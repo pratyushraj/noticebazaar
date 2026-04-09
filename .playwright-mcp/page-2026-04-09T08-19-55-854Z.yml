@@ -1,0 +1,55 @@
+- generic [ref=e2]:
+  - region "Notifications alt+T":
+    - list:
+      - listitem [ref=e50]:
+        - button "Close toast" [ref=e51] [cursor=pointer]:
+          - img [ref=e52]
+        - generic [ref=e55]:
+          - generic [ref=e56]: Demo credentials filled
+          - generic [ref=e57]: Sign in to preview Creator Armour.
+  - generic [ref=e3]:
+    - link "Skip to main content" [ref=e4] [cursor=pointer]:
+      - /url: "#main-content"
+    - generic [ref=e5]:
+      - generic [ref=e6]:
+        - generic [ref=e7]:
+          - img [ref=e9]
+          - heading "Creator Armour" [level=1] [ref=e12]
+        - generic [ref=e13]:
+          - heading "Sign In" [level=2] [ref=e14]
+          - paragraph [ref=e15]: Sign in to see your brand offers and active deals.
+        - generic [ref=e29]:
+          - generic [ref=e30]:
+            - text: Email
+            - textbox "Email" [ref=e31]:
+              - /placeholder: name@example.com
+              - text: brand-demo@noticebazaar.com
+          - generic [ref=e32]:
+            - generic [ref=e33]:
+              - generic [ref=e34]: Password
+              - button "Forgot?" [ref=e35] [cursor=pointer]
+            - textbox "Password" [ref=e36]:
+              - /placeholder: ••••••••
+              - text: BrandDemo123!@#
+          - button "Open My Deals" [ref=e49] [cursor=pointer]
+          - button "Try Demo Account" [active] [ref=e37] [cursor=pointer]
+        - generic [ref=e38]:
+          - generic [ref=e43]: Or continue with
+          - button "Continue with Google" [ref=e45] [cursor=pointer]:
+            - img
+            - text: Continue with Google
+        - link "Don't have an account? Create your creator link" [ref=e47] [cursor=pointer]:
+          - /url: /signup
+          - text: Don't have an account?
+          - generic [ref=e48]: Create your creator link
+        - link "Exit To Homepage" [ref=e21] [cursor=pointer]:
+          - /url: /
+          - img [ref=e22]
+          - text: Exit To Homepage
+      - paragraph [ref=e25]:
+        - text: Protected by Creator Armour Shield. By signing in, you agree to our
+        - link "Terms" [ref=e26] [cursor=pointer]:
+          - /url: /terms
+        - text: "&"
+        - link "Privacy" [ref=e27] [cursor=pointer]:
+          - /url: /privacy

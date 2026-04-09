@@ -1,0 +1,74 @@
+- generic [ref=e2]:
+  - region "Notifications alt+T"
+  - generic [ref=e3]:
+    - link "Skip to main content" [ref=e4] [cursor=pointer]:
+      - /url: "#main-content"
+    - generic [ref=e7]:
+      - main [ref=e8]:
+        - generic [ref=e9]:
+          - generic [ref=e11]:
+            - generic [ref=e12]:
+              - paragraph [ref=e13]: Brand Armour
+              - paragraph [ref=e14]: Good afternoon, Brand
+              - heading "Brand Dashboard" [level=1] [ref=e15]
+            - button "Logout" [ref=e16] [cursor=pointer]:
+              - img
+              - text: Logout
+          - generic [ref=e17]:
+            - generic [ref=e18]:
+              - generic [ref=e20]:
+                - generic [ref=e21]:
+                  - paragraph [ref=e23]: Total Deals
+                  - img [ref=e25]
+                - generic [ref=e28]:
+                  - paragraph [ref=e29]: "0"
+                  - paragraph [ref=e30]: Deals ever created
+              - generic [ref=e32]:
+                - generic [ref=e33]:
+                  - paragraph [ref=e35]: Active Deals
+                  - img [ref=e37]
+                - generic [ref=e40]:
+                  - paragraph [ref=e41]: "0"
+                  - paragraph [ref=e42]: In progress
+              - generic [ref=e44]:
+                - generic [ref=e45]:
+                  - paragraph [ref=e47]: Pending Payments
+                  - img [ref=e49]
+                - generic [ref=e52]:
+                  - paragraph [ref=e53]: "0"
+                  - paragraph [ref=e54]: Awaiting payment
+              - generic [ref=e56]:
+                - generic [ref=e57]:
+                  - paragraph [ref=e59]: Income Tracked
+                  - img [ref=e61]
+                - generic [ref=e63]:
+                  - paragraph [ref=e64]: ₹0
+                  - paragraph [ref=e65]: From completed deals
+              - generic [ref=e67]:
+                - generic [ref=e68]:
+                  - paragraph [ref=e70]: Revenue This Month
+                  - img [ref=e72]
+                - generic [ref=e75]:
+                  - paragraph [ref=e76]: ₹0
+                  - paragraph [ref=e77]: Paid this month
+              - generic [ref=e79]:
+                - generic [ref=e80]:
+                  - paragraph [ref=e82]: Deals Closing Soon
+                  - img [ref=e84]
+                - generic [ref=e86]:
+                  - paragraph [ref=e87]: "0"
+                  - paragraph [ref=e88]: Due within 7 days
+            - button "Send New Offer" [ref=e90] [cursor=pointer]:
+              - img
+              - text: Send New Offer
+            - generic [ref=e91]:
+              - button "Active (0)" [ref=e92] [cursor=pointer]
+              - button "All (0)" [ref=e93] [cursor=pointer]
+            - generic [ref=e95]:
+              - img [ref=e97]
+              - heading "No active deals" [level=3] [ref=e98]
+              - paragraph [ref=e99]: You don't have any active collaborations right now.
+              - button "Send First Offer" [ref=e100] [cursor=pointer]:
+                - img
+                - text: Send First Offer
+      - generic [ref=e101]: © 2026 Creator Armour

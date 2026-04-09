@@ -23,27 +23,27 @@ const dashboardShowcase = [
     accent: 'emerald',
     body: (
       <div className="space-y-3">
-        <div className="rounded-2xl border border-border bg-card p-4 shadow-sm">
+        <div className="rounded-2xl border border-[#E5E7EB] bg-white p-4 shadow-sm">
           <div className="flex items-start justify-between">
             <div>
-              <p className="text-sm font-black text-muted-foreground">Nykaa Summer Drop</p>
-              <p className="mt-1 text-xs font-bold text-muted-foreground">1 Reel + 3 stories • due in 4 days</p>
+              <p className="text-sm font-black text-[#0F172A]">Nykaa Summer Drop</p>
+              <p className="mt-1 text-xs font-bold text-[#64748B]">1 Reel + 3 stories • due in 4 days</p>
             </div>
-            <span className="rounded-full bg-primary px-3 py-1 text-[11px] font-black uppercase tracking-wide text-primary">Pending</span>
+            <span className="rounded-full bg-[#16A34A] px-3 py-1 text-[11px] font-black uppercase tracking-wide text-[#16A34A]">Pending</span>
           </div>
-          <div className="mt-4 flex items-center justify-between border-t border-border pt-3">
-            <span className="text-xs font-bold text-muted-foreground">Offer value</span>
-            <span className="text-lg font-black text-muted-foreground">₹18,000</span>
+          <div className="mt-4 flex items-center justify-between border-t border-[#E5E7EB] pt-3">
+            <span className="text-xs font-bold text-[#64748B]">Offer value</span>
+            <span className="text-lg font-black text-[#0F172A]">₹18,000</span>
           </div>
         </div>
         <div className="grid grid-cols-2 gap-3">
-          <div className="rounded-2xl bg-background px-4 py-3 text-foreground">
-            <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Awaiting reply</p>
+          <div className="rounded-2xl bg-white border border-[#E5E7EB] px-4 py-3 text-[#0F172A]">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-[#64748B]">Awaiting reply</p>
             <p className="mt-2 text-2xl font-black">03</p>
           </div>
-          <div className="rounded-2xl border border-border bg-background px-4 py-3">
-            <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Best-fit brand</p>
-            <p className="mt-2 text-sm font-black text-muted-foreground">Beauty / D2C</p>
+          <div className="rounded-2xl border border-[#E5E7EB] bg-white px-4 py-3">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-[#64748B]">Best-fit brand</p>
+            <p className="mt-2 text-sm font-black text-[#0F172A]">Beauty / D2C</p>
           </div>
         </div>
       </div>
@@ -57,13 +57,13 @@ const dashboardShowcase = [
     accent: 'blue',
     body: (
       <div className="space-y-3">
-        <div className="rounded-2xl border border-border bg-card p-4 shadow-sm">
+        <div className="rounded-2xl border border-[#E5E7EB] bg-white p-4 shadow-sm">
           <div className="flex items-center justify-between">
-            <p className="text-sm font-black text-muted-foreground">Campaign agreement scan</p>
-            <span className="rounded-full bg-warning px-3 py-1 text-[11px] font-black uppercase tracking-wide text-warning">2 flags</span>
+            <p className="text-sm font-black text-[#0F172A]">Campaign agreement scan</p>
+            <span className="rounded-full bg-amber-50 px-3 py-1 text-[11px] font-black uppercase tracking-wide text-amber-700 border border-amber-200">2 flags</span>
           </div>
           <div className="mt-4 space-y-2">
-            <div className="rounded-xl border border-warning bg-warning px-3 py-2 text-xs font-bold text-warning">
+            <div className="rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-bold text-amber-700">
               Unlimited usage rights detected
             </div>
             <div className="rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-bold text-rose-700">
@@ -71,9 +71,9 @@ const dashboardShowcase = [
             </div>
           </div>
         </div>
-        <div className="rounded-2xl border border-border bg-background px-4 py-3">
-          <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Suggested fix</p>
-          <p className="mt-2 text-sm font-bold text-muted-foreground">Add 50% advance, 30-day usage cap, and final payment within 7 days of posting.</p>
+        <div className="rounded-2xl border border-[#E5E7EB] bg-white px-4 py-3">
+          <p className="text-[10px] font-bold uppercase tracking-widest text-[#64748B]">Suggested fix</p>
+          <p className="mt-2 text-sm font-bold text-[#64748B]">Add 50% advance, 30-day usage cap, and final payment within 7 days of posting.</p>
         </div>
       </div>
     ),
@@ -86,22 +86,22 @@ const dashboardShowcase = [
     accent: 'teal',
     body: (
       <div className="space-y-3">
-        <div className="rounded-2xl bg-gradient-to-br from-emerald-600 to-teal-500 p-4 text-foreground shadow-lg shadow-emerald-500/20">
-          <p className="text-[10px] font-bold uppercase tracking-widest text-primary">This month</p>
+        <div className="rounded-2xl bg-gradient-to-br from-[#16A34A] to-[#15803D] p-4 text-white shadow-lg shadow-[#16A34A]/20">
+          <p className="text-[10px] font-bold uppercase tracking-widest text-[#16A34A]">This month</p>
           <p className="mt-2 text-3xl font-black">₹42,500</p>
-          <p className="mt-1 text-sm font-medium text-primary">2 paid deals, 1 overdue payout</p>
+          <p className="mt-1 text-sm font-medium text-[#16A34A]">2 paid deals, 1 overdue payout</p>
         </div>
-        <div className="rounded-2xl border border-border bg-card p-4 shadow-sm">
+        <div className="rounded-2xl border border-[#E5E7EB] bg-white p-4 shadow-sm">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-black text-muted-foreground">Myntra festive edit</p>
-              <p className="mt-1 text-xs font-bold text-muted-foreground">Final payment pending</p>
+              <p className="text-sm font-black text-[#0F172A]">Myntra festive edit</p>
+              <p className="mt-1 text-xs font-bold text-[#64748B]">Final payment pending</p>
             </div>
             <span className="rounded-full bg-rose-50 px-3 py-1 text-[11px] font-black uppercase tracking-wide text-rose-700">4 days late</span>
           </div>
-          <div className="mt-4 flex items-center justify-between border-t border-border pt-3">
-            <span className="text-xs font-bold text-muted-foreground">Amount due</span>
-            <span className="text-lg font-black text-muted-foreground">₹12,000</span>
+          <div className="mt-4 flex items-center justify-between border-t border-[#E5E7EB] pt-3">
+            <span className="text-xs font-bold text-[#64748B]">Amount due</span>
+            <span className="text-lg font-black text-[#0F172A]">₹12,000</span>
           </div>
         </div>
       </div>
@@ -149,7 +149,7 @@ const LandingPage = () => {
   }, [session, profile, loading, navigate]);
 
   return (
-    <div className="min-h-screen bg-card sm:bg-[#FAFAFA] text-muted-foreground font-sans selection:bg-primary/30 overflow-x-hidden">
+    <div className="min-h-screen bg-[#F8FAF9] text-[#0F172A] font-sans selection:bg-[#16A34A]/20 overflow-x-hidden">
       <SEOHead
         title={seoTitle}
         description={seoDescription}
@@ -184,63 +184,63 @@ const LandingPage = () => {
       <nav className={cn(
         "fixed top-0 inset-x-0 z-50 transition-all duration-300 border-b pt-[max(env(safe-area-inset-top),0px)]",
         hasScrolled
-          ? "bg-secondary/90 backdrop-blur-xl border-border shadow-sm"
-          : "bg-card border-border shadow-sm md:bg-transparent md:border-transparent md:shadow-none"
+          ? "bg-white/92 backdrop-blur-xl border-[#E5E7EB] shadow-sm"
+          : "bg-white border-[#E5E7EB] shadow-sm md:bg-white/70 md:border-transparent md:shadow-none md:backdrop-blur-md"
       )}>
         <div className="max-w-[1200px] mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2 group" onClick={() => triggerHaptic(HapticPatterns.light)}>
-            <div className="w-8 h-8 bg-primary rounded-xl flex items-center justify-center shadow-lg shadow-emerald-600/20">
-              <ShieldCheck className="w-5 h-5 text-foreground" />
+            <div className="w-8 h-8 bg-[#16A34A] rounded-xl flex items-center justify-center shadow-lg shadow-[#16A34A]/20">
+              <ShieldCheck className="w-5 h-5 text-white" />
             </div>
-            <h1 className="text-[17px] font-black tracking-tight text-muted-foreground">
+            <h1 className="text-[17px] font-black tracking-tight text-[#0F172A]">
               Creator Armour
             </h1>
           </Link>
 
-          <div className="hidden md:flex items-center gap-8 bg-card0 backdrop-blur-md px-6 py-2 rounded-full border border-border/60 shadow-sm">
-            <a href="#how-it-works" className="text-[13px] font-bold text-muted-foreground hover:text-primary transition-colors">How it Works</a>
-            <a href="#marketplace" className="text-[13px] font-bold text-muted-foreground hover:text-primary transition-colors">Packages</a>
-            <a href="#social-proof" className="text-[13px] font-bold text-muted-foreground hover:text-primary transition-colors">Creators</a>
+          <div className="hidden md:flex items-center gap-8 bg-white/95 backdrop-blur-md px-6 py-2 rounded-full border border-[#E5E7EB] shadow-sm">
+            <a href="#how-it-works" className="text-[13px] font-bold text-[#0F172A] hover:text-[#16A34A] transition-colors">How it Works</a>
+            <a href="#marketplace" className="text-[13px] font-bold text-[#0F172A] hover:text-[#16A34A] transition-colors">Packages</a>
+            <a href="#social-proof" className="text-[13px] font-bold text-[#0F172A] hover:text-[#16A34A] transition-colors">Creators</a>
           </div>
 
           <div className="flex items-center gap-3">
-            <Link to="/login" className="hidden md:block px-4 py-2 text-[14px] font-bold text-muted-foreground hover:text-muted-foreground transition-colors rounded-full hover:bg-background">
+            <Link to="/login" className="hidden md:block px-4 py-2 text-[14px] font-bold text-[#0F172A] hover:text-[#16A34A] transition-colors rounded-full hover:bg-[#F8FAF9]">
               Log In
             </Link>
             <Link
               to="/signup?mode=brand"
               onClick={() => triggerHaptic(HapticPatterns.light)}
-              className="hidden md:inline-flex items-center px-4 py-2 text-[14px] font-black text-muted-foreground hover:text-muted-foreground transition-colors rounded-full bg-secondary/70 hover:bg-card border border-border shadow-sm"
+              className="hidden md:inline-flex items-center px-4 py-2 text-[14px] font-black text-[#0F172A] hover:text-[#16A34A] transition-colors rounded-full bg-[#F8FAF9] hover:bg-[#E5E7EB] border border-[#E5E7EB] shadow-sm"
             >
               Brand Console
             </Link>
             <Link
               to="/signup?mode=creator"
               onClick={() => triggerHaptic(HapticPatterns.success)}
-              className="bg-primary hover:bg-primary text-foreground px-4 sm:px-5 py-2.5 sm:py-3 rounded-full text-[14px] sm:text-[15px] font-black shadow-lg shadow-emerald-600/25 hover:shadow-emerald-600/40 hover:-translate-y-0.5 transition-all whitespace-nowrap min-h-[44px]"
+              className="bg-[#16A34A] hover:bg-[#15803D] text-white px-4 sm:px-5 py-2.5 sm:py-3 rounded-full text-[14px] sm:text-[15px] font-black shadow-lg shadow-[#16A34A]/25 hover:shadow-[#16A34A]/40 hover:-translate-y-0.5 transition-all whitespace-nowrap min-h-[44px]"
             >
               Create Collab Link
             </Link>
             {/* Mobile menu button */}
             <button type="button"
-              className="md:hidden p-2 rounded-xl hover:bg-background transition-colors"
+              className="md:hidden p-2 rounded-xl hover:bg-[#F8FAF9] transition-colors"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               aria-label="Toggle menu"
             >
-              {mobileMenuOpen ? <X className="w-5 h-5 text-muted-foreground" /> : <Menu className="w-5 h-5 text-muted-foreground" />}
+              {mobileMenuOpen ? <X className="w-5 h-5 text-[#64748B]" /> : <Menu className="w-5 h-5 text-[#64748B]" />}
             </button>
           </div>
         </div>
 
         {/* Mobile menu panel */}
         {mobileMenuOpen && (
-          <div className="md:hidden bg-card border-t border-border px-4 py-4 space-y-1 shadow-lg">
-            <a href="#how-it-works" onClick={() => setMobileMenuOpen(false)} className="block px-4 py-3 text-[15px] font-bold text-muted-foreground hover:bg-background rounded-xl transition-colors">How it Works</a>
-            <a href="#marketplace" onClick={() => setMobileMenuOpen(false)} className="block px-4 py-3 text-[15px] font-bold text-muted-foreground hover:bg-background rounded-xl transition-colors">Packages</a>
-            <a href="#social-proof" onClick={() => setMobileMenuOpen(false)} className="block px-4 py-3 text-[15px] font-bold text-muted-foreground hover:bg-background rounded-xl transition-colors">Creators</a>
-            <div className="pt-2 border-t border-border space-y-1">
-              <Link to="/login" onClick={() => setMobileMenuOpen(false)} className="block px-4 py-3 text-[15px] font-bold text-muted-foreground hover:bg-background rounded-xl transition-colors">Log In</Link>
-              <Link to="/signup?mode=brand" onClick={() => setMobileMenuOpen(false)} className="block px-4 py-3 text-[15px] font-bold text-muted-foreground hover:bg-background rounded-xl transition-colors">Brand Console</Link>
+          <div className="md:hidden bg-white border-t border-[#E5E7EB] px-4 py-4 space-y-1 shadow-lg">
+            <a href="#how-it-works" onClick={() => setMobileMenuOpen(false)} className="block px-4 py-3 text-[15px] font-bold text-[#0F172A] hover:bg-[#F8FAF9] rounded-xl transition-colors">How it Works</a>
+            <a href="#marketplace" onClick={() => setMobileMenuOpen(false)} className="block px-4 py-3 text-[15px] font-bold text-[#0F172A] hover:bg-[#F8FAF9] rounded-xl transition-colors">Packages</a>
+            <a href="#social-proof" onClick={() => setMobileMenuOpen(false)} className="block px-4 py-3 text-[15px] font-bold text-[#0F172A] hover:bg-[#F8FAF9] rounded-xl transition-colors">Creators</a>
+            <div className="pt-2 border-t border-[#E5E7EB] space-y-1">
+              <Link to="/login" onClick={() => setMobileMenuOpen(false)} className="block px-4 py-3 text-[15px] font-bold text-[#0F172A] hover:bg-[#F8FAF9] rounded-xl transition-colors">Log In</Link>
+              <Link to="/signup?mode=brand" onClick={() => setMobileMenuOpen(false)} className="block px-4 py-3 text-[15px] font-bold text-[#0F172A] hover:bg-[#F8FAF9] rounded-xl transition-colors">Brand Console</Link>
             </div>
           </div>
         )}
@@ -248,150 +248,145 @@ const LandingPage = () => {
       </nav>
       <main className="relative z-10 pt-24 sm:pt-28 lg:pt-40 pb-24 space-y-12 lg:space-y-20">
         {/* 1. HERO SECTION */}
-        <section className="px-4 sm:px-6 max-w-[1200px] mx-auto relative scroll-mt-24">
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[600px] bg-gradient-to-br from-emerald-100/40 via-blue-50/40 to-transparent blur-[100px] rounded-full -z-10" />
+        <section className="px-4 sm:px-6 max-w-[1200px] mx-auto relative scroll-mt-24 py-20 lg:py-28">
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[600px] bg-gradient-to-br from-[#DCFCE7]/40 via-[#DCFCE7]/40 to-transparent blur-[100px] rounded-full -z-10" />
 
           <div className="flex flex-col lg:flex-row items-center gap-10 lg:gap-24 w-full">
             <div className="flex-1 text-center lg:text-left pt-2 lg:pt-10">
-              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary border border-primary mb-8 shadow-sm">
-                <Sparkles className="w-3.5 h-3.5 text-primary" />
-                <span className="text-[13px] font-bold text-primary uppercase tracking-wide">The Operating System for Creators</span>
-              </div>
-
-              <h1 className="text-[42px] md:text-[68px] lg:text-[76px] font-black tracking-tight leading-[1.05] mb-6 text-muted-foreground drop-shadow-sm">
-                Close Brand Deals <br />
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-teal-500 inline-block mt-2">
-                  Without <span className="whitespace-nowrap">Instagram DMs</span>
+              <h1 className="text-[48px] md:text-[72px] lg:text-[84px] font-black tracking-tight leading-[1.05] mb-6 text-[#0F172A] drop-shadow-sm">
+                Get brand deals <br />
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#16A34A] to-[#15803D] inline-block mt-2">
+                  without DMs
                 </span>
               </h1>
 
-              <p className="text-[17px] md:text-[20px] text-muted-foreground font-medium mb-8 md:mb-10 max-w-xl mx-auto lg:mx-0 leading-relaxed">
-                Creator Armour gives creators a professional collaboration page where brands send structured offers, choose packages, and close deals without messy messages.
+              <p className="text-[20px] md:text-[24px] text-[#64748B] font-medium mb-10 max-w-lg mx-auto lg:mx-0 leading-relaxed">
+                Send one link. Brands send offers.
               </p>
 
-	              <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 mb-10">
-	                <Link
+              <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 mb-10">
+                <Link
                     to="/signup?mode=creator"
-                    className="w-full sm:w-auto bg-primary hover:bg-primary text-foreground px-8 py-4 rounded-full font-black text-[16px] shadow-xl shadow-emerald-600/20 hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2 border border-primary"
+                    className="w-full sm:w-auto bg-[#16A34A] hover:bg-[#15803D] text-white px-8 py-5 rounded-full font-black text-[18px] shadow-xl shadow-[#16A34A]/20 hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2 border border-[#16A34A]"
                   >
-	                  I'm a Creator <ArrowRight className="w-5 h-5" />
-	                </Link>
-                  <Link
-                    to="/signup?mode=brand"
-                    className="w-full sm:w-auto bg-card hover:bg-background border shadow-sm border-border text-muted-foreground px-8 py-4 rounded-full font-black text-[16px] transition-all flex items-center justify-center gap-2"
-                  >
-                    I'm a Brand <ArrowRight className="w-5 h-5" />
+                    Create my link <ArrowRight className="w-5 h-5" />
                   </Link>
-	              </div>
+                  <Link
+                    to="/pratyush"
+                    className="w-full sm:w-auto bg-white hover:bg-[#F8FAF9] border shadow-sm border-[#E5E7EB] text-[#64748B] px-8 py-5 rounded-full font-black text-[16px] transition-all flex items-center justify-center gap-2"
+                  >
+                    See how it works
+                  </Link>
+              </div>
             </div>
 
             {/* Hero Mockup */}
             <div className="flex-1 w-full max-w-[420px] lg:max-w-none relative">
               {/* Floating Creator Profile Badge */}
-              <div className="hidden md:flex absolute -left-16 md:-left-24 top-20 bg-card p-4 rounded-3xl shadow-2xl border border-border z-20 items-center gap-4 animate-in fade-in slide-in-from-bottom-4 duration-1000 delay-300 hover:scale-105 transition-transform">
+              <div className="hidden md:flex absolute -left-16 md:-left-24 top-20 bg-white p-4 rounded-3xl shadow-2xl border border-[#E5E7EB] z-20 items-center gap-4 animate-in fade-in slide-in-from-bottom-4 duration-1000 delay-300 hover:scale-105 transition-transform">
                 <img src={AANYA_IMG} alt="Aanya Kapoor" className="w-16 h-16 rounded-full object-cover shadow-sm border-2 border-white" />
                 <div>
                   <div className="flex items-center gap-1.5 mb-1">
-                    <h3 className="text-base font-black text-muted-foreground">Aanya Kapoor</h3>
-                    <CheckCircle2 className="w-4 h-4 text-info fill-blue-50" />
+                    <h3 className="text-base font-black text-[#0F172A]">Aanya Kapoor</h3>
+                    <CheckCircle2 className="w-4 h-4 text-[#16A34A] fill-[#DCFCE7]" />
                   </div>
-                  <p className="text-[12px] font-bold text-muted-foreground leading-tight">Lifestyle Creator • 42K followers</p>
+                  <p className="text-[12px] font-bold text-[#64748B] leading-tight">Lifestyle Creator • 42K followers</p>
                 </div>
               </div>
 
               {/* Floating Offer Notification */}
-              <div className="hidden md:flex absolute -right-8 md:-right-16 top-64 bg-card p-4 rounded-3xl shadow-2xl border border-border z-30 items-center gap-4 animate-in fade-in slide-in-from-right-8 duration-1000 delay-700 hover:scale-105 transition-transform">
-                <div className="w-12 h-12 rounded-full bg-primary flex items-center justify-center">
+              <div className="hidden md:flex absolute -right-8 md:-right-16 top-64 bg-white p-4 rounded-3xl shadow-2xl border border-[#E5E7EB] z-30 items-center gap-4 animate-in fade-in slide-in-from-right-8 duration-1000 delay-700 hover:scale-105 transition-transform">
+                <div className="w-12 h-12 rounded-full bg-[#16A34A] flex items-center justify-center">
                   <span className="text-xl">💰</span>
                 </div>
                 <div>
-                  <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-wide">New Offer Received</p>
-                  <p className="text-base font-black text-muted-foreground">₹4,000 from Myntra</p>
+                  <p className="text-[11px] font-bold text-[#64748B] uppercase tracking-wide">New Offer Received</p>
+                  <p className="text-base font-black text-[#0F172A]">₹4,000 from Myntra</p>
                 </div>
               </div>
 
-              <div className="hidden lg:flex absolute -left-8 bottom-10 z-30 rounded-3xl border border-border bg-secondary/95 px-4 py-3 shadow-2xl backdrop-blur-sm items-center gap-4 animate-in fade-in slide-in-from-left-8 duration-1000 delay-500 hover:scale-105 transition-transform">
-                <div className="w-11 h-11 rounded-2xl bg-info flex items-center justify-center text-info">
+              <div className="hidden lg:flex absolute -left-8 bottom-10 z-30 rounded-3xl border border-[#E5E7EB] bg-white/95 px-4 py-3 shadow-2xl backdrop-blur-sm items-center gap-4 animate-in fade-in slide-in-from-left-8 duration-1000 delay-500 hover:scale-105 transition-transform">
+                <div className="w-11 h-11 rounded-2xl bg-[#DCFCE7] flex items-center justify-center text-[#16A34A]">
                   <FileText className="w-5 h-5" />
                 </div>
                 <div>
-                  <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">Contract check</p>
-                  <p className="text-sm font-black text-muted-foreground">2 risky clauses flagged</p>
+                  <p className="text-[11px] font-bold uppercase tracking-wider text-[#64748B]">Contract check</p>
+                  <p className="text-sm font-black text-[#0F172A]">2 risky clauses flagged</p>
                 </div>
               </div>
 
-              <div className="hidden xl:flex absolute -right-20 bottom-28 z-30 rounded-3xl border border-border bg-background px-4 py-3 text-foreground shadow-2xl items-center gap-4 animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-900 hover:scale-105 transition-transform">
-                <div className="w-11 h-11 rounded-2xl bg-secondary/50 flex items-center justify-center text-primary">
+              <div className="hidden xl:flex absolute -right-20 bottom-28 z-30 rounded-3xl border border-[#E5E7EB] bg-white px-4 py-3 text-[#0F172A] shadow-2xl items-center gap-4 animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-900 hover:scale-105 transition-transform">
+                <div className="w-11 h-11 rounded-2xl bg-[#DCFCE7]/50 flex items-center justify-center text-[#16A34A]">
                   <Clock3 className="w-5 h-5" />
                 </div>
                 <div>
-                  <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">Payment follow-up</p>
-                  <p className="text-sm font-black text-foreground">₹12,000 overdue by 4 days</p>
+                  <p className="text-[11px] font-bold uppercase tracking-wider text-[#64748B]">Payment follow-up</p>
+                  <p className="text-sm font-black text-[#0F172A]">₹12,000 overdue by 4 days</p>
                 </div>
               </div>
 
               {/* Phone Mockup Screen */}
-              <div className="bg-background rounded-[40px] md:rounded-[48px] shadow-2xl border-[10px] md:border-[14px] border-border overflow-hidden w-full max-w-[360px] md:max-w-[380px] mx-auto relative z-10 transform lg:rotate-2 hover:rotate-0 transition-transform duration-500 ring-1 ring-slate-900/5">
+              <div className="bg-white rounded-[40px] md:rounded-[48px] shadow-2xl border-[10px] md:border-[14px] border-[#E5E7EB] overflow-hidden w-full max-w-[360px] md:max-w-[380px] mx-auto relative z-10 transform lg:rotate-2 hover:rotate-0 transition-transform duration-500 ring-1 ring-[#0F172A]/5">
                 {/* Dynamic Island */}
-                <div className="absolute top-4 left-1/2 -translate-x-1/2 w-32 h-7 bg-background rounded-full z-20" />
+                <div className="absolute top-4 left-1/2 -translate-x-1/2 w-32 h-7 bg-[#F8FAF9] rounded-full z-20" />
 
-                <div className="px-5 md:px-6 pt-14 md:pt-16 pb-8 bg-card h-auto relative">
+                <div className="px-5 md:px-6 pt-14 md:pt-16 pb-8 bg-white h-auto relative">
                   {/* Decorative background blur */}
-                  <div className="absolute top-0 left-0 right-0 h-44 bg-gradient-to-b from-blue-50 to-white" />
+                  <div className="absolute top-0 left-0 right-0 h-44 bg-gradient-to-b from-[#DCFCE7] to-white" />
 
                   <div className="relative z-10 flex flex-col items-center mb-6">
                     <img src={AANYA_IMG} className="w-24 h-24 rounded-full object-cover border-4 border-white shadow-md mb-4" alt="Creator" />
-                    <h2 className="text-2xl font-black text-muted-foreground flex items-center gap-1">Aanya Kapoor <CheckCircle2 className="w-6 h-6 text-info fill-blue-50" /></h2>
-                    <p className="text-[13px] font-bold text-muted-foreground mb-4">@aanyakapoor</p>
+                    <h2 className="text-2xl font-black text-[#0F172A] flex items-center gap-1">Aanya Kapoor <CheckCircle2 className="w-6 h-6 text-[#16A34A] fill-[#DCFCE7]" /></h2>
+                    <p className="text-[13px] font-bold text-[#64748B] mb-4">@aanyakapoor</p>
 
-                    <div className="bg-card border border-border rounded-2xl p-4 w-full shadow-sm text-center">
-                      <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-widest mb-1">Typical Collab Rate</p>
-                      <p className="text-xl font-black text-muted-foreground">₹2K–₹4K</p>
+                    <div className="bg-[#F8FAF9] border border-[#E5E7EB] rounded-2xl p-4 w-full shadow-sm text-center">
+                      <p className="text-[11px] font-bold text-[#64748B] uppercase tracking-widest mb-1">Typical Collab Rate</p>
+                      <p className="text-xl font-black text-[#0F172A]">₹2K–₹4K</p>
                     </div>
                   </div>
 
                   {/* Packages */}
                   <div className="space-y-4 relative z-10">
-                    <div className="border border-border rounded-2xl p-5 bg-card shadow-sm hover:border-primary transition-colors">
+                    <div className="border border-[#E5E7EB] rounded-2xl p-5 bg-white shadow-sm hover:border-[#16A34A] transition-colors">
                       <div className="flex justify-between items-start mb-2">
-                        <h5 className="font-black text-[15px] text-muted-foreground">Reel Deal</h5>
-                        <div className="w-8 h-8 rounded-full bg-background flex items-center justify-center">
+                        <h5 className="font-black text-[15px] text-[#0F172A]">Reel Deal</h5>
+                        <div className="w-8 h-8 rounded-full bg-[#F8FAF9] flex items-center justify-center">
                           <span className="text-xl">🎬</span>
                         </div>
                       </div>
-                      <p className="text-xs font-medium text-muted-foreground mb-4 line-clamp-2">1 High-quality Instagram Reel with professional hooks and brand tagging.</p>
-                      <div className="flex justify-between items-center pt-3 border-t border-border">
-                        <span className="text-lg font-black text-muted-foreground">₹2,499</span>
-                        <div className="bg-background text-muted-foreground px-4 py-1.5 rounded-xl text-xs font-black">Select</div>
+                      <p className="text-xs font-medium text-[#64748B] mb-4 line-clamp-2">1 High-quality Instagram Reel with professional hooks and brand tagging.</p>
+                      <div className="flex justify-between items-center pt-3 border-t border-[#E5E7EB]">
+                        <span className="text-lg font-black text-[#0F172A]">₹2,499</span>
+                        <div className="bg-[#F8FAF9] text-[#64748B] px-4 py-1.5 rounded-xl text-xs font-black">Select</div>
                       </div>
                     </div>
 
-                    <div className="border-2 border-primary bg-card rounded-2xl p-5 relative shadow-lg shadow-emerald-500/10">
-                      <div className="absolute -top-3 left-4 bg-primary text-foreground text-[11px] uppercase font-black px-3 py-1 rounded-full tracking-wide">Most Popular</div>
+                    <div className="border-2 border-[#16A34A] bg-white rounded-2xl p-5 relative shadow-lg shadow-[#16A34A]/10">
+                      <div className="absolute -top-3 left-4 bg-[#16A34A] text-white text-[11px] uppercase font-black px-3 py-1 rounded-full tracking-wide">Most Popular</div>
                       <div className="flex justify-between items-start mb-2 mt-1">
-                        <h5 className="font-black text-[15px] text-muted-foreground">Engagement Package</h5>
-                        <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center">
+                        <h5 className="font-black text-[15px] text-[#0F172A]">Engagement Package</h5>
+                        <div className="w-8 h-8 rounded-full bg-[#16A34A] flex items-center justify-center">
                           <span className="text-xl">🔥</span>
                         </div>
                       </div>
-                      <p className="text-xs font-medium text-muted-foreground mb-4">1 Reel + 2 Engagement Stories to maximize reach and drive action.</p>
-                      <div className="flex justify-between items-center pt-3 border-t border-primary">
-                        <span className="text-lg font-black text-primary">₹3,999</span>
-                        <div className="bg-primary text-foreground px-4 py-1.5 rounded-xl text-xs font-black shadow-sm">Select</div>
+                      <p className="text-xs font-medium text-[#64748B] mb-4">1 Reel + 2 Engagement Stories to maximize reach and drive action.</p>
+                      <div className="flex justify-between items-center pt-3 border-t border-[#16A34A]">
+                        <span className="text-lg font-black text-[#16A34A]">₹3,999</span>
+                        <div className="bg-[#16A34A] text-white px-4 py-1.5 rounded-xl text-xs font-black shadow-sm">Select</div>
                       </div>
                     </div>
 
-                    <div className="border border-border rounded-2xl p-5 bg-card shadow-sm hover:border-primary transition-colors">
+                    <div className="border border-[#E5E7EB] rounded-2xl p-5 bg-white shadow-sm hover:border-[#16A34A] transition-colors">
                       <div className="flex justify-between items-start mb-2">
-                        <h5 className="font-black text-[15px] text-muted-foreground">Product Review</h5>
-                        <div className="w-8 h-8 rounded-full bg-background flex items-center justify-center">
+                        <h5 className="font-black text-[15px] text-[#0F172A]">Product Review</h5>
+                        <div className="w-8 h-8 rounded-full bg-[#F8FAF9] flex items-center justify-center">
                           <span className="text-xl">📦</span>
                         </div>
                       </div>
-                      <p className="text-xs font-medium text-muted-foreground mb-4">In-depth product unboxing and review with 1 story mention.</p>
-                      <div className="flex justify-between items-center pt-3 border-t border-border">
-                        <span className="text-lg font-black text-muted-foreground">Barter</span>
-                        <div className="bg-background text-muted-foreground px-4 py-1.5 rounded-xl text-xs font-black">Select</div>
+                      <p className="text-xs font-medium text-[#64748B] mb-4">In-depth product unboxing and review with 1 story mention.</p>
+                      <div className="flex justify-between items-center pt-3 border-t border-[#E5E7EB]">
+                        <span className="text-lg font-black text-[#0F172A]">Barter</span>
+                        <div className="bg-[#F8FAF9] text-[#64748B] px-4 py-1.5 rounded-xl text-xs font-black">Select</div>
                       </div>
                     </div>
                   </div>
@@ -401,55 +396,10 @@ const LandingPage = () => {
           </div>
         </section>
 
-        <section className="px-4 sm:px-6 max-w-[1200px] mx-auto">
-          <div className="text-center mb-10 md:mb-14">
-            <h2 className="text-3xl md:text-[42px] font-black tracking-tight text-muted-foreground">
-              More than a collab page
-            </h2>
-            <p className="mt-4 text-lg text-muted-foreground font-medium max-w-2xl mx-auto">
-              Show creators what happens after a brand clicks their link: offers arrive cleanly, contracts are easier to read, and payouts stay visible.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 md:gap-6">
-            {dashboardShowcase.map((panel) => {
-              const Icon = panel.icon;
-
-              return (
-                <div
-                  key={panel.title}
-                  className="rounded-[28px] border border-border bg-card p-6 md:p-7 shadow-sm hover:-translate-y-1 hover:shadow-xl transition-all duration-300"
-                >
-                  <div className="flex items-center gap-3 mb-5">
-                    <div className={cn(
-                      'w-11 h-11 rounded-2xl flex items-center justify-center',
-                      panel.accent === 'emerald' && 'bg-primary text-primary',
-                      panel.accent === 'blue' && 'bg-info text-info',
-                      panel.accent === 'teal' && 'bg-teal-50 text-teal-600',
-                    )}>
-                      <Icon className="w-5 h-5" />
-                    </div>
-                    <p className="text-[11px] font-black uppercase tracking-[0.22em] text-muted-foreground">{panel.eyebrow}</p>
-                  </div>
-
-                  <div className="mb-6">
-                    <h3 className="text-2xl font-black tracking-tight text-muted-foreground leading-tight">{panel.title}</h3>
-                    <p className="mt-3 text-sm font-medium leading-6 text-muted-foreground">{panel.description}</p>
-                  </div>
-
-                  <div className="rounded-[26px] border border-border bg-background/80 p-4">
-                    {panel.body}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </section>
-
-        {/* Brand Logos Section */}
-        <section className="border-y border-border bg-card py-10 md:py-12">
+        {/* Brand Logos Section - moved above "More than a collab page" */}
+        <section className="border-y border-[#E5E7EB] bg-[#F8FAF9] py-10 md:py-12">
           <div className="max-w-[1200px] mx-auto px-6 text-center">
-            <p className="text-[13px] font-bold text-muted-foreground uppercase tracking-widest mb-8">Example brands creators collaborate with</p>
+            <p className="text-[13px] font-bold text-[#64748B] uppercase tracking-widest mb-8">Example brands creators collaborate with</p>
             <div className="flex justify-center items-center gap-10 sm:gap-14 md:gap-20 opacity-50 hover:opacity-80 transition-all duration-500 overflow-hidden flex-wrap">
               {/* NYKAA */}
               <svg className="h-6 md:h-8 shrink-0" viewBox="0 0 120 28" fill="none">
@@ -475,31 +425,78 @@ const LandingPage = () => {
           </div>
         </section>
 
+        <section className="px-4 sm:px-6 max-w-[1200px] mx-auto py-16 lg:py-20">
+          <div className="text-center mb-10 md:mb-14">
+            <h2 className="text-3xl md:text-[42px] font-black tracking-tight text-[#0F172A]">
+              More than a collab page
+            </h2>
+            <p className="mt-4 text-lg text-[#64748B] font-medium max-w-2xl mx-auto">
+              Show creators what happens after a brand clicks their link: offers arrive cleanly, contracts are easier to read, and payouts stay visible.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 md:gap-6">
+            {dashboardShowcase.map((panel) => {
+              const Icon = panel.icon;
+
+              return (
+                <div
+                  key={panel.title}
+                  className="rounded-[20px] border border-[#E5E7EB] bg-white p-6 md:p-8 shadow-[0_8px_24px_rgba(0,0,0,0.06)] hover:-translate-y-1 hover:shadow-[0_12px_32px_rgba(0,0,0,0.1)] transition-all duration-300"
+                >
+                  <div className="flex items-center gap-3 mb-5">
+                    <div className={cn(
+                      'w-11 h-11 rounded-2xl flex items-center justify-center',
+                      panel.accent === 'emerald' && 'bg-[#16A34A] text-[#16A34A]',
+                      panel.accent === 'blue' && 'bg-[#DCFCE7] text-[#16A34A]',
+                      panel.accent === 'teal' && 'bg-[#DCFCE7] text-[#15803D]',
+                    )}>
+                      <Icon className="w-5 h-5" />
+                    </div>
+                    <p className="text-[11px] font-black uppercase tracking-[0.22em] text-[#64748B]">{panel.eyebrow}</p>
+                  </div>
+
+                  <div className="mb-6">
+                    <h3 className="text-2xl font-black tracking-tight text-[#0F172A] leading-tight">{panel.title}</h3>
+                    <p className="mt-3 text-sm font-medium leading-6 text-[#64748B]">{panel.description}</p>
+                  </div>
+
+                  <div className="rounded-[26px] border border-[#E5E7EB] bg-[#F8FAF9] p-4">
+                    {panel.body}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </section>
+
         {/* 2. CREATOR SOCIAL PROOF */}
-        <section id="social-proof" className="px-4 sm:px-6 max-w-[1200px] mx-auto scroll-mt-24">
+        <section id="social-proof" className="px-4 sm:px-6 max-w-[1200px] mx-auto scroll-mt-24 py-16 lg:py-20">
           <div className="text-center mb-10 md:mb-16">
-            <h2 className="text-3xl md:text-[40px] font-black tracking-tight text-muted-foreground lg:max-w-2xl mx-auto leading-tight">
+            <h2 className="text-3xl md:text-[40px] font-black tracking-tight text-[#0F172A] lg:max-w-2xl mx-auto leading-tight">
               Top creators running their business on Armour
             </h2>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
             {[
-              { name: 'Priya Sharma', category: 'Fashion Creator', loc: 'Delhi', followers: '36K', price: '₹3K', img: PRIYA_IMG },
-              { name: 'Arjun Patel', category: 'Tech Reviewer', loc: 'Mumbai', followers: '51K', price: '₹4K', img: ARJUN_IMG },
-              { name: 'Neha Verma', category: 'Beauty Creator', loc: 'Bangalore', followers: '28K', price: '₹2K', img: NEHA_IMG },
+              { name: 'Priya Sharma', category: 'Fashion Creator', loc: 'Delhi', followers: '36K', price: '₹3K', earned: '₹24,500 this week', img: PRIYA_IMG },
+              { name: 'Arjun Patel', category: 'Tech Reviewer', loc: 'Mumbai', followers: '51K', price: '₹4K', earned: '₹12,000 per reel', img: ARJUN_IMG },
+              { name: 'Neha Verma', category: 'Beauty Creator', loc: 'Bangalore', followers: '28K', price: '₹2K', earned: '₹18,500 last month', img: NEHA_IMG },
             ].map((c, i) => (
-              <div key={i} className="bg-card border border-border p-5 md:p-6 rounded-[24px] md:rounded-[28px] shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
-                <div className="flex items-start gap-4 mb-4">
+              <div key={i} className="bg-white border border-[#E5E7EB] p-6 md:p-8 rounded-[20px] md:rounded-[24px] shadow-[0_8px_24px_rgba(0,0,0,0.06)] hover:shadow-[0_12px_32px_rgba(0,0,0,0.1)] hover:-translate-y-1 transition-all duration-300">
+                <div className="flex items-center gap-4 mb-4">
                   <img src={c.img} alt={c.name} className="w-16 h-16 rounded-2xl object-cover shadow-sm" loading="lazy" />
                   <div>
-                    <h3 className="font-black text-muted-foreground text-lg">{c.name}</h3>
-                    <p className="text-[13px] font-medium text-muted-foreground">{c.category} • {c.loc}</p>
-                    <p className="text-[13px] font-bold text-muted-foreground mt-1">{c.followers} followers</p>
+                    <h3 className="font-black text-[#0F172A] text-lg">{c.name}</h3>
+                    <p className="text-[13px] font-medium text-[#64748B]">{c.category} • {c.loc}</p>
                   </div>
                 </div>
-                <div className="bg-background border border-border rounded-2xl p-4 flex items-center justify-between mt-4">
-                  <span className="text-sm font-bold text-muted-foreground">Typical deal</span>
-                  <span className="font-black text-primary text-lg">{c.price}</span>
+                <div className="bg-[#F8FAF9] border border-[#E5E7EB] rounded-2xl p-4">
+                  <p className="text-sm font-bold text-[#16A34A] mb-1">{c.earned}</p>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-bold text-[#64748B]">Typical deal</span>
+                    <span className="font-black text-2xl text-[#16A34A]">{c.price}</span>
+                  </div>
                 </div>
               </div>
             ))}
@@ -507,53 +504,49 @@ const LandingPage = () => {
         </section>
 
         {/* 3. YOUR COLLAB LINK */}
-        <section id="how-it-works" className="px-4 sm:px-6 max-w-[1200px] mx-auto scroll-mt-24">
-          <div className="bg-background rounded-[36px] md:rounded-[48px] p-6 md:p-16 lg:p-20 relative overflow-hidden shadow-2xl">
-            <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-primary/10 rounded-full blur-[120px]" />
+        <section id="how-it-works" className="px-4 sm:px-6 max-w-[1200px] mx-auto scroll-mt-24 py-16 lg:py-20">
+          <div className="bg-white rounded-[28px] md:rounded-[40px] p-8 md:p-16 lg:p-20 relative overflow-hidden shadow-[0_8px_24px_rgba(0,0,0,0.06)] border border-[#E5E7EB]">
+            <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-[#16A34A]/10 rounded-full blur-[120px]" />
 
             <div className="flex flex-col lg:flex-row items-center gap-10 md:gap-16 relative z-10">
-              <div className="flex-1 space-y-8 text-center lg:text-left">
-                <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-secondary/50 border border-border backdrop-blur-md">
-                  <LinkIcon className="w-4 h-4 text-primary" />
-                  <span className="text-[13px] font-bold text-foreground tracking-wide">Your Collab Link</span>
-                </div>
-                <h2 className="text-3xl md:text-[52px] font-black tracking-tight text-foreground leading-tight">
+              <div className="flex-1 space-y-6 text-center lg:text-left">
+                <h2 className="text-3xl md:text-[48px] font-black tracking-tight text-[#0F172A] leading-tight">
                   Add your link to your Instagram bio.
                 </h2>
-                <p className="text-xl text-muted-foreground font-medium leading-relaxed max-w-lg mx-auto lg:mx-0">
+                <p className="text-xl text-[#64748B] font-medium leading-relaxed max-w-lg mx-auto lg:mx-0">
                   Stop losing deals in the noise. Let brands send structured collaboration offers directly through your personal Creator Armour page.
                 </p>
-                <div className="bg-card border border-border p-5 rounded-2xl inline-block mt-4 backdrop-blur-sm">
-                  <p className="font-mono text-primary font-bold text-lg md:text-xl">creatorarmour.com/priyasharma</p>
+                <div className="bg-[#F8FAF9] border border-[#E5E7EB] p-4 rounded-xl inline-block mt-4 backdrop-blur-sm">
+                  <p className="font-mono text-[#16A34A] font-bold text-lg md:text-xl">creatorarmour.com/priyasharma</p>
                 </div>
               </div>
 
               <div className="flex-1 w-full max-w-[340px] lg:max-w-none flex justify-center lg:justify-end">
                 {/* Creator Collab Page Mockup */}
-                <div className="bg-card w-full max-w-[320px] rounded-[40px] shadow-2xl overflow-hidden border-8 border-border">
-                  <div className="px-5 pt-8 pb-6 bg-background relative">
-                    <div className="absolute top-0 left-0 right-0 h-24 bg-gradient-to-b from-blue-50 to-transparent" />
+                <div className="bg-white w-full max-w-[320px] rounded-[40px] shadow-2xl overflow-hidden border-8 border-[#E5E7EB]">
+                  <div className="px-5 pt-8 pb-6 bg-[#F8FAF9] relative">
+                    <div className="absolute top-0 left-0 right-0 h-24 bg-gradient-to-b from-[#DCFCE7] to-transparent" />
 
                     <div className="relative z-10 text-center mb-6">
                       <img src={PRIYA_IMG} className="w-20 h-20 rounded-full mx-auto object-cover border-[3px] border-white shadow-sm mb-3" alt="Priya Sharma" loading="lazy" />
-                      <h3 className="font-black text-lg text-muted-foreground flex items-center justify-center gap-1">Priya Sharma <CheckCircle2 className="w-4 h-4 text-info fill-blue-50" /></h3>
-                      <p className="text-[12px] font-bold text-muted-foreground mb-3">36K Followers</p>
+                      <h3 className="font-black text-lg text-[#0F172A] flex items-center justify-center gap-1">Priya Sharma <CheckCircle2 className="w-4 h-4 text-[#16A34A] fill-[#DCFCE7]" /></h3>
+                      <p className="text-[12px] font-bold text-[#64748B] mb-3">36K Followers</p>
 
-                      <div className="bg-card border border-border rounded-xl p-3 inline-block shadow-sm">
-                        <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-0.5">Typical Collab Rate</p>
-                        <p className="text-lg font-black text-muted-foreground">₹2K–₹4K</p>
+                      <div className="bg-white border border-[#E5E7EB] rounded-xl p-3 inline-block shadow-sm">
+                        <p className="text-[10px] font-bold text-[#64748B] uppercase tracking-wider mb-0.5">Typical Collab Rate</p>
+                        <p className="text-lg font-black text-[#0F172A]">₹2K–₹4K</p>
                       </div>
                     </div>
 
                     <div className="space-y-3 relative z-10 w-full">
-                      <div className="bg-card border border-border p-3 rounded-2xl shadow-sm flex justify-between items-center">
-                        <span className="font-black text-sm text-muted-foreground">Reel Deal</span>
-                        <span className="font-black text-sm text-primary">₹1,999</span>
+                      <div className="bg-white border border-[#E5E7EB] p-3 rounded-2xl shadow-sm flex justify-between items-center">
+                        <span className="font-black text-sm text-[#0F172A]">Reel Deal</span>
+                        <span className="font-black text-sm text-[#16A34A]">₹1,999</span>
                       </div>
-                      <div className="bg-card border border-border p-3 rounded-2xl shadow-sm flex justify-between items-center relative overflow-hidden">
-                        <div className="absolute top-0 right-0 w-12 h-12 bg-primary rounded-bl-full" />
-                        <span className="font-black text-sm text-muted-foreground relative z-10">Engagement Package</span>
-                        <span className="font-black text-sm text-primary relative z-10">₹3,499</span>
+                      <div className="bg-white border border-[#E5E7EB] p-3 rounded-2xl shadow-sm flex justify-between items-center relative overflow-hidden">
+                        <div className="absolute top-0 right-0 w-12 h-12 bg-[#16A34A] rounded-bl-full" />
+                        <span className="font-black text-sm text-[#0F172A] relative z-10">Engagement Package</span>
+                        <span className="font-black text-sm text-[#16A34A] relative z-10">₹3,499</span>
                       </div>
                     </div>
                   </div>
@@ -564,32 +557,32 @@ const LandingPage = () => {
         </section>
 
         {/* 4. MARKETPLACE PACKAGE PREVIEW */}
-        <section id="marketplace" className="px-4 sm:px-6 max-w-[1200px] mx-auto scroll-mt-24">
-          <div className="bg-card rounded-[32px] md:rounded-[48px] border border-border shadow-xl overflow-hidden">
-            <div className="text-center px-6 md:px-8 pt-12 md:pt-16 pb-8 md:pb-12 bg-background/50 border-b border-border">
-              <h2 className="text-3xl md:text-[44px] font-black tracking-tight text-muted-foreground mb-4">Your custom marketplace</h2>
-              <p className="text-lg text-muted-foreground font-medium">Let brands shop your services like a high-end catalog.</p>
+        <section id="marketplace" className="px-4 sm:px-6 max-w-[1200px] mx-auto scroll-mt-24 py-16 lg:py-20">
+          <div className="bg-white rounded-[28px] md:rounded-[40px] border border-[#E5E7EB] shadow-[0_8px_24px_rgba(0,0,0,0.06)] overflow-hidden">
+            <div className="text-center px-6 md:px-8 pt-12 md:pt-16 pb-8 md:pb-12 bg-[#F8FAF9] border-b border-[#E5E7EB]">
+              <h2 className="text-3xl md:text-[44px] font-black tracking-tight text-[#0F172A] mb-4">Your custom marketplace</h2>
+              <p className="text-lg text-[#64748B] font-medium">Let brands shop your services like a high-end catalog.</p>
             </div>
 
-            <div className="p-5 md:p-16 bg-card">
+            <div className="p-5 md:p-16 bg-white">
               <div className="max-w-[1000px] mx-auto">
-                <div className="flex flex-col md:flex-row items-center gap-6 mb-12 pb-12 border-b border-border">
-                  <img src={ROHAN_IMG} alt="Rohan Mehta" className="w-24 h-24 rounded-full object-cover shadow-md border border-border" loading="lazy" />
+                <div className="flex flex-col md:flex-row items-center gap-6 mb-12 pb-12 border-b border-[#E5E7EB]">
+                  <img src={ROHAN_IMG} alt="Rohan Mehta" className="w-24 h-24 rounded-full object-cover shadow-md border border-[#E5E7EB]" loading="lazy" />
                   <div className="text-center md:text-left">
-                    <h3 className="text-3xl font-black text-muted-foreground mb-1">Rohan Mehta</h3>
-                    <p className="text-base font-bold text-muted-foreground flex items-center justify-center md:justify-start gap-2">Travel Creator <span className="w-1.5 h-1.5 rounded-full bg-background"></span> 58K followers</p>
+                    <h3 className="text-3xl font-black text-[#0F172A] mb-1">Rohan Mehta</h3>
+                    <p className="text-base font-bold text-[#64748B] flex items-center justify-center md:justify-start gap-2">Travel Creator <span className="w-1.5 h-1.5 rounded-full bg-[#E5E7EB]"></span> 58K followers</p>
                   </div>
                   <div className="md:ml-auto mt-4 md:mt-0">
-                    <button type="button" className="bg-background text-foreground font-black px-6 py-3 rounded-xl shadow-lg hover:bg-black transition-all">Collab With Rohan</button>
+                    <button type="button" className="bg-white text-[#0F172A] font-black px-6 py-3 rounded-xl shadow-lg hover:bg-[#F8FAF9] transition-all">Collab With Rohan</button>
                   </div>
                 </div>
 
-                <div className="rounded-2xl border border-border bg-background/60 p-6 md:p-8 text-center">
-                  <p className="text-sm font-bold text-muted-foreground mb-1">Interactive package catalog</p>
-                  <p className="text-sm text-muted-foreground mb-4">See how brands browse creator packages, compare deliverables, and send structured offers.</p>
+                <div className="rounded-2xl border border-[#E5E7EB] bg-[#F8FAF9] p-6 md:p-8 text-center">
+                  <p className="text-sm font-bold text-[#64748B] mb-1">Interactive package catalog</p>
+                  <p className="text-sm text-[#64748B] mb-4">See how brands browse creator packages, compare deliverables, and send structured offers.</p>
                   <button type="button"
                     onClick={() => navigate('/pratyush')}
-                    className="bg-background text-foreground font-black px-6 py-3 rounded-xl shadow-lg hover:bg-black transition-all"
+                    className="bg-white text-[#0F172A] font-black px-6 py-3 rounded-xl shadow-lg hover:bg-[#F8FAF9] transition-all"
                   >
                     Explore Demo Creator Page
                   </button>
@@ -600,37 +593,37 @@ const LandingPage = () => {
         </section>
 
         {/* 5. DEAL PROOF SECTION */}
-        <section className="px-4 sm:px-6 max-w-[1200px] mx-auto">
+        <section className="px-4 sm:px-6 max-w-[1200px] mx-auto py-16 lg:py-20">
           <div className="text-center mb-10 md:mb-16">
-            <h2 className="text-3xl md:text-[40px] font-black text-muted-foreground mb-4">Real deals closed recently</h2>
-            <p className="text-lg text-muted-foreground font-medium">Creators are consistently booking deals using their Armour profiles.</p>
+            <h2 className="text-3xl md:text-[40px] font-black text-[#0F172A] mb-4">Real deals closed recently</h2>
+            <p className="text-lg text-[#64748B] font-medium">Creators are consistently booking deals using their Armour profiles.</p>
           </div>
           <div className="flex md:grid md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 overflow-x-auto md:overflow-visible pb-2 snap-x snap-mandatory">
             {[
-              { name: 'Priya Sharma', img: PRIYA_IMG, brand: 'Myntra', package: '1 Reel + 2 Stories', val: '₹4,500' },
-              { name: 'Arjun Patel', img: ARJUN_IMG, brand: 'Boat', package: 'Product Review', val: '₹3,000 + product' },
-              { name: 'Neha Verma', img: NEHA_IMG, brand: 'Mamaearth', package: '1 Reel', val: '₹2,000' },
+              { name: 'Priya Sharma', img: PRIYA_IMG, brand: 'Myntra', package: '1 Reel + 2 Stories', val: '₹4,500', earned: '₹24,500 earned this week' },
+              { name: 'Arjun Patel', img: ARJUN_IMG, brand: 'Boat', package: 'Product Review', val: '₹3,000 + product', earned: '₹12,000 per reel' },
+              { name: 'Neha Verma', img: NEHA_IMG, brand: 'Mamaearth', package: '1 Reel', val: '₹2,000', earned: '₹18,500 last month' },
             ].map((d, i) => (
-              <div key={i} className="bg-card border border-border p-6 md:p-8 rounded-[28px] md:rounded-[32px] shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all min-w-[280px] sm:min-w-[320px] md:min-w-0 snap-start">
-                <div className="flex items-start justify-between gap-3 mb-6 pb-6 border-b border-border">
-                  <div className="flex items-center gap-3 min-w-0">
-                    <img src={d.img} alt={d.name} className="w-12 h-12 rounded-full border border-border object-cover shrink-0" loading="lazy" />
-                    <span className="font-black text-base text-muted-foreground leading-tight">{d.name}</span>
+              <div key={i} className="bg-white border border-[#E5E7EB] p-6 md:p-8 rounded-[20px] md:rounded-[24px] shadow-[0_8px_24px_rgba(0,0,0,0.06)] hover:shadow-[0_12px_32px_rgba(0,0,0,0.1)] hover:-translate-y-1 transition-all min-w-[280px] sm:min-w-[320px] md:min-w-0 snap-start">
+                <div className="flex items-center gap-3 mb-4">
+                  <img src={d.img} alt={d.name} className="w-14 h-14 rounded-full border border-[#E5E7EB] object-cover shrink-0" loading="lazy" />
+                  <div>
+                    <span className="font-black text-lg text-[#0F172A] leading-tight">{d.name}</span>
+                    <p className="text-sm font-medium text-[#16A34A]">{d.earned}</p>
                   </div>
-                  <div className="shrink-0 text-[11px] font-black uppercase tracking-wider px-3 py-1.5 bg-primary text-primary rounded-full border border-primary">Closed</div>
                 </div>
                 <div className="space-y-4">
                   <div className="flex justify-between items-center">
-                    <span className="text-sm font-bold text-muted-foreground">Brand</span>
-                    <span className="text-base font-black text-muted-foreground">{d.brand}</span>
+                    <span className="text-sm font-bold text-[#64748B]">Brand</span>
+                    <span className="text-lg font-black text-[#0F172A]">{d.brand}</span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-sm font-bold text-muted-foreground">Package</span>
-                    <span className="text-base font-bold text-muted-foreground bg-background px-3 py-1 rounded-lg border border-border">{d.package}</span>
+                    <span className="text-sm font-bold text-[#64748B]">Package</span>
+                    <span className="text-base font-bold text-[#0F172A] bg-[#F8FAF9] px-3 py-1 rounded-lg border border-[#E5E7EB]">{d.package}</span>
                   </div>
-                  <div className="flex justify-between mt-6 pt-6 border-t border-border items-center">
-                    <span className="text-sm font-bold text-muted-foreground">Deal Value</span>
-                    <span className="text-2xl font-black text-primary">{d.val}</span>
+                  <div className="flex justify-between pt-4 border-t border-[#E5E7EB] items-center">
+                    <span className="text-sm font-bold text-[#64748B]">Deal Value</span>
+                    <span className="text-3xl font-black text-[#16A34A]">{d.val}</span>
                   </div>
                 </div>
               </div>
@@ -639,29 +632,23 @@ const LandingPage = () => {
         </section>
 
         {/* 6. PRE-FOOTER CTA */}
-        <section className="px-4 sm:px-6 pb-10">
+        <section className="px-4 sm:px-6 pb-16">
           <div
-            className="max-w-[1200px] mx-auto rounded-[24px] px-6 py-12 md:px-10 md:py-14 text-center text-foreground shadow-[0_28px_70px_rgba(11,59,47,0.36)] border border-primary/25 relative overflow-hidden"
-            style={{ background: 'linear-gradient(135deg,#0e3b2f,#1fb97a)' }}
+            className="max-w-[1200px] mx-auto rounded-[24px] px-6 py-16 md:px-10 md:py-20 text-center text-white shadow-[0_28px_70px_rgba(21,128,61,0.36)] border border-[#16A34A]/25 relative overflow-hidden"
+            style={{ background: 'linear-gradient(135deg,#15803D,#1fb97a)' }}
           >
-            <div className="absolute -top-32 -right-20 w-80 h-80 bg-secondary/50 rounded-full blur-3xl pointer-events-none" />
-            <div className="absolute -bottom-24 -left-20 w-72 h-72 bg-primary/20 rounded-full blur-3xl pointer-events-none" />
+            <div className="absolute -top-32 -right-20 w-80 h-80 bg-[#DCFCE7]/50 rounded-full blur-3xl pointer-events-none" />
+            <div className="absolute -bottom-24 -left-20 w-72 h-72 bg-[#16A34A]/20 rounded-full blur-3xl pointer-events-none" />
 
-            <div className="relative z-10 max-w-3xl mx-auto">
-              <h2 className="text-[32px] md:text-[52px] font-black tracking-tight leading-[1.05] mb-4">
-                Turn your Instagram into a deal pipeline
+            <div className="relative z-10 max-w-2xl mx-auto">
+              <h2 className="text-[36px] md:text-[56px] font-black tracking-tight leading-[1.05] mb-6">
+                Start getting brand deals today
               </h2>
-              <p className="text-base md:text-xl font-medium text-primary/90 mb-8 md:mb-10 leading-relaxed">
-                Stop negotiating in DMs. Create your collab link and receive structured brand offers.
-              </p>
 
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-3.5">
-                <Link to="/signup" className="w-full sm:w-auto bg-card text-primary hover:bg-primary px-8 py-4 rounded-full font-black text-[15px] shadow-xl transition-all flex items-center justify-center gap-2">
-                  Create your collab link <ArrowRight className="w-4.5 h-4.5" />
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+                <Link to="/signup" className="w-full sm:w-auto bg-white text-[#15803D] hover:bg-[#DCFCE7] px-10 py-5 rounded-full font-black text-[18px] shadow-xl transition-all flex items-center justify-center gap-2">
+                  Create my link <ArrowRight className="w-5 h-5" />
                 </Link>
-                <button type="button" onClick={() => navigate('/pratyush')} className="w-full sm:w-auto bg-secondary/50 hover:bg-secondary/20 border border-border/35 text-foreground px-8 py-4 rounded-full font-black text-[15px] transition-all flex items-center justify-center gap-2 backdrop-blur-sm">
-                  View demo creator page <ExternalLink className="w-4 h-4" />
-                </button>
               </div>
             </div>
           </div>
@@ -670,27 +657,27 @@ const LandingPage = () => {
       </main>
 
       {/* FOOTER */}
-      <footer className="border-t border-border bg-[#f7f9fb] pt-[60px] pb-[40px] px-6">
+      <footer className="border-t border-[#E5E7EB] bg-[#F8FAF9] pt-[60px] pb-[40px] px-6">
         <div className="max-w-[1200px] mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-12 gap-10 md:gap-12">
             <div className="md:col-span-4">
               <Link to="/" className="flex items-center gap-2 group">
-                <div className="w-9 h-9 bg-primary rounded-xl flex items-center justify-center shadow-lg shadow-emerald-500/25">
-                  <ShieldCheck className="w-5 h-5 text-foreground" />
+                <div className="w-9 h-9 bg-[#16A34A] rounded-xl flex items-center justify-center shadow-lg shadow-[#16A34A]/25">
+                  <ShieldCheck className="w-5 h-5 text-white" />
                 </div>
-                <h3 className="text-[20px] font-black tracking-tight text-muted-foreground">Creator Armour</h3>
+                <h3 className="text-[20px] font-black tracking-tight text-[#0F172A]">Creator Armour</h3>
               </Link>
-              <p className="mt-4 max-w-sm text-[15px] leading-relaxed font-medium text-muted-foreground">
+              <p className="mt-4 max-w-sm text-[15px] leading-relaxed font-medium text-[#64748B]">
                 Close brand deals without Instagram DMs.
               </p>
               <div className="mt-5 flex items-center gap-2">
-                <a href="https://instagram.com/creatorarmour" target="_blank" rel="noreferrer" className="w-10 h-10 rounded-xl border border-border bg-card text-muted-foreground hover:text-primary hover:border-primary inline-flex items-center justify-center transition-colors" aria-label="Creator Armour Instagram">
+                <a href="https://instagram.com/creatorarmour" target="_blank" rel="noreferrer" className="w-10 h-10 rounded-xl border border-[#E5E7EB] bg-white text-[#64748B] hover:text-[#16A34A] hover:border-[#16A34A] inline-flex items-center justify-center transition-colors" aria-label="Creator Armour Instagram">
                   <Instagram className="w-4.5 h-4.5" />
                 </a>
-                <a href="https://x.com/creatorarmour" target="_blank" rel="noreferrer" className="w-10 h-10 rounded-xl border border-border bg-card text-muted-foreground hover:text-primary hover:border-primary inline-flex items-center justify-center transition-colors" aria-label="Creator Armour X">
+                <a href="https://x.com/creatorarmour" target="_blank" rel="noreferrer" className="w-10 h-10 rounded-xl border border-[#E5E7EB] bg-white text-[#64748B] hover:text-[#16A34A] hover:border-[#16A34A] inline-flex items-center justify-center transition-colors" aria-label="Creator Armour X">
                   <Twitter className="w-4.5 h-4.5" />
                 </a>
-                <a href="https://www.linkedin.com/company/creatorarmour" target="_blank" rel="noreferrer" className="w-10 h-10 rounded-xl border border-border bg-card text-muted-foreground hover:text-primary hover:border-primary inline-flex items-center justify-center transition-colors" aria-label="Creator Armour LinkedIn">
+                <a href="https://www.linkedin.com/company/creatorarmour" target="_blank" rel="noreferrer" className="w-10 h-10 rounded-xl border border-[#E5E7EB] bg-white text-[#64748B] hover:text-[#16A34A] hover:border-[#16A34A] inline-flex items-center justify-center transition-colors" aria-label="Creator Armour LinkedIn">
                   <Linkedin className="w-4.5 h-4.5" />
                 </a>
               </div>
@@ -698,75 +685,75 @@ const LandingPage = () => {
 
             <div className="hidden md:grid md:col-span-8 grid-cols-4 gap-8">
               <div className="space-y-3">
-                <p className="text-sm font-black text-muted-foreground">Product</p>
-                <div className="space-y-2.5 text-sm font-medium text-muted-foreground">
-                  <Link to="/signup" className="block hover:text-primary">Create Collab Link</Link>
-                  <Link to="/discover" className="block hover:text-primary">Creator Marketplace</Link>
-                  <Link to="/collab-requests" className="block hover:text-primary">Brand Offers</Link>
-                  <Link to="/plan/growth" className="block hover:text-primary">Pricing</Link>
+                <p className="text-sm font-black text-[#64748B]">Product</p>
+                <div className="space-y-2.5 text-sm font-medium text-[#64748B]">
+                  <Link to="/signup" className="block hover:text-[#16A34A]">Create Collab Link</Link>
+                  <Link to="/discover" className="block hover:text-[#16A34A]">Creator Marketplace</Link>
+                  <Link to="/collab-requests" className="block hover:text-[#16A34A]">Brand Offers</Link>
+                  <Link to="/plan/growth" className="block hover:text-[#16A34A]">Pricing</Link>
                 </div>
               </div>
               <div className="space-y-3">
-                <p className="text-sm font-black text-muted-foreground">Creators</p>
-                <div className="space-y-2.5 text-sm font-medium text-muted-foreground">
-                  <a href="#how-it-works" className="block hover:text-primary">How it works</a>
-                  <a href="#marketplace" className="block hover:text-primary">Creator packages</a>
-                  <button type="button" onClick={() => navigate('/pratyush')} className="block text-left hover:text-primary">Examples</button>
-                  <Link to="/creator-dashboard" className="block hover:text-primary">Creator dashboard</Link>
+                <p className="text-sm font-black text-[#64748B]">Creators</p>
+                <div className="space-y-2.5 text-sm font-medium text-[#64748B]">
+                  <a href="#how-it-works" className="block hover:text-[#16A34A]">How it works</a>
+                  <a href="#marketplace" className="block hover:text-[#16A34A]">Creator packages</a>
+                  <button type="button" onClick={() => navigate('/pratyush')} className="block text-left hover:text-[#16A34A]">Examples</button>
+                  <Link to="/creator-dashboard" className="block hover:text-[#16A34A]">Creator dashboard</Link>
                 </div>
               </div>
               <div className="space-y-3">
-                <p className="text-sm font-black text-muted-foreground">Resources</p>
-                <div className="space-y-2.5 text-sm font-medium text-muted-foreground">
-                  <Link to="/blog" className="block hover:text-primary">Blog</Link>
-                  <a href="mailto:support@creatorarmour.com" className="block hover:text-primary">Help Center</a>
-                  <Link to="/free-influencer-contract" className="block hover:text-primary">Guides for creators</Link>
-                  <Link to="/rate-calculator" className="block hover:text-primary">Influencer pricing guide</Link>
+                <p className="text-sm font-black text-[#64748B]">Resources</p>
+                <div className="space-y-2.5 text-sm font-medium text-[#64748B]">
+                  <Link to="/blog" className="block hover:text-[#16A34A]">Blog</Link>
+                  <a href="mailto:support@creatorarmour.com" className="block hover:text-[#16A34A]">Help Center</a>
+                  <Link to="/free-influencer-contract" className="block hover:text-[#16A34A]">Guides for creators</Link>
+                  <Link to="/rate-calculator" className="block hover:text-[#16A34A]">Influencer pricing guide</Link>
                 </div>
               </div>
               <div className="space-y-3">
-                <p className="text-sm font-black text-muted-foreground">Company</p>
-                <div className="space-y-2.5 text-sm font-medium text-muted-foreground">
-                  <Link to="/about" className="block hover:text-primary">About</Link>
-                  <a href="mailto:support@creatorarmour.com" className="block hover:text-primary">Contact</a>
-                  <Link to="/privacy-policy" className="block hover:text-primary">Privacy</Link>
-                  <Link to="/terms-of-service" className="block hover:text-primary">Terms</Link>
+                <p className="text-sm font-black text-[#64748B]">Company</p>
+                <div className="space-y-2.5 text-sm font-medium text-[#64748B]">
+                  <Link to="/about" className="block hover:text-[#16A34A]">About</Link>
+                  <a href="mailto:support@creatorarmour.com" className="block hover:text-[#16A34A]">Contact</a>
+                  <Link to="/privacy-policy" className="block hover:text-[#16A34A]">Privacy</Link>
+                  <Link to="/terms-of-service" className="block hover:text-[#16A34A]">Terms</Link>
                 </div>
               </div>
             </div>
           </div>
 
           <div className="md:hidden mt-7 space-y-2">
-            <details className="bg-card border border-border rounded-2xl px-4 py-3">
-              <summary className="list-none cursor-pointer text-sm font-black text-muted-foreground flex items-center justify-between">Product <span className="text-muted-foreground">▼</span></summary>
-              <div className="pt-3 space-y-2 text-sm font-medium text-muted-foreground">
+            <details className="bg-white border border-[#E5E7EB] rounded-2xl px-4 py-3">
+              <summary className="list-none cursor-pointer text-sm font-black text-[#64748B] flex items-center justify-between">Product <span className="text-[#64748B]">▼</span></summary>
+              <div className="pt-3 space-y-2 text-sm font-medium text-[#64748B]">
                 <Link to="/signup" className="block">Create Collab Link</Link>
                 <Link to="/discover" className="block">Creator Marketplace</Link>
                 <Link to="/collab-requests" className="block">Brand Offers</Link>
                 <Link to="/plan/growth" className="block">Pricing</Link>
               </div>
             </details>
-            <details className="bg-card border border-border rounded-2xl px-4 py-3">
-              <summary className="list-none cursor-pointer text-sm font-black text-muted-foreground flex items-center justify-between">Creators <span className="text-muted-foreground">▼</span></summary>
-              <div className="pt-3 space-y-2 text-sm font-medium text-muted-foreground">
+            <details className="bg-white border border-[#E5E7EB] rounded-2xl px-4 py-3">
+              <summary className="list-none cursor-pointer text-sm font-black text-[#64748B] flex items-center justify-between">Creators <span className="text-[#64748B]">▼</span></summary>
+              <div className="pt-3 space-y-2 text-sm font-medium text-[#64748B]">
                 <a href="#how-it-works" className="block">How it works</a>
                 <a href="#marketplace" className="block">Creator packages</a>
                 <button type="button" onClick={() => navigate('/pratyush')} className="block text-left">Examples</button>
                 <Link to="/creator-dashboard" className="block">Creator dashboard</Link>
               </div>
             </details>
-            <details className="bg-card border border-border rounded-2xl px-4 py-3">
-              <summary className="list-none cursor-pointer text-sm font-black text-muted-foreground flex items-center justify-between">Resources <span className="text-muted-foreground">▼</span></summary>
-              <div className="pt-3 space-y-2 text-sm font-medium text-muted-foreground">
+            <details className="bg-white border border-[#E5E7EB] rounded-2xl px-4 py-3">
+              <summary className="list-none cursor-pointer text-sm font-black text-[#64748B] flex items-center justify-between">Resources <span className="text-[#64748B]">▼</span></summary>
+              <div className="pt-3 space-y-2 text-sm font-medium text-[#64748B]">
                 <Link to="/blog" className="block">Blog</Link>
                 <a href="mailto:support@creatorarmour.com" className="block">Help Center</a>
                 <Link to="/free-influencer-contract" className="block">Guides for creators</Link>
                 <Link to="/rate-calculator" className="block">Influencer pricing guide</Link>
               </div>
             </details>
-            <details className="bg-card border border-border rounded-2xl px-4 py-3">
-              <summary className="list-none cursor-pointer text-sm font-black text-muted-foreground flex items-center justify-between">Company <span className="text-muted-foreground">▼</span></summary>
-              <div className="pt-3 space-y-2 text-sm font-medium text-muted-foreground">
+            <details className="bg-white border border-[#E5E7EB] rounded-2xl px-4 py-3">
+              <summary className="list-none cursor-pointer text-sm font-black text-[#64748B] flex items-center justify-between">Company <span className="text-[#64748B]">▼</span></summary>
+              <div className="pt-3 space-y-2 text-sm font-medium text-[#64748B]">
                 <Link to="/about" className="block">About</Link>
                 <a href="mailto:support@creatorarmour.com" className="block">Contact</a>
                 <Link to="/privacy-policy" className="block">Privacy</Link>
@@ -775,19 +762,19 @@ const LandingPage = () => {
             </details>
           </div>
 
-          <div className="mt-10 border-t border-border pt-6">
-            <p className="text-sm font-medium text-muted-foreground text-center">
-              <span className="font-semibold text-primary">50+ creators</span> already using Creator Armour to collaborate professionally with brands.
+          <div className="mt-10 border-t border-[#E5E7EB] pt-6">
+            <p className="text-sm font-medium text-[#64748B] text-center">
+              <span className="font-semibold text-[#16A34A]">50+ creators</span> already using Creator Armour to collaborate professionally with brands.
             </p>
           </div>
 
-          <div className="mt-6 border-t border-border pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-sm text-muted-foreground">
+          <div className="mt-6 border-t border-[#E5E7EB] pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-sm text-[#64748B]">
             <p>© 2026 Creator Armour</p>
             <p className="font-medium">Made for creators</p>
             <div className="flex items-center gap-3">
-              <Link to="/privacy-policy" className="hover:text-muted-foreground">Privacy</Link>
-              <span className="text-muted-foreground">•</span>
-              <Link to="/terms-of-service" className="hover:text-muted-foreground">Terms</Link>
+              <Link to="/privacy-policy" className="hover:text-[#64748B]">Privacy</Link>
+              <span className="text-[#64748B]">•</span>
+              <Link to="/terms-of-service" className="hover:text-[#64748B]">Terms</Link>
             </div>
           </div>
         </div>

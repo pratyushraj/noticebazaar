@@ -1,0 +1,82 @@
+- generic [ref=e2]:
+  - region "Notifications alt+T"
+  - generic [ref=e5]:
+    - link "Skip to main content" [ref=e6] [cursor=pointer]:
+      - /url: "#main-content"
+    - generic [ref=e9]:
+      - main [ref=e10]:
+        - generic [ref=e12]:
+          - generic:
+            - generic:
+              - img
+          - generic [ref=e13]:
+            - generic [ref=e14]:
+              - generic [ref=e15]:
+                - button "Open menu" [ref=e16] [cursor=pointer]:
+                  - img [ref=e17]
+                - generic [ref=e18]:
+                  - img [ref=e19]
+                  - generic [ref=e22]: CreatorArmour
+                - generic [ref=e23]:
+                  - button "Light" [ref=e24] [cursor=pointer]:
+                    - img [ref=e26]
+                    - generic [ref=e32]: Light
+                  - button "Notifications" [ref=e33] [cursor=pointer]:
+                    - img [ref=e34]
+                  - button "avatar" [ref=e37] [cursor=pointer]:
+                    - img "avatar" [ref=e38]
+              - generic [ref=e39]:
+                - generic [ref=e40]:
+                  - heading "Good afternoon" [level=1] [ref=e41]
+                  - generic [ref=e44]: Active
+                - paragraph [ref=e45]: "@creator"
+            - generic [ref=e47]:
+              - paragraph [ref=e48]: Share your link to get your first offer
+              - button "Share Link" [ref=e49] [cursor=pointer]
+            - generic [ref=e54]:
+              - generic [ref=e55]:
+                - generic [ref=e56]:
+                  - paragraph [ref=e57]: Pending Amount
+                  - paragraph [ref=e58]: Released after content approval
+                - img [ref=e60]
+              - generic [ref=e63]:
+                - generic [ref=e64]: ₹
+                - generic [ref=e65]: "0"
+              - generic [ref=e66]:
+                - img [ref=e68]
+                - generic [ref=e71]: Creator Armour protection active
+            - generic [ref=e73]:
+              - heading "No offers yet 👀" [level=2] [ref=e74]
+              - paragraph [ref=e75]: Start by sharing your link
+              - button "Share Link Now" [ref=e76] [cursor=pointer]
+            - generic [ref=e78]:
+              - generic [ref=e79]:
+                - paragraph [ref=e80]: Your link
+                - paragraph [ref=e81]: Send this when a brand asks to collaborate
+              - generic [ref=e82]: creatorarmour.com/creator
+              - generic [ref=e83]:
+                - button "WhatsApp" [ref=e84] [cursor=pointer]:
+                  - img [ref=e85]
+                  - text: WhatsApp
+                - button "Copy" [ref=e87] [cursor=pointer]
+            - generic [ref=e88]:
+              - heading "Active Collaborations" [level=2] [ref=e90]
+              - generic [ref=e92]:
+                - img [ref=e94]
+                - heading "No offers yet" [level=3] [ref=e97]
+                - paragraph [ref=e98]: Share your creator link to start receiving verified brand offers.
+                - button "Share Link Now" [ref=e99] [cursor=pointer]
+          - generic [ref=e101]:
+            - button "Home" [ref=e102] [cursor=pointer]:
+              - img [ref=e103]
+              - generic [ref=e108]: Home
+            - button "Deals" [ref=e109] [cursor=pointer]:
+              - img [ref=e110]
+              - generic [ref=e113]: Deals
+            - button "Payments" [ref=e114] [cursor=pointer]:
+              - img [ref=e115]
+              - generic [ref=e117]: Payments
+            - button "Profile" [ref=e118] [cursor=pointer]:
+              - img [ref=e119]
+              - generic [ref=e122]: Profile
+      - generic [ref=e123]: © 2026 Creator Armour

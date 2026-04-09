@@ -1,0 +1,17 @@
+- generic [ref=e2]:
+  - region "Notifications alt+T":
+    - list:
+      - listitem [ref=e5]:
+        - button "Close toast" [ref=e6] [cursor=pointer]:
+          - img [ref=e7]
+        - img [ref=e11]
+        - generic [ref=e14]: Unable to connect. Is the server running at https://creatorarmour.com?
+  - generic [ref=e15]:
+    - link "Skip to main content" [ref=e16] [cursor=pointer]:
+      - /url: "#main-content"
+    - generic [ref=e19]:
+      - heading "Unable to Load Profile" [level=1] [ref=e20]
+      - paragraph [ref=e21]: Unable to connect. Is the server running at https://creatorarmour.com?
+      - generic [ref=e22]:
+        - button "Go to Homepage" [ref=e23] [cursor=pointer]
+        - button "Try Again" [ref=e24] [cursor=pointer]

@@ -38,11 +38,11 @@ const Layout = ({ children }: LayoutProps) => {
   const isFullScreen = routes.isFullScreen(path);
 
   return (
-    <div className="relative min-h-[100dvh] bg-background text-foreground overflow-hidden md:overflow-visible flex flex-col">
+    <div className="relative min-h-[100dvh] bg-background text-foreground overflow-x-hidden flex flex-col">
       <div className="relative z-10 flex flex-col flex-1 min-h-0">
         <Navbar />
 
-        <div className="flex flex-1 min-h-0 overflow-hidden md:overflow-visible flex-col">
+        <div className="flex flex-1 min-h-0 overflow-x-hidden flex-col">
           <main
             id="main"
             className={cn(

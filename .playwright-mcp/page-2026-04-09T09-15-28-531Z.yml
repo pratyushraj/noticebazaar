@@ -1,0 +1,101 @@
+- generic [ref=e7]:
+  - region "Notifications alt+T":
+    - list:
+      - listitem [ref=e105]:
+        - button "Close toast" [ref=e106] [cursor=pointer]:
+          - img [ref=e107]
+        - img [ref=e111]
+        - generic [ref=e113]:
+          - generic [ref=e114]: Account created successfully!
+          - generic [ref=e115]: Setting up your account...
+  - generic [ref=e8]:
+    - link "Skip to main content" [ref=e9] [cursor=pointer]:
+      - /url: "#main-content"
+    - generic [ref=e11]:
+      - generic [ref=e12]:
+        - generic [ref=e13]:
+          - generic [ref=e14]:
+            - img [ref=e16]
+            - heading "Creator Armour" [level=1] [ref=e19]
+          - heading "Protect and scale your creator business" [level=2] [ref=e20]:
+            - text: Protect and scale
+            - text: your creator business
+          - paragraph [ref=e21]: Create your creator link, get brand offers, and track active deals in one place.
+        - generic [ref=e22]:
+          - generic [ref=e23]:
+            - img [ref=e25]
+            - generic [ref=e28]:
+              - heading "Collab Link" [level=3] [ref=e29]
+              - paragraph [ref=e30]: Share one link to receive brand deals safely
+          - generic [ref=e31]:
+            - img [ref=e33]
+            - generic [ref=e35]:
+              - heading "Auto-Protected Deals" [level=3] [ref=e36]
+              - paragraph [ref=e37]: Contracts + payments handled automatically
+          - generic [ref=e38]:
+            - img [ref=e40]
+            - generic [ref=e43]:
+              - heading "Track Brand Earnings" [level=3] [ref=e44]
+              - paragraph [ref=e45]: Know what you earned from every collab
+          - generic [ref=e46]:
+            - img [ref=e48]
+            - generic [ref=e50]:
+              - heading "Expert Backup" [level=3] [ref=e51]
+              - paragraph [ref=e52]: Legal help when you actually need it
+        - generic [ref=e53]:
+          - generic [ref=e54]:
+            - paragraph [ref=e55]: 10,000+
+            - paragraph [ref=e56]: Contracts Analyzed
+          - generic [ref=e57]:
+            - paragraph [ref=e58]: ₹2Cr+
+            - paragraph [ref=e59]: Value Protected
+      - generic [ref=e60]:
+        - generic [ref=e61]:
+          - generic [ref=e62]:
+            - generic [ref=e64]:
+              - button "Creator" [ref=e65] [cursor=pointer]
+              - button "Brand" [ref=e66] [cursor=pointer]
+            - heading "Create your page" [level=2] [ref=e67]
+            - paragraph [ref=e68]: Sign up and get your link. Brands send offers through it.
+          - generic [ref=e70]:
+            - generic [ref=e71]:
+              - text: Name
+              - textbox "Name" [ref=e72]:
+                - /placeholder: e.g. Pratyush Raj
+            - generic [ref=e73]:
+              - text: Your Instagram username
+              - textbox "Your Instagram username" [ref=e74]:
+                - /placeholder: sana.reels.delhi
+                - text: test.creator123
+              - paragraph [ref=e75]: Just your username, not the full URL
+            - generic [ref=e76]:
+              - text: Email
+              - textbox "Email" [ref=e77]:
+                - /placeholder: name@example.com
+            - generic [ref=e78]:
+              - text: Password
+              - generic [ref=e79]:
+                - textbox "Password" [ref=e80]:
+                  - /placeholder: Min. 6 characters
+                - button [ref=e81] [cursor=pointer]:
+                  - img [ref=e82]
+            - button "Create My Page" [disabled]
+            - paragraph [ref=e85]: Takes 1 minute. No long forms.
+          - generic [ref=e90]: Or continue with
+          - button "Continue with Google" [ref=e92] [cursor=pointer]:
+            - img
+            - text: Continue with Google
+          - button "Already have an account? Sign in here" [ref=e94] [cursor=pointer]:
+            - text: Already have an account?
+            - generic [ref=e95]: Sign in here
+          - link "Back to Home" [ref=e97] [cursor=pointer]:
+            - /url: /
+            - img [ref=e98]
+            - text: Back to Home
+        - paragraph [ref=e101]:
+          - text: By continuing, you agree to our
+          - link "Terms" [ref=e102] [cursor=pointer]:
+            - /url: /terms-of-service
+          - text: "&"
+          - link "Privacy" [ref=e103] [cursor=pointer]:
+            - /url: /privacy-policy

@@ -1,0 +1,192 @@
+- generic [ref=e2]:
+  - region "Notifications alt+T"
+  - generic [ref=e3]:
+    - link "Skip to main content" [ref=e4] [cursor=pointer]:
+      - /url: "#main-content"
+    - generic [ref=e10]:
+      - generic [ref=e11]:
+        - generic [ref=e12]:
+          - generic [ref=e13]:
+            - generic [ref=e16]: T
+            - generic [ref=e18]:
+              - generic [ref=e19]:
+                - heading "Test Creator" [level=2] [ref=e20]
+                - generic [ref=e21]:
+                  - img [ref=e22]
+                  - generic [ref=e25]: Verified
+              - generic [ref=e26]:
+                - link "@test.creator123" [ref=e27] [cursor=pointer]:
+                  - /url: https://instagram.com/test.creator123
+                - generic [ref=e28]:
+                  - paragraph [ref=e29]: Verified Account followers • 3K–10K avg views
+                  - paragraph [ref=e30]: 98% reliability • replies in 3 hrs
+                  - paragraph [ref=e31]: Creator • India
+                - generic [ref=e32]:
+                  - generic [ref=e33]:
+                    - img [ref=e34]
+                    - generic "Estimated metric — real data will appear as the creator completes campaigns on CreatorArmour." [ref=e36]: 12 brands contacted this creator this week
+                  - generic [ref=e37]:
+                    - img [ref=e38]
+                    - generic "Estimated metric — real data will appear as the creator completes campaigns on CreatorArmour." [ref=e40]: Responds in 3 hrs
+                  - generic [ref=e41]:
+                    - img [ref=e42]
+                    - generic "Estimated metric — real data will appear as the creator completes campaigns on CreatorArmour." [ref=e45]: Performance reach 76K
+          - generic [ref=e46]:
+            - heading "Book Test for brand collaborations" [level=1] [ref=e47]
+            - paragraph [ref=e48]: Choose a ready-made service and send an offer in under 1 minute.
+            - generic [ref=e49]:
+              - button "Choose a Service" [ref=e50] [cursor=pointer]
+              - paragraph [ref=e51]: No cold DM needed. Creator is notified instantly.
+        - generic [ref=e53]:
+          - generic [ref=e54]:
+            - img [ref=e56]
+            - generic [ref=e58]:
+              - paragraph [ref=e59]: Replies in 3 hrs
+              - paragraph [ref=e60]: Fast response
+          - generic [ref=e61]:
+            - img [ref=e63]
+            - generic [ref=e66]:
+              - paragraph [ref=e67]: 98% delivery success
+              - paragraph [ref=e68]: Reliability
+          - generic [ref=e69]:
+            - img [ref=e71]
+            - generic [ref=e74]:
+              - paragraph [ref=e75]: 3 brand collaborations
+              - paragraph [ref=e76]: Social proof
+        - button "Why Brands Book Performance & Trust" [ref=e80] [cursor=pointer]:
+          - generic [ref=e81]:
+            - img [ref=e83]
+            - generic [ref=e86]:
+              - heading "Why Brands Book" [level=3] [ref=e87]
+              - paragraph [ref=e88]: Performance & Trust
+          - img [ref=e90]
+        - generic [ref=e92]:
+          - generic [ref=e94]:
+            - generic [ref=e95]: Fastest way to collaborate
+            - generic [ref=e96]:
+              - img [ref=e97]
+              - generic [ref=e99]: Choose how you'd like to collaborate
+          - generic [ref=e100]:
+            - 'button "🎬 Starter Creator Package Includes 1 Reel Add-ons Available + Extra Story +₹200 + Extra revision +₹300 Days to make content: 3 days ₹1,500 Starting price Choose this service" [ref=e102] [cursor=pointer]':
+              - generic [ref=e103]:
+                - generic [ref=e104]: 🎬
+                - img [ref=e105]
+              - generic [ref=e107]:
+                - paragraph [ref=e108]: Starter Creator Package
+                - generic [ref=e109]:
+                  - paragraph [ref=e110]: Includes
+                  - generic [ref=e114]: 1 Reel
+                  - generic [ref=e115]:
+                    - paragraph [ref=e116]: Add-ons Available
+                    - generic [ref=e117]:
+                      - generic [ref=e118]:
+                        - generic [ref=e119]: + Extra Story
+                        - generic [ref=e120]: +₹200
+                      - generic [ref=e121]:
+                        - generic [ref=e122]: + Extra revision
+                        - generic [ref=e123]: +₹300
+                  - generic [ref=e124]:
+                    - img [ref=e125]
+                    - generic [ref=e128]: "Days to make content: 3 days"
+              - generic [ref=e130]:
+                - paragraph [ref=e131]: ₹1,500
+                - paragraph [ref=e132]: Starting price
+                - generic [ref=e133]: Choose this service
+            - generic [ref=e134]:
+              - generic [ref=e136]:
+                - img [ref=e137]
+                - text: Most Popular
+              - 'button "🔥 Engagement Package Includes 1 Reel 2 Story Days to make content: 3 days Most brands choose this package for higher engagement ₹2,300 Starting price Choose this service" [ref=e139] [cursor=pointer]':
+                - generic [ref=e140]:
+                  - generic [ref=e141]: 🔥
+                  - img [ref=e142]
+                - generic [ref=e144]:
+                  - paragraph [ref=e145]: Engagement Package
+                  - generic [ref=e146]:
+                    - paragraph [ref=e147]: Includes
+                    - generic [ref=e148]:
+                      - generic [ref=e151]: 1 Reel
+                      - generic [ref=e154]: 2 Story
+                    - generic [ref=e155]:
+                      - img [ref=e156]
+                      - generic [ref=e159]: "Days to make content: 3 days"
+                - generic [ref=e160]:
+                  - paragraph [ref=e161]: Most brands choose this package for higher engagement
+                  - generic [ref=e162]:
+                    - paragraph [ref=e163]: ₹2,300
+                    - paragraph [ref=e164]: Starting price
+                    - generic [ref=e165]: Choose this service
+            - 'button "📦 Product Review Includes 1 Unboxing 1 Story Free products as payment Days to make content: 3 days Free products as payment Starting price Choose this service" [ref=e167] [cursor=pointer]':
+              - generic [ref=e168]:
+                - generic [ref=e169]: 📦
+                - img [ref=e170]
+              - generic [ref=e172]:
+                - paragraph [ref=e173]: Product Review
+                - generic [ref=e174]:
+                  - paragraph [ref=e175]: Includes
+                  - generic [ref=e176]:
+                    - generic [ref=e179]: 1 Unboxing
+                    - generic [ref=e182]: 1 Story
+                  - paragraph [ref=e183]: Free products as payment
+                  - generic [ref=e184]:
+                    - img [ref=e185]
+                    - generic [ref=e188]: "Days to make content: 3 days"
+              - generic [ref=e190]:
+                - paragraph [ref=e191]: Free products as payment
+                - paragraph [ref=e192]: Starting price
+                - generic [ref=e193]: Choose this service
+          - button "Need something custom? Create a custom deal" [ref=e195] [cursor=pointer]
+          - generic [ref=e196]:
+            - paragraph [ref=e198]: How It Works
+            - heading "Send an offer in under a minute" [level=3] [ref=e199]
+            - paragraph [ref=e200]: Choose a service, add a short brief, and send the offer. Legal details come later only if the creator is interested.
+            - generic [ref=e201]:
+              - generic [ref=e202]:
+                - img [ref=e205]
+                - paragraph [ref=e209]: 01 Choose service
+              - generic [ref=e210]:
+                - img [ref=e213]
+                - paragraph [ref=e215]: 02 Add brief + budget
+              - generic [ref=e216]:
+                - img [ref=e219]
+                - paragraph [ref=e222]: 03 Creator reviews it
+          - generic [ref=e223]:
+            - heading "Past Work (social proof)" [level=3] [ref=e225]
+            - generic [ref=e226]:
+              - generic [ref=e227]:
+                - paragraph [ref=e228]: boAt
+                - paragraph [ref=e229]: Launch reel
+                - paragraph [ref=e230]: Electronics
+                - paragraph [ref=e231]: 42K views in 5 days
+              - generic [ref=e232]:
+                - paragraph [ref=e233]: Mamaearth
+                - paragraph [ref=e234]: Routine stories
+                - paragraph [ref=e235]: Beauty
+                - paragraph [ref=e236]: High-intent skincare audience fit
+              - generic [ref=e237]:
+                - paragraph [ref=e238]: Lenskart
+                - paragraph [ref=e239]: Review package
+                - paragraph [ref=e240]: Lifestyle
+                - paragraph [ref=e241]: Strong click-through and saves
+        - generic [ref=e245]:
+          - generic [ref=e246]:
+            - heading "Active on Platform" [level=2] [ref=e247]
+            - generic [ref=e249]:
+              - img [ref=e250]
+              - generic [ref=e253]:
+                - paragraph [ref=e254]: Instagram
+                - link "@test.creator123" [ref=e255] [cursor=pointer]:
+                  - /url: https://instagram.com/test.creator123
+                  - text: "@test.creator123"
+                  - img [ref=e256]
+          - paragraph [ref=e261]:
+            - img [ref=e262]
+            - text: Actively open to collaborations
+      - generic [ref=e267]:
+        - generic [ref=e268]:
+          - paragraph [ref=e269]: Start here
+          - paragraph [ref=e270]: Choose a ready-made service first
+          - paragraph [ref=e271]: The quick offer form asks only for your brand name, work email, brief, budget or product value, and deadline.
+        - generic [ref=e272]:
+          - button "Choose a Service" [ref=e273] [cursor=pointer]
+          - button "Need something custom? Create a custom deal" [ref=e274] [cursor=pointer]

@@ -1,0 +1,44 @@
+- generic [ref=e2]:
+  - region "Notifications alt+T":
+    - list:
+      - listitem [ref=e373]:
+        - button "Close toast" [ref=e374] [cursor=pointer]:
+          - img [ref=e375]
+        - img [ref=e379]
+        - generic [ref=e382]: Offer sent! The creator will be notified.
+  - generic [ref=e3]:
+    - link "Skip to main content" [ref=e4] [cursor=pointer]:
+      - /url: "#main-content"
+    - generic [ref=e385]:
+      - img [ref=e387]
+      - paragraph [ref=e390]: Offer Sent
+      - heading "Test Creator has your offer." [level=1] [ref=e391]
+      - paragraph [ref=e392]: Demo Brand Co's offer has been delivered. The creator can now review it, accept it, counter it, or decline it.
+      - generic [ref=e393]:
+        - generic [ref=e394]:
+          - paragraph [ref=e395]: Creator
+          - paragraph [ref=e396]: Test Creator
+          - paragraph [ref=e397]: "@test.creator123"
+        - generic [ref=e398]:
+          - paragraph [ref=e399]: Offer Type
+          - paragraph [ref=e400]: paid
+          - paragraph [ref=e401]: Shared through Creator Armour
+        - generic [ref=e402]:
+          - paragraph [ref=e403]: Deadline
+          - paragraph [ref=e404]: 2026-04-12
+          - paragraph [ref=e405]: Legal details come later if they are interested
+      - generic [ref=e406]:
+        - paragraph [ref=e407]: What Happens Next
+        - generic [ref=e408]:
+          - generic [ref=e409]:
+            - paragraph [ref=e410]: 1. Creator reviews
+            - paragraph [ref=e411]: They see your brief, budget or product value, and timeline.
+          - generic [ref=e412]:
+            - paragraph [ref=e413]: 2. They respond
+            - paragraph [ref=e414]: They can accept, counter, or decline based on fit and availability.
+          - generic [ref=e415]:
+            - paragraph [ref=e416]: 3. Details follow
+            - paragraph [ref=e417]: Contract, shipping, and payment details are collected only after interest is confirmed.
+      - generic [ref=e418]:
+        - button "Send Another Offer" [ref=e419] [cursor=pointer]
+        - button "Go to Homepage" [ref=e420] [cursor=pointer]

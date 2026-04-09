@@ -6,15 +6,17 @@ import BrandBottomNav from '@/components/brand-dashboard/BrandBottomNav';
 import BrandDealsStats from '@/components/creator-contracts/BrandDealsStats';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Plus, Loader2 } from 'lucide-react';
+import { Plus, Loader2, LogOut } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { getApiBaseUrl } from '@/lib/utils/api';
+import { useSignOut } from '@/lib/hooks/useAuth';
 
 type BrandTab = 'active' | 'all';
 
 const BrandDashboard: React.FC = () => {
   const navigate = useNavigate();
   const { profile, user, session } = useSession();
+  const signOutMutation = useSignOut();
   const [tab, setTab] = useState<BrandTab>('active');
   const [deals, setDeals] = useState<BrandDeal[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -115,13 +117,31 @@ const BrandDashboard: React.FC = () => {
     <div className="min-h-screen bg-[#0D0F1A] text-white pb-24">
       {/* Header */}
       <div className="bg-gradient-to-r from-purple-900 to-purple-800 px-4 pt-12 pb-6">
-        <p className="text-[11px] font-black uppercase tracking-[0.28em] text-purple-300 mb-1">Brand Armour</p>
-        {profile?.first_name && (
-          <p className="text-sm text-white/50 mb-3">
-            Good {new Date().getHours() < 12 ? 'morning' : new Date().getHours() < 17 ? 'afternoon' : 'evening'}, {profile.first_name}
-          </p>
-        )}
-        <h1 className="text-3xl font-black tracking-tight">Brand Dashboard</h1>
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          <div className="min-w-0">
+            <p className="text-[11px] font-black uppercase tracking-[0.28em] text-purple-300 mb-1">Brand Armour</p>
+            {profile?.first_name && (
+              <p className="text-sm text-white/50 mb-3">
+                Good {new Date().getHours() < 12 ? 'morning' : new Date().getHours() < 17 ? 'afternoon' : 'evening'}, {profile.first_name}
+              </p>
+            )}
+            <h1 className="text-3xl font-black tracking-tight">Brand Dashboard</h1>
+          </div>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => signOutMutation.mutate()}
+            disabled={signOutMutation.isPending}
+            className="h-11 border-white/15 bg-white/5 text-white hover:bg-white/10 font-black sm:min-w-[132px]"
+          >
+            {signOutMutation.isPending ? (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            ) : (
+              <LogOut className="mr-2 h-4 w-4" />
+            )}
+            {signOutMutation.isPending ? 'Logging out...' : 'Logout'}
+          </Button>
+        </div>
       </div>
 
       <div className="px-4 py-6 space-y-6">

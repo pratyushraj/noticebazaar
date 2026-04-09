@@ -1,0 +1,11 @@
+- generic [ref=e7]:
+  - region "Notifications alt+T"
+  - generic [ref=e8]:
+    - link "Skip to main content" [ref=e9] [cursor=pointer]:
+      - /url: "#main-content"
+    - generic [ref=e12]:
+      - heading "Unable to Load Profile" [level=1] [ref=e13]
+      - paragraph [ref=e14]: Unable to connect. Is the server running at https://creatorarmour.com?
+      - generic [ref=e15]:
+        - button "Go to Homepage" [ref=e16] [cursor=pointer]
+        - button "Try Again" [ref=e17] [cursor=pointer]

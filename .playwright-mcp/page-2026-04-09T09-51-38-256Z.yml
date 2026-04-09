@@ -1,0 +1,125 @@
+- generic [ref=e2]:
+  - region "Notifications alt+T"
+  - generic [ref=e5]:
+    - link "Skip to main content" [ref=e6] [cursor=pointer]:
+      - /url: "#main-content"
+    - generic [ref=e9]:
+      - main [ref=e10]:
+        - generic [ref=e12]:
+          - generic:
+            - generic:
+              - img
+          - generic [ref=e13]:
+            - generic [ref=e14]:
+              - generic [ref=e15]:
+                - button "Open menu" [ref=e16] [cursor=pointer]:
+                  - img [ref=e17]
+                - generic [ref=e18]:
+                  - img [ref=e19]
+                  - generic [ref=e22]: CreatorArmour
+                - generic [ref=e23]:
+                  - button "Light" [ref=e24] [cursor=pointer]:
+                    - img [ref=e26]
+                    - generic [ref=e32]: Light
+                  - button "Notifications (1 new)" [ref=e124] [cursor=pointer]:
+                    - img [ref=e34]
+                    - generic [ref=e125]: "1"
+                  - button "avatar" [ref=e37] [cursor=pointer]:
+                    - img "avatar" [ref=e38]
+              - generic [ref=e39]:
+                - generic [ref=e40]:
+                  - heading "Good afternoon" [level=1] [ref=e41]
+                  - generic [ref=e44]: Active
+                - paragraph [ref=e45]: "@creator"
+            - generic [ref=e47]:
+              - paragraph [ref=e48]: Share your link to get your first offer
+              - button "Share Link" [ref=e49] [cursor=pointer]
+            - generic [ref=e54]:
+              - generic [ref=e55]:
+                - generic [ref=e56]:
+                  - paragraph [ref=e57]: Pending Amount
+                  - paragraph [ref=e58]: Released after content approval
+                - img [ref=e60]
+              - generic [ref=e63]:
+                - generic [ref=e64]: ₹
+                - generic [ref=e65]: "0"
+              - generic [ref=e66]:
+                - img [ref=e68]
+                - generic [ref=e71]: Creator Armour protection active
+            - generic [ref=e72]:
+              - generic [ref=e128]:
+                - generic [ref=e129]:
+                  - generic [ref=e130]: Monthly Revenue
+                  - img [ref=e131]
+                - generic [ref=e133]:
+                  - generic [ref=e134]: ₹
+                  - generic [ref=e135]: "0"
+                - generic [ref=e136]:
+                  - img [ref=e138]
+                  - generic [ref=e141]: Secured by Armour
+              - generic [ref=e142]:
+                - generic [ref=e143] [cursor=pointer]:
+                  - generic [ref=e144]:
+                    - img [ref=e145]
+                    - generic [ref=e148]: Active Deals
+                  - paragraph [ref=e149]: "0"
+                - generic [ref=e150] [cursor=pointer]:
+                  - generic [ref=e151]:
+                    - img [ref=e152]
+                    - generic [ref=e157]: Pending Offers
+                  - paragraph [ref=e158]: "1"
+            - generic [ref=e159]:
+              - img [ref=e161]
+              - generic [ref=e164]:
+                - img [ref=e166]
+                - generic [ref=e169]:
+                  - heading "Promote Collab Link" [level=3] [ref=e170]
+                  - paragraph [ref=e171]: Quick Share Tools
+              - generic [ref=e172]:
+                - button "Copy Bio Link" [ref=e173] [cursor=pointer]:
+                  - img [ref=e174]
+                  - generic [ref=e177]: Copy Bio Link
+                - button "Copy DM Reply" [ref=e178] [cursor=pointer]:
+                  - img [ref=e179]
+                  - generic [ref=e181]: Copy DM Reply
+              - paragraph [ref=e182]: "Pro tip: Direct brands to your intake storefront"
+            - generic [ref=e88]:
+              - heading "Active Collaborations" [level=2] [ref=e90]
+              - generic [ref=e185]:
+                - generic [ref=e186]:
+                  - generic [ref=e188]: D
+                  - generic [ref=e189]:
+                    - generic [ref=e190]:
+                      - paragraph [ref=e191]: Demo Brand Co
+                      - generic [ref=e192]: 💳 Paid
+                    - generic [ref=e193]:
+                      - generic [ref=e194]: Lifestyle
+                      - generic [ref=e195]: •
+                      - generic [ref=e196]:
+                        - img [ref=e197]
+                        - generic [ref=e200]: Verified
+                  - generic [ref=e201]:
+                    - paragraph [ref=e202]: ₹2,300
+                    - paragraph [ref=e203]: Cash
+                - generic [ref=e204]:
+                  - generic [ref=e205]: Reel
+                  - generic [ref=e206]: Story (x2)
+                  - generic [ref=e207]: 📅 12 Apr
+                  - generic [ref=e208]: ⚡3d left
+                - generic [ref=e209]:
+                  - button "Details" [ref=e210] [cursor=pointer]
+                  - button "Accept Offer" [ref=e211] [cursor=pointer]
+          - generic [ref=e101]:
+            - button "Home" [ref=e102] [cursor=pointer]:
+              - img [ref=e103]
+              - generic [ref=e108]: Home
+            - button "Deals" [ref=e109] [cursor=pointer]:
+              - img [ref=e110]
+              - generic [ref=e113]: Deals
+            - button "Payments" [ref=e114] [cursor=pointer]:
+              - img [ref=e115]
+              - generic [ref=e117]: Payments
+            - button "Profile" [ref=e118] [cursor=pointer]:
+              - img [ref=e119]
+              - generic [ref=e122]: Profile
+      - generic [ref=e123]: © 2026 Creator Armour

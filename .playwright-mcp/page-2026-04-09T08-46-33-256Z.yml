@@ -1,0 +1,27 @@
+- generic [ref=e2]:
+  - region "Notifications alt+T"
+  - generic [ref=e5]:
+    - link "Skip to main content" [ref=e6] [cursor=pointer]:
+      - /url: "#main-content"
+    - generic [ref=e433]:
+      - main [ref=e434]:
+        - generic [ref=e525]:
+          - generic [ref=e526]:
+            - button "Back" [ref=e527] [cursor=pointer]:
+              - img [ref=e528]
+              - text: Back
+            - heading "Send New Offer" [level=1] [ref=e530]
+            - paragraph [ref=e531]: Find creators and send them collaboration offers
+          - generic [ref=e532]:
+            - generic [ref=e533]:
+              - heading "Step 1 — Find a Creator" [level=2] [ref=e534]
+              - generic [ref=e535]:
+                - generic [ref=e536]:
+                  - img
+                  - textbox "Search by Instagram handle, name, or username..." [ref=e537]
+                - paragraph [ref=e538]: Enter an Instagram handle or name to find creators
+            - generic [ref=e539]:
+              - img [ref=e541]
+              - heading "Search for a creator above" [level=3] [ref=e544]
+              - paragraph [ref=e545]: Enter their Instagram handle or name to find them and send a collaboration offer
+      - generic [ref=e524]: © 2026 Creator Armour

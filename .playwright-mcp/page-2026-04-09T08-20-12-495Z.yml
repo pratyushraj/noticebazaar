@@ -1,0 +1,32 @@
+- generic [ref=e2]:
+  - region "Notifications alt+T"
+  - generic [ref=e3]:
+    - link "Skip to main content" [ref=e4] [cursor=pointer]:
+      - /url: "#main-content"
+    - generic [ref=e60]:
+      - main [ref=e61]:
+        - generic [ref=e62]:
+          - generic [ref=e64]:
+            - generic [ref=e65]:
+              - paragraph [ref=e66]: Brand Armour
+              - paragraph [ref=e67]: Good afternoon, Brand
+              - heading "Brand Dashboard" [level=1] [ref=e68]
+            - button "Logout" [ref=e69] [cursor=pointer]:
+              - img
+              - text: Logout
+          - generic [ref=e70]:
+            - generic [ref=e71]:
+              - img [ref=e74]
+              - img [ref=e78]
+              - img [ref=e82]
+              - img [ref=e86]
+              - img [ref=e90]
+              - img [ref=e94]
+            - button "Send New Offer" [ref=e97] [cursor=pointer]:
+              - img
+              - text: Send New Offer
+            - generic [ref=e98]:
+              - button "Active (0)" [ref=e99] [cursor=pointer]
+              - button "All (0)" [ref=e100] [cursor=pointer]
+            - img [ref=e102]
+      - generic [ref=e104]: © 2026 Creator Armour

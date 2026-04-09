@@ -398,11 +398,46 @@ const insertUnclaimedCollabRequest = async (payload: Record<string, unknown>) =>
 async function attachPendingCollabLeadsForCreator(creatorId: string): Promise<{ attached: number; failed: number }> {
   if (!creatorId) return { attached: 0, failed: 0 };
 
-  const { data: creatorProfile } = await supabase
+  const { data: creatorProfileRow } = await supabase
     .from('profiles')
     .select('id, first_name, last_name, business_name, username, instagram_handle, creator_category, avatar_url, instagram_followers, youtube_subs, tiktok_followers, twitter_followers')
     .eq('id', creatorId)
     .maybeSingle();
+
+  let creatorProfile: any = creatorProfileRow || null;
+  let authUserEmail: string | null = null;
+
+  try {
+    const { data: authUser } = await supabase.auth.admin.getUserById(creatorId);
+    authUserEmail = authUser?.user?.email || null;
+
+    if (!creatorProfile && authUser?.user) {
+      const metadata = authUser.user.user_metadata || {};
+      const fullName = String(metadata.full_name || '').trim();
+      const firstName = fullName.split(' ')[0] || '';
+      const lastName = fullName.split(' ').slice(1).join(' ');
+      const fallbackHandle = normalizeHandle(
+        metadata.instagram_handle || metadata.username || authUser.user.email?.split('@')[0] || ''
+      );
+
+      creatorProfile = {
+        id: creatorId,
+        first_name: firstName,
+        last_name: lastName,
+        business_name: metadata.business_name || null,
+        username: fallbackHandle || null,
+        instagram_handle: fallbackHandle || null,
+        creator_category: metadata.creator_category || null,
+        avatar_url: metadata.avatar_url || null,
+        instagram_followers: null,
+        youtube_subs: null,
+        tiktok_followers: null,
+        twitter_followers: null,
+      };
+    }
+  } catch (error) {
+    console.warn('[CollabRequests] Failed to fetch auth metadata for lead attachment fallback:', error);
+  }
 
   if (!creatorProfile) return { attached: 0, failed: 0 };
 
@@ -451,13 +486,7 @@ async function attachPendingCollabLeadsForCreator(creatorId: string): Promise<{ 
     || `${(creatorProfile as any).first_name || ''} ${(creatorProfile as any).last_name || ''}`.trim()
     || 'Creator';
 
-  let creatorEmail: string | null = null;
-  try {
-    const { data: authUser } = await supabase.auth.admin.getUserById(creatorId);
-    creatorEmail = authUser?.user?.email || null;
-  } catch (error) {
-    console.warn('[CollabRequests] Failed to fetch creator email for lead attachment notifications:', error);
-  }
+  const creatorEmail = authUserEmail;
 
   let attached = 0;
   let failed = 0;

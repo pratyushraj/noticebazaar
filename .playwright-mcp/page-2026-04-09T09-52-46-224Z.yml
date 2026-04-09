@@ -1,0 +1,238 @@
+- generic [ref=e1]:
+  - generic [ref=e2]:
+    - region "Notifications alt+T"
+    - generic [ref=e5]:
+      - link "Skip to main content" [ref=e6] [cursor=pointer]:
+        - /url: "#main-content"
+      - generic [ref=e9]:
+        - main [ref=e10]:
+          - generic [ref=e12]:
+            - generic:
+              - generic:
+                - img
+            - generic [ref=e13]:
+              - generic [ref=e14]:
+                - generic [ref=e15]:
+                  - button "Open menu" [ref=e16] [cursor=pointer]:
+                    - img [ref=e17]
+                  - generic [ref=e18]:
+                    - img [ref=e19]
+                    - generic [ref=e22]: CreatorArmour
+                  - generic [ref=e23]:
+                    - button "Light" [ref=e24] [cursor=pointer]:
+                      - img [ref=e26]
+                      - generic [ref=e32]: Light
+                    - button "Notifications (1 new)" [ref=e124] [cursor=pointer]:
+                      - img [ref=e34]
+                      - generic [ref=e125]: "1"
+                    - button "avatar" [ref=e37] [cursor=pointer]:
+                      - img "avatar" [ref=e38]
+                - generic [ref=e39]:
+                  - generic [ref=e40]:
+                    - heading "Good afternoon" [level=1] [ref=e41]
+                    - generic [ref=e44]: Active
+                  - paragraph [ref=e45]: "@creator"
+              - generic [ref=e47]:
+                - paragraph [ref=e48]: Share your link to get your first offer
+                - button "Share Link" [ref=e49] [cursor=pointer]
+              - generic [ref=e54]:
+                - generic [ref=e55]:
+                  - generic [ref=e56]:
+                    - paragraph [ref=e57]: Pending Amount
+                    - paragraph [ref=e58]: Released after content approval
+                  - img [ref=e60]
+                - generic [ref=e63]:
+                  - generic [ref=e64]: ₹
+                  - generic [ref=e65]: "0"
+                - generic [ref=e66]:
+                  - img [ref=e68]
+                  - generic [ref=e71]: Creator Armour protection active
+              - generic [ref=e72]:
+                - generic [ref=e128]:
+                  - generic [ref=e129]:
+                    - generic [ref=e130]: Monthly Revenue
+                    - img [ref=e131]
+                  - generic [ref=e133]:
+                    - generic [ref=e134]: ₹
+                    - generic [ref=e135]: "0"
+                  - generic [ref=e136]:
+                    - img [ref=e138]
+                    - generic [ref=e141]: Secured by Armour
+                - generic [ref=e142]:
+                  - generic [ref=e143] [cursor=pointer]:
+                    - generic [ref=e144]:
+                      - img [ref=e145]
+                      - generic [ref=e148]: Active Deals
+                    - paragraph [ref=e149]: "0"
+                  - generic [ref=e150] [cursor=pointer]:
+                    - generic [ref=e151]:
+                      - img [ref=e152]
+                      - generic [ref=e157]: Pending Offers
+                    - paragraph [ref=e158]: "1"
+              - generic [ref=e159]:
+                - img [ref=e161]
+                - generic [ref=e164]:
+                  - img [ref=e166]
+                  - generic [ref=e169]:
+                    - heading "Promote Collab Link" [level=3] [ref=e170]
+                    - paragraph [ref=e171]: Quick Share Tools
+                - generic [ref=e172]:
+                  - button "Copy Bio Link" [ref=e173] [cursor=pointer]:
+                    - img [ref=e174]
+                    - generic [ref=e177]: Copy Bio Link
+                  - button "Copy DM Reply" [ref=e178] [cursor=pointer]:
+                    - img [ref=e179]
+                    - generic [ref=e181]: Copy DM Reply
+                - paragraph [ref=e182]: "Pro tip: Direct brands to your intake storefront"
+              - generic [ref=e88]:
+                - heading "Active Collaborations" [level=2] [ref=e90]
+                - generic [ref=e185]:
+                  - generic [ref=e186]:
+                    - generic [ref=e188]: D
+                    - generic [ref=e189]:
+                      - generic [ref=e190]:
+                        - paragraph [ref=e191]: Demo Brand Co
+                        - generic [ref=e192]: 💳 Paid
+                      - generic [ref=e193]:
+                        - generic [ref=e194]: Lifestyle
+                        - generic [ref=e195]: •
+                        - generic [ref=e196]:
+                          - img [ref=e197]
+                          - generic [ref=e200]: Verified
+                    - generic [ref=e201]:
+                      - paragraph [ref=e202]: ₹2,300
+                      - paragraph [ref=e203]: Cash
+                  - generic [ref=e204]:
+                    - generic [ref=e205]: Reel
+                    - generic [ref=e206]: Story (x2)
+                    - generic [ref=e207]: 📅 12 Apr
+                    - generic [ref=e208]: ⚡3d left
+                  - generic [ref=e209]:
+                    - button "Details" [active] [ref=e210] [cursor=pointer]
+                    - button "Accept Offer" [ref=e211] [cursor=pointer]
+            - generic [ref=e101]:
+              - button "Home" [ref=e102] [cursor=pointer]:
+                - img [ref=e103]
+                - generic [ref=e108]: Home
+              - button "Deals" [ref=e109] [cursor=pointer]:
+                - img [ref=e110]
+                - generic [ref=e113]: Deals
+              - button "Payments" [ref=e114] [cursor=pointer]:
+                - img [ref=e115]
+                - generic [ref=e117]: Payments
+              - button "Profile" [ref=e118] [cursor=pointer]:
+                - img [ref=e119]
+                - generic [ref=e122]: Profile
+        - generic [ref=e123]: © 2026 Creator Armour
+  - generic [ref=e212]:
+    - generic [ref=e214]:
+      - generic [ref=e215]:
+        - button [ref=e216] [cursor=pointer]:
+          - img [ref=e217]
+        - generic [ref=e219]:
+          - heading "Offer Brief" [level=2] [ref=e220]
+          - paragraph [ref=e221]: Demo Brand Co
+      - button [ref=e222] [cursor=pointer]:
+        - img [ref=e223]
+    - generic [ref=e227]:
+      - generic [ref=e228]:
+        - generic [ref=e229]:
+          - generic [ref=e231]:
+            - img [ref=e232]
+            - text: Awaiting Your Decision
+          - generic [ref=e234]: Paid Campaign
+          - paragraph [ref=e235]: ₹2,300 Offer
+          - generic [ref=e236]:
+            - generic [ref=e237]: Reel
+            - generic [ref=e238]: •
+            - generic [ref=e239]: Story (x2)
+          - generic [ref=e240]:
+            - img [ref=e241]
+            - generic [ref=e244]: "Deadline: 12 Apr 2026"
+        - generic [ref=e245]:
+          - generic [ref=e247]: D
+          - generic [ref=e248]:
+            - generic [ref=e249]:
+              - paragraph [ref=e250]: Demo Brand Co
+              - img [ref=e251]
+            - paragraph [ref=e254]: Verified Brand
+      - button "Brand Information Verified Business · View Company Details" [ref=e256] [cursor=pointer]:
+        - img [ref=e258]
+        - generic [ref=e261]:
+          - paragraph [ref=e262]: Brand Information
+          - paragraph [ref=e263]: Verified Business · View Company Details
+        - img [ref=e265]
+      - generic [ref=e267]:
+        - heading "Campaign Timeline" [level=4] [ref=e268]
+        - generic [ref=e269]:
+          - generic [ref=e270]:
+            - generic [ref=e271]: Step 1 of 5
+            - generic [ref=e272]: Offer Received
+          - generic [ref=e273]:
+            - generic [ref=e278]: Offer
+            - generic [ref=e281]: Accept
+            - generic [ref=e284]: Create
+            - generic [ref=e287]: Submit
+            - generic [ref=e290]: Payment
+      - generic [ref=e291]:
+        - heading "Campaign Brief" [level=4] [ref=e292]
+        - paragraph [ref=e294]: "1 Reel + 2 Engagement Stories to maximize reach and drive action. Additional Commercial Terms: - Collab content category: Lifestyle"
+      - generic [ref=e295]:
+        - heading "Deliverables" [level=4] [ref=e296]
+        - generic [ref=e297]:
+          - generic [ref=e298]: Reel
+          - generic [ref=e299]: Story (x2)
+      - generic [ref=e300]:
+        - heading "Usage Rights" [level=4] [ref=e301]
+        - generic [ref=e302]:
+          - paragraph [ref=e303]: Organic social media only
+          - paragraph [ref=e304]: 90 days limit
+      - generic [ref=e305]:
+        - heading "Legal Protection" [level=4] [ref=e306]
+        - generic [ref=e307]:
+          - generic [ref=e309]:
+            - img [ref=e311]
+            - generic [ref=e314]:
+              - paragraph [ref=e315]: Protected by Creator Armour
+              - paragraph [ref=e316]: Contract + rights + dispute support
+          - generic [ref=e317]:
+            - generic [ref=e318]:
+              - img [ref=e319]
+              - generic [ref=e322]: Contract auto-generated
+            - generic [ref=e323]:
+              - img [ref=e324]
+              - generic [ref=e327]: Content rights secured
+            - generic [ref=e328]:
+              - img [ref=e329]
+              - generic [ref=e332]: Dispute protection included
+      - generic [ref=e333]:
+        - heading "Earnings Breakdown" [level=4] [ref=e334]
+        - generic [ref=e335]:
+          - generic [ref=e336]:
+            - paragraph [ref=e337]: You Receive
+            - paragraph [ref=e338]: ₹2,300
+          - generic [ref=e339]:
+            - generic [ref=e340]:
+              - generic [ref=e341]: Offer budget
+              - generic [ref=e342]: ₹2,300
+            - generic [ref=e343]:
+              - generic [ref=e344]: Platform fee
+              - generic [ref=e345]: ₹0
+            - generic [ref=e346]:
+              - generic [ref=e347]: Payment Method
+              - generic [ref=e348]: Bank Transfer
+    - generic [ref=e350]:
+      - button "Accept Offer ₹2,300 Contract generated instantly" [ref=e351] [cursor=pointer]:
+        - generic [ref=e352]: Accept Offer ₹2,300
+        - generic [ref=e353]: Contract generated instantly
+      - generic [ref=e354]:
+        - button "Ask Brand Question" [ref=e355] [cursor=pointer]:
+          - img [ref=e356]
+          - generic [ref=e358]: Ask Brand Question
+        - generic [ref=e359]:
+          - button "Suggest New Price" [ref=e360] [cursor=pointer]:
+            - img [ref=e361]
+            - generic [ref=e363]: Suggest New Price
+          - button "Decline Offer" [ref=e364] [cursor=pointer]:
+            - img [ref=e365]
+            - generic [ref=e369]: Decline Offer

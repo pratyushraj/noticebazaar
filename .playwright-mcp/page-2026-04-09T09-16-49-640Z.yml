@@ -1,0 +1,67 @@
+- generic [ref=e7]:
+  - region "Notifications alt+T"
+  - generic [ref=e8]:
+    - link "Skip to main content" [ref=e9] [cursor=pointer]:
+      - /url: "#main-content"
+    - generic [ref=e118]:
+      - main [ref=e119]:
+        - main [ref=e121]:
+          - generic [ref=e122]:
+            - paragraph [ref=e123]: Creator Armour
+            - paragraph [ref=e124]: Good afternoon, Test
+            - heading "Your Offer Inbox" [level=1] [ref=e125]
+            - paragraph [ref=e126]: Share your link. Brand offers appear here.
+          - generic [ref=e127]:
+            - region "Your next step" [ref=e128]:
+              - generic [ref=e129]:
+                - generic [ref=e130]:
+                  - paragraph [ref=e131]: Your next step
+                  - heading "Share your creator link" [level=2] [ref=e132]
+                  - paragraph [ref=e133]: This is the page brands open to send you an offer. Copy it, share it in DMs, and your first offer will appear here.
+                  - generic [ref=e134]:
+                    - paragraph [ref=e135]: Your link
+                    - paragraph [ref=e136]: www.creatorarmour.com/test.creator123
+                - generic [ref=e137]:
+                  - button "Share" [ref=e138] [cursor=pointer]:
+                    - img
+                    - text: Share
+                  - button "Copy" [ref=e139] [cursor=pointer]:
+                    - img
+                    - text: Copy
+                  - button "Preview" [active] [ref=e140] [cursor=pointer]:
+                    - img
+                    - text: Preview
+            - generic [ref=e142]:
+              - img [ref=e144]
+              - generic [ref=e146]:
+                - generic [ref=e147]:
+                  - paragraph [ref=e148]: Your collab page is 0% complete
+                  - generic [ref=e149]: Profile incomplete
+                - paragraph [ref=e151]: "Brands see these as blank: your rate, profile photo, bio / intro, pricing packages"
+                - button "Complete your profile →" [ref=e152] [cursor=pointer]
+            - region "What happens after you share" [ref=e153]:
+              - paragraph [ref=e154]: What happens after you share
+              - generic [ref=e155]:
+                - generic [ref=e156]:
+                  - paragraph [ref=e157]: "01"
+                  - paragraph [ref=e158]: A brand opens your page
+                - generic [ref=e159]:
+                  - paragraph [ref=e160]: "02"
+                  - paragraph [ref=e161]: They send an offer in under a minute
+                - generic [ref=e162]:
+                  - paragraph [ref=e163]: "03"
+                  - paragraph [ref=e164]: You review it here and decide
+            - region "You do not need a long profile first" [ref=e165]:
+              - paragraph [ref=e166]: You do not need a long profile first
+              - paragraph [ref=e167]: We collect only the one missing thing needed for the next deal step.
+              - generic [ref=e168]:
+                - generic [ref=e169]:
+                  - paragraph [ref=e170]: Paid offer
+                  - paragraph [ref=e171]: We ask your price only when you accept it.
+                - generic [ref=e172]:
+                  - paragraph [ref=e173]: Product deal
+                  - paragraph [ref=e174]: We ask your address only if shipping is needed.
+                - generic [ref=e175]:
+                  - paragraph [ref=e176]: Payment
+                  - paragraph [ref=e177]: We only ask for your UPI when payment is about to be made.
+      - generic [ref=e178]: © 2026 Creator Armour

@@ -1,0 +1,46 @@
+- generic [ref=e2]:
+  - region "Notifications alt+T"
+  - generic [ref=e3]:
+    - link "Skip to main content" [ref=e4] [cursor=pointer]:
+      - /url: "#main-content"
+    - generic [ref=e5]:
+      - generic [ref=e6]:
+        - generic [ref=e7]:
+          - img [ref=e9]
+          - heading "Creator Armour" [level=1] [ref=e12]
+        - generic [ref=e13]:
+          - heading "Sign In" [level=2] [ref=e14]
+          - paragraph [ref=e15]: Sign in to see your brand offers and active deals.
+        - generic [ref=e17]:
+          - generic [ref=e18]:
+            - text: Email
+            - textbox "Email" [ref=e19]:
+              - /placeholder: name@example.com
+          - generic [ref=e20]:
+            - generic [ref=e21]:
+              - generic [ref=e22]: Password
+              - button "Forgot?" [ref=e23] [cursor=pointer]
+            - textbox "Password" [ref=e24]:
+              - /placeholder: ••••••••
+          - button "Open My Deals" [disabled]
+          - button "Try Demo Account" [ref=e25] [cursor=pointer]
+        - generic [ref=e26]:
+          - generic [ref=e31]: Or continue with
+          - button "Continue with Google" [ref=e33] [cursor=pointer]:
+            - img
+            - text: Continue with Google
+        - link "Don't have an account? Create your creator link" [ref=e35] [cursor=pointer]:
+          - /url: /signup
+          - text: Don't have an account?
+          - generic [ref=e36]: Create your creator link
+        - link "Exit To Homepage" [ref=e38] [cursor=pointer]:
+          - /url: /
+          - img [ref=e39]
+          - text: Exit To Homepage
+      - paragraph [ref=e42]:
+        - text: Protected by Creator Armour Shield. By signing in, you agree to our
+        - link "Terms" [ref=e43] [cursor=pointer]:
+          - /url: /terms
+        - text: "&"
+        - link "Privacy" [ref=e44] [cursor=pointer]:
+          - /url: /privacy

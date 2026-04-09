@@ -1,0 +1,104 @@
+- generic [ref=e2]:
+  - region "Notifications alt+T"
+  - generic [ref=e5]:
+    - link "Skip to main content" [ref=e6] [cursor=pointer]:
+      - /url: "#main-content"
+    - generic [ref=e9]:
+      - main [ref=e10]:
+        - generic [ref=e12]:
+          - generic:
+            - generic:
+              - img
+          - generic [ref=e13]:
+            - generic [ref=e16]:
+              - generic [ref=e17]:
+                - generic [ref=e19]: 🎁
+                - generic [ref=e20]:
+                  - paragraph [ref=e21]: Invite Creators, Earn Rewards
+                  - paragraph [ref=e22]: Share your referral link — get rewarded when friends join
+              - button "Invite" [ref=e23] [cursor=pointer]
+            - generic [ref=e24]:
+              - generic [ref=e25]:
+                - button "Open menu" [ref=e26] [cursor=pointer]:
+                  - img [ref=e27]
+                - generic [ref=e28]:
+                  - img [ref=e29]
+                  - generic [ref=e32]: CreatorArmour
+                - generic [ref=e33]:
+                  - button "Light" [ref=e34] [cursor=pointer]:
+                    - img [ref=e36]
+                    - generic [ref=e42]: Light
+                  - button "Notifications" [ref=e43] [cursor=pointer]:
+                    - img [ref=e44]
+                  - button "avatar" [ref=e47] [cursor=pointer]:
+                    - img "avatar" [ref=e48]
+              - generic [ref=e49]:
+                - generic [ref=e50]:
+                  - heading "Good afternoon" [level=1] [ref=e51]
+                  - generic [ref=e54]: Active
+                - paragraph [ref=e55]: "@creator"
+            - generic [ref=e57]:
+              - generic [ref=e58]:
+                - paragraph [ref=e59]: How it works
+                - generic [ref=e60]: 3 steps
+              - generic [ref=e61]:
+                - generic [ref=e62]:
+                  - generic [ref=e63]: 🔗
+                  - paragraph [ref=e64]: Share your link on Instagram bio, DMs, or email
+                - generic [ref=e65]:
+                  - generic [ref=e66]: 📋
+                  - paragraph [ref=e67]: Brand fills a structured brief with budget & deliverables
+                - generic [ref=e68]:
+                  - generic [ref=e69]: ✅
+                  - paragraph [ref=e70]: You accept, counter, or decline — with contract protection
+            - generic [ref=e75]:
+              - generic [ref=e76]:
+                - generic [ref=e77]:
+                  - paragraph [ref=e78]: Pending Amount
+                  - paragraph [ref=e79]: Released after content approval
+                - img [ref=e81]
+              - generic [ref=e84]:
+                - generic [ref=e85]: ₹
+                - generic [ref=e86]: "0"
+              - generic [ref=e87]:
+                - img [ref=e89]
+                - generic [ref=e92]: Creator Armour protection active
+            - generic [ref=e94]:
+              - generic:
+                - img
+              - heading "Your Creator Link Is Live" [level=2] [ref=e95]
+              - paragraph [ref=e96]: Brands can send offers here. Share it once and your first offer will appear on this screen.
+              - generic [ref=e97]:
+                - generic [ref=e98]:
+                  - paragraph [ref=e99]: Your Creator Link
+                  - generic [ref=e102]: Brands submit offers here
+                - generic [ref=e103]: creatorarmour.com/creator
+                - generic [ref=e104]:
+                  - button "Share Link Now" [ref=e105] [cursor=pointer]
+                  - button "Copy" [ref=e106] [cursor=pointer]
+                - button "Preview page" [ref=e107] [cursor=pointer]
+              - button "Show sharing tips" [ref=e108] [cursor=pointer]
+            - generic [ref=e109]:
+              - heading "Active Collaborations" [level=2] [ref=e111]
+              - generic [ref=e113]:
+                - img [ref=e115]
+                - heading "No offers yet" [level=3] [ref=e118]
+                - paragraph [ref=e119]: Share your creator link to start receiving verified brand offers.
+                - button "Share Link Now" [ref=e120] [cursor=pointer]
+          - generic [ref=e122]:
+            - button "Home" [ref=e123] [cursor=pointer]:
+              - img [ref=e124]
+              - generic [ref=e129]: Home
+            - button "Collabs" [ref=e130] [cursor=pointer]:
+              - img [ref=e131]
+              - generic [ref=e134]: Collabs
+            - button "Analytics" [ref=e135] [cursor=pointer]:
+              - img [ref=e136]
+              - generic [ref=e138]: Analytics
+            - button "Payments" [ref=e139] [cursor=pointer]:
+              - img [ref=e140]
+              - generic [ref=e142]: Payments
+            - button "Account" [ref=e143] [cursor=pointer]:
+              - img [ref=e144]
+              - generic [ref=e147]: Account
+      - generic [ref=e148]: © 2026 Creator Armour

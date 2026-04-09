@@ -1,0 +1,30 @@
+- generic [ref=e7]:
+  - region "Notifications alt+T"
+  - generic [ref=e8]:
+    - link "Skip to main content" [ref=e9] [cursor=pointer]:
+      - /url: "#main-content"
+    - generic [ref=e71]:
+      - main [ref=e72]:
+        - generic [ref=e163]:
+          - generic [ref=e164]:
+            - button "Back" [ref=e165] [cursor=pointer]:
+              - img [ref=e166]
+              - text: Back
+            - heading "Send New Offer" [level=1] [ref=e168]
+            - paragraph [ref=e169]: Find creators and send them collaboration offers
+          - generic [ref=e170]:
+            - generic [ref=e171]:
+              - heading "Step 1 — Find a Creator" [level=2] [ref=e172]
+              - generic [ref=e173]:
+                - generic [ref=e174]:
+                  - img
+                  - textbox "Search by Instagram handle, name, or username..." [active] [ref=e175]: pratyush
+                  - img [ref=e186]
+                - generic [ref=e189]:
+                  - img [ref=e190]
+                  - generic [ref=e192]: Searching creators...
+            - generic [ref=e177]:
+              - img [ref=e179]
+              - heading "Search for a creator above" [level=3] [ref=e182]
+              - paragraph [ref=e183]: Enter their Instagram handle or name to find them and send a collaboration offer
+      - generic [ref=e162]: © 2026 Creator Armour

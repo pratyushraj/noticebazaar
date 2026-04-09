@@ -1,0 +1,397 @@
+- generic [ref=e2]:
+  - region "Notifications alt+T"
+  - generic [ref=e5]:
+    - link "Skip to main content" [ref=e6] [cursor=pointer]:
+      - /url: "#main-content"
+    - generic [ref=e7]:
+      - navigation [ref=e8]:
+        - generic [ref=e9]:
+          - link "Creator Armour" [ref=e10] [cursor=pointer]:
+            - /url: /
+            - img [ref=e12]
+            - heading "Creator Armour" [level=1] [ref=e15]
+          - generic [ref=e16]:
+            - link "How it Works" [ref=e17] [cursor=pointer]:
+              - /url: "#how-it-works"
+            - link "Packages" [ref=e18] [cursor=pointer]:
+              - /url: "#marketplace"
+            - link "Creators" [ref=e19] [cursor=pointer]:
+              - /url: "#social-proof"
+          - generic [ref=e20]:
+            - link "Log In" [ref=e21] [cursor=pointer]:
+              - /url: /login
+            - link "Brand Console" [ref=e22] [cursor=pointer]:
+              - /url: /signup?mode=brand
+            - link "Create Collab Link" [ref=e23] [cursor=pointer]:
+              - /url: /signup?mode=creator
+      - main [ref=e24]:
+        - generic [ref=e27]:
+          - generic [ref=e28]:
+            - generic [ref=e29]:
+              - img [ref=e30]
+              - generic [ref=e32]: The Operating System for Creators
+            - heading "Close Brand Deals Without Instagram DMs" [level=1] [ref=e33]:
+              - text: Close Brand Deals
+              - generic [ref=e34]: Without Instagram DMs
+            - paragraph [ref=e35]: Creator Armour gives creators a professional collaboration page where brands send structured offers, choose packages, and close deals without messy messages.
+            - generic [ref=e36]:
+              - link "I'm a Creator" [ref=e37] [cursor=pointer]:
+                - /url: /signup?mode=creator
+                - text: I'm a Creator
+                - img [ref=e38]
+              - link "I'm a Brand" [ref=e40] [cursor=pointer]:
+                - /url: /signup?mode=brand
+                - text: I'm a Brand
+                - img [ref=e41]
+          - generic [ref=e43]:
+            - generic [ref=e44]:
+              - img "Aanya Kapoor" [ref=e45]
+              - generic [ref=e46]:
+                - generic [ref=e47]:
+                  - heading "Aanya Kapoor" [level=3] [ref=e48]
+                  - img [ref=e49]
+                - paragraph [ref=e52]: Lifestyle Creator • 42K followers
+            - generic [ref=e53]:
+              - generic [ref=e55]: 💰
+              - generic [ref=e56]:
+                - paragraph [ref=e57]: New Offer Received
+                - paragraph [ref=e58]: ₹4,000 from Myntra
+            - generic [ref=e59]:
+              - img [ref=e61]
+              - generic [ref=e64]:
+                - paragraph [ref=e65]: Contract check
+                - paragraph [ref=e66]: 2 risky clauses flagged
+            - generic [ref=e67]:
+              - img [ref=e69]
+              - generic [ref=e72]:
+                - paragraph [ref=e73]: Payment follow-up
+                - paragraph [ref=e74]: ₹12,000 overdue by 4 days
+            - generic [ref=e77]:
+              - generic [ref=e79]:
+                - img "Creator" [ref=e80]
+                - heading "Aanya Kapoor" [level=2] [ref=e81]:
+                  - text: Aanya Kapoor
+                  - img [ref=e82]
+                - paragraph [ref=e85]: "@aanyakapoor"
+                - generic [ref=e86]:
+                  - paragraph [ref=e87]: Typical Collab Rate
+                  - paragraph [ref=e88]: ₹2K–₹4K
+              - generic [ref=e89]:
+                - generic [ref=e90]:
+                  - generic [ref=e91]:
+                    - heading "Reel Deal" [level=5] [ref=e92]
+                    - generic [ref=e94]: 🎬
+                  - paragraph [ref=e95]: 1 High-quality Instagram Reel with professional hooks and brand tagging.
+                  - generic [ref=e96]:
+                    - generic [ref=e97]: ₹2,499
+                    - generic [ref=e98]: Select
+                - generic [ref=e99]:
+                  - generic [ref=e100]: Most Popular
+                  - generic [ref=e101]:
+                    - heading "Engagement Package" [level=5] [ref=e102]
+                    - generic [ref=e104]: 🔥
+                  - paragraph [ref=e105]: 1 Reel + 2 Engagement Stories to maximize reach and drive action.
+                  - generic [ref=e106]:
+                    - generic [ref=e107]: ₹3,999
+                    - generic [ref=e108]: Select
+                - generic [ref=e109]:
+                  - generic [ref=e110]:
+                    - heading "Product Review" [level=5] [ref=e111]
+                    - generic [ref=e113]: 📦
+                  - paragraph [ref=e114]: In-depth product unboxing and review with 1 story mention.
+                  - generic [ref=e115]:
+                    - generic [ref=e116]: Barter
+                    - generic [ref=e117]: Select
+        - generic [ref=e118]:
+          - generic [ref=e119]:
+            - heading "More than a collab page" [level=2] [ref=e120]
+            - paragraph [ref=e121]: "Show creators what happens after a brand clicks their link: offers arrive cleanly, contracts are easier to read, and payouts stay visible."
+          - generic [ref=e122]:
+            - generic [ref=e123]:
+              - generic [ref=e124]:
+                - img [ref=e126]
+                - paragraph [ref=e130]: Incoming Offers
+              - generic [ref=e131]:
+                - heading "Know which brand is offering what" [level=3] [ref=e132]
+                - paragraph [ref=e133]: Creators see live offer value, deliverables, and due dates instead of re-reading old chats.
+              - generic [ref=e135]:
+                - generic [ref=e136]:
+                  - generic [ref=e137]:
+                    - generic [ref=e138]:
+                      - paragraph [ref=e139]: Nykaa Summer Drop
+                      - paragraph [ref=e140]: 1 Reel + 3 stories • due in 4 days
+                    - generic [ref=e141]: Pending
+                  - generic [ref=e142]:
+                    - generic [ref=e143]: Offer value
+                    - generic [ref=e144]: ₹18,000
+                - generic [ref=e145]:
+                  - generic [ref=e146]:
+                    - paragraph [ref=e147]: Awaiting reply
+                    - paragraph [ref=e148]: "03"
+                  - generic [ref=e149]:
+                    - paragraph [ref=e150]: Best-fit brand
+                    - paragraph [ref=e151]: Beauty / D2C
+            - generic [ref=e152]:
+              - generic [ref=e153]:
+                - img [ref=e155]
+                - paragraph [ref=e158]: Contract Clarity
+              - generic [ref=e159]:
+                - heading "See risky deal terms before accepting" [level=3] [ref=e160]
+                - paragraph [ref=e161]: Important clauses are highlighted so a creator who has only used DMs can still understand what matters.
+              - generic [ref=e163]:
+                - generic [ref=e164]:
+                  - generic [ref=e165]:
+                    - paragraph [ref=e166]: Campaign agreement scan
+                    - generic [ref=e167]: 2 flags
+                  - generic [ref=e168]:
+                    - generic [ref=e169]: Unlimited usage rights detected
+                    - generic [ref=e170]: No payment due date mentioned
+                - generic [ref=e171]:
+                  - paragraph [ref=e172]: Suggested fix
+                  - paragraph [ref=e173]: Add 50% advance, 30-day usage cap, and final payment within 7 days of posting.
+            - generic [ref=e174]:
+              - generic [ref=e175]:
+                - img [ref=e177]
+                - paragraph [ref=e180]: Payout Tracking
+              - generic [ref=e181]:
+                - heading "Track what is paid, late, or at risk" [level=3] [ref=e182]
+                - paragraph [ref=e183]: The payout side should feel as visible as the storefront so creators know what to follow up on fast.
+              - generic [ref=e185]:
+                - generic [ref=e186]:
+                  - paragraph [ref=e187]: This month
+                  - paragraph [ref=e188]: ₹42,500
+                  - paragraph [ref=e189]: 2 paid deals, 1 overdue payout
+                - generic [ref=e190]:
+                  - generic [ref=e191]:
+                    - generic [ref=e192]:
+                      - paragraph [ref=e193]: Myntra festive edit
+                      - paragraph [ref=e194]: Final payment pending
+                    - generic [ref=e195]: 4 days late
+                  - generic [ref=e196]:
+                    - generic [ref=e197]: Amount due
+                    - generic [ref=e198]: ₹12,000
+        - generic [ref=e200]:
+          - paragraph [ref=e201]: Example brands creators collaborate with
+          - generic [ref=e202]:
+            - img [ref=e203]:
+              - generic [ref=e204]: NYKAA
+            - img [ref=e205]:
+              - generic [ref=e206]: boAt
+            - img [ref=e207]:
+              - generic [ref=e208]: mamaearth
+            - img [ref=e209]:
+              - generic [ref=e210]: Myntra
+            - img [ref=e211]:
+              - generic [ref=e212]: SUGAR
+        - generic [ref=e213]:
+          - heading "Top creators running their business on Armour" [level=2] [ref=e215]
+          - generic [ref=e216]:
+            - generic [ref=e217]:
+              - generic [ref=e218]:
+                - img "Priya Sharma" [ref=e219]
+                - generic [ref=e220]:
+                  - heading "Priya Sharma" [level=3] [ref=e221]
+                  - paragraph [ref=e222]: Fashion Creator • Delhi
+                  - paragraph [ref=e223]: 36K followers
+              - generic [ref=e224]:
+                - generic [ref=e225]: Typical deal
+                - generic [ref=e226]: ₹3K
+            - generic [ref=e227]:
+              - generic [ref=e228]:
+                - img "Arjun Patel" [ref=e229]
+                - generic [ref=e230]:
+                  - heading "Arjun Patel" [level=3] [ref=e231]
+                  - paragraph [ref=e232]: Tech Reviewer • Mumbai
+                  - paragraph [ref=e233]: 51K followers
+              - generic [ref=e234]:
+                - generic [ref=e235]: Typical deal
+                - generic [ref=e236]: ₹4K
+            - generic [ref=e237]:
+              - generic [ref=e238]:
+                - img "Neha Verma" [ref=e239]
+                - generic [ref=e240]:
+                  - heading "Neha Verma" [level=3] [ref=e241]
+                  - paragraph [ref=e242]: Beauty Creator • Bangalore
+                  - paragraph [ref=e243]: 28K followers
+              - generic [ref=e244]:
+                - generic [ref=e245]: Typical deal
+                - generic [ref=e246]: ₹2K
+        - generic [ref=e250]:
+          - generic [ref=e251]:
+            - generic [ref=e252]:
+              - img [ref=e253]
+              - generic [ref=e256]: Your Collab Link
+            - heading "Add your link to your Instagram bio." [level=2] [ref=e257]
+            - paragraph [ref=e258]: Stop losing deals in the noise. Let brands send structured collaboration offers directly through your personal Creator Armour page.
+            - paragraph [ref=e260]: creatorarmour.com/priyasharma
+          - generic [ref=e263]:
+            - generic [ref=e265]:
+              - img "Priya Sharma" [ref=e266]
+              - heading "Priya Sharma" [level=3] [ref=e267]:
+                - text: Priya Sharma
+                - img [ref=e268]
+              - paragraph [ref=e271]: 36K Followers
+              - generic [ref=e272]:
+                - paragraph [ref=e273]: Typical Collab Rate
+                - paragraph [ref=e274]: ₹2K–₹4K
+            - generic [ref=e275]:
+              - generic [ref=e276]:
+                - generic [ref=e277]: Reel Deal
+                - generic [ref=e278]: ₹1,999
+              - generic [ref=e279]:
+                - generic [ref=e281]: Engagement Package
+                - generic [ref=e282]: ₹3,499
+        - generic [ref=e284]:
+          - generic [ref=e285]:
+            - heading "Your custom marketplace" [level=2] [ref=e286]
+            - paragraph [ref=e287]: Let brands shop your services like a high-end catalog.
+          - generic [ref=e289]:
+            - generic [ref=e290]:
+              - img "Rohan Mehta" [ref=e291]
+              - generic [ref=e292]:
+                - heading "Rohan Mehta" [level=3] [ref=e293]
+                - paragraph [ref=e294]:
+                  - text: Travel Creator
+                  - text: 58K followers
+              - button "Collab With Rohan" [ref=e297] [cursor=pointer]
+            - generic [ref=e298]:
+              - paragraph [ref=e299]: Interactive package catalog
+              - paragraph [ref=e300]: See how brands browse creator packages, compare deliverables, and send structured offers.
+              - button "Explore Demo Creator Page" [ref=e301] [cursor=pointer]
+        - generic [ref=e302]:
+          - generic [ref=e303]:
+            - heading "Real deals closed recently" [level=2] [ref=e304]
+            - paragraph [ref=e305]: Creators are consistently booking deals using their Armour profiles.
+          - generic [ref=e306]:
+            - generic [ref=e307]:
+              - generic [ref=e308]:
+                - generic [ref=e309]:
+                  - img "Priya Sharma" [ref=e310]
+                  - generic [ref=e311]: Priya Sharma
+                - generic [ref=e312]: Closed
+              - generic [ref=e313]:
+                - generic [ref=e314]:
+                  - generic [ref=e315]: Brand
+                  - generic [ref=e316]: Myntra
+                - generic [ref=e317]:
+                  - generic [ref=e318]: Package
+                  - generic [ref=e319]: 1 Reel + 2 Stories
+                - generic [ref=e320]:
+                  - generic [ref=e321]: Deal Value
+                  - generic [ref=e322]: ₹4,500
+            - generic [ref=e323]:
+              - generic [ref=e324]:
+                - generic [ref=e325]:
+                  - img "Arjun Patel" [ref=e326]
+                  - generic [ref=e327]: Arjun Patel
+                - generic [ref=e328]: Closed
+              - generic [ref=e329]:
+                - generic [ref=e330]:
+                  - generic [ref=e331]: Brand
+                  - generic [ref=e332]: Boat
+                - generic [ref=e333]:
+                  - generic [ref=e334]: Package
+                  - generic [ref=e335]: Product Review
+                - generic [ref=e336]:
+                  - generic [ref=e337]: Deal Value
+                  - generic [ref=e338]: ₹3,000 + product
+            - generic [ref=e339]:
+              - generic [ref=e340]:
+                - generic [ref=e341]:
+                  - img "Neha Verma" [ref=e342]
+                  - generic [ref=e343]: Neha Verma
+                - generic [ref=e344]: Closed
+              - generic [ref=e345]:
+                - generic [ref=e346]:
+                  - generic [ref=e347]: Brand
+                  - generic [ref=e348]: Mamaearth
+                - generic [ref=e349]:
+                  - generic [ref=e350]: Package
+                  - generic [ref=e351]: 1 Reel
+                - generic [ref=e352]:
+                  - generic [ref=e353]: Deal Value
+                  - generic [ref=e354]: ₹2,000
+        - generic [ref=e357]:
+          - heading "Turn your Instagram into a deal pipeline" [level=2] [ref=e358]
+          - paragraph [ref=e359]: Stop negotiating in DMs. Create your collab link and receive structured brand offers.
+          - generic [ref=e360]:
+            - link "Create your collab link" [ref=e361] [cursor=pointer]:
+              - /url: /signup
+              - text: Create your collab link
+              - img [ref=e362]
+            - button "View demo creator page" [ref=e364] [cursor=pointer]:
+              - text: View demo creator page
+              - img [ref=e365]
+      - contentinfo [ref=e369]:
+        - generic [ref=e370]:
+          - generic [ref=e371]:
+            - generic [ref=e372]:
+              - link "Creator Armour" [ref=e373] [cursor=pointer]:
+                - /url: /
+                - img [ref=e375]
+                - heading "Creator Armour" [level=3] [ref=e378]
+              - paragraph [ref=e379]: Close brand deals without Instagram DMs.
+              - generic [ref=e380]:
+                - link "Creator Armour Instagram" [ref=e381] [cursor=pointer]:
+                  - /url: https://instagram.com/creatorarmour
+                  - img [ref=e382]
+                - link "Creator Armour X" [ref=e385] [cursor=pointer]:
+                  - /url: https://x.com/creatorarmour
+                  - img [ref=e386]
+                - link "Creator Armour LinkedIn" [ref=e388] [cursor=pointer]:
+                  - /url: https://www.linkedin.com/company/creatorarmour
+                  - img [ref=e389]
+            - generic [ref=e393]:
+              - generic [ref=e394]:
+                - paragraph [ref=e395]: Product
+                - generic [ref=e396]:
+                  - link "Create Collab Link" [ref=e397] [cursor=pointer]:
+                    - /url: /signup
+                  - link "Creator Marketplace" [ref=e398] [cursor=pointer]:
+                    - /url: /discover
+                  - link "Brand Offers" [ref=e399] [cursor=pointer]:
+                    - /url: /collab-requests
+                  - link "Pricing" [ref=e400] [cursor=pointer]:
+                    - /url: /plan/growth
+              - generic [ref=e401]:
+                - paragraph [ref=e402]: Creators
+                - generic [ref=e403]:
+                  - link "How it works" [ref=e404] [cursor=pointer]:
+                    - /url: "#how-it-works"
+                  - link "Creator packages" [ref=e405] [cursor=pointer]:
+                    - /url: "#marketplace"
+                  - button "Examples" [ref=e406] [cursor=pointer]
+                  - link "Creator dashboard" [ref=e407] [cursor=pointer]:
+                    - /url: /creator-dashboard
+              - generic [ref=e408]:
+                - paragraph [ref=e409]: Resources
+                - generic [ref=e410]:
+                  - link "Blog" [ref=e411] [cursor=pointer]:
+                    - /url: /blog
+                  - link "Help Center" [ref=e412] [cursor=pointer]:
+                    - /url: mailto:support@creatorarmour.com
+                  - link "Guides for creators" [ref=e413] [cursor=pointer]:
+                    - /url: /free-influencer-contract
+                  - link "Influencer pricing guide" [ref=e414] [cursor=pointer]:
+                    - /url: /rate-calculator
+              - generic [ref=e415]:
+                - paragraph [ref=e416]: Company
+                - generic [ref=e417]:
+                  - link "About" [ref=e418] [cursor=pointer]:
+                    - /url: /about
+                  - link "Contact" [ref=e419] [cursor=pointer]:
+                    - /url: mailto:support@creatorarmour.com
+                  - link "Privacy" [ref=e420] [cursor=pointer]:
+                    - /url: /privacy-policy
+                  - link "Terms" [ref=e421] [cursor=pointer]:
+                    - /url: /terms-of-service
+          - paragraph [ref=e423]: 50+ creators already using Creator Armour to collaborate professionally with brands.
+          - generic [ref=e424]:
+            - paragraph [ref=e425]: © 2026 Creator Armour
+            - paragraph [ref=e426]: Made for creators
+            - generic [ref=e427]:
+              - link "Privacy" [ref=e428] [cursor=pointer]:
+                - /url: /privacy-policy
+              - generic [ref=e429]: •
+              - link "Terms" [ref=e430] [cursor=pointer]:
+                - /url: /terms-of-service

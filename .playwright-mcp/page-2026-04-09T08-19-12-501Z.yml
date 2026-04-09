@@ -1,0 +1,44 @@
+- generic [ref=e2]:
+  - region "Notifications alt+T":
+    - list:
+      - listitem [ref=e780]:
+        - button "Close toast" [ref=e781] [cursor=pointer]:
+          - img [ref=e782]
+        - img [ref=e786]
+        - generic [ref=e789]: Offer sent! The creator will be notified.
+  - generic [ref=e3]:
+    - link "Skip to main content" [ref=e4] [cursor=pointer]:
+      - /url: "#main-content"
+    - generic [ref=e792]:
+      - img [ref=e794]
+      - paragraph [ref=e797]: Offer Sent
+      - heading "Pratyush has your offer." [level=1] [ref=e798]
+      - paragraph [ref=e799]: Test Brand's offer has been delivered. The creator can now review it, accept it, counter it, or decline it.
+      - generic [ref=e800]:
+        - generic [ref=e801]:
+          - paragraph [ref=e802]: Creator
+          - paragraph [ref=e803]: Pratyush
+          - paragraph [ref=e804]: "@pratyush"
+        - generic [ref=e805]:
+          - paragraph [ref=e806]: Offer Type
+          - paragraph [ref=e807]: paid
+          - paragraph [ref=e808]: Shared through Creator Armour
+        - generic [ref=e809]:
+          - paragraph [ref=e810]: Deadline
+          - paragraph [ref=e811]: 2026-04-19
+          - paragraph [ref=e812]: Legal details come later if they are interested
+      - generic [ref=e813]:
+        - paragraph [ref=e814]: What Happens Next
+        - generic [ref=e815]:
+          - generic [ref=e816]:
+            - paragraph [ref=e817]: 1. Creator reviews
+            - paragraph [ref=e818]: They see your brief, budget or product value, and timeline.
+          - generic [ref=e819]:
+            - paragraph [ref=e820]: 2. They respond
+            - paragraph [ref=e821]: They can accept, counter, or decline based on fit and availability.
+          - generic [ref=e822]:
+            - paragraph [ref=e823]: 3. Details follow
+            - paragraph [ref=e824]: Contract, shipping, and payment details are collected only after interest is confirmed.
+      - generic [ref=e825]:
+        - button "Send Another Offer" [ref=e826] [cursor=pointer]
+        - button "Go to Homepage" [ref=e827] [cursor=pointer]

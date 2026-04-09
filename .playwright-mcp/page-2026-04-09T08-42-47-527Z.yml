@@ -1,0 +1,27 @@
+- generic [ref=e2]:
+  - region "Notifications alt+T"
+  - generic [ref=e5]:
+    - link "Skip to main content" [ref=e6] [cursor=pointer]:
+      - /url: "#main-content"
+    - generic [ref=e7]:
+      - generic [ref=e8]:
+        - generic [ref=e9]:
+          - img [ref=e11]
+          - heading "Creator Armour" [level=1] [ref=e14]
+        - generic [ref=e15]:
+          - heading "Sign In" [level=2] [ref=e16]
+          - paragraph [ref=e17]: Sign in to see your brand offers and active deals.
+        - generic [ref=e18]:
+          - paragraph [ref=e19]: Authenticating…
+          - button "Continue" [ref=e20] [cursor=pointer]
+        - link "Exit To Homepage" [ref=e22] [cursor=pointer]:
+          - /url: /
+          - img [ref=e23]
+          - text: Exit To Homepage
+      - paragraph [ref=e26]:
+        - text: Protected by Creator Armour Shield. By signing in, you agree to our
+        - link "Terms" [ref=e27] [cursor=pointer]:
+          - /url: /terms
+        - text: "&"
+        - link "Privacy" [ref=e28] [cursor=pointer]:
+          - /url: /privacy
