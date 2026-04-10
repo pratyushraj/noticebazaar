@@ -119,19 +119,23 @@ const Signup = () => {
         username: cleanHandle,
         instagram_handle: cleanHandle,
         open_to_collabs: true,
+        onboarding_complete: true,
       },
       {
         first_name: firstName,
         last_name: lastName,
         username: cleanHandle,
         instagram_handle: cleanHandle,
+        onboarding_complete: true,
       },
       {
         username: cleanHandle,
         instagram_handle: cleanHandle,
+        onboarding_complete: true,
       },
       {
         username: cleanHandle,
+        onboarding_complete: true,
       },
     ];
 
@@ -372,7 +376,7 @@ const Signup = () => {
         email: emailAtSignup,
         password: password,
         options: {
-          emailRedirectTo: `${window.location.origin}/${accountMode === 'brand' ? 'brand-dashboard' : 'creator-onboarding'}`,
+          emailRedirectTo: `${window.location.origin}/${accountMode === 'brand' ? 'brand-dashboard' : 'creator-link-ready'}`,
           data: {
             first_name: firstName,
             last_name: lastName,
@@ -506,7 +510,7 @@ const Signup = () => {
                       toast.error(getErrorMessage(e, 'Failed to set up brand account'));
                     }
                   }
-                  navigate('/creator-onboarding', { replace: true });
+                  navigate('/creator-link-ready', { replace: true });
                 }
               }, 500);
             } else {
@@ -537,7 +541,7 @@ const Signup = () => {
                     window.location.assign('/brand-dashboard');
                     return;
                   }
-                  navigate('/creator-onboarding', { replace: true });
+                  navigate('/creator-link-ready', { replace: true });
                 }, 1000);
               } else {
                 // Signin failed - redirect to login
@@ -1019,21 +1023,15 @@ const Signup = () => {
 	              </div>
             )}
 
-            <div className="relative my-8">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-slate-200"></div>
-              </div>
-              <div className="relative flex justify-center text-[10px] font-black uppercase tracking-[0.2em]">
-                <span className="bg-white px-4 text-slate-500">Or continue with</span>
-              </div>
-            </div>
-
-	            <div className="space-y-3 mb-8">
+	            <div className="space-y-3 mb-6">
+                <p className="text-center text-[11px] font-black uppercase tracking-[0.18em] text-slate-500">
+                  Fastest sign up
+                </p>
 	              <Button
 	                onClick={async () => {
                   void trackEvent('signup_started', { mode: accountMode, method: 'google' });
 	                  try {
-	                    const redirectPath = accountMode === 'brand' ? 'brand-dashboard' : 'creator-onboarding';
+	                    const redirectPath = accountMode === 'brand' ? 'brand-dashboard' : 'creator-link-ready';
 	                    const redirectUrl = `${window.location.origin}/${redirectPath}`;
 	                    sessionStorage.setItem('oauth_intended_route', redirectPath);
 	                    const { data, error } = await supabase.auth.signInWithOAuth({
@@ -1056,7 +1054,16 @@ const Signup = () => {
                   <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
                 </svg>
               Continue with Google
-              </Button>
+	              </Button>
+	            </div>
+
+            <div className="relative my-8">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-slate-200"></div>
+              </div>
+              <div className="relative flex justify-center text-[10px] font-black uppercase tracking-[0.2em]">
+                <span className="bg-white px-4 text-slate-500">Or use email</span>
+              </div>
             </div>
 
             <div className="text-center pt-6 border-t border-slate-200">

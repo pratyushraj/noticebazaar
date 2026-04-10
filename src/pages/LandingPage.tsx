@@ -272,7 +272,7 @@ const LandingPage = () => {
                     Create my link <ArrowRight className="w-5 h-5" />
                   </Link>
                   <Link
-                    to="/pratyush"
+                    to="/#how-it-works"
                     className="w-full sm:w-auto bg-white hover:bg-[#F8FAF9] border shadow-sm border-[#E5E7EB] text-[#64748B] px-8 py-5 rounded-full font-black text-[16px] transition-all flex items-center justify-center gap-2"
                   >
                     See how it works

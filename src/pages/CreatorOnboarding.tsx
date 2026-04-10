@@ -134,8 +134,8 @@ export default function CreatorOnboarding() {
 
       await refetchProfile?.();
       trackEvent('creator_link_ready', { creator_id: profile.id, username: cleanHandle });
-      setStep('linkReady');
       toast.success('Your collab link is ready');
+      navigate('/creator-link-ready', { replace: true });
     } catch (error: any) {
       toast.error(error?.message || 'Could not create your collab link');
     } finally {
@@ -315,83 +315,31 @@ export default function CreatorOnboarding() {
         )}
 
         {step === 'linkReady' && (
-          <div className="mx-auto w-full max-w-2xl rounded-[32px] border border-slate-200 bg-white p-6 shadow-xl sm:p-8">
+          <div className="mx-auto w-full max-w-xl rounded-[32px] border border-slate-200 bg-white p-6 shadow-xl sm:p-8">
             <div className="flex items-start gap-4">
               <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-emerald-100 text-emerald-600">
                 <CheckCircle2 className="h-7 w-7" />
               </div>
               <div>
-                <p className="text-[11px] font-black uppercase tracking-[0.25em] text-emerald-600">Link ready</p>
-                <h1 className="mt-2 text-4xl font-black tracking-tight text-slate-900">Your offer link is live</h1>
+                <p className="text-[11px] font-black uppercase tracking-[0.25em] text-emerald-600">Almost done</p>
+                <h1 className="mt-2 text-3xl font-black tracking-tight text-slate-900">Confirm your username</h1>
                 <p className="mt-3 text-base font-medium leading-relaxed text-slate-600">
-                  Send this when a brand asks how to work with you. We’ll only ask for more details when the next deal step needs them.
+                  We’ll generate your link now. You can change this later.
                 </p>
               </div>
             </div>
-
-            <div className="mt-8 rounded-[28px] border border-slate-200 bg-slate-50 p-5">
-              <p className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-500">Your link</p>
-              <p className="mt-3 break-all text-2xl font-black text-slate-900">{collabUrl.replace(/^https?:\/\//, '')}</p>
+            <div className="mt-6 rounded-2xl border border-slate-200 bg-slate-50 p-4">
+              <p className="text-[11px] font-black uppercase tracking-[0.18em] text-slate-500">Your username</p>
+              <p className="mt-2 text-lg font-black text-slate-900">@{normalizedHandle}</p>
+              <p className="mt-1 text-xs text-slate-500">Link: {collabUrl.replace(/^https?:\/\//, '')}</p>
             </div>
-
-            <div className="mt-6 rounded-[28px] border border-slate-200 bg-white p-5">
-              <p className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-500">This is what brands will see</p>
-              <div className="mt-4 rounded-[24px] border border-emerald-200 bg-[linear-gradient(180deg,#f8fffc_0%,#eef8f5_100%)] p-5">
-                <p className="text-2xl font-black text-slate-900">{name || 'Creator Name'}</p>
-                <p className="mt-1 text-sm font-semibold text-emerald-700">@{normalizedHandle}</p>
-                <p className="mt-3 text-sm text-slate-600">
-                  Brands can send an offer in under a minute. You only fill price, address, or UPI when the next deal step needs it.
-                </p>
-                <div className="mt-4 inline-flex h-11 items-center justify-center rounded-full bg-emerald-600 px-5 text-xs font-black uppercase tracking-[0.16em] text-white">
-                  Choose a Service
-                </div>
-              </div>
-            </div>
-
-            <div className="mt-6 grid gap-3 sm:grid-cols-3">
-              <Button type="button" onClick={() => void handleShareWhatsApp()} className="h-14 rounded-2xl bg-emerald-600 text-white hover:bg-emerald-500">
-                <MessageCircleMore className="mr-2 h-5 w-5" />
-                Share on WhatsApp
-              </Button>
-              <Button type="button" variant="outline" onClick={() => void handleCopyLink()} className="h-14 rounded-2xl border-slate-300 bg-white text-slate-900 hover:bg-slate-50">
-                <Copy className="mr-2 h-5 w-5" />
-                Copy Link
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => window.open(collabUrl, '_blank', 'noopener,noreferrer')}
-                className="h-14 rounded-2xl border-slate-300 bg-white text-slate-900 hover:bg-slate-50"
-              >
-                <Instagram className="mr-2 h-5 w-5" />
-                Preview Page
-              </Button>
-            </div>
-
-            <div className="mt-8 rounded-2xl border border-slate-200 bg-white p-5">
-              <p className="text-sm font-bold text-slate-900">What happens next</p>
-              <div className="mt-3 grid gap-3 sm:grid-cols-3">
-                <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                  <p className="text-xs font-black uppercase tracking-[0.18em] text-slate-500">1</p>
-                  <p className="mt-2 text-sm font-semibold text-slate-900">Brand sends offer</p>
-                </div>
-                <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                  <p className="text-xs font-black uppercase tracking-[0.18em] text-slate-500">2</p>
-                  <p className="mt-2 text-sm font-semibold text-slate-900">You fill only missing info</p>
-                </div>
-                <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                  <p className="text-xs font-black uppercase tracking-[0.18em] text-slate-500">3</p>
-                  <p className="mt-2 text-sm font-semibold text-slate-900">Deal starts smoothly</p>
-                </div>
-              </div>
-            </div>
-
             <Button
               type="button"
-              onClick={() => navigate('/creator-dashboard')}
-              className="mt-8 h-14 w-full rounded-2xl bg-slate-900 text-xs font-black uppercase tracking-[0.18em] text-white hover:bg-slate-800"
+              onClick={handleSaveLink}
+              disabled={isSubmitting || normalizedHandle.length < 3}
+              className="mt-6 h-14 w-full rounded-2xl bg-emerald-600 text-xs font-black uppercase tracking-[0.18em] text-white hover:bg-emerald-500"
             >
-              Go to dashboard
+              Create my link
             </Button>
           </div>
         )}

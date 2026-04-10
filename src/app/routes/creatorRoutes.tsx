@@ -10,10 +10,12 @@ const CreatorProfile = lazy(() => import("@/pages/CreatorProfile"));
 const DealDeliveryDetailsPage = lazy(() => import("@/pages/DealDeliveryDetailsPage"));
 const CreatorOnboarding = lazy(() => import("@/pages/CreatorOnboarding"));
 const DealDetailPage = lazy(() => import("@/pages/DealDetailPage"));
+const CreatorLinkReady = lazy(() => import("@/pages/CreatorLinkReady"));
 
 export const CreatorRoutes = () => (
   <>
     <Route path="/creator-onboarding" element={<LazyRoute><ProtectedLayout allowedRoles={["creator"]}><CreatorOnboarding /></ProtectedLayout></LazyRoute>} />
+    <Route path="/creator-link-ready" element={<LazyRoute><ProtectedLayout allowedRoles={["creator"]}><CreatorLinkReady /></ProtectedLayout></LazyRoute>} />
     <Route path="/creator-dashboard" element={<LazyRoute><ProtectedLayout allowedRoles={["creator", "client"]}><CreatorDashboard /></ProtectedLayout></LazyRoute>} />
     <Route path="/collab-requests" element={<Navigate to="/creator-dashboard" replace />} />
     <Route path="/collab-requests/:requestId/brief" element={<LazyRoute><ProtectedLayout allowedRoles={["creator"]}><CollabRequestBriefPage /></ProtectedLayout></LazyRoute>} />
