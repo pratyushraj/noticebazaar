@@ -52,6 +52,35 @@ const App = () => {
   // Enhanced accessibility with keyboard navigation
   useKeyboardNavigation();
 
+  // Local dev safety: if a service worker was previously registered, it can cache `/api/*` and
+  // serve stale responses (including 404s), making auth and dashboard data look broken.
+  // On localhost, proactively unregister SW and clear our Workbox caches.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const host = window.location.hostname.toLowerCase();
+    const isLocalhost = host === "localhost" || host === "127.0.0.1";
+    if (!isLocalhost) return;
+    if (!("serviceWorker" in navigator)) return;
+
+    navigator.serviceWorker.getRegistrations()
+      .then((regs) => Promise.all(regs.map((r) => r.unregister())))
+      .catch(() => { /* ignore */ });
+
+    // Best-effort cache cleanup (may be blocked in some browser modes).
+    const c: any = (window as any).caches;
+    if (c?.keys && c?.delete) {
+      c.keys()
+        .then((keys: string[]) =>
+          Promise.all(
+            keys
+              .filter((k) => k.startsWith("creator-armour-"))
+              .map((k) => c.delete(k))
+          )
+        )
+        .catch(() => { /* ignore */ });
+    }
+  }, []);
+
   // Removed the temporary useEffect block for role update
   const [showSplash, setShowSplash] = useState(true);
   const [appLoaded, setAppLoaded] = useState(false);

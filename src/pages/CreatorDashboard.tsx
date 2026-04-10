@@ -21,7 +21,8 @@ async function fetchBrandDeals() {
   const { data: sessionData } = await supabase.auth.getSession();
   if (!sessionData.session) return [];
 
-  const res = await fetch(`${getApiBaseUrl()}/api/deals`, {
+  // Backend exposes creator deals at GET /api/deals/mine (not /api/deals).
+  const res = await fetch(`${getApiBaseUrl()}/api/deals/mine`, {
     headers: { Authorization: `Bearer ${sessionData.session.access_token}` },
   });
   const data = await res.json();

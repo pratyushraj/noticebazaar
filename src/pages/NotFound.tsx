@@ -47,7 +47,10 @@ const NotFound = () => {
       }
     }
 
-    console.error("404 Error: User attempted to access non-existent route:", location.pathname);
+    // If the user is intentionally on the reserved /404 route, don't spam an error log.
+    if (location.pathname !== '/404') {
+      console.error("404 Error: User attempted to access non-existent route:", location.pathname);
+    }
   }, [location.pathname, location.search, location.hash, navigate]);
 
   const popularPages = [

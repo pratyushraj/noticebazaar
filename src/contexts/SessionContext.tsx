@@ -325,6 +325,39 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
   useEffect(() => {
     const initializeSession = async () => {
       try {
+        // PKCE OAuth callback support (Supabase returns `?code=...`).
+        // In some environments, `getSession()` does not reliably exchange the code for a session
+        // before our app starts routing. Make the exchange explicit and then clean the URL to
+        // avoid re-processing the code on refresh.
+        const initialUrl = new URL(window.location.href);
+        const oauthCode = initialUrl.searchParams.get('code');
+        if (oauthCode) {
+          debugLog('[SessionContext] Detected OAuth code in URL, exchanging for session...');
+          try {
+            const { data, error } = await supabase.auth.exchangeCodeForSession(oauthCode);
+            if (error) {
+              debugError('[SessionContext] Failed to exchange OAuth code for session:', error);
+            } else if (data?.session) {
+              debugLog('[SessionContext] OAuth code exchanged successfully');
+            }
+          } catch (err) {
+            debugError('[SessionContext] Exception exchanging OAuth code for session:', err);
+          } finally {
+            // Always remove auth artifacts from the URL so refresh doesn't repeat the exchange.
+            initialUrl.searchParams.delete('code');
+            initialUrl.searchParams.delete('state');
+            initialUrl.searchParams.delete('error');
+            initialUrl.searchParams.delete('error_code');
+            initialUrl.searchParams.delete('error_description');
+            const cleanedSearch = initialUrl.searchParams.toString();
+            const cleaned =
+              initialUrl.pathname +
+              (cleanedSearch ? `?${cleanedSearch}` : '') +
+              initialUrl.hash;
+            window.history.replaceState({}, '', cleaned);
+          }
+        }
+
         // Handle hash fragments from OAuth callbacks
         // Supabase sometimes appends tokens as #route#access_token=... (double hash)
         // We need to extract the route, let Supabase process tokens, then clean hash IMMEDIATELY

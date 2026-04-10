@@ -20,6 +20,8 @@ export const PublicRoutes = () => (
     <Route path="/login" element={<LazyRoute><Login /></LazyRoute>} />
     <Route path="/signup" element={<LazyRoute><Signup /></LazyRoute>} />
     <Route path="/reset-password" element={<LazyRoute><ResetPassword /></LazyRoute>} />
+    {/* Reserve /404 so it doesn't get interpreted as a collab username and loop */}
+    <Route path="/404" element={<LazyRoute><NotFound /></LazyRoute>} />
     <Route path="/privacy-policy" element={<LazyRoute><PrivacyPolicy /></LazyRoute>} />
     <Route path="/terms-of-service" element={<LazyRoute><TermsOfService /></LazyRoute>} />
     <Route path="/creator/:username" element={<LegacyCreatorProfileRedirect />} />

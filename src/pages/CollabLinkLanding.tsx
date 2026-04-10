@@ -1085,19 +1085,53 @@ const CollabLinkLanding = () => {
 
     const fetchCreator = async () => {
       const normalizedUsername = decodeURIComponent(username).trim();
-      const apiBaseUrl = getApiBaseUrl();
-      const apiUrl = `${apiBaseUrl}/api/collab/${encodeURIComponent(normalizedUsername)}`;
+      const primaryApiBaseUrl = getApiBaseUrl();
+      const fallbackApiBaseUrl =
+        /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/i.test(primaryApiBaseUrl)
+          ? 'https://noticebazaar-api.onrender.com'
+          : null;
+      const candidateApiBaseUrls = [primaryApiBaseUrl, fallbackApiBaseUrl].filter(
+        (value, index, all): value is string => Boolean(value) && all.indexOf(value) === index
+      );
 
       console.log('[CollabLinkLanding] Fetching creator:', {
         originalUsername: username,
         normalizedUsername,
-        apiUrl,
+        apiBaseUrls: candidateApiBaseUrls,
         currentUrl: window.location.href,
         hash: window.location.hash,
       });
 
       try {
-        const response = await fetch(apiUrl, { signal: controller.signal });
+        let response: Response | null = null;
+        let activeApiBaseUrl = primaryApiBaseUrl;
+        let lastFetchError: any = null;
+
+        for (const candidateApiBaseUrl of candidateApiBaseUrls) {
+          const candidateApiUrl = `${candidateApiBaseUrl}/api/collab/${encodeURIComponent(normalizedUsername)}`;
+          activeApiBaseUrl = candidateApiBaseUrl;
+
+          try {
+            response = await fetch(candidateApiUrl, { signal: controller.signal });
+            if (response.ok || response.status === 404) {
+              break;
+            }
+
+            if (candidateApiBaseUrl === fallbackApiBaseUrl && !response.ok) {
+              break;
+            }
+          } catch (fetchError: any) {
+            lastFetchError = fetchError;
+            if (candidateApiBaseUrl === fallbackApiBaseUrl || fetchError?.name === 'AbortError') {
+              throw fetchError;
+            }
+            continue;
+          }
+        }
+
+        if (!response) {
+          throw lastFetchError || new Error('Failed to fetch creator profile');
+        }
 
         if (!response.ok) {
           const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
@@ -1106,7 +1140,7 @@ const CollabLinkLanding = () => {
             statusText: response.statusText,
             errorData,
             username: normalizedUsername,
-            apiUrl,
+            apiBaseUrl: activeApiBaseUrl,
           });
 
           if (response.status === 404) {
@@ -1143,8 +1177,8 @@ const CollabLinkLanding = () => {
             const utmMedium = urlParams.get('utm_medium');
             const utmCampaign = urlParams.get('utm_campaign');
 
-            const apiBaseUrl = getApiBaseUrl();
-            const trackResponse = await fetch(`${apiBaseUrl}/api/collab-analytics/track`, {
+            const analyticsApiBaseUrl = candidateApiBaseUrls[0];
+            const trackResponse = await fetch(`${analyticsApiBaseUrl}/api/collab-analytics/track`, {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
@@ -1180,18 +1214,22 @@ const CollabLinkLanding = () => {
         }
       } catch (error: any) {
         if (error?.name === 'AbortError') {
-          setError('Request timed out. Make sure the server is running at ' + apiBaseUrl + ' and try again.');
+          setError(
+            'Request timed out. Make sure the server is running at ' +
+            primaryApiBaseUrl +
+            ' and try again.'
+          );
           toast.error('Request timed out. Check that the API server is running.');
         } else {
-          console.error('[CollabLinkLanding] Fetch error:', {
-            error,
-            message: error?.message,
-            username: normalizedUsername,
-            apiUrl,
-          });
+            console.error('[CollabLinkLanding] Fetch error:', {
+              error,
+              message: error?.message,
+              username: normalizedUsername,
+              apiBaseUrls: candidateApiBaseUrls,
+            });
           let errorMsg = 'Failed to load creator profile. Please try again later.';
           if (error?.message?.includes('Failed to fetch') || error?.message?.includes('NetworkError')) {
-            errorMsg = 'Unable to connect. Is the server running at ' + apiBaseUrl + '?';
+            errorMsg = 'Unable to connect. Is the server running at ' + primaryApiBaseUrl + '?';
           }
           setError(errorMsg);
           toast.error(errorMsg);

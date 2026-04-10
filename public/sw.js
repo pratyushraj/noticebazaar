@@ -37,17 +37,12 @@ if (workbox) {
   );
 
   // Cache API responses with stale-while-revalidate for better offline experience
+  // Important: do NOT cache API responses.
+  // These are frequently authenticated and must always hit the network; caching can cause
+  // stuck logins and "phantom" 404s/401s being served from cache.
   workbox.routing.registerRoute(
-    ({ url }) => url.pathname.startsWith('/api/') || url.hostname.includes('supabase'),
-    new workbox.strategies.StaleWhileRevalidate({
-      cacheName: 'creator-armour-api',
-      plugins: [
-        new workbox.expiration.ExpirationPlugin({
-          maxEntries: 200,
-          maxAgeSeconds: 10 * 60, // 10 minutes
-        }),
-      ],
-    })
+    ({ url }) => url.pathname.startsWith('/api/'),
+    new workbox.strategies.NetworkOnly()
   );
 }
 

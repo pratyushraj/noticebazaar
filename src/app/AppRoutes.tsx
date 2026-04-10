@@ -6,6 +6,8 @@ import { PublicRoutes } from "./routes/publicRoutes";
 import { ClientRoutes } from "./routes/clientRoutes";
 import { CreatorRoutes } from "./routes/creatorRoutes";
 import { BrandRoutes } from "./routes/brandRoutes";
+import { AdminRoutes } from "./routes/adminRoutes";
+import { AdvisorRoutes } from "./routes/advisorRoutes";
 
 export default function AppRoutes() {
   return (
@@ -16,6 +18,8 @@ export default function AppRoutes() {
           {ClientRoutes()}
           {CreatorRoutes()}
           {BrandRoutes()}
+          {AdminRoutes()}
+          {AdvisorRoutes()}
         </Routes>
         <AddToHomeScreen />
       </SidebarProvider>

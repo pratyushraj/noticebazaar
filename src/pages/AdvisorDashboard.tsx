@@ -95,13 +95,34 @@ export default function AdvisorDashboard() {
         const { data: conversationsData, error: conversationsError } = await supabase
           .from('conversations')
           .select(`
-            *,
-            last_message:messages!last_message_id(content, sent_at)
+            *
           `)
           .in('id', conversationIds)
           .order('updated_at', { ascending: false });
 
         if (conversationsError) throw conversationsError;
+
+        // Fetch last-message payloads separately.
+        // Some environments return 400 from PostgREST for the `messages!last_message_id(...)` embed,
+        // so we avoid the join and stitch results client-side.
+        const lastMessageIds = Array.from(
+          new Set((conversationsData || []).map((c: any) => c?.last_message_id).filter(Boolean))
+        );
+        const lastMessagesById = new Map<string, { content: string; sent_at: string }>();
+        if (lastMessageIds.length > 0) {
+          const { data: lastMessages, error: lastMessagesError } = await supabase
+            .from('messages')
+            .select('id, content, sent_at')
+            .in('id', lastMessageIds);
+          if (lastMessagesError) {
+            // Non-fatal: render list without last message.
+            console.warn('[AdvisorDashboard] Failed to fetch last messages:', lastMessagesError.message);
+          } else {
+            for (const m of lastMessages || []) {
+              lastMessagesById.set(m.id, { content: m.content, sent_at: m.sent_at });
+            }
+          }
+        }
 
         // Fetch all participants for these conversations
         const { data: allParticipants, error: participantsError } = await supabase
@@ -126,6 +147,7 @@ export default function AdvisorDashboard() {
         // Join conversations with participants and profiles
         const conversationsWithParticipants = conversationsData?.map(conv => ({
           ...conv,
+          last_message: conv?.last_message_id ? lastMessagesById.get(conv.last_message_id) ?? null : null,
           participants: allParticipants
             ?.filter(p => p.conversation_id === conv.id)
             .map(p => ({
