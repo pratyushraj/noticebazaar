@@ -3048,7 +3048,6 @@ const MobileDashboardDemo = ({
                                                 </div>
                                             </div>
                                         </div>
-                                    </div>
                                 </>
 
                             ) : (
@@ -4317,10 +4316,11 @@ const MobileDashboardDemo = ({
                                                     </button>
                                                 </div>
                                             )}
-                            </AnimatePresence>
-                            <div className="h-24 opacity-0 pointer-events-none" aria-hidden="true" />
-                        </div>
-                    )}
+                                        </motion.div>
+                                    </AnimatePresence>
+                                    <div className="h-24 opacity-0 pointer-events-none" aria-hidden="true" />
+                                </div>
+                            )}
 
                     {/* ─── OTHER TABS (Simplified for UI flow) ─── */}
                     {activeTab === 'profile' && (
