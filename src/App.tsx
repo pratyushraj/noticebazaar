@@ -67,14 +67,14 @@ const App = () => {
       .catch(() => { /* ignore */ });
 
     // Best-effort cache cleanup (may be blocked in some browser modes).
+    // Use "delete all" on localhost because cache names vary across Workbox versions/builds
+    // and stale bundles can cause redirect loops (e.g. /404 interpreted as a username).
     const c: any = (window as any).caches;
     if (c?.keys && c?.delete) {
       c.keys()
         .then((keys: string[]) =>
           Promise.all(
-            keys
-              .filter((k) => k.startsWith("creator-armour-"))
-              .map((k) => c.delete(k))
+            keys.map((k) => c.delete(k))
           )
         )
         .catch(() => { /* ignore */ });

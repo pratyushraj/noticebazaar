@@ -175,6 +175,39 @@ router.post('/log-share', async (req: AuthenticatedRequest, res: Response) => {
   }
 });
 
+// GET /api/deals/mine
+// Creator-facing deals list used by the mobile dashboard.
+// Note: This file is mounted behind authMiddleware at /api/deals.
+router.get('/mine', async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const userId = req.user?.id;
+    const role = String(req.user?.role || '').toLowerCase();
+
+    if (!userId) {
+      return res.status(401).json({ success: false, error: 'Authentication required' });
+    }
+    if (role !== 'creator' && role !== 'admin' && role !== 'client') {
+      return res.status(403).json({ success: false, error: 'Creator access required' });
+    }
+
+    const { data: deals, error } = await supabase
+      .from('brand_deals')
+      .select('*')
+      .eq('creator_id', userId)
+      .order('updated_at', { ascending: false });
+
+    if (error) {
+      console.error('[Deals] mine query error:', error);
+      return res.status(500).json({ success: false, error: error.message || 'Failed to fetch deals' });
+    }
+
+    return res.json({ success: true, deals: deals || [] });
+  } catch (error: any) {
+    console.error('[Deals] mine error:', error);
+    return res.status(500).json({ success: false, error: error?.message || 'Internal server error' });
+  }
+});
+
 // POST /api/deals/log-reminder
 // Log a brand reminder to the activity log
 router.post('/log-reminder', async (req: AuthenticatedRequest, res: Response) => {
@@ -1111,4 +1144,3 @@ router.get('/test-routing', (req, res) => {
 });
 
 export default router;
-
