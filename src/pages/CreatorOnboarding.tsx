@@ -308,8 +308,8 @@ export default function CreatorOnboarding() {
               <Button
                 type="button"
                 onClick={handleSaveLink}
-                disabled={isSubmitting || normalizedHandle.length < 3}
-                className="h-14 w-full rounded-2xl bg-emerald-600 text-xs font-black uppercase tracking-[0.18em] text-white hover:bg-emerald-500"
+                disabled={isSubmitting}
+                className="h-14 w-full rounded-2xl bg-emerald-600 text-xs font-black uppercase tracking-[0.18em] text-white hover:bg-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-emerald-600"
               >
                 {isSubmitting ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <Link2 className="mr-2 h-5 w-5" />}
                 Create my link
@@ -340,8 +340,8 @@ export default function CreatorOnboarding() {
             <Button
               type="button"
               onClick={handleSaveLink}
-              disabled={isSubmitting || normalizedHandle.length < 3}
-              className="mt-6 h-14 w-full rounded-2xl bg-emerald-600 text-xs font-black uppercase tracking-[0.18em] text-white hover:bg-emerald-500"
+              disabled={isSubmitting}
+              className="mt-6 h-14 w-full rounded-2xl bg-emerald-600 text-xs font-black uppercase tracking-[0.18em] text-white hover:bg-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-emerald-600"
             >
               Create my link
             </Button>
