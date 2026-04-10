@@ -6085,6 +6085,24 @@ const MobileDashboardDemo = ({
                                         </>
                                     )}
                                 </motion.button>
+
+                                {import.meta.env.DEV && (
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      // Local E2E testing: bypass OTP requirement.
+                                      void handleSignAsCreator();
+                                    }}
+                                    className={cn(
+                                      "w-full h-12 rounded-2xl border font-black uppercase tracking-widest text-[11px] transition-all active:scale-[0.98]",
+                                      isDark
+                                        ? "bg-card border-border text-foreground hover:bg-secondary/40"
+                                        : "bg-background border-border text-muted-foreground hover:bg-secondary/40"
+                                    )}
+                                  >
+                                    Skip OTP (Dev)
+                                  </button>
+                                )}
                             </div>
                         ) : (
                             <div className="space-y-6">

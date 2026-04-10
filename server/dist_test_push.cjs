@@ -20338,7 +20338,7 @@ if (shouldShowDeprecationWarning()) console.warn("\u26A0\uFE0F  Node.js 18 and b
 var import_web_push = __toESM(require_src2(), 1);
 var supabase = createClient(
   "https://ooaxtwmqrvfzdqzoijcj.supabase.co",
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9vYXh0d21xcnZmemRxem9pamNqIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1OTUwMTI1NiwiZXhwIjoyMDc1MDc3MjU2fQ.hKeyfz-wZ6JOs3mupPDppKDYuHii0GRcxc04oRROD4c"
+  "YOUR_SUPABASE_SERVICE_ROLE_KEY"
 );
 async function run() {
   console.log("Fetching most recent push subscription...");

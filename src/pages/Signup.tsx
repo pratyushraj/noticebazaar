@@ -475,97 +475,56 @@ const Signup = () => {
             void trackEvent('creator_signed_up', { method: 'email' });
           }
 
-          // Clear form immediately
+          // Clear form immediately (this also prevents accidental re-submits).
           setName('');
           setEmail('');
           setPassword('');
           setEmailError('');
 
-          // Wait a moment for Supabase to establish session (even if email confirmation is disabled)
-          // Sometimes there's a brief delay before session is available
-          setTimeout(async () => {
-            setSignupPhase('provisioning');
-            // Check if session is now available
-            const { data: { session: currentSession } } = await supabase.auth.getSession();
-
-            if (currentSession) {
-              // Session exists - wait for profile and navigate
-              let attempts = 0;
-              const maxAttempts = 10;
-              const checkProfile = setInterval(async () => {
-                attempts++;
-                const { data: profileData } = await profilesTable
-                  .select('id')
-                  .eq('id', currentSession.user.id)
-                  .single();
-
-                if (profileData || attempts >= maxAttempts) {
-                  clearInterval(checkProfile);
-                  sessionStorage.removeItem('just_signed_up');
-                  setSignupPhase('opening');
-                  if (profileData) {
-                    if (accountMode === 'creator' && normalizedHandle) {
-                      await ensureCreatorProfileSeed(currentSession.user.id, name.trim(), normalizedHandle);
-                    }
-                    // Fire-and-forget: welcome email trigger (only after profile exists to avoid 404 noise)
-                    void triggerWelcomeEmail(currentSession.access_token);
-                  }
-                  if (accountMode === 'brand') {
-                    try {
-                      await ensureBrandWorkspace(currentSession.user.id, currentSession.user.email || emailAtSignup);
-                      window.location.assign('/brand-dashboard');
-                      return;
-                    } catch (e: unknown) {
-                      toast.error(getErrorMessage(e, 'Failed to set up brand account'));
-                    }
-                  }
-                  navigate('/creator-link-ready', { replace: true });
-                }
-              }, 500);
-            } else {
-              // No session yet - try signin once
-              const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
-                email: emailAtSignup,
-                password: passwordAtSignup,
-              });
-
-              if (signInData.session) {
-                // Fire-and-forget: welcome email trigger
-                void triggerWelcomeEmail(signInData.session.access_token);
-
-                sessionStorage.removeItem('just_signed_up');
-                setSignupPhase('opening');
-                // Wait a moment for profile creation
-                setTimeout(async () => {
-                  if (accountMode === 'creator' && normalizedHandle) {
-                    await ensureCreatorProfileSeed(signInData.session.user.id, name.trim(), normalizedHandle);
-                  }
-                  if (accountMode === 'brand') {
-                    try {
-                      await ensureBrandWorkspace(signInData.session.user.id, signInData.session.user.email || emailAtSignup);
-                    } catch (e: unknown) {
-                      toast.error(getErrorMessage(e, 'Failed to set up brand account'));
-                      return;
-                    }
-                    window.location.assign('/brand-dashboard');
-                    return;
-                  }
-                  navigate('/creator-link-ready', { replace: true });
-                }, 1000);
-              } else {
-                // Signin failed - redirect to login
-                sessionStorage.removeItem('just_signed_up');
-                console.warn('[Signup] Auto-signin failed:', signInError?.message);
-
-                toast.info('Account created! Please sign in to continue', {
-                  description: 'Your account has been created successfully.',
-                  duration: 5000,
-                });
-                setShowLogin(true);
-                setEmail(emailAtSignup);
-              }
+          // Fast path: establish session (with a short retry), then redirect right away.
+          // Users should never be left on the signup form after seeing "Account created".
+          setSignupPhase('provisioning');
+          const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
+          const waitForSession = async () => {
+            for (let i = 0; i < 8; i++) {
+              const { data: { session: s } } = await supabase.auth.getSession();
+              if (s) return s;
+              await wait(250);
             }
-          }, 1000); // Wait 1 second for session to be established
+            return null;
+          };
+
+          let sessionNow = await waitForSession();
+          if (!sessionNow) {
+            const { data: signInData } = await supabase.auth.signInWithPassword({
+              email: emailAtSignup,
+              password: passwordAtSignup,
+            });
+            sessionNow = signInData.session || null;
+          }
+
+          if (!sessionNow) {
+            sessionStorage.removeItem('just_signed_up');
+            toast.info('Account created! Please sign in to continue', {
+              description: 'We could not open your account automatically.',
+              duration: 5000,
+            });
+            setShowLogin(true);
+            setEmail(emailAtSignup);
+            return;
+          }
+
+          // Fire-and-forget: welcome email trigger
+          void triggerWelcomeEmail(sessionNow.access_token);
+
+          sessionStorage.removeItem('just_signed_up');
+          setSignupPhase('opening');
+          if (accountMode === 'brand') {
+            navigate('/brand-dashboard', { replace: true });
+          } else {
+            // Onboarding will persist handle automatically (and never blocks the CTA).
+            navigate('/creator-onboarding', { replace: true });
+          }
         }
       }
     } catch (err: unknown) {
@@ -593,7 +552,10 @@ const Signup = () => {
       }
     } finally {
       setIsLoading(false);
-      setSignupPhase('idle');
+      // Don't reset the phase if we're mid-provisioning; that causes "Account created" toasts
+      // without any visible progress/redirect for slow sessions.
+      const justSignedUp = sessionStorage.getItem('just_signed_up') === 'true';
+      if (!justSignedUp) setSignupPhase('idle');
     }
   };
 

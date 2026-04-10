@@ -37,7 +37,7 @@ git push
 
 ```
 VITE_SUPABASE_URL=https://ooaxtwmqrvfzdqzoijcj.supabase.co
-VITE_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9vYXh0d21xcnZmemRxem9pamNqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk1MDEyNTYsImV4cCI6MjA3NTA3NzI1Nn0.xIIz_9W9PAnxTKDdJZ3_wQ6OO7NQJbiy4P_PP0CSVBQ
+VITE_SUPABASE_ANON_KEY=YOUR_SUPABASE_ANON_KEY
 VITE_API_BASE_URL=https://noticebazaar-api.onrender.com
 NODE_ENV=production
 ```

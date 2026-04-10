@@ -37,7 +37,7 @@ Complete guide to deploy both frontend and backend to Render.
    Click "Add Environment Variable" and add:
    ```
    SUPABASE_URL=https://ooaxtwmqrvfzdqzoijcj.supabase.co
-   SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9vYXh0d21xcnZmemRxem9pamNqIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1OTUwMTI1NiwiZXhwIjoyMDc1MDc3MjU2fQ.hKeyfz-wZ6JOs3mupPDppKDYuHii0GRcxc04oRROD4c
+   SUPABASE_SERVICE_ROLE_KEY=YOUR_SUPABASE_SERVICE_ROLE_KEY
    LLM_PROVIDER=groq
    LLM_API_KEY=your-groq-api-key-here
    LLM_MODEL=llama-3.1-8b-instant
@@ -77,7 +77,7 @@ Complete guide to deploy both frontend and backend to Render.
    Click "Add Environment Variable" and add:
    ```
    VITE_SUPABASE_URL=https://ooaxtwmqrvfzdqzoijcj.supabase.co
-   VITE_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9vYXh0d21xcnZmemRxem9pamNqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk1MDEyNTYsImV4cCI6MjA3NTA3NzI1Nn0.xIIz_9W9PAnxTKDdJZ3_wQ6OO7NQJbiy4P_PP0CSVBQ
+   VITE_SUPABASE_ANON_KEY=YOUR_SUPABASE_ANON_KEY
    VITE_API_BASE_URL=https://noticebazaar-api.onrender.com
    NODE_ENV=production
    ```

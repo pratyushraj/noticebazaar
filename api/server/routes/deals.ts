@@ -1235,6 +1235,154 @@ router.patch('/:dealId/shipping/report-issue', async (req: AuthenticatedRequest,
   }
 });
 
+/**
+ * POST /api/deals/:dealId/regenerate-contract
+ * Manual trigger to (re)generate the contract doc for a deal.
+ * Used by the brand console "Generate contract" CTA.
+ */
+router.post('/:dealId/regenerate-contract', async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const userId = req.user!.id;
+    const userEmail = String(req.user?.email || '').toLowerCase();
+    const { dealId } = req.params;
+
+    if (!dealId) return res.status(400).json({ success: false, error: 'Deal ID is required' });
+
+    const { data: deal, error: dealError } = await supabase
+      .from('brand_deals')
+      .select('*')
+      .eq('id', dealId)
+      .single();
+
+    if (dealError || !deal) return res.status(404).json({ success: false, error: 'Deal not found' });
+
+    const isCreatorOwner = deal.creator_id === userId;
+    const isBrandOwner =
+      deal.brand_id === userId ||
+      (userEmail && String(deal.brand_email || '').toLowerCase() === userEmail);
+    const isAdmin = String(req.user?.role || '').toLowerCase() === 'admin';
+
+    if (!isCreatorOwner && !isBrandOwner && !isAdmin) {
+      return res.status(403).json({ success: false, error: 'Access denied' });
+    }
+
+    // Fetch creator profile (keep select conservative to avoid schema drift).
+    const { data: creatorProfile } = await supabase
+      .from('profiles')
+      .select('first_name, last_name, location')
+      .eq('id', deal.creator_id)
+      .maybeSingle();
+
+    const creatorName = creatorProfile
+      ? `${(creatorProfile.first_name || '').trim()} ${(creatorProfile.last_name || '').trim()}`.trim() || 'Creator'
+      : 'Creator';
+
+    // Creator email: prefer auth admin (service role available on server).
+    let creatorEmail: string | undefined = undefined;
+    try {
+      const { data: authUser } = await supabase.auth.admin.getUserById(deal.creator_id);
+      creatorEmail = authUser?.user?.email || undefined;
+    } catch (e) {
+      console.warn('[Deals] regenerate-contract: could not fetch creator email via auth.admin:', e);
+      if (isCreatorOwner) creatorEmail = req.user?.email;
+    }
+
+    // Deliverables parsing.
+    let deliverablesArray: string[] = [];
+    try {
+      const d = (deal as any).deliverables;
+      if (Array.isArray(d)) deliverablesArray = d.map((v) => String(v));
+      else if (typeof d === 'string') deliverablesArray = d.includes('[') ? JSON.parse(d) : d.split(',').map((s) => s.trim());
+      else if (d && typeof d === 'object') deliverablesArray = Array.isArray(d) ? d : Object.values(d).map((v) => String(v));
+    } catch {
+      deliverablesArray = [];
+    }
+
+    const dueDateStr = deal.due_date ? new Date(deal.due_date).toLocaleDateString() : undefined;
+    const paymentExpectedDateStr = deal.payment_expected_date ? new Date(deal.payment_expected_date).toLocaleDateString() : undefined;
+
+    const contractResult = await generateContractFromScratch({
+      brandName: (deal as any).brand_name || deal.brand_name || 'Brand',
+      creatorName,
+      creatorEmail: creatorEmail || 'creator@example.com',
+      dealAmount: Number(deal.deal_amount || 0),
+      deliverables: deliverablesArray.length > 0 ? deliverablesArray : ['As per agreement'],
+      paymentTerms: paymentExpectedDateStr ? `Payment by ${paymentExpectedDateStr}` : 'Within 7 days of content delivery',
+      dueDate: dueDateStr,
+      paymentExpectedDate: paymentExpectedDateStr,
+      platform: (deal as any).platform || 'Multiple Platforms',
+      brandEmail: deal.brand_email || undefined,
+      // Some environments enforce address for contract generation; default to a safe placeholder
+      // so the flow doesn't block on first-time brands/creators.
+      brandAddress: (deal as any).brand_address || 'Mumbai, Maharashtra 400001',
+      brandPhone: (deal as any).brand_phone || undefined,
+      creatorAddress: creatorProfile?.location || 'Mumbai, Maharashtra 400001',
+      dealSchema: {
+        deal_amount: deal.deal_amount,
+        deliverables: deliverablesArray.length > 0 ? deliverablesArray : ['As per agreement'],
+        delivery_deadline: deal.due_date || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+        payment: { method: 'Bank Transfer', timeline: paymentExpectedDateStr ? `Payment by ${paymentExpectedDateStr}` : 'Within 7 days of content delivery' },
+        usage: { type: 'Non-exclusive', platforms: ['All platforms'], duration: '6 months', paid_ads: false, whitelisting: false },
+        exclusivity: { enabled: false, category: null, duration: null },
+        termination: { notice_days: 7 },
+        jurisdiction_city: 'Mumbai',
+      },
+      usageType: 'Non-exclusive',
+      usagePlatforms: ['All platforms'],
+      usageDuration: '6 months',
+      paidAdsAllowed: false,
+      whitelistingAllowed: false,
+      exclusivityEnabled: false,
+      exclusivityCategory: null,
+      exclusivityDuration: null,
+      terminationNoticeDays: 7,
+      jurisdictionCity: 'Mumbai',
+    });
+
+    const timestamp = Date.now();
+    const storagePath = `contracts/${dealId}/${timestamp}_${contractResult.fileName}`;
+    const { error: uploadError } = await supabase.storage
+      .from('creator-assets')
+      .upload(storagePath, contractResult.contractDocx, {
+        contentType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        upsert: false,
+      });
+    if (uploadError) throw uploadError;
+
+    const { data: publicUrlData } = supabase.storage.from('creator-assets').getPublicUrl(storagePath);
+    const contractUrl = publicUrlData?.publicUrl;
+    if (!contractUrl) throw new Error('Failed to get public URL for contract');
+
+    await supabase
+      .from('brand_deals')
+      .update({ contract_file_url: contractUrl, updated_at: new Date().toISOString() } as any)
+      .eq('id', dealId);
+
+    const token = await createContractReadyToken({
+      dealId,
+      creatorId: deal.creator_id,
+      expiresAt: null,
+    });
+
+    if (deal.brand_email && token.id) {
+      sendCollabRequestAcceptedEmail(deal.brand_email, {
+        creatorName,
+        brandName: (deal as any).brand_name || deal.brand_name,
+        dealAmount: deal.deal_amount,
+        dealType: (deal.deal_type as 'paid' | 'barter') || 'paid',
+        deliverables: deliverablesArray.length > 0 ? deliverablesArray : ['As per agreement'],
+        contractReadyToken: token.id,
+        contractUrl,
+      }).catch((e) => console.error('[Deals] regenerate-contract email failed:', e));
+    }
+
+    return res.json({ success: true, contract: { url: contractUrl, token: token.id }, message: 'Contract regenerated.' });
+  } catch (error: any) {
+    console.error('[Deals] regenerate-contract error:', error);
+    return res.status(500).json({ success: false, error: error.message || 'Internal server error' });
+  }
+});
+
 // Debug route to test routing
 router.get('/test-routing', (req, res) => {
   console.log('[Deals] Test routing endpoint hit');

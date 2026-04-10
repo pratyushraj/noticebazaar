@@ -1,5 +1,9 @@
-const SUPABASE_URL = "https://ooaxtwmqrvfzdqzoijcj.supabase.co";
-const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9vYXh0d21xcnZmemRxem9pamNqIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1OTUwMTI1NiwiZXhwIjoyMDc1MDc3MjU2fQ.hKeyfz-wZ6JOs3mupPDppKDYuHii0GRcxc04oRROD4c";
+const SUPABASE_URL = process.env.SUPABASE_URL || "https://ooaxtwmqrvfzdqzoijcj.supabase.co";
+const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+if (!SUPABASE_KEY) {
+  console.error('Missing SUPABASE_SERVICE_ROLE_KEY env var');
+  process.exit(2);
+}
 
 async function fetchJSON(endpoint, options = {}) {
   const url = `${SUPABASE_URL}${endpoint}`;
