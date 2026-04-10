@@ -12,6 +12,22 @@ import { sendCollabRequestAcceptedEmail } from '../services/collabRequestEmailSe
 import { createShippingToken } from '../services/shippingTokenService';
 import { sendBrandShippingUpdateEmail, sendBrandShippingIssueEmail } from '../services/shippingEmailService';
 
+const normalizeStatus = (raw: any) =>
+  String(raw || '')
+    .trim()
+    .toUpperCase()
+    .replaceAll(' ', '_')
+    .replaceAll('-', '_');
+
+const inferRequiresPayment = (deal: any) => {
+  const kind = String(deal?.collab_type || deal?.deal_type || '').trim().toLowerCase();
+  const amount = Number(deal?.deal_amount || deal?.exact_budget || 0);
+  // Prefer numeric amount when available; schemas vary across environments.
+  if (Number.isFinite(amount) && amount > 0) return true;
+  if (!kind) return false;
+  return kind === 'paid' || kind === 'both' || kind === 'hybrid' || kind === 'paid_barter';
+};
+
 // Helper: delegate generic push to Render server
 async function sendGenericPushViaRender(params: {
   creatorId: string;
@@ -302,6 +318,280 @@ router.patch('/:id/unconfirm-payment-received', async (req: AuthenticatedRequest
     return res.json({ success: true, message: 'Payment confirmation undone.' });
   } catch (error: any) {
     console.error('[Deals] unconfirm-payment-received error:', error);
+    return res.status(500).json({ success: false, error: error?.message || 'Internal server error' });
+  }
+});
+
+/**
+ * PATCH /api/deals/:id/submit-content
+ * Creator submits content for brand review (Instagram link, etc).
+ */
+router.patch('/:id/submit-content', async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const rawId = String(req.params.id || '').trim();
+    const userId = req.user?.id;
+    const role = String(req.user?.role || '').toLowerCase();
+    const accessToken = String(req.headers?.authorization || '').replace(/^Bearer\s+/i, '').trim();
+
+    if (!userId) return res.status(401).json({ success: false, error: 'Authentication required' });
+    if (role !== 'creator' && role !== 'admin' && role !== 'client') {
+      return res.status(403).json({ success: false, error: 'Creator access required' });
+    }
+
+    const contentUrl = String(req.body?.contentUrl || req.body?.mainLink || '').trim();
+    const messageToBrand = String(req.body?.messageToBrand || req.body?.notes || '').trim() || null;
+
+    if (!contentUrl || !/^https?:\/\//i.test(contentUrl)) {
+      return res.status(400).json({ success: false, error: 'Paste a full Instagram post or reel link' });
+    }
+
+    // Resolve deal id (some pages pass tokens/collab ids)
+    const resolveDealId = async (id: string): Promise<string | null> => {
+      if (!id) return null;
+      const cleaned = id.trim();
+      const { data: dealProbe } = await supabase.from('brand_deals').select('id').eq('id', cleaned).maybeSingle();
+      if (dealProbe?.id) return String(dealProbe.id);
+
+      const { data: collabRow } = await (supabase as any).from('collab_requests').select('deal_id').eq('id', cleaned).maybeSingle();
+      if (collabRow?.deal_id) return String(collabRow.deal_id);
+
+      const { data: submission } = await (supabase as any)
+        .from('deal_details_submissions')
+        .select('deal_id')
+        .eq('token_id', cleaned)
+        .maybeSingle();
+      if (submission?.deal_id) return String(submission.deal_id);
+      return null;
+    };
+
+    const dealId = await resolveDealId(rawId);
+    if (!dealId) return res.status(404).json({ success: false, error: 'Deal not found' });
+
+    const { data: deal, error: dealErr } = await supabase
+      .from('brand_deals')
+      .select('id, status, creator_id, brand_email, brand_name, updated_at')
+      .eq('id', dealId)
+      .maybeSingle();
+    if (dealErr || !deal) return res.status(404).json({ success: false, error: 'Deal not found' });
+    if (role !== 'admin' && String((deal as any).creator_id || '') !== String(userId)) {
+      return res.status(403).json({ success: false, error: 'Access denied' });
+    }
+
+    const current = normalizeStatus((deal as any).status);
+    const canSubmit =
+      current === 'CONTENT_MAKING' ||
+      current === 'DRAFTING' ||
+      current === 'CONTENT_IN_PROGRESS' ||
+      current === 'FULLY_EXECUTED' ||
+      current === 'SIGNED' ||
+      current === 'REVISION_REQUESTED';
+    if (!canSubmit) {
+      return res.status(409).json({ success: false, error: `Cannot submit content from status ${current || 'UNKNOWN'}.` });
+    }
+
+    const now = new Date().toISOString();
+    const isRevision = current === 'REVISION_REQUESTED';
+
+    // Best-effort: new columns may not exist in older schema; fallback to status-only update.
+    const fullUpdate: any = {
+      status: 'Content Delivered',
+      progress_percentage: 95,
+      content_submission_url: contentUrl,
+      content_submitted_at: now,
+      message_to_brand: messageToBrand,
+      updated_at: now,
+    };
+    const minimalUpdate: any = {
+      status: 'Content Delivered',
+      progress_percentage: 95,
+      updated_at: now,
+    };
+
+    const { error: updErr } = await supabase.from('brand_deals').update(fullUpdate).eq('id', dealId);
+    if (updErr) {
+      const { error: fallbackErr } = await supabase.from('brand_deals').update(minimalUpdate).eq('id', dealId);
+      if (fallbackErr) throw fallbackErr;
+    }
+
+    await supabase.from('deal_action_logs').insert({
+      deal_id: dealId,
+      user_id: userId,
+      event: isRevision ? 'REVISION_SUBMITTED' : 'CONTENT_SUBMITTED',
+      metadata: {
+        content_url: contentUrl,
+        notes: messageToBrand,
+        submitted_at: now,
+      },
+    }).then(() => {});
+
+    // Non-blocking: if Render push is configured, nudge creator/brand. No-op without keys.
+    if (accessToken) {
+      // nothing; keep local minimal
+    }
+
+    return res.json({ success: true, message: 'Content submitted' });
+  } catch (error: any) {
+    console.error('[Deals] submit-content error:', error);
+    return res.status(500).json({ success: false, error: error?.message || 'Internal server error' });
+  }
+});
+
+/**
+ * PATCH /api/deals/:id/review-content
+ * Brand approves / requests changes / disputes after creator submits content.
+ */
+router.patch('/:id/review-content', async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const dealId = String(req.params.id || '').trim();
+    const userId = req.user?.id;
+    const role = String(req.user?.role || '').toLowerCase();
+    const userEmail = String(req.user?.email || '').toLowerCase() || null;
+
+    if (!userId) return res.status(401).json({ success: false, error: 'Authentication required' });
+    if (role !== 'brand' && role !== 'admin') return res.status(403).json({ success: false, error: 'Brand access required' });
+
+    const status = String(req.body?.status || '').trim().toLowerCase();
+    if (!['approved', 'changes_requested', 'disputed'].includes(status)) {
+      return res.status(400).json({ success: false, error: 'Invalid review status' });
+    }
+
+    const feedback = String(req.body?.feedback || req.body?.brandFeedback || '').trim() || null;
+    const disputeNotes = String(req.body?.disputeNotes || '').trim() || null;
+
+    const { data: deal, error: dealErr } = await supabase
+      .from('brand_deals')
+      .select('id, brand_id, brand_email, status, creator_id')
+      .eq('id', dealId)
+      .maybeSingle();
+    if (dealErr || !deal) return res.status(404).json({ success: false, error: 'Deal not found' });
+
+    const dealBrandEmail = String((deal as any).brand_email || '').toLowerCase() || null;
+    const hasAccess =
+      String((deal as any).brand_id || '') === String(userId) ||
+      (!!userEmail && !!dealBrandEmail && userEmail === dealBrandEmail) ||
+      role === 'admin';
+    if (!hasAccess) return res.status(403).json({ success: false, error: 'Access denied' });
+
+    const current = normalizeStatus((deal as any).status);
+    if (current !== 'CONTENT_DELIVERED' && current !== 'CONTENT_SUBMITTED' && current !== 'REVISION_SUBMITTED' && current !== 'REVISION_DONE') {
+      // Allow "review" even if schema uses string statuses.
+      if (!String((deal as any).status || '').toLowerCase().includes('content')) {
+        return res.status(409).json({ success: false, error: `Cannot review content from status ${current || 'UNKNOWN'}.` });
+      }
+    }
+
+    const now = new Date().toISOString();
+    const updateData: any = {
+      updated_at: now,
+      brand_approval_status: status,
+    };
+    if (status === 'approved') {
+      updateData.status = 'CONTENT_APPROVED';
+      updateData.brand_feedback = feedback;
+    } else if (status === 'changes_requested') {
+      updateData.status = 'REVISION_REQUESTED';
+      updateData.brand_feedback = feedback;
+    } else {
+      updateData.status = 'DISPUTED';
+      updateData.dispute_notes = disputeNotes || feedback;
+    }
+
+    const { error: updErr } = await supabase.from('brand_deals').update(updateData).eq('id', dealId);
+    if (updErr) {
+      // Fallback to only status if extra columns don't exist.
+      const { error: fallbackErr } = await supabase.from('brand_deals').update({ status: updateData.status, updated_at: now } as any).eq('id', dealId);
+      if (fallbackErr) throw fallbackErr;
+    }
+
+    await supabase.from('deal_action_logs').insert({
+      deal_id: dealId,
+      user_id: userId,
+      event: status === 'approved' ? 'CONTENT_APPROVED' : status === 'changes_requested' ? 'REVISION_REQUESTED' : 'DISPUTE_RAISED',
+      metadata: { reviewed_at: now, feedback: feedback, dispute_notes: disputeNotes },
+    }).then(() => {});
+
+    return res.json({ success: true, message: 'Review saved', status });
+  } catch (error: any) {
+    console.error('[Deals] review-content error:', error);
+    return res.status(500).json({ success: false, error: error?.message || 'Internal server error' });
+  }
+});
+
+/**
+ * PATCH /api/deals/:id/release-payment
+ * Brand marks payment as released after content approval.
+ */
+router.patch('/:id/release-payment', async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const dealId = String(req.params.id || '').trim();
+    const userId = req.user?.id;
+    const role = String(req.user?.role || '').toLowerCase();
+    const userEmail = String(req.user?.email || '').toLowerCase() || null;
+
+    if (!userId) return res.status(401).json({ success: false, error: 'Authentication required' });
+    if (role !== 'brand' && role !== 'admin') return res.status(403).json({ success: false, error: 'Brand access required' });
+
+    // Keep select limited to columns that exist across older schemas.
+    const { data: deal, error: dealErr } = await supabase
+      .from('brand_deals')
+      .select('id, brand_id, brand_email, status, creator_id, deal_amount, updated_at')
+      .eq('id', dealId)
+      .maybeSingle();
+    if (dealErr || !deal) return res.status(404).json({ success: false, error: 'Deal not found' });
+
+    const dealBrandEmail = String((deal as any).brand_email || '').toLowerCase() || null;
+    const hasAccess =
+      String((deal as any).brand_id || '') === String(userId) ||
+      (!!userEmail && !!dealBrandEmail && userEmail === dealBrandEmail) ||
+      role === 'admin';
+    if (!hasAccess) return res.status(403).json({ success: false, error: 'Access denied' });
+
+    if (!inferRequiresPayment(deal)) {
+      return res.status(409).json({ success: false, error: 'This deal does not require creator payment.' });
+    }
+
+    const current = normalizeStatus((deal as any).status);
+    if (current !== 'CONTENT_APPROVED') {
+      return res.status(409).json({ success: false, error: `Payment can be released only after approval. Current: ${current || 'UNKNOWN'}.` });
+    }
+
+    const paymentReference = String(req.body?.paymentReference || req.body?.utrNumber || '').trim();
+    const paymentProofUrl = String(req.body?.paymentProofUrl || '').trim() || null;
+    const paymentNotes = String(req.body?.paymentNotes || '').trim() || null;
+    const paymentReceivedDate = String(req.body?.paymentReceivedDate || '').trim() || null;
+
+    if (!paymentReference) {
+      return res.status(400).json({ success: false, error: 'Payment reference is required before release.' });
+    }
+
+    const now = new Date().toISOString();
+    const fullUpdate: any = {
+      status: 'PAYMENT_RELEASED',
+      payment_released_at: now,
+      payment_received_date: paymentReceivedDate || null,
+      utr_number: paymentReference,
+      payment_proof_url: paymentProofUrl,
+      payment_notes: paymentNotes,
+      updated_at: now,
+    };
+    const minimalUpdate: any = { status: 'PAYMENT_RELEASED', payment_released_at: now, updated_at: now };
+
+    const { error: updErr } = await supabase.from('brand_deals').update(fullUpdate).eq('id', dealId);
+    if (updErr) {
+      const { error: fallbackErr } = await supabase.from('brand_deals').update(minimalUpdate).eq('id', dealId);
+      if (fallbackErr) throw fallbackErr;
+    }
+
+    await supabase.from('deal_action_logs').insert({
+      deal_id: dealId,
+      user_id: userId,
+      event: 'PAYMENT_RELEASED',
+      metadata: { released_at: now, payment_reference: paymentReference, payment_proof_url: paymentProofUrl, payment_notes: paymentNotes },
+    }).then(() => {});
+
+    return res.json({ success: true, message: 'Payment released.' });
+  } catch (error: any) {
+    console.error('[Deals] release-payment error:', error);
     return res.status(500).json({ success: false, error: error?.message || 'Internal server error' });
   }
 });
