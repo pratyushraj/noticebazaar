@@ -256,7 +256,16 @@ const Login = () => {
 
         {/* Timed out */}
         {loading && loadingTimedOut && !session && (
-          <p className="text-foreground/40 text-[11px] font-black uppercase tracking-widest text-center mb-6">Still loading? Use the form below to sign in.</p>
+          <>
+            <p className="text-foreground/40 text-[11px] font-black uppercase tracking-widest text-center mb-6">Still loading? Use the form below to sign in.</p>
+            <Button
+              type="button"
+              onClick={() => navigate('/demo-dashboard', { replace: true })}
+              className="w-full mb-4 bg-muted hover:bg-muted/80 text-muted-foreground font-black h-12 rounded-2xl transition-all active:scale-[0.98] uppercase tracking-widest text-xs"
+            >
+              Try Demo Mode
+            </Button>
+          </>
         )}
 
         {/* Primary: Email/Password Login */}
