@@ -208,6 +208,104 @@ router.get('/mine', async (req: AuthenticatedRequest, res: Response) => {
   }
 });
 
+// PATCH /api/deals/:id/confirm-payment-received
+// Creator confirms payment was received after brand marks it sent.
+router.patch('/:id/confirm-payment-received', async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const dealId = String(req.params.id || '').trim();
+    const userId = req.user?.id;
+    const role = String(req.user?.role || '').toLowerCase();
+
+    if (!userId) return res.status(401).json({ success: false, error: 'Authentication required' });
+    if (role !== 'creator' && role !== 'admin' && role !== 'client') {
+      return res.status(403).json({ success: false, error: 'Creator access required' });
+    }
+
+    const { data: deal, error: dealErr } = await supabase
+      .from('brand_deals')
+      .select('id, status, creator_id, payment_released_at, payment_received_date')
+      .eq('id', dealId)
+      .maybeSingle();
+    if (dealErr || !deal) return res.status(404).json({ success: false, error: 'Deal not found' });
+
+    if (role !== 'admin' && String((deal as any).creator_id || '') !== String(userId)) {
+      return res.status(403).json({ success: false, error: 'Access denied' });
+    }
+
+    const current = String((deal as any).status || '').trim().toUpperCase().replaceAll(' ', '_');
+    if (current !== 'PAYMENT_RELEASED') {
+      return res.status(409).json({ success: false, error: `Payment can be confirmed only after brand releases it. Current: ${current || 'UNKNOWN'}.` });
+    }
+
+    const now = new Date().toISOString();
+    const { error: updErr } = await supabase
+      .from('brand_deals')
+      .update({ status: 'PAYMENT_RECEIVED', payment_received_date: now, updated_at: now } as any)
+      .eq('id', dealId);
+    if (updErr) throw updErr;
+
+    await supabase.from('deal_action_logs').insert({
+      deal_id: dealId,
+      user_id: userId,
+      event: 'PAYMENT_CONFIRMED',
+      metadata: { confirmed_at: now },
+    }).then(() => {});
+
+    return res.json({ success: true, message: 'Payment confirmed.', payment_received_date: now });
+  } catch (error: any) {
+    console.error('[Deals] confirm-payment-received error:', error);
+    return res.status(500).json({ success: false, error: error?.message || 'Internal server error' });
+  }
+});
+
+router.patch('/:id/unconfirm-payment-received', async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const dealId = String(req.params.id || '').trim();
+    const userId = req.user?.id;
+    const role = String(req.user?.role || '').toLowerCase();
+
+    if (!userId) return res.status(401).json({ success: false, error: 'Authentication required' });
+    if (role !== 'creator' && role !== 'admin' && role !== 'client') {
+      return res.status(403).json({ success: false, error: 'Creator access required' });
+    }
+
+    const { data: deal, error: dealErr } = await supabase
+      .from('brand_deals')
+      .select('id, status, creator_id')
+      .eq('id', dealId)
+      .maybeSingle();
+    if (dealErr || !deal) return res.status(404).json({ success: false, error: 'Deal not found' });
+
+    if (role !== 'admin' && String((deal as any).creator_id || '') !== String(userId)) {
+      return res.status(403).json({ success: false, error: 'Access denied' });
+    }
+
+    const current = String((deal as any).status || '').trim().toUpperCase().replaceAll(' ', '_');
+    if (current !== 'PAYMENT_RECEIVED') {
+      return res.status(409).json({ success: false, error: `Nothing to undo. Current: ${current || 'UNKNOWN'}.` });
+    }
+
+    const now = new Date().toISOString();
+    const { error: updErr } = await supabase
+      .from('brand_deals')
+      .update({ status: 'PAYMENT_RELEASED', payment_received_date: null, updated_at: now } as any)
+      .eq('id', dealId);
+    if (updErr) throw updErr;
+
+    await supabase.from('deal_action_logs').insert({
+      deal_id: dealId,
+      user_id: userId,
+      event: 'PAYMENT_CONFIRM_UNDONE',
+      metadata: { undone_at: now },
+    }).then(() => {});
+
+    return res.json({ success: true, message: 'Payment confirmation undone.' });
+  } catch (error: any) {
+    console.error('[Deals] unconfirm-payment-received error:', error);
+    return res.status(500).json({ success: false, error: error?.message || 'Internal server error' });
+  }
+});
+
 // POST /api/deals/log-reminder
 // Log a brand reminder to the activity log
 router.post('/log-reminder', async (req: AuthenticatedRequest, res: Response) => {

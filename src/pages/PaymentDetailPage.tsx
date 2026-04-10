@@ -392,17 +392,26 @@ const PaymentDetailPage = () => {
 
     try {
       const now = new Date().toISOString();
-      
-      await updateDealMutation.mutateAsync({
-        id: resolvedDeal.id,
-        creator_id: actorId,
-        status: 'Payment Received',
-        payment_received_date: now,
-        // Note: payment_received_amount column doesn't exist - amount is stored in deal_amount
-        proof_of_payment_url: proofOfPaymentUrl,
-        utr_number: null, // Can be added separately
-        // updated_at will be automatically updated by trigger
+      if (!accessToken) {
+        toast.error('Please log in again');
+        return;
+      }
+
+      const response = await fetch(`${getApiBaseUrl()}/api/deals/${resolvedDeal.id}/confirm-payment-received`, {
+        method: 'PATCH',
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          proofOfPaymentUrl: proofOfPaymentUrl || undefined,
+        }),
       });
+
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok || !payload?.success) {
+        throw new Error(payload?.error || 'Failed to confirm payment');
+      }
 
       void trackEvent('payment_confirmed', {
         creator_id: profile.id,
@@ -451,15 +460,22 @@ const PaymentDetailPage = () => {
     }
 
     try {
-      await updateDealMutation.mutateAsync({
-        id: resolvedDeal.id,
-        creator_id: actorId,
-        status: previousPaymentState.status,
-        payment_received_date: previousPaymentState.payment_received_date,
-        // Note: payment_received_amount column doesn't exist - amount is stored in deal_amount
-        proof_of_payment_url: previousPaymentState.payment_proof_url,
-        utr_number: previousPaymentState.utr_number,
+      if (!accessToken) {
+        toast.error('Please log in again');
+        return;
+      }
+
+      const response = await fetch(`${getApiBaseUrl()}/api/deals/${resolvedDeal.id}/unconfirm-payment-received`, {
+        method: 'PATCH',
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          'Content-Type': 'application/json',
+        },
       });
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok || !payload?.success) {
+        throw new Error(payload?.error || 'Failed to undo');
+      }
 
       // Clear undo state
       if (undoToastId) {

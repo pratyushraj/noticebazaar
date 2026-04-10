@@ -1881,10 +1881,6 @@ router.patch('/:id/release-payment', authMiddleware, async (req: AuthenticatedRe
     const paymentReference = String(req.body?.paymentReference || req.body?.utrNumber || '').trim();
     const paymentProofUrl = String(req.body?.paymentProofUrl || '').trim() || null;
     const paymentNotes = String(req.body?.paymentNotes || '').trim() || null;
-    const paymentReceivedDateRaw = String(req.body?.paymentReceivedDate || '').trim();
-    const paymentReceivedDate = paymentReceivedDateRaw
-      ? new Date(paymentReceivedDateRaw).toISOString()
-      : new Date().toISOString();
 
     if (!paymentReference) {
       return res.status(400).json({ success: false, error: 'Payment reference is required before release.' });
@@ -1894,7 +1890,6 @@ router.patch('/:id/release-payment', authMiddleware, async (req: AuthenticatedRe
     const fullUpdate: any = {
       status: 'PAYMENT_RELEASED',
       payment_released_at: now,
-      payment_received_date: paymentReceivedDate,
       utr_number: paymentReference,
       updated_at: now,
     };
@@ -1924,7 +1919,6 @@ router.patch('/:id/release-payment', authMiddleware, async (req: AuthenticatedRe
       metadata: {
         released_at: now,
         payment_reference: paymentReference,
-        payment_received_date: paymentReceivedDate,
         payment_proof_url: paymentProofUrl,
         payment_notes: paymentNotes,
       },
@@ -1947,7 +1941,6 @@ router.patch('/:id/release-payment', authMiddleware, async (req: AuthenticatedRe
       status: 'PAYMENT_RELEASED',
     }, {
       payment_reference: paymentReference,
-      payment_received_date: paymentReceivedDate,
       payment_proof_url: paymentProofUrl,
       payment_notes: paymentNotes,
     });
@@ -1956,12 +1949,132 @@ router.patch('/:id/release-payment', authMiddleware, async (req: AuthenticatedRe
       success: true,
       message: 'Payment released.',
       payment_reference: paymentReference,
-      payment_received_date: paymentReceivedDate,
       payment_proof_url: paymentProofUrl,
       payment_notes: paymentNotes,
     });
   } catch (error: any) {
     console.error('[Deals] release-payment error:', error);
+    return res.status(500).json({ success: false, error: error?.message || 'Internal server error' });
+  }
+});
+
+/**
+ * PATCH /api/deals/:id/confirm-payment-received
+ * Creator confirms payment has been received after the brand releases it.
+ */
+router.patch('/:id/confirm-payment-received', authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const dealId = req.params.id;
+    const userId = req.user?.id;
+    const role = String(req.user?.role || '').toLowerCase();
+
+    if (!userId) {
+      return res.status(401).json({ success: false, error: 'Authentication required' });
+    }
+    if (role !== 'creator' && role !== 'admin' && role !== 'client') {
+      return res.status(403).json({ success: false, error: 'Creator access required' });
+    }
+
+    const { deal, error: dealError } = await fetchDealForCreatorMutation(dealId);
+    if (dealError || !deal) {
+      return res.status(404).json({ success: false, error: 'Deal not found' });
+    }
+
+    const creatorId = String((deal as any).creator_id || '');
+    if (role !== 'admin' && creatorId !== String(userId)) {
+      return res.status(403).json({ success: false, error: 'Access denied' });
+    }
+
+    const normalizeStatus = (raw: any) => String(raw || '').trim().toUpperCase().replaceAll(' ', '_');
+    const current = normalizeStatus((deal as any).status);
+    if (!inferRequiresPayment(deal)) {
+      return res.status(409).json({ success: false, error: 'This deal does not require creator payment.' });
+    }
+    if (current !== 'PAYMENT_RELEASED') {
+      return res.status(409).json({ success: false, error: `Payment can be confirmed only after brand releases it. Current: ${current || 'UNKNOWN'}.` });
+    }
+
+    const now = new Date().toISOString();
+    const { error: updateError } = await supabase
+      .from('brand_deals')
+      .update({
+        status: 'PAYMENT_RECEIVED',
+        payment_received_date: now,
+        updated_at: now,
+      } as any)
+      .eq('id', dealId);
+    if (updateError) throw updateError;
+
+    await supabase.from('deal_action_logs').insert({
+      deal_id: dealId,
+      user_id: userId,
+      event: 'PAYMENT_CONFIRMED',
+      metadata: {
+        confirmed_at: now,
+      },
+    }).then(({ error }) => {
+      if (error) console.warn('[Deals] confirm-payment-received action log failed:', error.message);
+    });
+
+    return res.json({ success: true, message: 'Payment confirmed.', payment_received_date: now });
+  } catch (error: any) {
+    console.error('[Deals] confirm-payment-received error:', error);
+    return res.status(500).json({ success: false, error: error?.message || 'Internal server error' });
+  }
+});
+
+/**
+ * PATCH /api/deals/:id/unconfirm-payment-received
+ * Creator can undo a mistaken confirmation (simple revert to PAYMENT_RELEASED).
+ */
+router.patch('/:id/unconfirm-payment-received', authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const dealId = req.params.id;
+    const userId = req.user?.id;
+    const role = String(req.user?.role || '').toLowerCase();
+
+    if (!userId) return res.status(401).json({ success: false, error: 'Authentication required' });
+    if (role !== 'creator' && role !== 'admin' && role !== 'client') {
+      return res.status(403).json({ success: false, error: 'Creator access required' });
+    }
+
+    const { deal, error: dealError } = await fetchDealForCreatorMutation(dealId);
+    if (dealError || !deal) return res.status(404).json({ success: false, error: 'Deal not found' });
+
+    const creatorId = String((deal as any).creator_id || '');
+    if (role !== 'admin' && creatorId !== String(userId)) {
+      return res.status(403).json({ success: false, error: 'Access denied' });
+    }
+
+    const normalizeStatus = (raw: any) => String(raw || '').trim().toUpperCase().replaceAll(' ', '_');
+    const current = normalizeStatus((deal as any).status);
+    if (current !== 'PAYMENT_RECEIVED') {
+      return res.status(409).json({ success: false, error: `Nothing to undo. Current: ${current || 'UNKNOWN'}.` });
+    }
+
+    const now = new Date().toISOString();
+    const { error: updateError } = await supabase
+      .from('brand_deals')
+      .update({
+        status: 'PAYMENT_RELEASED',
+        payment_received_date: null,
+        updated_at: now,
+      } as any)
+      .eq('id', dealId);
+    if (updateError) throw updateError;
+
+    await supabase.from('deal_action_logs').insert({
+      deal_id: dealId,
+      user_id: userId,
+      event: 'PAYMENT_CONFIRM_UNDONE',
+      metadata: { undone_at: now },
+    }).then(({ error }) => {
+      if (error) console.warn('[Deals] unconfirm-payment-received action log failed:', error.message);
+    });
+
+    return res.json({ success: true, message: 'Payment confirmation undone.' });
+  } catch (error: any) {
+    console.error('[Deals] unconfirm-payment-received error:', error);
     return res.status(500).json({ success: false, error: error?.message || 'Internal server error' });
   }
 });
