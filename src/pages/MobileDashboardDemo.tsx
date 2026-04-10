@@ -5391,19 +5391,23 @@ const MobileDashboardDemo = ({
                                                     <div className={cn("rounded-2xl border p-4", cardBgColor, borderColor)}>
                                                         {(() => {
                                                             const status = String(selectedItem.status || '').toLowerCase();
+                                                            const rawStatus = String(selectedItem.raw?.status || '').toLowerCase();
                                                             const hasContract = Boolean(selectedItem.contract_file_url || selectedItem.signed_contract_url || selectedItem.safe_contract_url);
                                                             const signedAt = selectedItem.signed_at || selectedItem.creator_signed_at || selectedItem.brand_signed_at || selectedItem.raw?.signed_at || null;
                                                             const contractUrl = selectedItem.contract_file_url || selectedItem.signed_contract_url || selectedItem.safe_contract_url || '';
                                                             const contractName = contractUrl
                                                                 ? decodeURIComponent(contractUrl.split('/').pop() || 'collaboration-contract.pdf')
                                                                 : 'Contract is being prepared';
-                                                            const contractState = status.includes('signed')
-                                                                ? 'Signed and active'
+                                                            const isContentDelivered = status.includes('content_delivered') || status.includes('awaiting_approval') || status.includes('draft_review') || rawStatus.includes('content_delivered') || rawStatus.includes('awaiting_approval');
+                                                            const contractState = signedAt
+                                                                ? 'Contract Active'
                                                                 : hasContract
                                                                     ? 'Ready for review'
-                                                                    : (status === 'drafting' || status === 'brand_details_pending')
-                                                                        ? 'Brand is preparing the contract'
-                                                                        : 'Contract details unavailable';
+                                                                    : isContentDelivered
+                                                                        ? 'Contract generated'
+                                                                        : (status === 'drafting' || status === 'brand_details_pending')
+                                                                            ? 'Brand is preparing the contract'
+                                                                            : 'Contract details unavailable';
 
                                                             return (
                                                                 <>
@@ -5415,7 +5419,9 @@ const MobileDashboardDemo = ({
                                                                                     ? `Signed on ${new Date(signedAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}`
                                                                                     : hasContract
                                                                                         ? 'Your contract is ready to review and download.'
-                                                                                        : 'The contract will appear here once the brand finalizes the setup.'}
+                                                                                        : isContentDelivered
+                                                                                            ? 'Your contract has been auto-generated and is active.'
+                                                                                            : 'The contract will appear here once the brand finalizes the setup.'}
                                                                             </p>
                                                                         </div>
                                                                         <span className={cn(
