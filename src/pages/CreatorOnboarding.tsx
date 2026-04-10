@@ -257,7 +257,7 @@ export default function CreatorOnboarding() {
                       value={instagramHandle}
                       onChange={(e) => setInstagramHandle(e.target.value)}
                       placeholder="sana.reels.delhi"
-                      className="border-0 bg-transparent px-0 text-[16px] shadow-none focus-visible:ring-0"
+                      className="border-0 bg-transparent px-0 text-[16px] font-semibold text-slate-900 placeholder:text-slate-400 shadow-none focus-visible:ring-0"
                       autoCapitalize="none"
                       autoCorrect="off"
                     />
