@@ -2515,7 +2515,6 @@ const MobileDashboardDemo = ({
                                     )}
                                 </div>
                                 <button type="button"
-                                    type="button"
                                     onClick={async () => {
                                         triggerHaptic();
                                         await refreshPushStatus();
@@ -2681,10 +2680,24 @@ const MobileDashboardDemo = ({
                                             <div className="h-full bg-primary rounded-full transition-all duration-500" style={{ width: `${pct}%` }} />
                                         </div>
                                         <div className="flex flex-wrap gap-2">
-                                            <button onClick={() => navigate('/creator-profile?section=profile')} className="text-[11px] font-bold px-3 py-1.5 rounded-full bg-card border border-primary text-primary active:scale-95">
+                                            <button
+                                                onClick={() => {
+                                                    triggerHaptic();
+                                                    setActiveTab('profile');
+                                                    setActiveSettingsPage('portfolio');
+                                                }}
+                                                className="text-[11px] font-bold px-3 py-1.5 rounded-full bg-card border border-primary text-primary active:scale-95"
+                                            >
                                                 Set rates
                                             </button>
-                                            <button onClick={() => navigate('/creator-profile?section=collab')} className="text-[11px] font-bold px-3 py-1.5 rounded-full bg-card border border-primary text-primary active:scale-95">
+                                            <button
+                                                onClick={() => {
+                                                    triggerHaptic();
+                                                    setActiveTab('profile');
+                                                    setActiveSettingsPage('payouts');
+                                                }}
+                                                className="text-[11px] font-bold px-3 py-1.5 rounded-full bg-card border border-primary text-primary active:scale-95"
+                                            >
                                                 Add payout method
                                             </button>
                                         </div>
@@ -2847,7 +2860,6 @@ const MobileDashboardDemo = ({
                                                 </p>
                                                 <div className="mt-4 flex gap-2">
                                                     <button type="button"
-                                                        type="button"
                                                         onClick={async () => {
                                                             triggerHaptic();
                                                             if (isIOSNeedsInstall) {
@@ -2867,7 +2879,6 @@ const MobileDashboardDemo = ({
                                                         Enable
                                                     </button>
                                                     <button type="button"
-                                                        type="button"
                                                         onClick={() => {
                                                             triggerHaptic();
                                                             dismissPushPrompt();
@@ -3028,6 +3039,50 @@ const MobileDashboardDemo = ({
                                                 >
                                                     {isCollabLinkCopied ? 'Copied!' : 'Copy'}
                                                 </button>
+                                            </div>
+
+                                            <div className={cn(
+                                                "mt-4 rounded-[24px] border p-4 overflow-hidden relative",
+                                                isDark ? "bg-[#0F172A] border-border" : "bg-[linear-gradient(180deg,#ffffff_0%,#f8fbfa_100%)] border-slate-200"
+                                            )}>
+                                                <div className={cn(
+                                                    "absolute inset-x-0 top-0 h-20 opacity-80 pointer-events-none",
+                                                    isDark
+                                                        ? "bg-gradient-to-r from-emerald-500/10 via-cyan-500/10 to-blue-500/10"
+                                                        : "bg-gradient-to-r from-emerald-50 via-cyan-50 to-blue-50"
+                                                )} />
+                                                <div className="relative">
+                                                    <p className={cn("text-[11px] font-black uppercase tracking-[0.2em] mb-3", isDark ? "text-white/55" : "text-slate-500")}>
+                                                        What brands will see
+                                                    </p>
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="w-11 h-11 rounded-2xl overflow-hidden border border-border shrink-0">
+                                                            <img
+                                                                src={avatarUrl}
+                                                                alt="creator preview avatar"
+                                                                className="w-full h-full object-cover"
+                                                                onError={(e) => {
+                                                                    (e.currentTarget as HTMLImageElement).onerror = null;
+                                                                    (e.currentTarget as HTMLImageElement).src = avatarFallbackUrl;
+                                                                }}
+                                                            />
+                                                        </div>
+                                                        <div className="min-w-0">
+                                                            <p className={cn("text-[17px] font-black tracking-tight truncate", isDark ? "text-white" : "text-slate-900")}>
+                                                                {profile?.first_name || username || 'Creator'}
+                                                            </p>
+                                                            <p className={cn("text-[13px] font-semibold", isDark ? "text-emerald-300" : "text-emerald-700")}>
+                                                                @{profile?.instagram_handle || username || 'creator'}
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                    <p className={cn("mt-3 text-[13px] leading-relaxed max-w-[260px]", isDark ? "text-white/70" : "text-slate-600")}>
+                                                        Brands open your creator link, choose a service, and send you an offer here.
+                                                    </p>
+                                                    <div className="mt-4 inline-flex h-10 items-center justify-center rounded-full bg-emerald-600 px-5 text-[11px] font-black uppercase tracking-[0.16em] text-white">
+                                                        Send Offer
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -3722,9 +3777,9 @@ const MobileDashboardDemo = ({
                                                                     };
 
                                                                     return (
-                                                                        <button type="button"
-                                                                            key={it.label}
+                                                                        <button
                                                                             type="button"
+                                                                            key={it.label}
                                                                             onClick={(e) => {
                                                                                 e.stopPropagation();
                                                                                 onChip();
@@ -3853,7 +3908,6 @@ const MobileDashboardDemo = ({
                                                                         </div>
 
                                                                         <button type="button"
-                                                                            type="button"
                                                                             onPointerDown={(e) => e.stopPropagation()}
                                                                             onClick={(e) => {
                                                                                 e.stopPropagation();
@@ -3964,7 +4018,6 @@ const MobileDashboardDemo = ({
                                                                 ✅ Completed
                                                             </div>
                                                             <button type="button"
-                                                                type="button"
                                                                 onPointerDown={(e) => e.stopPropagation()}
                                                                 onClick={(e) => {
                                                                     e.stopPropagation();
@@ -4064,7 +4117,6 @@ const MobileDashboardDemo = ({
                                                             </div>
 
                                                             <button type="button"
-                                                                type="button"
                                                                 onClick={(e) => {
                                                                     e.stopPropagation();
                                                                     triggerHaptic();
@@ -4111,13 +4163,33 @@ const MobileDashboardDemo = ({
                                                                 setSelectedType('offer');
                                                             }}
                                                             className={cn(
-                                                                "p-4 rounded-2xl border transition-all duration-300 group active:scale-[0.99] relative cursor-pointer",
+                                                                idx === 0 && !req.isConfirmedDeal
+                                                                    ? "p-5 rounded-[24px] border-2 transition-all duration-300 group active:scale-[0.99] relative cursor-pointer shadow-lg"
+                                                                    : "p-4 rounded-2xl border transition-all duration-300 group active:scale-[0.99] relative cursor-pointer",
                                                                 borderColor,
-                                                                isDark
-                                                                    ? "bg-[#111827]/40 hover:bg-[#111827]/60 shadow-[0_4px_20px_rgba(0,0,0,0.2)]"
-                                                                    : "bg-card shadow-sm hover:shadow-md active:bg-background"
+                                                                idx === 0 && !req.isConfirmedDeal
+                                                                    ? (
+                                                                        isDark
+                                                                            ? "bg-[linear-gradient(135deg,rgba(15,23,42,0.98),rgba(17,24,39,0.92))] border-emerald-400/30 hover:bg-[#111827]/95 shadow-[0_12px_30px_rgba(16,185,129,0.14)]"
+                                                                            : "bg-[linear-gradient(135deg,#ffffff_0%,#ecfdf5_100%)] border-emerald-200 shadow-[0_16px_35px_rgba(16,185,129,0.08)]"
+                                                                    )
+                                                                    : (
+                                                                        isDark
+                                                                            ? "bg-[#111827]/40 hover:bg-[#111827]/60 shadow-[0_4px_20px_rgba(0,0,0,0.2)]"
+                                                                            : "bg-card shadow-sm hover:shadow-md active:bg-background"
+                                                                    )
                                                             )}
                                                         >
+                                                            {idx === 0 && !req.isConfirmedDeal && (
+                                                                <div className="absolute top-4 right-4">
+                                                                    <span className={cn(
+                                                                        "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-[0.16em] border",
+                                                                        isDark ? "bg-emerald-500/12 text-emerald-300 border-emerald-400/20" : "bg-emerald-50 text-emerald-700 border-emerald-100"
+                                                                    )}>
+                                                                        New offer
+                                                                    </span>
+                                                                </div>
+                                                            )}
                                                             <div className="flex flex-wrap items-center gap-2 mb-3">
                                                                 <span className={cn("inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-[10px] font-black uppercase tracking-widest",
                                                                     isDark ? "bg-warning/10 text-warning border-warning/20" : "bg-warning text-warning border-warning"
@@ -4140,7 +4212,11 @@ const MobileDashboardDemo = ({
                                                                     </div>
                                                                 </div>
                                                                 <div className="text-right">
-                                                                    <p className={cn("text-[22px] font-black font-outfit tracking-tight", isDark ? "text-foreground" : "text-muted-foreground")}>
+                                                                    <p className={cn(
+                                                                        idx === 0 && !req.isConfirmedDeal ? "text-[28px]" : "text-[22px]",
+                                                                        "font-black font-outfit tracking-tight",
+                                                                        isDark ? "text-foreground" : "text-muted-foreground"
+                                                                    )}>
                                                                         ₹{amount.toLocaleString()}
                                                                     </p>
                                                                     <p className={cn("text-[9px] font-black uppercase tracking-widest opacity-60 mt-1", isDark ? "text-primary" : "text-primary")}>
@@ -4201,17 +4277,20 @@ const MobileDashboardDemo = ({
 
                                                             <div className="space-y-3">
                                                                 <button type="button"
-                                                                    type="button"
                                                                     onClick={(e) => { e.stopPropagation(); triggerHaptic(); setSelectedItem(req); setSelectedType('offer'); }}
-                                                                    className="h-11 w-full bg-info text-foreground rounded-[16px] text-[12px] font-black shadow-lg shadow-blue-500/20 active:scale-95 transition-all flex items-center justify-center gap-1.5"
+                                                                    className={cn(
+                                                                        "w-full rounded-[16px] text-[12px] font-black shadow-lg active:scale-95 transition-all flex items-center justify-center gap-1.5",
+                                                                        idx === 0 && !req.isConfirmedDeal
+                                                                            ? "h-12 bg-emerald-600 text-white shadow-emerald-500/20"
+                                                                            : "h-11 bg-info text-foreground shadow-blue-500/20"
+                                                                    )}
                                                                 >
-                                                                    Review & Respond
+                                                                    Review offer
                                                                     <ArrowRight className="w-3.5 h-3.5 opacity-70" />
                                                                 </button>
 
                                                                 <div className="flex items-center justify-between">
                                                                     <button type="button"
-                                                                        type="button"
                                                                         onClick={(e) => {
                                                                             e.stopPropagation();
                                                                             triggerHaptic();
@@ -4224,7 +4303,6 @@ const MobileDashboardDemo = ({
                                                                         Counter
                                                                     </button>
                                                                     <button type="button"
-                                                                        type="button"
                                                                         onClick={(e) => {
                                                                             e.stopPropagation();
                                                                             triggerHaptic(HapticPatterns.warning);
@@ -5789,7 +5867,6 @@ const MobileDashboardDemo = ({
                             </label>
                             <div className={cn("grid grid-cols-2 gap-2 rounded-2xl p-1 border", isDark ? "bg-card border-border" : "bg-background border-border")}>
                                 <button type="button"
-                                    type="button"
                                     onClick={() => setDeliverContentStatusDraft('draft')}
                                     className={cn(
                                         "h-14 rounded-2xl font-black text-[12px] transition-all active:scale-[0.98] flex flex-col items-center justify-center leading-tight",
@@ -5805,7 +5882,6 @@ const MobileDashboardDemo = ({
                                     </span>
                                 </button>
                                 <button type="button"
-                                    type="button"
                                     onClick={() => setDeliverContentStatusDraft('posted')}
                                     className={cn(
                                         "h-14 rounded-2xl font-black text-[12px] transition-all active:scale-[0.98] flex flex-col items-center justify-center leading-tight",
@@ -6093,14 +6169,12 @@ const MobileDashboardDemo = ({
 
                         <div className="flex gap-2">
                             <button type="button"
-                                type="button"
                                 onClick={() => setShowPushInstallGuide(false)}
                                 className="flex-1 rounded-xl bg-primary hover:bg-primary text-foreground text-sm font-semibold px-4 py-3 transition-colors"
                             >
                                 Got it
                             </button>
                             <button type="button"
-                                type="button"
                                 onClick={() => setShowPushInstallGuide(false)}
                                 className="rounded-xl border border-border text-foreground/85 hover:text-foreground hover:bg-secondary/50 text-sm px-4 py-3 transition-colors"
                             >

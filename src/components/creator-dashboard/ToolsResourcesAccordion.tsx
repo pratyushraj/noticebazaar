@@ -42,6 +42,12 @@ const ToolsResourcesAccordion: React.FC = () => {
           <div className="p-2 rounded-lg bg-card hover:bg-secondary/50 cursor-pointer">
             Payment Reminder Template
           </div>
+          <div className="p-2 rounded-lg bg-card hover:bg-secondary/50 cursor-pointer">
+            Link Announcement Template
+          </div>
+          <div className="p-2 rounded-lg bg-card hover:bg-secondary/50 cursor-pointer">
+            Brand Communication Template
+          </div>
         </div>
       ),
     },
@@ -64,19 +70,22 @@ const ToolsResourcesAccordion: React.FC = () => {
       ),
     },
     {
-      id: 'learn',
-      title: 'Learn More',
+      id: 'guides',
+      title: 'Guides & Best Practices',
       icon: <BookOpen className="h-4 w-4" />,
       content: (
         <div className="space-y-2 text-sm text-foreground/70">
           <div className="p-2 rounded-lg bg-card hover:bg-secondary/50 cursor-pointer">
-            Best Practices
+            Optimizing Instagram Bio
           </div>
           <div className="p-2 rounded-lg bg-card hover:bg-secondary/50 cursor-pointer">
-            Legal Resources
+            Promoting Your CreatorArmour Link
           </div>
           <div className="p-2 rounded-lg bg-card hover:bg-secondary/50 cursor-pointer">
-            Video Tutorials
+            Professional Communication Templates
+          </div>
+          <div className="p-2 rounded-lg bg-card hover:bg-secondary/50 cursor-pointer">
+            Indian Market Specifics
           </div>
         </div>
       ),

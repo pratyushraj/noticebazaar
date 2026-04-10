@@ -188,42 +188,42 @@ const LandingPage = () => {
           : "bg-white border-[#E5E7EB] shadow-sm md:bg-white/70 md:border-transparent md:shadow-none md:backdrop-blur-md"
       )}>
         <div className="max-w-[1200px] mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-2 group" onClick={() => triggerHaptic(HapticPatterns.light)}>
-            <div className="w-8 h-8 bg-[#16A34A] rounded-xl flex items-center justify-center shadow-lg shadow-[#16A34A]/20">
+          <Link to="/" className="flex items-center gap-2 group shrink-0" onClick={() => triggerHaptic(HapticPatterns.light)}>
+            <div className="w-8 h-8 bg-[#16A34A] rounded-xl flex items-center justify-center shadow-lg shadow-[#16A34A]/20 shrink-0">
               <ShieldCheck className="w-5 h-5 text-white" />
             </div>
-            <h1 className="text-[17px] font-black tracking-tight text-[#0F172A]">
+            <h1 className="text-[17px] font-black tracking-tight text-[#0F172A] whitespace-nowrap">
               Creator Armour
             </h1>
           </Link>
 
-          <div className="hidden md:flex items-center gap-8 bg-white/95 backdrop-blur-md px-6 py-2 rounded-full border border-[#E5E7EB] shadow-sm">
-            <a href="#how-it-works" className="text-[13px] font-bold text-[#0F172A] hover:text-[#16A34A] transition-colors">How it Works</a>
-            <a href="#marketplace" className="text-[13px] font-bold text-[#0F172A] hover:text-[#16A34A] transition-colors">Packages</a>
-            <a href="#social-proof" className="text-[13px] font-bold text-[#0F172A] hover:text-[#16A34A] transition-colors">Creators</a>
+          <div className="hidden lg:flex items-center gap-6 bg-white/95 backdrop-blur-md px-6 py-2 rounded-full border border-[#E5E7EB] shadow-sm">
+            <a href="#how-it-works" className="text-[13px] font-bold text-[#0F172A] hover:text-[#16A34A] transition-colors whitespace-nowrap">How it Works</a>
+            <a href="#marketplace" className="text-[13px] font-bold text-[#0F172A] hover:text-[#16A34A] transition-colors whitespace-nowrap">Packages</a>
+            <a href="#social-proof" className="text-[13px] font-bold text-[#0F172A] hover:text-[#16A34A] transition-colors whitespace-nowrap">Creators</a>
           </div>
 
-          <div className="flex items-center gap-3">
-            <Link to="/login" className="hidden md:block px-4 py-2 text-[14px] font-bold text-[#0F172A] hover:text-[#16A34A] transition-colors rounded-full hover:bg-[#F8FAF9]">
+          <div className="flex items-center gap-2 md:gap-3 shrink-0">
+            <Link to="/login" className="hidden md:block px-3 py-2 text-[14px] font-bold text-[#0F172A] hover:text-[#16A34A] transition-colors rounded-full hover:bg-[#F8FAF9] whitespace-nowrap shrink-0">
               Log In
             </Link>
             <Link
               to="/signup?mode=brand"
               onClick={() => triggerHaptic(HapticPatterns.light)}
-              className="hidden md:inline-flex items-center px-4 py-2 text-[14px] font-black text-[#0F172A] hover:text-[#16A34A] transition-colors rounded-full bg-[#F8FAF9] hover:bg-[#E5E7EB] border border-[#E5E7EB] shadow-sm"
+              className="hidden lg:inline-flex items-center px-4 py-2 text-[14px] font-black text-[#0F172A] hover:text-[#16A34A] transition-colors rounded-full bg-[#F8FAF9] hover:bg-[#E5E7EB] border border-[#E5E7EB] shadow-sm whitespace-nowrap shrink-0"
             >
               Brand Console
             </Link>
             <Link
               to="/signup?mode=creator"
               onClick={() => triggerHaptic(HapticPatterns.success)}
-              className="bg-[#16A34A] hover:bg-[#15803D] text-white px-4 sm:px-5 py-2.5 sm:py-3 rounded-full text-[14px] sm:text-[15px] font-black shadow-lg shadow-[#16A34A]/25 hover:shadow-[#16A34A]/40 hover:-translate-y-0.5 transition-all whitespace-nowrap min-h-[44px]"
+              className="bg-[#16A34A] hover:bg-[#15803D] text-white px-4 sm:px-5 py-2.5 sm:py-3 rounded-full text-[14px] sm:text-[15px] font-black shadow-lg shadow-[#16A34A]/25 hover:shadow-[#16A34A]/40 hover:-translate-y-0.5 transition-all whitespace-nowrap shrink-0 min-h-[44px]"
             >
               Create Collab Link
             </Link>
             {/* Mobile menu button */}
             <button type="button"
-              className="md:hidden p-2 rounded-xl hover:bg-[#F8FAF9] transition-colors"
+              className="lg:hidden p-2 rounded-xl hover:bg-[#F8FAF9] transition-colors shrink-0"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               aria-label="Toggle menu"
             >
@@ -234,13 +234,13 @@ const LandingPage = () => {
 
         {/* Mobile menu panel */}
         {mobileMenuOpen && (
-          <div className="md:hidden bg-white border-t border-[#E5E7EB] px-4 py-4 space-y-1 shadow-lg">
+          <div className="lg:hidden bg-white border-t border-[#E5E7EB] px-4 py-4 space-y-1 shadow-lg">
             <a href="#how-it-works" onClick={() => setMobileMenuOpen(false)} className="block px-4 py-3 text-[15px] font-bold text-[#0F172A] hover:bg-[#F8FAF9] rounded-xl transition-colors">How it Works</a>
             <a href="#marketplace" onClick={() => setMobileMenuOpen(false)} className="block px-4 py-3 text-[15px] font-bold text-[#0F172A] hover:bg-[#F8FAF9] rounded-xl transition-colors">Packages</a>
             <a href="#social-proof" onClick={() => setMobileMenuOpen(false)} className="block px-4 py-3 text-[15px] font-bold text-[#0F172A] hover:bg-[#F8FAF9] rounded-xl transition-colors">Creators</a>
             <div className="pt-2 border-t border-[#E5E7EB] space-y-1">
-              <Link to="/login" onClick={() => setMobileMenuOpen(false)} className="block px-4 py-3 text-[15px] font-bold text-[#0F172A] hover:bg-[#F8FAF9] rounded-xl transition-colors">Log In</Link>
-              <Link to="/signup?mode=brand" onClick={() => setMobileMenuOpen(false)} className="block px-4 py-3 text-[15px] font-bold text-[#0F172A] hover:bg-[#F8FAF9] rounded-xl transition-colors">Brand Console</Link>
+              <Link to="/login" onClick={() => setMobileMenuOpen(false)} className="block md:hidden px-4 py-3 text-[15px] font-bold text-[#0F172A] hover:bg-[#F8FAF9] rounded-xl transition-colors">Log In</Link>
+              <Link to="/signup?mode=brand" onClick={() => setMobileMenuOpen(false)} className="block lg:hidden px-4 py-3 text-[15px] font-bold text-[#0F172A] hover:bg-[#F8FAF9] rounded-xl transition-colors">Brand Console</Link>
             </div>
           </div>
         )}

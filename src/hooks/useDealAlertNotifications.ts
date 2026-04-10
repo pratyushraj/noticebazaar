@@ -71,6 +71,7 @@ export const useDealAlertNotifications = () => {
 
   const syncSubscriptionStatus = useCallback(async () => {
     if (!('Notification' in window) || !('serviceWorker' in navigator)) return;
+    if (isLocalhostDev) return;
 
     setPermission(Notification.permission);
 
@@ -149,12 +150,16 @@ export const useDealAlertNotifications = () => {
   }, [pushApiBase, isLocalhostDev]);
 
   useEffect(() => {
-    const supported = 'Notification' in window && 'serviceWorker' in navigator && 'PushManager' in window;
+    const supported =
+      'Notification' in window &&
+      'serviceWorker' in navigator &&
+      'PushManager' in window &&
+      !isLocalhostDev;
     setIsSupported(supported);
     setPromptDismissed(localStorage.getItem(PROMPT_DISMISSED_KEY) === 'true');
     if (!supported) return;
     syncSubscriptionStatus();
-  }, [syncSubscriptionStatus]);
+  }, [syncSubscriptionStatus, isLocalhostDev]);
 
   const dismissPrompt = useCallback(() => {
     localStorage.setItem(PROMPT_DISMISSED_KEY, 'true');
@@ -164,6 +169,9 @@ export const useDealAlertNotifications = () => {
   const enableNotifications = useCallback(async (): Promise<{ success: boolean; reason?: string }> => {
     if (!isSupported) {
       return { success: false, reason: 'unsupported' };
+    }
+    if (isLocalhostDev) {
+      return { success: false, reason: 'localhost_disabled' };
     }
     if (!hasVapidKey) {
       return { success: false, reason: 'missing_vapid_key' };

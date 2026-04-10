@@ -3,7 +3,7 @@
  */
 
 /**
- * Resolve API base URL: use VITE_API_URL when set, otherwise infer from host (production) or fallback to localhost.
+ * Resolve API base URL: use VITE_API_URL when set, otherwise infer from host (production) or fallback to 127.0.0.1.
  * Call this when making requests so production (creatorarmour.com) uses the correct API host.
  */
 export function getApiBaseUrl(): string {
@@ -48,7 +48,7 @@ export function getApiBaseUrl(): string {
 
       if (useLocalApi && !isProduction) {
         // Local debug mode should only force localhost on local/non-production hosts.
-        apiUrl = 'http://localhost:3001';
+        apiUrl = 'http://127.0.0.1:3001';
       } else if (isProduction) {
         // Production: use dedicated API domain to avoid route drift
         // between frontend serverless handlers and backend API routes.
@@ -59,37 +59,35 @@ export function getApiBaseUrl(): string {
         let useProdApi = false;
         try { useProdApi = localStorage.getItem('useProdApi') === 'true'; } catch { /* ignore */ }
         useProdApi = useProdApi || urlParams.get('prodApi') === 'true';
-        apiUrl = useProdApi ? 'https://noticebazaar-api.onrender.com' : 'http://localhost:3001';
+        apiUrl = useProdApi ? 'https://noticebazaar-api.onrender.com' : 'http://127.0.0.1:3001';
       } else if (isLocalNetwork) {
         // Use the same IP but port 3001 for the API
         apiUrl = origin.replace(/:\d+$/, '') + ':3001';
       } else {
         // Fallback for tunnels or other cases
-        apiUrl = 'http://localhost:3001';
+        apiUrl = 'http://127.0.0.1:3001';
       }
     }
   }
 
   // Fallback for non-browser environments
-  if (apiUrl === undefined) apiUrl = 'http://localhost:3001';
+  if (apiUrl === undefined) apiUrl = 'http://127.0.0.1:3001';
 
   // Cleanup: No trailing slashes
   let cleanedUrl = (apiUrl || '').replace(/\/$/, '');
 
-  // Local dev safety: keep frontend and API on the same hostname family.
-  // Mixing 127.0.0.1 and localhost causes flaky local QA behavior in some browsers/tooling.
+  // Local dev safety: prefer 127.0.0.1 explicitly when a local API is selected.
+  // On this machine, localhost:3001 can resolve/flap differently from 127.0.0.1:3001,
+  // which breaks profile loading in fresh sessions like incognito windows.
   if (typeof window !== 'undefined' && localhostPattern.test(cleanedUrl)) {
-    const frontendHost = window.location.hostname.toLowerCase();
-    if (frontendHost === '127.0.0.1' || frontendHost === 'localhost') {
-      try {
-        const parsed = new URL(cleanedUrl);
-        if (parsed.hostname !== frontendHost) {
-          parsed.hostname = frontendHost;
-          cleanedUrl = parsed.toString().replace(/\/$/, '');
-        }
-      } catch {
-        // Ignore invalid URL parsing and keep the original cleanedUrl.
+    try {
+      const parsed = new URL(cleanedUrl);
+      if (parsed.hostname === 'localhost') {
+        parsed.hostname = '127.0.0.1';
+        cleanedUrl = parsed.toString().replace(/\/$/, '');
       }
+    } catch {
+      // Ignore invalid URL parsing and keep the original cleanedUrl.
     }
   }
 

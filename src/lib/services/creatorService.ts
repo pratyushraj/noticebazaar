@@ -1,6 +1,6 @@
 /**
  * Creator Service
- * 
+ *
  * Handles all business logic related to creators including:
  * - Profile management
  * - Platform connections
@@ -34,14 +34,14 @@ export interface CreatorProfile {
   bio: string | null;
   location: string | null;
   phone: string | null;
-  
+
   // Platform handles
   instagram_handle: string | null;
   youtube_channel_id: string | null;
   tiktok_handle: string | null;
   twitter_handle: string | null;
   facebook_profile_url: string | null;
-  
+
   // Platform metrics
   instagram_followers: number | null;
   youtube_subs: number | null;
@@ -49,7 +49,7 @@ export interface CreatorProfile {
   twitter_followers: number | null;
   facebook_followers: number | null;
   last_instagram_sync: string | null;
-  
+
   // Pricing
   pricing_min: number | null;
   pricing_avg: number | null;
@@ -57,24 +57,27 @@ export interface CreatorProfile {
   avg_rate_reel: number | null;
   typical_story_rate: number | null;
   typical_post_rate: number | null;
-  
+
   // Creator info
   creator_category: string | null;
   content_niches: string[] | null;
   platforms: string[] | null;
   goals: string[] | null;
   open_to_collabs: boolean | null;
-  
+
   // Banking
   bank_account_name: string | null;
   bank_account_number: string | null;
   bank_ifsc: string | null;
   bank_upi: string | null;
-  
+
   // Tax info
   gst_number: string | null;
   pan_number: string | null;
-  
+  portfolio_links: string[] | null;
+  bio_screenshot_url: string | null;
+  follower_range: string | null;
+
   // Metadata
   onboarding_complete: boolean | null;
   created_at: string;
@@ -89,14 +92,14 @@ export interface UpdateCreatorInput {
   bio?: string;
   location?: string;
   phone?: string;
-  
+
   // Platform handles
   instagram_handle?: string;
   youtube_channel_id?: string;
   tiktok_handle?: string;
   twitter_handle?: string;
   facebook_profile_url?: string;
-  
+
   // Pricing
   pricing_min?: number;
   pricing_avg?: number;
@@ -104,23 +107,26 @@ export interface UpdateCreatorInput {
   avg_rate_reel?: number;
   typical_story_rate?: number;
   typical_post_rate?: number;
-  
+
   // Creator info
   creator_category?: string;
   content_niches?: string[];
   platforms?: string[];
   goals?: string[];
   open_to_collabs?: boolean;
-  
+
   // Banking
   bank_account_name?: string;
   bank_account_number?: string;
   bank_ifsc?: string;
   bank_upi?: string;
-  
+
   // Tax info
   gst_number?: string;
   pan_number?: string;
+  portfolio_links?: string[];
+  bio_screenshot_url?: string;
+  follower_range?: string;
 }
 
 export interface CreatorStats {
@@ -149,11 +155,11 @@ export interface ICreatorService {
   getById(userId: string): Promise<ServiceResult<CreatorProfile>>;
   getByUsername(username: string): Promise<ServiceResult<CreatorProfile>>;
   update(userId: string, input: UpdateCreatorInput): Promise<ServiceResult<CreatorProfile>>;
-  
+
   // Onboarding
   completeOnboarding(userId: string, input: UpdateCreatorInput): Promise<ServiceResult<CreatorProfile>>;
   isOnboardingComplete(userId: string): Promise<ServiceResult<boolean>>;
-  
+
   // Platform Connections
   getPlatformConnections(userId: string): Promise<ServiceResult<PlatformConnection[]>>;
   updatePlatformHandle(
@@ -161,10 +167,10 @@ export interface ICreatorService {
     platform: PlatformConnection['platform'],
     handle: string
   ): Promise<ServiceResult<void>>;
-  
+
   // Stats
   getStats(userId: string): Promise<ServiceResult<CreatorStats>>;
-  
+
   // Avatar
   uploadAvatar(userId: string, file: File): Promise<ServiceResult<string>>;
 }
@@ -235,6 +241,9 @@ export class CreatorService implements ICreatorService {
       bank_upi: d.bank_upi,
       gst_number: d.gst_number,
       pan_number: d.pan_number,
+      portfolio_links: d.portfolio_links,
+      bio_screenshot_url: d.bio_screenshot_url,
+      follower_range: d.follower_range,
       onboarding_complete: d.onboarding_complete,
       created_at: d.created_at,
       updated_at: d.updated_at,

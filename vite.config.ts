@@ -1,28 +1,27 @@
-import { defineConfig } from "vite";
-import dyadComponentTagger from "@dyad-sh/react-vite-component-tagger";
-import react from "@vitejs/plugin-react-swc";
-import path from "path";
-
-
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react-swc'
+import path from 'path'
 
 // Plugin to fix use-sync-external-store/shim CommonJS export issue
 const useSyncExternalStoreShimPlugin = (): any => {
-  const virtualModuleId = '\0virtual:use-sync-external-store-shim';
+  const virtualModuleId = '\0virtual:use-sync-external-store-shim'
   return {
     name: 'use-sync-external-store-shim-fix',
     enforce: 'pre' as const, // Run before other plugins
     resolveId(id: string) {
       // Intercept use-sync-external-store/shim imports (any form)
-      if (id === 'use-sync-external-store/shim' ||
+      if (
+        id === 'use-sync-external-store/shim' ||
         id.endsWith('use-sync-external-store/shim') ||
-        id.includes('use-sync-external-store/shim/index')) {
-        return virtualModuleId;
+        id.includes('use-sync-external-store/shim/index')
+      ) {
+        return virtualModuleId
       }
       // Also catch the actual file path from pnpm
       if (id.includes('use-sync-external-store') && id.includes('/shim')) {
-        return virtualModuleId;
+        return virtualModuleId
       }
-      return null;
+      return null
     },
     load(id: string) {
       // Handle our virtual module
@@ -32,13 +31,12 @@ const useSyncExternalStoreShimPlugin = (): any => {
           import { useSyncExternalStore } from 'react';
           export { useSyncExternalStore };
           export default useSyncExternalStore;
-        `;
+        `
       }
-      return null;
+      return null
     },
-  };
-};
-
+  }
+}
 
 export default defineConfig(() => ({
   server: {
@@ -49,7 +47,7 @@ export default defineConfig(() => ({
     strictPort: true,
   },
   build: {
-    sourcemap: false, 
+    sourcemap: false,
     assetsDir: 'assets',
     chunkSizeWarningLimit: 1000,
     commonjsOptions: {
@@ -70,66 +68,66 @@ export default defineConfig(() => ({
           if (id.includes('node_modules')) {
             // React ecosystem
             if (id.includes('react/') || id.includes('react-dom/') || id.includes('react-router')) {
-              return 'vendor-react';
+              return 'vendor-react'
             }
             // UI libraries
-            if (id.includes('@radix-ui') || id.includes('cmdk') || id.includes('vaul') || id.includes('embla-carousel')) {
-              return 'vendor-ui';
+            if (
+              id.includes('@radix-ui') ||
+              id.includes('cmdk') ||
+              id.includes('vaul') ||
+              id.includes('embla-carousel')
+            ) {
+              return 'vendor-ui'
             }
             // Supabase
             if (id.includes('@supabase')) {
-              return 'vendor-supabase';
+              return 'vendor-supabase'
             }
             // Framer motion (heavy animation lib)
             if (id.includes('framer-motion')) {
-              return 'vendor-motion';
+              return 'vendor-motion'
             }
             // Icons
             if (id.includes('lucide-react')) {
-              return 'vendor-icons';
+              return 'vendor-icons'
             }
             // Data/state
             if (id.includes('@tanstack')) {
-              return 'vendor-query';
+              return 'vendor-query'
             }
             // Charts
             if (id.includes('recharts')) {
-              return 'vendor-charts';
+              return 'vendor-charts'
             }
           }
         },
       },
     },
   },
-  plugins: [
-    react(),
-    dyadComponentTagger(),
-    useSyncExternalStoreShimPlugin()
-  ],
+  plugins: [react({ jsxRuntime: 'automatic' }), useSyncExternalStoreShimPlugin()],
   resolve: {
     alias: {
-      "@": path.resolve(__dirname, "./src"),
-      "react": path.resolve(__dirname, "node_modules/react"),
-      "react-dom": path.resolve(__dirname, "node_modules/react-dom"),
-      "use-sync-external-store/shim": path.resolve(__dirname, "./src/lib/use-sync-external-store-shim.ts"),
+      '@': path.resolve(__dirname, './src'),
+      'use-sync-external-store/shim': path.resolve(
+        __dirname,
+        './src/lib/use-sync-external-store-shim.ts'
+      ),
     },
-    dedupe: ["react", "react-dom", "framer-motion", "lucide-react", "react-router-dom"],
   },
   optimizeDeps: {
     include: [
-      "react",
-      "react-dom",
-      "react-dom/client",
-      "framer-motion",
-      "lucide-react",
-      "@supabase/supabase-js",
-      "@tanstack/react-query",
-      "react-router-dom"
+      'react',
+      'react-dom',
+      'react-dom/client',
+      'react/jsx-runtime',
+      'react/jsx-dev-runtime',
+      'framer-motion',
+      'lucide-react',
+      '@supabase/supabase-js',
+      '@tanstack/react-query',
+      'react-router-dom',
     ],
-    exclude: [
-      "use-sync-external-store",
-      "use-sync-external-store/shim",
-    ],
+    exclude: ['use-sync-external-store', 'use-sync-external-store/shim'],
     holdUntilCrawlEnd: true,
   },
-}));
+}))

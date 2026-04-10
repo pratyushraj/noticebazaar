@@ -3,7 +3,8 @@
 import { useEffect, useState, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { ErrorBoundary } from '@/components/ui/error-boundary';
-import { Search, Briefcase, CheckCircle, DollarSign, Calendar, AlertTriangle, FileText } from 'lucide-react';
+import { Search, Briefcase, CheckCircle, DollarSign, Calendar, AlertTriangle, FileText, Link2 } from 'lucide-react';
+import ProfileCompletionCard from '@/components/creator-dashboard/ProfileCompletionCard';
 import ActionCenter from '@/components/creator-dashboard/ActionCenter';
 import QuickActionsFAB from '@/components/creator-dashboard/QuickActionsFAB';
 import { Card, CardContent } from '@/components/ui/card';
@@ -516,42 +517,34 @@ const CreatorDashboardPreview = () => {
                 </div>
               </div>
 
-              {/* Financial Overview Section */}
-            {/* Financial Overview Section */}
+                {/* Financial Overview Section */}
             <section className="mb-12">
-              <h2 className="text-2xl font-semibold text-foreground mb-6">Financial Overview</h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                <Card className="bg-secondary/[0.06] backdrop-blur-[40px] border-border rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.3)] hover:bg-secondary/[0.08] transition-all">
-                  <CardContent className="p-6">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-xs text-foreground/50 mb-2 font-medium">Pending Invoices</p>
-                        <p className="text-2xl font-semibold text-foreground">
-                          ₹{dashboardData.moneyOverview.pendingPayments.toLocaleString('en-IN')}
-                        </p>
-                      </div>
-                      <div className="h-12 w-12 rounded-2xl bg-yellow-500/20 backdrop-blur-sm border border-yellow-500/30 flex items-center justify-center">
-                        <AlertTriangle className="h-5 w-5 text-yellow-400" />
-                      </div>
+              <h2 className="text-2xl font-semibold text-foreground mb-6">Your Financial Overview</h2>
+              <Card className="bg-secondary/[0.06] backdrop-blur-[40px] border-border rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.3)]">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-xs text-foreground/50 mb-2 font-medium">Total Earnings</p>
+                      <p className="text-2xl font-semibold text-foreground">₹0.00</p>
                     </div>
-                  </CardContent>
-                </Card>
-
-                <Card className="bg-secondary/[0.06] backdrop-blur-[40px] border-border rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.3)] hover:bg-secondary/[0.08] transition-all">
-                  <CardContent className="p-6">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-xs text-foreground/50 mb-2 font-medium">Tax Liability (Q3)</p>
-                        <p className="text-2xl font-semibold text-foreground">₹85,000</p>
-                      </div>
-                      <div className="h-12 w-12 rounded-2xl bg-warning/20 backdrop-blur-sm border border-orange-500/30 flex items-center justify-center">
-                        <Calendar className="h-5 w-5 text-warning" />
-                      </div>
+                    <div className="h-12 w-12 rounded-2xl bg-green-500/20 backdrop-blur-sm border border-green-500/30 flex items-center justify-center">
+                      <DollarSign className="h-5 w-5 text-green-400" />
                     </div>
-                  </CardContent>
-                </Card>
-              </div>
+                  </div>
+                  <div className="mt-4 text-sm text-foreground/70">
+                    <p>Complete your profile and share your link to start earning!</p>
+                    <ul className="list-disc list-inside mt-2 space-y-1">
+                      <li><CheckCircle className="inline-block h-4 w-4 mr-1 text-green-500" /> Create your Collab Link</li>
+                      <li><CheckCircle className="inline-block h-4 w-4 mr-1 text-gray-400" /> Complete your profile (Niche, Portfolio, etc.)</li>
+                      <li><CheckCircle className="inline-block h-4 w-4 mr-1 text-gray-400" /> Share your link with brands</li>
+                    </ul>
+                  </div>
+                </CardContent>
+              </Card>
             </section>
+
+            {/* Profile Completion Card */}
+            <ProfileCompletionCard />
 
             {/* Recent Activity Section */}
             <section className="mb-12">
@@ -559,7 +552,7 @@ const CreatorDashboardPreview = () => {
               <Card className="bg-secondary/[0.06] backdrop-blur-[40px] border-border rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.3)]">
                 <CardContent className="space-y-4 p-6">
                   <div className="space-y-2 bg-card rounded-2xl p-2 border border-border/5">
-                    <div className={cn("flex items-center gap-3 p-3 rounded-xl transition-all hover:bg-card", "border-b border-border/5")}>
+                    <div className={cn("flex items-center gap-3 flex-wrap p-3 rounded-xl transition-all hover:bg-card", "border-b border-border/5")}>
                       <div className="h-10 w-10 rounded-xl bg-green-500/20 backdrop-blur-sm flex items-center justify-center border border-green-500/30">
                         <CheckCircle className="h-5 w-5 text-green-400" />
                       </div>
@@ -568,7 +561,7 @@ const CreatorDashboardPreview = () => {
                         <p className="text-xs text-foreground/60">Approved • 2 hours ago</p>
                       </div>
                     </div>
-                    <div className={cn("flex items-center gap-3 p-3 rounded-xl transition-all hover:bg-card", "border-b border-border/5")}>
+                    <div className={cn("flex items-center gap-3 flex-wrap p-3 rounded-xl transition-all hover:bg-card", "border-b border-border/5")}>
                       <div className="h-10 w-10 rounded-xl bg-info/20 backdrop-blur-sm flex items-center justify-center border border-info/30">
                         <Briefcase className="h-5 w-5 text-info" />
                       </div>
@@ -577,7 +570,7 @@ const CreatorDashboardPreview = () => {
                         <p className="text-xs text-foreground/60">Contract Reviewed • 5 hours ago</p>
                       </div>
                     </div>
-                    <div className={cn("flex items-center gap-3 p-3 rounded-xl transition-all hover:bg-card", "border-b border-border/5")}>
+                    <div className={cn("flex items-center gap-3 flex-wrap p-3 rounded-xl transition-all hover:bg-card", "border-b border-border/5")}>
                       <div className="h-10 w-10 rounded-xl bg-secondary/20 backdrop-blur-sm flex items-center justify-center border border-purple-500/30">
                         <DollarSign className="h-5 w-5 text-secondary" />
                       </div>
@@ -586,7 +579,7 @@ const CreatorDashboardPreview = () => {
                         <p className="text-xs text-foreground/60">Completed • 1 day ago</p>
                       </div>
                     </div>
-                    <div className="flex items-center gap-3 p-3 rounded-xl transition-all hover:bg-card">
+                    <div className={cn("flex items-center gap-3 flex-wrap p-3 rounded-xl transition-all hover:bg-card")}>
                       <div className="h-10 w-10 rounded-xl bg-yellow-500/20 backdrop-blur-sm flex items-center justify-center border border-yellow-500/30">
                         <FileText className="h-5 w-5 text-yellow-400" />
                       </div>

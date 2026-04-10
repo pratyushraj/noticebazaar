@@ -24,6 +24,10 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+tsconfig.tsbuildinfo
+memory/
+MEMORY.md
+package-lock.json
 
 # Supabase
 supabase/.temp/
