@@ -376,7 +376,8 @@ const Signup = () => {
         email: emailAtSignup,
         password: password,
         options: {
-          emailRedirectTo: `${window.location.origin}/${accountMode === 'brand' ? 'brand-dashboard' : 'creator-link-ready'}`,
+          // Email confirmation link should land on onboarding which can finalize link creation automatically.
+          emailRedirectTo: `${window.location.origin}/${accountMode === 'brand' ? 'brand-dashboard' : 'creator-onboarding'}`,
           data: {
             first_name: firstName,
             last_name: lastName,
@@ -1031,7 +1032,8 @@ const Signup = () => {
 	                onClick={async () => {
                   void trackEvent('signup_started', { mode: accountMode, method: 'google' });
 	                  try {
-	                    const redirectPath = accountMode === 'brand' ? 'brand-dashboard' : 'creator-link-ready';
+	                    // OAuth may not provide an instagram handle; onboarding can finalize automatically if it exists.
+	                    const redirectPath = accountMode === 'brand' ? 'brand-dashboard' : 'creator-onboarding';
 	                    const redirectUrl = `${window.location.origin}/${redirectPath}`;
 	                    sessionStorage.setItem('oauth_intended_route', redirectPath);
 	                    const { data, error } = await supabase.auth.signInWithOAuth({

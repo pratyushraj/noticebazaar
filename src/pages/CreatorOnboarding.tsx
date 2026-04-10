@@ -41,15 +41,20 @@ export default function CreatorOnboarding() {
   const [name] = useState(fullName || 'Creator');
   const [instagramHandle, setInstagramHandle] = useState('');
 
+  const isGeneratedUsername = useMemo(() => {
+    const u = String(profile?.username || '').trim().toLowerCase();
+    return !!u && /^creator-[a-z0-9]+$/i.test(u);
+  }, [profile?.username]);
+
   const derivedHandle = useMemo(() => {
-    return (
-      (profile?.instagram_handle || profile?.username || user?.user_metadata?.instagram_handle || '')
-        .toString()
-        .replace(/^@+/, '')
-        .trim()
-        .toLowerCase()
-    );
-  }, [profile?.instagram_handle, profile?.username, user?.user_metadata?.instagram_handle]);
+    const fromProfile = String(profile?.instagram_handle || '').replace(/^@+/, '').trim().toLowerCase();
+    const fromMetadata = String(user?.user_metadata?.instagram_handle || '').replace(/^@+/, '').trim().toLowerCase();
+    const fromUsername =
+      !isGeneratedUsername
+        ? String(profile?.username || '').replace(/^@+/, '').trim().toLowerCase()
+        : '';
+    return fromProfile || fromMetadata || fromUsername || '';
+  }, [profile?.instagram_handle, profile?.username, user?.user_metadata?.instagram_handle, isGeneratedUsername]);
 
   const metadataHandle = useMemo(() => {
     return (user?.user_metadata?.instagram_handle || '')
@@ -60,12 +65,11 @@ export default function CreatorOnboarding() {
   }, [user?.user_metadata?.instagram_handle]);
 
   const persistedHandle = useMemo(() => {
-    return (profile?.instagram_handle || profile?.username || '')
-      .toString()
-      .replace(/^@+/, '')
-      .trim()
-      .toLowerCase();
-  }, [profile?.instagram_handle, profile?.username]);
+    const fromProfile = String(profile?.instagram_handle || '').replace(/^@+/, '').trim().toLowerCase();
+    const fromUsername =
+      !isGeneratedUsername ? String(profile?.username || '').replace(/^@+/, '').trim().toLowerCase() : '';
+    return fromProfile || fromUsername || '';
+  }, [profile?.instagram_handle, profile?.username, isGeneratedUsername]);
 
   useEffect(() => {
     if (derivedHandle && !instagramHandle) {
