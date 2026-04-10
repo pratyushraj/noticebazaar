@@ -3005,46 +3005,9 @@ const MobileDashboardDemo = ({
                                         </motion.div>
                                     </div>
 
-                                    {/* Beautiful Collab Link Card - moved below empty state */}
+                                    {/* Collab Link Card - removed duplicate */}
                                     <div className="px-5 mb-8">
-                                        <div className={cn("p-4 rounded-2xl border", isDark ? "bg-card border-[#2C2C2E]" : "bg-white border-[#E5E7EB]")}>
-                                            <div className="flex items-center justify-between mb-2">
-                                                <p className={cn("text-[10px] font-black uppercase tracking-widest opacity-50", textColor)}>Your link</p>
-                                                <p className={cn("text-[10px] font-medium", secondaryTextColor)}>Send this when a brand asks to collaborate</p>
-                                            </div>
-
-                                            <div className={cn("px-4 py-3 rounded-xl font-mono text-[12px] border mb-3", isDark ? "bg-background border-border text-foreground" : "bg-[#F8FAF9] border-[#E5E7EB] text-[#0F172A]")}>
-                                                creatorarmour.com/{profile?.handle || username || 'creator'}
-                                            </div>
-
-                                            <div className="flex gap-2">
-                                                <button type="button"
-                                                    onClick={() => {
-                                                        handleShareOnWhatsApp();
-                                                    }}
-                                                    className={cn(
-                                                        "flex-1 h-10 rounded-xl flex items-center justify-center font-black text-[12px] active:scale-95 transition-all",
-                                                        isDark ? "bg-primary text-foreground" : "bg-[#16A34A] text-white"
-                                                    )}
-                                                >
-                                                    <MessageCircle className="w-4 h-4 mr-1.5" /> WhatsApp
-                                                </button>
-                                                <button type="button"
-                                                    onClick={() => {
-                                                        handleCopyStorefront();
-                                                    }}
-                                                    className={cn(
-                                                        "h-10 px-4 rounded-xl flex items-center justify-center border font-black text-[12px] active:scale-95 transition-all",
-                                                        isCollabLinkCopied
-                                                            ? "bg-[#16A34A] border-[#16A34A] text-white"
-                                                            : isDark ? "bg-background border-border text-foreground" : "bg-white border-[#E5E7EB] text-[#0F172A]"
-                                                    )}
-                                                >
-                                                    {isCollabLinkCopied ? 'Copied!' : 'Copy'}
-                                                </button>
-                                            </div>
-
-                                            <div className={cn(
+                                        <div className={cn(
                                                 "mt-4 rounded-[24px] border p-4 overflow-hidden relative",
                                                 isDark ? "bg-[#0F172A] border-border" : "bg-[linear-gradient(180deg,#ffffff_0%,#f8fbfa_100%)] border-slate-200"
                                             )}>
@@ -3055,9 +3018,6 @@ const MobileDashboardDemo = ({
                                                         : "bg-gradient-to-r from-emerald-50 via-cyan-50 to-blue-50"
                                                 )} />
                                                 <div className="relative">
-                                                    <p className={cn("text-[11px] font-black uppercase tracking-[0.2em] mb-3", isDark ? "text-white/55" : "text-slate-500")}>
-                                                        What brands will see
-                                                    </p>
                                                     <div className="flex items-center gap-3">
                                                         <div className="w-11 h-11 rounded-2xl overflow-hidden border border-border shrink-0">
                                                             <img
@@ -3958,7 +3918,7 @@ const MobileDashboardDemo = ({
                                                     }}
                                                     className="h-12 px-6 rounded-2xl bg-gradient-to-r from-blue-600 to-cyan-500 text-white font-black text-[13px] shadow-lg shadow-blue-500/20 active:scale-95 transition-all"
                                                 >
-                                                    View New Offers
+                                                    View Pending Offers
                                                 </button>
                                             </div>
                                         )}
@@ -4344,20 +4304,19 @@ const MobileDashboardDemo = ({
                                                 <p className={cn("text-[13px] leading-relaxed opacity-70 mb-5", textColor)}>
                                                     Share your creator link to start receiving structured brand offers here.
                                                 </p>
-                                                <button
-                                                    type="button"
-                                                    onClick={() => {
-                                                        triggerHaptic();
-                                                        handleShareOnWhatsApp();
-                                                    }}
-                                                    className="h-12 px-6 rounded-2xl bg-gradient-to-r from-blue-600 to-cyan-500 text-white font-black text-[13px] shadow-lg shadow-blue-500/20 active:scale-95 transition-all"
-                                                >
-                                                    Share Link
-                                                </button>
-                                            </div>
-                                        )}
-                                    </motion.div>
-                                )}
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => {
+                                                            triggerHaptic();
+                                                            setActiveTab('deals');
+                                                            setCollabSubTab('pending');
+                                                        }}
+                                                        className="h-12 px-6 rounded-2xl bg-gradient-to-r from-blue-600 to-cyan-500 text-white font-black text-[13px] shadow-lg shadow-blue-500/20 active:scale-95 transition-all"
+                                                    >
+                                                        Review Pending Offers
+                                                    </button>
+                                                </div>
+                                            )}
                             </AnimatePresence>
                             <div className="h-24 opacity-0 pointer-events-none" aria-hidden="true" />
                         </div>
@@ -4741,25 +4700,25 @@ const MobileDashboardDemo = ({
                     className={cn('fixed bottom-0 inset-x-0 border-t z-[1100] transition-all duration-500', isDark ? 'border-[#1F2937] bg-[#0B0F14]/90' : 'border-border bg-secondary/90')}
                     style={{ backdropFilter: 'blur(30px)', WebkitBackdropFilter: 'blur(30px)' }}
                 >
-                    <div className="max-w-md md:max-w-2xl mx-auto flex items-center justify-between px-4 py-3 pb-safe gap-1" style={{ paddingBottom: 'max(env(safe-area-inset-bottom), 16px)' }}>
-                        <motion.button whileTap={{ scale: 0.94 }} onClick={() => { triggerHaptic(); setActiveTab('dashboard'); }} className={cn("flex flex-col items-center justify-center gap-1 min-w-[64px] h-[54px] px-2 rounded-2xl transition-all", activeTab === 'dashboard' ? (isDark ? 'bg-white/8 shadow-[0_8px_20px_rgba(0,0,0,0.18)]' : 'bg-white shadow-sm border border-[#E5E7EB]') : 'bg-transparent')}>
-                            <LayoutDashboard className={cn('w-[22px] h-[22px]', activeTab === 'dashboard' ? (isDark ? 'text-foreground' : 'text-[#111827]') : secondaryTextColor)} />
-                            <span className={cn('text-[10px] tracking-tight', activeTab === 'dashboard' ? (isDark ? 'text-foreground font-bold' : 'text-[#111827] font-bold') : cn('font-medium', secondaryTextColor))}>Home</span>
+                    <div className="max-w-md md:max-w-2xl mx-auto flex items-center justify-between px-4 py-2 pb-safe gap-1" style={{ paddingBottom: 'max(env(safe-area-inset-bottom), 12px)' }}>
+                        <motion.button whileTap={{ scale: 0.94 }} onClick={() => { triggerHaptic(); setActiveTab('dashboard'); }} className={cn("flex flex-col items-center justify-center gap-0.5 min-w-[64px] h-[48px] px-2 rounded-2xl transition-all", activeTab === 'dashboard' ? (isDark ? 'bg-white/8 shadow-[0_8px_20px_rgba(0,0,0,0.18)]' : 'bg-white shadow-sm border border-[#E5E7EB]') : 'bg-transparent')}>
+                            <LayoutDashboard className={cn('w-[20px] h-[20px]', activeTab === 'dashboard' ? (isDark ? 'text-foreground' : 'text-[#111827]') : secondaryTextColor)} />
+                            <span className={cn('text-[9px] tracking-tight', activeTab === 'dashboard' ? (isDark ? 'text-foreground font-bold' : 'text-[#111827] font-bold') : cn('font-medium', secondaryTextColor))}>Home</span>
                         </motion.button>
 
-                        <motion.button whileTap={{ scale: 0.94 }} onClick={() => { triggerHaptic(); setActiveTab('deals'); }} className={cn("flex flex-col items-center justify-center gap-1 min-w-[64px] h-[54px] px-2 rounded-2xl transition-all", activeTab === 'deals' ? (isDark ? 'bg-white/8 shadow-[0_8px_20px_rgba(0,0,0,0.18)]' : 'bg-white shadow-sm border border-[#E5E7EB]') : 'bg-transparent')}>
-                            <Briefcase className={cn('w-[22px] h-[22px]', activeTab === 'deals' ? (isDark ? 'text-foreground' : 'text-[#111827]') : secondaryTextColor)} />
-                            <span className={cn('text-[10px] tracking-tight', activeTab === 'deals' ? (isDark ? 'text-foreground font-bold' : 'text-[#111827] font-bold') : cn('font-medium', secondaryTextColor))}>Collabs</span>
+                        <motion.button whileTap={{ scale: 0.94 }} onClick={() => { triggerHaptic(); setActiveTab('deals'); }} className={cn("flex flex-col items-center justify-center gap-0.5 min-w-[64px] h-[48px] px-2 rounded-2xl transition-all", activeTab === 'deals' ? (isDark ? 'bg-white/8 shadow-[0_8px_20px_rgba(0,0,0,0.18)]' : 'bg-white shadow-sm border border-[#E5E7EB]') : 'bg-transparent')}>
+                            <Briefcase className={cn('w-[20px] h-[20px]', activeTab === 'deals' ? (isDark ? 'text-foreground' : 'text-[#111827]') : secondaryTextColor)} />
+                            <span className={cn('text-[9px] tracking-tight', activeTab === 'deals' ? (isDark ? 'text-foreground font-bold' : 'text-[#111827] font-bold') : cn('font-medium', secondaryTextColor))}>Collabs</span>
                         </motion.button>
 
-                        <motion.button whileTap={{ scale: 0.94 }} onClick={() => { triggerHaptic(); setActiveTab('payments'); }} className={cn("flex flex-col items-center justify-center gap-1 min-w-[64px] h-[54px] px-2 rounded-2xl transition-all", activeTab === 'payments' ? (isDark ? 'bg-white/8 shadow-[0_8px_20px_rgba(0,0,0,0.18)]' : 'bg-white shadow-sm border border-[#E5E7EB]') : 'bg-transparent')}>
-                            <CreditCard className={cn('w-[22px] h-[22px]', activeTab === 'payments' ? (isDark ? 'text-foreground' : 'text-[#111827]') : secondaryTextColor)} />
-                            <span className={cn('text-[10px] tracking-tight', activeTab === 'payments' ? (isDark ? 'text-foreground font-bold' : 'text-[#111827] font-bold') : cn('font-medium', secondaryTextColor))}>Payments</span>
+                        <motion.button whileTap={{ scale: 0.94 }} onClick={() => { triggerHaptic(); setActiveTab('payments'); }} className={cn("flex flex-col items-center justify-center gap-0.5 min-w-[64px] h-[48px] px-2 rounded-2xl transition-all", activeTab === 'payments' ? (isDark ? 'bg-white/8 shadow-[0_8px_20px_rgba(0,0,0,0.18)]' : 'bg-white shadow-sm border border-[#E5E7EB]') : 'bg-transparent')}>
+                            <CreditCard className={cn('w-[20px] h-[20px]', activeTab === 'payments' ? (isDark ? 'text-foreground' : 'text-[#111827]') : secondaryTextColor)} />
+                            <span className={cn('text-[9px] tracking-tight', activeTab === 'payments' ? (isDark ? 'text-foreground font-bold' : 'text-[#111827] font-bold') : cn('font-medium', secondaryTextColor))}>Payments</span>
                         </motion.button>
 
-                        <motion.button whileTap={{ scale: 0.94 }} onClick={() => { triggerHaptic(); setActiveTab('profile'); }} className={cn("flex flex-col items-center justify-center gap-1 min-w-[64px] h-[54px] px-2 rounded-2xl transition-all", activeTab === 'profile' ? (isDark ? 'bg-white/8 shadow-[0_8px_20px_rgba(0,0,0,0.18)]' : 'bg-white shadow-sm border border-[#E5E7EB]') : 'bg-transparent')}>
-                            <User className={cn('w-[22px] h-[22px]', activeTab === 'profile' ? (isDark ? 'text-foreground' : 'text-[#111827]') : secondaryTextColor)} />
-                            <span className={cn('text-[10px] tracking-tight', activeTab === 'profile' ? (isDark ? 'text-foreground font-bold' : 'text-[#111827] font-bold') : cn('font-medium', secondaryTextColor))}>Account</span>
+                        <motion.button whileTap={{ scale: 0.94 }} onClick={() => { triggerHaptic(); setActiveTab('profile'); }} className={cn("flex flex-col items-center justify-center gap-0.5 min-w-[64px] h-[48px] px-2 rounded-2xl transition-all", activeTab === 'profile' ? (isDark ? 'bg-white/8 shadow-[0_8px_20px_rgba(0,0,0,0.18)]' : 'bg-white shadow-sm border border-[#E5E7EB]') : 'bg-transparent')}>
+                            <User className={cn('w-[20px] h-[20px]', activeTab === 'profile' ? (isDark ? 'text-foreground' : 'text-[#111827]') : secondaryTextColor)} />
+                            <span className={cn('text-[9px] tracking-tight', activeTab === 'profile' ? (isDark ? 'text-foreground font-bold' : 'text-[#111827] font-bold') : cn('font-medium', secondaryTextColor))}>Account</span>
                         </motion.button>
                     </div>
                 </div>
