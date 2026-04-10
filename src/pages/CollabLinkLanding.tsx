@@ -523,6 +523,18 @@ const CollabLinkLanding = () => {
   const [brandLogoUrl, setBrandLogoUrl] = useState<string>('');
   const [brandLogoUploading, setBrandLogoUploading] = useState(false);
 
+  const jumpToOfferForm = (options?: { openCustom?: boolean }) => {
+    setHasStartedOffer(true);
+    if (options?.openCustom && !showCustomFlow) {
+      setShowCustomFlow(true);
+      setCurrentStep(1);
+      setSelectedTemplateId(null);
+    }
+    window.setTimeout(() => {
+      document.getElementById('core-offer-form')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 80);
+  };
+
   // If the brand came here via "Send offer", auto-open the offer flow.
   useEffect(() => {
     const offerParam = (searchParams.get('offer') || '').toLowerCase();
@@ -530,10 +542,7 @@ const CollabLinkLanding = () => {
     if (!shouldStartOffer) return;
     if (hasStartedOffer) return;
 
-    setHasStartedOffer(true);
-    window.setTimeout(() => {
-      document.getElementById('core-offer-form')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }, 100);
+    jumpToOfferForm();
   }, [searchParams, hasStartedOffer]);
 
   // Save and continue later
@@ -3658,21 +3667,23 @@ const CollabLinkLanding = () => {
               {isCoreReady && !hasStartedOffer && (
                 <div className="pointer-events-none absolute inset-0 -z-10 rounded-2xl border border-teal-300/30 animate-ping" />
               )}
-	              <Button
-	                onClick={
-	                  !showCustomFlow
-	                    ? () => {
-	                      if (selectedTemplate) {
-	                        setShowCustomFlow(true);
-	                        setCurrentStep(2);
-	                        window.scrollTo({ top: 0, behavior: 'smooth' });
-	                        triggerHaptic(HapticPatterns.success);
-	                        return;
-	                      }
-	                      document.getElementById('packages-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-	                    }
-	                    : handleStickySubmit
-	                }
+		              <Button
+		                onClick={
+		                  !showCustomFlow
+		                    ? () => {
+		                      if (selectedTemplate) {
+		                        setShowCustomFlow(true);
+		                        setCurrentStep(2);
+		                        window.scrollTo({ top: 0, behavior: 'smooth' });
+		                        triggerHaptic(HapticPatterns.success);
+		                        return;
+		                      }
+		                      // First-time brands want the fastest path: open the minimal custom offer form immediately.
+		                      jumpToOfferForm({ openCustom: true });
+		                      triggerHaptic(HapticPatterns.success);
+		                    }
+		                    : handleStickySubmit
+		                }
 	                disabled={submitting || (showCustomFlow && currentStep === 2 && hasStartedOffer && !isStep2Ready)}
 	                className={[
 	                  'w-full rounded-2xl font-black active:scale-[0.98] transition-all duration-300',
@@ -3686,24 +3697,24 @@ const CollabLinkLanding = () => {
                     <Loader2 className="h-5 w-5 text-white animate-spin" />
                     Finalizing Security...
                   </span>
-		                ) : !showCustomFlow ? (
-		                  selectedTemplate ? (
-			                    <span className="w-full flex flex-col items-center justify-center leading-tight">
-			                      <span className="text-[12px] font-black">
-			                        Chosen service — {selectedTemplate.type === 'barter' ? 'Free products as payment' : `₹${selectedTemplate.budget.toLocaleString('en-IN')}`}
-			                      </span>
-			                      <span className="mt-1 text-[12px] font-black uppercase tracking-widest flex items-center gap-2">
-			                        Continue to Offer
-			                        <ArrowRight className="h-4 w-4" />
-			                      </span>
+			                ) : !showCustomFlow ? (
+			                  selectedTemplate ? (
+				                    <span className="w-full flex flex-col items-center justify-center leading-tight">
+				                      <span className="text-[12px] font-black">
+				                        Chosen service — {selectedTemplate.type === 'barter' ? 'Free products as payment' : `₹${selectedTemplate.budget.toLocaleString('en-IN')}`}
+				                      </span>
+				                      <span className="mt-1 text-[12px] font-black uppercase tracking-widest flex items-center gap-2">
+				                        Continue to Offer
+				                        <ArrowRight className="h-4 w-4" />
+				                      </span>
+				                    </span>
+			                  ) : (
+			                    <span className="flex items-center justify-center gap-2 text-[13px] uppercase tracking-widest">
+			                      Send Offer
+			                      <ArrowRight className="h-4 w-4" />
 			                    </span>
-		                  ) : (
-		                    <span className="flex items-center justify-center gap-2 text-[13px] uppercase tracking-widest">
-		                      Choose a Service
-		                      <ArrowRight className="h-4 w-4" />
-		                    </span>
-		                  )
-		                  ) : (
+			                  )
+			                  ) : (
 		                  (currentStep === 2 && hasStartedOffer) ? (
 		                    <span className="flex items-center justify-center gap-2 text-[13px] uppercase tracking-widest">
 		                      Send Offer

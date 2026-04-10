@@ -1272,8 +1272,10 @@ function DealDetailPageContent() {
           explanation: 'Share your Instagram post link from this deal so the brand can review it.',
           actionLabel: 'Share post link',
           action: () => {
-            // Scroll to content submission panel
-            const target = document.getElementById('deal-brief-section');
+            // Scroll to content submission input (not the brief section).
+            const target =
+              document.getElementById('deal-content-link') ||
+              document.getElementById('deal-brief-section');
             target?.scrollIntoView({ behavior: 'smooth', block: 'start' });
           },
         };

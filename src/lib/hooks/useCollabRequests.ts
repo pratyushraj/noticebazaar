@@ -1,3 +1,4 @@
+import { useRef } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { getApiBaseUrl } from '@/lib/utils/api';
@@ -34,6 +35,8 @@ export interface CollabRequest {
 
 const STALE_TIME_MS = 3 * 60 * 1000;   // 3 minutes – cache considered fresh, no refetch on remount
 const REFETCH_INTERVAL_MS = 5 * 60 * 1000; // 5 minutes – background refetch when on page
+const FAST_POLL_WINDOW_MS = 60 * 1000; // 60s burst on first dashboard view to surface new offers quickly
+const FAST_POLL_INTERVAL_MS = 5 * 1000; // 5s
 
 async function fetchCollabRequests(): Promise<CollabRequest[]> {
   const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
@@ -57,18 +60,29 @@ async function fetchCollabRequests(): Promise<CollabRequest[]> {
     throw new Error(data.error || 'Failed to load collaboration requests');
   }
 
-  return data.requests || [];
+  const rows = (data.requests || []) as CollabRequest[];
+  // Ensure newest offers float to top for visibility.
+  return [...rows].sort((a, b) => String(b.created_at || '').localeCompare(String(a.created_at || '')));
 }
 
 export function useCollabRequests(creatorId: string | undefined) {
   const queryClient = useQueryClient();
+  const hookStartedAtRef = useRef<number>(Date.now());
 
   const result = useQuery({
     queryKey: ['collab-requests', creatorId],
     queryFn: fetchCollabRequests,
     enabled: !!creatorId,
     staleTime: STALE_TIME_MS,
-    refetchInterval: REFETCH_INTERVAL_MS,
+    refetchInterval: (query) => {
+      if (typeof document !== 'undefined' && document.visibilityState === 'hidden') return false;
+      const withinBurst = Date.now() - hookStartedAtRef.current < FAST_POLL_WINDOW_MS;
+      const current = (query.state.data as CollabRequest[] | undefined) ?? [];
+      // Poll faster only when the creator is likely waiting for first offers.
+      const waitingForFirstOffer = current.length === 0;
+      if (withinBurst && waitingForFirstOffer) return FAST_POLL_INTERVAL_MS;
+      return REFETCH_INTERVAL_MS;
+    },
     retry: (failureCount, error: unknown) => {
       const err = error as { message?: string };
       if (err?.message === 'Session expired' || err?.message === 'Not authenticated') return false;
