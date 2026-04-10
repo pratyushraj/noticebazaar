@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { getApiBaseUrl } from '@/lib/utils/api';
@@ -68,6 +68,40 @@ async function fetchCollabRequests(): Promise<CollabRequest[]> {
 export function useCollabRequests(creatorId: string | undefined) {
   const queryClient = useQueryClient();
   const hookStartedAtRef = useRef<number>(Date.now());
+
+  // Realtime: surface new offers immediately.
+  useEffect(() => {
+    if (!creatorId) return;
+    let channel: any | null = null;
+
+    try {
+      channel = supabase
+        .channel(`collab-requests:${creatorId}`)
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'collab_requests',
+            filter: `creator_id=eq.${creatorId}`,
+          },
+          () => {
+            queryClient.invalidateQueries({ queryKey: ['collab-requests'] });
+          },
+        )
+        .subscribe();
+    } catch {
+      channel = null;
+    }
+
+    return () => {
+      try {
+        if (channel) supabase.removeChannel(channel);
+      } catch {
+        // ignore
+      }
+    };
+  }, [creatorId, queryClient]);
 
   const result = useQuery({
     queryKey: ['collab-requests', creatorId],

@@ -1492,12 +1492,15 @@ const CollabLinkLanding = () => {
 
       if (data.success) {
         trackEvent('collab_link_form_submitted', { username: username || '', collab_type: collabType });
-        toast.success('Offer sent! The creator will be notified.');
+        toast.success('Offer sent! Check your email to track it.');
+        const requestId =
+          String(data?.request?.id || data?.lead?.id || '').trim() || null;
         const successParams = new URLSearchParams({
           type: collabType,
           brand: brandName,
         });
         if (deadline) successParams.set('deadline', deadline);
+        if (requestId) successParams.set('requestId', requestId);
         navigate(`/${username}/success?${successParams.toString()}`);
       } else {
         toast.error(data.error || 'Failed to submit request');
@@ -1679,6 +1682,7 @@ const CollabLinkLanding = () => {
   const successBrand = searchParams.get('brand')?.trim();
   const successType = searchParams.get('type')?.trim();
   const successDeadline = searchParams.get('deadline')?.trim();
+  const successRequestId = searchParams.get('requestId')?.trim();
 
   const displayBudget = exactBudget
     ? `₹${Number(exactBudget || 0).toLocaleString('en-IN')}`
@@ -2079,6 +2083,35 @@ const CollabLinkLanding = () => {
                     <p className="text-sm font-black text-slate-900">3. Details follow</p>
                     <p className="mt-1 text-sm leading-6 text-slate-600">Contract, shipping, and payment details are collected only after interest is confirmed.</p>
                   </div>
+                </div>
+              </div>
+
+              <div className="mt-6 rounded-3xl border border-slate-200 bg-slate-50 p-5">
+                <p className="text-[11px] font-black uppercase tracking-[0.22em] text-slate-500">Track This Offer</p>
+                <p className="mt-2 text-sm font-medium leading-6 text-slate-600">
+                  We emailed you a link to track replies and manage the deal. If you already have a brand account, you can also open your dashboard.
+                </p>
+                {successRequestId && (
+                  <p className="mt-3 text-xs font-bold text-slate-500">
+                    Reference ID: <span className="font-black text-slate-700">{successRequestId}</span>
+                  </p>
+                )}
+                <div className="mt-4 flex flex-col gap-3 sm:flex-row">
+                  <Button
+                    type="button"
+                    onClick={() => navigate('/brand-dashboard')}
+                    className="h-12 rounded-full bg-slate-900 px-6 text-sm font-black text-white hover:bg-black"
+                  >
+                    Open Brand Dashboard
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => navigate('/login')}
+                    className="h-12 rounded-full border-slate-300 px-6 text-sm font-black text-slate-700 hover:bg-white"
+                  >
+                    Log In
+                  </Button>
                 </div>
               </div>
 
