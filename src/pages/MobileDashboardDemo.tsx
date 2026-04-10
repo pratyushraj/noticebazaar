@@ -3000,7 +3000,7 @@ const MobileDashboardDemo = ({
                                                     isDark ? "bg-primary text-foreground" : "bg-[#16A34A] text-white"
                                                 )}
                                             >
-                                                Share on WhatsApp
+                                                Share Link
                                             </button>
                                         </motion.div>
                                     </div>
@@ -4352,7 +4352,7 @@ const MobileDashboardDemo = ({
                                                     }}
                                                     className="h-12 px-6 rounded-2xl bg-gradient-to-r from-blue-600 to-cyan-500 text-white font-black text-[13px] shadow-lg shadow-blue-500/20 active:scale-95 transition-all"
                                                 >
-                                                    Share on WhatsApp
+                                                    Share Link
                                                 </button>
                                             </div>
                                         )}
