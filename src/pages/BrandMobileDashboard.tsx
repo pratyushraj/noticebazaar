@@ -3718,23 +3718,23 @@ const BrandMobileDashboard = ({
                               Notifications are blocked in your browser settings.
                             </p>
                           )}
-                          <div className="flex gap-2 mt-3">
-                            <button type="button"
-                              type="button"
-                              disabled={isPushBusy || pushPermission === 'denied' || isIOSNeedsInstall}
-                              onClick={handleEnablePush}
-                              className={primaryButtonClass}
-                            >
-                              Enable
-                            </button>
-                            <button type="button"
-                              type="button"
-                              onClick={() => dismissPushPromptPersisted()}
-                              className={secondaryButtonClass}
-                            >
-                              Later
-                            </button>
-                          </div>
+	                          <div className="flex gap-2 mt-3">
+	                            <button
+	                              type="button"
+	                              disabled={isPushBusy || pushPermission === 'denied' || isIOSNeedsInstall}
+	                              onClick={handleEnablePush}
+	                              className={primaryButtonClass}
+	                            >
+	                              Enable
+	                            </button>
+	                            <button
+	                              type="button"
+	                              onClick={() => dismissPushPromptPersisted()}
+	                              className={secondaryButtonClass}
+	                            >
+	                              Later
+	                            </button>
+	                          </div>
                         </div>
                       </div>
                     </motion.div>
@@ -3758,15 +3758,15 @@ const BrandMobileDashboard = ({
                           <p className={cn('text-[12px] mt-1 opacity-70', textColor)}>
                             Required before sending offers—creators respond faster when they recognize you.
                           </p>
-                          <div className="flex gap-2 mt-3">
-                            <button type="button"
-                              type="button"
-                              onClick={() => navigate('/brand-settings')}
-                              className={cn('px-4 py-2 rounded-2xl text-[11px] font-black uppercase tracking-widest', isDark ? 'bg-secondary/50 text-foreground hover:bg-secondary/15' : 'bg-card text-muted-foreground border border-warning')}
-                            >
-                              Upload logo
-                            </button>
-                          </div>
+	                          <div className="flex gap-2 mt-3">
+	                            <button
+	                              type="button"
+	                              onClick={() => navigate('/brand-settings')}
+	                              className={cn('px-4 py-2 rounded-2xl text-[11px] font-black uppercase tracking-widest', isDark ? 'bg-secondary/50 text-foreground hover:bg-secondary/15' : 'bg-card text-muted-foreground border border-warning')}
+	                            >
+	                              Upload logo
+	                            </button>
+	                          </div>
                         </div>
                       </div>
                     </motion.div>
@@ -3854,7 +3854,12 @@ const BrandMobileDashboard = ({
 
 	                        {/* Performance (motivational) */}
 	                        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.03 }} className={cn('mb-4 rounded-[32px] border overflow-hidden relative', isDark ? 'border-border bg-card' : 'border-primary/70 bg-gradient-to-br from-emerald-500 via-teal-500 to-blue-600 shadow-[0_22px_48px_rgba(16,185,129,0.26)]')}>
-	                          <div className={cn('absolute inset-0 pointer-events-none', isDark ? 'bg-background')} />
+		                          <div
+                                className={cn(
+                                  'absolute inset-0 pointer-events-none',
+                                  isDark ? 'bg-background' : 'bg-white/10'
+                                )}
+                              />
 	                          <div className="relative p-5">
 	                            <div className="flex flex-col gap-4">
 	                              <div className="min-w-0">
@@ -3873,14 +3878,14 @@ const BrandMobileDashboard = ({
 	                                  )}
 	                                </div>
 	                              </div>
-	                              <div className="flex items-center gap-3">
-	                              <button type="button"
-	                                type="button"
-	                                onClick={() => {
-	                                  triggerHaptic(HapticPatterns.light);
-	                                  if (needsActionTotal > 0) setActiveTab('collabs', 'action_required');
-	                                  else openCreateOfferSheet();
-	                                }}
+		                              <div className="flex items-center gap-3">
+		                              <button
+		                                type="button"
+		                                onClick={() => {
+		                                  triggerHaptic(HapticPatterns.light);
+		                                  if (needsActionTotal > 0) setActiveTab('collabs', 'action_required');
+		                                  else openCreateOfferSheet();
+		                                }}
 	                                className={cn(
 	                                  'w-full sm:w-auto px-4 py-3 rounded-2xl text-[11px] font-black uppercase tracking-widest border transition-all active:scale-[0.99]',
 	                                  needsActionTotal > 0
@@ -3946,11 +3951,11 @@ const BrandMobileDashboard = ({
 	                                    : 'See completed work and closed deals.'}
 	                              </p>
 	                            </div>
-	                            <button type="button"
-	                              type="button"
-	                              onClick={() => setActiveTab('collabs', activeCollabTab)}
-	                              className={cn('text-[12px] font-bold', isDark ? 'text-info' : 'text-info')}
-	                            >
+		                            <button
+		                              type="button"
+		                              onClick={() => setActiveTab('collabs', activeCollabTab)}
+		                              className={cn('text-[12px] font-bold', isDark ? 'text-info' : 'text-info')}
+		                            >
 	                              View all
 	                            </button>
 	                          </div>
@@ -3962,13 +3967,13 @@ const BrandMobileDashboard = ({
 	                            ].map((item) => {
 	                              const isSelected = activeCollabTab === item.key;
 	                              return (
-	                                <button type="button"
-	                                  key={item.key}
-	                                  type="button"
-	                                  onClick={() => {
-	                                    triggerHaptic(HapticPatterns.light);
-	                                    setDashboardCollabTab(item.key as BrandCollabTab);
-	                                  }}
+		                                <button
+		                                  type="button"
+		                                  key={item.key}
+		                                  onClick={() => {
+		                                    triggerHaptic(HapticPatterns.light);
+		                                    setDashboardCollabTab(item.key as BrandCollabTab);
+		                                  }}
 	                                  className={cn(
 	                                    'flex-1 rounded-[20px] px-3 py-3 text-left transition-all active:scale-[0.98] border backdrop-blur-lg',
 	                                    isSelected
@@ -4114,12 +4119,12 @@ const BrandMobileDashboard = ({
 	                                          Payment released after content approval
 	                                        </div>
 
-	                                        <button type="button"
-	                                          type="button"
-	                                          onClick={(e) => {
-	                                            e.stopPropagation();
-	                                            triggerHaptic(HapticPatterns.light);
-	                                            setSelectedOffer(item);
+		                                        <button
+		                                          type="button"
+		                                          onClick={(e) => {
+		                                            e.stopPropagation();
+		                                            triggerHaptic(HapticPatterns.light);
+		                                            setSelectedOffer(item);
 	                                          }}
 	                                          className={cn('h-11 w-full rounded-2xl text-[13px] font-black transition active:scale-[0.98]', 'bg-gradient-to-r from-emerald-600 to-sky-600 text-foreground shadow-[0_14px_34px_rgba(16,185,129,0.22)]')}
 	                                        >
@@ -4219,12 +4224,12 @@ const BrandMobileDashboard = ({
 		                                        </div>
 		                                      </div>
 
-				                              <button type="button"
-				                                type="button"
-				                                onClick={() => {
-				                                  triggerHaptic(HapticPatterns.light);
-				                                  if (activeCollabTab === 'active') setSelectedDealPage(item);
-				                                  else setSelectedOffer(item);
+					                              <button
+					                                type="button"
+					                                onClick={() => {
+					                                  triggerHaptic(HapticPatterns.light);
+					                                  if (activeCollabTab === 'active') setSelectedDealPage(item);
+					                                  else setSelectedOffer(item);
 				                                }}
 				                                disabled={Boolean((ui as any)?.ctaDisabled)}
 				                                className={cn(
@@ -4388,34 +4393,34 @@ const BrandMobileDashboard = ({
                       </button>
                     </div>
 	                    <div className={cn('rounded-[28px] border overflow-hidden backdrop-blur-xl shadow-[0_18px_45px_rgba(15,23,42,0.12)]', borderColor, isDark ? 'bg-secondary/[0.04] shadow-black/20' : 'bg-card shadow-sm')}>
-                      <button type="button"
-                        type="button"
-                        onClick={() => {
-                          triggerHaptic(HapticPatterns.light);
-                          setActiveTab('collabs', 'action_required');
-                        }}
+	                      <button
+	                        type="button"
+	                        onClick={() => {
+	                          triggerHaptic(HapticPatterns.light);
+	                          setActiveTab('collabs', 'action_required');
+	                        }}
                         className={cn('w-full p-4 flex items-center justify-between transition-all active:scale-[0.995] backdrop-blur-md', isDark ? 'border-b border-border hover:bg-secondary/[0.06]' : 'border-b border-border/80 hover:bg-secondary/60')}
                       >
                         <p className={cn('text-[12px] font-bold', textColor)}>Action Required</p>
 	                        <p className={cn('text-[12px] font-bold', textColor)}>{offers.length}</p>
                       </button>
-                      <button type="button"
-                        type="button"
-                        onClick={() => {
-                          triggerHaptic(HapticPatterns.light);
-                          setActiveTab('collabs', 'active');
-                        }}
+	                      <button
+	                        type="button"
+	                        onClick={() => {
+	                          triggerHaptic(HapticPatterns.light);
+	                          setActiveTab('collabs', 'active');
+	                        }}
                         className={cn('w-full p-4 flex items-center justify-between transition-all active:scale-[0.995] backdrop-blur-md', isDark ? 'border-b border-border hover:bg-secondary/[0.06]' : 'border-b border-border/80 hover:bg-secondary/60')}
                       >
                         <p className={cn('text-[12px] font-bold', textColor)}>Active</p>
                         <p className={cn('text-[12px] font-bold', textColor)}>{activeDealsList.length}</p>
                       </button>
-                      <button type="button"
-                        type="button"
-                        onClick={() => {
-                          triggerHaptic(HapticPatterns.light);
-                          setActiveTab('collabs', 'completed');
-                        }}
+	                      <button
+	                        type="button"
+	                        onClick={() => {
+	                          triggerHaptic(HapticPatterns.light);
+	                          setActiveTab('collabs', 'completed');
+	                        }}
                         className={cn('w-full p-4 flex items-center justify-between transition-all active:scale-[0.995]', isDark ? 'hover:bg-card' : 'hover:bg-background')}
                       >
                         <p className={cn('text-[12px] font-bold', textColor)}>Completed</p>
@@ -4458,13 +4463,13 @@ const BrandMobileDashboard = ({
 		                    ].map((item) => {
 		                      const isSelected = activeCollabTab === item.key;
 		                      return (
-		                        <button type="button"
-		                          key={item.key}
-		                          type="button"
-		                          onClick={() => {
-		                            triggerHaptic(HapticPatterns.light);
-		                            setActiveTab('collabs', item.key as BrandCollabTab);
-		                          }}
+			                        <button
+			                          type="button"
+			                          key={item.key}
+			                          onClick={() => {
+			                            triggerHaptic(HapticPatterns.light);
+			                            setActiveTab('collabs', item.key as BrandCollabTab);
+			                          }}
 		                          className={cn(
 		                            'flex-1 h-11 rounded-[18px] px-3 transition-all active:scale-[0.98] flex items-center justify-center gap-2',
 		                            isSelected
@@ -4634,12 +4639,12 @@ const BrandMobileDashboard = ({
 	                                  Payment released after content approval
 	                                </div>
 
-	                                <button type="button"
-	                                  type="button"
-	                                  onClick={() => {
-	                                    triggerHaptic(HapticPatterns.light);
-	                                    setSelectedOffer(item);
-	                                  }}
+		                                <button
+		                                  type="button"
+		                                  onClick={() => {
+		                                    triggerHaptic(HapticPatterns.light);
+		                                    setSelectedOffer(item);
+		                                  }}
 	                                  className={cn(
 	                                    'h-11 w-full rounded-2xl text-[13px] font-black transition active:scale-[0.98]',
 	                                    'bg-gradient-to-r from-emerald-600 to-sky-600 text-foreground shadow-[0_14px_34px_rgba(16,185,129,0.22)]'
@@ -4653,12 +4658,12 @@ const BrandMobileDashboard = ({
                                       <p className={cn('text-[11px] font-semibold', secondaryTextColor)}>
                                         {isNoResponse ? 'Tip: Follow up after 24h for faster replies.' : 'Tip: Creators respond faster when offers are reviewed quickly.'}
                                       </p>
-                                      <button type="button"
-                                        type="button"
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          triggerHaptic(HapticPatterns.light);
-                                          toast.message('Send reminder', { description: 'Coming soon.' });
+	                                      <button
+	                                        type="button"
+	                                        onClick={(e) => {
+	                                          e.stopPropagation();
+	                                          triggerHaptic(HapticPatterns.light);
+	                                          toast.message('Send reminder', { description: 'Coming soon.' });
                                         }}
                                         className={cn('text-[11px] font-black uppercase tracking-widest shrink-0', isDark ? 'text-info' : 'text-info')}
                                       >
@@ -4748,13 +4753,13 @@ const BrandMobileDashboard = ({
 		                                </div>
 		                              </div>
 
-				                              <button type="button"
-				                                type="button"
-				                                onClick={(e) => {
-			                                  triggerHaptic(HapticPatterns.light);
-			                                  if (activeCollabTab === 'active') setSelectedDealPage(item);
-			                                  else setSelectedOffer(item);
-			                                }}
+					                              <button
+					                                type="button"
+					                                onClick={(e) => {
+				                                  triggerHaptic(HapticPatterns.light);
+				                                  if (activeCollabTab === 'active') setSelectedDealPage(item);
+				                                  else setSelectedOffer(item);
+				                                }}
 				                                disabled={Boolean((ui as any)?.ctaDisabled)}
 			                                className={cn(
 			                                  'mt-4 h-12 w-full rounded-2xl text-[13px] font-black transition active:scale-[0.98]',
@@ -4815,12 +4820,12 @@ const BrandMobileDashboard = ({
                     {creatorSearchResults.length > 0 && (
                       <div className="mt-3 grid gap-2">
                         {creatorSearchResults.slice(0, 4).map((c: any) => (
-                          <button type="button"
-                            key={c.id}
-                            type="button"
-                            onClick={() => {
-                              const handle = String(c.username || '').trim().replace(/^@+/, '');
-                              if (!handle) return;
+	                          <button
+	                            type="button"
+	                            key={c.id}
+	                            onClick={() => {
+	                              const handle = String(c.username || '').trim().replace(/^@+/, '');
+	                              if (!handle) return;
                               triggerHaptic(HapticPatterns.light);
                               navigate(`/${handle}`);
                             }}
@@ -5016,11 +5021,11 @@ const BrandMobileDashboard = ({
                           <p className={cn('text-[12px] font-bold', textColor)}>Upload your logo to send offers</p>
                           <p className={cn('text-[11px] mt-0.5 opacity-70', textColor)}>Creators respond faster when they recognize you.</p>
                         </div>
-                        <button type="button"
-                          type="button"
-                          onClick={() => navigate('/brand-settings')}
-                          className={cn('px-4 py-2 rounded-2xl text-[11px] font-black uppercase tracking-widest whitespace-nowrap', isDark ? 'bg-secondary/50 text-foreground hover:bg-secondary/15' : 'bg-card text-muted-foreground border border-warning')}
-                        >
+	                        <button
+	                          type="button"
+	                          onClick={() => navigate('/brand-settings')}
+	                          className={cn('px-4 py-2 rounded-2xl text-[11px] font-black uppercase tracking-widest whitespace-nowrap', isDark ? 'bg-secondary/50 text-foreground hover:bg-secondary/15' : 'bg-card text-muted-foreground border border-warning')}
+	                        >
                           Upload
                         </button>
                       </div>
