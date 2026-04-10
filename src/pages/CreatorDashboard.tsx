@@ -25,8 +25,13 @@ async function fetchBrandDeals() {
   const res = await fetch(`${getApiBaseUrl()}/api/deals/mine`, {
     headers: { Authorization: `Bearer ${sessionData.session.access_token}` },
   });
-  const data = await res.json();
-  return data.deals || [];
+  if (res.status === 404) return [];
+  if (!res.ok) {
+    const payload = await res.json().catch(() => ({}));
+    throw new Error(payload?.error || `Failed to fetch deals (${res.status})`);
+  }
+  const data = await res.json().catch(() => ({}));
+  return data?.deals || [];
 }
 
 const CreatorDashboard = () => {

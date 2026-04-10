@@ -29,7 +29,10 @@ export default function CreatorOnboarding() {
   const navigate = useNavigate();
   const updateProfileMutation = useUpdateProfile();
   const [step, setStep] = useState<ProgressiveStep>('instagram');
+  // Manual submission state (CTA). Keep this separate from any background automation so we
+  // never block the user from tapping the button.
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isAutoFinalizing, setIsAutoFinalizing] = useState(false);
   const hasAutoCopiedLinkRef = useRef(false);
   const hasAttemptedAutoFinalizeRef = useRef(false);
 
@@ -100,8 +103,20 @@ export default function CreatorOnboarding() {
 
   const normalizedHandle = instagramHandle.replace(/^@+/, '').trim().toLowerCase();
   const collabUrl = normalizedHandle ? `${window.location.origin}/${normalizedHandle}` : '';
+  const handleLooksValid = normalizedHandle.length >= 3 && /^[a-z0-9._]+$/.test(normalizedHandle);
+  const handleError =
+    instagramHandle.length === 0
+      ? ''
+      : normalizedHandle.length < 3
+        ? 'Username must be at least 3 characters.'
+        : !/^[a-z0-9._]+$/.test(normalizedHandle)
+          ? 'Use only letters, numbers, dot (.) or underscore (_).'
+          : '';
 
-  const persistLink = async (cleanHandle: string) => {
+  const persistLink = async (
+    cleanHandle: string,
+    options?: { source?: 'manual' | 'auto' },
+  ) => {
     if (!profile?.id || !user?.id) return;
 
     if (!cleanHandle || cleanHandle.length < 3) {
@@ -109,7 +124,10 @@ export default function CreatorOnboarding() {
       return;
     }
 
-    setIsSubmitting(true);
+    const source = options?.source || 'manual';
+    if (source === 'manual') setIsSubmitting(true);
+    else setIsAutoFinalizing(true);
+
     try {
       if (!profile.is_trial) {
         await startTrialOnSignup(user.id);
@@ -131,10 +149,16 @@ export default function CreatorOnboarding() {
 
       const progressPatch = getCreatorProgressPatch({ ...(profile as any), ...basePayload });
 
-      await updateProfileMutation.mutateAsync({
+      // Avoid indefinite spinners in flaky environments. Supabase calls should be fast; if not,
+      // re-enable the CTA so the user can retry.
+      const mutationPromise = updateProfileMutation.mutateAsync({
         ...basePayload,
         ...progressPatch,
       } as any);
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('Timed out while creating your link. Please try again.')), 12000),
+      );
+      await Promise.race([mutationPromise, timeoutPromise]);
 
       await refetchProfile?.();
       trackEvent('creator_link_ready', { creator_id: profile.id, username: cleanHandle });
@@ -143,7 +167,8 @@ export default function CreatorOnboarding() {
     } catch (error: any) {
       toast.error(error?.message || 'Could not create your collab link');
     } finally {
-      setIsSubmitting(false);
+      if (source === 'manual') setIsSubmitting(false);
+      else setIsAutoFinalizing(false);
     }
   };
 
@@ -159,6 +184,7 @@ export default function CreatorOnboarding() {
       profile.onboarding_complete ||
       !metadataHandle ||
       isSubmitting ||
+      isAutoFinalizing ||
       hasAttemptedAutoFinalizeRef.current
     ) {
       return;
@@ -176,13 +202,15 @@ export default function CreatorOnboarding() {
     }
 
     hasAttemptedAutoFinalizeRef.current = true;
-    void persistLink(metadataHandle);
+    // Background best-effort: never blocks CTA.
+    void persistLink(metadataHandle, { source: 'auto' });
   }, [
     sessionLoading,
     profile,
     metadataHandle,
     persistedHandle,
     isSubmitting,
+    isAutoFinalizing,
   ]);
 
   const handleCopyLink = async () => {
@@ -257,13 +285,19 @@ export default function CreatorOnboarding() {
                       value={instagramHandle}
                       onChange={(e) => setInstagramHandle(e.target.value)}
                       placeholder="sana.reels.delhi"
-                      className="border-0 bg-transparent px-0 text-[16px] font-semibold text-slate-900 placeholder:text-slate-400 shadow-none focus-visible:ring-0"
+                      // Make the typed handle unmistakably visible across themes/devices.
+                      className="border-0 bg-transparent px-0 text-[16px] font-semibold text-slate-900 caret-slate-900 placeholder:text-slate-400 shadow-none focus-visible:ring-0"
                       autoCapitalize="none"
                       autoCorrect="off"
+                      autoComplete="username"
+                      inputMode="text"
                     />
                   </div>
                 </div>
-                <p className="text-xs text-slate-500">This becomes your public link: `creatorarmour.com/{normalizedHandle || 'yourname'}`</p>
+                <p className="text-xs text-slate-500">
+                  Tip: don’t type `@` or the full URL. This becomes: `creatorarmour.com/{normalizedHandle || 'yourname'}`
+                </p>
+                {handleError && <p className="text-xs font-bold text-red-500">{handleError}</p>}
               </div>
 
               <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4">
@@ -314,6 +348,16 @@ export default function CreatorOnboarding() {
                 {isSubmitting ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <Link2 className="mr-2 h-5 w-5" />}
                 Create my link
               </Button>
+              {isAutoFinalizing && !isSubmitting && (
+                <p className="text-[11px] font-bold text-slate-500 text-center">
+                  Setting up your link… If this takes too long, tap “Create my link”.
+                </p>
+              )}
+              {!handleLooksValid && !isSubmitting && (
+                <p className="text-[11px] font-bold text-slate-500 text-center">
+                  Enter your Instagram username to create the link.
+                </p>
+              )}
             </div>
           </div>
         )}
@@ -343,6 +387,7 @@ export default function CreatorOnboarding() {
               disabled={isSubmitting}
               className="mt-6 h-14 w-full rounded-2xl bg-emerald-600 text-xs font-black uppercase tracking-[0.18em] text-white hover:bg-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-emerald-600"
             >
+              {isSubmitting ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : null}
               Create my link
             </Button>
           </div>

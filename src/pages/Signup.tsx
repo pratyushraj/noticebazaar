@@ -243,6 +243,14 @@ const Signup = () => {
     return { strength: 4, label: 'Strong', color: 'bg-green-500' };
   };
 
+  const passwordStrength = getPasswordStrength(password);
+  const passwordHelper =
+    password.length === 0
+      ? 'At least 6 characters. Stronger: add 1 uppercase + 1 number.'
+      : passwordStrength.label
+        ? `Password strength: ${passwordStrength.label}`
+        : 'At least 6 characters.';
+
   const handleEmailChange = (value: string) => {
     setEmail(value);
     if (value && !value.includes('@')) {
@@ -974,31 +982,49 @@ const Signup = () => {
                       <p className="text-xs text-red-400 mt-1 font-bold">{emailError}</p>
                     )}
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="signup-password" className="text-slate-500 text-[11px] font-black uppercase tracking-widest ml-1">
-                      Password
-                    </Label>
-                    <div className="relative">
-                      <Input
-                        id="signup-password"
-                        type={showPassword ? 'text' : 'password'}
-                        placeholder="Min. 6 characters"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        className="bg-white border-slate-300 text-slate-900 placeholder:text-slate-400 text-[16px] h-14 rounded-2xl px-5 pr-12"
-                        required
-                        autoComplete="new-password"
-                        minLength={6}
-                      />
+	                  <div className="space-y-2">
+	                    <Label htmlFor="signup-password" className="text-slate-500 text-[11px] font-black uppercase tracking-widest ml-1">
+	                      Password
+	                    </Label>
+	                    <div className="relative">
+	                      <Input
+	                        id="signup-password"
+	                        type={showPassword ? 'text' : 'password'}
+	                        placeholder="Min. 6 characters"
+	                        value={password}
+	                        onChange={(e) => setPassword(e.target.value)}
+	                        className={cn(
+                            "bg-white border-slate-300 text-slate-900 placeholder:text-slate-400 text-[16px] h-14 rounded-2xl px-5 pr-12",
+                            password.length > 0 && password.length < 6 ? "border-red-500/50" : ""
+                          )}
+	                        required
+	                        autoComplete="new-password"
+	                        minLength={6}
+	                      />
                       <button
                         type="button"
                         onClick={() => setShowPassword(!showPassword)}
                         className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-700 transition-colors"
                       >
                         {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                      </button>
-                    </div>
-	                  </div>
+	                      </button>
+	                    </div>
+                      <div className="mt-2 flex items-center justify-between gap-3">
+                        <p className={cn("text-xs font-bold", password.length > 0 && password.length < 6 ? "text-red-400" : "text-slate-500")}>
+                          {passwordHelper}
+                        </p>
+                        {passwordStrength.strength > 0 && (
+                          <span
+                            className={cn(
+                              "shrink-0 rounded-full px-3 py-1 text-[10px] font-black uppercase tracking-widest",
+                              passwordStrength.strength <= 2 ? "bg-amber-100 text-amber-800" : "bg-emerald-100 text-emerald-800"
+                            )}
+                          >
+                            {passwordStrength.label || "OK"}
+                          </span>
+                        )}
+                      </div>
+		                  </div>
 	                  <Button
 	                    type="submit"
 	                    disabled={isLoading || !name.trim() || (accountMode === 'creator' && !instagramHandle.trim()) || (accountMode === 'brand' && !brandName.trim()) || !email.trim() || !password.trim() || password.length < 6 || !!emailError}

@@ -2924,6 +2924,8 @@ const MobileDashboardDemo = ({
                                 </div>
                             )}
 
+                            {/* Avoid showing a confusing "₹0 Pending Amount" banner for brand-new accounts */}
+                            {!(activeDealsCount === 0 && pendingOffersCount === 0 && monthlyRevenue === 0 && collabRequests.length === 0 && pendingAmount === 0) && (
                             <div className="px-5 mb-5">
                                 <motion.div
                                     initial={{ scale: 0.98, opacity: 0 }}
@@ -2966,6 +2968,7 @@ const MobileDashboardDemo = ({
                                     </div>
                                 </motion.div>
                             </div>
+                            )}
 
                             {/* Empty State vs Normal Metrics */}
                             {activeDealsCount === 0 && pendingOffersCount === 0 && monthlyRevenue === 0 && collabRequests.length === 0 ? (
