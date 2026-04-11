@@ -197,7 +197,7 @@ const getCreatorDealCardUX = (deal: any) => {
     } else if (isRevisionRequested) {
         stagePill = 'REVISION REQUESTED';
         nextStep = 'Update content and resubmit';
-        cta = 'Upload Revision';
+        cta = 'Submit Revision';
     } else if (isDelivered) {
         stagePill = 'AWAITING REVIEW';
         nextStep = 'Wait for brand approval';
@@ -2937,6 +2937,9 @@ const MobileDashboardDemo = ({
                                             ? "bg-gradient-to-br from-emerald-400 via-cyan-500 to-blue-600 shadow-blue-500/20"
                                             : "bg-gradient-to-br from-emerald-500 via-cyan-500 to-blue-700 shadow-blue-500/15"
                                     )}
+                                    onClick={() => { triggerHaptic(); setActiveTab('deals'); }}
+                                    role="button"
+                                    aria-label="View pending deals"
                                 >
                                     <div className="absolute -top-8 -right-8 w-28 h-28 bg-white/15 rounded-full blur-3xl" />
                                     <div className="absolute -bottom-8 -left-8 w-28 h-28 bg-white/10 rounded-full blur-3xl" />
@@ -5831,7 +5834,7 @@ const MobileDashboardDemo = ({
                             {String(selectedItem?.status || '').toLowerCase().includes('revision_requested') ||
                                 String(selectedItem?.status || '').toLowerCase().includes('changes_requested') ||
                                 String((selectedItem as any)?.brand_approval_status || '').toLowerCase().includes('changes_requested')
-                                ? 'Upload Revision'
+                                ? 'Submit Revision'
                                 : 'Deliver Content'}
                         </DialogTitle>
                         <DialogDescription className={cn("px-6 pb-2 text-sm font-medium leading-relaxed opacity-60", isDark ? "text-foreground" : "text-muted-foreground")}>
