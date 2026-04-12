@@ -61,10 +61,12 @@ const StatusBadge = ({ status }: { status: string }) => {
         'pending': { bg: 'bg-background dark:bg-secondary/50', text: 'text-muted-foreground dark:text-muted-foreground', label: 'AWAITING REVIEW' },
         'negotiating': { bg: 'bg-background dark:bg-secondary/50', text: 'text-muted-foreground dark:text-muted-foreground', label: 'IN NEGOTIATION' },
         'active': { bg: 'bg-background dark:bg-secondary/50', text: 'text-muted-foreground dark:text-muted-foreground', label: 'ACTIVE' },
-        'completed': { bg: 'bg-background dark:bg-secondary/50', text: 'text-muted-foreground dark:text-muted-foreground', label: 'COMPLETED' },
+        'payment_released': { bg: 'bg-green-100 dark:bg-green-900/30', text: 'text-green-700 dark:text-green-400', label: '💰 PAID' },
+        'completed': { bg: 'bg-green-100 dark:bg-green-900/30', text: 'text-green-700 dark:text-green-400', label: 'COMPLETED' },
     };
     const normalizeStatus = (status: string) => {
         const s = String(status || '').toLowerCase();
+        if (s.includes('payment_released') || s.includes('paid_out')) return 'payment_released';
         if (s.includes('complete') || s.includes('closed') || s.includes('paid')) return 'completed';
         if (s.includes('active') || s.includes('sign') || s.includes('execut') || s.includes('making') || s.includes('deliver') || s.includes('ship')) return 'active';
         if (s.includes('neg')) return 'negotiating';

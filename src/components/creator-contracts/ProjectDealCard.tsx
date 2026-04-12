@@ -296,16 +296,6 @@ const ProjectDealCard: React.FC<ProjectDealCardProps> = ({
               </Button>
             );
           })}
-          <Button
-            size="sm"
-            variant="ghost"
-            onClick={() => onView(deal)}
-            className="min-h-[44px] min-w-[44px] text-sm px-4 py-3"
-            aria-label="View deal details"
-          >
-            <ChevronRight className="w-4 h-4" />
-            <span className="sr-only">View</span>
-          </Button>
         </div>
       </Card>
     </motion.div>
