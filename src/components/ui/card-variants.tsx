@@ -144,7 +144,7 @@ export const StatCard = ({
       "min-w-0 w-full px-2.5 py-2.5 md:px-4 md:py-4",
       theme === 'light'
         ? "bg-card border border-border shadow-[0_18px_50px_rgba(15,23,42,0.08)]"
-        : "border border-border/8 shadow-[0_18px_50px_rgba(0,0,0,0.35)]",
+        : "border border-border shadow-[0_18px_50px_rgba(0,0,0,0.35)]",
       "scale-[0.96] sm:scale-100",
       className
     )}>

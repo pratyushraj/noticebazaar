@@ -1,5 +1,5 @@
 import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react-swc'
+import react from '@vitejs/plugin-react'
 import path from 'path'
 
 // Plugin to fix use-sync-external-store/shim CommonJS export issue
@@ -104,7 +104,7 @@ export default defineConfig(() => ({
       },
     },
   },
-  plugins: [react({ jsxRuntime: 'automatic' }), useSyncExternalStoreShimPlugin()],
+  plugins: [react(), useSyncExternalStoreShimPlugin()],
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),

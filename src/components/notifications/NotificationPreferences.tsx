@@ -174,7 +174,7 @@ export const NotificationPreferences: React.FC = () => {
   return (
     <div className="space-y-3">
       {/* Notification Mode Selector - Primary Emphasis */}
-      <Card className="bg-secondary/3 rounded-lg p-4 border border-border/8">
+      <Card className="bg-secondary/3 rounded-lg p-4 border border-border">
         <h3 className="text-base font-semibold text-foreground mb-1 flex items-center gap-2">
           <Bell className="w-4 h-4" />
           Notification Mode
@@ -250,7 +250,7 @@ export const NotificationPreferences: React.FC = () => {
 
       {/* Do Not Disturb Schedule - Merged Quiet Hours + DND */}
       {notificationMode === 'dnd' && (
-        <Card className="bg-secondary/3 rounded-lg p-4 border border-border/8">
+        <Card className="bg-secondary/3 rounded-lg p-4 border border-border">
           <h3 className="text-base font-semibold text-foreground mb-3 flex items-center gap-2">
             <Moon className="w-4 h-4" />
             Do Not Disturb Schedule
@@ -300,7 +300,7 @@ export const NotificationPreferences: React.FC = () => {
       )}
 
       {/* Customize Advanced Notifications - Secondary Emphasis, Collapsed by default */}
-      <Card className="bg-secondary/3 rounded-lg p-3 border border-border/8">
+      <Card className="bg-secondary/3 rounded-lg p-3 border border-border">
         <button type="button"
           onClick={() => setShowAdvanced(!showAdvanced)}
           className="w-full flex items-center justify-between min-h-[44px]"

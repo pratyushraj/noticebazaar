@@ -2803,7 +2803,7 @@ const MobileDashboardDemo = ({
                                         </motion.button>
 
                                         {/* Bell */}
-                                        <button type="button" onClick={() => handleAction('notifications')} aria-label={`Notifications${collabRequests.length > 0 ? ` (${collabRequests.length} new)` : ''}`} className={cn('relative', secondaryTextColor)}>
+                                        <button type="button" onClick={() => handleAction('notifications')} aria-label={`Notifications${collabRequests.length > 0 ? ` (${collabRequests.length} new)` : ''}`} className={cn('relative min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full', secondaryTextColor)}>
                                             <Bell className="w-5 h-5" />
                                             {collabRequests.length > 0 && (
                                                 <span className="absolute -top-1 -right-1 w-4 h-4 bg-destructive rounded-full border-2 text-[8px] font-black flex items-center justify-center text-foreground" style={{ borderColor: bgColor }}>
@@ -2813,7 +2813,7 @@ const MobileDashboardDemo = ({
                                         </button>
 
                                         {/* Avatar */}
-                                        <button type="button" onClick={() => setActiveTab('profile')} className={cn("w-8 h-8 rounded-full border overflow-hidden transition-all active:scale-95", borderColor)}>
+                                        <button type="button" onClick={() => setActiveTab('profile')} className={cn("w-11 h-11 rounded-full border overflow-hidden transition-all active:scale-95", borderColor)}>
                                             <img
                                                 src={avatarUrl}
                                                 alt="avatar"
@@ -3517,7 +3517,7 @@ const MobileDashboardDemo = ({
                                         <span className={textColor}>CreatorArmour</span>
                                     </div>
 
-                                    <button type="button" onClick={() => setActiveTab('profile')} className={cn("w-8 h-8 rounded-full border overflow-hidden transition-all active:scale-95", borderColor)}>
+                                    <button type="button" onClick={() => setActiveTab('profile')} className={cn("w-11 h-11 rounded-full border overflow-hidden transition-all active:scale-95", borderColor)}>
                                         <img
                                             src={avatarUrl}
                                             alt="avatar"
@@ -5090,7 +5090,7 @@ const MobileDashboardDemo = ({
                                                         transition={{ duration: 0.25, ease: 'easeInOut' }}
                                                         className="overflow-hidden"
                                                     >
-                                                        <div className={cn("border-t mx-0", isDark ? "border-border/8" : "border-border")} />
+                                                        <div className={cn("border-t mx-0", isDark ? "border-border" : "border-border")} />
 
                                                         {/* Trust badges */}
                                                         <div className="px-4 pt-3 pb-2">

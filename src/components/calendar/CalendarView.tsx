@@ -412,7 +412,7 @@ export function CalendarView({
             exit={{ opacity: 0, x: 20 }}
             transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
           >
-            <Card className="bg-[rgba(255,255,255,0.06)] backdrop-blur-xl border border-border/8 md:shadow-lg md:shadow-black/20">
+            <Card className="bg-[rgba(255,255,255,0.06)] backdrop-blur-xl border border-border md:shadow-lg md:shadow-black/20">
               <CardContent className="p-4">
                 <div className="text-center mb-6">
                   <div className="text-2xl font-bold text-foreground mb-1">

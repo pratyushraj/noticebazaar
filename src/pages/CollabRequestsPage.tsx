@@ -224,11 +224,11 @@ const CollabRequestsPage = () => {
               <div className="w-20 h-20 rounded-full bg-card0 flex items-center justify-center mx-auto mb-5">
                 <Briefcase className="h-10 w-10 text-info/80" />
               </div>
-              <h3 className="text-lg font-semibold text-foreground mb-2">No brand requests yet</h3>
+              <h3 className="text-lg font-semibold text-foreground mb-2">No pending requests</h3>
               {hasUsername ? (
                 <>
                   <p className="text-sm text-info/80 mb-6 max-w-xs mx-auto">
-                    Share your collab link to receive protected deals
+                    Share your collab link — brands that visit will be able to send you deal requests.
                   </p>
                   <Button
                     onClick={copyCollabLink}
@@ -399,10 +399,10 @@ const CollabRequestsPage = () => {
                               : "bg-primary hover:bg-primary"
                           )}
                         >
-                          {acceptingRequestId === request.id ? 'Generating contract…' : 'Accept offer'}
+                          {acceptingRequestId === request.id ? 'Generating contract…' : 'Accept & Generate Contract'}
                         </Button>
-                        <p className="text-[11px] text-center text-foreground/55">
-                          By clicking Accept, a contract is auto-generated.
+<p className="text-[11px] text-center text-foreground/55">
+                          A contract is auto-generated and sent to the brand.
                         </p>
                       </div>
                       <div className="flex items-center justify-center gap-3 py-0.5">
@@ -410,7 +410,7 @@ const CollabRequestsPage = () => {
                           onClick={(e) => { e.stopPropagation(); navigate(`/collab-requests/${request.id}/brief`, { state: { request } }); }}
                           className="text-sm font-medium text-indigo-200 hover:text-foreground min-h-[44px] px-1.5"
                         >
-                          Counter offer
+                          Counter
                         </button>
                         <span className="w-px h-4 bg-secondary/30" />
                         <button type="button"
@@ -466,7 +466,7 @@ const CollabRequestsPage = () => {
             <AlertDialogHeader>
               <AlertDialogTitle>Decline this offer?</AlertDialogTitle>
               <AlertDialogDescription className="text-foreground/70">
-                The brand will be notified. You cannot undo this action.
+                The brand will be notified. You can't undo this.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>

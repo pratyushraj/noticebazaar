@@ -52,7 +52,7 @@ const BrandBottomNav: React.FC<{ isDark?: boolean }> = ({ isDark = true }) => {
       <div className={cn("absolute inset-x-0 top-0 h-[1px]", isDark ? "bg-secondary/50" : "bg-background")} />
 
       <nav
-        className="flex justify-around h-12 items-center px-2 md:px-4 relative z-10 pointer-events-auto"
+        className="flex justify-around h-[54px] items-center px-2 md:px-4 relative z-10 pointer-events-auto"
         style={{ paddingTop: '6px', paddingBottom: '6px' }}
         role="navigation"
         aria-label="Brand bottom navigation"

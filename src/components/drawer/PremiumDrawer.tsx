@@ -332,7 +332,7 @@ export default function PremiumDrawer({
               "fixed top-0 left-0 h-full",
               "w-[82vw] max-w-[300px]",
               "bg-card dark:bg-background",
-              "border-r border-border dark:border-border/8",
+              "border-r border-border",
               "shadow-[4px_0_40px_rgba(15,23,42,0.18)] dark:shadow-[4px_0_60px_rgba(0,0,0,0.6)]",
               "overflow-y-auto",
               "px-4 py-6",

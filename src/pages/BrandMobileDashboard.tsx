@@ -3610,7 +3610,7 @@ const BrandMobileDashboard = ({
                   <div className="relative">
                     <button type="button"
                       onClick={() => setNotificationsOpen((v) => !v)}
-                      className={cn('relative w-10 h-10 rounded-2xl border flex items-center justify-center transition-all active:scale-95', isDark ? 'border-border bg-card text-foreground/70' : 'border-border bg-secondary/80 text-muted-foreground shadow-sm')}
+                      className={cn('relative w-11 h-11 rounded-2xl border flex items-center justify-center transition-all active:scale-95', isDark ? 'border-border bg-card text-foreground/70' : 'border-border bg-secondary/80 text-muted-foreground shadow-sm')}
                     >
                       <Bell className="w-5 h-5" />
                       {notifications.length > 0 && (

@@ -313,19 +313,27 @@ const BrandDealDetailPage: React.FC = () => {
           </CardContent>
         </Card>
 
+        {/* Next Step Card — with actionable context */}
         <Card className="bg-white/5 border-white/10 rounded-2xl overflow-hidden">
           <CardContent className="p-4 space-y-2">
-            <p className="text-[11px] uppercase tracking-wider text-white/40">Next Step</p>
+            <p className="text-[11px] uppercase tracking-wider text-white/40">Your Action</p>
             <p className="text-lg font-bold text-white">{nextStepLabel}</p>
             <p className="text-sm text-white/60">
               {canReviewContent
-                ? 'Check the submitted post and either approve it or ask for one clear change.'
+                ? 'Check the submitted post. Approve it if it looks good, or request one clear change with feedback.'
                 : canReleasePayment
-                  ? 'Once the content is approved, add your payment reference so the creator gets notified.'
+                  ? 'Add a payment reference (UTR or transaction ID) so the creator knows the payment is on the way. They will be notified automatically.'
                   : brandApprovalStatus === 'changes_requested'
-                    ? 'The creator has been notified. Review the updated link when they re-submit.'
-                    : 'Use this page to monitor the collaboration, content, and payment progress.'}
+                    ? 'The creator has been notified and will re-submit with revisions. You will get an email when the updated link is ready.'
+                    : brandApprovalStatus === 'approved' && paymentMarkedSent
+                      ? 'Waiting for the creator to confirm the payment has arrived in their account.'
+                      : 'Monitor this collaboration. Content and payment updates will appear here.'}
             </p>
+            {canReleasePayment && (
+              <p className="text-xs text-white/40 border border-white/10 rounded-lg px-3 py-2 mt-2">
+                💡 The creator has already approved the content. Add the payment reference to release funds.
+              </p>
+            )}
           </CardContent>
         </Card>
 
@@ -387,6 +395,23 @@ const BrandDealDetailPage: React.FC = () => {
                       className="min-h-[96px] bg-white/5 border-white/10 text-white placeholder:text-white/35"
                     />
                   </div>
+
+                  {/* Context hint based on approval status */}
+                  {canReviewContent && (
+                    <p className="text-xs text-white/50 bg-white/[0.03] rounded-lg px-3 py-2">
+                      ✅ Creator submitted their post. Review and approve or request changes.
+                    </p>
+                  )}
+                  {brandApprovalStatus === 'approved' && (
+                    <p className="text-xs text-emerald-200 bg-emerald-500/10 border border-emerald-500/20 rounded-lg px-3 py-2">
+                      ✅ You approved the content. Scroll down to Payment to mark payment sent.
+                    </p>
+                  )}
+                  {brandApprovalStatus === 'changes_requested' && (
+                    <p className="text-xs text-amber-200 bg-amber-500/10 border border-amber-500/20 rounded-lg px-3 py-2">
+                      🔔 Feedback sent to creator. You will be notified when they update the link.
+                    </p>
+                  )}
 
                   {canReviewContent && (
                     <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
@@ -458,9 +483,12 @@ const BrandDealDetailPage: React.FC = () => {
 
               {canReleasePayment && (
                 <div className="rounded-xl border border-white/10 bg-white/[0.03] p-3 space-y-3">
+                  <p className="text-xs text-white/40 bg-white/[0.03] rounded-lg px-3 py-2 mb-1">
+                    💡 Content approved. Add a payment reference so the creator knows the payment is on the way.
+                  </p>
                   <div className="space-y-2">
                     <Label htmlFor="payment-reference" className="text-[11px] uppercase tracking-wider text-white/50">
-                      Payment reference
+                      Payment reference (UTR / Transaction ID)
                     </Label>
                     <Input
                       id="payment-reference"

@@ -584,7 +584,7 @@ const MarketingHome = () => {
                   />
                   <div className="rounded-2xl border border-border bg-secondary/[0.03] p-4 space-y-3">
                     {creatorWorkflow.map(({ step, title, description, icon: Icon }) => (
-                      <div key={step} className="rounded-2xl border border-border/8 bg-black/10 p-4">
+                      <div key={step} className="rounded-2xl border border-border bg-black/10 p-4">
                         <div className="flex items-center gap-3">
                           <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-info/15 text-info">
                             <Icon className="h-5 w-5" />
@@ -606,7 +606,7 @@ const MarketingHome = () => {
 
         {/* SECTION 1B — How It Works */}
         <section className="py-10 md:py-14" data-aos="fade-up">
-          <div className="rounded-[2rem] border border-border/8 bg-secondary/[0.03] p-6 md:p-8">
+          <div className="rounded-[2rem] border border-border bg-secondary/[0.03] p-6 md:p-8">
             <div className="max-w-3xl">
               <p className="section-kicker">How it works</p>
               <h2 className="mt-3 text-3xl md:text-4xl font-bold text-foreground">A cleaner path from incoming brief to paid deal.</h2>
@@ -788,7 +788,7 @@ const MarketingHome = () => {
         {/* SECTION 6 — Creator Plans Section */}
         <section className="py-16">
           <div className="mb-12" data-aos="fade-up">
-            <div className="rounded-[2rem] border border-border/8 bg-secondary/[0.03] p-6 md:p-8">
+            <div className="rounded-[2rem] border border-border bg-secondary/[0.03] p-6 md:p-8">
               <div className="max-w-3xl">
                 <p className="section-kicker">Why this beats DMs</p>
                 <h2 className="mt-3 text-3xl md:text-4xl font-bold text-foreground">Instagram DMs are where deals start. They should not be where they stay.</h2>
@@ -935,7 +935,7 @@ const MarketingHome = () => {
 
         {/* SECTION 11 — Human Trust */}
         <section className="py-16" data-aos="fade-up">
-          <div className="rounded-[2rem] border border-border/8 bg-secondary/[0.03] p-6 md:p-8">
+          <div className="rounded-[2rem] border border-border bg-secondary/[0.03] p-6 md:p-8">
             <div className="max-w-3xl">
               <p className="section-kicker">Who this is built with</p>
               <h2 className="mt-3 text-3xl font-bold text-foreground">Software handles the workflow. Real specialists support the hard parts.</h2>

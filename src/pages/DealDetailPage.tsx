@@ -122,9 +122,9 @@ const getSimpleStatusLabel = (state: GuidedDealState) => {
     case 'APPROVED':
       return 'Brand approved — awaiting payment';
     case 'PAYMENT_PENDING':
-      return 'Payment incoming';
+      return 'Waiting for brand to send payment';
     case 'PAID':
-      return 'Payment sent — confirm received';
+      return 'Brand sent payment — confirm received';
     case 'COMPLETED':
       return 'Done!';
     default:
@@ -1302,9 +1302,9 @@ function DealDetailPageContent() {
         };
       case 'PAID':
         return {
-          title: 'Confirm payment received',
-          explanation: 'Tap this only after the money reaches your bank account.',
-          actionLabel: 'Confirm payment',
+          title: 'Mark payment as received',
+          explanation: 'The brand marked payment as sent. Only tap "Confirm" after the money reaches your bank or UPI account.',
+          actionLabel: 'Confirm payment received',
           action: () => dealIdValue && navigate(`/payment/${dealIdValue}`),
         };
       case 'COMPLETED':

@@ -264,7 +264,7 @@ const CollabRequestsSection = ({ copyCollabLink, usernameForLink: usernameFromPa
             <div className="text-center">
               <Briefcase className="h-10 w-10 text-secondary mx-auto mb-2 opacity-50" />
               <h3 className="text-base font-semibold text-foreground mb-1 break-words">No brand requests yet</h3>
-              <p className="text-sm text-secondary/80 mb-3 break-words">Brands apply through your collab link — not DMs.</p>
+              <p className="text-sm text-secondary/80 mb-3 break-words">Share your collab link with brands. When they submit a brief, it'll appear here as a pending request.</p>
               {hasUsername && (
                 <div className="flex flex-col gap-2">
                   <Button
