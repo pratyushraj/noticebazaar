@@ -152,7 +152,7 @@ const ProjectDealCard: React.FC<ProjectDealCardProps> = ({
       case 'live_deal':
       case 'content_making':
         return [
-          { label: 'Upload Content', onClick: () => onUploadContent(deal), icon: Upload },
+          { label: 'Submit Content', onClick: () => onUploadContent(deal), icon: Upload },
           { label: 'Manage Deliverables', onClick: () => onManageDeliverables(deal), icon: Package },
         ];
       case 'content_delivered':

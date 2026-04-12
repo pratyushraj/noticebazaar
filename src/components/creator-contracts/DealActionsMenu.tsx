@@ -88,7 +88,7 @@ const DealActionsMenu: React.FC<DealActionsMenuProps> = ({
             className="cursor-pointer hover:bg-accent/50"
           >
             <Upload className="mr-2 h-4 w-4" />
-            Upload Content
+            Submit Content
           </DropdownMenuItem>
         )}
         {onContactBrand && (
