@@ -844,6 +844,7 @@ const MobileDashboardDemo = ({
                 throw new Error(msg);
             }
             toast.success('Submitted for review');
+            toast.message('Brand typically responds within 24-48 hours');
             triggerHaptic(HapticPatterns.success);
             // Optimistically update the open deal so CTA/status changes immediately.
             setSelectedItem((prev: any) => {
