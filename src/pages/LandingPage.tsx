@@ -1,12 +1,16 @@
 "use client";
 
-import React, { useEffect, useState } from 'react';
+import React, { Suspense, lazy, useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useSession } from '@/contexts/SessionContext';
 import { SEOHead } from '@/components/seo/SEOHead';
 import { ArrowRight, ShieldCheck, CheckCircle2, Sparkles, Link as LinkIcon, ExternalLink, Instagram, Linkedin, Twitter, Menu, X, IndianRupee, FileText, BriefcaseBusiness, Clock3 } from 'lucide-react';
 import { triggerHaptic, HapticPatterns } from '@/lib/utils/haptics';
 import { cn } from '@/lib/utils';
+
+const ThreeDIllustration = lazy(() =>
+  import('@/components/ui/ThreeDIllustration').then(m => ({ default: m.default }))
+);
 
 const AANYA_IMG = "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=500&h=500&q=80";
 const PRIYA_IMG = "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=500&h=500&q=80";
@@ -263,6 +267,13 @@ const LandingPage = () => {
               <p className="text-[20px] md:text-[24px] text-[#64748B] font-medium mb-10 max-w-lg mx-auto lg:mx-0 leading-relaxed">
                 Send one link. Brands send offers.
               </p>
+
+              {/* Floating 3D Hero Illustration */}
+              <div className="hidden xl:flex justify-center mb-8">
+                <Suspense fallback={null}>
+                  <ThreeDIllustration type="hero" size="md" />
+                </Suspense>
+              </div>
 
               <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 mb-10">
                 <Link

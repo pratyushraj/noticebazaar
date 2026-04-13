@@ -1,21 +1,28 @@
-"use client";
+'use client';
 
-import React from 'react';
+import React, { Suspense, lazy } from 'react';
 import { motion } from 'framer-motion';
 import { Briefcase, Zap, Search, Star } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 
+// Lazy-loaded 3D illustration — zero impact on initial page load
+const ThreeDIllustration = lazy(() =>
+  import('@/components/ui/ThreeDIllustration').then(m => ({ default: m.default }))
+);
+
 interface EnhancedEmptyStateProps {
   type: 'no-deals' | 'no-recommendations' | 'no-search-results' | 'no-active-deals';
   isDark?: boolean;
   onAction?: () => void;
+  show3D?: boolean;
 }
 
 const EnhancedEmptyStates: React.FC<EnhancedEmptyStateProps> = ({
   type,
   isDark = true,
   onAction,
+  show3D = true,
 }) => {
   const states = {
     'no-deals': {
@@ -69,6 +76,15 @@ const EnhancedEmptyStates: React.FC<EnhancedEmptyStateProps> = ({
         isDark ? `${state.bgColor} border-border` : 'bg-background border-border shadow-sm'
       )}
     >
+      {/* 3D floating illustration backdrop */}
+      {show3D && (
+        <Suspense fallback={null}>
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-[0.07] z-0">
+            <ThreeDIllustration type="empty" size="lg" />
+          </div>
+        </Suspense>
+      )}
+
       {/* Animated background elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         {state.emojis.map((emoji, idx) => (
