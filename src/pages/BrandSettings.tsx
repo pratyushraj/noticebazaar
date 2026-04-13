@@ -7,6 +7,8 @@ import { Label } from '@/components/ui/label';
 import { useSession } from '@/contexts/SessionContext';
 import { getApiBaseUrl } from '@/lib/utils/api';
 import { cn } from '@/lib/utils';
+import { uploadFile } from '@/lib/services/fileService';
+import { Camera, Loader2 } from 'lucide-react';
 
 type BrandProfilePayload = {
   name: string;
@@ -30,9 +32,21 @@ export const BrandSettingsPanel = ({
   const [website, setWebsite] = useState('');
   const [industry, setIndustry] = useState('');
   const [description, setDescription] = useState('');
+  const [logoFile, setLogoFile] = useState<File | null>(null);
+  const [logoPreview, setLogoPreview] = useState<string | null>(null);
+  const [logoUploading, setLogoUploading] = useState(false);
+  const [currentLogoUrl, setCurrentLogoUrl] = useState<string | null>(null);
 
   const canCallApi = !!session?.access_token;
   const apiBase = useMemo(() => getApiBaseUrl(), []);
+
+  // Get current logo from profile
+  const brandProfile = profile as any;
+  useEffect(() => {
+    if (brandProfile?.logo_url) {
+      setCurrentLogoUrl(brandProfile.logo_url);
+    }
+  }, [brandProfile?.logo_url]);
 
   useEffect(() => {
     const seed =
@@ -41,6 +55,50 @@ export const BrandSettingsPanel = ({
       '';
     if (seed && !name) setName(seed);
   }, [profile?.id, profile?.first_name, profile?.last_name, (profile as any)?.business_name, name]);
+
+  const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate
+    const allowed = ['image/jpeg', 'image/png', 'image/webp', 'image/svg+xml', 'image/gif'];
+    if (!allowed.includes(file.type)) {
+      toast.error('Please upload a valid image (JPEG, PNG, WebP, SVG, or GIF).');
+      return;
+    }
+    if (file.size > 2 * 1024 * 1024) {
+      toast.error('Logo must be under 2MB.');
+      return;
+    }
+
+    setLogoFile(file);
+    setLogoPreview(URL.createObjectURL(file));
+  };
+
+  const uploadLogo = async (): Promise<string | null> => {
+    if (!logoFile || !session?.user?.id) return currentLogoUrl;
+
+    setLogoUploading(true);
+    try {
+      const uploadResult = await uploadFile(logoFile, {
+        category: 'document',
+        userId: session.user.id,
+        fileName: `brand-logo-${session.user.id}`,
+        folder: 'brand',
+      });
+      const uploadedUrl = uploadResult.url;
+      setCurrentLogoUrl(uploadedUrl);
+      setLogoFile(null);
+      setLogoPreview(null);
+      toast.success('Logo uploaded.');
+      return uploadedUrl;
+    } catch (err) {
+      toast.error('Failed to upload logo.');
+      return currentLogoUrl;
+    } finally {
+      setLogoUploading(false);
+    }
+  };
 
   const saveProfile = async () => {
     const cleanName = name.trim();
@@ -55,11 +113,15 @@ export const BrandSettingsPanel = ({
 
     setIsSaving(true);
     try {
+      // Upload logo first if changed
+      const logoUrl = logoFile ? await uploadLogo() : currentLogoUrl;
+
       const payload: BrandProfilePayload = {
         name: cleanName,
         website_url: website.trim() || null,
         industry: industry.trim() || null,
         description: description.trim() || null,
+        logo_url: logoUrl,
       };
 
       const res = await fetch(`${apiBase}/api/brand-dashboard/profile`, {
@@ -99,6 +161,42 @@ export const BrandSettingsPanel = ({
       )}
 
       <div className="space-y-4">
+        {/* Logo Upload */}
+        <div className="space-y-2">
+          <Label>Brand logo</Label>
+          <p className="text-xs text-foreground/60">Appears on your offers and in creator dashboards.</p>
+          <div className="flex items-center gap-4 rounded-2xl border border-border bg-card p-4">
+            <div className="relative">
+              {(logoPreview || currentLogoUrl) ? (
+                <img
+                  src={logoPreview || currentLogoUrl || ''}
+                  alt="Brand logo"
+                  className="h-16 w-16 rounded-2xl object-cover border"
+                />
+              ) : (
+                <div className="h-16 w-16 rounded-2xl border border-dashed border-border bg-secondary/50 flex items-center justify-center">
+                  <Camera className="w-6 h-6 text-muted-foreground/50" />
+                </div>
+              )}
+              {logoUploading && (
+                <div className="absolute inset-0 bg-black/50 rounded-2xl flex items-center justify-center">
+                  <Loader2 className="w-5 h-5 animate-spin text-white" />
+                </div>
+              )}
+            </div>
+            <div className="flex-1">
+              <Input
+                id="brand-logo"
+                type="file"
+                accept="image/*"
+                onChange={handleLogoChange}
+                className="text-[13px] file:text-[13px] file:font-bold"
+              />
+              <p className="text-[11px] text-foreground/50 mt-1">JPEG, PNG, WebP, SVG or GIF • Max 2MB</p>
+            </div>
+          </div>
+        </div>
+
         <div className="space-y-2">
           <Label htmlFor="brand-name">Brand name</Label>
           <Input id="brand-name" value={name} onChange={(e) => setName(e.target.value)} placeholder="Your brand name" />
@@ -125,7 +223,7 @@ export const BrandSettingsPanel = ({
         </div>
 
         <div className="flex flex-col gap-3 sm:flex-row">
-          <Button type="button" onClick={saveProfile} disabled={isSaving} className="sm:min-w-[160px]">
+          <Button type="button" onClick={saveProfile} disabled={isSaving || logoUploading} className="sm:min-w-[160px]">
             {isSaving ? 'Saving…' : 'Save'}
           </Button>
           <Button
@@ -156,4 +254,3 @@ export default function BrandSettings() {
     </div>
   );
 }
-
