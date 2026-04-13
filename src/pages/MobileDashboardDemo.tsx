@@ -2906,8 +2906,8 @@ const MobileDashboardDemo = ({
                                 </div>
                             )}
 
-                            {/* Share Link CTA - replaces "How It Works" for new accounts */}
-                            {(!profile?.instagram_handle || !profile?.bio) && (
+                            {/* Share Link CTA - only for new accounts with no activity */}
+                            {activeDealsCount === 0 && pendingOffersCount === 0 && (!profile?.instagram_handle || !profile?.bio) && (
                                 <div className="px-5 mb-4">
                                     <div className={cn("p-5 rounded-2xl border", isDark ? "bg-card border-[#2C2C2E]" : "bg-[#DCFCE7] border-[#16A34A]/20")}>
                                         <p className={cn("text-[14px] font-bold mb-3", isDark ? "text-foreground" : "text-[#0F172A]")}>Share your link to get your first offer</p>

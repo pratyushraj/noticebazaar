@@ -880,7 +880,7 @@ const BrandMobileDashboard = ({
 	    }
 
     toast.error('Upload your brand logo first', {
-      description: 'Creators trust offers more when the brand identity is clear.',
+      description: 'Go to Brand Settings \u2192 Upload logo \u2192 Come back and send your offer',
     });
     navigate('/brand-settings');
 	  };
@@ -3687,7 +3687,7 @@ const BrandMobileDashboard = ({
                     <p className={cn('text-[12px] font-black uppercase tracking-[0.18em] opacity-35', textColor)}>Welcome back</p>
                     <h1 className={cn('text-[28px] font-semibold tracking-tight leading-tight mt-1', textColor)}>{brandName}</h1>
                     <p className={cn('text-[13px] mt-2 opacity-60', textColor)}>
-                      Trust-first collabs. Fewer vanity metrics, clearer next steps.
+                      Find creators. Send protected offers. Get quality content.
                     </p>
                   </div>
                 </div>
@@ -5137,7 +5137,7 @@ const BrandMobileDashboard = ({
 	                    onClick={() => {
 	                      if (!hasUploadedBrandLogo) {
 	                        toast.error('Upload your brand logo first', {
-	                          description: 'Creators trust offers more when the brand identity is clear.',
+	                          description: 'Go to Brand Settings \u2192 Upload logo \u2192 Come back and send your offer',
 	                        });
 	                        setShowActionSheet(false);
                         navigate('/brand-settings');
