@@ -3,6 +3,7 @@ import { Route, Navigate } from "react-router-dom";
 import ProtectedLayout from "@/components/ProtectedLayout";
 import { LazyRoute } from "./routeElements";
 import PaymentDetailPage from "@/pages/PaymentDetailPage";
+import CounterOfferPage from "@/pages/CounterOfferPage";
 
 const CreatorDashboard = lazy(() => import("@/pages/CreatorDashboard"));
 const CollabRequestsPage = lazy(() => import("@/pages/CollabRequestsPage"));
@@ -21,6 +22,7 @@ export const CreatorRoutes = () => (
     <Route path="/creator-dashboard" element={<LazyRoute><ProtectedLayout allowedRoles={["creator", "client"]}><CreatorDashboard /></ProtectedLayout></LazyRoute>} />
     <Route path="/collab-requests" element={<Navigate to="/creator-dashboard" replace />} />
     <Route path="/collab-requests/:requestId/brief" element={<LazyRoute><ProtectedLayout allowedRoles={["creator"]}><CollabRequestBriefPage /></ProtectedLayout></LazyRoute>} />
+    <Route path="/collab-requests/:requestId/counter" element={<LazyRoute><ProtectedLayout allowedRoles={["creator"]}><CounterOfferPage /></ProtectedLayout></LazyRoute>} />
     <Route path="/creator-profile" element={<LazyRoute><ProtectedLayout allowedRoles={["creator"]}><CreatorProfile /></ProtectedLayout></LazyRoute>} />
     <Route path="/deal-delivery-details/:dealId" element={<LazyRoute><ProtectedLayout allowedRoles={["creator"]}><DealDeliveryDetailsPage /></ProtectedLayout></LazyRoute>} />
     <Route path="/payment/:dealId" element={<ProtectedLayout allowedRoles={["creator"]}><PaymentDetailPage /></ProtectedLayout>} />
