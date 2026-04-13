@@ -72,9 +72,17 @@ const CreatorDashboard = () => {
       },
     });
     const data = await res.json();
-    if (!res.ok || !data.success) throw new Error(data.error || 'Failed to accept');
+    // Always invalidate so list refreshes even on "already processed" errors
     queryClient.invalidateQueries({ queryKey: ['collab-requests'] });
     queryClient.invalidateQueries({ queryKey: ['brand-deals'] });
+    if (!res.ok || !data.success) {
+      const msg = data?.error || '';
+      if (msg.includes('already been processed') || msg.includes('already accepted') || msg.includes('already declined')) {
+        toast.info('This offer was already processed.');
+        return;
+      }
+      throw new Error(data.error || 'Failed to accept');
+    }
   };
 
   const handleDeclineRequest = async (req: any) => {
@@ -90,9 +98,18 @@ const CreatorDashboard = () => {
       },
     });
     const data = await res.json();
-    if (!res.ok || !data.success) throw new Error(data.error || 'Failed to decline');
-    toast.success('Offer declined');
+    // Always invalidate so list refreshes even on "already processed" errors
     queryClient.invalidateQueries({ queryKey: ['collab-requests'] });
+    if (!res.ok || !data.success) {
+      const msg = data?.error || '';
+      if (msg.includes('already been processed') || msg.includes('already declined') || msg.includes('already accepted')) {
+        toast.info('This offer was already processed.');
+      } else {
+        throw new Error(data.error || 'Failed to decline');
+      }
+      return;
+    }
+    toast.success('Offer declined');
   };
 
   return (

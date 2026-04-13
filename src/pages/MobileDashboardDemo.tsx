@@ -1485,8 +1485,15 @@ const MobileDashboardDemo = ({
             confetti({ particleCount: 80, spread: 60, origin: { y: 0.7 }, colors: ['#10B981', '#059669', '#34D399'] });
             toast.success('🎉 Collab accepted! Check your deals tab.');
             toast.message('Next: Submit content links in Active tab → Deliver Content', { description: 'Brand gets notified. Payment held until you deliver.' });
-        } catch (error) {
+        } catch (error: any) {
             console.error("Accept error:", error);
+            const msg = error?.message || '';
+            if (msg.includes('already been processed') || msg.includes('already accepted') || msg.includes('already declined')) {
+                toast.info('This offer was already processed.');
+                closeItemDetail();
+            } else {
+                toast.error('Failed to accept: ' + (error?.message || 'Unknown error'));
+            }
         } finally {
             setProcessingDeal(null);
         }
@@ -5679,7 +5686,14 @@ const MobileDashboardDemo = ({
                                                                     toast.error("Please open the offer details first.", { id: 'decline-error' });
                                                                     return;
                                                                 }
-                                                                if (onDeclineRequest) onDeclineRequest(selectedItem);
+                                                                if (onDeclineRequest) {
+                                                                    try {
+                                                                        await onDeclineRequest(selectedItem);
+                                                                    } catch (err: any) {
+                                                                        // Error already handled & toasted inside handleDeclineRequest
+                                                                        console.error('Decline error:', err);
+                                                                    }
+                                                                }
                                                                 closeItemDetail();
                                                             }}
                                                             className={cn("flex-1 py-3 border-none flex items-center justify-center gap-1.5 transition-all active:scale-95 text-destructive/80")}
