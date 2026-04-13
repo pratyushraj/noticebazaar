@@ -568,8 +568,13 @@ const BrandMobileDashboard = ({
   const secondaryButtonClass = cn('h-10 px-4 text-[12px]', isDark ? dsButtons.ecosystemSecondaryDark : dsButtons.ecosystemSecondaryLight);
 
   useEffect(() => {
-    setActiveTab(initialTab, initialTab === 'collabs' ? activeCollabTab : undefined);
-  }, [initialTab]);
+    // Sync activeTab with URL param on mount and whenever URL tab changes
+    if (tabParam) {
+      setActiveTab(tabParam as BrandTab, tabParam === 'collabs' ? activeCollabTab : undefined);
+    } else {
+      setActiveTab(initialTab, initialTab === 'collabs' ? activeCollabTab : undefined);
+    }
+  }, [tabParam]);
 
   const [showActionSheet, setShowActionSheet] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
