@@ -139,6 +139,8 @@ export const BrandSettingsPanel = ({
       }
 
       toast.success('Saved');
+      // Navigate back so dashboard picks up the updated profile (logo, etc.)
+      navigate('/brand-dashboard', { replace: true });
     } catch (err: any) {
       toast.error(err?.message || 'Could not save');
     } finally {

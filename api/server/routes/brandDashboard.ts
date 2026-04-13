@@ -86,5 +86,83 @@ router.get('/requests', async (req: AuthenticatedRequest, res: Response) => {
   }
 });
 
+router.get('/profile', async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const brand = requireBrand(req, res);
+    if (!brand) return;
+
+    const { data, error } = await supabase
+      .from('brands')
+      .select('*')
+      .eq('external_id', brand.email)
+      .maybeSingle();
+
+    if (error) throw error;
+
+    res.setHeader('Cache-Control', 'no-store');
+    return res.json({ success: true, brand: data });
+  } catch (error: any) {
+    console.error('[BrandDashboard] GET /profile failed:', error);
+    return res.status(500).json({ success: false, error: error?.message || 'Failed to fetch brand profile' });
+  }
+});
+
+router.put('/profile', async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const brand = requireBrand(req, res);
+    if (!brand) return;
+
+    const { name, website_url, industry, description, logo_url } = req.body;
+
+    if (!name?.trim()) {
+      return res.status(400).json({ success: false, error: 'Brand name is required' });
+    }
+
+    // Check if brand exists by external_id (email)
+    const { data: existing } = await supabase
+      .from('brands')
+      .select('id')
+      .eq('external_id', brand.email)
+      .maybeSingle();
+
+    const brandPayload: any = {
+      external_id: brand.email,
+      name: name.trim(),
+      website_url: website_url || null,
+      industry: industry || null,
+      description: description || null,
+      logo_url: logo_url || null,
+      updated_at: new Date().toISOString(),
+    };
+
+    let data, error;
+    if (existing?.id) {
+      // Update existing
+      ({ data, error } = await supabase
+        .from('brands')
+        .update(brandPayload)
+        .eq('id', existing.id)
+        .select()
+        .single());
+    } else {
+      // Insert new
+      brandPayload.created_at = new Date().toISOString();
+      ({ data, error } = await supabase
+        .from('brands')
+        .insert(brandPayload)
+        .select()
+        .single());
+    }
+
+    if (error) throw error;
+
+    res.setHeader('Cache-Control', 'no-store');
+    return res.json({ success: true, brand: data });
+  } catch (error: any) {
+    console.error('[BrandDashboard] PUT /profile failed:', error);
+    return res.status(500).json({ success: false, error: error?.message || 'Failed to save brand profile' });
+  }
+});
+
 export default router;
 
