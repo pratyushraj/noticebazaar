@@ -6,19 +6,14 @@
    MOBILE NATIVE UI/UX ENHANCEMENTS
    ============================================ */
 
-/* Shimmer Animation for Skeleton Loaders (300-400ms) */
+/* Shimmer Animation for Skeleton Loaders (CSS-only, no framer-motion) */
 @keyframes shimmer {
-  0% {
-    transform: translateX(-100%);
-  }
-
-  100% {
-    transform: translateX(100%);
-  }
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
 }
 
 .animate-shimmer {
-  animation: shimmer 0.4s ease-in-out infinite;
+  animation: shimmer 1.5s ease-in-out infinite;
 }
 
 /* Smooth App Transition (ease-out-quart) */

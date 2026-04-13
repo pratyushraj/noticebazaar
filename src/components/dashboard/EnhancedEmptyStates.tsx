@@ -3,6 +3,7 @@
 import React, { Suspense, lazy } from 'react';
 import { motion } from 'framer-motion';
 import { Briefcase, Zap, Search, Star } from 'lucide-react';
+import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 
@@ -16,6 +17,11 @@ interface EnhancedEmptyStateProps {
   isDark?: boolean;
   onAction?: () => void;
   show3D?: boolean;
+  /**
+   * When provided, the 'no-deals' Share Collab Link button will copy this URL
+   * to clipboard and show a toast instead of calling onAction.
+   */
+  shareUrl?: string;
 }
 
 const EnhancedEmptyStates: React.FC<EnhancedEmptyStateProps> = ({
@@ -23,7 +29,22 @@ const EnhancedEmptyStates: React.FC<EnhancedEmptyStateProps> = ({
   isDark = true,
   onAction,
   show3D = true,
+  shareUrl,
 }) => {
+  const handleAction = async () => {
+    // 'no-deals' type — if shareUrl is provided, copy it to clipboard
+    if (type === 'no-deals' && shareUrl) {
+      try {
+        await navigator.clipboard.writeText(shareUrl);
+        toast.success('Link copied to clipboard!');
+        return;
+      } catch {
+        toast.error('Failed to copy link');
+      }
+    }
+    // Fall back to onAction
+    onAction?.();
+  };
   const states = {
     'no-deals': {
       icon: Briefcase,
@@ -150,14 +171,14 @@ const EnhancedEmptyStates: React.FC<EnhancedEmptyStateProps> = ({
         </motion.p>
 
         {/* Action Button */}
-        {onAction && (
+        {(onAction || (type === 'no-deals' && shareUrl)) && (
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.25, duration: 0.3 }}
           >
             <Button
-              onClick={onAction}
+              onClick={handleAction}
               className={cn(
                 'bg-gradient-to-r text-foreground font-bold rounded-xl px-6 py-2.5 text-sm hover:shadow-lg transition-all active:scale-95 shadow-lg',
                 state.color

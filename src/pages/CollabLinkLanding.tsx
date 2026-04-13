@@ -18,6 +18,7 @@ import { BreadcrumbSchema } from '@/components/seo/SchemaMarkup';
 import { getApiBaseUrl } from '@/lib/utils/api';
 import { getCollabReadiness } from '@/lib/collab/readiness';
 import { useSession } from '@/contexts/SessionContext';
+import { VerificationBadge } from '@/components/ui/VerificationBadge';
 import { useUpdateProfile } from '@/lib/hooks/useProfiles';
 import { useSignOut } from '@/lib/hooks/useAuth';
 
@@ -2269,7 +2270,14 @@ const CollabLinkLanding = () => {
                         </div>
                       )}
                     </div>
-                    <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-emerald-500 rounded-full border-2 border-slate-50" />
+                    {/* Verification Badge — shown when payout_verified or onboarding_complete */}
+                    {(creator as any)?.payout_verified || creator.onboarding_complete ? (
+                      <div className="absolute -bottom-0.5 -right-0.5">
+                        <VerificationBadge size="md" />
+                      </div>
+                    ) : (
+                      <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-emerald-500 rounded-full border-2 border-slate-50" />
+                    )}
                   </div>
 
                   <div className="flex flex-col">
@@ -2284,10 +2292,12 @@ const CollabLinkLanding = () => {
                       ) : (
                         <h2 className="text-[17px] font-black text-slate-900 leading-tight">{creator.name}</h2>
                       )}
-                      <div className="flex items-center gap-1 bg-teal-50 border border-teal-200 rounded-full px-2 py-0.5">
-                        <CheckCircle2 className="h-3 w-3 text-teal-600" />
-                        <span className="text-[10px] font-black text-teal-700 uppercase tracking-wider">Verified</span>
-                      </div>
+                      {(creator as any)?.payout_verified || creator.onboarding_complete ? (
+                        <div className="flex items-center gap-1 bg-blue-50 border border-blue-200 rounded-full px-2 py-0.5">
+                          <CheckCircle2 className="h-3 w-3 text-blue-500" />
+                          <span className="text-[10px] font-black text-blue-600 uppercase tracking-wider">Verified</span>
+                        </div>
+                      ) : null
                     </div>
                     {editMode ? (
                       <div className="mt-1 flex gap-2 items-center">

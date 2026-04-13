@@ -34,6 +34,10 @@ import DealStatusFlow from '@/components/dashboard/DealStatusFlow';
 import SmartNotificationsCenter from '@/components/dashboard/SmartNotificationsCenter';
 import { usePwaInstall } from '@/hooks/usePwaInstall';
 import { useSessionTimeout } from '@/hooks/useSessionTimeout';
+import { useHealthCheck } from '@/hooks/useHealthCheck';
+import { VerificationBadge } from '@/components/ui/VerificationBadge';
+import { NotificationPermission } from '@/components/ui/NotificationPermission';
+import { ShimmerSkeleton } from '@/components/ui/ShimmerSkeleton';
 import confetti from 'canvas-confetti';
 
 interface MobileDashboardProps {
@@ -52,6 +56,10 @@ interface MobileDashboardProps {
      * Default behavior is to avoid showing demo items for real accounts.
      */
     showDemoOffer?: boolean;
+    /** Show skeleton loading for deals/offers section */
+    isLoadingDeals?: boolean;
+    /** Show skeleton loading for profile section */
+    isLoadingProfile?: boolean;
 }
 
 // Minimal Status Badge for Deal Cards
@@ -409,6 +417,8 @@ const MobileDashboardDemo = ({
     onRefresh,
     onLogout,
     showDemoOffer = false,
+    isLoadingDeals = false,
+    isLoadingProfile = false,
 }: MobileDashboardProps) => {
     const navigate = useNavigate();
     const queryClient = useQueryClient();
@@ -574,6 +584,7 @@ const MobileDashboardDemo = ({
     const [completionDismissed, setCompletionDismissed] = useState(false);
     const { canInstall, promptInstall } = usePwaInstall();
     useSessionTimeout();
+    const { status: healthStatus } = useHealthCheck();
     const sessionTracked = useRef(false);
 
     // Track first dashboard view (once per session)
@@ -2752,10 +2763,15 @@ const MobileDashboardDemo = ({
                                         <Menu className="w-6 h-6" strokeWidth={1.5} />
                                     </button>
 
-                                    {/* Center: Wordmark */}
+                                    {/* Center: Wordmark + Connection Status */}
                                     <div className="flex items-center gap-1.5 font-semibold text-[16px] tracking-tight">
                                         <ShieldCheck className={cn("w-4 h-4", isDark ? "text-foreground" : "text-muted-foreground")} />
                                         <span className={textColor}>CreatorArmour</span>
+                                        {healthStatus !== 'connected' && (
+                                            <span className="text-[10px] text-muted-foreground/50 font-medium">
+                                                {healthStatus === 'checking' ? '· connecting' : '· offline'}
+                                            </span>
+                                        )}
                                     </div>
 
                                     {/* Right: Actions & Avatar */}
@@ -2821,6 +2837,9 @@ const MobileDashboardDemo = ({
                                             <span className="text-[10px] font-bold tracking-wide">{isDark ? 'Dark' : 'Light'}</span>
                                         </motion.button>
 
+                                        {/* Notification Permission Prompt */}
+                                        <NotificationPermission />
+
                                         {/* Bell */}
                                         <button type="button" onClick={() => handleAction('notifications')} aria-label={`Notifications${collabRequests.length > 0 ? ` (${collabRequests.length} new)` : ''}`} className={cn('relative min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full', secondaryTextColor)}>
                                             <Bell className="w-5 h-5" />
@@ -2831,40 +2850,60 @@ const MobileDashboardDemo = ({
                                             )}
                                         </button>
 
-                                        {/* Avatar */}
-                                        <button type="button" onClick={() => setActiveTab('profile')} className={cn("w-11 h-11 rounded-full border overflow-hidden transition-all active:scale-95", borderColor)}>
-                                            <img
-                                                src={avatarUrl}
-                                                alt="avatar"
-                                                className="w-full h-full object-cover"
-                                                onError={(e) => {
-                                                    (e.currentTarget as HTMLImageElement).onerror = null;
-                                                    (e.currentTarget as HTMLImageElement).src = avatarFallbackUrl;
-                                                }}
-                                            />
-                                        </button>
+                                        {/* Avatar with Verification Badge */}
+                                        <div className="relative">
+                                            <button type="button" onClick={() => setActiveTab('profile')} className={cn("w-11 h-11 rounded-full border overflow-hidden transition-all active:scale-95", borderColor)}>
+                                                <img
+                                                    src={avatarUrl}
+                                                    alt="avatar"
+                                                    className="w-full h-full object-cover"
+                                                    onError={(e) => {
+                                                        (e.currentTarget as HTMLImageElement).onerror = null;
+                                                        (e.currentTarget as HTMLImageElement).src = avatarFallbackUrl;
+                                                    }}
+                                                />
+                                            </button>
+                                            {/* Verification Badge — show when profile is verified/onboarding complete */}
+                                            {(profile?.payout_verified || profile?.onboarding_complete) && (
+                                                <div className="absolute -bottom-0.5 -right-0.5">
+                                                    <VerificationBadge size="sm" />
+                                                </div>
+                                            )}
+                                        </div>
                                     </div>
                                 </div>
 
                                 {/* Greeting / Status */}
                                 <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
                                     <div className="flex items-center justify-between">
-                                        <h1 className={cn('text-[18px] font-semibold tracking-tight', textColor)}>
-                                            {(() => {
-                                                const hour = new Date().getHours();
-                                                const name = (profile?.first_name || '').trim();
-                                                const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
-                                                return name ? `${greeting}, ${name}` : greeting;
-                                            })()}
-                                        </h1>
-                                        <div className={cn("flex items-center gap-1.5 px-2.5 py-1 rounded-full", isDark ? "bg-primary/10" : "bg-primary")}>
-                                            <span className="w-1.5 h-1.5 rounded-full bg-primary shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
-                                            <span className="text-[10px] uppercase font-bold tracking-[0.06em] text-primary dark:text-primary">Active</span>
-                                        </div>
+                                        {!profile ? (
+                                            /* Profile loading skeleton */
+                                            <div className="flex-1 space-y-2">
+                                                <ShimmerSkeleton className="h-5 w-40" />
+                                                <ShimmerSkeleton className="h-4 w-24" />
+                                            </div>
+                                        ) : (
+                                            <>
+                                                <h1 className={cn('text-[18px] font-semibold tracking-tight', textColor)}>
+                                                    {(() => {
+                                                        const hour = new Date().getHours();
+                                                        const name = (profile?.first_name || '').trim();
+                                                        const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
+                                                        return name ? `${greeting}, ${name}` : greeting;
+                                                    })()}
+                                                </h1>
+                                                <div className={cn("flex items-center gap-1.5 px-2.5 py-1 rounded-full", isDark ? "bg-primary/10" : "bg-primary")}>
+                                                    <span className="w-1.5 h-1.5 rounded-full bg-primary shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
+                                                    <span className="text-[10px] uppercase font-bold tracking-[0.06em] text-primary dark:text-primary">Active</span>
+                                                </div>
+                                            </>
+                                        )}
                                     </div>
-                                    <p className={cn('text-[15px] font-semibold mt-0', isDark ? "text-foreground/70" : "text-muted-foreground")}>
-                                        @{username}
-                                    </p>
+                                    {profile && (
+                                        <p className={cn('text-[15px] font-semibold mt-0', isDark ? "text-foreground/70" : "text-muted-foreground")}>
+                                            @{username}
+                                        </p>
+                                    )}
                                 </motion.div>
                             </div>
 
