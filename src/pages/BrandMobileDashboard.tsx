@@ -4001,10 +4001,10 @@ const BrandMobileDashboard = ({
 	                              <div className="p-8 text-center">
 	                                <p className={cn('text-[12px] font-bold opacity-50', textColor)}>
 	                                  {activeCollabTab === 'action_required'
-	                                    ? 'No action required items'
+	                                    ? 'All caught up! Send an offer to get started.'
 	                                    : activeCollabTab === 'active'
-	                                      ? 'No active collabs yet'
-	                                      : 'No completed collabs yet'}
+	                                      ? 'No active collabs — complete a deal first'
+	                                      : 'No completed collabs yet — finish an active deal'}
 	                                </p>
 	                                {activeCollabTab === 'action_required' && (
                                   <Button type="button" onClick={() => openCreateOfferSheet()} className={cn('mt-4 rounded-2xl', isDark ? 'bg-primary hover:bg-primary text-foreground' : 'bg-primary hover:bg-primary text-foreground')}>
@@ -4507,10 +4507,10 @@ const BrandMobileDashboard = ({
                       <div className="p-8 text-center">
                         <p className={cn('text-[12px] font-bold opacity-50', textColor)}>
                           {activeCollabTab === 'action_required'
-                            ? 'No action required items'
+                            ? 'All caught up! Send an offer to get started.'
                             : activeCollabTab === 'active'
-                              ? 'No active collabs yet'
-                              : 'No completed collabs yet'}
+                              ? 'No active collabs — complete a deal first'
+                              : 'No completed collabs yet — finish an active deal'}
                         </p>
                         {activeCollabTab === 'action_required' && (
                           <Button type="button" onClick={() => openCreateOfferSheet()} className={cn('mt-4 rounded-2xl', isDark ? 'bg-primary hover:bg-primary text-foreground' : 'bg-primary hover:bg-primary text-foreground')}>

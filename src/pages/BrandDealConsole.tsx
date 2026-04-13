@@ -548,6 +548,7 @@ const BrandDealConsole = () => {
                                         </div>
 
                                         <div className="space-y-6">
+                                            <p className="text-xs text-muted-foreground mb-3">Follow each step to complete the deal. Click each step for details.</p>
                                             {/* Milestone Status Indicators */}
                                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                                 <div className={cn(
@@ -560,7 +561,7 @@ const BrandDealConsole = () => {
                                                     )}>
                                                         <FileText className="w-4 h-4" />
                                                     </div>
-                                                    <span className="text-[10px] font-bold uppercase tracking-wider">Content Submited</span>
+                                                    <span className="text-[10px] font-bold uppercase tracking-wider">Content Submitted</span>
                                                     {brandDeal?.content_submitted_at && <span className="text-[10px] text-primary">{new Date(brandDeal.content_submitted_at).toLocaleDateString()}</span>}
                                                 </div>
                                                 <div className={cn(

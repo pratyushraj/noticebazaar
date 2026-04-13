@@ -2992,7 +2992,7 @@ const MobileDashboardDemo = ({
                                         >
                                             <h2 className={cn("text-[22px] font-black mb-2 tracking-tight", isDark ? "text-foreground" : "text-[#0F172A]")}>No brand requests yet 👀</h2>
                                             <p className={cn("text-[14px] font-medium mb-5 leading-relaxed", isDark ? "text-foreground/70" : "text-[#64748B]")}>
-                                                Share your link to start getting offers
+                                                When brands submit briefs through your collab link, they'll appear here.
                                             </p>
 
                                             <button
@@ -3274,9 +3274,9 @@ const MobileDashboardDemo = ({
                                                         <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-500 to-cyan-500 mx-auto mb-4 flex items-center justify-center shadow-lg shadow-blue-500/20">
                                                             <Briefcase className="w-7 h-7 text-white" />
                                                         </div>
-                                                        <h3 className={cn("text-[18px] font-black tracking-tight mb-2 font-outfit", textColor)}>No brand requests yet</h3>
+                                                        <h3 className={cn("text-[18px] font-black tracking-tight mb-2 font-outfit", textColor)}>Share your link to get brand requests</h3>
                                                         <p className={cn("text-[13px] leading-relaxed opacity-70 mb-5", textColor)}>
-                                                            Share your link to start getting offers.
+                                                            Share your collab link with brands — they'll submit briefs through it.
                                                         </p>
                                                         <button
                                                             type="button"
@@ -3949,9 +3949,9 @@ const MobileDashboardDemo = ({
                                                 <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-violet-500 to-blue-500 mx-auto mb-4 flex items-center justify-center shadow-lg shadow-blue-500/20">
                                                     <Zap className="w-7 h-7 text-white" />
                                                 </div>
-                                                <h3 className={cn("text-[18px] font-black tracking-tight mb-2 font-outfit", textColor)}>No brand requests yet</h3>
+                                                <h3 className={cn("text-[18px] font-black tracking-tight mb-2 font-outfit", textColor)}>Share your link to get brand requests</h3>
                                                 <p className={cn("text-[13px] leading-relaxed opacity-70 mb-5", textColor)}>
-                                                    Share your link to start getting offers.
+                                                    Brand briefs submitted through your link will appear here.
                                                 </p>
                                                 <button
                                                     type="button"
@@ -4054,9 +4054,9 @@ const MobileDashboardDemo = ({
                                                 <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-500 mx-auto mb-4 flex items-center justify-center shadow-lg shadow-emerald-500/20">
                                                     <CheckCircle2 className="w-7 h-7 text-white" />
                                                 </div>
-                                                <h3 className={cn("text-[18px] font-black tracking-tight mb-2 font-outfit", textColor)}>No brand requests yet</h3>
+                                                <h3 className={cn("text-[18px] font-black tracking-tight mb-2 font-outfit", textColor)}>Share your link to get brand requests</h3>
                                                 <p className={cn("text-[13px] leading-relaxed opacity-70", textColor)}>
-                                                    Share your link to start getting offers.
+                                                    Share your collab link to receive brand briefs here.
                                                 </p>
                                             </div>
                                         )}
@@ -4512,8 +4512,8 @@ const MobileDashboardDemo = ({
                                             {activeDealsCount === 0 && pendingOffersCount === 0 ? (
                                                 <div className="px-4">
                                                     <div className={cn("p-4 rounded-2xl border", isDark ? "bg-[#111827]/40 border-border" : "bg-green-50 border-green-100")}>
-                                                        <p className={cn("text-sm font-bold mb-1", isDark ? "text-foreground" : "text-green-800")}>No brand requests yet</p>
-                                                        <p className={cn("text-xs opacity-70 mb-3", isDark ? "text-foreground" : "text-green-700")}>Share your creator link once and your first offer will appear here.</p>
+                                                        <p className={cn("text-sm font-bold mb-1", isDark ? "text-foreground" : "text-green-800")}>Share your link to get brand requests</p>
+                                                        <p className={cn("text-xs opacity-70 mb-3", isDark ? "text-foreground" : "text-green-700")}>Brand briefs from your collab link will appear here.</p>
                                                         <button
                                                             type="button"
                                                             onClick={handleShareOnWhatsApp}

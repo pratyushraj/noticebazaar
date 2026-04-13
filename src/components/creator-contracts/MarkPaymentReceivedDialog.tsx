@@ -69,6 +69,9 @@ const MarkPaymentReceivedDialog: React.FC<MarkPaymentReceivedDialogProps> = ({ d
         <p className="text-sm font-medium text-foreground">Brand: {deal.brand_name}</p>
         <p className="text-xs text-muted-foreground">Amount: ₹{deal.deal_amount.toLocaleString('en-IN')}</p>
       </div>
+      <p className="text-xs text-muted-foreground bg-muted/50 rounded-lg px-3 py-2">
+        Confirm only after the payment arrives in your bank or UPI account.
+      </p>
       
       <div>
         <Label htmlFor="paymentReceivedDate">Payment Received Date *</Label>
@@ -107,11 +110,11 @@ const MarkPaymentReceivedDialog: React.FC<MarkPaymentReceivedDialogProps> = ({ d
         <Button type="submit" disabled={isSubmitting || !paymentReceivedDate}>
           {isSubmitting ? (
             <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Marking...
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Confirming...
             </>
           ) : (
             <>
-              <CheckCircle className="mr-2 h-4 w-4" /> Mark as Completed
+              <CheckCircle className="mr-2 h-4 w-4" /> Confirm Payment Received
             </>
           )}
         </Button>
