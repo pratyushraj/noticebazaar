@@ -4601,7 +4601,7 @@ const MobileDashboardDemo = ({
                                                                 isDark ? "bg-primary text-white" : "bg-[#16A34A] text-white"
                                                             )}
                                                         >
-                                                            Share link now
+                                                            Share Link
                                                         </button>
                                                     </div>
                                                 </div>
