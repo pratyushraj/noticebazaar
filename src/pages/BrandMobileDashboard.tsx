@@ -3534,15 +3534,15 @@ const BrandMobileDashboard = ({
                       <Sparkles className="w-5 h-5 text-foreground" />
                     </div>
                     <div>
-                      <p className="text-[14px] font-bold text-muted-foreground">Welcome to Brand Console</p>
-                      <p className="text-[12px] text-muted-foreground">Find creators and close deals in 3 steps</p>
+                      <p className="text-[14px] font-bold text-muted-foreground">Get started with your first deal</p>
+                      <p className="text-[12px] text-muted-foreground">Pick a creator and send a protected offer</p>
                     </div>
                   </div>
                   <div className="flex flex-col gap-2">
                     {[
-                      { n: 1, label: 'Browse creators in your niche', action: () => navigate('/discover-creators') },
-                      { n: 2, label: 'Send your first collab offer', action: () => navigate('/brand-dashboard?tab=creators') },
-                      { n: 3, label: 'Track deals and payments', action: () => navigate('/brand-dashboard?tab=collabs') },
+                      { n: 1, label: 'Find a creator in your niche', action: () => navigate('/discover-creators') },
+                      { n: 2, label: 'Send a protected offer', action: () => navigate('/brand-dashboard?tab=creators') },
+                      { n: 3, label: 'Track deals and get paid', action: () => navigate('/brand-dashboard?tab=collabs') },
                     ].map(step => (
                       <button
                         key={step.n}
@@ -3873,7 +3873,7 @@ const BrandMobileDashboard = ({
 	                                  ₹<CountUp end={Number(activeValue) || 0} duration={1.5} separator="," decimals={0} />
 	                                </p>
 	                                <p className={cn('text-[13px] font-bold mt-2', isDark ? 'text-foreground/70' : 'text-foreground/85')}>
-	                                  Across {activeDealsList.length} active collaboration{activeDealsList.length === 1 ? '' : 's'}
+	                                  {activeDealsList.length === 0 ? 'No active deals yet — send your first offer' : `Across ${activeDealsList.length} active collaboration${activeDealsList.length === 1 ? '' : 's'}`}
 	                                </p>
 	                                <div className="mt-3 flex flex-wrap gap-2">
 	                                  {(newToday > 0 || contentPendingReview > 0) && (

@@ -10,7 +10,7 @@ const navItems = [
   { to: "/creator-dashboard", icon: LayoutDashboard, label: "Home", matchPaths: ["/creator-dashboard"] },
   { to: "/creator-dashboard?tab=deals", icon: Briefcase, label: "Deals", matchPaths: ["creator-dashboard", "deals"] },
   { to: "/creator-dashboard?tab=payments", icon: Wallet, label: "Payments", matchPaths: ["creator-dashboard", "payments"] },
-  { to: "/creator-dashboard?tab=deals&subtab=pending", icon: Link2, label: "Collab", matchPaths: ["creator-dashboard", "collab"] },
+  { to: "/creator-dashboard?tab=deals&subtab=pending", icon: Link2, label: "Requests", matchPaths: ["creator-dashboard", "collab"] },
   { to: "/creator-dashboard?tab=profile", icon: User, label: "Profile", matchPaths: ["creator-dashboard", "profile"] },
 ];
 

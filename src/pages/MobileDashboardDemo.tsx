@@ -4756,7 +4756,7 @@ const MobileDashboardDemo = ({
 
                         <motion.button whileTap={{ scale: 0.94 }} onClick={() => { triggerHaptic(); setActiveTab('deals'); }} className={cn("flex flex-col items-center justify-center gap-1 min-w-[64px] h-[54px] px-2 rounded-2xl transition-all", activeTab === 'deals' ? (isDark ? 'bg-white/8 shadow-[0_8px_20px_rgba(0,0,0,0.18)]' : 'bg-white shadow-sm border border-[#E5E7EB]') : 'bg-transparent')}>
                             <Briefcase className={cn('w-[22px] h-[22px]', activeTab === 'deals' ? (isDark ? 'text-foreground' : 'text-[#111827]') : secondaryTextColor)} />
-                            <span className={cn('text-[10px] tracking-tight', activeTab === 'deals' ? (isDark ? 'text-foreground font-bold' : 'text-[#111827] font-bold') : cn('font-medium', secondaryTextColor))}>Collabs</span>
+                            <span className={cn('text-[10px] tracking-tight', activeTab === 'deals' ? (isDark ? 'text-foreground font-bold' : 'text-[#111827] font-bold') : cn('font-medium', secondaryTextColor))}>Deals</span>
                         </motion.button>
 
                         <motion.button whileTap={{ scale: 0.94 }} onClick={() => { triggerHaptic(); setActiveTab('payments'); }} className={cn("flex flex-col items-center justify-center gap-1 min-w-[64px] h-[54px] px-2 rounded-2xl transition-all", activeTab === 'payments' ? (isDark ? 'bg-white/8 shadow-[0_8px_20px_rgba(0,0,0,0.18)]' : 'bg-white shadow-sm border border-[#E5E7EB]') : 'bg-transparent')}>
