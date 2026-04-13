@@ -1794,15 +1794,15 @@ const MobileDashboardDemo = ({
                         <div className="px-4 space-y-6">
                             <div className={cn("p-6 rounded-[2.5rem] bg-background border border-border text-foreground")}>
                                 <p className="text-[11px] font-black uppercase tracking-[0.2em] opacity-50 mb-4">Total Revenue Generated</p>
-                                <div className="text-4xl font-black font-outfit mb-6">₹{allTimeRevenue.toLocaleString()}</div>
+                                <div className="text-4xl font-black font-outfit mb-6 tabular-nums">₹{allTimeRevenue.toLocaleString()}</div>
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="bg-card p-4 rounded-2xl border border-border/5">
                                         <p className="text-[10px] font-bold opacity-40 mb-1">THIS YEAR</p>
-                                        <p className="text-lg font-bold">₹{yearlyRevenue.toLocaleString()}</p>
+                                        <p className="text-lg font-bold tabular-nums">₹{yearlyRevenue.toLocaleString()}</p>
                                     </div>
                                     <div className="bg-card p-4 rounded-2xl border border-border/5">
                                         <p className="text-[10px] font-bold opacity-40 mb-1">LAST MONTH</p>
-                                        <p className="text-lg font-bold text-primary">₹{monthlyRevenue.toLocaleString()}</p>
+                                        <p className="text-lg font-bold text-primary tabular-nums">₹{monthlyRevenue.toLocaleString()}</p>
                                     </div>
                                 </div>
                             </div>

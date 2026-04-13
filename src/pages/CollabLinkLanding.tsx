@@ -3915,9 +3915,9 @@ const EditDealTemplateModal = ({
                     </label>
                     {isSelected && (
                       <div className="flex items-center gap-1.5 shrink-0 bg-white rounded-lg border border-slate-200 px-1 py-0.5 shadow-sm">
-                        <button type="button" onClick={() => updateDeliverableQuantityModal(opt.value, (edited.quantities[opt.value] || 1) - 1)} className="w-5 h-5 rounded hover:bg-slate-100 flex items-center justify-center font-bold text-slate-500 transition-colors">−</button>
+                        <button type="button" aria-label="Decrease quantity" onClick={() => updateDeliverableQuantityModal(opt.value, (edited.quantities[opt.value] || 1) - 1)} className="w-5 h-5 rounded hover:bg-slate-100 flex items-center justify-center font-bold text-slate-500 transition-colors">−</button>
                         <span className="text-[12px] font-black w-3 text-center text-slate-800">{edited.quantities[opt.value] || 1}</span>
-                        <button type="button" onClick={() => updateDeliverableQuantityModal(opt.value, (edited.quantities[opt.value] || 1) + 1)} className="w-5 h-5 rounded hover:bg-slate-100 flex items-center justify-center font-bold text-slate-500 transition-colors">+</button>
+                        <button type="button" aria-label="Increase quantity" onClick={() => updateDeliverableQuantityModal(opt.value, (edited.quantities[opt.value] || 1) + 1)} className="w-5 h-5 rounded hover:bg-slate-100 flex items-center justify-center font-bold text-slate-500 transition-colors">+</button>
                       </div>
                     )}
                   </div>

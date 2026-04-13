@@ -26,6 +26,9 @@ const floatKeyframes = `
     0%   { transform: scale(1); opacity: 0.6; }
     100% { transform: scale(1.3); opacity: 0; }
   }
+  @media (prefers-reduced-motion: reduce) {
+    .float-animate { animation-play-state: paused; }
+  }
 `;
 
 const wrapperStyle: React.CSSProperties = {
@@ -47,7 +50,7 @@ function EmptyDealsSVG({ size }: { size: 'sm' | 'md' | 'lg' }) {
   return (
     <div style={{ ...wrapperStyle, width: s * 1.6, height: s * 1.4 }}>
       <style>{floatKeyframes}</style>
-      <div style={{ position: 'relative', transformStyle: 'preserve-3d', animation: 'float3d 4s ease-in-out infinite' }}>
+      <div style={{ position: 'relative', transformStyle: 'preserve-3d', animation: 'float3d 4s ease-in-out infinite' }} className="float-animate">
         {/* Front face */}
         <div style={{
           position: 'absolute',
@@ -132,7 +135,7 @@ function SuccessBadgeSVG({ size }: { size: 'sm' | 'md' | 'lg' }) {
   return (
     <div style={{ ...wrapperStyle, width: s * 1.7, height: s * 1.7 }}>
       <style>{floatKeyframes}</style>
-      <div style={{ position: 'relative', transformStyle: 'preserve-3d', animation: 'float3d 4.5s ease-in-out infinite 0.5s' }}>
+      <div style={{ position: 'relative', transformStyle: 'preserve-3d', animation: 'float3d 4.5s ease-in-out infinite 0.5s' }} className="float-animate">
 
         {/* Glow ring */}
         <div style={{
@@ -192,7 +195,7 @@ function SuccessPaymentSVG({ size }: { size: 'sm' | 'md' | 'lg' }) {
   return (
     <div style={{ ...wrapperStyle, width: s * 1.6, height: s * 1.4 }}>
       <style>{floatKeyframes}</style>
-      <div style={{ position: 'relative', transformStyle: 'preserve-3d', animation: 'float3d 5s ease-in-out infinite 1s' }}>
+      <div style={{ position: 'relative', transformStyle: 'preserve-3d', animation: 'float3d 5s ease-in-out infinite 1s' }} className="float-animate">
 
         {/* Card */}
         <div style={{
@@ -241,7 +244,7 @@ function HeroSVG({ size }: { size: 'sm' | 'md' | 'lg' }) {
   return (
     <div style={{ ...wrapperStyle, width: s * 1.5, height: s * 1.2 }}>
       <style>{floatKeyframes}</style>
-      <div style={{ position: 'relative', transformStyle: 'preserve-3d', animation: 'float3d 6s ease-in-out infinite' }}>
+      <div style={{ position: 'relative', transformStyle: 'preserve-3d', animation: 'float3d 6s ease-in-out infinite' }} className="float-animate">
 
         {/* Large backdrop disc */}
         <div style={{

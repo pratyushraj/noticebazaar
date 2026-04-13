@@ -257,14 +257,14 @@ const LandingPage = () => {
 
           <div className="flex flex-col lg:flex-row items-center gap-10 lg:gap-24 w-full">
             <div className="flex-1 text-center lg:text-left pt-2 lg:pt-10">
-              <h1 className="text-[48px] md:text-[72px] lg:text-[84px] font-black tracking-tight leading-[1.05] mb-6 text-[#0F172A] drop-shadow-sm">
+              <h1 className="text-[48px] md:text-[72px] lg:text-[84px] font-black tracking-tight leading-[1.05] mb-6 text-[#0F172A] drop-shadow-sm text-balance">
                 Get brand deals <br />
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#16A34A] to-[#15803D] inline-block mt-2">
                   without DMs
                 </span>
               </h1>
 
-              <p className="text-[20px] md:text-[24px] text-[#64748B] font-medium mb-10 max-w-lg mx-auto lg:mx-0 leading-relaxed">
+              <p className="text-[20px] md:text-[24px] text-[#64748B] font-medium mb-10 max-w-lg mx-auto lg:mx-0 leading-relaxed text-pretty">
                 Send one link. Brands send offers.
               </p>
 
