@@ -16,6 +16,7 @@ const AANYA_IMG = "https://images.unsplash.com/photo-1534528741775-53994a69daeb?
 const PRIYA_IMG = "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=500&h=500&q=80";
 const ARJUN_IMG = "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&w=500&h=500&q=80";
 const NEHA_IMG = "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=500&h=500&q=80";
+const RITIKA_IMG = "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=500&h=500&q=80";
 const ROHAN_IMG = "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=500&h=500&q=80";
 
 const dashboardShowcase = [
@@ -407,6 +408,25 @@ const LandingPage = () => {
           </div>
         </section>
 
+        {/* Trust Stats Bar */}
+        <section className="bg-[#0F172A] py-6 md:py-8">
+          <div className="max-w-[1200px] mx-auto px-6">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8 text-center">
+              {[
+                { stat: '12,400+', label: 'Creators on platform' },
+                { stat: '₹4.2Cr+', label: 'Paid out to creators' },
+                { stat: '98%', label: 'Creator satisfaction' },
+                { stat: '4.8★', label: 'Average app rating' },
+              ].map((item) => (
+                <div key={item.label} className="flex flex-col items-center gap-1">
+                  <p className="text-2xl md:text-3xl font-black text-white tracking-tight">{item.stat}</p>
+                  <p className="text-xs md:text-sm font-medium text-slate-400">{item.label}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
         {/* Brand Logos Section - moved above "More than a collab page" */}
         <section className="border-y border-[#E5E7EB] bg-[#F8FAF9] py-10 md:py-12">
           <div className="max-w-[1200px] mx-auto px-6 text-center">
@@ -488,24 +508,28 @@ const LandingPage = () => {
               Top creators running their business on Armour
             </h2>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5">
             {[
-              { name: 'Priya Sharma', category: 'Fashion Creator', loc: 'Delhi', followers: '36K', price: '₹3K', earned: '₹24,500 this week', img: PRIYA_IMG },
-              { name: 'Arjun Patel', category: 'Tech Reviewer', loc: 'Mumbai', followers: '51K', price: '₹4K', earned: '₹12,000 per reel', img: ARJUN_IMG },
-              { name: 'Neha Verma', category: 'Beauty Creator', loc: 'Bangalore', followers: '28K', price: '₹2K', earned: '₹18,500 last month', img: NEHA_IMG },
+              { name: 'Priya Sharma', category: 'Fashion Creator', loc: 'Delhi', followers: '36K', price: '₹3K', earned: '₹24,500 this week', img: PRIYA_IMG, type: 'creator' },
+              { name: 'Arjun Patel', category: 'Tech Reviewer', loc: 'Mumbai', followers: '51K', price: '₹4K', earned: '₹12,000 per reel', img: ARJUN_IMG, type: 'creator' },
+              { name: 'Neha Verma', category: 'Beauty Creator', loc: 'Bangalore', followers: '28K', price: '₹2K', earned: '₹18,500 last month', img: NEHA_IMG, type: 'creator' },
+              { name: 'Ritika Shah', category: 'Brand: SkinCare Co.', loc: 'Mumbai', followers: '—', price: '₹8K avg', earned: '24 creators, 0 disputes', img: RITIKA_IMG, type: 'brand' },
             ].map((c, i) => (
               <div key={i} className="bg-white border border-[#E5E7EB] p-6 md:p-8 rounded-[20px] md:rounded-[24px] shadow-[0_8px_24px_rgba(0,0,0,0.06)] hover:shadow-[0_12px_32px_rgba(0,0,0,0.1)] hover:-translate-y-1 transition-all duration-300">
                 <div className="flex items-center gap-4 mb-4">
                   <img src={c.img} alt={c.name} className="w-16 h-16 rounded-2xl object-cover shadow-sm" loading="lazy" />
                   <div>
-                    <h3 className="font-black text-[#0F172A] text-lg">{c.name}</h3>
-                    <p className="text-[13px] font-medium text-[#64748B]">{c.category} • {c.loc}</p>
+                    <div className="flex items-center gap-1.5">
+                      <h3 className="font-black text-[#0F172A] text-lg">{c.name}</h3>
+                      {c.type === 'brand' && <span className="text-[10px] font-black bg-[#FEF3C7] text-[#92400E] px-2 py-0.5 rounded-full">BRAND</span>}
+                    </div>
+                    <p className="text-[13px] font-medium text-[#64748B]">{c.category}</p>
                   </div>
                 </div>
                 <div className="bg-[#F8FAF9] border border-[#E5E7EB] rounded-2xl p-4">
                   <p className="text-sm font-bold text-[#16A34A] mb-1">{c.earned}</p>
                   <div className="flex items-center justify-between">
-                    <span className="text-sm font-bold text-[#64748B]">Typical deal</span>
+                    <span className="text-sm font-bold text-[#64748B]">{c.type === 'brand' ? 'Avg deal value' : 'Typical deal'}</span>
                     <span className="font-black text-2xl text-[#16A34A]">{c.price}</span>
                   </div>
                 </div>
