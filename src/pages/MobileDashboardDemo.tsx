@@ -4616,7 +4616,7 @@ const MobileDashboardDemo = ({
                                                         className={cn("h-14 rounded-2xl border font-bold text-[12px] active:scale-95 transition-all flex flex-col items-center justify-center leading-tight", isDark ? "bg-card border-border text-foreground" : "bg-white border-border text-black shadow-sm")}
                                                     >
                                                         <span className="text-primary text-[16px] font-black">{pendingOffersCount}</span>
-                                                        New offers
+                                                        New Offers
                                                     </button>
                                                     <button
                                                         type="button"
@@ -4624,7 +4624,7 @@ const MobileDashboardDemo = ({
                                                         className={cn("h-14 rounded-2xl border font-bold text-[12px] active:scale-95 transition-all flex flex-col items-center justify-center leading-tight", isDark ? "bg-card border-border text-foreground" : "bg-white border-border text-black shadow-sm")}
                                                     >
                                                         <span className="text-primary text-[16px] font-black">₹{pendingAmount.toLocaleString()}</span>
-                                                        Pending payouts
+                                                        Pending Payouts
                                                     </button>
                                                 </div>
                                             </div>
