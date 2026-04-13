@@ -79,8 +79,9 @@ const CreatorDashboard = () => {
   const handleDeclineRequest = async (req: any) => {
     const { data: sessionData } = await supabase.auth.getSession();
     if (!sessionData.session) throw new Error('Not authenticated');
-
-    const res = await fetch(`${getApiBaseUrl()}/api/collab-requests/${req.id}/decline`, {
+    const requestId = typeof req === 'string' ? req : req?.id;
+    if (!requestId) { throw new Error('Request ID missing'); }
+    const res = await fetch(`${getApiBaseUrl()}/api/collab-requests/${requestId}/decline`, {
       method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',
