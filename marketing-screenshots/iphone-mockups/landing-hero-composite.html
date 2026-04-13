@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Creator Armour — App Preview</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #050a05 0%, #07120a 40%, #0a0f1a 100%);
+  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+  overflow: hidden;
+  padding: 20px;
+}
+.scene {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 32px;
+  position: relative;
+}
+.phone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+.phone-inner {
+  position: relative;
+  background: #1C1C1E;
+  border-radius: 52px;
+  padding: 12px;
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,0.06),
+    0 48px 100px rgba(0,0,0,0.55),
+    0 20px 50px rgba(0,0,0,0.4),
+    inset 0 1px 0 rgba(255,255,255,0.08);
+}
+.phone-inner.left {
+  transform: rotateY(-8deg) rotateX(3deg) translateY(-8px);
+  animation: tiltLeft 7s ease-in-out infinite;
+}
+.phone-inner.center {
+  z-index: 10;
+  transform: rotateY(-2deg) rotateX(1deg);
+  animation: tiltCenter 7s ease-in-out infinite;
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,0.1),
+    0 60px 120px rgba(0,0,0,0.6),
+    0 24px 60px rgba(0,0,0,0.45),
+    inset 0 1px 0 rgba(255,255,255,0.12);
+}
+.phone-inner.right {
+  transform: rotateY(6deg) rotateX(-2deg) translateY(-4px);
+  animation: tiltRight 7s ease-in-out infinite;
+}
+@keyframes tiltLeft {
+  0%, 100% { transform: rotateY(-8deg) rotateX(3deg) translateY(-8px); }
+  50% { transform: rotateY(-5deg) rotateX(2deg) translateY(-14px); }
+}
+@keyframes tiltCenter {
+  0%, 100% { transform: rotateY(-2deg) rotateX(1deg); }
+  50% { transform: rotateY(1deg) rotateX(-0.5deg) translateY(-10px); }
+}
+@keyframes tiltRight {
+  0%, 100% { transform: rotateY(6deg) rotateX(-2deg) translateY(-4px); }
+  50% { transform: rotateY(3deg) rotateX(-1deg) translateY(-10px); }
+}
+.screen {
+  width: 366px;
+  height: 820px;
+  border-radius: 40px;
+  overflow: hidden;
+  background: #000;
+  position: relative;
+}
+.screen img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.di {
+  position: absolute;
+  top: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 90px;
+  height: 28px;
+  background: #000;
+  border-radius: 14px;
+  z-index: 5;
+}
+.home-bar {
+  position: absolute;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 120px;
+  height: 5px;
+  background: rgba(255,255,255,0.22);
+  border-radius: 3px;
+}
+.label {
+  font-size: 11px;
+  font-weight: 600;
+  color: #4B5563;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+/* Glow effects */
+.glow-1 {
+  position: fixed;
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(circle, rgba(16,185,129,0.12) 0%, transparent 70%);
+  top: 20%;
+  left: 15%;
+  pointer-events: none;
+  animation: glowPulse 6s ease-in-out infinite;
+}
+.glow-2 {
+  position: fixed;
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, rgba(59,130,246,0.1) 0%, transparent 70%);
+  bottom: 10%;
+  right: 10%;
+  pointer-events: none;
+  animation: glowPulse 6s ease-in-out infinite 2s;
+}
+@keyframes glowPulse {
+  0%, 100% { opacity: 0.6; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.1); }
+}
+</style>
+</head>
+<body>
+<div class="glow-1"></div>
+<div class="glow-2"></div>
+
+<div class="scene">
+  <!-- Left phone: Collab Link -->
+  <div class="phone">
+    <div class="phone-inner left">
+      <div class="screen">
+        <div class="di"></div>
+        <img src="collab-link-screen.png" alt="Collab Link" />
+        <div class="home-bar"></div>
+      </div>
+    </div>
+    <span class="label">Your Public Profile</span>
+  </div>
+
+  <!-- Center phone: Dashboard Overview -->
+  <div class="phone">
+    <div class="phone-inner center">
+      <div class="screen">
+        <div class="di"></div>
+        <img src="dashboard-overview-screen.png" alt="Dashboard" />
+        <div class="home-bar"></div>
+      </div>
+    </div>
+    <span class="label">Manage Deals</span>
+  </div>
+
+  <!-- Right phone: Active Deals -->
+  <div class="phone">
+    <div class="phone-inner right">
+      <div class="screen">
+        <div class="di"></div>
+        <img src="dashboard-active-screen.png" alt="Active Deals" />
+        <div class="home-bar"></div>
+      </div>
+    </div>
+    <span class="label">Track Earnings</span>
+  </div>
+</div>
+</body>
+</html>
