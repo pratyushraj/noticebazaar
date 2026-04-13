@@ -3358,7 +3358,7 @@ const CollabLinkLanding = () => {
                               type="email"
                               value={brandEmail}
                               onChange={(e) => setBrandEmail(e.target.value)}
-                              placeholder="your@email.com"
+                              placeholder="your@company.com"
                               className="h-14 px-4 rounded-xl border-white bg-white font-bold text-base shadow-sm"
                             />
                             <label htmlFor="brand-instagram-input" className="sr-only">Brand Instagram</label>
@@ -3380,7 +3380,7 @@ const CollabLinkLanding = () => {
                             id="campaign-description-input"
                             value={campaignDescription}
                             onChange={(e) => setCampaignDescription(e.target.value)}
-                            placeholder="Launch a new product, drive installs, announce a sale, or review a product..."
+                            placeholder="Describe your brand, goals, and what you're looking for..."
                             className="min-h-[110px] rounded-2xl border-white bg-white px-4 py-3 text-[14px] font-medium shadow-sm"
                           />
                         </div>
