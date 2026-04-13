@@ -56,8 +56,8 @@ interface MobileDashboardProps {
      * Default behavior is to avoid showing demo items for real accounts.
      */
     showDemoOffer?: boolean;
-    /** Show skeleton loading for deals/offers section */
-    isLoadingDeals?: boolean;
+    /** Show skeleton loading for deals/offers section (overrides local state) */
+    isLoadingDealsOverride?: boolean;
     /** Show skeleton loading for profile section */
     isLoadingProfile?: boolean;
 }
@@ -417,7 +417,6 @@ const MobileDashboardDemo = ({
     onRefresh,
     onLogout,
     showDemoOffer = false,
-    isLoadingDeals = false,
     isLoadingProfile = false,
 }: MobileDashboardProps) => {
     const navigate = useNavigate();
@@ -2876,7 +2875,7 @@ const MobileDashboardDemo = ({
                                 {/* Greeting / Status */}
                                 <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
                                     <div className="flex items-center justify-between">
-                                        {!profile ? (
+                                        {(isLoadingProfile || !profile) ? (
                                             /* Profile loading skeleton */
                                             <div className="flex-1 space-y-2">
                                                 <ShimmerSkeleton className="h-5 w-40" />
@@ -3324,7 +3323,14 @@ const MobileDashboardDemo = ({
                                         }
                                         return (
                                             <div className="space-y-10">
-                                                {displayOffers.length === 0 ? (
+                                                {isLoadingDeals ? (
+                                                    /* Skeleton for deals loading */
+                                                    <div className="space-y-4">
+                                                        <ShimmerSkeleton className="h-24 w-full rounded-2xl" />
+                                                        <ShimmerSkeleton className="h-24 w-full rounded-2xl" />
+                                                        <ShimmerSkeleton className="h-24 w-full rounded-2xl" />
+                                                    </div>
+                                                ) : displayOffers.length === 0 ? (
                                                     <div className={cn(
                                                         "p-6 rounded-[2rem] border text-center",
                                                         isDark ? "bg-card border-border" : "bg-card border-border shadow-sm"
@@ -3605,16 +3611,25 @@ const MobileDashboardDemo = ({
                                 >
                                     <h3 className={cn('text-sm font-bold tracking-tight mb-3', textColor)}>Your Performance</h3>
                                 </motion.div>
-                                <DashboardMetricsCards
-                                    totalDealValue={brandDeals?.reduce((sum: number, deal: any) => sum + (deal.deal_amount || 0), 0) || 0}
-                                    activeDealCount={activeDealsCount}
-                                    outstandingPayments={brandDeals?.filter((d: any) => {
-                                        const s = (d.status || '').toLowerCase();
-                                        return s.includes('payment_pending') || s.includes('payment_awaiting');
-                                    }).reduce((sum: number, deal: any) => sum + (deal.deal_amount || 0), 0) || 0}
-                                    avgDealDuration={30}
-                                    isDark={isDark}
-                                />
+                                {isLoadingDeals ? (
+                                    <div className="grid grid-cols-2 gap-3">
+                                        <ShimmerSkeleton className="h-20 rounded-2xl" />
+                                        <ShimmerSkeleton className="h-20 rounded-2xl" />
+                                        <ShimmerSkeleton className="h-20 rounded-2xl" />
+                                        <ShimmerSkeleton className="h-20 rounded-2xl" />
+                                    </div>
+                                ) : (
+                                    <DashboardMetricsCards
+                                        totalDealValue={brandDeals?.reduce((sum: number, deal: any) => sum + (deal.deal_amount || 0), 0) || 0}
+                                        activeDealCount={activeDealsCount}
+                                        outstandingPayments={brandDeals?.filter((d: any) => {
+                                            const s = (d.status || '').toLowerCase();
+                                            return s.includes('payment_pending') || s.includes('payment_awaiting');
+                                        }).reduce((sum: number, deal: any) => sum + (deal.deal_amount || 0), 0) || 0}
+                                        avgDealDuration={30}
+                                        isDark={isDark}
+                                    />
+                                )}
                             </div>
 
                             <div className="px-5 mb-8">
@@ -5710,7 +5725,7 @@ const MobileDashboardDemo = ({
                                                             <span className={cn("font-bold text-[13px] opacity-70", isDark ? "text-foreground" : "text-muted-foreground")}>Suggest New Price</span>
                                                         </button>
                                                         <button type="button"
-                                                            onClick={() => {
+                                                            onClick={async () => {
                                                                 triggerHaptic();
                                                                 if (selectedItem.isDemo) {
                                                                     toast.info("You can't decline a demo offer! 😉");

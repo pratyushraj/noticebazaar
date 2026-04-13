@@ -2297,7 +2297,7 @@ const CollabLinkLanding = () => {
                           <CheckCircle2 className="h-3 w-3 text-blue-500" />
                           <span className="text-[10px] font-black text-blue-600 uppercase tracking-wider">Verified</span>
                         </div>
-                      ) : null
+                      ) : null}
                     </div>
                     {editMode ? (
                       <div className="mt-1 flex gap-2 items-center">
