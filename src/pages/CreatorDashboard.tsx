@@ -6,6 +6,7 @@ import { useCollabRequests } from '@/lib/hooks/useCollabRequests';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { getApiBaseUrl } from '@/lib/utils/api';
 import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 async function fetchProfile(userId: string) {
   const { data, error } = await supabase
@@ -90,6 +91,7 @@ const CreatorDashboard = () => {
     });
     const data = await res.json();
     if (!res.ok || !data.success) throw new Error(data.error || 'Failed to decline');
+    toast.success('Offer declined');
     queryClient.invalidateQueries({ queryKey: ['collab-requests'] });
   };
 

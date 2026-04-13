@@ -939,7 +939,19 @@ const MobileDashboardDemo = ({
         resolveAvatarUrl(profile?.avatar_url) ||
         avatarFallbackUrl;
     const displayName = liveCollabProfile?.name || profile?.full_name || profile?.first_name || 'Pratyush';
-    const pendingOffersCount = (collabRequests || []).length;
+    const pendingOffersDeduplicated = React.useMemo(() => {
+        const seen = new Set<string>();
+        return (collabRequests || []).filter((req: any) => {
+            const key = [req.brand_name, req.collab_type, req.exact_budget || req.budget_amount || req.deal_amount].filter(Boolean).join('|');
+            if (seen.has(key)) return false;
+            seen.add(key);
+            return true;
+        });
+    }, [collabRequests]);
+    const displayOffers = React.useMemo(() => {
+        return pendingOffersDeduplicated;
+    }, [pendingOffersDeduplicated]);
+    const pendingOffersCount = displayOffers.length;
     const completedDealsList = React.useMemo(() => {
         return (brandDeals || []).filter((d: any) => {
             const s = normalizeDealStatus(d);
@@ -3251,7 +3263,7 @@ const MobileDashboardDemo = ({
                                             isDemo: true
                                         };
                                         const displayOffers = [
-                                            ...(collabRequests || []),
+                                            ...pendingOffersDeduplicated,
                                             ...(brandDeals || [])
                                                 .filter(d => {
                                                     const s = (d.status || '').toLowerCase();
