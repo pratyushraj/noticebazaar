@@ -3827,7 +3827,7 @@ const BrandMobileDashboard = ({
                                 <div className="min-w-0">
                                   <p className={cn('text-[12px] font-black uppercase tracking-[0.2em] opacity-50', textColor)}>Needs your attention</p>
                                   <p className={cn('text-[13px] mt-1 font-bold', textColor)}>
-                                    {attentionTotal} item{attentionTotal === 1 ? '' : 's'} waiting on you
+                                    {attentionTotal} item{attentionTotal === 1 ? '' : 's'} need your response
                                   </p>
                                 </div>
                                 <ChevronRight className={cn('w-5 h-5 opacity-30 mt-1', textColor)} />
@@ -3902,7 +3902,7 @@ const BrandMobileDashboard = ({
 	                              </button>
 	                              {needsActionTotal > 0 && (
 	                                <p className={cn('text-[12px] font-medium', isDark ? secondaryTextColor : 'text-foreground/80')}>
-	                                  {needsActionTotal} item{needsActionTotal === 1 ? '' : 's'} waiting on you
+	                                  {needsActionTotal} item{needsActionTotal === 1 ? '' : 's'} need your response
 	                                </p>
 	                              )}
 	                              </div>
@@ -4449,7 +4449,7 @@ const BrandMobileDashboard = ({
 	                    <div className="flex items-center gap-3">
 	                      {needsActionTotal > 0 && (
 	                        <div className={cn('px-2.5 py-1.5 rounded-full border text-[10px] font-black uppercase tracking-widest', isDark ? 'bg-warning/10 text-warning border-warning/25' : 'bg-warning text-warning border-warning')}>
-	                          {needsActionTotal} need action
+	                          {needsActionTotal} need your review
 	                        </div>
 	                      )}
 	                      <button type="button" onClick={() => setActiveTab('dashboard')} className={cn('text-[12px] font-bold', isDark ? 'text-info' : 'text-info')}>

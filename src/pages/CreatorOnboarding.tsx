@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { CheckCircle2, Copy, Instagram, Link2, Loader2, MessageCircleMore } from 'lucide-react';
+import { CheckCircle2, Check, Copy, Instagram, Link2, Loader2, MessageCircleMore } from 'lucide-react';
 import { toast } from 'sonner';
 import { useSession } from '@/contexts/SessionContext';
 import { useUpdateProfile } from '@/lib/hooks/useProfiles';
@@ -265,6 +265,15 @@ export default function CreatorOnboarding() {
         {step === 'instagram' && (
           <div className="mx-auto w-full max-w-xl rounded-[32px] border border-slate-200 bg-white p-6 shadow-xl sm:p-8">
             <div className="mb-8">
+              {/* Step indicator */}
+              <div className="flex items-center gap-2 mb-5">
+                <div className="flex items-center gap-1.5">
+                  <div className="w-6 h-6 rounded-full bg-emerald-600 text-white text-[10px] font-black flex items-center justify-center">1</div>
+                  <div className="w-6 h-1.5 rounded-full bg-emerald-600" />
+                  <div className="w-6 h-6 rounded-full border-2 border-slate-200 text-slate-400 text-[10px] font-black flex items-center justify-center">2</div>
+                </div>
+                <p className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400">Step 1 of 2</p>
+              </div>
               <p className="text-[11px] font-black uppercase tracking-[0.25em] text-emerald-600">Creator Armour</p>
               <h1 className="mt-3 text-4xl font-black tracking-tight text-slate-900">Create your offer link</h1>
               <p className="mt-3 text-base font-medium leading-relaxed text-slate-600">
@@ -295,7 +304,7 @@ export default function CreatorOnboarding() {
                   </div>
                 </div>
                 <p className="text-xs text-slate-500">
-                  Tip: don’t type `@` or the full URL. This becomes: `creatorarmour.com/{normalizedHandle || 'yourname'}`
+                  Tip: don't type `@` or the full URL. This becomes: `creatorarmour.com/{normalizedHandle || 'yourname'}`
                 </p>
                 {handleError && <p className="text-xs font-bold text-red-500">{handleError}</p>}
               </div>
@@ -350,7 +359,7 @@ export default function CreatorOnboarding() {
               </Button>
               {isAutoFinalizing && !isSubmitting && (
                 <p className="text-[11px] font-bold text-slate-500 text-center">
-                  Setting up your link… If this takes too long, tap “Create my link”.
+                  Setting up your link... If this takes too long, tap "Create my link".
                 </p>
               )}
               {!handleLooksValid && !isSubmitting && (
@@ -364,6 +373,17 @@ export default function CreatorOnboarding() {
 
         {step === 'linkReady' && (
           <div className="mx-auto w-full max-w-xl rounded-[32px] border border-slate-200 bg-white p-6 shadow-xl sm:p-8">
+            {/* Step indicator */}
+            <div className="flex items-center gap-2 mb-6">
+              <div className="flex items-center gap-1.5">
+                <div className="w-6 h-6 rounded-full bg-emerald-600 text-white text-[10px] font-black flex items-center justify-center">
+                  <Check className="w-3.5 h-3.5" />
+                </div>
+                <div className="w-6 h-1.5 rounded-full bg-emerald-600" />
+                <div className="w-6 h-6 rounded-full bg-emerald-600 text-white text-[10px] font-black flex items-center justify-center">2</div>
+              </div>
+              <p className="text-[11px] font-black uppercase tracking-[0.2em] text-emerald-600">Step 2 of 2</p>
+            </div>
             <div className="flex items-start gap-4">
               <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-emerald-100 text-emerald-600">
                 <CheckCircle2 className="h-7 w-7" />
@@ -372,7 +392,7 @@ export default function CreatorOnboarding() {
                 <p className="text-[11px] font-black uppercase tracking-[0.25em] text-emerald-600">Almost done</p>
                 <h1 className="mt-2 text-3xl font-black tracking-tight text-slate-900">Confirm your username</h1>
                 <p className="mt-3 text-base font-medium leading-relaxed text-slate-600">
-                  We’ll generate your link now. You can change this later.
+                  We'll generate your link now. You can change this later.
                 </p>
               </div>
             </div>
