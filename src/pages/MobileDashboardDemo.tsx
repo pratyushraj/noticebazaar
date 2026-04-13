@@ -1472,7 +1472,7 @@ const MobileDashboardDemo = ({
             // Celebration: confetti burst on first accept
             confetti({ particleCount: 80, spread: 60, origin: { y: 0.7 }, colors: ['#10B981', '#059669', '#34D399'] });
             toast.success('🎉 Collab accepted! Check your deals tab.');
-            toast.message('Next: Submit links in the Active tab');
+            toast.message('Next: Submit content links in Active tab → Deliver Content', { description: 'Brand gets notified. Payment held until you deliver.' });
         } catch (error) {
             console.error("Accept error:", error);
         } finally {
