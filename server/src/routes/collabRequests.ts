@@ -2537,6 +2537,10 @@ router.get('/', async (req: AuthenticatedRequest, res: Response) => {
       console.warn('[CollabRequests] Auto-attach leads failed (non-fatal):', attachError);
     }
 
+    // Deduplicate: keep most recent request per unique (brand_name, collab_type, exact_budget)
+    // Only applied when filtering by status=pending to avoid hiding legitimate history entries
+    const isPendingOnly = status === 'pending';
+
     let query = supabase
       .from('collab_requests')
       .select('*')
@@ -2571,7 +2575,21 @@ router.get('/', async (req: AuthenticatedRequest, res: Response) => {
       });
     }
 
-    const normalizedRequests = (requests || []).map((request: any) => ({
+    // Backend deduplication: keep most recent offer per unique brand+type+budget combo
+    const dedupeKey = (r: any) =>
+      `${r.brand_name ?? ''}|||${r.collab_type ?? ''}|||${r.exact_budget ?? ''}`;
+
+    const seenKeys = new Set<string>();
+    const deduplicatedRequests = isPendingOnly
+      ? (requests || []).filter((r: any) => {
+          const key = dedupeKey(r);
+          if (seenKeys.has(key)) return false;
+          seenKeys.add(key);
+          return true;
+        })
+      : (requests || []);
+
+    const normalizedRequests = deduplicatedRequests.map((request: any) => ({
       ...request,
       collab_type: normalizeCollabTypeForApi(request.collab_type) || request.collab_type,
     }));
