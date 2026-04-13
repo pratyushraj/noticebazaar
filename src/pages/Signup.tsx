@@ -882,7 +882,7 @@ const Signup = () => {
                         <Input
                           id="signup-instagram-handle"
                           type="text"
-                          placeholder="sana.reels.delhi"
+                          placeholder="your.username"
                           value={instagramHandle}
                           onChange={(e) => setInstagramHandle(e.target.value)}
                           className="bg-white border-slate-300 text-slate-900 placeholder:text-slate-400 text-[16px] h-14 rounded-2xl px-5"
