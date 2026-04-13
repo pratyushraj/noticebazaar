@@ -5628,6 +5628,7 @@ const MobileDashboardDemo = ({
                                             <motion.button
                                                 whileTap={{ scale: 0.97 }}
                                                 onClick={() => {
+                                                    if (processingDeal) return;
                                                     if (selectedType === 'offer') {
                                                         if (selectedItem.isDemo) {
                                                             toast.success("This is a demo offer! Complete your profile to get real brand deals.");
