@@ -4093,7 +4093,7 @@ const MobileDashboardDemo = ({
                                                                     <div className={cn("text-[17px] font-black tracking-tight leading-none", isDark ? "text-foreground" : "text-muted-foreground")}>
                                                                         ₹{(deal.deal_amount || deal.exact_budget || 0).toLocaleString()}
                                                                     </div>
-                                                                    <p className={cn("text-[8px] font-black uppercase tracking-widest opacity-40 mt-1.5", isDark ? "text-muted-foreground" : "text-muted-foreground")}>Earned</p>
+                                                                    <p className={cn("text-[8px] font-black uppercase tracking-widest opacity-40 mt-1.5", isDark ? "text-muted-foreground" : "text-muted-foreground")}>Deal Value</p>
                                                                 </div>
                                                             </div>
 
@@ -4368,7 +4368,7 @@ const MobileDashboardDemo = ({
                                                                             : "h-11 bg-info text-foreground shadow-blue-500/20"
                                                                     )}
                                                                 >
-                                                                    Review offer
+                                                                    View Details
                                                                     <ArrowRight className="w-3.5 h-3.5 opacity-70" />
                                                                 </button>
 
@@ -4383,18 +4383,24 @@ const MobileDashboardDemo = ({
                                                                         }}
                                                                         className={cn("text-[11px] font-black uppercase tracking-widest", isDark ? "text-foreground/70 hover:text-foreground" : "text-muted-foreground hover:text-muted-foreground")}
                                                                     >
-                                                                        Counter
+                                                                        Counter Offer
                                                                     </button>
                                                                     <button type="button"
-                                                                        onClick={(e) => {
+                                                                        onClick={async (e) => {
                                                                             e.stopPropagation();
                                                                             triggerHaptic(HapticPatterns.warning);
                                                                             if (req.isDemo) {
                                                                                 toast.message("This is a demo offer", { description: "Accept/counter/decline is disabled for demo." });
                                                                                 return;
                                                                             }
-                                                                            if (onDeclineRequest) onDeclineRequest(req.id);
-                                                                            else toast.error("Declined offer.");
+                                                                            if (onDeclineRequest) {
+                                                                                try {
+                                                                                    await onDeclineRequest(req);
+                                                                                } catch(err) {
+                                                                                    console.error('Decline error:', err);
+                                                                                }
+                                                                            }
+                                                                            closeItemDetail();
                                                                         }}
                                                                         className={cn("text-[11px] font-black uppercase tracking-widest", isDark ? "text-foreground/60 hover:text-foreground" : "text-muted-foreground hover:text-muted-foreground")}
                                                                     >
@@ -5678,7 +5684,7 @@ const MobileDashboardDemo = ({
                                                 ) : selectedType === 'offer' ? (
                                                     <>
                                                         <span className="text-[17px] font-black leading-tight">
-                                                            Accept Offer {renderBudgetValue(selectedItem)}
+                                                            Accept Deal {renderBudgetValue(selectedItem)}
                                                         </span>
                                                         <span className="text-[11px] font-semibold opacity-85 mt-0.5 leading-tight">
                                                             Contract generated instantly
