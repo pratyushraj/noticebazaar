@@ -2641,6 +2641,15 @@ const CollabLinkLanding = () => {
               </div>
 	            {/* LEFT COLUMN continues below (services + bio) */}
 
+            {/* Value prop — eyebrow divider before services */}
+            {showPackagesSection && (
+              <div className="flex items-center gap-2 px-1 mb-2">
+                <div className="flex-1 h-px bg-gradient-to-r from-transparent via-slate-200 to-transparent" />
+                <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Services offered</p>
+                <div className="flex-1 h-px bg-gradient-to-r from-transparent via-slate-200 to-transparent" />
+              </div>
+            )}
+
             {/* 1.5. Services (Moved higher for conversion speed) */}
 		            <div id="packages-section" ref={packagesSectionRef} className={`deal-templates-section mb-2 md:mb-4 relative z-10 animate-in fade-in slide-in-from-bottom-2 duration-500 delay-200 w-full p-4 lg:p-6 rounded-3xl ${showPackagesSection ? '' : 'hidden'}`} style={{ background: "linear-gradient(180deg,#F0FBF7 0%,#F7F9FB 100%)", border: "1px solid #D4EDDF", boxShadow: "0 16px 40px rgba(15,23,42,0.06)" }}>
 	              <div className="flex items-center justify-between mb-3.5">
