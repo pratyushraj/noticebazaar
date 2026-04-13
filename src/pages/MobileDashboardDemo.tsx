@@ -5658,7 +5658,16 @@ const MobileDashboardDemo = ({
                                                                     toast.info("You can't decline a demo offer! 😉");
                                                                     return;
                                                                 }
-                                                                if (onDeclineRequest) onDeclineRequest(selectedItem.id);
+                                                                const itemId = selectedItem?.id ?? selectedItem?.raw?.id;
+                                                                if (!itemId || String(itemId).trim().length < 10) {
+                                                                    toast.error("Couldn't identify this offer. Please re-open it from the list.", { id: 'decline-error' });
+                                                                    return;
+                                                                }
+                                                                if (selectedType !== 'offer') {
+                                                                    toast.error("Please open the offer details first.", { id: 'decline-error' });
+                                                                    return;
+                                                                }
+                                                                if (onDeclineRequest) onDeclineRequest(selectedItem);
                                                                 closeItemDetail();
                                                             }}
                                                             className={cn("flex-1 py-3 border-none flex items-center justify-center gap-1.5 transition-all active:scale-95 text-destructive/80")}
