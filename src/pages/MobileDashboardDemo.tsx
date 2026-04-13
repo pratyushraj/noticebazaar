@@ -5686,7 +5686,7 @@ const MobileDashboardDemo = ({
                                                         <span className="text-[17px] font-black leading-tight">
                                                             Accept Deal {renderBudgetValue(selectedItem)}
                                                         </span>
-                                                        <span className="text-[11px] font-semibold opacity-85 mt-0.5 leading-tight">
+                                                        <span className="text-[11px] font-semibold opacity-85 mt-0.5">
                                                             Contract generated instantly
                                                         </span>
                                                     </>
@@ -5728,7 +5728,7 @@ const MobileDashboardDemo = ({
                                                             className={cn("flex-1 py-3 border-none flex items-center justify-center gap-1.5 transition-all active:scale-95")}
                                                         >
                                                             <Edit3 className="w-3.5 h-3.5 opacity-50 text-muted-foreground" />
-                                                            <span className={cn("font-bold text-[13px] opacity-70", isDark ? "text-foreground" : "text-muted-foreground")}>Suggest New Price</span>
+                                                            <span className={cn("font-bold text-[13px] opacity-70", isDark ? "text-foreground" : "text-muted-foreground")}>Counter Offer</span>
                                                         </button>
                                                         <button type="button"
                                                             onClick={async () => {
