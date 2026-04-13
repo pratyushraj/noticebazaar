@@ -4172,7 +4172,7 @@ const MobileDashboardDemo = ({
                                                                     )}
                                                                 >
                                                                     <AlertTriangle className={cn("w-3.5 h-3.5", isDark ? "text-warning" : "text-warning")} strokeWidth={3} />
-                                                                    Action required
+                                                                    {ux.needsSignature ? "Sign contract" : ux.isRevisionRequested ? "Revision requested" : ux.isMaking ? "Deliver content" : "Action required"}
                                                                 </span>
                                                             </div>
                                                             <div className="flex items-start justify-between mb-3.5">
@@ -4275,10 +4275,10 @@ const MobileDashboardDemo = ({
                                                             )}
                                                             <div className="flex flex-wrap items-center gap-2 mb-3">
                                                                 <span className={cn("inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-[10px] font-black uppercase tracking-widest",
-                                                                    isDark ? "bg-warning/10 text-warning border-warning/20" : "bg-warning text-warning border-warning"
+                                                                    isDark ? "bg-emerald-100/60 text-emerald-700 border-emerald-200/50" : "bg-emerald-50 text-emerald-700 border-emerald-100"
                                                                 )}>
-                                                                    <AlertTriangle className={cn("w-3.5 h-3.5", isDark ? "text-warning" : "text-warning")} strokeWidth={3} />
-                                                                    Action required
+                                                                    <AlertTriangle className={cn("w-3.5 h-3.5", isDark ? "text-emerald-400" : "text-emerald-600")} strokeWidth={3} />
+                                                                    Awaiting your response
                                                                 </span>
                                                             </div>
                                                             <div className="flex items-start justify-between mb-3.5">
