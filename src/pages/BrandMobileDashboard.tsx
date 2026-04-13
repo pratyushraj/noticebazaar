@@ -2934,20 +2934,28 @@ const BrandMobileDashboard = ({
                                     </div>
                                     <div>
                                       <p className={cn('text-[12px] font-black mb-2', textColor)}>Receipt / screenshot (optional)</p>
-                                      <input
-                                        type="file"
-                                        accept="image/*,.pdf"
-                                        onChange={(e) => {
-                                          const file = e.target.files?.[0] || null;
-                                          if (file && file.size > 5 * 1024 * 1024) {
-                                            toast.error('Receipt must be 5 MB or smaller');
-                                            e.target.value = '';
-                                            return;
-                                          }
-                                          setPaymentProofFile(file);
-                                        }}
-                                        className={cn('block w-full text-[12px] font-semibold', isDark ? 'text-foreground/80 file:text-foreground' : 'text-muted-foreground')}
-                                      />
+                                      <label className={cn('flex items-center gap-2 px-4 py-2.5 rounded-2xl border cursor-pointer text-[12px] font-semibold transition-colors',
+                                        isDark ? 'border-border bg-card text-foreground/80 hover:bg-secondary/50' : 'border-border bg-background text-muted-foreground hover:bg-accent'
+                                      )}>
+                                        <span>Upload receipt</span>
+                                        <input
+                                          type="file"
+                                          accept="image/*,.pdf"
+                                          className="sr-only"
+                                          onChange={(e) => {
+                                            const file = e.target.files?.[0] || null;
+                                            if (file && file.size > 5 * 1024 * 1024) {
+                                              toast.error('Receipt must be 5 MB or smaller');
+                                              e.target.value = '';
+                                              return;
+                                            }
+                                            setPaymentProofFile(file);
+                                          }}
+                                        />
+                                      </label>
+                                      {paymentProofFile && (
+                                        <p className={cn('text-[11px] font-semibold mt-1', secondaryTextColor)}>{paymentProofFile.name}</p>
+                                      )}
                                       {paymentProofFile && (
                                         <p className={cn('text-[11px] font-semibold mt-2', secondaryTextColor)}>{paymentProofFile.name}</p>
                                       )}

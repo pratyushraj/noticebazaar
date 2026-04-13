@@ -224,20 +224,24 @@ export const BrandSettingsPanel = ({
           <Input id="brand-desc" value={description} onChange={(e) => setDescription(e.target.value)} placeholder="What do you sell?" />
         </div>
 
-        <div className="flex flex-col gap-3 sm:flex-row">
-          <Button type="button" onClick={saveProfile} disabled={isSaving || logoUploading} className="sm:min-w-[160px]">
-            {isSaving ? 'Saving…' : 'Save'}
-          </Button>
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => {
-              void onLogout?.();
-            }}
-          >
-            Log out
-          </Button>
-        </div>
+        <Button type="button" onClick={saveProfile} disabled={isSaving || logoUploading} className="w-full sm:w-auto sm:min-w-[160px]">
+          {isSaving ? 'Saving…' : 'Save changes'}
+        </Button>
+      </div>
+
+      {/* Danger zone — separate from form to prevent accidental logouts */}
+      <div className="mt-8 pt-6 border-t border-border">
+        <p className="text-xs font-black uppercase tracking-widest text-muted-foreground mb-3">Session</p>
+        <Button
+          type="button"
+          variant="outline"
+          className="w-full sm:w-auto text-destructive border-destructive/30 hover:bg-destructive/10 hover:text-destructive"
+          onClick={() => {
+            void onLogout?.();
+          }}
+        >
+          Log out of account
+        </Button>
       </div>
     </div>
   );
