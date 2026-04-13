@@ -5,6 +5,7 @@ import type { ChangeEvent } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Download, Flag, Loader2, Building2, Calendar, FileText, CheckCircle, Clock, Trash2, AlertCircle, XCircle, Bell, Mail, Phone, Edit, X, Check, Share2, Copy, Link2, ChevronDown, ChevronUp, ChevronLeft, ChevronRight, Lock, Package, ExternalLink, ShieldCheck, PenTool, TrendingUp, WifiOff } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
 import { Collapsible, CollapsibleTrigger, CollapsibleContent } from '@/components/ui/collapsible';
 import { toast } from 'sonner';
 import { useDealSignatures } from '@/lib/hooks/useDealSignatures';
@@ -2008,12 +2009,13 @@ Best regards`;
           <FileText className="w-16 h-16 mx-auto mb-4 text-foreground/60" />
           <h2 className="text-2xl font-bold mb-2">Deal not found</h2>
           <p className="text-foreground/60 mb-4">The deal you're looking for doesn't exist or has been removed.</p>
-          <button type="button"
+          <Button
+            type="button"
             onClick={() => navigate('/creator-dashboard')}
-            className="px-4 py-2 bg-info hover:bg-info rounded-xl transition-colors"
+            className="bg-blue-500 hover:bg-blue-600 text-white"
           >
             Back to Dashboard
-          </button>
+          </Button>
         </div>
       </div>
     );

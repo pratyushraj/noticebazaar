@@ -8,10 +8,10 @@ import { useKeyboardAware } from '@/hooks/useKeyboardAware';
 
 const navItems = [
   { to: "/creator-dashboard", icon: LayoutDashboard, label: "Home", matchPaths: ["/creator-dashboard"] },
-  { to: "/creator-contracts", icon: Briefcase, label: "Deals", matchPaths: ["/creator-contracts", "/contract-upload", "/contract-protection"] },
-  { to: "/creator-payments", icon: Wallet, label: "Payments", matchPaths: ["/creator-payments", "/insights"] },
-  { to: "/creator-collab", icon: Link2, label: "Collab", matchPaths: ["/creator-collab"] },
-  { to: "/creator-profile", icon: User, label: "Profile", matchPaths: ["/creator-profile"] },
+  { to: "/creator-dashboard?tab=deals", icon: Briefcase, label: "Deals", matchPaths: ["creator-dashboard", "deals"] },
+  { to: "/creator-dashboard?tab=payments", icon: Wallet, label: "Payments", matchPaths: ["creator-dashboard", "payments"] },
+  { to: "/creator-dashboard?tab=deals&subtab=pending", icon: Link2, label: "Collab", matchPaths: ["creator-dashboard", "collab"] },
+  { to: "/creator-dashboard?tab=profile", icon: User, label: "Profile", matchPaths: ["creator-dashboard", "profile"] },
 ];
 
 const CreatorBottomNav = () => {

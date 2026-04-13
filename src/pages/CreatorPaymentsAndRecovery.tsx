@@ -417,10 +417,10 @@ const CreatorPaymentsAndRecovery = () => {
     <ContextualTipsProvider currentView="payments">
       <div className={`min-h-full ${gradients.page} text-foreground ${spacing.page} pb-24 safe-area-fix`}>
         {/* Header */}
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className={typography.h1 + " mb-1"}>Payments</h1>
-            <p className={typography.bodySmall + " text-foreground/70"}>Track pending payments and completed payouts</p>
+            <h1 className={cn(typography.h1, "mb-1")}>Payments</h1>
+            <p className={cn(typography.bodySmall, "text-foreground/60")}>Track pending payments and completed payouts</p>
           </div>
           <motion.button
             onClick={() => {
@@ -430,38 +430,36 @@ const CreatorPaymentsAndRecovery = () => {
             whileTap={animations.microTap}
             whileHover={window.innerWidth > 768 ? animations.microHover : undefined}
             className={cn(
-              buttons.icon,
               glass.apple,
-              radius.md,
-              spacing.cardPadding.tertiary,
+              "w-11 h-11 rounded-2xl flex items-center justify-center",
               shadows.lg
             )}
             aria-label="Export report"
           >
-            <Download className={iconSizes.md} />
+            <Download className={cn(iconSizes.md, "text-info")} />
           </motion.button>
         </div>
 
         {/* Stats Overview - Refactored for Mobile */}
-        <div className="mb-4 grid grid-cols-1 gap-3">
+        <div className="mb-6 grid grid-cols-1 gap-3">
           {/* Primary Card: Pending Amount (Highlighted) */}
-          <div className="bg-card0 backdrop-blur-xl border-2 border-yellow-500/30 rounded-2xl p-4 shadow-lg shadow-yellow-500/10">
-            <div className="text-sm text-foreground/70 mb-1">Pending Amount</div>
-            <div className="text-3xl font-bold text-yellow-400 mb-1">{formatIndianCurrency(totalPending)}</div>
-            <div className="text-xs text-foreground/60">Across active signed deals</div>
+          <div className={cn(glass.apple, "rounded-[28px] p-5", shadows.depth)}>
+            <div className="text-sm text-foreground/60 mb-1">Pending Amount</div>
+            <div className="text-3xl font-black font-outfit text-yellow-400 mb-1">{formatIndianCurrency(totalPending)}</div>
+            <div className="text-xs text-foreground/50">Across active signed deals</div>
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             {/* Paid This Month */}
-            <div className="bg-secondary/6 backdrop-blur-xl border border-border/12 rounded-2xl p-3">
-              <div className="text-xs text-foreground/70 mb-1">Paid This Month</div>
+            <div className={cn(glass.apple, "rounded-2xl p-4")}>
+              <div className="text-xs text-foreground/60 mb-1">Paid This Month</div>
               <div className="text-xl font-bold text-green-400">{formatIndianCurrency(stats.thisMonth)}</div>
             </div>
 
             {/* Total Earnings */}
-            <div className="bg-secondary/6 backdrop-blur-xl border border-border/12 rounded-2xl p-3">
-              <div className="text-xs text-foreground/70 mb-1">Total Earnings</div>
-              <div className="text-lg font-semibold text-foreground/85">{formatIndianCurrency(stats.totalReceived)}</div>
+            <div className={cn(glass.apple, "rounded-2xl p-4")}>
+              <div className="text-xs text-foreground/60 mb-1">Total Earnings</div>
+              <div className="text-lg font-semibold text-foreground/90">{formatIndianCurrency(stats.totalReceived)}</div>
             </div>
           </div>
         </div>
@@ -470,7 +468,7 @@ const CreatorPaymentsAndRecovery = () => {
         <div className={separators.section} />
 
         {/* Quick Actions - Mobile Optimized (2 Primary Actions) */}
-        <div className="grid grid-cols-2 gap-3 mb-4">
+        <div className="grid grid-cols-2 gap-3 mb-6">
           {/* Primary: Request Payment */}
           <motion.button
             onClick={() => {
@@ -478,10 +476,10 @@ const CreatorPaymentsAndRecovery = () => {
               setShowPaymentRequest(true);
             }}
             whileTap={animations.microTap}
-            className="relative bg-gradient-to-r from-green-500/25 to-emerald-500/15 backdrop-blur-xl rounded-2xl p-4 border border-green-500/40 shadow-lg shadow-green-500/20 hover:bg-green-500/25 transition-all"
+            className={cn(glass.apple, "rounded-2xl p-4 hover:bg-white/10 transition-all")}
           >
             <div className="flex items-center gap-3">
-              <div className="bg-green-500/20 w-10 h-10 rounded-full flex items-center justify-center">
+              <div className="bg-green-500/20 w-10 h-10 rounded-2xl flex items-center justify-center shadow-lg shadow-green-500/20">
                 <ArrowDownRight className="w-5 h-5 text-green-400" />
               </div>
               <div className="text-left">
@@ -520,10 +518,10 @@ const CreatorPaymentsAndRecovery = () => {
               }
             }}
             whileTap={animations.microTap}
-            className="relative bg-secondary/8 backdrop-blur-xl rounded-2xl p-4 border border-border hover:bg-secondary/12 transition-all"
+            className={cn(glass.apple, "rounded-2xl p-4 hover:bg-white/10 transition-all")}
           >
             <div className="flex items-center gap-3">
-              <div className="bg-indigo-500/20 w-10 h-10 rounded-full flex items-center justify-center">
+              <div className="bg-indigo-500/20 w-10 h-10 rounded-2xl flex items-center justify-center shadow-lg shadow-indigo-500/20">
                 <Download className="w-5 h-5 text-indigo-400" />
               </div>
               <div className="text-left">
@@ -535,17 +533,17 @@ const CreatorPaymentsAndRecovery = () => {
         </div>
 
         {/* Add Expense - Hidden on mobile, accessible via menu or secondary action */}
-        <div className="mb-4 md:hidden">
+        <div className="mb-6 md:hidden">
           <motion.button
             onClick={() => {
               triggerHaptic(HapticPatterns.light);
               setShowAddExpense(true);
             }}
             whileTap={animations.microTap}
-            className="w-full bg-card backdrop-blur-xl rounded-xl p-3 border border-border hover:bg-secondary/8 transition-all text-left"
+            className={cn("w-full ", glass.apple, "rounded-2xl p-4 hover:bg-white/10 transition-all text-left")}
           >
             <div className="flex items-center gap-3">
-              <CreditCard className="w-4 h-4 flex-shrink-0 text-foreground/70" />
+              <CreditCard className="w-5 h-5 flex-shrink-0 text-foreground/60" />
               <div>
                 <div className="text-sm font-medium text-foreground/80">Add Expense</div>
                 <div className="text-xs text-foreground/50">Track all your business expenses</div>
@@ -558,7 +556,7 @@ const CreatorPaymentsAndRecovery = () => {
         <div className={separators.section} />
 
         {/* Search Bar - Full Width */}
-        <div className="mb-4">
+        <div className="mb-6">
           <motion.div
             initial={motionTokens.slide.up.initial}
             animate={motionTokens.slide.up.animate}
@@ -566,8 +564,8 @@ const CreatorPaymentsAndRecovery = () => {
             className={cn(
               "relative flex items-center w-full",
               glass.apple,
-              radius.full,
-              "px-4 py-3",
+              "rounded-2xl",
+              "px-4 py-3.5",
               shadows.lg
             )}
           >
@@ -587,7 +585,7 @@ const CreatorPaymentsAndRecovery = () => {
         </div>
 
         {/* Filter Tabs - Simplified: All | Pending | Paid */}
-        <div className="mb-4">
+        <div className="mb-6">
           <div
             role="tablist"
             aria-label="Transaction filters"
@@ -611,10 +609,10 @@ const CreatorPaymentsAndRecovery = () => {
                   whileTap={animations.microTap}
                   whileHover={window.innerWidth > 768 ? animations.microHover : undefined}
                   className={cn(
-                    "px-4 py-2 rounded-full text-sm font-semibold transition-all duration-150 whitespace-nowrap flex-shrink-0",
+                    "px-5 py-2.5 rounded-full text-sm font-semibold transition-all duration-150 whitespace-nowrap flex-shrink-0",
                     isActive
-                      ? 'bg-secondary/20 text-foreground border-2 border-border/25 shadow-lg shadow-white/10'
-                      : 'bg-secondary/8 text-foreground/70 border border-border hover:bg-secondary/12'
+                      ? cn(glass.appleStrong, "text-foreground shadow-xl")
+                      : cn(glass.apple, "text-foreground/60 hover:text-foreground/80 hover:bg-white/10")
                   )}
                 >
                   {filter.label}
@@ -631,7 +629,16 @@ const CreatorPaymentsAndRecovery = () => {
         {isLoadingDeals && (
           <div className="space-y-3" data-section="transactions">
             {[1, 2, 3, 4].map((i) => (
-              <SkeletonCard key={i} variant="tertiary" showSubtitle={false} showValue={false} showProgress={false} />
+              <div key={i} className={cn(glass.apple, "rounded-2xl p-4 animate-pulse")}>
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-white/10" />
+                  <div className="flex-1 space-y-2">
+                    <div className="h-4 w-24 rounded bg-white/10" />
+                    <div className="h-3 w-16 rounded bg-white/5" />
+                  </div>
+                  <div className="h-5 w-16 rounded bg-white/10" />
+                </div>
+              </div>
             ))}
           </div>
         )}
