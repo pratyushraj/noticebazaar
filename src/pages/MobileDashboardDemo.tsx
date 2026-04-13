@@ -3346,11 +3346,11 @@ const MobileDashboardDemo = ({
                                                             type="button"
                                                             onClick={() => {
                                                                 triggerHaptic();
-                                                                handleShareStorefront();
+                                                                handleCopyStorefront();
                                                             }}
                                                             className="h-12 px-6 rounded-2xl bg-gradient-to-r from-blue-600 to-cyan-500 text-white font-black text-[13px] shadow-lg shadow-blue-500/20 active:scale-95 transition-all"
                                                         >
-                                                            Share Link Now
+                                                            Copy Link
                                                         </button>
                                                     </div>
                                                 ) : null}
@@ -4128,9 +4128,19 @@ const MobileDashboardDemo = ({
                                                     <CheckCircle2 className="w-7 h-7 text-white" />
                                                 </div>
                                                 <h3 className={cn("text-[18px] font-black tracking-tight mb-2 font-outfit", textColor)}>Share your link to get brand requests</h3>
-                                                <p className={cn("text-[13px] leading-relaxed opacity-70", textColor)}>
+                                                <p className={cn("text-[13px] leading-relaxed opacity-70 mb-5", textColor)}>
                                                     Share your collab link to receive brand briefs here.
                                                 </p>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => {
+                                                        triggerHaptic();
+                                                        handleCopyStorefront();
+                                                    }}
+                                                    className="h-12 px-6 rounded-2xl bg-gradient-to-r from-blue-600 to-cyan-500 text-white font-black text-[13px] shadow-lg shadow-blue-500/20 active:scale-95 transition-all"
+                                                >
+                                                    Copy Link
+                                                </button>
                                             </div>
                                         )}
                                     </motion.div>
@@ -4381,7 +4391,7 @@ const MobileDashboardDemo = ({
                                                                             setSelectedType('offer');
                                                                             toast.message("Counter inside offer details", { description: "Open offer → Counter." });
                                                                         }}
-                                                                        className={cn("text-[11px] font-black uppercase tracking-widest", isDark ? "text-foreground/70 hover:text-foreground" : "text-muted-foreground hover:text-muted-foreground")}
+                                                                        className={cn("text-[11px] font-black uppercase tracking-widest", isDark ? "text-info hover:text-info" : "text-info hover:text-info/80")}
                                                                     >
                                                                         Counter Offer
                                                                     </button>
@@ -4402,7 +4412,7 @@ const MobileDashboardDemo = ({
                                                                             }
                                                                             closeItemDetail();
                                                                         }}
-                                                                        className={cn("text-[11px] font-black uppercase tracking-widest", isDark ? "text-foreground/60 hover:text-foreground" : "text-muted-foreground hover:text-muted-foreground")}
+                                                                        className={cn("text-[11px] font-black uppercase tracking-widest", isDark ? "text-foreground/40 hover:text-destructive" : "text-muted-foreground/50 hover:text-destructive")}
                                                                     >
                                                                         Decline
                                                                     </button>
