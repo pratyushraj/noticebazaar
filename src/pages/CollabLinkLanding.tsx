@@ -1775,7 +1775,7 @@ const CollabLinkLanding = () => {
   const audienceRegionLabel = creator.collab_region_label?.trim() || getAudienceRegionLabel(audienceCities);
   const audienceRelevanceNote = creator.collab_audience_relevance_note?.trim() || 'Strong relevance for North India audience';
   const creatorBio = isScrapedInstagramBio(creator.bio) ? null : creator.bio;
-  const collabIntroLine = creator.collab_intro_line?.trim() || creatorBio || 'Clear collaboration packages, fast response, and structured booking for brand campaigns.';
+  const collabIntroLine = creator.collab_intro_line?.trim() || creatorBio || 'Structured brand deals with upfront payment protection — no more chasing payments.';
   const audienceFitLine = creator.collab_audience_fit_note?.trim() || 'Works best for targeted audience campaigns.';
   const sameDayResponseLine = avgResponseHours && avgResponseHours <= 20
     ? `~${Math.round(avgResponseHours)} hr${Math.round(avgResponseHours) > 1 ? 's' : ''}`
