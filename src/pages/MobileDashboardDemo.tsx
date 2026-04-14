@@ -3007,7 +3007,10 @@ const MobileDashboardDemo = ({
                                     <div className="relative z-10">
                                         <div className="flex items-start justify-between gap-3 mb-3">
                                             <div>
-                                                <p className="text-[10px] font-black uppercase tracking-[0.18em] text-white/85">Pending Amount</p>
+                                                <div className="flex items-center gap-1.5 mb-0.5">
+                                                    <span className="w-2 h-2 rounded-full bg-red-400 animate-pulse" />
+                                                    <p className="text-[10px] font-black uppercase tracking-[0.18em] text-white/85">Pending Amount</p>
+                                                </div>
                                                 <p className="text-[11px] font-semibold text-white/75 mt-1">Released after content approval</p>
                                             </div>
                                             <div className="p-2 rounded-xl bg-white/10 backdrop-blur-md border border-white/30">
@@ -3173,7 +3176,6 @@ const MobileDashboardDemo = ({
                                         >
                                             {/* Decorative elements — modern subtle gradient border effect */}
                                             <div className="absolute inset-0 rounded-[28px] bg-gradient-to-br from-emerald-400/10 via-transparent to-blue-500/10" />
-                                            <div className="absolute inset-[1px] rounded-[27px] bg-card" />
 
                                             <div className="relative z-10">
                                                 <div className="flex items-center justify-between text-foreground/90 mb-3">
