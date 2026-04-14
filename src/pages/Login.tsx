@@ -257,7 +257,7 @@ const Login = () => {
         {/* Timed out */}
         {loading && loadingTimedOut && !session && (
           <>
-            <p className="text-foreground/40 text-[11px] font-black uppercase tracking-widest text-center mb-6">Still loading? Use the form below to sign in.</p>
+            <p className="text-foreground/60 text-[11px] font-black uppercase tracking-widest text-center mb-6">Still loading? Use the form below to sign in.</p>
             <Button
               type="button"
               onClick={() => navigate('/demo-dashboard', { replace: true })}
