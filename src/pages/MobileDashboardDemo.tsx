@@ -3371,7 +3371,7 @@ const MobileDashboardDemo = ({
                                                             initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: idx * 0.05 }}
                                                             whileTap={{ scale: 0.98 }}
                                                             onTap={() => {
-                                                                console.log("Card tapped: (main block)", req);
+                                                                
                                                                 triggerHaptic();
                                                                 setSelectedItem(req);
                                                                 setSelectedType(req.isConfirmedDeal ? 'deal' : 'offer');
@@ -3854,7 +3854,7 @@ const MobileDashboardDemo = ({
                                                             key={idx}
                                                             whileTap={{ scale: 0.98 }}
                                                             onTap={() => {
-                                                                console.log("Card tapped: active deal", deal);
+                                                                
                                                                 triggerHaptic();
                                                                 setSelectedItem(deal);
                                                                 setSelectedType('deal');
@@ -4219,7 +4219,7 @@ const MobileDashboardDemo = ({
                                                             key={idx}
                                                             whileTap={{ scale: 0.983 }}
                                                             onTap={() => {
-                                                                console.log("Card tapped: pending offer", req);
+                                                                
                                                                 triggerHaptic();
                                                                 setSelectedItem(req);
                                                                 setSelectedType('offer');

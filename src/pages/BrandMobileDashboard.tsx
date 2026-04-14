@@ -643,7 +643,6 @@ const BrandMobileDashboard = ({
       toast.error('Deal details unavailable');
       return;
     }
-    console.log('[BrandMobileDashboard] startBrandSigningFlow', { dealId: deal.id });
     toast.message('Opening signing…');
     setBrandSigningDeal(deal);
     setBrandSigningToken(null);
@@ -828,12 +827,8 @@ const BrandMobileDashboard = ({
       try {
         const overlay = document.querySelector('[data-brand-signing-overlay]');
         const panel = document.querySelector('[data-brand-signing-panel]');
-        console.log('[BrandMobileDashboard] signing modal DOM', {
-          overlay: !!overlay,
-          panel: !!panel,
-        });
       } catch (e) {
-        console.warn('[BrandMobileDashboard] signing modal DOM check failed', e);
+        // signing modal DOM check failed silently
       }
     }, 0);
   }, [showBrandSigningModal]);
