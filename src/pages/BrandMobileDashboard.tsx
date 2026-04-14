@@ -3736,14 +3736,14 @@ const BrandMobileDashboard = ({
 	                              type="button"
 	                              disabled={isPushBusy || pushPermission === 'denied' || isIOSNeedsInstall}
 	                              onClick={handleEnablePush}
-	                              className={cn('flex-1 h-10 px-4 text-[12px] font-bold rounded-xl', isDark ? 'bg-emerald-500 text-white hover:bg-emerald-400' : 'bg-emerald-500 text-white hover:bg-emerald-600')}
+	                              className={cn('flex-1 h-10 px-4 text-[12px] font-bold rounded-xl shadow-md', isDark ? 'bg-emerald-600 text-white hover:bg-emerald-500' : 'bg-emerald-600 text-white hover:bg-emerald-700')}
 	                            >
 	                              Enable
 	                            </button>
 	                            <button
 	                              type="button"
 	                              onClick={() => dismissPushPromptPersisted()}
-	                              className={cn('h-10 px-4 text-[12px] font-semibold rounded-xl border', isDark ? 'bg-secondary/60 border-border/40 text-foreground hover:bg-secondary/80' : 'bg-white text-foreground border-border hover:bg-secondary/60')}
+	                              className={cn('h-10 px-4 text-[12px] font-semibold rounded-xl border shadow-sm', isDark ? 'bg-secondary/80 border-border/60 text-foreground hover:bg-secondary' : 'bg-white text-foreground border-border/80 hover:bg-secondary/60')}
 	                            >
 	                              Later
 	                            </button>
