@@ -1366,9 +1366,6 @@ const ProfileSettings = () => {
       } else {
         updatePayload.pricing_max = null;
       }
-      if ('typical_deal_size' in (profile as any)) {
-        updatePayload.typical_deal_size = formData.typicalDealSize;
-      }
 
       updatePayload.open_to_collabs = !!formData.openToCollabs;
 

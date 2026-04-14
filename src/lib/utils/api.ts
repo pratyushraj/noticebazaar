@@ -33,7 +33,6 @@ export function getApiBaseUrl(): string {
       // which is more robust than hardcoding a domain that might change or have CORS issues.
       const isProduction =
         origin.includes('creatorarmour.com') ||
-        origin.includes('creatorarmour.com') ||
         origin.includes('vercel.app') ||
         origin.includes('netlify.app') ||
         origin.includes('trycloudflare.com');
@@ -97,7 +96,6 @@ export function getApiBaseUrl(): string {
   if (typeof window !== 'undefined') {
     const host = window.location.hostname.toLowerCase();
     const isPublicHost =
-      host.endsWith('creatorarmour.com') ||
       host.endsWith('creatorarmour.com') ||
       host.endsWith('vercel.app') ||
       host.endsWith('netlify.app') ||
