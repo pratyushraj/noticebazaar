@@ -2739,13 +2739,13 @@ const MobileDashboardDemo = ({
 
                             {/* PWA Install Banner (Android only) */}
                             {canInstall && (
-                                <div className="mx-5 mb-4 p-3 rounded-2xl bg-gradient-to-r from-blue-50 to-indigo-50 border border-info flex items-center justify-between">
+                                <div className="mx-5 mb-4 p-3 rounded-2xl bg-gradient-to-r from-emerald-50 to-teal-50 border border-primary/30 flex items-center justify-between">
                                     <div className="flex items-center gap-3">
                                         <div className="w-9 h-9 rounded-xl bg-info flex items-center justify-center">
                                             <Download className="w-4 h-4 text-foreground" />
                                         </div>
                                         <div>
-                                            <p className="text-[13px] font-bold text-muted-foreground">Install Creator Armour</p>
+                                            <p className="text-[13px] font-bold text-foreground">Add to home screen</p>
                                             <p className="text-[11px] text-muted-foreground">Add to home screen for faster access</p>
                                         </div>
                                     </div>
