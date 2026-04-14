@@ -3103,13 +3103,13 @@ const MobileDashboardDemo = ({
                                                     setActiveTab('deals');
                                                     setCollabSubTab('active');
                                                 }}
-                                                className={cn('p-5 rounded-[16px] border shadow-md hover:shadow-lg transition-all cursor-pointer active:scale-95', cardBgColor, borderColor)}
+                                                className={cn('p-4 rounded-[12px] border shadow-md hover:shadow-lg transition-all cursor-pointer active:scale-95', cardBgColor, borderColor)}
                                             >
-                                                <div className="flex items-center gap-2 mb-2.5">
-                                                    <Briefcase className={cn('w-4 h-4', secondaryTextColor)} strokeWidth={1.5} />
-                                                    <span className={cn('text-[12px] uppercase tracking-[0.06em] font-medium', secondaryTextColor)}>Active Deals</span>
+                                                <div className="flex items-center gap-1.5 mb-1">
+                                                    <Briefcase className={cn('w-3.5 h-3.5', secondaryTextColor)} strokeWidth={1.5} />
+                                                    <span className={cn('text-[10px] uppercase tracking-[0.06em] font-medium', secondaryTextColor)}>Active Deals</span>
                                                 </div>
-                                                <p className={cn('text-[28px] font-semibold tracking-tight', textColor)}>{activeDealsCount}</p>
+                                                <p className={cn('text-[22px] font-semibold tracking-tight', textColor)}>{activeDealsCount}</p>
                                             </motion.div>
 
                                             <motion.div
@@ -3119,13 +3119,13 @@ const MobileDashboardDemo = ({
                                                     setActiveTab('deals');
                                                     setCollabSubTab('pending');
                                                 }}
-                                                className={cn('p-5 rounded-[16px] border shadow-md hover:shadow-lg transition-all cursor-pointer active:scale-95', cardBgColor, borderColor)}
+                                                className={cn('p-4 rounded-[12px] border shadow-md hover:shadow-lg transition-all cursor-pointer active:scale-95', cardBgColor, borderColor)}
                                             >
-                                                <div className="flex items-center gap-2 mb-2.5">
-                                                    <Handshake className={cn('w-4 h-4', secondaryTextColor)} strokeWidth={1.5} />
-                                                    <span className={cn('text-[12px] uppercase tracking-[0.06em] font-medium', secondaryTextColor)}>Pending Offers</span>
+                                                <div className="flex items-center gap-1.5 mb-1">
+                                                    <Handshake className={cn('w-3.5 h-3.5', secondaryTextColor)} strokeWidth={1.5} />
+                                                    <span className={cn('text-[10px] uppercase tracking-[0.06em] font-medium', secondaryTextColor)}>Pending Offers</span>
                                                 </div>
-                                                <p className={cn('text-[28px] font-semibold tracking-tight', textColor)}>{pendingOffersCount}</p>
+                                                <p className={cn('text-[22px] font-semibold tracking-tight', textColor)}>{pendingOffersCount}</p>
                                             </motion.div>
                                         </div>
                                     </div>
