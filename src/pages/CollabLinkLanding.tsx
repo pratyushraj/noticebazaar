@@ -2913,7 +2913,7 @@ const CollabLinkLanding = () => {
                             rel="noopener noreferrer"
                             className="mt-3 inline-flex items-center gap-1 text-[12px] font-semibold text-slate-600 hover:text-slate-900 transition-colors"
                           >
-                            Active on Instagram <span className="font-black">@{handle}</span>
+                            Active on Instagram <span className="font-black text-foreground">@{handle}</span>
                             <ExternalLink className="h-3.5 w-3.5 opacity-60" />
                           </a>
                         );

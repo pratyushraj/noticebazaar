@@ -3692,7 +3692,7 @@ const BrandMobileDashboard = ({
               {activeTab === 'dashboard' && (
                 <div className="flex items-end justify-between gap-3">
                   <div className="min-w-0">
-                    <p className={cn('text-[12px] font-black uppercase tracking-[0.18em] opacity-60', textColor)}>Welcome back</p>
+                    <p className={cn('text-[12px] font-black uppercase tracking-[0.18em] opacity-80', textColor)}>Welcome back</p>
                     <h1 className={cn('text-[28px] font-semibold tracking-tight leading-tight mt-1', textColor)}>{brandName}</h1>
                     <p className={cn('text-[13px] mt-2 opacity-60', textColor)}>
                       Find creators. Send protected offers. Get quality content.
