@@ -2620,10 +2620,9 @@ const MobileDashboardDemo = ({
         >
             {isDark ? (
                 <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
-                    <div className="absolute inset-0 bg-gradient-to-b from-emerald-500/15 via-sky-500/10 to-transparent" />
-                    <div className="absolute top-[-12%] left-[-14%] w-[45%] h-[45%] bg-primary/20 rounded-full blur-[140px]" />
-                    <div className="absolute top-[8%] right-[-18%] w-[48%] h-[48%] bg-info/18 rounded-full blur-[160px]" />
-                    <div className="absolute bottom-[-14%] left-[20%] w-[52%] h-[52%] bg-primary/12 rounded-full blur-[170px]" />
+                    <div className="absolute inset-0 bg-gradient-to-b from-emerald-500/10 via-transparent to-transparent" />
+                    <div className="absolute top-[-8%] right-[-10%] w-[35%] h-[35%] bg-primary/10 rounded-full blur-[100px]" />
+                    <div className="absolute bottom-[-10%] left-[10%] w-[40%] h-[40%] bg-primary/8 rounded-full blur-[120px]" />
                 </div>
             ) : (
                 <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
@@ -3166,7 +3165,7 @@ const MobileDashboardDemo = ({
                                             animate={{ scale: 1, opacity: 1 }}
                                             transition={{ delay: 0.1 }}
                                             className={cn(
-                                                "py-8 px-8 rounded-[2rem] shadow-xl shadow-emerald-500/20 border-0 mb-6 bg-gradient-to-br relative overflow-hidden",
+                                                "py-8 px-8 rounded-[2rem] shadow-xl shadow-emerald-500/10 border border-white/10 mb-6 bg-gradient-to-br relative overflow-hidden",
                                                 isDark
                                                     ? "from-emerald-400 via-cyan-500 to-blue-600"
                                                     : "bg-primary from-emerald-600 via-teal-500 to-blue-700"
