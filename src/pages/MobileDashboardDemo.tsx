@@ -2934,57 +2934,6 @@ const MobileDashboardDemo = ({
                                 </div>
                             )}
 
-                            {/* Avoid showing a confusing "₹0 Pending Amount" banner for brand-new accounts */}
-                            {!(activeDealsCount === 0 && pendingOffersCount === 0 && monthlyRevenue === 0 && collabRequests.length === 0 && pendingAmount === 0) && (
-                            <div className="px-5 mb-6">
-                                <motion.div
-                                    initial={{ scale: 0.98, opacity: 0 }}
-                                    animate={{ scale: 1, opacity: 1 }}
-                                    transition={{ delay: 0.08 }}
-                                    className={cn(
-                                        "py-5 px-5 rounded-[2rem] shadow-xl border-0 relative overflow-hidden",
-                                        isDark
-                                            ? "bg-gradient-to-br from-emerald-400 via-cyan-500 to-blue-600 shadow-blue-500/20"
-                                            : "bg-gradient-to-br from-emerald-500 via-cyan-500 to-blue-700 shadow-blue-500/15"
-                                    )}
-                                    onClick={() => { triggerHaptic(); setActiveTab('deals'); }}
-                                    role="button"
-                                    aria-label="View pending deals"
-                                >
-                                    <div className="absolute -top-8 -right-8 w-28 h-28 bg-white/15 rounded-full blur-2xl" />
-                                    <div className="absolute -bottom-8 -left-8 w-28 h-28 bg-white/10 rounded-full blur-2xl" />
-
-                                    <div className="relative z-10">
-                                        <div className="flex items-start justify-between gap-3 mb-3">
-                                            <div>
-                                                <div className="flex items-center gap-1.5 mb-0.5">
-                                                    <span className="w-2 h-2 rounded-full bg-red-400 animate-pulse" />
-                                                    <p className="text-[10px] font-black uppercase tracking-[0.18em] text-white/85">Pending Amount</p>
-                                                </div>
-                                                <p className="text-[11px] font-semibold text-white/75 mt-1">Released after content approval</p>
-                                            </div>
-                                            <div className="p-2 rounded-xl bg-white/10 backdrop-blur-md border border-white/30">
-                                                <Clock className="w-4 h-4 text-white" />
-                                            </div>
-                                        </div>
-
-                                        <div className="flex items-end gap-1 mb-4 font-outfit text-white">
-                                            <span className="text-2xl font-bold opacity-80">₹</span>
-                                            <span className="text-4xl font-black tracking-tight">
-                                                <AnimatedCounter value={pendingAmount} />
-                                            </span>
-                                        </div>
-
-                                        <div className="flex items-center gap-2.5 py-2 px-3.5 rounded-xl bg-black/10 backdrop-blur-md border border-white/25 w-fit">
-                                            <div className="w-5 h-5 rounded-full bg-white/15 flex items-center justify-center border border-white/20">
-                                                <ShieldCheck className="w-3 h-3 text-white" />
-                                            </div>
-                                            <span className="text-[9px] font-black text-white tracking-[0.15em] uppercase">Creator Armour protection active</span>
-                                        </div>
-                                    </div>
-                                </motion.div>
-                            </div>
-                            )}
 
                             {/* Empty State vs Normal Metrics */}
                             {activeDealsCount === 0 && pendingOffersCount === 0 && monthlyRevenue === 0 && collabRequests.length === 0 ? (
