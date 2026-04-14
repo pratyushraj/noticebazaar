@@ -3532,7 +3532,7 @@ const BrandMobileDashboard = ({
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
           >
-            <div className="px-5 pb-6 pt-safe" style={{ paddingTop: 'max(env(safe-area-inset-top), 24px)' }}>
+            <div className="px-5 pb-6 pt-safe" style={{ paddingTop: 'max(env(safe-area-inset-top), 16px)' }}>
 
               {/* Brand Getting Started Banner — shown when no deals exist */}
               {!isLoading && deals.length === 0 && (
@@ -3736,7 +3736,7 @@ const BrandMobileDashboard = ({
 	                              type="button"
 	                              disabled={isPushBusy || pushPermission === 'denied' || isIOSNeedsInstall}
 	                              onClick={handleEnablePush}
-	                              className={cn('flex-1 h-10 px-4 text-[12px] font-semibold rounded-xl', isDark ? 'bg-primary text-foreground hover:bg-primary/90' : 'bg-primary text-foreground hover:bg-primary/90')}
+	                              className={cn('flex-1 h-10 px-4 text-[12px] font-bold rounded-xl', isDark ? 'bg-emerald-500 text-white hover:bg-emerald-400' : 'bg-emerald-500 text-white hover:bg-emerald-600')}
 	                            >
 	                              Enable
 	                            </button>
