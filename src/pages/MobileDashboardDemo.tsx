@@ -3330,10 +3330,13 @@ const MobileDashboardDemo = ({
 
                                                     // Determine Deadline text
                                                     let deadlineText = '';
+                                                    let isPastDue = false;
                                                     if (req.deadline || req.due_date) {
                                                         const dDate = new Date(req.deadline || req.due_date);
                                                         const diffDays = Math.ceil((dDate.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
-                                                        deadlineText = diffDays > 0 ? `${diffDays}d left` : 'Past Due';
+                                                        if (diffDays > 0) deadlineText = `${diffDays}d left`;
+                                                        else if (diffDays === 0) { deadlineText = 'Today'; isPastDue = true; }
+                                                        else { deadlineText = 'Past Due'; isPastDue = true; }
                                                     }
 
                                                     // Mock/Get ID and time
@@ -3454,9 +3457,11 @@ const MobileDashboardDemo = ({
                                                                     {deadlineText && (
                                                                         <span className={cn(
                                                                             "px-2.5 py-1 rounded-lg text-[10px] font-black border transition-all",
-                                                                            isDark ? "bg-gradient-to-r from-amber-500/10 to-orange-500/10 border-warning/30 text-warning" : "bg-gradient-to-r from-amber-50 to-orange-50 border-warning text-warning"
+                                                                            isPastDue
+                                                                                ? (isDark ? "bg-gradient-to-r from-red-500/15 to-rose-500/15 border-red-500/40 text-red-400" : "bg-gradient-to-r from-red-50 to-rose-50 border-red-200 text-red-600")
+                                                                                : (isDark ? "bg-gradient-to-r from-amber-500/10 to-orange-500/10 border-warning/30 text-warning" : "bg-gradient-to-r from-amber-50 to-orange-50 border-warning text-warning")
                                                                         )}>
-                                                                            ⚡{deadlineText}
+                                                                            {isPastDue ? '🚨 ' : '⚡'}{deadlineText}
                                                                         </span>
                                                                     )}
                                                                 </div>
