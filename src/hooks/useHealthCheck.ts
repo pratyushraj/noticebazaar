@@ -20,7 +20,7 @@ export function useHealthCheck(): UseHealthCheckResult {
     setStatus('checking');
     try {
       const apiBaseUrl = getApiBaseUrl();
-      const res = await fetch(`${apiBaseUrl}/api/health`, {
+      const res = await fetch(`${apiBaseUrl}/health`, {
         method: 'GET',
         headers: { 'Content-Type': 'application/json' },
         // Abort after 5s to avoid hanging on cold starts
