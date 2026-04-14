@@ -1371,7 +1371,6 @@ const ProfileSettings = () => {
       }
 
       updatePayload.open_to_collabs = !!formData.openToCollabs;
-      updatePayload.auto_pricing_enabled = !!formData.autoPricingEnabled;
 
       const mediaKitUrlValue = formData.mediaKitUrl?.trim();
       if (mediaKitUrlValue) {
