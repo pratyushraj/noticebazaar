@@ -1164,38 +1164,9 @@ const MobileDashboardDemo = ({
                 media_kit_url: profileFormData.media_kit_url || null,
                 open_to_collabs: profileFormData.open_to_collabs,
                 typical_deal_size: profileFormData.typical_deal_size,
-                collaboration_preference: profileFormData.collaboration_preference,
                 avg_rate_reel: Number(profileFormData.avg_rate_reel) || null,
-                content_niches: profileFormData.content_niches,
-                deal_templates: profileFormData.deal_templates,
                 bank_account_name: profileFormData.bank_account_name?.trim() || null,
                 bank_upi: profileFormData.bank_upi?.trim() || null,
-                // NEW: Audience & Demographics
-                audience_gender_split: profileFormData.audience_gender_split || null,
-                top_cities: profileFormData.top_cities || [],
-                audience_age_range: profileFormData.audience_age_range || null,
-                primary_audience_language: profileFormData.primary_audience_language || null,
-                // NEW: Stats & Availability
-                posting_frequency: profileFormData.posting_frequency || null,
-                active_brand_collabs_month: Number(profileFormData.active_brand_collabs_month) || null,
-                past_brand_count: Number(profileFormData.past_brand_count) || null,
-                avg_reel_views_manual: Number(profileFormData.avg_reel_views_manual) || null,
-                avg_likes_manual: Number(profileFormData.avg_likes_manual) || null,
-                // NEW: Collab Professional Notes
-                collab_region_label: profileFormData.collab_region_label || null,
-                collab_audience_fit_note: profileFormData.collab_audience_fit_note || null,
-                collab_recent_activity_note: profileFormData.collab_recent_activity_note || null,
-                collab_audience_relevance_note: profileFormData.collab_audience_relevance_note || null,
-                collab_delivery_reliability_note: profileFormData.collab_delivery_reliability_note || null,
-                collab_response_behavior_note: profileFormData.collab_response_behavior_note || null,
-                campaign_slot_note: profileFormData.campaign_slot_note || null,
-                // NEW: CTA Customization
-                collab_cta_trust_note: profileFormData.collab_cta_trust_note || null,
-                collab_cta_dm_note: profileFormData.collab_cta_dm_note || null,
-                collab_cta_platform_note: profileFormData.collab_cta_platform_note || null,
-                // NEW: Public Portfolio
-                portfolio_links: profileFormData.portfolio_links || [],
-                past_brands: profileFormData.past_brands || [],
                 updated_at: new Date().toISOString(),
             };
 
