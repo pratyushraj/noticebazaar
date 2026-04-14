@@ -4705,11 +4705,17 @@ const MobileDashboardDemo = ({
                             <div className="grid grid-cols-2 gap-3 mb-6">
                                 <div className={cn("p-5 rounded-2xl border", cardBgColor, borderColor)}>
                                     <p className={cn("text-[10px] font-bold uppercase tracking-widest opacity-50 mb-2", textColor)}>Paid This Month</p>
-                                    <div className={cn("text-lg font-bold font-outfit", isDark ? "text-primary" : "text-primary")}>₹{monthlyRevenue.toLocaleString()}</div>
+                                    <div className="flex items-baseline gap-1 font-outfit">
+                                        <span className={cn("text-xl font-bold", isDark ? "text-primary" : "text-primary")}>₹</span>
+                                        <span className={cn("text-2xl font-black", isDark ? "text-primary" : "text-primary")}>{monthlyRevenue.toLocaleString()}</span>
+                                    </div>
                                 </div>
                                 <div className={cn("p-5 rounded-2xl border", cardBgColor, borderColor)}>
                                     <p className={cn("text-[10px] font-bold uppercase tracking-widest opacity-50 mb-2", textColor)}>Total Earnings</p>
-                                    <div className={cn("text-lg font-bold font-outfit", textColor)}>₹{allTimeRevenue.toLocaleString()}</div>
+                                    <div className="flex items-baseline gap-1 font-outfit">
+                                        <span className={cn("text-xl font-bold", textColor)}>₹</span>
+                                        <span className={cn("text-2xl font-black", textColor)}>{allTimeRevenue.toLocaleString()}</span>
+                                    </div>
                                 </div>
                             </div>
 
