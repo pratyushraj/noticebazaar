@@ -1659,7 +1659,7 @@ const MobileDashboardDemo = ({
             case 'portfolio':
                 return (
                     <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} drag="x" dragConstraints={{ left: 0, right: 0 }} dragElastic={0.2} onDragEnd={(e, { offset, velocity }) => { if (offset.x > 50 || velocity.x > 500) { triggerHaptic(); setActiveSettingsPage(null); } }} className="pb-20 touch-pan-y">
-                        <PageHeader title="Public Portfolio" />
+                        <PageHeader title="Your Public Profile" />
                         <div className="px-4 space-y-6">
                             <div className={cn("p-6 rounded-[2.5rem] border text-center relative overflow-hidden", isDark ? "bg-card border-[#2C2C2E]" : "bg-card border-[#E5E5EA] shadow-sm")}>
                                 <div className="w-20 h-20 bg-info/10 rounded-3xl flex items-center justify-center mx-auto mb-4">
@@ -4485,8 +4485,8 @@ const MobileDashboardDemo = ({
                                                             <div className="mt-4 flex flex-wrap gap-2">
                                                                 <div className={cn("px-3 py-2 rounded-2xl border", isDark ? "bg-background border-border" : "bg-background border-[#E5E7EB]")}>
                                                                     <p className={cn("text-[10px] font-black uppercase tracking-[0.16em] opacity-45 mb-1", textColor)}>Creator link</p>
-                                                                    <p className={cn("text-[12px] font-bold", textColor)}>
-                                                                        {profile?.instagram_handle ? 'Ready' : 'Setup needed'}
+                                                                    <p className={cn("text-[11px] font-bold truncate max-w-[140px]", profile?.instagram_handle ? "text-primary" : textColor)}>
+                                                                        {profile?.instagram_handle ? `creatorarmour.com/${username}` : 'Setup needed'}
                                                                     </p>
                                                                 </div>
                                                                 <div className={cn("px-3 py-2 rounded-2xl border", isDark ? "bg-background border-border" : "bg-background border-[#E5E7EB]")}>
@@ -4594,7 +4594,7 @@ const MobileDashboardDemo = ({
                                             <div className="pt-2">
                                                 <SectionHeader title="Profile & Link" isDark={isDark} />
                                                 <SettingsGroup isDark={isDark}>
-                                                    <SettingsRow icon={<FileText />} iconBg="bg-primary" label="Public Portfolio" subtext="Bio, proof, and what brands see" isDark={isDark} textColor={textColor} hasChevron onClick={() => setActiveSettingsPage('portfolio')} />
+                                                    <SettingsRow icon={<FileText />} iconBg="bg-primary" label="Your Public Profile" subtext="Bio, proof & what brands see" isDark={isDark} textColor={textColor} hasChevron onClick={() => setActiveSettingsPage('portfolio')} />
                                                     <SettingsRow icon={<Link2 />} iconBg="bg-violet-500" label="Creator Link" subtext="Manage your public intake page" isDark={isDark} textColor={textColor} hasChevron onClick={() => setActiveSettingsPage('collab-link')} />
                                                     <SettingsRow icon={<User />} iconBg="bg-slate-500" label="Personal Information" subtext="Name, identity, and legal details" isDark={isDark} textColor={textColor} hasChevron onClick={() => setActiveSettingsPage('personal')} />
                                                 </SettingsGroup>
