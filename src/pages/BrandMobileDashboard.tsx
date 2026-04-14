@@ -3536,9 +3536,9 @@ const BrandMobileDashboard = ({
 
               {/* Brand Getting Started Banner — shown when no deals exist */}
               {!isLoading && deals.length === 0 && (
-                <div className="mb-5 p-4 rounded-2xl bg-gradient-to-r from-blue-50 to-indigo-50 border border-info">
+                <div className="mb-5 p-4 rounded-2xl bg-gradient-to-r from-emerald-50 to-teal-50 border border-primary/20">
                   <div className="flex items-center gap-3 mb-3">
-                    <div className="w-10 h-10 rounded-xl bg-info flex items-center justify-center">
+                    <div className="w-10 h-10 rounded-xl bg-primary/15 flex items-center justify-center">
                       <Sparkles className="w-5 h-5 text-foreground" />
                     </div>
                     <div>
@@ -3555,9 +3555,9 @@ const BrandMobileDashboard = ({
                       <button
                         key={step.n}
                         onClick={step.action}
-                        className="flex items-center gap-3 p-3 rounded-xl bg-card border border-info hover:border-info active:scale-[0.98] transition-all text-left"
+                        className="flex items-center gap-3 p-3 rounded-xl bg-card border border-primary/20 hover:border-primary/30 active:scale-[0.98] transition-all text-left"
                       >
-                        <span className="w-6 h-6 rounded-full bg-info text-foreground text-[11px] font-black flex items-center justify-center">{step.n}</span>
+                        <span className="w-6 h-6 rounded-full bg-primary/20 text-primary text-[11px] font-black flex items-center justify-center">{step.n}</span>
                         <span className="text-[13px] font-semibold text-muted-foreground">{step.label}</span>
                         <ChevronRight className="w-4 h-4 text-muted-foreground ml-auto" />
                       </button>
