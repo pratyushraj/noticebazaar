@@ -368,7 +368,7 @@ const buildProfileFormData = (profile: any, userEmail?: string | null) => {
         instagram_handle: profile?.instagram_handle || '',
         media_kit_url: profile?.media_kit_url || '',
         open_to_collabs: profile?.open_to_collabs ?? true,
-        typical_deal_size: profile?.typical_deal_size || 'standard',
+
         collaboration_preference: profile?.collaboration_preference || 'Hybrid',
         avg_rate_reel: profile?.avg_rate_reel || '5000',
         content_niches: profile?.content_niches || ['Fashion', 'Tech', 'Lifestyle'],
@@ -1163,7 +1163,6 @@ const MobileDashboardDemo = ({
                 location: location,
                 media_kit_url: profileFormData.media_kit_url || null,
                 open_to_collabs: profileFormData.open_to_collabs,
-                typical_deal_size: profileFormData.typical_deal_size,
                 avg_rate_reel: Number(profileFormData.avg_rate_reel) || null,
                 bank_account_name: profileFormData.bank_account_name?.trim() || null,
                 bank_upi: profileFormData.bank_upi?.trim() || null,
@@ -1922,32 +1921,6 @@ const MobileDashboardDemo = ({
                                     packages={profileFormData.deal_templates || []}
                                     onChange={(pkgs) => setProfileFormData(p => ({ ...p, deal_templates: pkgs }))}
                                 />
-                            </div>
-
-                            <SectionHeader title="Deal Size Expectations" isDark={isDark} />
-                            <div className="grid grid-cols-1 gap-2">
-                                {[
-                                    { key: 'starter', title: 'Starter Level', range: '₹2k - ₹10k', sub: 'Smaller niche brands, barter or small fees' },
-                                    { key: 'standard', title: 'Professional', range: '₹10k - ₹50k', sub: 'Mainstream brands, partial cash upfront' },
-                                    { key: 'premium', title: 'High-Value', range: '₹50k - ₹2L+', sub: 'Luxury / Corporate campaigns only' },
-                                ].map((tier) => (
-                                    <button type="button"
-                                        key={tier.key}
-                                        onClick={() => setProfileFormData((p: any) => ({ ...p, typical_deal_size: tier.key }))}
-                                        className={cn(
-                                            "p-4 rounded-2xl border text-left transition-all active:scale-[0.98]",
-                                            profileFormData.typical_deal_size === tier.key
-                                                ? "bg-info border-info text-foreground"
-                                                : (isDark ? "bg-card border-border/5 text-foreground" : "bg-card border-border text-black")
-                                        )}
-                                    >
-                                        <div className="flex justify-between items-center">
-                                            <p className="font-bold text-sm">{tier.title}</p>
-                                            <p className={cn("text-xs font-black", profileFormData.typical_deal_size === tier.key ? "text-foreground/80" : "text-info")}>{tier.range}</p>
-                                        </div>
-                                        <p className={cn("text-[10px] uppercase tracking-wider mt-1 opacity-60")}>{tier.sub}</p>
-                                    </button>
-                                ))}
                             </div>
 
                             <SectionHeader title="Collaboration Type" isDark={isDark} />
