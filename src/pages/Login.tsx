@@ -314,7 +314,7 @@ const Login = () => {
 	              <Button
 	                type="submit"
 	                disabled={isLoading || !email.trim() || !password.trim()}
-	                className="w-full bg-primary hover:bg-primary text-foreground font-black h-14 rounded-2xl shadow-xl shadow-emerald-600/20 transition-all active:scale-[0.98] uppercase tracking-widest text-xs mt-2"
+	                className="w-full bg-primary hover:bg-primary text-white font-black h-14 rounded-2xl shadow-xl shadow-emerald-600/10 transition-all active:scale-[0.98] uppercase tracking-widest text-xs mt-2"
                 style={{
                   WebkitTapHighlightColor: 'transparent',
                   touchAction: 'manipulation',
