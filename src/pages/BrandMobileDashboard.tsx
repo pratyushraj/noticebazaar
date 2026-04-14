@@ -954,10 +954,10 @@ const BrandMobileDashboard = ({
       const res = await fetch(`${apiBase}/api/creators/suggested?limit=10`);
       if (res.status === 404) return [];
       const data: any = await res.json().catch(() => ({}));
-      if (!res.ok || !data?.success) throw new Error(data?.error || 'Failed to fetch creators');
+      if (!res.ok || !data?.success) return []; // fail silently — non-critical API
       return Array.isArray(data.creators) ? (data.creators as SuggestedCreator[]) : [];
     },
-    { staleTime: 60_000 }
+    { staleTime: 60_000, retry: false }
   );
 
   const [creatorSearch, setCreatorSearch] = useState('');
@@ -3991,14 +3991,14 @@ const BrandMobileDashboard = ({
 	                                    'flex-1 rounded-[20px] px-3 py-3 text-left transition-all active:scale-[0.98] border backdrop-blur-lg',
 	                                    isSelected
 	                                      ? isDark
-	                                        ? 'bg-secondary/90 text-muted-foreground border-border/40 shadow-[0_10px_30px_rgba(255,255,255,0.08)]'
-	                                        : 'bg-gradient-to-br from-emerald-500 to-teal-500 text-foreground border-primary/70 shadow-[0_12px_30px_rgba(16,185,129,0.24)]'
+	                                        ? 'bg-secondary/90 text-foreground border-border/40 shadow-[0_10px_30px_rgba(255,255,255,0.08)]'
+	                                        : 'bg-gradient-to-br from-emerald-500 to-teal-500 text-white border-primary/70 shadow-[0_12px_30px_rgba(16,185,129,0.24)]'
 	                                      : isDark
-	                                        ? 'text-foreground/70 border-border/5 hover:bg-secondary/[0.05]'
-	                                        : 'text-muted-foreground border-border/50 hover:bg-secondary/60'
+	                                        ? 'bg-secondary/40 text-foreground border-border/20 hover:bg-secondary/60'
+	                                        : 'bg-white text-muted-foreground border-border shadow-sm hover:bg-slate-50'
 	                                  )}
 	                                >
-	                                  <p className={cn('text-[10px] font-black uppercase tracking-widest', isSelected ? 'opacity-80' : 'opacity-50')}>{item.label}</p>
+	                                  <p className={cn('text-[10px] font-black uppercase tracking-widest', isSelected ? 'text-white opacity-100' : 'opacity-70')}>{item.label}</p>
 	                                  <p className="mt-1 text-[16px] font-black">{item.count}</p>
 	                                </button>
 	                              );

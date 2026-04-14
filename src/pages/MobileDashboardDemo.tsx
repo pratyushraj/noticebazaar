@@ -4810,9 +4810,11 @@ const MobileDashboardDemo = ({
                                 ) : (
                                     <div className="text-center py-12">
                                         <div className="w-16 h-16 rounded-full bg-background/10 flex items-center justify-center mx-auto mb-4 border border-border">
-                                            <CreditCard className={cn("w-8 h-8 opacity-20", textColor)} />
+                                            <div className="w-16 h-16 rounded-full bg-emerald-500/10 flex items-center justify-center mx-auto mb-4 border border-emerald-200/40">
+                                              <svg className="w-8 h-8" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" fill="#16A34A" opacity="0.15"/><path d="M12 2C7.03 2 3 6.03 3 11c0 2.7 1.2 5.13 3.1 6.87L12 22l5.9-4.13A9.96 9.96 0 0021 11c0-4.97-4.03-9-9-9zm0 16H8v-2h4v2zm0-4H8v-2h4v2zm5-3h4v2h-4v-2zm-5-5a1 1 0 100-2 1 1 0 000 2z" fill="#16A34A" opacity="0.8"/></svg>
+                                            </div>
                                         </div>
-                                        <h3 className={cn("text-[18px] font-black tracking-tight mb-2 font-outfit", textColor)}>No payments yet</h3>
+                                        <h3 className={cn("text-[18px] font-black tracking-tight mb-2 font-outfit", textColor)}>Your earnings will appear here</h3>
                                         <p className={cn("text-sm font-bold opacity-30", textColor)}>Complete your first brand deal to start earning</p>
                                         <button
                                             type="button"
