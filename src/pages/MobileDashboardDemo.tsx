@@ -2855,7 +2855,9 @@ const MobileDashboardDemo = ({
                                                 <h1 className={cn('text-[18px] font-semibold tracking-tight', textColor)}>
                                                     {(() => {
                                                         const hour = new Date().getHours();
-                                                        const name = (profile?.first_name || '').trim();
+                                                        let name = (profile?.first_name || '').trim();
+                                                        // Filter out placeholder/bot names
+                                                        if (!name || name === 'Dashboard©' || name.includes('Dashboard') || name.includes('©')) name = '';
                                                         const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
                                                         return name ? `${greeting}, ${name}` : greeting;
                                                     })()}
