@@ -5024,7 +5024,7 @@ const BrandMobileDashboard = ({
                         <p className={cn('text-[18px] font-black tracking-tight truncate', textColor)}>{brandName}</p>
                         <p className={cn('text-[12px] mt-1 opacity-60 truncate', textColor)}>Brand account</p>
                         <div className="flex flex-wrap gap-2 mt-3">
-                          <span className={cn('inline-flex items-center px-3 py-1.5 rounded-full border text-[10px] font-black uppercase tracking-widest', isDark ? 'border-border bg-card text-foreground/70' : 'border-border bg-card text-muted-foreground')}>
+                          <span className={cn('inline-flex items-center px-3 py-1.5 rounded-full border text-[10px] font-black uppercase tracking-widest', isDark ? 'border-border bg-card text-foreground/70' : 'border-border bg-card text-slate-700')}>
                             Verified Business
                           </span>
                           <span className={cn('inline-flex items-center px-3 py-1.5 rounded-full border text-[10px] font-black uppercase tracking-widest', isDark ? 'border-primary/20 bg-primary/10 text-primary' : 'border-primary bg-primary text-primary')}>
