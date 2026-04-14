@@ -3727,8 +3727,8 @@ const BrandMobileDashboard = ({
                               : 'Get notified when creators reply and deals need action.'}
                           </p>
                           {pushPermission === 'denied' && (
-                            <p className={cn('text-[12px] mt-2', isDark ? 'text-warning/80' : 'text-warning')}>
-                              Notifications are blocked in your browser settings.
+                            <p className={cn('text-[12px] mt-2 opacity-60', textColor)}>
+                              Notifications blocked — enable in browser settings.
                             </p>
                           )}
 	                          <div className="flex gap-2 mt-3">
