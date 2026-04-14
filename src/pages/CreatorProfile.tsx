@@ -1375,7 +1375,6 @@ const ProfileSettings = () => {
       }
 
       updatePayload.content_niches = formData.contentNiches.length > 0 ? formData.contentNiches : [];
-      updatePayload.deal_templates = formData.dealTemplates;
 
       const audienceGenderSplitValue = genderSplit.trim();
       updatePayload.audience_gender_split = audienceGenderSplitValue || null;
