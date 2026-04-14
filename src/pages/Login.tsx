@@ -337,7 +337,7 @@ const Login = () => {
                 <span className="w-full border-t border-border" />
               </div>
               <div className="relative flex justify-center text-[10px] font-black uppercase tracking-[0.2em]">
-                <span className="bg-[#0B0F14] px-4 text-foreground/50">Or continue with</span>
+                <span className="bg-[#0B0F14] px-4 text-foreground/75 font-semibold">Or continue with</span>
               </div>
             </div>
             <div className="space-y-3">
@@ -391,7 +391,7 @@ const Login = () => {
 
         {/* Back to Homepage */}
         <div className="mt-8 pt-6 border-t border-border">
-          <Link to="/" className="flex items-center justify-center gap-2 text-foreground/50 hover:text-foreground/70 transition-all text-[12px] font-black uppercase tracking-widest">
+          <Link to="/" className="flex items-center justify-center gap-2 text-foreground/80 hover:text-foreground transition-all text-[12px] font-bold uppercase tracking-widest">
             <ArrowLeft className="h-4 w-4" aria-hidden="true" /> Exit To Homepage
           </Link>
         </div>
