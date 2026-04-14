@@ -2874,12 +2874,11 @@ const MobileDashboardDemo = ({
                                 {/* Greeting / Status */}
                                 <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
                                     <div className="flex items-center justify-between">
-                                        {(isLoadingProfile || !profile) ? (
-                                            /* Profile loading skeleton */
-                                            <div className="flex-1 space-y-2">
-                                                <ShimmerSkeleton className="h-5 w-40" />
-                                                <ShimmerSkeleton className="h-4 w-24" />
-                                            </div>
+                                        {isLoadingProfile ? (
+                                            /* Profile loading — text fallback, no skeleton */
+                                            <span className="text-[15px] font-medium text-foreground/60">Loading...</span>
+                                        ) : !profile ? (
+                                            <span className="text-[15px] font-medium text-foreground/60">Welcome back</span>
                                         ) : (
                                             <>
                                                 <h1 className={cn('text-[18px] font-semibold tracking-tight', textColor)}>
