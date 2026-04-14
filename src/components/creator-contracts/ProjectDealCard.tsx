@@ -85,29 +85,31 @@ const ProjectDealCard: React.FC<ProjectDealCardProps> = ({
 
   const PlatformIcon = getPlatformIcon(deal.platform);
 
-  // Get next milestone (project-focused)
+  // Get next milestone (action-focused, brief)
   const getNextMilestone = () => {
     switch (stage) {
       case 'details_submitted':
+        return 'Respond before expiry';
       case 'negotiation':
-        return 'Review deal terms';
+        return 'Review counter and reply';
       case 'contract_ready':
-        return 'Awaiting brand signature';
+        return 'Sign to lock in the deal';
       case 'brand_signed':
-        return 'Add your signature';
+        return 'Your signature needed';
       case 'awaiting_product_shipment':
-        return 'Wait for product shipment';
+        return 'Waiting for product delivery';
       case 'fully_executed':
+        return 'Start creating content';
       case 'live_deal':
       case 'content_making':
         if (deliverablesArray.length > 0) {
           return `Next: ${deliverablesArray[0]}`;
         }
-        return 'Continue content creation';
+        return 'Upload your content';
       case 'content_delivered':
-        return 'Awaiting brand review';
+        return 'Brand reviewing — you\'ll be paid soon';
       case 'completed':
-        return 'Project completed';
+        return deal.payment_received_date ? 'Payment received' : 'Deal complete';
       default:
         return null;
     }
@@ -133,43 +135,31 @@ const ProjectDealCard: React.FC<ProjectDealCardProps> = ({
 
   const deliverableStatuses = getDeliverableStatuses();
 
-  // Get primary action buttons based on stage
-  const getPrimaryActions = () => {
+  // ONE clear primary action per stage
+  const getPrimaryAction = () => {
     switch (stage) {
       case 'details_submitted':
       case 'negotiation':
-        return [
-          { label: 'Edit Deal', onClick: () => onEdit(deal), icon: FileText },
-          { label: 'View Contract', onClick: () => onViewContract(deal), icon: FileText },
-        ];
+        return { label: 'Review Offer', onClick: () => onView(deal), icon: FileText };
       case 'contract_ready':
+        return { label: 'Sign Agreement', onClick: () => onViewContract(deal), icon: FileText };
       case 'brand_signed':
-        return [
-          { label: 'View Contract', onClick: () => onViewContract(deal), icon: FileText },
-          { label: 'Contact Brand', onClick: () => onContactBrand(deal), icon: MessageSquare },
-        ];
+        return { label: 'Sign to Start', onClick: () => onViewContract(deal), icon: FileText };
       case 'fully_executed':
       case 'live_deal':
+        return { label: 'Submit Content', onClick: () => onUploadContent(deal), icon: Upload };
       case 'content_making':
-        return [
-          { label: 'Submit Content', onClick: () => onUploadContent(deal), icon: Upload },
-          { label: 'Manage Deliverables', onClick: () => onManageDeliverables(deal), icon: Package },
-        ];
+        return { label: 'Continue Creating', onClick: () => onUploadContent(deal), icon: Upload };
       case 'content_delivered':
-        return [
-          { label: 'Submit Deliverables', onClick: () => onUploadContent(deal), icon: Upload },
-          { label: 'Contact Brand', onClick: () => onContactBrand(deal), icon: MessageSquare },
-        ];
+        return { label: 'Awaiting Review', onClick: () => onView(deal), icon: Package };
       case 'completed':
-        return [
-          { label: 'View Contract', onClick: () => onViewContract(deal), icon: FileText },
-        ];
+        return { label: 'View Earnings', onClick: () => onView(deal), icon: FileText };
       default:
-        return [];
+        return null;
     }
   };
 
-  const primaryActions = getPrimaryActions();
+  const primaryAction = getPrimaryAction();
   const [showMoodBoard, setShowMoodBoard] = useState(false);
   const category = categorizeDeal(deal.brand_name);
   const categoryStyle = getCategoryStyle(category);
@@ -221,9 +211,16 @@ const ProjectDealCard: React.FC<ProjectDealCardProps> = ({
         {/* Amount and Deliverables - Compact Row */}
         <div className="flex items-center justify-between mb-3 pb-3 border-b border-border">
           <div>
-            <div className="text-[10px] text-muted-foreground mb-0.5">Deal Value</div>
+            <div className="text-[10px] text-muted-foreground mb-0.5">
+              {stage === 'completed' ? 'Earned' : 'Deal Value'}
+            </div>
             <div className="text-lg font-bold text-foreground">
               ₹{deal.deal_amount.toLocaleString('en-IN')}
+              {deal.payment_received_date && (
+                <span className="ml-2 text-xs font-medium text-green-400 bg-green-500/20 px-1.5 py-0.5 rounded-full">
+                  PAID
+                </span>
+              )}
             </div>
           </div>
           <div className="text-right">
@@ -237,28 +234,14 @@ const ProjectDealCard: React.FC<ProjectDealCardProps> = ({
           </div>
         </div>
 
-        {/* Project Progress and Next Milestone - Compact */}
+        {/* Next Milestone + Progress Bar */}
         <div className="mb-3">
-          <div className="flex items-center justify-between text-[10px] text-muted-foreground mb-1.5">
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <span className="cursor-help">Progress: {progress}%</span>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p className="text-xs">
-                    {progress}% = {progress < 25 ? 'Project started' : 
-                     progress < 50 ? 'In progress' :
-                     progress < 75 ? 'Deliverables in progress' :
-                     progress < 100 ? 'Near completion' : 'Completed'}
-                  </p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-            {nextMilestone && (
-              <span className="truncate max-w-[60%]">{nextMilestone}</span>
-            )}
-          </div>
+          {nextMilestone && (
+            <div className="flex items-center gap-2 text-sm text-foreground/80 mb-2">
+              <span className="w-1.5 h-1.5 rounded-full bg-current" />
+              <span className="truncate">{nextMilestone}</span>
+            </div>
+          )}
           <div className="h-1.5 bg-muted rounded-full overflow-hidden">
             <motion.div
               initial={{ width: 0 }}
@@ -267,36 +250,30 @@ const ProjectDealCard: React.FC<ProjectDealCardProps> = ({
               className={cn(
                 "h-full transition-all",
                 stage === 'completed' ? 'bg-green-500' :
-                stage === 'content_delivered' ? 'bg-orange-500' :
-                stage === 'live_deal' || stage === 'content_making' ? 'bg-info' :
+                stage === 'content_delivered' ? 'bg-indigo-500' :
+                stage === 'needs_changes' || stage === 'details_submitted' || stage === 'negotiation' ? 'bg-amber-500' :
+                stage === 'live_deal' || stage === 'content_making' ? 'bg-blue-500' :
                 stage === 'brand_signed' || stage === 'contract_ready' ? 'bg-yellow-500' :
-                stage === 'fully_executed' ? 'bg-secondary' :
+                stage === 'fully_executed' ? 'bg-green-500/70' :
                 'bg-gray-400'
               )}
             />
           </div>
         </div>
 
-        {/* Action Buttons - Accessibility: 44x44px minimum touch target */}
-        <div className="flex flex-wrap gap-2 pt-3 border-t border-border" onClick={(e) => e.stopPropagation()}>
-          {primaryActions.slice(0, 2).map((action, index) => {
-            const Icon = action.icon;
-            return (
-              <Button
-                key={index}
-                size="sm"
-                variant={index === 0 ? "default" : "outline"}
-                onClick={action.onClick}
-                className="flex-1 min-h-[44px] min-w-[44px] text-sm px-4 py-3"
-                aria-label={action.label}
-              >
-                <Icon className="w-4 h-4 mr-1.5" />
-                <span className="hidden sm:inline">{action.label}</span>
-                <span className="sm:hidden">{action.label.split(' ')[0]}</span>
-              </Button>
-            );
-          })}
-        </div>
+        {/* Single Primary Action Button */}
+        {primaryAction && (
+          <div className="pt-3 border-t border-border" onClick={(e) => e.stopPropagation()}>
+            <Button
+              size="lg"
+              className="w-full min-h-[48px] text-base font-semibold rounded-2xl"
+              onClick={primaryAction.onClick}
+            >
+              <primaryAction.icon className="w-5 h-5 mr-2" />
+              {primaryAction.label}
+            </Button>
+          </div>
+        )
       </Card>
     </motion.div>
     <BrandMoodBoard
