@@ -994,7 +994,16 @@ const MobileDashboardDemo = ({
         const currentMonth = new Date().getMonth();
         const currentYear = new Date().getFullYear();
         return (brandDeals || []).reduce((sum, deal) => {
-            const dateStr = deal.payment_received_date || deal.payment_expected_date || deal.due_date || deal.created_at;
+            // For completed deals use due_date (when payment was due)
+            // For active deals use created_at (work is happening now, revenue counts this month)
+            const rawStatus = normalizeDealStatus(deal);
+            const isCompleted = rawStatus.includes('completed') || rawStatus === 'paid';
+            let dateStr: string;
+            if (isCompleted) {
+                dateStr = deal.payment_received_date || deal.payment_expected_date || deal.due_date || deal.created_at;
+            } else {
+                dateStr = deal.created_at || deal.due_date;
+            }
             let isCurrentMonth = true;
             if (dateStr) {
                 const date = new Date(dateStr);
