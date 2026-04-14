@@ -3156,6 +3156,10 @@ const MobileDashboardDemo = ({
                                                 </div>
                                             </div>
 
+                                            <div className="mb-3 p-2.5 rounded-xl bg-background/60 border border-border">
+                                                <p className="text-[11px] font-mono font-medium text-center truncate" style={{ color: 'var(--foreground)', opacity: 0.7 }}>creatorarmour.com/{username}</p>
+                                            </div>
+
                                             <div className="flex gap-2.5">
                                                 <button type="button"
                                                     onClick={handleCopyStorefront}
@@ -3180,7 +3184,7 @@ const MobileDashboardDemo = ({
                                             </div>
 
                                             <p className={cn("text-[10px] text-center mt-3 opacity-40 font-medium italic", textColor)}>
-                                                Pro tip: Direct brands to your intake storefront
+                                                Share your collab link with brands — they'll submit briefs directly
                                             </p>
                                         </motion.div>
                                     </div>
