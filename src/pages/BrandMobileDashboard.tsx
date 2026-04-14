@@ -4029,7 +4029,6 @@ const BrandMobileDashboard = ({
                                     <Send className="w-4 h-4 mr-2" /> Find creators
                                   </Button>
                                 )}
-	                                </p>
 	                                {activeCollabTab === 'action_required' && (
                                   <Button type="button" onClick={() => openCreateOfferSheet()} className={cn('mt-4 rounded-2xl', isDark ? 'bg-primary hover:bg-primary text-foreground' : 'bg-primary hover:bg-primary text-foreground')}>
 	                                    <Send className="w-4 h-4 mr-2" /> Send new offer
