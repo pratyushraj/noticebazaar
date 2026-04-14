@@ -2927,7 +2927,7 @@ const MobileDashboardDemo = ({
 
                             {/* Avoid showing a confusing "₹0 Pending Amount" banner for brand-new accounts */}
                             {!(activeDealsCount === 0 && pendingOffersCount === 0 && monthlyRevenue === 0 && collabRequests.length === 0 && pendingAmount === 0) && (
-                            <div className="px-5 mb-5">
+                            <div className="px-5 mb-6">
                                 <motion.div
                                     initial={{ scale: 0.98, opacity: 0 }}
                                     animate={{ scale: 1, opacity: 1 }}
@@ -2942,8 +2942,8 @@ const MobileDashboardDemo = ({
                                     role="button"
                                     aria-label="View pending deals"
                                 >
-                                    <div className="absolute -top-8 -right-8 w-28 h-28 bg-white/15 rounded-full blur-3xl" />
-                                    <div className="absolute -bottom-8 -left-8 w-28 h-28 bg-white/10 rounded-full blur-3xl" />
+                                    <div className="absolute -top-8 -right-8 w-28 h-28 bg-white/15 rounded-full blur-2xl" />
+                                    <div className="absolute -bottom-8 -left-8 w-28 h-28 bg-white/10 rounded-full blur-2xl" />
 
                                     <div className="relative z-10">
                                         <div className="flex items-start justify-between gap-3 mb-3">
@@ -3116,7 +3116,7 @@ const MobileDashboardDemo = ({
                                             )}
                                         >
                                             {/* Decorative elements — modern subtle gradient border effect */}
-                                            <div className="absolute inset-0 rounded-[28px] bg-gradient-to-br from-emerald-400/10 via-transparent to-blue-500/10" />
+                                            <div className="absolute inset-0 rounded-[2rem] bg-gradient-to-br from-white/10 via-transparent to-blue-500/10" />
 
                                             <div className="relative z-10">
                                                 <div className="flex items-center justify-between text-foreground/90 mb-3">
