@@ -1559,8 +1559,11 @@ const CollabLinkLanding = () => {
       <div className="min-h-screen bg-black text-white flex items-center justify-center">
         <div className="text-center max-w-md mx-auto px-4">
           <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-lg p-8">
-            <h1 className="text-2xl font-bold mb-4">{errorTitle}</h1>
-            <p className="text-slate-200 mb-6 leading-relaxed">
+            <div className="mb-5">
+              <div className="text-4xl mb-3">⚠️</div>
+              <h1 className="text-3xl font-black text-white mb-3">{errorTitle}</h1>
+            </div>
+            <p className="text-slate-300 mb-6 leading-relaxed text-sm">
               {error.toLowerCase().includes('timeout')
                 ? "The profile server is taking unusually long to wake up. This is common on the first load—clicking 'Try Again' usually works immediately."
                 : error}

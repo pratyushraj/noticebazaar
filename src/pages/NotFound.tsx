@@ -71,8 +71,8 @@ const NotFound = () => {
           <span className="text-lg font-black text-muted-foreground tracking-tight">Creator Armour</span>
         </div>
 
-        <h1 className="text-6xl font-black text-muted-foreground mb-2">404</h1>
-        <p className="text-lg text-muted-foreground mb-8">
+        <h1 className="text-5xl font-black text-slate-300 mb-3">404</h1>
+        <p className="text-base text-slate-500 mb-8 leading-relaxed">
           This page doesn't exist or has been moved.
         </p>
 
