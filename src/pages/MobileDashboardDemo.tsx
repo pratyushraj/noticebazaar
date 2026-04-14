@@ -3407,14 +3407,10 @@ const MobileDashboardDemo = ({
                                                                                 </span>
                                                                             )}
                                                                         </div>
-                                                                        {/* Category + Verified */}
-                                                                        <div className="flex items-center gap-1.5">
-                                                                            <span className={cn("text-[12px] font-medium", secondaryTextColor)}>{req.category || 'Lifestyle'}</span>
-                                                                            <span className="text-muted-foreground text-[9px]">•</span>
-                                                                            <div className="flex items-center gap-0.5">
-                                                                                <ShieldCheck className="w-3 h-3 text-info" strokeWidth={2.5} />
-                                                                                <span className={cn("text-[11px] font-semibold text-info", isDark ? "text-info" : "text-info")}>Verified</span>
-                                                                            </div>
+                                                                        {/* Verified badge only - category redundant with type badge */}
+                                                                        <div className="flex items-center gap-0.5">
+                                                                            <ShieldCheck className="w-3 h-3 text-info" strokeWidth={2.5} />
+                                                                            <span className={cn("text-[11px] font-semibold text-info", isDark ? "text-info" : "text-info")}>Verified</span>
                                                                         </div>
                                                                     </div>
 
@@ -3433,7 +3429,7 @@ const MobileDashboardDemo = ({
 
                                                                 {/* Row 2: Deliverables + Deadline */}
                                                                 <div className="flex items-center gap-2 mb-4 flex-wrap">
-                                                                    {deliverablesArr.map((d, i) => (
+                                                                    {deliverablesArr.slice(0, 2).map((d, i) => (
                                                                         <span key={i} className={cn(
                                                                             "px-2.5 py-1 rounded-lg text-[10px] font-bold border transition-all",
                                                                             isDark ? "bg-background/50 border-border/50 text-muted-foreground" : "bg-background border-border text-muted-foreground"
@@ -3441,6 +3437,14 @@ const MobileDashboardDemo = ({
                                                                             {d}
                                                                         </span>
                                                                     ))}
+                                                                    {deliverablesArr.length > 2 && (
+                                                                        <span className={cn(
+                                                                            "px-2.5 py-1 rounded-lg text-[10px] font-bold border transition-all",
+                                                                            isDark ? "bg-background/50 border-border/50 text-muted-foreground" : "bg-background border-border text-muted-foreground"
+                                                                        )}>
+                                                                            +{deliverablesArr.length - 2} more
+                                                                        </span>
+                                                                    )}
                                                                     <span className={cn(
                                                                         "px-2.5 py-1 rounded-lg text-[10px] font-semibold border transition-all",
                                                                         isDark ? "bg-background/50 border-border/50 text-muted-foreground" : "bg-background border-border text-muted-foreground"
@@ -3449,7 +3453,7 @@ const MobileDashboardDemo = ({
                                                                     </span>
                                                                     {deadlineText && (
                                                                         <span className={cn(
-                                                                            "px-2.5 py-1 rounded-lg text-[10px] font-black border transition-all animate-pulse",
+                                                                            "px-2.5 py-1 rounded-lg text-[10px] font-black border transition-all",
                                                                             isDark ? "bg-gradient-to-r from-amber-500/10 to-orange-500/10 border-warning/30 text-warning" : "bg-gradient-to-r from-amber-50 to-orange-50 border-warning text-warning"
                                                                         )}>
                                                                             ⚡{deadlineText}
