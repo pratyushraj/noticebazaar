@@ -1721,7 +1721,7 @@ const BrandMobileDashboard = ({
                 }}
                 className={cn('p-4 rounded-2xl border text-left transition-all active:scale-[0.99]', isDark ? 'bg-card border-border hover:bg-secondary/50' : 'bg-background border-border hover:bg-background')}
               >
-                <p className={cn('text-[13px] font-bold', textColor)}>Back to {activeCollabTab} list</p>
+                <p className={cn('text-[13px] font-bold', isDark ? 'text-foreground/60' : 'text-muted-foreground')}>← {activeCollabTab === 'action_required' ? 'Pending' : activeCollabTab === 'active' ? 'Active' : 'Completed'}</p>
                 <p className={cn('text-[12px] opacity-60 mt-1', textColor)}>Keep reviewing offers without leaving this screen</p>
               </button>
 	              <button type="button"
@@ -2277,8 +2277,8 @@ const BrandMobileDashboard = ({
       >
         <div className={cn('px-5 py-3.5 flex items-center justify-between border-b sticky top-0 z-[210]', isDark ? 'bg-[#061318]/92 backdrop-blur-xl border-border' : 'bg-card border-border')}>
           <div className="flex items-center gap-3">
-            <button type="button" onClick={() => { triggerHaptic(HapticPatterns.light); setSelectedDealPage(null); }} className={cn('w-10 h-10 rounded-full flex items-center justify-center border transition-all active:scale-90', borderColor, isDark ? 'bg-card hover:bg-secondary/50' : 'bg-card hover:bg-background')}>
-              <ChevronRight className="w-4 h-4 rotate-180" />
+            <button type="button" onClick={() => { triggerHaptic(HapticPatterns.light); setSelectedDealPage(null); }} aria-label="Close deal detail" className={cn('w-10 h-10 rounded-full flex items-center justify-center border transition-all active:scale-90', borderColor, isDark ? 'bg-card hover:bg-secondary/50' : 'bg-card hover:bg-background')}>
+              <ChevronRight className="w-4 h-4 rotate-180" aria-hidden="true" />
             </button>
             <div>
               <h2 className={cn('text-[16px] font-bold tracking-tight leading-tight', textColor)}>Deal Detail</h2>
@@ -3736,14 +3736,14 @@ const BrandMobileDashboard = ({
 	                              type="button"
 	                              disabled={isPushBusy || pushPermission === 'denied' || isIOSNeedsInstall}
 	                              onClick={handleEnablePush}
-	                              className={primaryButtonClass}
+	                              className={cn('flex-1 h-10 px-4 text-[12px] font-semibold rounded-xl', isDark ? 'bg-primary text-foreground hover:bg-primary/90' : 'bg-primary text-foreground hover:bg-primary/90')}
 	                            >
 	                              Enable
 	                            </button>
 	                            <button
 	                              type="button"
 	                              onClick={() => dismissPushPromptPersisted()}
-	                              className={secondaryButtonClass}
+	                              className={cn('h-10 px-4 text-[12px] font-semibold rounded-xl border', isDark ? 'bg-secondary/60 border-border/40 text-foreground hover:bg-secondary/80' : 'bg-white text-foreground border-border hover:bg-secondary/60')}
 	                            >
 	                              Later
 	                            </button>
@@ -4012,12 +4012,23 @@ const BrandMobileDashboard = ({
 	                            </div>
 	                            {visibleCollabItems.length === 0 ? (
 	                              <div className="p-8 text-center">
-	                                <p className={cn('text-[12px] font-bold opacity-50', textColor)}>
-	                                  {activeCollabTab === 'action_required'
-	                                    ? 'All caught up! Send an offer to get started.'
-	                                    : activeCollabTab === 'active'
-	                                      ? 'No active collabs — complete a deal first'
-	                                      : 'No completed collabs yet — finish an active deal'}
+                                <p className={cn('text-[13px] font-semibold', isDark ? 'text-foreground/75' : 'text-muted-foreground')}>
+                                  {activeCollabTab === 'action_required'
+                                    ? 'All caught up! No pending offers right now.'
+                                    : activeCollabTab === 'active'
+                                      ? 'No active deals yet — finish a pending offer'
+                                      : 'No completed deals yet — check back on active ones'}
+                                </p>
+                                {activeCollabTab === 'active' && (
+                                  <Button type="button" onClick={() => setActiveTab('collabs', 'action_required')} className={cn('mt-4 rounded-2xl', isDark ? 'bg-primary hover:bg-primary text-foreground' : 'bg-primary hover:bg-primary text-foreground')}>
+                                    <Send className="w-4 h-4 mr-2" /> Review pending offers
+                                  </Button>
+                                )}
+                                {activeCollabTab === 'completed' && (
+                                  <Button type="button" onClick={() => setActiveTab('creators')} className={cn('mt-4 rounded-2xl', isDark ? 'bg-primary hover:bg-primary text-foreground' : 'bg-primary hover:bg-primary text-foreground')}>
+                                    <Send className="w-4 h-4 mr-2" /> Find creators
+                                  </Button>
+                                )}
 	                                </p>
 	                                {activeCollabTab === 'action_required' && (
                                   <Button type="button" onClick={() => openCreateOfferSheet()} className={cn('mt-4 rounded-2xl', isDark ? 'bg-primary hover:bg-primary text-foreground' : 'bg-primary hover:bg-primary text-foreground')}>
@@ -4388,7 +4399,7 @@ const BrandMobileDashboard = ({
                         <Handshake className={cn('w-4 h-4 mb-2', secondaryTextColor)} />
                         <span className={cn('text-[11px] font-bold', textColor)}>Collabs</span>
                       </button>
-                      <button type="button" onClick={() => { triggerHaptic(HapticPatterns.light); toast.message('Payments', { description: 'Invoices, GST, UPI payouts — coming soon.' }); }} className={cn('flex flex-col items-center justify-center py-4 rounded-[1.5rem] border transition-all active:scale-[0.97]', isDark ? 'bg-card border-border hover:bg-secondary/50' : 'bg-background border-border hover:bg-background shadow-sm')}>
+                      <button type="button" onClick={() => { triggerHaptic(HapticPatterns.light); toast.info('Payments', { description: 'Invoices, GST, UPI payouts — coming soon.' }); }} className={cn('flex flex-col items-center justify-center py-4 rounded-[1.5rem] border transition-all active:scale-[0.97]', isDark ? 'bg-card border-border hover:bg-secondary/50' : 'bg-background border-border hover:bg-background shadow-sm')}>
                         <CreditCard className={cn('w-4 h-4 mb-2', secondaryTextColor)} />
                         <span className={cn('text-[11px] font-bold', textColor)}>Payments</span>
                       </button>
@@ -5020,8 +5031,8 @@ const BrandMobileDashboard = ({
                             Protected by Creator Armour
                           </span>
                           {!hasUploadedBrandLogo && (
-                            <span className={cn('inline-flex items-center px-3 py-1.5 rounded-full border text-[10px] font-black uppercase tracking-widest', isDark ? 'border-warning/25 bg-warning/10 text-warning' : 'border-warning bg-warning text-warning')}>
-                              Logo required
+                            <span className={cn('inline-flex items-center px-3 py-1.5 rounded-full border text-[10px] font-black uppercase tracking-widest', isDark ? 'border-warning/30 bg-warning/15 text-warning' : 'bg-amber-50 border-amber-200 text-amber-700')}>
+                              ⚠️ Logo required
                             </span>
                           )}
                         </div>
@@ -5029,7 +5040,7 @@ const BrandMobileDashboard = ({
                     </div>
 
                     {!hasUploadedBrandLogo && (
-                      <div className={cn('relative mt-4 p-3 rounded-2xl border flex items-center justify-between gap-3', isDark ? 'bg-warning/10 border-warning/20' : 'bg-warning/70 border-warning')}>
+                      <div className={cn('relative mt-4 p-3 rounded-2xl border flex items-center justify-between gap-3', isDark ? 'bg-warning/10 border-warning/20' : 'bg-amber-50 border-amber-200')}>
                         <div className="min-w-0">
                           <p className={cn('text-[12px] font-bold', textColor)}>Upload your logo to send offers</p>
                           <p className={cn('text-[11px] mt-0.5 opacity-70', textColor)}>Creators respond faster when they recognize you.</p>
@@ -5039,7 +5050,7 @@ const BrandMobileDashboard = ({
 	                          onClick={() => navigate('/brand-settings')}
 	                          className={cn('px-4 py-2 rounded-2xl text-[11px] font-black uppercase tracking-widest whitespace-nowrap', isDark ? 'bg-secondary/50 text-foreground hover:bg-secondary/15' : 'bg-card text-muted-foreground border border-warning')}
 	                        >
-                          Upload
+                          Upload logo
                         </button>
                       </div>
                     )}
@@ -5182,7 +5193,7 @@ const BrandMobileDashboard = ({
                     <p className={cn('text-[12px] opacity-60 mt-1', textColor)}>Search and shortlist profiles</p>
                   </button>
 
-                  <button type="button" onClick={() => { setShowActionSheet(false); toast.message('Import creator profile', { description: 'Coming soon.' }); }} className={cn('p-4 rounded-2xl border text-left transition-all active:scale-[0.99]', isDark ? 'bg-card border-border hover:bg-secondary/50' : 'bg-background border-border hover:bg-background')}>
+                  <button type="button" onClick={() => { setShowActionSheet(false); toast.info('Import creator profile', { description: 'Coming soon.' }); }} className={cn('p-4 rounded-2xl border text-left transition-all active:scale-[0.99]', isDark ? 'bg-card border-border hover:bg-secondary/50' : 'bg-background border-border hover:bg-background')}>
                     <p className={cn('text-[13px] font-bold', textColor)}>Import creator profile</p>
                     <p className={cn('text-[12px] opacity-60 mt-1', textColor)}>Paste a link to add quickly</p>
                   </button>

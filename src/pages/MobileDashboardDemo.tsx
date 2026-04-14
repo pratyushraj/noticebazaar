@@ -3172,9 +3172,9 @@ const MobileDashboardDemo = ({
                                                     : "bg-primary from-emerald-600 via-teal-500 to-blue-700"
                                             )}
                                         >
-                                            {/* Decorative elements */}
-                                            <div className="absolute -top-10 -right-10 w-32 h-32 bg-secondary/50 rounded-full blur-3xl" />
-                                            <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-info/20 rounded-full blur-3xl home-card-glow" />
+                                            {/* Decorative elements — modern subtle gradient border effect */}
+                                            <div className="absolute inset-0 rounded-[28px] bg-gradient-to-br from-emerald-400/10 via-transparent to-blue-500/10" />
+                                            <div className="absolute inset-[1px] rounded-[27px] bg-card" />
 
                                             <div className="relative z-10">
                                                 <div className="flex items-center justify-between text-foreground/90 mb-3">

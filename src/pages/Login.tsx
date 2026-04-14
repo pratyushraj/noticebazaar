@@ -220,21 +220,21 @@ const Login = () => {
         {/* Branding */}
         <div className="flex items-center gap-3 mb-10">
           <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center shadow-lg shadow-emerald-600/25">
-            <ShieldCheck className="h-5 w-5 text-foreground" />
+            <ShieldCheck className="h-5 w-5 text-foreground" aria-hidden="true" />
           </div>
           <h1 className="text-xl font-black tracking-tight text-foreground">Creator Armour</h1>
         </div>
 
         {/* Title and Subtitle */}
         <div className="mb-10">
-          <h2 className="text-4xl font-black text-foreground mb-3 tracking-tight">Sign In</h2>
-          <p className="text-muted-foreground text-[15px] font-medium leading-relaxed">Sign in to see your brand offers and active deals.</p>
+          <h2 className="text-4xl font-black text-foreground mb-3 tracking-tight text-balance">Sign In</h2>
+          <p className="text-muted-foreground text-[15px] font-medium leading-relaxed text-pretty">Sign in to see your brand offers and active deals.</p>
         </div>
 
         {/* Loading: wait for session (with timeout so user isn't stuck) */}
         {loading && !loadingTimedOut && !session && (
           <div className="mb-6 flex flex-col items-center justify-center py-10 gap-4">
-            <Loader2 className="h-10 w-10 animate-spin text-primary" aria-hidden />
+            <Loader2 className="h-10 w-10 animate-spin text-primary" aria-hidden="true" />
             <p className="text-muted-foreground text-sm font-bold tracking-widest uppercase">Checking your sign-in...</p>
           </div>
         )}
@@ -337,7 +337,7 @@ const Login = () => {
                 <span className="w-full border-t border-border" />
               </div>
               <div className="relative flex justify-center text-[10px] font-black uppercase tracking-[0.2em]">
-                <span className="bg-[#0B0F14] px-4 text-muted-foreground">Or continue with</span>
+                <span className="bg-[#0B0F14] px-4 text-foreground/50">Or continue with</span>
               </div>
             </div>
             <div className="space-y-3">
@@ -384,15 +384,15 @@ const Login = () => {
         {(!loading || loadingTimedOut) && !session && (
           <div className="text-center">
             <Link to="/signup" className="text-muted-foreground hover:text-foreground transition-all text-[13px] font-medium group inline-flex items-center gap-2">
-              Don't have an account? <span className="text-primary font-bold group-hover:underline">Create your creator link</span>
+              Don't have a brand account? <span className="text-primary font-bold group-hover:underline">Create a brand account →</span>
             </Link>
           </div>
         )}
 
         {/* Back to Homepage */}
         <div className="mt-8 pt-6 border-t border-border">
-          <Link to="/" className="flex items-center justify-center gap-2 text-muted-foreground hover:text-muted-foreground transition-all text-[12px] font-black uppercase tracking-widest">
-            <ArrowLeft className="h-4 w-4" /> Exit To Homepage
+          <Link to="/" className="flex items-center justify-center gap-2 text-foreground/50 hover:text-foreground/70 transition-all text-[12px] font-black uppercase tracking-widest">
+            <ArrowLeft className="h-4 w-4" aria-hidden="true" /> Exit To Homepage
           </Link>
         </div>
       </div>
