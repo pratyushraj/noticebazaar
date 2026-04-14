@@ -2736,11 +2736,7 @@ const MobileDashboardDemo = ({
                                     <div className="flex items-center gap-1.5 font-semibold text-[16px] tracking-tight">
                                         <ShieldCheck className={cn("w-4 h-4", isDark ? "text-foreground" : "text-muted-foreground")} />
                                         <span className={textColor}>CreatorArmour</span>
-                                        {healthStatus !== 'connected' && (
-                                            <span className="text-[10px] text-muted-foreground/50 font-medium">
-                                                {healthStatus === 'checking' ? '· connecting' : '· offline'}
-                                            </span>
-                                        )}
+
                                     </div>
 
                                     {/* Right: Actions & Avatar */}
