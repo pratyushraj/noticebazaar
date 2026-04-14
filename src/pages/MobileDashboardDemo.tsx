@@ -4733,35 +4733,37 @@ const MobileDashboardDemo = ({
                                                         ? (isDark ? "bg-secondary/50 text-foreground/80 border-border" : "bg-background/5 text-muted-foreground border-border")
                                                         : (isDark ? "bg-info/14 text-info border-sky-400/25" : "bg-info/10 text-info border-sky-500/15");
 
-                                            <motion.div
-                                                key={idx}
-                                                initial={{ opacity: 0, y: 10 }}
-                                                animate={{ opacity: 1, y: 0 }}
-                                                transition={{ delay: idx * 0.05 }}
-                                                onClick={() => { triggerHaptic(); setSelectedPayment(deal); }}
-                                                className={cn("p-5 rounded-2xl border flex items-center justify-between group active:scale-[0.98] transition-all cursor-pointer", cardBgColor, borderColor)}
-                                            >
-                                                <div className="flex items-center gap-4">
-                                                    <div className={cn("w-10 h-10 rounded-xl border overflow-hidden flex items-center justify-center text-lg font-black", borderColor, isDark ? "bg-card" : "bg-background")}>
-                                                        {getBrandIcon(deal.brand_logo_url || deal.logo_url, deal.category, deal.brand_name)}
-                                                    </div>
-                                                    <div>
-                                                        <p className={cn("font-bold text-[15px]", textColor)}>{deal.brand_name || 'Brand Partner'}</p>
-                                                        <div className="mt-1 flex items-center gap-2 min-w-0">
-                                                            <span className={cn("inline-flex px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-widest border", badgeClass)}>
-                                                                {payUx.label}
-                                                            </span>
-                                                            <span className={cn("text-[11px] font-semibold opacity-60 truncate", textColor)}>{payUx.sublabel}</span>
+                                            return (
+                                                <motion.div
+                                                    key={idx}
+                                                    initial={{ opacity: 0, y: 10 }}
+                                                    animate={{ opacity: 1, y: 0 }}
+                                                    transition={{ delay: idx * 0.05 }}
+                                                    onClick={() => { triggerHaptic(); setSelectedPayment(deal); }}
+                                                    className={cn("p-5 rounded-2xl border flex items-center justify-between group active:scale-[0.98] transition-all cursor-pointer", cardBgColor, borderColor)}
+                                                >
+                                                    <div className="flex items-center gap-4">
+                                                        <div className={cn("w-10 h-10 rounded-xl border overflow-hidden flex items-center justify-center text-lg font-black", borderColor, isDark ? "bg-card" : "bg-background")}>
+                                                            {getBrandIcon(deal.brand_logo_url || deal.logo_url, deal.category, deal.brand_name)}
+                                                        </div>
+                                                        <div>
+                                                            <p className={cn("font-bold text-[15px]", textColor)}>{deal.brand_name || 'Brand Partner'}</p>
+                                                            <div className="mt-1 flex items-center gap-2 min-w-0">
+                                                                <span className={cn("inline-flex px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-widest border", badgeClass)}>
+                                                                    {payUx.label}
+                                                                </span>
+                                                                <span className={cn("text-[11px] font-semibold opacity-60 truncate", textColor)}>{payUx.sublabel}</span>
+                                                            </div>
                                                         </div>
                                                     </div>
-                                                </div>
-                                                <div className="flex items-center gap-2">
-                                                    <div className="text-right">
-                                                        <p className={cn("font-black text-[16px] font-outfit", textColor)}>₹{(deal.deal_amount || 0).toLocaleString()}</p>
+                                                    <div className="flex items-center gap-2">
+                                                        <div className="text-right">
+                                                            <p className={cn("font-black text-[16px] font-outfit", textColor)}>₹{(deal.deal_amount || 0).toLocaleString()}</p>
+                                                        </div>
+                                                        <ChevronRight className={cn("w-4 h-4 opacity-30", textColor)} />
                                                     </div>
-                                                    <ChevronRight className={cn("w-4 h-4 opacity-30", textColor)} />
-                                                </div>
-                                            </motion.div>
+                                                </motion.div>
+                                            );
                                         })()
                                     ))
                                 ) : (
