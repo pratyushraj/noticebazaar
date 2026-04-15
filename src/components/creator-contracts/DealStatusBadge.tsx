@@ -15,10 +15,12 @@ interface DealStatusBadgeProps {
   /** Optional: show helper text below badge (e.g. on deal cards) */
   showHelperText?: boolean;
   dealType?: 'paid' | 'barter' | null;
+  /** Payment received date — when set, overrides stage with PAID badge */
+  paymentReceivedDate?: string | null;
 }
 
-const DealStatusBadge: React.FC<DealStatusBadgeProps> = ({ stage, className, showHelperText, dealType }) => {
-  const config = getStageDisplay(stage);
+const DealStatusBadge: React.FC<DealStatusBadgeProps> = ({ stage, className, showHelperText, dealType, paymentReceivedDate }) => {
+  const config = getStageDisplay(stage, paymentReceivedDate);
   const badge = (
     <Badge
       variant="outline"

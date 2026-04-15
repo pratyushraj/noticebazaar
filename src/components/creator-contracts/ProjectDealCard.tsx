@@ -206,7 +206,7 @@ const ProjectDealCard: React.FC<ProjectDealCardProps> = ({
             </div>
           </div>
           <div className="flex flex-col items-end gap-2 flex-shrink-0">
-            <DealStatusBadge stage={stage} />
+            <DealStatusBadge stage={stage} paymentReceivedDate={deal.payment_received_date} />
           </div>
         </div>
 

@@ -144,7 +144,9 @@ export function getStageHelperText(
   return config.helperText;
 }
 
-export function getStageDisplay(stage: DealStageKey | string): StageDisplayConfig {
+export function getStageDisplay(stage: DealStageKey | string, paymentReceivedDate?: string | null): StageDisplayConfig {
+  // Payment received overrides any stage — show PAID badge
+  if (paymentReceivedDate) return PAYMENT_SECURED_DISPLAY;
   return DEAL_STAGE_DISPLAY[stage as DealStageKey] ?? {
     label: String(stage),
     shortLabel: String(stage),

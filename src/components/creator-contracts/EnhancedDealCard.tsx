@@ -212,7 +212,7 @@ const EnhancedDealCard: React.FC<EnhancedDealCardProps> = ({
             </div>
 
             <div className="flex items-center gap-2 flex-shrink-0">
-              <DealStatusBadge stage={stage} />
+              <DealStatusBadge stage={stage} paymentReceivedDate={deal.payment_received_date} />
               {urgency && (
                 <Badge 
                   variant="outline"
@@ -641,7 +641,7 @@ const EnhancedDealCard: React.FC<EnhancedDealCardProps> = ({
             </div>
           </div>
           <div className="flex items-center gap-2 flex-shrink-0">
-            <DealStatusBadge stage={stage} />
+            <DealStatusBadge stage={stage} paymentReceivedDate={deal.payment_received_date} />
             {urgency && (
               <Badge 
                 variant={isOverdue ? 'destructive' : 'secondary'}

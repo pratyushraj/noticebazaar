@@ -81,7 +81,7 @@ const DealCard: React.FC<DealCardProps> = ({
           </h3>
         </div>
         <div className="flex items-center gap-2 flex-shrink-0">
-          <DealStatusBadge stage={stage} />
+          <DealStatusBadge stage={stage} paymentReceivedDate={deal.payment_received_date} />
           <div onClick={(e) => e.stopPropagation()}>
             <DealActionsMenu
               deal={deal}
