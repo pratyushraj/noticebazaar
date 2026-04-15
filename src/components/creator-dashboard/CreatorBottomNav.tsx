@@ -43,7 +43,7 @@ const CreatorBottomNav = () => {
       }}
     >
       <nav
-        className="flex justify-around items-center h-16"
+        className="flex justify-around items-center h-[70px] min-h-[70px]"
         role="navigation"
         aria-label="Bottom navigation"
       >
@@ -58,8 +58,8 @@ const CreatorBottomNav = () => {
               onClick={(e) => handleClick(e, item.to)}
               className={cn(
                 "flex flex-col items-center justify-center gap-1 w-full h-full",
-                "text-[10px] font-medium transition-colors duration-150",
-                "min-w-[60px] min-h-[56px]",
+                "text-[11px] font-medium transition-colors duration-150",
+                "min-w-[68px] min-h-[60px] px-1",
                 "focus-visible:outline-none focus-visible:bg-secondary rounded-lg",
                 active ? "text-primary" : "text-muted-foreground"
               )}
