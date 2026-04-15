@@ -202,7 +202,7 @@ const EnhancedDealCard: React.FC<EnhancedDealCardProps> = ({
                     {deal.platform || 'Campaign'}
                   </span>
                   {stage === 'completed' && (
-                    <Badge className="bg-green-500/20 text-green-500 border-green-500/30 text-xs">
+                    <Badge className="bg-green-500/20 text-green-600 border-green-500/30 text-xs">
                       <CheckCircle className="w-3 h-3 mr-1" />
                       Success
                     </Badge>
@@ -284,10 +284,10 @@ const EnhancedDealCard: React.FC<EnhancedDealCardProps> = ({
                   : Clock;
                 
                 const iconColor = deliverable.status === 'delivered'
-                  ? 'text-green-500'
+                  ? 'text-green-600'
                   : deliverable.status === 'overdue'
                   ? 'text-destructive'
-                  : 'text-yellow-500';
+                  : 'text-yellow-600';
 
                 return (
                   <motion.div 
@@ -695,10 +695,10 @@ const EnhancedDealCard: React.FC<EnhancedDealCardProps> = ({
                 : Clock;
               
               const iconColor = deliverable.status === 'delivered'
-                ? 'text-green-500'
+                ? 'text-green-600'
                 : deliverable.status === 'overdue'
                 ? 'text-destructive'
-                : 'text-yellow-500';
+                : 'text-yellow-600';
 
               return (
                 <div key={index} className="flex items-center gap-2 text-sm">

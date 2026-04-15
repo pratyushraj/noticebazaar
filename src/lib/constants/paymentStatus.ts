@@ -20,25 +20,25 @@ export const PAYMENT_STATUS_CONFIG: Record<PaymentStatus, {
   pending: {
     label: 'Pending',
     shortLabel: 'Pending',
-    colorClass: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
+    colorClass: 'bg-yellow-500/20 text-yellow-600 border-yellow-500/40',
     icon: 'clock',
   },
   upcoming: {
     label: 'Due Soon',
     shortLabel: 'Soon',
-    colorClass: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
+    colorClass: 'bg-blue-500/20 text-blue-600 border-blue-500/40',
     icon: 'calendar',
   },
   overdue: {
     label: 'Overdue',
     shortLabel: 'Overdue',
-    colorClass: 'bg-destructive/20 text-destructive border-destructive/30',
+    colorClass: 'bg-red-500/20 text-red-600 border-red-500/40',
     icon: 'alert',
   },
   paid: {
     label: 'Paid',
     shortLabel: 'Paid',
-    colorClass: 'bg-green-500/20 text-green-400 border-green-500/30',
+    colorClass: 'bg-green-500/20 text-green-600 border-green-500/40',
     icon: 'check',
   },
 };

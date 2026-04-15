@@ -75,7 +75,7 @@ const EnhancedPaymentCard: React.FC<EnhancedPaymentCardProps> = ({
 
   const statusColor = {
     overdue: 'text-destructive',
-    pending: 'text-yellow-400',
+    pending: 'text-yellow-600',
     upcoming: 'text-primary',
     paid: 'text-primary',
   }[status];

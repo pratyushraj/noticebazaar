@@ -43,13 +43,13 @@ export const TimelineItem = ({ icon, label, date, highlight = false }: TimelineI
           highlight ? 'bg-green-500/30' : 'bg-secondary/50'
         )}
       >
-        <Icon className={cn('w-5 h-5', highlight ? 'text-green-400' : 'text-foreground/60')} />
+        <Icon className={cn('w-5 h-5', highlight ? 'text-green-600' : 'text-foreground/60')} />
       </div>
       <div className="flex-1 min-w-0">
-        <div className={cn('font-semibold mb-1', highlight ? 'text-green-300' : 'text-foreground')}>
+        <div className={cn('font-semibold mb-1', highlight ? 'text-green-700' : 'text-foreground')}>
           {label}
         </div>
-        <div className={cn('text-sm', highlight ? 'text-green-400/80' : 'text-foreground/60')}>
+        <div className={cn('text-sm', highlight ? 'text-green-600/80' : 'text-foreground/60')}>
           {formattedDate}
         </div>
       </div>
