@@ -6333,15 +6333,15 @@ const MobileDashboardDemo = ({
                                     "rounded-2xl border p-5 relative overflow-hidden",
                                     isPaid
                                         ? (isDark ? "bg-primary/5 border-primary/25" : "bg-primary border-primary")
-                                        : (isDark ? "bg-destructive/5 border-destructive/25" : "bg-red-100 border-red-400")
+                                        : (isDark ? "bg-destructive/5 border-destructive/25" : "bg-red-500 border-red-600")
                                 )}>
                                     <div className="absolute inset-y-0 left-0 w-1 rounded-r-full" style={{ background: isPaid ? '#10b981' : '#ef4444' }} />
                                     <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent pointer-events-none" />
                                     <div className="relative">
-                                        <p className={cn("text-[10px] font-black uppercase tracking-widest mb-1", isPaid ? (isDark ? "text-primary/70" : "text-primary") : (isDark ? "text-destructive/70" : "text-red-600"))}>
+                                        <p className={cn("text-[10px] font-black uppercase tracking-widest mb-1", isPaid ? (isDark ? "text-primary/70" : "text-white") : (isDark ? "text-destructive/70" : "text-white"))}>
                                             Payment Status
                                         </p>
-                                        <p className={cn("text-[22px] font-black leading-tight mb-0.5", isPaid ? (isDark ? "text-primary" : "text-primary") : (isDark ? "text-destructive" : "text-red-600"))}>
+                                        <p className={cn("text-[22px] font-black leading-tight mb-0.5", isPaid ? (isDark ? "text-primary" : "text-white") : (isDark ? "text-destructive" : "text-white"))}>
                                             {isPaid ? 'RECEIVED' : (daysPast > 0 ? 'OVERDUE' : 'PENDING')}
                                         </p>
                                         <p className={cn("text-3xl font-black font-outfit mb-3", isDark ? textColor : "text-black")}>{renderBudgetValue(pay)}</p>
@@ -6349,8 +6349,8 @@ const MobileDashboardDemo = ({
                                             <p className={cn("text-[12px] font-semibold", secondaryTextColor)}>Paid on {dueDateStr}</p>
                                         ) : (
                                             <div className="space-y-1">
-                                                <p className={cn("text-[12px] font-semibold", secondaryTextColor)}>Due on: {dueDateStr}</p>
-                                                {daysPast > 0 && <p className="text-[11px] font-black text-destructive">{daysPast} day{daysPast > 1 ? 's' : ''} past due</p>}
+                                                <p className={cn("text-[12px] font-semibold", isDark ? secondaryTextColor : "text-white")}>Due on: {dueDateStr}</p>
+                                                {daysPast > 0 && <p className="text-[11px] font-black text-white">{daysPast} day{daysPast > 1 ? 's' : ''} past due</p>}
                                             </div>
                                         )}
                                     </div>
