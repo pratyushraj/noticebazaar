@@ -13,33 +13,41 @@ export function useSessionTimeout() {
 
   useEffect(() => {
     const check = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.expires_at) return;
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session?.expires_at) return;
 
-      const expiresAt = session.expires_at * 1000; // seconds → ms
-      const msUntilExpiry = expiresAt - Date.now();
+        const expiresAt = session.expires_at * 1000; // seconds → ms
+        const msUntilExpiry = expiresAt - Date.now();
 
-      if (msUntilExpiry <= 0) {
-        // Already expired
-        toast.error('Session expired', { description: 'Please sign in again.' });
-        return;
-      }
+        if (msUntilExpiry <= 0) {
+          // Already expired
+          toast.error('Session expired', { description: 'Please sign in again.' });
+          return;
+        }
 
-      if (msUntilExpiry <= WARNING_BEFORE_MS) {
-        toast.warning('Session expiring soon', {
-          description: 'Your session expires in a few minutes. Refresh to stay signed in.',
-          action: {
-            label: 'Refresh',
-            onClick: async () => {
-              await supabase.auth.refreshSession();
-              toast.success('Session refreshed');
+        if (msUntilExpiry <= WARNING_BEFORE_MS) {
+          toast.warning('Session expiring soon', {
+            description: 'Your session expires in a few minutes. Refresh to stay signed in.',
+            action: {
+              label: 'Refresh',
+              onClick: async () => {
+                try {
+                  await supabase.auth.refreshSession();
+                  toast.success('Session refreshed');
+                } catch (refreshErr) {
+                  toast.error('Failed to refresh session');
+                }
+              },
             },
-          },
-          duration: 30000,
-        });
-      } else {
-        // Schedule warning
-        timerRef.current = setTimeout(check, msUntilExpiry - WARNING_BEFORE_MS);
+            duration: 30000,
+          });
+        } else {
+          // Schedule warning
+          timerRef.current = setTimeout(check, msUntilExpiry - WARNING_BEFORE_MS);
+        }
+      } catch (err) {
+        console.error('[useSessionTimeout] Error checking session:', err);
       }
     };
 

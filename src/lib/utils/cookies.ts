@@ -1,3 +1,9 @@
+/**
+ * Set a cookie with expiration date.
+ * @param name - Cookie name
+ * @param value - Cookie value
+ * @param days - Number of days until expiration
+ */
 export const setCookie = (name: string, value: string, days: number) => {
   const date = new Date();
   date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
@@ -5,6 +11,11 @@ export const setCookie = (name: string, value: string, days: number) => {
   document.cookie = name + "=" + (value || "") + expires + "; path=/";
 };
 
+/**
+ * Get a cookie value by name.
+ * @param name - Cookie name
+ * @returns Cookie value or null if not found
+ */
 export const getCookie = (name: string): string | null => {
   const nameEQ = name + "=";
   const ca = document.cookie.split(';');

@@ -33,10 +33,13 @@ export const useNetworkStatus = (): NetworkStatus => {
     const handleOnline = () => {
       setIsOnline(getEffectiveOnlineState());
       setLastOnlineTime(new Date());
-      if (wasOffline) {
-        // Connection restored
-        setWasOffline(false);
-      }
+      setWasOffline((prev) => {
+        if (prev) {
+          // Connection restored after being offline
+          return false;
+        }
+        return prev;
+      });
     };
 
     const handleOffline = () => {
@@ -56,7 +59,7 @@ export const useNetworkStatus = (): NetworkStatus => {
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
     };
-  }, [isLocalhost, wasOffline]);
+  }, [isLocalhost]);
 
   return {
     isOnline,

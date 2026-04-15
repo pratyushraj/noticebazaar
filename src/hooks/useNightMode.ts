@@ -35,13 +35,13 @@ export const useNightMode = () => {
         localStorage.setItem('night_mode_count', newCount.toString());
         localStorage.setItem('last_night_count_date', today);
 
-        if (newCount >= 10 && !hasNightOwlBadge) {
+        if (newCount >= 10) {
           setHasNightOwlBadge(true);
           localStorage.setItem('night_owl_badge', 'true');
         }
       }
     }
-  }, [hasNightOwlBadge]);
+  }, []);
 
   return { nightCount, hasNightOwlBadge };
 };

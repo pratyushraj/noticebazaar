@@ -3,7 +3,7 @@
  */
 
 export type IssueStatus = 'pending' | 'under_review' | 'resolved';
-export type IssueCategory = 
+export type IssueCategory =
   | 'payment_delay'
   | 'contract_mismatch'
   | 'deliverables_dispute'

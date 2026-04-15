@@ -29,7 +29,7 @@ export function useKeyboardShortcuts(shortcuts: KeyboardShortcut[]) {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [shortcuts]);
+  }, [shortcuts, navigate]);
 }
 
 // Common keyboard shortcuts for dashboard

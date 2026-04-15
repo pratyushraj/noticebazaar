@@ -160,6 +160,8 @@ const ProjectDealCard: React.FC<ProjectDealCardProps> = ({
   };
 
   const primaryAction = getPrimaryAction();
+  // Extract icon to avoid dynamic JSX element type issue
+  const ActionIcon = primaryAction?.icon;
   const [showMoodBoard, setShowMoodBoard] = useState(false);
   const category = categorizeDeal(deal.brand_name);
   const categoryStyle = getCategoryStyle(category);
@@ -269,11 +271,11 @@ const ProjectDealCard: React.FC<ProjectDealCardProps> = ({
               className="w-full min-h-[48px] text-base font-semibold rounded-2xl"
               onClick={primaryAction.onClick}
             >
-              <primaryAction.icon className="w-5 h-5 mr-2" />
+              {ActionIcon && <ActionIcon className="w-5 h-5 mr-2" />}
               {primaryAction.label}
             </Button>
           </div>
-        )
+        )}
       </Card>
     </motion.div>
     <BrandMoodBoard

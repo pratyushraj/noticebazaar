@@ -68,11 +68,15 @@ export function useRealtimePresence(conversationId: string | null, userId: strin
       })
       .subscribe(async (status) => {
         if (status === 'SUBSCRIBED') {
-          await channel.track({
-            user_id: userId,
-            status: 'online',
-            last_seen_at: new Date().toISOString()
-          });
+          try {
+            await channel.track({
+              user_id: userId,
+              status: 'online',
+              last_seen_at: new Date().toISOString()
+            });
+          } catch (err) {
+            console.error('[useRealtimePresence] Failed to track presence:', err);
+          }
         }
       });
 

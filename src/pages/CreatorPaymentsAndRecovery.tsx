@@ -698,7 +698,7 @@ const CreatorPaymentsAndRecovery = () => {
               <div className="space-y-3 text-center max-w-sm mx-auto">
                 <p className="text-base font-semibold text-foreground">No pending transactions</p>
                 <p className="text-sm text-foreground/60">You&apos;re all caught up on payments!</p>
-                <button type="button"
+                <button
                   type="button"
                   onClick={() => {
                     triggerHaptic(HapticPatterns.light);
@@ -713,7 +713,7 @@ const CreatorPaymentsAndRecovery = () => {
               <div className="space-y-3 text-center max-w-sm mx-auto">
                 <p className="text-base font-semibold text-foreground">No paid transactions yet</p>
                 <p className="text-sm text-foreground/60">Completed payments will show here.</p>
-                <button type="button"
+                <button
                   type="button"
                   onClick={() => {
                     triggerHaptic(HapticPatterns.light);

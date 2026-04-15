@@ -1,18 +1,4 @@
-// Simple relative time formatter (replaces date-fns to avoid new dependency)
-const formatDistanceToNow = (date: Date): string => {
-    const now = new Date();
-    const diffMs = now.getTime() - date.getTime();
-    const diffSecs = Math.floor(diffMs / 1000);
-    const diffMins = Math.floor(diffSecs / 60);
-    const diffHours = Math.floor(diffMins / 60);
-    const diffDays = Math.floor(diffHours / 24);
-
-    if (diffDays > 30) return `${Math.floor(diffDays / 30)} month${Math.floor(diffDays / 30) > 1 ? 's' : ''} ago`;
-    if (diffDays > 0) return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
-    if (diffHours > 0) return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
-    if (diffMins > 0) return `${diffMins} minute${diffMins > 1 ? 's' : ''} ago`;
-    return 'just now';
-};
+import { formatDistanceToNow } from './date';
 
 // Transform brand deals data into dashboard stats
 export const calculateDashboardStats = (brandDeals: any[]) => {

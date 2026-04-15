@@ -147,14 +147,12 @@ const ProtectedRoute = ({ children, allowedRoles, requiredRole }: ProtectedRoute
 
     setIsCreatingProfile(true);
     let attempt = 0;
-    const requestedRole = inferRequestedRole(location.pathname, allowedRoles, (user.user_metadata || {}) as Record<string, unknown>);
-    const metadataRole = typeof user.user_metadata?.role === 'string'
-      ? user.user_metadata.role
-      : typeof user.user_metadata?.account_mode === 'string'
-        ? user.user_metadata.account_mode
-        : null;
+    // Capture userId to avoid stale closure in setTimeout
+    const userId = user.id;
+    // Use the already-computed requestedRole from component level
+    const requestedRoleToUse = inferRequestedRole(location.pathname, allowedRoles, (user.user_metadata || {}) as Record<string, unknown>);
 
-    if (requestedRole === 'brand') {
+    if (requestedRoleToUse === 'brand') {
       refetchProfile?.();
       setIsCreatingProfile(false);
       return;
@@ -162,7 +160,7 @@ const ProtectedRoute = ({ children, allowedRoles, requiredRole }: ProtectedRoute
 
     const tryGetProfile = async () => {
       if (attempt >= MAX_PROFILE_RETRIES) {
-        await createProfileFallback(user.id, requestedRole);
+        await createProfileFallback(userId, requestedRoleToUse);
         refetchProfile?.();
         setIsCreatingProfile(false);
         return;
@@ -170,7 +168,7 @@ const ProtectedRoute = ({ children, allowedRoles, requiredRole }: ProtectedRoute
       refetchProfile?.();
       attempt++;
       setTimeout(async () => {
-        const { data } = await supabase.from('profiles').select('id').eq('id', user.id).single();
+        const { data } = await supabase.from('profiles').select('id').eq('id', userId).single();
         if (data) {
           refetchProfile?.();
           setIsCreatingProfile(false);
@@ -188,7 +186,6 @@ const ProtectedRoute = ({ children, allowedRoles, requiredRole }: ProtectedRoute
     if (authStatus === 'loading') return;
 
     const path = location.pathname;
-    const handle = (profile?.instagram_handle || profile?.username || '').replace(/^@/, '').trim();
     const userRole = profile?.role || 'creator';
 
     // Unauthenticated — redirect to login

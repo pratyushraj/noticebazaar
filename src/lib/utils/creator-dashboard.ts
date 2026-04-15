@@ -1,11 +1,21 @@
 import { DealStage, getDealStageFromStatus } from '@/lib/hooks/useBrandDeals';
 
+/**
+ * Normalize deal status to a consistent lowercase format with underscores.
+ * @param deal - The deal object containing status information
+ * @returns Normalized status string (e.g., 'in_progress', 'contract_ready')
+ */
 export const normalizeDealStatus = (deal: any) =>
     String(deal?.status ?? deal?.raw?.status ?? '')
         .trim()
         .toLowerCase()
         .replace(/[\s-]+/g, '_');
 
+/**
+ * Parse various date formats into a Date object.
+ * @param value - Date value in string or Date format
+ * @returns Parsed Date object or null if invalid
+ */
 export const parseDealDate = (value: any): Date | null => {
     if (!value) return null;
     if (value instanceof Date) return Number.isNaN(value.getTime()) ? null : value;
@@ -14,6 +24,11 @@ export const parseDealDate = (value: any): Date | null => {
     return Number.isNaN(dt.getTime()) ? null : dt;
 };
 
+/**
+ * Calculate days until a given date from today.
+ * @param date - The target date
+ * @returns Number of days until the date, or null if date is null
+ */
 export const getDaysUntil = (date: Date | null) => {
     if (!date) return null;
     const now = new Date();
@@ -22,6 +37,11 @@ export const getDaysUntil = (date: Date | null) => {
     return Math.round((end.getTime() - start.getTime()) / (24 * 60 * 60 * 1000));
 };
 
+/**
+ * Infer whether the creator requires payment for a deal.
+ * @param deal - The deal object
+ * @returns True if payment is required
+ */
 export const inferCreatorRequiresPayment = (deal: any) => {
     if (typeof deal?.requires_payment === 'boolean') return Boolean(deal.requires_payment);
     const kind = String(deal?.collab_type || deal?.deal_type || deal?.raw?.collab_type || '').trim().toLowerCase();
@@ -29,6 +49,11 @@ export const inferCreatorRequiresPayment = (deal: any) => {
     return kind === 'paid' || kind === 'both' || kind === 'hybrid' || kind === 'paid_barter' || (kind !== 'barter' && amount > 0);
 };
 
+/**
+ * Infer whether the creator requires shipping for a deal.
+ * @param deal - The deal object
+ * @returns True if shipping is required
+ */
 export const inferCreatorRequiresShipping = (deal: any) => {
     if (typeof deal?.requires_shipping === 'boolean') return Boolean(deal.requires_shipping);
     if (typeof deal?.shipping_required === 'boolean') return Boolean(deal.shipping_required);
@@ -36,6 +61,11 @@ export const inferCreatorRequiresShipping = (deal: any) => {
     return kind === 'barter' || kind === 'both' || kind === 'hybrid' || kind === 'paid_barter';
 };
 
+/**
+ * Get UX state for creator deal card UI.
+ * @param deal - The deal object
+ * @returns Object containing UI state (stagePill, cta, urgencyLevel, etc.)
+ */
 export const getCreatorDealCardUX = (deal: any) => {
     const rawStatus = normalizeDealStatus(deal);
 
@@ -143,6 +173,11 @@ export const getCreatorDealCardUX = (deal: any) => {
     };
 };
 
+/**
+ * Get UX state for creator payment list item.
+ * @param deal - The deal object
+ * @returns Object with label, sublabel, and tone for payment status display
+ */
 export const getCreatorPaymentListUX = (deal: any) => {
     const ux = getCreatorDealCardUX(deal);
     const rawStatus = ux.rawStatus;
@@ -161,6 +196,11 @@ export const getCreatorPaymentListUX = (deal: any) => {
     return { label: 'PENDING', sublabel: 'Released after approval', tone: 'info' as const };
 };
 
+/**
+ * Parse a location string into address, city, and pincode components.
+ * @param location - Raw location string (e.g., "123 Main St, Mumbai, 400001")
+ * @returns Object with address, city, and pincode
+ */
 export const parseLocationParts = (location?: string | null) => {
     const raw = (location || '').trim();
     if (!raw) return { address: '', city: '', pincode: '' };
@@ -183,6 +223,12 @@ export const parseLocationParts = (location?: string | null) => {
     return { address, city, pincode };
 };
 
+/**
+ * Resolve avatar URL with fallback to UI Avatars service.
+ * @param candidate - Raw avatar URL or identifier
+ * @param username - Fallback username for UI Avatars
+ * @returns Valid avatar URL
+ */
 export const resolveAvatarUrl = (candidate: any, username: string = 'creator') => {
     const raw = String(candidate || '').trim();
     const avatarFallbackUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(username)}&background=10B981&color=fff`;
@@ -192,6 +238,12 @@ export const resolveAvatarUrl = (candidate: any, username: string = 'creator') =
     return avatarFallbackUrl;
 };
 
+/**
+ * Build a normalized profile form data object from various profile sources.
+ * @param profile - Raw profile object from database
+ * @param userEmail - Optional user email override
+ * @returns Normalized profile form data
+ */
 export const buildProfileFormData = (profile: any, userEmail?: string | null) => {
     const fullName = `${profile?.first_name || ''} ${profile?.last_name || ''}`.trim() || profile?.full_name || '';
     const parsedLocation = parseLocationParts(profile?.location);
@@ -237,6 +289,11 @@ export const buildProfileFormData = (profile: any, userEmail?: string | null) =>
     };
 };
 
+/**
+ * Render budget value as formatted Indian currency string.
+ * @param item - Deal or item with budget information
+ * @returns Formatted budget string (e.g., "₹50,000+" or "Flexible Budget")
+ */
 export const renderBudgetValue = (item: any) => {
     const exact = Number(item?.deal_amount || item?.exact_budget);
     if (Number.isFinite(exact) && exact > 0) return `₹${exact.toLocaleString()}`;
