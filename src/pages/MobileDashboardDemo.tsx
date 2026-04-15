@@ -965,13 +965,13 @@ const MobileDashboardDemo = ({
     const completedDealsList = React.useMemo(() => {
         return (brandDeals || []).filter((d: any) => {
             const s = normalizeDealStatus(d);
-            return s.includes('completed') || s === 'paid';
+            return s.includes('completed') || s === 'paid' || Boolean(d.payment_received_date);
         });
     }, [brandDeals]);
     const activeDealsList = React.useMemo(() => {
         return (brandDeals || []).filter((d: any) => {
             const s = normalizeDealStatus(d);
-            return !(s.includes('completed') || s === 'paid');
+            return !(s.includes('completed') || s === 'paid' || Boolean(d.payment_received_date));
         });
     }, [brandDeals]);
     const actionRequiredDealsList = React.useMemo(() => {
