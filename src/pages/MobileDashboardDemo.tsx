@@ -2830,7 +2830,7 @@ const MobileDashboardDemo = ({
                                             <span className="text-[15px] font-medium text-foreground/60">Welcome back</span>
                                         ) : (
                                             <>
-                                                <h1 className={cn('text-[18px] font-semibold tracking-tight', textColor)}>
+                                                <h1 className={cn('text-[16px] font-medium tracking-tight', textColor)}>
                                                     {(() => {
                                                         const hour = new Date().getHours();
                                                         let name = (profile?.first_name || '').trim();
