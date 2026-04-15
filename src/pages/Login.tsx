@@ -283,7 +283,7 @@ const Login = () => {
                   placeholder="name@example.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="bg-background/85 border-border text-foreground placeholder:text-muted-foreground text-[16px] h-14 rounded-2xl focus:border-primary/50 focus:ring-emerald-500/20 px-5 transition-all"
+                  className="bg-background/85 border-border text-foreground placeholder:text-muted-foreground text-[16px] h-14 rounded-2xl focus:border-primary/50 focus:ring-primary/30 focus:ring-[3px] focus:outline-none px-5 transition-all"
                   required
                   autoComplete="email"
                 />
@@ -296,7 +296,8 @@ const Login = () => {
                   <button
                     type="button"
                     onClick={handleForgotPassword}
-                    className="text-[12px] font-bold text-primary/90 hover:text-primary transition-colors underline underline-offset-2"
+                    className="text-[13px] font-bold text-primary/90 hover:text-primary transition-colors min-h-[44px] px-3 py-2 -my-2 -mr-3 rounded-lg focus-visible:ring-2 focus-visible:ring-primary/50"
+                    aria-label="Reset forgotten password"
                   >
                     Forgot?
                   </button>
@@ -308,7 +309,7 @@ const Login = () => {
                     placeholder="••••••••"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="bg-background/85 border-border text-foreground placeholder:text-muted-foreground text-[16px] h-14 rounded-2xl focus:border-primary/50 focus:ring-emerald-500/20 pr-12 px-5 transition-all"
+                    className="bg-background/85 border-border text-foreground placeholder:text-muted-foreground text-[16px] h-14 rounded-2xl focus:border-primary/50 focus:ring-primary/30 focus:ring-[3px] focus:outline-none pr-12 px-5 transition-all"
                     required
                     autoComplete="current-password"
                   />
@@ -325,7 +326,7 @@ const Login = () => {
 	              <Button
 	                type="submit"
 	                disabled={isLoading || !email.trim() || !password.trim()}
-	                className="w-full bg-primary hover:bg-primary text-white font-black h-14 rounded-2xl shadow-xl shadow-emerald-500/30 transition-all active:scale-[0.98] uppercase tracking-widest text-xs mt-2"
+	                className="w-full bg-primary hover:bg-primary text-white font-black h-14 rounded-2xl shadow-xl shadow-emerald-500/30 transition-all active:scale-[0.98] uppercase tracking-widest text-xs mt-2 focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2 focus-visible:outline-none"
                 style={{
                   WebkitTapHighlightColor: 'transparent',
                   touchAction: 'manipulation',
