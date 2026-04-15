@@ -16,6 +16,7 @@ import { useExpenses } from '@/lib/hooks/useExpenses';
 import { exportPaymentsReport } from '@/lib/utils/exportPaymentsReport';
 import { PaymentCard } from '@/components/payments/PaymentCard';
 
+import { computePaymentStatus, computeDaysUntilDue } from '@/lib/constants/paymentStatus';
 import { extractTaxInfo, getTaxDisplayMessage, calculateFinalAmount } from '@/lib/utils/taxExtraction';
 import { calculatePaymentRiskLevel } from '@/lib/utils/paymentRisk';
 import { formatIndianCurrency } from '@/lib/utils/currency';
@@ -70,49 +71,38 @@ const CreatorPaymentsAndRecovery = () => {
     const currentMonth = now.getMonth();
     const currentYear = now.getFullYear();
 
-    // Calculate this month's earnings
-    const thisMonthEarnings = brandDeals
-      .filter(deal => {
-        if (!deal.payment_received_date) return false;
-        const date = new Date(deal.payment_received_date);
-        return date.getMonth() === currentMonth && date.getFullYear() === currentYear;
-      })
-      .reduce((sum, deal) => sum + (deal.deal_amount || 0), 0);
+    let totalReceived = 0;
+    let thisMonthEarnings = 0;
+    let pending = 0;
 
-    // Calculate last month's earnings for growth
-    const lastMonth = currentMonth === 0 ? 11 : currentMonth - 1;
-    const lastMonthYear = currentMonth === 0 ? currentYear - 1 : currentYear;
-    const lastMonthEarnings = brandDeals
-      .filter(deal => {
-        if (!deal.payment_received_date) return false;
-        const date = new Date(deal.payment_received_date);
-        return date.getMonth() === lastMonth && date.getFullYear() === lastMonthYear;
-      })
-      .reduce((sum, deal) => sum + (deal.deal_amount || 0), 0);
+    for (const deal of brandDeals) {
+      const status = computePaymentStatus(deal.payment_received_date, deal.payment_expected_date);
+      const amount = deal.deal_amount || 0;
 
-    // Calculate total received (all time)
-    const totalReceived = brandDeals
-      .filter(deal => deal.payment_received_date)
-      .reduce((sum, deal) => sum + (deal.deal_amount || 0), 0);
-
-    // Calculate pending payments
-    const pending = brandDeals
-      .filter(deal => deal.status === 'Payment Pending' && !deal.payment_received_date)
-      .reduce((sum, deal) => sum + (deal.deal_amount || 0), 0);
+      if (status === 'paid') {
+        totalReceived += amount;
+        if (deal.payment_received_date) {
+          const date = new Date(deal.payment_received_date);
+          if (date.getMonth() === currentMonth && date.getFullYear() === currentYear) {
+            thisMonthEarnings += amount;
+          }
+        }
+      } else {
+        pending += amount;
+      }
+    }
 
     // Get next payout (earliest pending payment)
     const nextPayoutDeal = brandDeals
-      .filter(deal => deal.status === 'Payment Pending' && deal.payment_expected_date)
+      .filter(deal => {
+        const status = computePaymentStatus(deal.payment_received_date, deal.payment_expected_date);
+        return status !== 'paid' && deal.payment_expected_date;
+      })
       .sort((a, b) => {
         const dateA = new Date(a.payment_expected_date!).getTime();
         const dateB = new Date(b.payment_expected_date!).getTime();
         return dateA - dateB;
       })[0];
-
-    // Calculate growth percentage
-    const growthPercentage = lastMonthEarnings > 0
-      ? ((thisMonthEarnings - lastMonthEarnings) / lastMonthEarnings) * 100
-      : thisMonthEarnings > 0 ? 100 : 0;
 
     // Calculate total expenses (from expenses table)
     const totalExpenses = expenses.reduce((sum, expense) => sum + (expense.amount || 0), 0);
@@ -128,9 +118,8 @@ const CreatorPaymentsAndRecovery = () => {
       payoutDate: nextPayoutDeal?.payment_expected_date
         ? new Date(nextPayoutDeal.payment_expected_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
         : 'TBD',
-      growthPercentage,
       totalExpenses,
-      netIncome
+      netIncome,
     };
   }, [brandDeals, expenses]);
 
@@ -227,9 +216,6 @@ const CreatorPaymentsAndRecovery = () => {
 
   // Transform brand deals to transactions
   const allTransactions = useMemo(() => {
-    const now = new Date();
-    now.setHours(0, 0, 0, 0);
-
     // Show all deals that have payment information (received or expected)
     // Include deals with: payment_received_date, payment_expected_date, or Payment Pending status
     return brandDeals
@@ -259,53 +245,35 @@ const CreatorPaymentsAndRecovery = () => {
         );
 
         const paymentReceivedDate = deal.payment_received_date ? new Date(deal.payment_received_date) : null;
+        const daysUntilDue = computeDaysUntilDue(deal.payment_expected_date);
+        const status = computePaymentStatus(deal.payment_received_date, deal.payment_expected_date);
 
-        // Calculate payment expected date:
-        // 1. Use payment_expected_date if set
-        // 2. Otherwise, calculate from due_date + payment terms (if available)
-        // 3. Default to due_date if no payment terms
-        let paymentExpectedDate: Date | null = null;
-        if (deal.payment_expected_date) {
-          paymentExpectedDate = new Date(deal.payment_expected_date);
-        } else if (deal.due_date) {
-          // If no payment_expected_date, use due_date as fallback
-          // In a real scenario, this would be calculated from contract terms (e.g., 45 days after posting)
-          paymentExpectedDate = new Date(deal.due_date);
-        }
-
-        // Determine status
-        let paymentStatus: 'received' | 'pending' | 'due_today' | 'overdue' = 'pending';
+        // Determine status and days info
         let daysInfo = '';
         let riskLevel: 'low' | 'moderate' | 'overdue' = 'low';
 
-        if (paymentReceivedDate) {
-          paymentStatus = 'received';
+        if (status === 'paid') {
           daysInfo = 'Paid';
-        } else if (paymentExpectedDate) {
-          const diffTime = paymentExpectedDate.getTime() - now.getTime();
-          const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        } else if (status === 'overdue' && daysUntilDue !== null) {
+          daysInfo = `Overdue by ${Math.abs(daysUntilDue)} day${Math.abs(daysUntilDue) !== 1 ? 's' : ''}`;
+          riskLevel = 'overdue';
+        } else if (status === 'upcoming' && daysUntilDue !== null) {
+          daysInfo = `Due in ${daysUntilDue} day${daysUntilDue !== 1 ? 's' : ''}`;
+          const contractRiskScore = 0;
+          riskLevel = calculatePaymentRiskLevel(
+            deal.payment_expected_date ? new Date(deal.payment_expected_date) : null,
+            contractRiskScore,
+            new Date()
+          );
+        } else {
+          daysInfo = 'Pending';
+        }
 
-          if (diffDays < 0) {
-            paymentStatus = 'overdue';
-            daysInfo = `Overdue by ${Math.abs(diffDays)} day${Math.abs(diffDays) !== 1 ? 's' : ''}`;
-            riskLevel = 'overdue';
-          } else if (diffDays === 0) {
-            paymentStatus = 'due_today';
-            daysInfo = 'Due today';
+        // Contract risk can only elevate to moderate, never to overdue
+        if (riskLevel !== 'overdue') {
+          const taxRiskScore = taxInfo.riskScore;
+          if (taxRiskScore >= 15) {
             riskLevel = 'moderate';
-          } else {
-            paymentStatus = 'pending';
-            daysInfo = `Due in ${diffDays} day${diffDays !== 1 ? 's' : ''}`;
-
-            // Use new priority-based risk calculation
-            // Contract risk score would need to be extracted from deal if available
-            // For now, we'll use timing-based calculation
-            const contractRiskScore = 0; // Could be extracted from deal.contract_analysis if available
-            riskLevel = calculatePaymentRiskLevel(
-              paymentExpectedDate,
-              contractRiskScore,
-              now
-            );
           }
         }
 
@@ -326,28 +294,20 @@ const CreatorPaymentsAndRecovery = () => {
           brand: deal.brand_name,
           amount,
           tax: null, // Keep for backward compatibility
-          hasTaxInfo: taxInfo.taxClarity !== 'missing', // Flag to check if tax info is available
+          hasTaxInfo: taxInfo.taxClarity !== 'missing',
           type: paymentReceivedDate ? 'received' : 'pending',
-          status: paymentReceivedDate ? 'completed' : paymentStatus,
-          paymentStatus, // New: specific payment status
+          status: paymentReceivedDate ? 'completed' : status,
+          paymentStatus: status,
           date: paymentReceivedDate
             ? paymentReceivedDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
-            : expectedDateStr,
-          expectedDate: expectedDateStr,
+            : daysUntilDue !== null
+              ? `${daysUntilDue > 0 ? daysUntilDue : Math.abs(daysUntilDue)} days ${daysUntilDue > 0 ? '' : 'ago'}`
+              : 'TBD',
+          expectedDate: deal.payment_expected_date
+            ? new Date(deal.payment_expected_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+            : 'TBD',
           daysInfo,
-          riskLevel: ((): 'low' | 'moderate' | 'overdue' => {
-            // Payment timing risk takes priority over contract risk
-            // If already overdue, keep it overdue
-            if (riskLevel === 'overdue') {
-              return 'overdue';
-            }
-            // Contract risk can only elevate to moderate, never to overdue
-            const taxRiskScore = taxInfo.riskScore;
-            if (taxRiskScore >= 15 && riskLevel === 'low') {
-              return 'moderate'; // Contract risk elevates low to moderate
-            }
-            return riskLevel; // Use payment timing risk level
-          })(),
+          riskLevel,
           method: extractPaymentMethod(deal), // Extract from contract or null if not found
           invoice: invoiceNumber,
           platform: deal.platform || 'Multiple',

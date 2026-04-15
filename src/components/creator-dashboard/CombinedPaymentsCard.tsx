@@ -10,74 +10,56 @@ import { BrandDeal } from '@/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Wallet } from 'lucide-react';
+import { computePaymentStatus, computeDaysUntilDue } from '@/lib/constants/paymentStatus';
 
 interface CombinedPaymentsCardProps {
-  pendingPayments: number;
-  pendingBrandCount: number;
-  dueThisWeek: number;
-  dueThisWeekCount: number;
   brandDeals?: BrandDeal[];
   onSendReminder?: (dealId: string) => void;
   isLoading?: boolean;
 }
 
 const CombinedPaymentsCard: React.FC<CombinedPaymentsCardProps> = ({
-  pendingPayments,
-  pendingBrandCount,
-  dueThisWeek,
-  dueThisWeekCount,
   brandDeals = [],
   onSendReminder,
   isLoading = false,
 }) => {
   const navigate = useNavigate();
 
-  // Calculate overdue status
-  const hasOverdue = useMemo(() => {
-    if (!brandDeals.length) return false;
-    const now = new Date();
-    return brandDeals.some(deal => {
-      if (deal.status !== 'Payment Pending') return false;
-      const dueDate = new Date(deal.payment_expected_date);
-      return dueDate < now;
-    });
+  // Calculate all stats using unified helpers
+  const { pendingAmount, pendingCount, dueSoonAmount, dueSoonCount, hasOverdue, pendingBrands } = useMemo(() => {
+    let pendingAmount = 0;
+    let pendingCount = 0;
+    let dueSoonAmount = 0;
+    let dueSoonCount = 0;
+    let hasOverdue = false;
+    const pendingBrands: string[] = [];
+
+    for (const deal of brandDeals) {
+      const status = computePaymentStatus(deal.payment_received_date, deal.payment_expected_date);
+      const days = computeDaysUntilDue(deal.payment_expected_date);
+      const amount = deal.deal_amount || 0;
+
+      if (status === 'paid') continue;
+
+      if (status === 'overdue') {
+        hasOverdue = true;
+        pendingAmount += amount;
+        pendingCount++;
+        if (!pendingBrands.includes(deal.brand_name)) pendingBrands.push(deal.brand_name);
+      } else if (days !== null && days <= 7) {
+        dueSoonAmount += amount;
+        dueSoonCount++;
+      } else {
+        pendingAmount += amount;
+        pendingCount++;
+        if (!pendingBrands.includes(deal.brand_name)) pendingBrands.push(deal.brand_name);
+      }
+    }
+
+    return { pendingAmount, pendingCount, dueSoonAmount, dueSoonCount, hasOverdue, pendingBrands };
   }, [brandDeals]);
 
-  // Get overdue payment details
-  const overduePayment = useMemo(() => {
-    if (!brandDeals.length) return null;
-    const now = new Date();
-    const overdue = brandDeals.find(deal => {
-      if (deal.status !== 'Payment Pending') return false;
-      const dueDate = new Date(deal.payment_expected_date);
-      return dueDate < now;
-    });
-    if (!overdue) return null;
-    const dueDate = new Date(overdue.payment_expected_date);
-    const daysOverdue = Math.floor((now.getTime() - dueDate.getTime()) / (1000 * 60 * 60 * 24));
-    return { deal: overdue, daysOverdue };
-  }, [brandDeals]);
-
-  // Get brand initials for chips
-  const getBrandInitials = (brandName: string): string => {
-    return brandName
-      .split(' ')
-      .map(word => word[0])
-      .join('')
-      .toUpperCase()
-      .slice(0, 2);
-  };
-
-  // Get pending brands
-  const pendingBrands = useMemo(() => {
-    return Array.from(new Set(
-      brandDeals
-        .filter(deal => deal.status === 'Payment Pending')
-        .map(deal => deal.brand_name)
-    )).slice(0, 3);
-  }, [brandDeals]);
-
-  const totalAmount = pendingPayments + dueThisWeek;
+  const totalAmount = pendingAmount + dueSoonAmount;
 
   if (isLoading) {
     return (
@@ -160,10 +142,10 @@ const CombinedPaymentsCard: React.FC<CombinedPaymentsCardProps> = ({
           <div className="space-y-3 mb-1">
             <div className="flex items-center gap-2 flex-wrap">
               <span className="px-2.5 py-1 rounded-lg bg-secondary/50 backdrop-blur-sm text-foreground/70 text-[11px] font-medium border border-border">
-                Pending ({pendingBrandCount})
+                Pending ({pendingCount})
               </span>
               <span className="px-2.5 py-1 rounded-lg bg-warning/20 backdrop-blur-sm text-warning text-[11px] font-medium border border-warning/30">
-                Due Soon ({dueThisWeekCount})
+                Due Soon ({dueSoonCount})
               </span>
             </div>
             
@@ -191,9 +173,9 @@ const CombinedPaymentsCard: React.FC<CombinedPaymentsCardProps> = ({
                     {brand}
                   </span>
                 ))}
-                {pendingBrandCount > 3 && (
+                {pendingCount > 3 && (
                   <span className="text-[12px] text-foreground/50 font-medium">
-                    +{pendingBrandCount - 3} more
+                    +{pendingCount - 3} more
                   </span>
                 )}
               </div>

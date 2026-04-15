@@ -3,78 +3,82 @@
 import React from 'react';
 import { BrandDeal } from '@/types';
 import BrandLogo from '@/components/creator-contracts/BrandLogo';
-import { Card } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import {
-  Calendar,
-  Send,
-} from 'lucide-react';
+import { Calendar, Send } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
+import { computePaymentStatus, computeDaysUntilDue, PaymentStatus } from '@/lib/constants/paymentStatus';
 
 interface EnhancedPaymentCardProps {
   deal: BrandDeal;
-  status: 'overdue' | 'pending' | 'upcoming' | 'paid';
+  status?: PaymentStatus; // If not provided, computed from deal
   daysOverdue?: number;
   daysLeft?: number;
   onSendReminder?: (deal: BrandDeal) => void;
-  onEscalate?: (deal: BrandDeal) => void;
   onMarkPaid?: (deal: BrandDeal) => void;
   onViewDetails?: (deal: BrandDeal) => void;
-  onAddNote?: (deal: BrandDeal) => void;
 }
 
 const EnhancedPaymentCard: React.FC<EnhancedPaymentCardProps> = ({
   deal,
-  status,
-  daysOverdue,
-  daysLeft,
+  status: propStatus,
+  daysOverdue: propDaysOverdue,
+  daysLeft: propDaysLeft,
   onSendReminder,
-  onEscalate: _onEscalate,
   onMarkPaid,
-  onViewDetails: _onViewDetails,
-  onAddNote: _onAddNote,
+  onViewDetails,
 }) => {
-  // Mock reminder count (in real app, this would come from payment_reminders table)
-  const remindersSent = daysOverdue && daysOverdue > 7 ? Math.floor(daysOverdue / 7) : 0;
-  
-  // Calculate days until due (for pending status)
-  const daysUntilDue = daysLeft !== undefined ? daysLeft : null;
-  
-  // Determine if reminder button should be shown and what text to use
-  const getReminderButtonConfig = () => {
-    if (status === 'overdue' && daysOverdue) {
-      if (daysOverdue >= 15) {
-        return { show: true, text: 'Send Urgent Reminder', variant: 'destructive' as const, urgent: true };
-      } else if (daysOverdue >= 7) {
-        return { show: true, text: 'Send Firm Reminder', variant: 'default' as const, urgent: false };
-      } else {
-        return { show: true, text: 'Send Reminder', variant: 'default' as const, urgent: false };
-      }
-    } else if (status === 'pending' && daysUntilDue !== null) {
-      if (daysUntilDue <= 1) {
-        return { show: true, text: 'Send Reminder', variant: 'default' as const, urgent: false };
-      } else if (daysUntilDue <= 3) {
-        return { show: true, text: 'Send Gentle Reminder', variant: 'outline' as const, urgent: false };
-      } else {
-        return { show: false, text: '', variant: 'outline' as const, urgent: false };
-      }
-    }
-    return { show: false, text: '', variant: 'outline' as const, urgent: false };
-  };
-  
-  const reminderConfig = getReminderButtonConfig();
+  // Compute status from deal if not provided
+  const status = propStatus ?? computePaymentStatus(
+    deal.payment_received_date,
+    deal.payment_expected_date
+  );
 
-  // Mock brand payment history (in real app, this would be calculated from all deals with this brand)
-  const brandPaymentHistory = {
-    avgDays: 35,
-    reliability: 'good' as 'excellent' | 'good' | 'fair' | 'poor',
-    latePayments: 0,
+  // Compute days
+  const computedDaysLeft = propDaysLeft ?? (status === 'upcoming' || status === 'pending'
+    ? computeDaysUntilDue(deal.payment_expected_date)
+    : null);
+  const computedDaysOverdue = propDaysOverdue ?? (status === 'overdue'
+    ? computeDaysUntilDue(deal.payment_expected_date)
+      ? -computeDaysUntilDue(deal.payment_expected_date)!
+      : undefined
+    : undefined);
+
+  const daysOverdue = computedDaysOverdue;
+  const daysLeft = computedDaysLeft !== null && computedDaysLeft > 0 ? computedDaysLeft : null;
+
+  // Reminder button logic
+  const getReminderConfig = () => {
+    if (status === 'overdue' && daysOverdue !== undefined && daysOverdue > 0) {
+      if (daysOverdue >= 15) return { show: true, text: 'Send Urgent Reminder', variant: 'destructive' as const };
+      if (daysOverdue >= 7) return { show: true, text: 'Send Firm Reminder', variant: 'default' as const };
+      return { show: true, text: 'Send Reminder', variant: 'default' as const };
+    }
+    if (status === 'pending' && daysLeft !== null) {
+      if (daysLeft <= 1) return { show: true, text: 'Send Reminder', variant: 'default' as const };
+      if (daysLeft <= 3) return { show: true, text: 'Send Gentle Reminder', variant: 'outline' as const };
+    }
+    return { show: false, text: '', variant: 'outline' as const };
   };
-  
-  // Get days left for display
-  const displayDaysLeft = daysLeft !== undefined ? daysLeft : daysOverdue ? -daysOverdue : null;
+
+  const reminderConfig = getReminderConfig();
+  const displayDays = daysLeft ?? (daysOverdue ? -daysOverdue : null);
+
+  const statusLabel = {
+    overdue: 'Overdue',
+    pending: 'Pending',
+    upcoming: 'Scheduled',
+    paid: 'Paid',
+  }[status];
+
+  const statusColor = {
+    overdue: 'text-destructive',
+    pending: 'text-yellow-400',
+    upcoming: 'text-primary',
+    paid: 'text-primary',
+  }[status];
 
   return (
     <motion.div
@@ -82,36 +86,33 @@ const EnhancedPaymentCard: React.FC<EnhancedPaymentCardProps> = ({
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.2 }}
     >
-      <Card 
+      <Card
         className="bg-secondary/[0.08] backdrop-blur-lg border border-border rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.08)] p-4 md:p-5 transition-all hover:shadow-2xl hover:border-purple-500/30 hover:-translate-y-0.5"
         onContextMenu={(e) => {
           e.preventDefault();
-          // Generate shareable invoice link
-          const invoiceId = deal.id.slice(0, 8); // Use first 8 chars of deal ID
+          const invoiceId = deal.id.slice(0, 8);
           const shareableLink = `${window.location.origin}/i/${invoiceId}`;
           navigator.clipboard.writeText(shareableLink);
-          toast.success('Invoice link copied!', {
-            description: 'Share this link with the brand',
-          });
+          toast.success('Invoice link copied!');
         }}
       >
         {/* Top Badge */}
-        {displayDaysLeft !== null && (
+        {displayDays !== null && (
           <div className={cn(
-            "flex items-center gap-2 mb-4 px-3 py-2 rounded-lg",
-            (displayDaysLeft <= 7 || status === 'overdue') 
-              ? 'bg-warning/20 border border-warning/20' 
+            'flex items-center gap-2 mb-4 px-3 py-2 rounded-lg',
+            (displayDays <= 7 || status === 'overdue')
+              ? 'bg-warning/20 border border-warning/20'
               : 'bg-card border border-border'
           )}>
             <Calendar className={cn(
-              "w-4 h-4",
-              (displayDaysLeft <= 7 || status === 'overdue') ? 'text-warning' : 'text-foreground/80'
+              'w-4 h-4',
+              (displayDays <= 7 || status === 'overdue') ? 'text-warning' : 'text-foreground/80'
             )} />
             <span className={cn(
-              "text-sm font-medium",
-              (displayDaysLeft <= 7 || status === 'overdue') ? 'text-warning' : 'text-foreground/80'
+              'text-sm font-medium',
+              (displayDays <= 7 || status === 'overdue') ? 'text-warning' : 'text-foreground/80'
             )}>
-              Payment Expected · {displayDaysLeft > 0 ? `${displayDaysLeft} days left` : `${Math.abs(displayDaysLeft)} days overdue`}
+              Payment Expected · {displayDays > 0 ? `${displayDays} days left` : `${Math.abs(displayDays)} days overdue`}
             </span>
           </div>
         )}
@@ -130,7 +131,7 @@ const EnhancedPaymentCard: React.FC<EnhancedPaymentCardProps> = ({
             <div className="flex-1">
               <h3 className="font-bold text-lg md:text-xl mb-1 text-foreground">{deal.brand_name}</h3>
               <p className="text-sm text-foreground/60 flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-secondary/40"></span>
+                <span className="w-2 h-2 rounded-full bg-secondary/40" />
                 {deal.platform || 'N/A'}
               </p>
             </div>
@@ -144,24 +145,9 @@ const EnhancedPaymentCard: React.FC<EnhancedPaymentCardProps> = ({
         <div className="mb-5">
           <div className="flex items-center justify-between text-sm">
             <span className="text-foreground/60">Payment Status:</span>
-            <div className="text-right">
-              <span className={cn(
-                "font-medium",
-                status === 'overdue' && 'text-destructive',
-                status === 'pending' && 'text-yellow-400',
-                status === 'upcoming' && 'text-primary',
-                status === 'paid' && 'text-primary'
-              )}>
-                {status === 'overdue' ? 'Overdue' : 
-                 status === 'pending' ? 'Pending' :
-                 status === 'upcoming' ? 'Scheduled' : 'Paid'}
-              </span>
-              {status === 'overdue' && daysOverdue !== undefined && daysOverdue > 0 && (
-                <div className="text-xs text-destructive font-medium mt-0.5">
-                  Overdue by {daysOverdue} {daysOverdue === 1 ? 'day' : 'days'}
-                </div>
-              )}
-            </div>
+            <span className={cn('font-medium', statusColor)}>
+              {statusLabel}
+            </span>
           </div>
         </div>
 
@@ -169,27 +155,29 @@ const EnhancedPaymentCard: React.FC<EnhancedPaymentCardProps> = ({
         <div className="flex items-center justify-between gap-3 md:gap-4 mb-5">
           <div className="bg-card rounded-lg px-3 py-2 border border-border flex-1">
             <p className="text-foreground/60 mb-1 text-xs">Payment History</p>
-            <p className="font-medium text-foreground/80 text-sm">~{Math.abs(brandPaymentHistory.avgDays)} days avg</p>
+            <p className="font-medium text-foreground/80 text-sm">~35 days avg</p>
           </div>
           <div className="bg-card rounded-lg px-3 py-2 border border-border flex-1">
             <p className="text-foreground/60 mb-1 text-xs">Due Date</p>
             <p className="font-medium text-foreground/80 text-sm">
-              {new Date(deal.payment_expected_date).toLocaleDateString('en-IN', {
-                day: 'numeric',
-                month: 'short',
-                year: 'numeric',
-              })}
+              {deal.payment_expected_date
+                ? new Date(deal.payment_expected_date).toLocaleDateString('en-IN', {
+                    day: 'numeric',
+                    month: 'short',
+                    year: 'numeric',
+                  })
+                : 'TBD'}
             </p>
           </div>
         </div>
 
-        {/* Bottom Actions - Accessibility: 44x44px minimum touch target */}
+        {/* Bottom Actions */}
         <div className="flex flex-col gap-2" onClick={(e) => e.stopPropagation()}>
           {reminderConfig.show && (
             <Button
               onClick={(e) => {
                 e.stopPropagation();
-                if (window.confirm(`Send reminder to ${deal.brand_name}?\n\n${reminderConfig.urgent ? '⚠️ This payment is overdue. ' : ''}${remindersSent > 0 ? `\nPrevious reminder sent ${remindersSent} time${remindersSent > 1 ? 's' : ''}.` : ''}`)) {
+                if (window.confirm(`Send reminder to ${deal.brand_name}?`)) {
                   onSendReminder?.(deal);
                 }
               }}
@@ -198,11 +186,12 @@ const EnhancedPaymentCard: React.FC<EnhancedPaymentCardProps> = ({
               aria-label={`Send payment reminder to ${deal.brand_name}`}
             >
               <Send className="w-5 h-5" />
-              Send Reminder
+              {reminderConfig.text}
             </Button>
           )}
           {onMarkPaid && status !== 'paid' && (
-            <button type="button"
+            <button
+              type="button"
               onClick={(e) => {
                 e.stopPropagation();
                 onMarkPaid(deal);
@@ -214,6 +203,18 @@ const EnhancedPaymentCard: React.FC<EnhancedPaymentCardProps> = ({
               Mark Paid
             </button>
           )}
+          {onViewDetails && status === 'paid' && (
+            <Button
+              onClick={(e) => {
+                e.stopPropagation();
+                onViewDetails(deal);
+              }}
+              variant="outline"
+              className="w-full min-h-[44px] px-4 py-3 bg-card hover:bg-secondary/50 rounded-xl font-medium text-base flex items-center justify-center gap-2 transition-all border border-border text-foreground/80"
+            >
+              View Details
+            </Button>
+          )}
         </div>
       </Card>
     </motion.div>
@@ -221,4 +222,3 @@ const EnhancedPaymentCard: React.FC<EnhancedPaymentCardProps> = ({
 };
 
 export default EnhancedPaymentCard;
-

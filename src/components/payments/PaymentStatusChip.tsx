@@ -1,40 +1,29 @@
-import { CheckCircle, Clock, AlertCircle } from 'lucide-react';
+import React from 'react';
+import { CheckCircle, Clock, AlertCircle, Calendar } from 'lucide-react';
 import { cn } from '@/lib/utils';
-
-export type PaymentStatus = 'received' | 'pending' | 'overdue';
+import { PaymentStatus, PAYMENT_STATUS_CONFIG } from '@/lib/constants/paymentStatus';
 
 interface PaymentStatusChipProps {
   status: PaymentStatus;
   className?: string;
 }
 
-const statusConfig = {
-  received: {
-    label: 'Payment Received',
-    icon: CheckCircle,
-    className: 'bg-green-500/20 text-green-400 border-green-500/30',
-  },
-  pending: {
-    label: 'Pending',
-    icon: Clock,
-    className: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
-  },
-  overdue: {
-    label: 'Overdue',
-    icon: AlertCircle,
-    className: 'bg-destructive/20 text-destructive border-destructive/30',
-  },
+const iconMap: Record<string, React.ElementType> = {
+  clock: Clock,
+  alert: AlertCircle,
+  check: CheckCircle,
+  calendar: Calendar,
 };
 
 export const PaymentStatusChip = ({ status, className }: PaymentStatusChipProps) => {
-  const config = statusConfig[status];
-  const Icon = config.icon;
+  const config = PAYMENT_STATUS_CONFIG[status];
+  const Icon = iconMap[config.icon] ?? Clock;
 
   return (
     <div
       className={cn(
         'px-3 py-1.5 rounded-full border text-sm font-semibold flex items-center gap-2 backdrop-blur-xl',
-        config.className,
+        config.colorClass,
         className
       )}
     >
@@ -43,4 +32,3 @@ export const PaymentStatusChip = ({ status, className }: PaymentStatusChipProps)
     </div>
   );
 };
-

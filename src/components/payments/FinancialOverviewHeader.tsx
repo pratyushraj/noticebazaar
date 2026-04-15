@@ -4,6 +4,7 @@ import React, { useMemo } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { AlertTriangle, Clock, TrendingUp, CheckCircle, Wallet, Download } from 'lucide-react';
+import { computePaymentStatus } from '@/lib/constants/paymentStatus';
 import { BrandDeal } from '@/types';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
@@ -18,71 +19,48 @@ const FinancialOverviewHeader: React.FC<FinancialOverviewHeaderProps> = ({ allDe
     const now = new Date();
     const currentMonth = now.getMonth();
     const currentYear = now.getFullYear();
-    const lastMonth = currentMonth === 0 ? 11 : currentMonth - 1;
-    const lastMonthYear = currentMonth === 0 ? currentYear - 1 : currentYear;
 
-    // Pending payments (not overdue)
-    const pendingPayments = allDeals.filter(deal => {
-      if (deal.status !== 'Payment Pending') return false;
-      const dueDate = new Date(deal.payment_expected_date);
-      return dueDate >= now;
-    });
+    let pendingAmount = 0;
+    let pendingCount = 0;
+    let overdueAmount = 0;
+    let overdueCount = 0;
+    let receivedAmount = 0;
+    let receivedCount = 0;
 
-    const pendingAmount = pendingPayments.reduce((sum, deal) => sum + deal.deal_amount, 0);
-    const pendingCount = pendingPayments.length;
+    for (const deal of allDeals) {
+      const status = computePaymentStatus(deal.payment_received_date, deal.payment_expected_date);
+      const amount = deal.deal_amount || 0;
 
-    // Overdue payments
-    const overduePayments = allDeals.filter(deal => {
-      if (deal.status !== 'Payment Pending') return false;
-      const dueDate = new Date(deal.payment_expected_date);
-      return dueDate < now;
-    });
+      if (status === 'paid') {
+        // Received this month
+        if (deal.payment_received_date) {
+          const receivedDate = new Date(deal.payment_received_date);
+          if (receivedDate.getMonth() === currentMonth && receivedDate.getFullYear() === currentYear) {
+            receivedAmount += amount;
+            receivedCount++;
+          }
+        }
+      } else if (status === 'overdue') {
+        overdueAmount += amount;
+        overdueCount++;
+      } else {
+        pendingAmount += amount;
+        pendingCount++;
+      }
+    }
 
-    const overdueAmount = overduePayments.reduce((sum, deal) => sum + deal.deal_amount, 0);
-    const overdueCount = overduePayments.length;
-
-    // Received this month
-    const receivedThisMonth = allDeals.filter(deal => {
-      if (!deal.payment_received_date || deal.status !== 'Completed') return false;
-      const receivedDate = new Date(deal.payment_received_date);
-      return receivedDate.getMonth() === currentMonth && 
-             receivedDate.getFullYear() === currentYear;
-    });
-
-    const receivedAmount = receivedThisMonth.reduce((sum, deal) => sum + deal.deal_amount, 0);
-
-    // Collection success rate
-    const totalExpected = allDeals
-      .filter(deal => deal.status === 'Payment Pending' || deal.status === 'Completed')
-      .reduce((sum, deal) => sum + deal.deal_amount, 0);
-    
-    const totalReceived = allDeals
-      .filter(deal => deal.status === 'Completed' && deal.payment_received_date)
-      .reduce((sum, deal) => sum + deal.deal_amount, 0);
-
+    // Collection rate (based on deals with payment info)
+    const totalDeals = allDeals.filter(d => d.payment_received_date || d.payment_expected_date);
+    const totalReceived = totalDeals.filter(d => computePaymentStatus(d.payment_received_date, d.payment_expected_date) === 'paid')
+      .reduce((sum, d) => sum + (d.deal_amount || 0), 0);
+    const totalExpected = totalDeals.reduce((sum, d) => sum + (d.deal_amount || 0), 0);
     const collectionRate = totalExpected > 0 ? Math.round((totalReceived / totalExpected) * 100) : 0;
-
-    // Last month collection rate for comparison
-    const lastMonthExpected = allDeals.filter(deal => {
-      const dueDate = new Date(deal.payment_expected_date);
-      return dueDate.getMonth() === lastMonth && dueDate.getFullYear() === lastMonthYear;
-    }).reduce((sum, deal) => sum + deal.deal_amount, 0);
-
-    const lastMonthReceived = allDeals.filter(deal => {
-      if (!deal.payment_received_date) return false;
-      const receivedDate = new Date(deal.payment_received_date);
-      return receivedDate.getMonth() === lastMonth && receivedDate.getFullYear() === lastMonthYear;
-    }).reduce((sum, deal) => sum + deal.deal_amount, 0);
-
-    const lastMonthRate = lastMonthExpected > 0 ? Math.round((lastMonthReceived / lastMonthExpected) * 100) : 0;
-    const rateChange = collectionRate - lastMonthRate;
 
     return {
       pending: { amount: pendingAmount, count: pendingCount },
       overdue: { amount: overdueAmount, count: overdueCount },
-      received: { amount: receivedAmount, count: receivedThisMonth.length },
+      received: { amount: receivedAmount, count: receivedCount },
       collectionRate,
-      rateChange,
     };
   }, [allDeals]);
 
@@ -267,7 +245,7 @@ ${stats.collectionRate}%
                 </div>
                 <span className="text-2xl font-bold text-info">{stats.collectionRate}%</span>
               </div>
-              <div className="relative h-3 bg-gray-800/50 rounded-full overflow-hidden mb-2">
+              <div className="relative h-3 bg-gray-800/50 rounded-full overflow-hidden">
                 <motion.div
                   initial={{ width: 0 }}
                   animate={{ width: `${stats.collectionRate}%` }}
@@ -276,18 +254,6 @@ ${stats.collectionRate}%
                 >
                   <div className="absolute inset-0 bg-secondary/20 animate-pulse"></div>
                 </motion.div>
-              </div>
-              <div className={cn(
-                "flex items-center gap-1 text-sm",
-                stats.rateChange >= 0 ? "text-primary" : "text-destructive"
-              )}>
-                <TrendingUp className={cn(
-                  "w-4 h-4",
-                  stats.rateChange < 0 && "rotate-180"
-                )} />
-                <span>
-                  {stats.rateChange >= 0 ? '+' : ''}{stats.rateChange}% {stats.rateChange >= 0 ? 'better' : 'worse'} than last month
-                </span>
               </div>
             </CardContent>
           </Card>

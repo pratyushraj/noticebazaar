@@ -3,11 +3,12 @@
 import React, { useMemo } from 'react';
 import { cn } from '@/lib/utils';
 import { BrandDeal } from '@/types';
+import { computePaymentStatus, computeDaysUntilDue, PaymentStatus } from '@/lib/constants/paymentStatus';
 
 interface PaymentQuickFiltersProps {
   allDeals: BrandDeal[];
-  activeFilter: string | null;
-  onFilterChange: (filter: string | null) => void;
+  activeFilter: PaymentStatus | 'all' | null;
+  onFilterChange: (filter: PaymentStatus | 'all' | null) => void;
 }
 
 const PaymentQuickFilters: React.FC<PaymentQuickFiltersProps> = ({
@@ -21,41 +22,39 @@ const PaymentQuickFilters: React.FC<PaymentQuickFiltersProps> = ({
     const sevenDaysFromNow = new Date(now);
     sevenDaysFromNow.setDate(sevenDaysFromNow.getDate() + 7);
 
-    const overdue = allDeals.filter(deal => {
-      if (deal.status !== 'Payment Pending') return false;
-      const dueDate = new Date(deal.payment_expected_date);
-      return dueDate < now;
-    });
+    let overdue = 0;
+    let dueThisWeek = 0;
+    let pending = 0;
+    let paid = 0;
 
-    const dueThisWeek = allDeals.filter(deal => {
-      if (deal.status !== 'Payment Pending') return false;
-      const dueDate = new Date(deal.payment_expected_date);
-      return dueDate >= now && dueDate <= sevenDaysFromNow;
-    });
+    for (const deal of allDeals) {
+      const status = computePaymentStatus(deal.payment_received_date, deal.payment_expected_date);
+      const days = computeDaysUntilDue(deal.payment_expected_date);
 
-    const pending = allDeals.filter(deal => {
-      if (deal.status !== 'Payment Pending') return false;
-      const dueDate = new Date(deal.payment_expected_date);
-      return dueDate >= now;
-    });
-
-    const paid = allDeals.filter(deal => 
-      deal.status === 'Completed' && deal.payment_received_date
-    );
+      if (status === 'paid') {
+        paid++;
+      } else if (status === 'overdue') {
+        overdue++;
+      } else if (status === 'upcoming' || (days !== null && days <= 7)) {
+        dueThisWeek++;
+      } else {
+        pending++;
+      }
+    }
 
     return {
       all: allDeals.length,
-      overdue: overdue.length,
-      dueThisWeek: dueThisWeek.length,
-      pending: pending.length,
-      paid: paid.length,
+      overdue,
+      dueThisWeek,
+      pending,
+      paid,
     };
   }, [allDeals]);
 
-  const filters = [
+  const filters: Array<{ id: PaymentStatus | 'all'; label: string; count: number }> = [
     { id: 'all', label: 'All', count: filterCounts.all },
     { id: 'overdue', label: 'Overdue', count: filterCounts.overdue },
-    { id: 'due_this_week', label: 'Due This Week', count: filterCounts.dueThisWeek },
+    { id: 'upcoming', label: 'Due This Week', count: filterCounts.dueThisWeek },
     { id: 'pending', label: 'Pending', count: filterCounts.pending },
     { id: 'paid', label: 'Paid', count: filterCounts.paid },
   ];
@@ -64,20 +63,21 @@ const PaymentQuickFilters: React.FC<PaymentQuickFiltersProps> = ({
     <div className="mt-3 md:mt-4">
       <div className="w-full bg-secondary/[0.03] border border-border rounded-2xl backdrop-blur-lg px-2 md:px-3 py-2 flex items-center gap-2 overflow-x-auto no-scrollbar">
         {filters.map((filter) => (
-          <button type="button"
+          <button
             key={filter.id}
+            type="button"
             onClick={() => onFilterChange(activeFilter === filter.id ? null : filter.id)}
             className={cn(
-              "px-2.5 md:px-3 py-1.5 rounded-full text-xs md:text-sm font-medium whitespace-nowrap border transition-all duration-300",
+              'px-2.5 md:px-3 py-1.5 rounded-full text-xs md:text-sm font-medium whitespace-nowrap border transition-all duration-300',
               activeFilter === filter.id
-                ? "bg-secondary/50 border-border text-foreground shadow-[0_0_12px_rgba(255,255,255,0.08)]"
-                : "border-border text-gray-300 hover:bg-card"
+                ? 'bg-secondary/50 border-border text-foreground shadow-[0_0_12px_rgba(255,255,255,0.08)]'
+                : 'border-border text-gray-300 hover:bg-card'
             )}
           >
             {filter.label}
             <span className={cn(
-              "ml-1 text-xs",
-              activeFilter === filter.id ? "text-foreground/80" : "text-gray-400"
+              'ml-1 text-xs',
+              activeFilter === filter.id ? 'text-foreground/80' : 'text-gray-400'
             )}>
               ({filter.count})
             </span>
@@ -89,4 +89,3 @@ const PaymentQuickFilters: React.FC<PaymentQuickFiltersProps> = ({
 };
 
 export default PaymentQuickFilters;
-

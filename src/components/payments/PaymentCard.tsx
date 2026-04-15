@@ -2,6 +2,8 @@
 
 import React, { memo } from 'react';
 import { motion } from 'framer-motion';
+import { cn } from '@/lib/utils';
+import { PaymentStatus, computeDaysUntilDue, PAYMENT_STATUS_CONFIG } from '@/lib/constants/paymentStatus';
 
 interface PaymentCardProps {
   id: string;
@@ -10,22 +12,21 @@ interface PaymentCardProps {
   platform: string;
   amount: number;
   type: 'received' | 'pending' | 'expense';
-  paymentStatus: 'received' | 'pending' | 'due_today' | 'overdue';
+  paymentStatus: PaymentStatus;
   expectedDate?: string;
   daysInfo?: string;
-  riskLevel?: 'low' | 'medium' | 'high';
+  riskLevel?: 'low' | 'moderate' | 'high';
   method: string | null | undefined;
   invoice: string;
   tax?: number | null;
   taxInfo?: {
     message: string;
-    riskLevel: 'low' | 'medium' | 'high';
+    riskLevel: 'low' | 'moderate' | 'high';
   };
   finalAmount?: number;
   onClick?: () => void;
 }
 
-// replaced-by-ultra-polish: Memoized for performance
 export const PaymentCard: React.FC<PaymentCardProps> = memo(({
   title,
   dealName,
@@ -35,73 +36,30 @@ export const PaymentCard: React.FC<PaymentCardProps> = memo(({
   daysInfo,
   onClick,
 }) => {
-
-  // Format date info for display
-  const formatDateInfo = () => {
-    if (type === 'received' && daysInfo) {
-      // Extract days from "Paid" or similar
-      const daysMatch = daysInfo.match(/(\d+)\s+day/);
-      if (daysMatch) {
-        const days = parseInt(daysMatch[1]);
-        return `${days} day${days !== 1 ? 's' : ''} ago`;
-      }
-      return 'Paid';
-    }
-    if (type === 'pending' && daysInfo) {
-      // Extract days from "Due in X days" or "Overdue by X days"
-      if (daysInfo.includes('Overdue')) {
-        const daysMatch = daysInfo.match(/(\d+)/);
-        if (daysMatch) {
-          return `Overdue ${daysMatch[1]} day${parseInt(daysMatch[1]) !== 1 ? 's' : ''} ago`;
-        }
-        return 'Overdue';
-      }
-      const daysMatch = daysInfo.match(/(\d+)/);
-      if (daysMatch) {
-        const days = parseInt(daysMatch[1]);
-        return `Due in ${days} day${days !== 1 ? 's' : ''}`;
-      }
-      return 'Pending';
-    }
-    return type === 'received' ? 'Paid' : 'Pending';
-  };
-
-  // Get status pill color
-  const getStatusPillColor = () => {
+  // Determine badge text
+  const getBadge = () => {
     if (type === 'received') {
-      return 'bg-green-500/20 text-green-400 border-green-500/30';
+      return { text: 'Paid', ...PAYMENT_STATUS_CONFIG.paid };
     }
     if (paymentStatus === 'overdue') {
-      return 'bg-destructive/20 text-destructive border-destructive/30';
-    }
-    return 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30';
-  };
-
-  // Get badge text and color based on payment status
-  const getBadgeInfo = () => {
-    if (type === 'received') {
-      return { text: 'Paid', color: 'bg-green-500/20 text-green-400 border-green-500/30' };
-    }
-    if (paymentStatus === 'overdue') {
-      return { text: 'Overdue', color: 'bg-destructive/20 text-destructive border-destructive/30' };
+      return { text: 'Overdue', ...PAYMENT_STATUS_CONFIG.overdue };
     }
     if (paymentStatus === 'due_today') {
-      return { text: 'Due today', color: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30' };
+      return { text: 'Due today', ...PAYMENT_STATUS_CONFIG.upcoming };
     }
-    // Pending with days info
-    if (daysInfo && daysInfo.includes('Due in')) {
-      const daysMatch = daysInfo.match(/(\d+)/);
-      if (daysMatch) {
-        return { text: `Due in ${daysMatch[1]} days`, color: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30' };
-      }
+    if (daysInfo?.includes('Due in')) {
+      const match = daysInfo.match(/(\d+)/);
+      return match
+        ? { text: `Due in ${match[1]} days`, ...PAYMENT_STATUS_CONFIG.upcoming }
+        : { text: 'Pending', ...PAYMENT_STATUS_CONFIG.pending };
     }
-    return { text: 'Pending', color: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30' };
+    return { text: 'Pending', ...PAYMENT_STATUS_CONFIG.pending };
   };
 
-  const badgeInfo = getBadgeInfo();
-  
+  const badge = getBadge();
+
   // Extract campaign name from title if different from brand name
-  const campaignName = title !== dealName && title !== `${dealName} Campaign` 
+  const campaignName = title !== dealName && title !== `${dealName} Campaign`
     ? title.replace(`${dealName} `, '').replace(' Campaign', '')
     : null;
 
@@ -135,16 +93,17 @@ export const PaymentCard: React.FC<PaymentCardProps> = memo(({
 
         {/* Right: Amount and Badge */}
         <div className="flex-shrink-0 flex flex-col items-end gap-1.5">
-          {/* Amount */}
           <div className={`text-lg font-bold ${
             type === 'expense' ? 'text-destructive' : 'text-foreground'
           }`}>
             {type === 'expense' ? '-' : ''}₹{Math.round(amount).toLocaleString('en-IN')}
           </div>
-          
-          {/* Due Badge */}
-          <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium border ${badgeInfo.color}`}>
-            {badgeInfo.text}
+
+          <span className={cn(
+            'inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium border',
+            badge.colorClass
+          )}>
+            {badge.text}
           </span>
         </div>
       </div>
@@ -153,4 +112,3 @@ export const PaymentCard: React.FC<PaymentCardProps> = memo(({
 });
 
 PaymentCard.displayName = 'PaymentCard';
-
