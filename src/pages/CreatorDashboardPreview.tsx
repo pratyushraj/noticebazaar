@@ -52,14 +52,19 @@ const getDealStage = (deal: BrandDeal): DealStage => {
 
 const getPaymentStatus = (deal: BrandDeal): PaymentStatus => {
   if (deal.payment_received_date) return 'received';
-  if (deal.status === 'Payment Pending') {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const dueDate = new Date(deal.payment_expected_date);
-    dueDate.setHours(0, 0, 0, 0);
-    return dueDate < today ? 'overdue' : 'pending';
-  }
-  return 'pending';
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const dueDate = deal.payment_expected_date ? new Date(deal.payment_expected_date) : null;
+
+  // Check if overdue based on due date (not just status)
+  if (dueDate && dueDate < today) return 'overdue';
+
+  // For Payment Pending deals with future due date
+  if (deal.status === 'Payment Pending') return 'pending';
+
+  // Default: upcoming if has due date, pending if no due date
+  return dueDate ? 'upcoming' : 'pending';
 };
 
 // Pill Tab Button Component
