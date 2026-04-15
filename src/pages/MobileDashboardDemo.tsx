@@ -6344,7 +6344,7 @@ const MobileDashboardDemo = ({
                                         <p className={cn("text-[22px] font-black leading-tight mb-0.5", isPaid ? (isDark ? "text-primary" : "text-primary") : (isDark ? "text-destructive" : "text-red-600"))}>
                                             {isPaid ? 'RECEIVED' : (daysPast > 0 ? 'OVERDUE' : 'PENDING')}
                                         </p>
-                                        <p className={cn("text-3xl font-black font-outfit mb-3", textColor)}>{renderBudgetValue(pay)}</p>
+                                        <p className={cn("text-3xl font-black font-outfit mb-3", isDark ? textColor : "text-black")}>{renderBudgetValue(pay)}</p>
                                         {isPaid ? (
                                             <p className={cn("text-[12px] font-semibold", secondaryTextColor)}>Paid on {dueDateStr}</p>
                                         ) : (
