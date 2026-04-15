@@ -189,6 +189,9 @@ importers:
       web-vitals:
         specifier: ^5.2.0
         version: 5.2.0
+      workbox-sw:
+        specifier: ^7.4.0
+        version: 7.4.0
     devDependencies:
       '@dyad-sh/react-vite-component-tagger':
         specifier: ^0.8.0
@@ -4086,6 +4089,9 @@ packages:
   word-wrap@1.2.5:
     resolution: {integrity: sha512-BN22B5eaMMI9UMtjrGd5g5eCYPpCPDUy0FJXbYsaT5zYxjFOckS53SQDE3pWkVoWpHXVb3BrYcEN4Twa55B5cA==}
     engines: {node: '>=0.10.0'}
+
+  workbox-sw@7.4.0:
+    resolution: {integrity: sha512-ltU+Kr3qWR6BtbdlMnCjobZKzeV1hN+S6UvDywBrwM19TTyqA03X66dzw1tEIdJvQ4lYKkBFox6IAEhoSEZ8Xw==}
 
   wrap-ansi@7.0.0:
     resolution: {integrity: sha512-YVGIj2kamLSTxw6NsZjoBxfSwsn0ycdesmc4p+Q21c5zPuZ1pl+NfxVdxPtdHvmNVOQ6XSYG4AUtyt/Fi7D16Q==}
@@ -8110,6 +8116,8 @@ snapshots:
     optional: true
 
   word-wrap@1.2.5: {}
+
+  workbox-sw@7.4.0: {}
 
   wrap-ansi@7.0.0:
     dependencies:
