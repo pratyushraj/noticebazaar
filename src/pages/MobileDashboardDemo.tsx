@@ -611,6 +611,8 @@ const MobileDashboardDemo = ({
     const [searchQuery, setSearchQuery] = useState('');
     const [dealFilters, setDealFilters] = useState({ status: 'all', sortBy: 'newest' });
     const [isLoadingDeals, setIsLoadingDeals] = useState(false);
+    // Show skeleton on initial load when profile hasn't loaded yet
+    const showInitialSkeleton = isLoadingProfile && !profile;
     const contractSectionRef = useRef<HTMLDivElement | null>(null);
 
     // Prevent double scrollbar when item detail modal is open
@@ -2826,8 +2828,11 @@ const MobileDashboardDemo = ({
                                 <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
                                     <div className="flex items-center justify-between">
                                         {isLoadingProfile ? (
-                                            /* Profile loading — text fallback, no skeleton */
-                                            <span className="text-[15px] font-medium text-foreground/60">Loading...</span>
+                                            /* Profile loading — skeleton */
+                                            <div className="flex flex-col gap-2">
+                                                <ShimmerSkeleton className="h-5 w-40 rounded" />
+                                                <ShimmerSkeleton className="h-3.5 w-24 rounded" />
+                                            </div>
                                         ) : !profile ? (
                                             <span className="text-[15px] font-medium text-foreground/60">Welcome back</span>
                                         ) : (
@@ -3229,7 +3234,7 @@ const MobileDashboardDemo = ({
                                         }
                                         return (
                                             <div className="space-y-10">
-                                                {isLoadingDeals ? (
+                                                {(isLoadingDeals || showInitialSkeleton) ? (
                                                     /* Skeleton for deals loading */
                                                     <div className="space-y-4">
                                                         <ShimmerSkeleton className="h-24 w-full rounded-2xl" />
@@ -3526,7 +3531,7 @@ const MobileDashboardDemo = ({
                                 >
                                     <h3 className={cn('text-sm font-bold tracking-tight mb-3', textColor)}>Your Performance</h3>
                                 </motion.div>
-                                {isLoadingDeals ? (
+                                {(isLoadingDeals || showInitialSkeleton) ? (
                                     <div className="grid grid-cols-2 gap-3">
                                         <ShimmerSkeleton className="h-20 rounded-2xl" />
                                         <ShimmerSkeleton className="h-20 rounded-2xl" />

@@ -39,7 +39,7 @@ const CreatorDashboard = () => {
   const { user, profile: sessionProfile } = useSession();
   const queryClient = useQueryClient();
 
-  const { data: profile } = useQuery({
+  const { data: profile, isLoading: isProfileLoading } = useQuery({
     queryKey: ['profile', user?.id],
     queryFn: () => fetchProfile(user!.id),
     enabled: !!user?.id,
@@ -115,6 +115,7 @@ const CreatorDashboard = () => {
   return (
     <MobileDashboardDemo
       profile={profile}
+      isLoadingProfile={isProfileLoading}
       collabRequests={collabRequests}
       brandDeals={brandDeals}
       onAcceptRequest={handleAcceptRequest}
