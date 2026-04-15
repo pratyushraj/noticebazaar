@@ -22,17 +22,26 @@ async function fetchBrandDeals() {
   const { data: sessionData } = await supabase.auth.getSession();
   if (!sessionData.session) return [];
 
-  // Backend exposes creator deals at GET /api/deals/mine (not /api/deals).
-  const res = await fetch(`${getApiBaseUrl()}/api/deals/mine`, {
-    headers: { Authorization: `Bearer ${sessionData.session.access_token}` },
-  });
-  if (res.status === 404) return [];
-  if (!res.ok) {
-    const payload = await res.json().catch(() => ({}));
-    throw new Error(payload?.error || `Failed to fetch deals (${res.status})`);
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 5000); // 5s — fail fast if backend is down
+  try {
+    const res = await fetch(`${getApiBaseUrl()}/api/deals/mine`, {
+      headers: { Authorization: `Bearer ${sessionData.session.access_token}` },
+      signal: controller.signal,
+    });
+    clearTimeout(timeoutId);
+    if (res.status === 404) return [];
+    if (!res.ok) {
+      const payload = await res.json().catch(() => ({}));
+      throw new Error(payload?.error || `Failed to fetch deals (${res.status})`);
+    }
+    const data = await res.json().catch(() => ({}));
+    return data?.deals || [];
+  } catch (err: any) {
+    clearTimeout(timeoutId);
+    if (err.name === 'AbortError') return []; // Backend unavailable — return empty gracefully
+    throw err;
   }
-  const data = await res.json().catch(() => ({}));
-  return data?.deals || [];
 }
 
 const CreatorDashboard = () => {
@@ -46,12 +55,13 @@ const CreatorDashboard = () => {
     initialData: sessionProfile,
   });
 
-  const { requests: collabRequests } = useCollabRequests(user?.id);
+  const { requests: collabRequests, isLoading: isLoadingCollab } = useCollabRequests(user?.id);
 
-  const { data: brandDeals = [] } = useQuery({
+  const { data: brandDeals = [], isLoading: isLoadingBrandDeals } = useQuery({
     queryKey: ['brand-deals', user?.id],
     queryFn: fetchBrandDeals,
     enabled: !!user?.id,
+    retry: false, // Don't retry — backend may be unavailable, fail fast
   });
 
   const handleRefresh = () => {
@@ -117,6 +127,7 @@ const CreatorDashboard = () => {
       profile={profile}
       collabRequests={collabRequests}
       brandDeals={brandDeals}
+      isLoadingDealsOverride={isLoadingCollab || isLoadingBrandDeals}
       onAcceptRequest={handleAcceptRequest}
       onDeclineRequest={handleDeclineRequest}
       onRefresh={handleRefresh}

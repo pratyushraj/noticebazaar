@@ -1,5 +1,5 @@
 import { lazy } from "react";
-import { Route } from "react-router-dom";
+import { Navigate, Route } from "react-router-dom";
 import LegacyCollabRedirect from "@/components/collab/LegacyCollabRedirect";
 import LegacyCollabSuccessRedirect from "@/components/collab/LegacyCollabSuccessRedirect";
 import LegacyCreatorProfileRedirect from "@/components/collab/LegacyCreatorProfileRedirect";
@@ -25,6 +25,9 @@ export const PublicRoutes = () => (
     <Route path="/privacy-policy" element={<LazyRoute><PrivacyPolicy /></LazyRoute>} />
     <Route path="/terms-of-service" element={<LazyRoute><TermsOfService /></LazyRoute>} />
     <Route path="/creator/:username" element={<LegacyCreatorProfileRedirect />} />
+    <Route path="/settings" element={<Navigate to="/creator-profile" replace />} />
+    <Route path="/brand-opportunities" element={<Navigate to="/creator-dashboard" replace />} />
+    <Route path="/messages" element={<Navigate to="/creator-dashboard" replace />} />
     <Route path="/:username" element={<LazyRoute><CollabLinkLanding /></LazyRoute>} />
     <Route path="/:username/success" element={<LazyRoute><CollabLinkLanding /></LazyRoute>} />
     <Route path="/collab/:username" element={<LegacyCollabRedirect />} />

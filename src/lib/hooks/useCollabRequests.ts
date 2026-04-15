@@ -44,12 +44,24 @@ async function fetchCollabRequests(): Promise<CollabRequest[]> {
     throw new Error('Not authenticated');
   }
 
-  const response = await fetch(`${getApiBaseUrl()}/api/collab-requests`, {
-    headers: {
-      Authorization: `Bearer ${sessionData.session.access_token}`,
-      'Content-Type': 'application/json',
-    },
-  });
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 5000); // 5s timeout
+  let response: Response;
+  try {
+    response = await fetch(`${getApiBaseUrl()}/api/collab-requests`, {
+      headers: {
+        Authorization: `Bearer ${sessionData.session.access_token}`,
+        'Content-Type': 'application/json',
+      },
+      signal: controller.signal,
+    });
+  } catch (err: any) {
+    clearTimeout(timeoutId);
+    if (err.name === 'AbortError') throw new Error('API_TIMEOUT');
+    throw err;
+  } finally {
+    clearTimeout(timeoutId);
+  }
 
   if (response.status === 401) {
     throw new Error('Session expired');
@@ -119,8 +131,9 @@ export function useCollabRequests(creatorId: string | undefined) {
     },
     retry: (failureCount, error: unknown) => {
       const err = error as { message?: string };
-      if (err?.message === 'Session expired' || err?.message === 'Not authenticated') return false;
-      return failureCount < 2;
+      // Don't retry auth errors or timeout errors (backend likely down)
+      if (err?.message === 'Session expired' || err?.message === 'Not authenticated' || err?.message === 'API_TIMEOUT') return false;
+      return failureCount < 1;
     },
   });
 

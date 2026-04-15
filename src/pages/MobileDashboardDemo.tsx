@@ -418,6 +418,7 @@ const MobileDashboardDemo = ({
     onLogout,
     showDemoOffer = false,
     isLoadingProfile = false,
+    isLoadingDealsOverride = false,
 }: MobileDashboardProps) => {
     const navigate = useNavigate();
     const queryClient = useQueryClient();
@@ -450,7 +451,7 @@ const MobileDashboardDemo = ({
     const dealIdParam = (searchParams.get('dealId') || '').trim() || null;
     const subtabParam = (searchParams.get('subtab') as 'active' | 'pending' | 'completed' | null) || null;
 
-    const [collabSubTab, setCollabSubTab] = useState<'active' | 'pending' | 'completed'>('active');
+    const [collabSubTab, setCollabSubTab] = useState<'active' | 'pending' | 'completed'>('pending');
     const [showSharingTips, setShowSharingTips] = useState(false);
     const hasHandledDeepLinkRef = useRef(false);
     useEffect(() => {
@@ -610,7 +611,8 @@ const MobileDashboardDemo = ({
     const [isReportingIssue, setIsReportingIssue] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const [dealFilters, setDealFilters] = useState({ status: 'all', sortBy: 'newest' });
-    const [isLoadingDeals, setIsLoadingDeals] = useState(false);
+    const [isLoadingDealsLocal, setIsLoadingDeals] = useState(false);
+    const isLoadingDeals = isLoadingDealsOverride || isLoadingDealsLocal;
     const contractSectionRef = useRef<HTMLDivElement | null>(null);
 
     // Prevent double scrollbar when item detail modal is open
@@ -2724,7 +2726,7 @@ const MobileDashboardDemo = ({
                             )}
 
                             {/* Command Header */}
-                            <div className="px-5 pb-6 pt-safe" style={{ paddingTop: 'max(env(safe-area-inset-top), 24px)' }}>
+                            <div className="sticky top-0 z-10 px-5 pb-6 pt-safe" style={{ paddingTop: 'max(env(safe-area-inset-top), 24px)', backgroundColor: bgColor }}>
                                 <div className="flex items-center justify-between mb-8">
                                     {/* Left: Sidebar Menu */}
                                     <button type="button" onClick={() => handleAction('menu')} aria-label="Open menu" className={cn("p-1.5 -ml-1.5 rounded-full transition-all active:scale-95", secondaryTextColor)}>
@@ -2858,8 +2860,8 @@ const MobileDashboardDemo = ({
                                                     })()}
                                                 </h1>
                                                 <div className={cn("flex items-center gap-1.5 px-2.5 py-1 rounded-full", isDark ? "bg-primary/10" : "bg-primary")}>
-                                                    <span className="w-1.5 h-1.5 rounded-full bg-primary shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
-                                                    <span className="text-[10px] uppercase font-bold tracking-[0.06em] text-primary dark:text-primary">Active</span>
+                                                    <span className={cn("w-1.5 h-1.5 rounded-full shadow-[0_0_8px_rgba(16,185,129,0.5)]", isDark ? "bg-primary" : "bg-white")} />
+                                                    <span className={cn("text-[10px] uppercase font-bold tracking-[0.06em]", isDark ? "text-primary" : "text-white")}>Active</span>
                                                 </div>
                                             </>
                                         )}
@@ -2995,7 +2997,7 @@ const MobileDashboardDemo = ({
                                                 <p className={cn("text-[10px] font-medium", secondaryTextColor)}>Send this when a brand asks to collaborate</p>
                                             </div>
 
-                                            <div className={cn("px-4 py-3 rounded-xl font-mono text-[12px] border mb-3", isDark ? "bg-background border-border text-foreground" : "bg-[#F8FAF9] border-[#E5E7EB] text-[#0F172A]")}>
+                                            <div className={cn("px-4 py-3 rounded-xl font-mono text-[12px] border mb-3 min-w-0 truncate", isDark ? "bg-background border-border text-foreground" : "bg-[#F8FAF9] border-[#E5E7EB] text-[#0F172A]")}>
                                                 creatorarmour.com/{profile?.handle || username || 'creator'}
                                             </div>
 
@@ -3406,6 +3408,8 @@ const MobileDashboardDemo = ({
                                                     );
                                                 };
 
+                                                return (
+                                                    <div className="space-y-4">
                                                 {/* Section 1: Incoming / Pending Offers */}
                                                 {(pendingSection.length > 0 || showDemo) && (
                                                     <div>
@@ -4125,11 +4129,11 @@ const MobileDashboardDemo = ({
                                                                 setSelectedType('offer');
                                                             }}
                                                             className={cn(
-                                                                idx === 0 && !req.isConfirmedDeal
+                                                                !req.isConfirmedDeal
                                                                     ? "p-5 rounded-[24px] border-2 transition-all duration-300 group active:scale-[0.99] relative cursor-pointer shadow-lg"
                                                                     : "p-4 rounded-2xl border transition-all duration-300 group active:scale-[0.99] relative cursor-pointer",
                                                                 borderColor,
-                                                                idx === 0 && !req.isConfirmedDeal
+                                                                !req.isConfirmedDeal
                                                                     ? (
                                                                         isDark
                                                                             ? "bg-[linear-gradient(135deg,rgba(15,23,42,0.98),rgba(17,24,39,0.92))] border-emerald-400/30 hover:bg-[#111827]/95 shadow-[0_12px_30px_rgba(16,185,129,0.14)]"
@@ -4142,7 +4146,7 @@ const MobileDashboardDemo = ({
                                                                     )
                                                             )}
                                                         >
-                                                            {idx === 0 && !req.isConfirmedDeal && (
+                                                            {!req.isConfirmedDeal && (
                                                                 <div className="absolute top-4 right-4">
                                                                     <span className={cn(
                                                                         "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-[0.16em] border",
@@ -4175,7 +4179,7 @@ const MobileDashboardDemo = ({
                                                                 </div>
                                                                 <div className="text-right">
                                                                     <p className={cn(
-                                                                        idx === 0 && !req.isConfirmedDeal ? "text-[28px]" : "text-[22px]",
+                                                                        !req.isConfirmedDeal ? "text-[28px]" : "text-[22px]",
                                                                         "font-black font-outfit tracking-tight",
                                                                         isDark ? "text-foreground" : "text-muted-foreground"
                                                                     )}>
@@ -4218,9 +4222,9 @@ const MobileDashboardDemo = ({
                                                                     <div className={cn(
                                                                         "flex items-center gap-1.5 ml-auto px-2.5 py-1.5 rounded-lg border",
                                                                         expTone === 'danger'
-                                                                            ? (isDark ? "bg-destructive/10 text-destructive border-destructive/20" : "bg-destructive text-destructive border-destructive")
+                                                                            ? (isDark ? "bg-destructive/10 text-destructive border-destructive/20" : "bg-destructive/10 text-destructive border-destructive/30")
                                                                             : expTone === 'warn'
-                                                                                ? (isDark ? "bg-warning/10 text-warning border-warning/20" : "bg-warning text-warning border-warning")
+                                                                                ? (isDark ? "bg-warning/10 text-warning border-warning/20" : "bg-warning/10 text-warning border-warning/30")
                                                                                 : (isDark ? "bg-card text-foreground/70 border-border" : "bg-card text-muted-foreground border-border")
                                                                     )}>
                                                                         <Clock className="w-3.5 h-3.5" />
@@ -4231,7 +4235,7 @@ const MobileDashboardDemo = ({
                                                                 </div>
 
                                                                 {/* Expected Payment Time callout */}
-                                                                <div className={cn("flex items-start gap-2 px-3 py-2 rounded-xl text-[11px] font-semibold leading-relaxed border", isDark ? "bg-[#1C2C2A]/70 text-primary border-primary/20" : "bg-primary text-primary border-primary")}>
+                                                                <div className={cn("flex items-start gap-2 px-3 py-2 rounded-xl text-[11px] font-semibold leading-relaxed border", isDark ? "bg-[#1C2C2A]/70 text-primary border-primary/20" : "bg-primary/10 text-primary border-primary/20")}>
                                                                     <Landmark className="w-3.5 h-3.5 shrink-0 mt-[2px]" />
                                                                     Payment released after content approval
                                                                 </div>
@@ -4242,7 +4246,7 @@ const MobileDashboardDemo = ({
                                                                     onClick={(e) => { e.stopPropagation(); triggerHaptic(); setSelectedItem(req); setSelectedType('offer'); }}
                                                                     className={cn(
                                                                         "w-full rounded-[16px] text-[12px] font-black shadow-lg active:scale-95 transition-all flex items-center justify-center gap-1.5",
-                                                                        idx === 0 && !req.isConfirmedDeal
+                                                                        !req.isConfirmedDeal
                                                                             ? "h-12 bg-emerald-600 text-white shadow-emerald-500/20"
                                                                             : "h-11 bg-info text-foreground shadow-blue-500/20"
                                                                     )}
@@ -4713,7 +4717,7 @@ const MobileDashboardDemo = ({
 
                 {/* ─── NAVIGATION BAR (Redesigned) ─── */}
                 <div
-                    className={cn('fixed bottom-0 inset-x-0 border-t z-[1100] transition-all duration-500', isDark ? 'border-[#1F2937] bg-[#0B0F14]/90' : 'border-border bg-secondary/90')}
+                    className={cn('fixed bottom-0 inset-x-0 border-t z-[1100] transition-all duration-500 md:hidden', isDark ? 'border-[#1F2937] bg-[#0B0F14]/90' : 'border-border bg-secondary/90')}
                     style={{ backdropFilter: 'blur(30px)', WebkitBackdropFilter: 'blur(30px)' }}
                 >
                     <div className="max-w-md md:max-w-2xl mx-auto flex items-center justify-between px-4 py-3 pb-safe gap-1" style={{ paddingBottom: 'max(env(safe-area-inset-bottom), 16px)' }}>
@@ -5298,7 +5302,7 @@ const MobileDashboardDemo = ({
                                                                 </p>
                                                             )}
                                                             <a
-                                                                href="/#/creator-contracts"
+                                                                href="/creator-dashboard?tab=deals"
                                                                 className={cn("inline-flex items-center gap-2 text-[12px] font-black uppercase tracking-wider", isDark ? "text-rose-200" : "text-rose-700")}
                                                             >
                                                                 <Flag className="w-4 h-4" />

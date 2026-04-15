@@ -228,7 +228,7 @@ const Login = () => {
         {/* Title and Subtitle */}
         <div className="mb-10">
           <h2 className="text-4xl font-black text-foreground mb-3 tracking-tight text-balance">Sign In</h2>
-          <p className="text-muted-foreground text-[15px] font-medium leading-relaxed text-pretty">Sign in to see your brand offers and active deals.</p>
+          <p className="text-muted-foreground text-[15px] font-medium leading-relaxed text-pretty">Enter your email and password to access your dashboard.</p>
         </div>
 
         {/* Loading: wait for session (with timeout so user isn't stuck) */}
@@ -273,8 +273,8 @@ const Login = () => {
           <div className="mb-8">
             <form onSubmit={handleEmailPasswordLogin} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="email" className="text-muted-foreground text-[11px] font-black uppercase tracking-widest ml-1">
-                  Email
+                <Label htmlFor="email" className="text-foreground/80 text-[13px] font-bold ml-1">
+                  Email address
                 </Label>
                 <Input
                   id="email"
@@ -282,22 +282,24 @@ const Login = () => {
                   placeholder="name@example.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="bg-background/85 border-border text-foreground placeholder:text-muted-foreground text-[16px] h-14 rounded-2xl focus:border-primary/50 focus:ring-emerald-500/20 px-5 transition-all"
+                  className="bg-background/85 border-border text-foreground placeholder:text-muted-foreground/50 text-[17px] h-[56px] rounded-2xl border-2 focus:border-primary focus:ring-2 focus:ring-primary/25 focus:bg-background px-5 transition-all outline-none"
                   required
                   autoComplete="email"
+                  aria-label="Email address"
                 />
               </div>
               <div className="space-y-2">
                 <div className="flex justify-between items-center px-1">
-                  <Label htmlFor="password" className="text-muted-foreground text-[11px] font-black uppercase tracking-widest">
+                  <Label htmlFor="password" className="text-foreground/80 text-[13px] font-bold">
                     Password
                   </Label>
                   <button
                     type="button"
                     onClick={handleForgotPassword}
-                    className="text-[11px] font-black text-primary uppercase tracking-widest hover:text-primary transition-colors"
+                    className="text-[13px] font-bold text-primary hover:text-primary/80 transition-colors py-1 px-2 -mr-2 rounded-lg hover:bg-primary/10 active:scale-95"
+                    aria-label="Send password reset email"
                   >
-                    Forgot?
+                    Forgot password?
                   </button>
                 </div>
                 <Input
@@ -306,9 +308,10 @@ const Login = () => {
                   placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="bg-background/85 border-border text-foreground placeholder:text-muted-foreground text-[16px] h-14 rounded-2xl focus:border-primary/50 focus:ring-emerald-500/20 px-5 transition-all"
+                  className="bg-background/85 border-border text-foreground placeholder:text-muted-foreground/50 text-[17px] h-[56px] rounded-2xl border-2 focus:border-primary focus:ring-2 focus:ring-primary/25 focus:bg-background px-5 transition-all outline-none"
                   required
                   autoComplete="current-password"
+                  aria-label="Password"
                 />
               </div>
 	              <Button

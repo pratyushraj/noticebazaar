@@ -18,10 +18,10 @@ const retryConfig = {
         error?.code === 'PGRST301' || error?.message?.includes('JWT')) {
       return false;
     }
-    // Retry up to 3 times with exponential backoff for network/server errors
-    return failureCount < 3;
+    // Retry at most once — backend may be unavailable locally
+    return failureCount < 1;
   },
-  retryDelay: (attemptIndex: number) => Math.min(1000 * 2 ** attemptIndex, 30000),
+  retryDelay: (attemptIndex: number) => Math.min(1000 * 2 ** attemptIndex, 5000),
   staleTime: 5 * 60 * 1000, // 5 minutes
   cacheTime: 10 * 60 * 1000, // 10 minutes
 };
