@@ -317,8 +317,8 @@ function DealDetailPageContent() {
   const creatorSignature = signatureData?.creatorSignature || null;
 
   // Get current stage from deal status - uses canonical mapping
-  const getCurrentStage = (status: string | null | undefined, progressPercentage?: number | null): DealStage | undefined => {
-    return getDealStageFromStatus(status, progressPercentage);
+  const getCurrentStage = (status: string | null | undefined, progressPercentage?: number | null, paymentReceivedDate?: string | null): DealStage | undefined => {
+    return getDealStageFromStatus(status, progressPercentage, paymentReceivedDate);
   };
 
   // Helper to validate creator address and phone before contract operations
@@ -1050,7 +1050,7 @@ function DealDetailPageContent() {
   const isPaymentOverdue = daysOverdue > 0 && deal?.status?.toLowerCase().includes('pending');
 
   // Get current stage - calculated after all hooks
-  const currentStage = getCurrentStage(deal?.status, deal?.progress_percentage);
+  const currentStage = getCurrentStage(deal?.status, deal?.progress_percentage, deal?.payment_received_date);
 
   // Compute deal data for handlers (safe even if deal is undefined)
   const dealAmount = useMemo(() => Number(deal?.deal_amount || 0), [deal?.deal_amount]);

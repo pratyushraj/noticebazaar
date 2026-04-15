@@ -1006,7 +1006,9 @@ export const STAGE_LABELS: Record<DealStage, string> = {
  * Maps database status to DealStage
  * This is the canonical mapping function used throughout the app
  */
-export const getDealStageFromStatus = (status: string | null | undefined, progressPercentage?: number | null): DealStage => {
+export const getDealStageFromStatus = (status: string | null | undefined, progressPercentage?: number | null, paymentReceivedDate?: string | null): DealStage => {
+  // If payment is received, deal is completed regardless of status string
+  if (paymentReceivedDate) return 'completed';
   if (!status && progressPercentage === undefined) return 'details_submitted';
 
   const statusLower = status?.toLowerCase() || '';

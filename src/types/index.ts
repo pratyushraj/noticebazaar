@@ -250,6 +250,7 @@ export type BrandDeal = Tables<'brand_deals'> & {
   delivery_notes?: string | null;
   shipping_required?: boolean | null;
   shipping_status?: string | null;
+  payment_received_date?: string | null;
 };
 
 // NEW: Payment Reminder Type

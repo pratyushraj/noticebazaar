@@ -952,6 +952,8 @@ const MobileDashboardDemo = ({
     const pendingOffersDeduplicated = React.useMemo(() => {
         const seen = new Set<string>();
         return (collabRequests || []).filter((req: any) => {
+            // Only include pending requests in New Offers
+            if (req.status !== 'pending') return false;
             const key = [req.brand_name, req.collab_type, req.exact_budget || req.budget_amount || req.deal_amount].filter(Boolean).join('|');
             if (seen.has(key)) return false;
             seen.add(key);
@@ -965,13 +967,13 @@ const MobileDashboardDemo = ({
     const completedDealsList = React.useMemo(() => {
         return (brandDeals || []).filter((d: any) => {
             const s = normalizeDealStatus(d);
-            return s.includes('completed') || s === 'paid' || Boolean(d.payment_received_date);
+            return s.includes('completed') || Boolean(d.payment_received_date);
         });
     }, [brandDeals]);
     const activeDealsList = React.useMemo(() => {
         return (brandDeals || []).filter((d: any) => {
             const s = normalizeDealStatus(d);
-            return !(s.includes('completed') || s === 'paid' || Boolean(d.payment_received_date));
+            return !(s.includes('completed') || Boolean(d.payment_received_date));
         });
     }, [brandDeals]);
     const actionRequiredDealsList = React.useMemo(() => {

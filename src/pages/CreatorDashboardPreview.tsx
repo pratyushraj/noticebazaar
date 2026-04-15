@@ -47,7 +47,7 @@ import { usePratyushMode, PratyushModeOverlay } from '@/components/easter-egg/Pr
 import { getDealStageFromStatus } from '@/lib/hooks/useBrandDeals';
 
 const getDealStage = (deal: BrandDeal): DealStage => {
-  return getDealStageFromStatus(deal.status, deal.progress_percentage);
+  return getDealStageFromStatus(deal.status, deal.progress_percentage, deal.payment_received_date);
 };
 
 const getPaymentStatus = (deal: BrandDeal): PaymentStatus => {

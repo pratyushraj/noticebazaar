@@ -86,7 +86,7 @@ export const DealKanban: React.FC<DealKanbanProps> = ({ brandDeals, onDealUpdate
 
   const getDealStage = (deal: BrandDeal): DealStage => {
     // Use canonical status mapping
-    return getDealStageFromStatus(deal.status, deal.progress_percentage);
+    return getDealStageFromStatus(deal.status, deal.progress_percentage, deal.payment_received_date);
   };
 
   return (

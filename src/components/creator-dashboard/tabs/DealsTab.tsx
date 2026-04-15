@@ -89,7 +89,7 @@ const DealsTab = ({
                         <ProjectDealCard
                             key={item.id}
                             deal={item}
-                            stage={getDealStageFromStatus(item.status, item.progress_percentage)}
+                            stage={getDealStageFromStatus(item.status, item.progress_percentage, item.payment_received_date)}
                             onView={() => onDealSelect(item)}
                             onEdit={() => { }}
                             onManageDeliverables={() => { }}

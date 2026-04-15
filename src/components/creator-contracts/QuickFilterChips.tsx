@@ -16,7 +16,7 @@ interface QuickFilterChipsProps {
 
 // Helper function to map status to stage - uses canonical mapping
 const getDealStage = (deal: BrandDeal): DealStage => {
-  return getDealStageFromStatus(deal.status, deal.progress_percentage);
+  return getDealStageFromStatus(deal.status, deal.progress_percentage, deal.payment_received_date);
 };
 
 const QuickFilterChips: React.FC<QuickFilterChipsProps> = ({
