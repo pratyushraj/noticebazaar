@@ -80,8 +80,12 @@ export function useRealtimePresence(conversationId: string | null, userId: strin
         }
       });
 
-    return () => {
-      channel.untrack();
+    return async () => {
+      try {
+        await channel.untrack();
+      } catch (e) {
+        console.warn('[useRealtimePresence] untrack failed:', e);
+      }
       supabase.removeChannel(channel);
     };
   }, [conversationId, userId]);

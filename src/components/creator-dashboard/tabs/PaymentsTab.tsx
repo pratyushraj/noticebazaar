@@ -6,16 +6,17 @@ import EnhancedPaymentCard from '@/components/payments/EnhancedPaymentCard';
 import FinancialOverviewHeader from '@/components/payments/FinancialOverviewHeader';
 import PaymentQuickFilters from '@/components/payments/PaymentQuickFilters';
 import { typography } from '@/lib/design-system';
+import { BrandDeal } from '@/types';
 
 interface PaymentsTabProps {
-    brandDeals: any[];
+    brandDeals: BrandDeal[];
 }
 
 const PaymentsTab = ({ brandDeals }: PaymentsTabProps) => {
     const [searchQuery, setSearchQuery] = React.useState('');
     const [activeFilter, setActiveFilter] = React.useState<string | null>(null);
 
-    const getPaymentStatus = (deal: any): 'overdue' | 'pending' | 'upcoming' | 'paid' => {
+    const getPaymentStatus = (deal: BrandDeal): 'overdue' | 'pending' | 'upcoming' | 'paid' => {
         const rawStatus = (deal.status || '').toLowerCase();
         if (deal.payment_received_date || rawStatus.includes('completed') || rawStatus === 'paid') return 'paid';
 

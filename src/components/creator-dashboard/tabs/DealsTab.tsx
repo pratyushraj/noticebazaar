@@ -7,14 +7,15 @@ import ProjectDealCard from '@/components/creator-contracts/ProjectDealCard';
 import { getDealStageFromStatus } from '@/lib/hooks/useBrandDeals';
 import { ios, typography, glass } from '@/lib/design-system';
 import { cn } from '@/lib/utils';
+import { BrandDeal } from '@/types';
 
 interface DealsTabProps {
     activeSubTab: 'active' | 'pending' | 'completed';
     setActiveSubTab: (tab: 'active' | 'pending' | 'completed') => void;
-    activeDeals: any[];
-    completedDeals: any[];
-    pendingOffers: any[];
-    onDealSelect: (deal: any) => void;
+    activeDeals: BrandDeal[];
+    completedDeals: BrandDeal[];
+    pendingOffers: BrandDeal[];
+    onDealSelect: (deal: BrandDeal) => void;
 }
 
 const DealsTab = ({

@@ -5,6 +5,16 @@
 
 import DOMPurify from 'isomorphic-dompurify';
 
+// Re-export canonical validators from validation.ts to maintain backward compat
+// These were previously defined here but are now consolidated into validation.ts
+export { validateEmail, validatePhone } from './validation';
+
+// Wrapper for backward compat - validatePhoneNumber used internally by validateFormField
+const validatePhoneNumber = (phone: string) => {
+  const result = validatePhone(phone);
+  return { isValid: result === null, sanitized: phone, error: result };
+};
+
 // Instagram handle validation patterns
 const INSTAGRAM_HANDLE_PATTERN = /^[a-zA-Z0-9_.]{1,30}$/;
 const INSTAGRAM_URL_PATTERN = /^https?:\/\/(www\.)?instagram\.com\/[a-zA-Z0-9_.]{1,30}\/?$/;
@@ -118,47 +128,6 @@ export const validateInstagramUrl = (url: string): { isValid: boolean; handle?: 
   return { isValid: true, handle };
 };
 
-/**
- * Validate email address
- */
-export const validateEmail = (email: string): { isValid: boolean; sanitized: string; error?: string } => {
-  if (!email || typeof email !== 'string') {
-    return { isValid: false, sanitized: '', error: 'Email is required' };
-  }
-
-  const sanitized = email.trim().toLowerCase();
-
-  if (sanitized.length > 254) {
-    return { isValid: false, sanitized, error: 'Email is too long' };
-  }
-
-  if (!EMAIL_PATTERN.test(sanitized)) {
-    return { isValid: false, sanitized, error: 'Invalid email format' };
-  }
-
-  return { isValid: true, sanitized };
-};
-
-/**
- * Validate phone number
- */
-export const validatePhoneNumber = (phone: string): { isValid: boolean; sanitized: string; error?: string } => {
-  if (!phone || typeof phone !== 'string') {
-    return { isValid: false, sanitized: '', error: 'Phone number is required' };
-  }
-
-  // Remove all non-digit characters except + for country code
-  const sanitized = phone.replace(/[^\d+]/g, '');
-
-  // Check against patterns
-  const isValid = PHONE_PATTERNS.some(pattern => pattern.test(sanitized));
-
-  if (!isValid) {
-    return { isValid: false, sanitized, error: 'Invalid phone number format' };
-  }
-
-  return { isValid: true, sanitized };
-};
 
 /**
  * Validate URL

@@ -5,11 +5,11 @@ import { Card, CardContent } from '@/components/ui/card';
 import { TrendingUp } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
-import { BrandDeal } from '@/types';
+import { BrandDeal, Profile } from '@/types';
 
 interface BrandInterestScoreProps {
   brandDeals?: BrandDeal[];
-  profile?: any;
+  profile?: Profile;
 }
 
 const BrandInterestScore: React.FC<BrandInterestScoreProps> = ({ brandDeals = [], profile }) => {

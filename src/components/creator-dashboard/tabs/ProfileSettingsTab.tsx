@@ -14,9 +14,10 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ios, typography } from '@/lib/design-system';
+import { Profile } from '@/types';
 
 interface ProfileSettingsTabProps {
-    profile: any;
+    profile: Profile;
     onLogout: () => void;
 }
 

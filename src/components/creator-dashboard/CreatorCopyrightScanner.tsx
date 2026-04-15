@@ -32,10 +32,19 @@ interface ScanStatus {
   platform?: string;
 }
 
+interface CopyrightScanResult {
+  id?: string;
+  similarity_score?: number;
+  platform?: string;
+  screenshot_url?: string;
+  description?: string;
+  infringingUrl?: string;
+}
+
 const CreatorCopyrightScanner: React.FC = () => {
   const [scanQuery, setScanQuery] = useState('');
   const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>([]);
-  const [lastScanResults, setLastScanResults] = useState<any[]>([]);
+  const [lastScanResults, setLastScanResults] = useState<CopyrightScanResult[]>([]);
   const [lastScanTime, setLastScanTime] = useState<string | null>(null);
   const [isAdvancedOpen, setIsAdvancedOpen] = useState(false);
   const [advancedOptions, setAdvancedOptions] = useState({
@@ -147,7 +156,7 @@ const CreatorCopyrightScanner: React.FC = () => {
   };
 
   // Categorize results by confidence level
-  const categorizeResults = (results: any[]) => {
+  const categorizeResults = (results: CopyrightScanResult[]) => {
     const highConfidence = results.filter(r => (r.similarity_score || 0) >= 0.9);
     const possibleReposts = results.filter(r => (r.similarity_score || 0) >= 0.6 && (r.similarity_score || 0) < 0.9);
     const noMatch = results.filter(r => (r.similarity_score || 0) < 0.6);

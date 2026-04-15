@@ -4,9 +4,10 @@ import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Sparkles, TrendingUp } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { BrandDeal } from '@/types';
 
 interface AIInsightsProps {
-  brandDeals?: any[];
+  brandDeals?: BrandDeal[];
 }
 
 const AIInsights: React.FC<AIInsightsProps> = ({ brandDeals = [] }) => {

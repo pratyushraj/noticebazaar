@@ -68,11 +68,11 @@ const normalizeDeliverable = (deliverable: any): string => {
   }
 };
 
-const parseDeliverables = (deliverables: any): string[] => {
+const parseDeliverables = (deliverables: unknown): string[] => {
   if (!deliverables) return [];
 
-  const coerceToList = (value: any): any[] => {
-    if (Array.isArray(value)) return value;
+  const coerceToList = <T,>(value: T | T[] | null | undefined): T[] => {
+    if (Array.isArray(value)) return value as T[];
     if (value === null || value === undefined) return [];
     return [value];
   };

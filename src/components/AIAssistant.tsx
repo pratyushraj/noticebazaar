@@ -64,6 +64,16 @@ export interface Message {
   stateType?: AIState['type']; // To track which state generated this message
 }
 
+export interface CollectedAIData {
+  meeting_type?: string;
+  document_relation_type?: 'unlinked' | 'case' | 'category';
+  related_id?: string | null;
+  business_name?: string;
+  gstin?: string;
+  business_entity_type?: string;
+  [key: string]: unknown; // Allow additional dynamic fields
+}
+
 interface AIAssistantProps {
   onClose: () => void;
   initialFlow?: 'onboarding' | 'document_upload' | 'book_consultation' | 'general';
@@ -75,8 +85,8 @@ interface AIAssistantProps {
   setMessages: React.Dispatch<React.SetStateAction<Message[]>>;
   aiState: AIState;
   setAiState: React.Dispatch<React.SetStateAction<AIState>>;
-  collectedData: any;
-  setCollectedData: React.Dispatch<React.SetStateAction<any>>;
+  collectedData: CollectedAIData;
+  setCollectedData: React.Dispatch<React.SetStateAction<CollectedAIData>>;
 }
 
 // --- Mock Data/Functions (Simulated Knowledge Base) ---

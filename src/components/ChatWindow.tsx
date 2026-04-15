@@ -21,6 +21,7 @@ import {
 } from '@/lib/hooks/useConversationMessages';
 import { useQueryClient } from '@tanstack/react-query';
 import { getInitials, DEFAULT_AVATAR_URL } from '@/lib/utils/avatar';
+import { Message } from '@/types';
 // Sample history disabled - no demo messages
 import { isTrialFeatureRestricted } from '@/lib/trial';
 import UpgradeModal from '@/components/trial/UpgradeModal';
@@ -138,7 +139,7 @@ const ChatWindow = ({ receiverId, receiverName, receiverAvatarUrl }: ChatWindowP
   // Count user's sent messages (only for CA/Lawyer chat during trial)
   const userMessagesCount = React.useMemo(() => {
     if (!isCAOrLawyerChat || !trialStatus.isTrial) return 0;
-    return messagesToDisplay.filter((msg: any) => {
+    return messagesToDisplay.filter((msg: Message) => {
       return msg.sender_id === currentUserId;
     }).length;
   }, [messagesToDisplay, isCAOrLawyerChat, trialStatus.isTrial, currentUserId]);
@@ -298,7 +299,7 @@ const ChatWindow = ({ receiverId, receiverName, receiverAvatarUrl }: ChatWindowP
         {messagesToDisplay.length === 0 ? (
           <div className="text-center text-muted-foreground py-8">No messages yet. Start the conversation!</div>
         ) : (
-          messagesToDisplay.map((msg: any) => {
+          messagesToDisplay.map((msg: Message) => {
             // For real messages, check the actual sender_id against the current user's ID
             const isCurrentUserMessage = msg.sender_id === currentUserId;
             
@@ -317,15 +318,15 @@ const ChatWindow = ({ receiverId, receiverName, receiverAvatarUrl }: ChatWindowP
                   <Avatar className="h-8 w-8">
                     <AvatarImage 
                       src={
-                        (msg as any).sender?.avatar_url || 
+                        msg.sender?.avatar_url || 
                         receiverAvatarUrl || 
                         DEFAULT_AVATAR_URL
                       } 
-                      alt={(msg as any).sender?.first_name || receiverName} 
+                      alt={msg.sender?.first_name || receiverName} 
                     />
                     <AvatarFallback className="bg-secondary text-secondary-foreground">
-                      {(msg as any).sender 
-                        ? getInitials((msg as any).sender.first_name, (msg as any).sender.last_name) 
+                      {msg.sender 
+                        ? getInitials(msg.sender.first_name, msg.sender.last_name) 
                         : getInitials(receiverName.split(' ')[0], receiverName.split(' ')[1] || '')}
                     </AvatarFallback>
                   </Avatar>

@@ -3,13 +3,15 @@ import { motion } from 'framer-motion';
 import { ios, typography } from '@/lib/design-system';
 import { Card, CardContent } from '@/components/ui/card';
 import HeroEarningsCard from '../HeroEarningsCard';
-import { UrgentActionsWidget } from '../UrgentActionsWidget';
+import { UrgentActionsWidget, UrgentAction } from '../UrgentActionsWidget';
+import { BrandDeal } from '@/types';
+import { Profile } from '@/types';
 
 interface OverviewTabProps {
-    profile: any;
-    brandDeals: any[];
+    profile: Profile;
+    brandDeals: BrandDeal[];
     monthlyRevenue: number;
-    urgentActions: any[];
+    urgentActions: UrgentAction[];
 }
 
 const OverviewTab = ({

@@ -252,7 +252,7 @@ export const CreatorMarketplace: React.FC = () => {
     });
   };
 
-  const handleSubmitApplication = (applicationData: any) => {
+  const handleSubmitApplication = (applicationData: ApplicationFormData) => {
     // Mock application submission
     const newApplication: ProjectApplication = {
       id: `app-${Date.now()}`,
@@ -573,11 +573,18 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, onApply, hasApplied 
 };
 
 // Application Dialog Component
+interface ApplicationFormData {
+  proposal: string;
+  budget: string;
+  timeline: string;
+  portfolio: string[];
+}
+
 interface ApplicationDialogProps {
   project: MarketplaceProject | null;
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (data: any) => void;
+  onSubmit: (data: ApplicationFormData) => void;
 }
 
 const ApplicationDialog: React.FC<ApplicationDialogProps> = ({

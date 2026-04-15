@@ -43,7 +43,7 @@ const normalizeStatusText = (raw: unknown) =>
     .toUpperCase()
     .replaceAll(' ', '_');
 
-const hasTruthyKeyMatch = (sources: any[], pattern: RegExp) => {
+const hasTruthyKeyMatch = (sources: Record<string, unknown>[], pattern: RegExp) => {
   for (const src of sources) {
     if (!src || typeof src !== 'object') continue;
     for (const key of Object.keys(src)) {

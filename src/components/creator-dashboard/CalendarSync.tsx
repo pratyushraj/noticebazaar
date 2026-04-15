@@ -14,9 +14,10 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+import { BrandDeal } from '@/types';
 
 interface CalendarSyncProps {
-  brandDeals?: any[];
+  brandDeals?: BrandDeal[];
 }
 
 type SyncProvider = 'google' | 'apple' | 'outlook' | null;

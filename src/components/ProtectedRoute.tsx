@@ -8,6 +8,7 @@ import FullScreenLoader from '@/components/FullScreenLoader';
 import { supabase } from '@/integrations/supabase/client';
 import { getCollabReadiness } from '@/lib/collab/readiness';
 import { routes } from '@/lib/routes';
+import { Profile } from '@/types';
 
 interface ProtectedRouteProps {
   children: ReactNode;
@@ -47,7 +48,7 @@ function hasPersistedSupabaseAuth(): boolean {
 }
 
 /** Check if creator collab profile is complete */
-function isCollabProfileComplete(profile: any): boolean {
+function isCollabProfileComplete(profile: Partial<Profile> | null | undefined): boolean {
   if (!profile) return false;
   const readiness = getCollabReadiness({
     instagramHandle: profile.instagram_handle || profile.username || null,
@@ -71,7 +72,7 @@ function isCollabProfileComplete(profile: any): boolean {
 }
 
 /** Determine the target dashboard for a user based on role */
-function getTargetDashboard(profile: any): string {
+function getTargetDashboard(profile: Partial<Profile> | null | undefined): string {
   switch (profile?.role) {
     case 'admin': return '/admin-dashboard';
     case 'chartered_accountant': return '/ca-dashboard';

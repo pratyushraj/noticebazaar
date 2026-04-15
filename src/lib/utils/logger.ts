@@ -11,7 +11,7 @@ export enum LogLevel {
 }
 
 interface LogContext {
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 class Logger {
@@ -37,7 +37,7 @@ class Logger {
   /**
    * Log error messages (always logged, can be sent to error tracking service)
    */
-  error(message: string, error?: any, context?: LogContext) {
+  error(message: string, error?: unknown, context?: LogContext) {
     console.error(`[${LogLevel.ERROR}] ${message}`, {
       error: error?.message || error,
       stack: error?.stack,

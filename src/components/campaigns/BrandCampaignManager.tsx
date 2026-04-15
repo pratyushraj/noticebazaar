@@ -933,10 +933,25 @@ const CampaignAnalyticsView: React.FC<{ campaigns: Campaign[] }> = ({ campaigns 
 };
 
 // Create Campaign Dialog Component
+interface CampaignFormData {
+  name: string;
+  description: string;
+  objective: string;
+  budget: string;
+  startDate: string;
+  endDate: string;
+  targetAudience: {
+    ageRange: string;
+    gender: string[];
+    interests: string[];
+    locations: string[];
+  };
+}
+
 interface CreateCampaignDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  onCreate: (campaignData: any) => void;
+  onCreate: (campaignData: CampaignFormData) => void;
 }
 
 const CreateCampaignDialog: React.FC<CreateCampaignDialogProps> = ({ isOpen, onClose, onCreate }) => {

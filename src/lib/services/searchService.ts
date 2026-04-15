@@ -9,6 +9,15 @@ import { Notification } from '@/types/notifications';
 
 export type SearchResultType = 'deal' | 'payment' | 'contract' | 'notification' | 'message' | 'tax';
 
+export interface SearchDocument {
+  id: string;
+  name?: string;
+  type?: string;
+  dealName?: string;
+  tags?: string[];
+  [key: string]: unknown;
+}
+
 export interface SearchResult {
   id: string;
   type: SearchResultType;
@@ -193,7 +202,7 @@ export function searchPayments(deals: BrandDeal[], query: string): SearchResult[
 /**
  * Search contracts/documents
  */
-export function searchContracts(documents: any[], query: string): SearchResult[] {
+export function searchContracts(documents: SearchDocument[], query: string): SearchResult[] {
   if (!query.trim()) return [];
 
   const results: SearchResult[] = [];
@@ -282,7 +291,7 @@ export function searchNotifications(notifications: Notification[], query: string
  */
 export interface GlobalSearchOptions {
   deals?: BrandDeal[];
-  documents?: any[];
+  documents?: SearchDocument[];
   notifications?: Notification[];
   query: string;
   limit?: number;

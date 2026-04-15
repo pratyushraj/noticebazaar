@@ -5,10 +5,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { BadgeCheck, Calendar, Shield, Instagram, CreditCard, Star, TrendingUp, Award, CheckCircle2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
-import { BrandDeal } from '@/types';
+import { BrandDeal, Profile } from '@/types';
 
 interface ProfileTrustScoreProps {
-  profile?: any;
+  profile?: Profile;
   brandDeals?: BrandDeal[];
 }
 

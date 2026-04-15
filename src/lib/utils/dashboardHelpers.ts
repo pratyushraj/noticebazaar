@@ -1,7 +1,18 @@
 import { formatDistanceToNow } from './date';
+import { BrandDeal } from '@/types';
+
+export interface UrgentAction {
+    id: string;
+    type: 'payment_overdue' | 'deliverable_overdue' | 'signature_needed' | 'response_needed';
+    brand_name: string;
+    amount?: number;
+    dueDate?: string;
+    daysOverdue?: number;
+    onClick: () => void;
+}
 
 // Transform brand deals data into dashboard stats
-export const calculateDashboardStats = (brandDeals: any[]) => {
+export const calculateDashboardStats = (brandDeals: BrandDeal[]) => {
     const now = new Date();
     now.setHours(0, 0, 0, 0);
 
@@ -37,7 +48,7 @@ export const calculateDashboardStats = (brandDeals: any[]) => {
 };
 
 // Calculate month-over-month trends
-export const calculateTrends = (brandDeals: any[]) => {
+export const calculateTrends = (brandDeals: BrandDeal[]) => {
     const now = new Date();
     const currentMonth = now.getMonth();
     const currentYear = now.getFullYear();
@@ -86,7 +97,7 @@ export const calculateTrends = (brandDeals: any[]) => {
 };
 
 // Generate revenue chart data (last 6 months)
-export const generateRevenueChartData = (brandDeals: any[]) => {
+export const generateRevenueChartData = (brandDeals: BrandDeal[]) => {
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     const now = new Date();
     const data = [];
@@ -115,11 +126,11 @@ export const generateRevenueChartData = (brandDeals: any[]) => {
 };
 
 // Extract urgent actions from deals
-export const extractUrgentActions = (brandDeals: any[], navigate: (path: string) => void) => {
+export const extractUrgentActions = (brandDeals: BrandDeal[], navigate: (path: string) => void) => {
     const now = new Date();
     now.setHours(0, 0, 0, 0);
 
-    const urgentActions: any[] = [];
+    const urgentActions: UrgentAction[] = [];
 
     brandDeals.forEach(deal => {
         // Payment overdue
@@ -174,7 +185,7 @@ export const extractUrgentActions = (brandDeals: any[], navigate: (path: string)
 };
 
 // Generate recent activity from deals
-export const generateRecentActivity = (brandDeals: any[]) => {
+export const generateRecentActivity = (brandDeals: BrandDeal[]) => {
     const activities: any[] = [];
 
     brandDeals.forEach(deal => {
