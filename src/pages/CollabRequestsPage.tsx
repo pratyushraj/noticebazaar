@@ -357,7 +357,7 @@ const CollabRequestsPage = () => {
                     {/* Campaign Description - Now directly on card */}
                     {request.campaign_description && (
                       <div className="pt-1.5 border-t border-border mt-1">
-                        <p className="text-[11px] font-medium text-info/60 uppercase tracking-wider mb-1">
+                        <p className="text-[13px] font-semibold text-info/90 uppercase tracking-wider mb-1">
                           Campaign details
                         </p>
                         <p className={cn(
@@ -401,7 +401,7 @@ const CollabRequestsPage = () => {
                         >
                           {acceptingRequestId === request.id ? 'Generating contract…' : 'Accept & Generate Contract'}
                         </Button>
-<p className="text-[11px] text-center text-foreground/55">
+<p className="text-[12px] text-center text-foreground/75">
                           A contract is auto-generated and sent to the brand.
                         </p>
                       </div>

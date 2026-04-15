@@ -549,7 +549,7 @@ const CollabRequestBriefPage = () => {
           <div className="rounded-2xl bg-secondary/[0.06] border border-border/[0.08] p-4 md:p-4">
             <div className="flex items-end justify-between gap-4">
               <div className="min-w-0">
-                <p className="text-[11px] font-medium text-info/60 uppercase tracking-wider">They're paying</p>
+                <p className="text-[13px] font-semibold text-info/90 uppercase tracking-wider">They're paying</p>
                 <p className="text-xl md:text-2xl font-black text-foreground tracking-tight mt-1">{budgetLabel}</p>
               </div>
               {timeLeft && (
@@ -597,7 +597,7 @@ const CollabRequestBriefPage = () => {
 
           {/* What the brand wants */}
           <div className="rounded-2xl bg-secondary/[0.03] border border-border/[0.06] p-4">
-            <p className="text-[11px] font-medium text-info/60 uppercase tracking-wider mb-2">What the brand wants</p>
+            <p className="text-[13px] font-semibold text-info/90 uppercase tracking-wider mb-2">What the brand wants</p>
             <p className="text-sm text-info leading-relaxed whitespace-pre-wrap">
               {request.campaign_description || '-'}
             </p>
@@ -605,7 +605,7 @@ const CollabRequestBriefPage = () => {
 
           {/* Earnings Breakdown */}
           <div className="rounded-2xl bg-secondary/[0.03] border border-border/[0.06] p-4">
-            <p className="text-[11px] font-medium text-info/60 uppercase tracking-wider mb-3">Deal value</p>
+            <p className="text-[13px] font-semibold text-info/90 uppercase tracking-wider mb-3">Deal value</p>
             <div className="space-y-3 text-base md:text-sm">
               {!isBarterLike(request.collab_type) && (
                 <>
@@ -622,17 +622,17 @@ const CollabRequestBriefPage = () => {
               )}
               <div className="flex items-center justify-between text-foreground">
                 <span className="font-semibold">{isBarterLike(request.collab_type) ? "You'll receive" : "You'll get"}</span>
-                <span className="font-black text-primary text-lg md:text-base">{budgetLabel}</span>
+                <span className="font-black text-primary text-xl md:text-2xl">{budgetLabel}</span>
               </div>
               {!isBarterLike(request.collab_type) && (
-                <p className="text-[13px] md:text-[11px] text-foreground/55 mt-3">Paid via bank transfer or UPI.</p>
+                <p className="text-[13px] md:text-[12px] text-foreground/75 mt-3">Paid via bank transfer or UPI.</p>
               )}
             </div>
           </div>
 
           {/* Simple next-step explainer — extra bottom margin prevents overlap with sticky CTA */}
           <div className="rounded-2xl bg-secondary/[0.02] border border-border/[0.06] p-4 mb-[160px] md:mb-0">
-            <p className="text-[11px] font-medium text-info/60 uppercase tracking-wider mb-3">If you accept</p>
+            <p className="text-[13px] font-semibold text-info/90 uppercase tracking-wider mb-3">If you accept</p>
             <div className="grid grid-cols-1 gap-3 text-[13px] md:text-[12px] text-foreground/80">
               <div className="flex items-center gap-3">
                 <CheckCircle2 className="h-5 w-5 text-primary flex-shrink-0" />
@@ -665,8 +665,8 @@ const CollabRequestBriefPage = () => {
                   </div>
                   <div className="shrink-0">
                     <div className="text-right">
-                      <p className="text-xs text-foreground/60">Deal value</p>
-                      <p className="text-lg font-black text-primary" aria-label={`Payment amount: ${budgetLabel}`}>{budgetLabel}</p>
+                      <p className="text-xs font-medium text-foreground/80">Deal value</p>
+                      <p className="text-2xl font-black text-primary" aria-label={`Payment amount: ${budgetLabel}`}>{budgetLabel}</p>
                     </div>
                   </div>
                 </div>
