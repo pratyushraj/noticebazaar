@@ -3218,16 +3218,7 @@ const MobileDashboardDemo = ({
                                             status: 'new',
                                             isDemo: true
                                         };
-                                        const displayOffers = [
-                                            ...pendingOffersDeduplicated,
-                                            ...(brandDeals || [])
-                                                .filter(d => {
-                                                    const s = (d.status || '').toLowerCase();
-                                                    return s !== 'completed' && s !== 'cancelled';
-                                                })
-                                                .map(d => ({ ...d, isConfirmedDeal: true }))
-                                                .slice(0, 5)
-                                        ];
+                                        const displayOffers = [...pendingOffersDeduplicated];
 
                                         if (displayOffers.length === 0 && isDemoOfferEnabled) {
                                             displayOffers.push(fakeDemoOffer);
