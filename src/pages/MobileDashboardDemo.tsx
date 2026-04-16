@@ -969,15 +969,19 @@ const MobileDashboardDemo = ({
         const seen = new Set<string>();
         (collabRequests || []).forEach((req: any) => {
             if (req.status !== 'pending') return;
-            const brand = (req.brand_name || '').trim().toLowerCase();
-            const amount = req.exact_budget || req.budget_amount || req.deal_amount || 0;
+            // Support both flat brand_name and nested raw.brand_name
+            const rawBrand = req.raw?.brand_name || '';
+            const brand = (req.brand_name || rawBrand || '').trim().toLowerCase();
+            const rawAmount = req.raw?.exact_budget || req.raw?.budget_amount || req.raw?.deal_amount;
+            const amount = req.exact_budget || req.budget_amount || req.deal_amount || rawAmount || 0;
             const dealAmount = Number(amount);
 
             // Check if this brand+amount already has an active brandDeal
             const alreadyAccepted = (brandDeals || []).some((d: any) => {
+                if (!d?.id) return false;
                 const dBrand = (d.brand_name || '').trim().toLowerCase();
                 const dAmount = Number(d.deal_amount || 0);
-                return dBrand === brand && dAmount === dealAmount && d.id;
+                return dBrand === brand && dAmount === dealAmount;
             });
             if (alreadyAccepted) return; // Don't show in New Offers — deal already accepted
 
