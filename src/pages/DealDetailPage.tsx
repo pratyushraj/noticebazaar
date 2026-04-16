@@ -206,9 +206,7 @@ function DealDetailPageContent() {
 
   // All creator deals for deal switching
   const { data: allDeals = [] } = useBrandDeals({
-    userId: profile?.id,
-    role: 'creator',
-    status: undefined,
+    creatorId: profile?.id,
   });
 
   // Compute prev/next deals for navigation
