@@ -80,7 +80,7 @@ const CreatorBottomNav = () => {
                 "text-[11px] font-medium transition-colors duration-150",
                 "min-w-[68px] min-h-[60px] px-1",
                 "focus-visible:outline-none focus-visible:bg-secondary rounded-lg",
-                active ? "text-primary" : "text-muted-foreground"
+                active ? "text-primary" : "text-foreground/70"
               )}
               aria-label={item.label}
               aria-current={active ? 'page' : undefined}

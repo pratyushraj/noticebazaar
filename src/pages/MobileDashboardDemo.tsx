@@ -4475,7 +4475,9 @@ const MobileDashboardDemo = ({
                                                             onClick={() => setActiveSettingsPage('portfolio')}
                                                             className={cn(
                                                                 "h-12 rounded-2xl font-black text-[13px] active:scale-95 transition-all flex items-center justify-center gap-2",
-                                                                isDark ? "bg-primary text-white" : "bg-primary text-white shadow-lg shadow-primary/15"
+                                                                isDark
+                                                                    ? "bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-[0_4px_20px_rgba(16,185,129,0.3)]"
+                                                                    : "bg-primary text-white shadow-lg shadow-primary/15"
                                                             )}
                                                         >
                                                             <Edit3 className="w-4 h-4" />
@@ -4673,14 +4675,14 @@ const MobileDashboardDemo = ({
                             {/* Secondary Stats Row */}
                             <div className="grid grid-cols-2 gap-3 mb-6">
                                 <div className={cn("p-5 rounded-2xl border", cardBgColor, borderColor)}>
-                                    <p className={cn("text-[10px] font-bold uppercase tracking-widest opacity-50 mb-2", textColor)}>Paid This Month</p>
+                                    <p className={cn("text-[10px] font-bold uppercase tracking-widest opacity-70 dark:opacity-90 mb-2", textColor)}>Paid This Month</p>
                                     <div className="flex items-baseline gap-1 font-outfit">
                                         <span className={cn("text-xl font-bold", isDark ? "text-primary" : "text-primary")}>₹</span>
                                         <span className={cn("text-2xl font-black", isDark ? "text-primary" : "text-primary")}>{monthlyRevenue.toLocaleString()}</span>
                                     </div>
                                 </div>
                                 <div className={cn("p-5 rounded-2xl border", cardBgColor, borderColor)}>
-                                    <p className={cn("text-[10px] font-bold uppercase tracking-widest opacity-50 mb-2", textColor)}>Total Earnings</p>
+                                    <p className={cn("text-[10px] font-bold uppercase tracking-widest opacity-70 dark:opacity-90 mb-2", textColor)}>Total Earnings</p>
                                     <div className="flex items-baseline gap-1 font-outfit">
                                         <span className={cn("text-xl font-bold", textColor)}>₹</span>
                                         <span className={cn("text-2xl font-black", textColor)}>{allTimeRevenue.toLocaleString()}</span>
