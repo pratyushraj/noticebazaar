@@ -217,7 +217,67 @@ router.get('/mine', async (req: AuthenticatedRequest, res: Response) => {
       return res.status(500).json({ success: false, error: error.message || 'Failed to fetch deals' });
     }
 
-    return res.json({ success: true, deals: deals || [] });
+    // ============================================================
+    // BACKEND DATA VALIDATION - Filter out garbage data
+    // ============================================================
+    const VALID_STATUSES = new Set([
+      'pending', 'accepted', 'declined', 'countered', 'withdrawn',
+      'new', 'sent', 'contract_ready', 'signed', 'signed_by_brand', 'signed_by_creator',
+      'content_making', 'content_delivered', 'revision_requested', 'revision_done',
+      'content_approved', 'payment_released', 'payment_received', 'completed',
+      'fully_paid', 'payment_pending', 'disputed', 'cancelled',
+      'drafting', 'awaiting_product_shipment',
+      'Active', 'Confirmed', 'Content Making', 'Content Delivered', 'Content Approved',
+      'Revision Requested', 'Revision Done', 'Payment Released', 'Payment Received',
+      'Completed', 'Fully Executed',
+    ]);
+
+    const isValidStatus = (s) => {
+      if (!s) return false;
+      const n = String(s).trim().toLowerCase().replace(/ /g, '_');
+      return VALID_STATUSES.has(n) || VALID_STATUSES.has(String(s).trim());
+    };
+
+    const cleanedDeals = [];
+    let invalidCount = 0;
+
+    for (const deal of deals || []) {
+      const issues = [];
+      if (!deal?.id) issues.push('missing_id');
+      if (!deal?.brand_name || !String(deal.brand_name).trim()) issues.push('empty_brand');
+      if (!deal?.status || !isValidStatus(deal.status)) issues.push('invalid_status');
+      const amount = Number(deal?.deal_amount || 0);
+      if (deal?.deal_amount != null && !Number.isFinite(amount)) issues.push('invalid_amount');
+
+
+      if (issues.length > 0) {
+        invalidCount++;
+        console.warn(`[Deals] Filtered invalid deal:`, { id: deal?.id, brand: deal?.brand_name, issues });
+        continue;
+      }
+
+      cleanedDeals.push({
+        id: deal.id,
+        brand_name: String(deal.brand_name).trim(),
+        status: deal.status,
+        deal_amount: Number.isFinite(amount) ? amount : 0,
+        creator_id: deal.creator_id || null,
+        collab_type: deal.collab_type || null,
+        campaign_name: deal.campaign_name || deal.title || null,
+        deliverables: deal.deliverables || null,
+        due_date: deal.due_date || null,
+        created_at: deal.created_at || null,
+        updated_at: deal.updated_at || null,
+        payment_received_date: deal.payment_received_date || null,
+        payment_released_at: deal.payment_released_at || null,
+      });
+    }
+
+    if (invalidCount > 0) {
+      console.warn(`[Deals] /mine: filtered ${invalidCount}/${deals?.length || 0} invalid deals`);
+    }
+
+    return res.json({ success: true, deals: cleanedDeals });
   } catch (error: any) {
     console.error('[Deals] mine error:', error);
     return res.status(500).json({ success: false, error: error?.message || 'Internal server error' });

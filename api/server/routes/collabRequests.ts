@@ -1060,9 +1060,67 @@ router.get('/', async (req: AuthenticatedRequest, res: Response) => {
       return enriched;
     });
 
+    // ============================================================
+    // BACKEND DATA VALIDATION - Filter out garbage data
+    // ============================================================
+    const VALID_STATUSES = new Set([
+      'pending', 'accepted', 'declined', 'countered', 'withdrawn',
+      'new', 'sent', 'contract_ready', 'signed', 'signed_by_brand', 'signed_by_creator',
+      'content_making', 'content_delivered', 'revision_requested', 'revision_done',
+      'content_approved', 'payment_released', 'payment_received', 'completed',
+      'fully_paid', 'payment_pending', 'disputed', 'cancelled',
+      'drafting', 'awaiting_product_shipment',
+      'Active', 'Confirmed', 'Content Making', 'Content Delivered', 'Content Approved',
+      'Revision Requested', 'Revision Done', 'Payment Released', 'Payment Received',
+      'Completed', 'Fully Executed',
+    ]);
+
+    const isValidStatus = (s) => {
+      if (!s) return false;
+      const n = String(s).trim().toLowerCase().replace(/ /g, '_');
+      return VALID_STATUSES.has(n) || VALID_STATUSES.has(String(s).trim());
+    };
+
+    let invalidCount = 0;
+    const cleanedRequests = (enrichedRequests || []).map((request: any) => {
+      const issues = [];
+      if (!request?.id) issues.push('missing_id');
+      if (!request?.brand_name || !String(request.brand_name).trim()) issues.push('empty_brand');
+      if (!request?.status || !isValidStatus(request.status)) issues.push('invalid_status');
+      const rawBudget = request?.exact_budget ?? request?.budget_amount ?? request?.deal_amount ?? 0;
+      const amount = Number(rawBudget);
+      if (rawBudget != null && rawBudget !== 0 && !Number.isFinite(amount)) issues.push('invalid_budget');
+
+
+      if (issues.length > 0) {
+        invalidCount++;
+        console.warn(`[CollabRequests] Filtered invalid request:`, { id: request?.id, brand: request?.brand_name, issues });
+        return null;
+      }
+
+      return {
+        id: request.id,
+        brand_name: String(request.brand_name).trim(),
+        status: request.status,
+        exact_budget: Number.isFinite(amount) ? amount : 0,
+        budget_amount: Number.isFinite(amount) ? amount : 0,
+        collab_type: request.collab_type || null,
+        deliverables: request.deliverables || null,
+        deadline: request.deadline || null,
+        created_at: request.created_at || null,
+        raw: request.raw || null,
+        brand_verified: request.brand_verified || false,
+        counter_offer: request.counter_offer || null,
+      };
+    }).filter(Boolean);
+
+    if (invalidCount > 0) {
+      console.warn(`[CollabRequests] GET /: filtered ${invalidCount}/${enrichedRequests?.length || 0} invalid requests`);
+    }
+
     res.json({
       success: true,
-      requests: enrichedRequests,
+      requests: cleanedRequests,
     });
   } catch (error: any) {
     console.error('[CollabRequests] Error in GET /:', error);
