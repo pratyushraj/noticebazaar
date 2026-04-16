@@ -44,11 +44,14 @@ const CreatorDashboard = () => {
   const { user, profile: sessionProfile } = useSession();
   const queryClient = useQueryClient();
 
+  // Use placeholderData so isLoading stays true during fetch (shows skeleton)
+  // Use sessionProfile from SessionContext cache for instant display on refresh
   const { data: profile, isLoading: isProfileLoading } = useQuery({
     queryKey: ['profile', user?.id],
     queryFn: () => fetchProfile(user!.id),
     enabled: !!user?.id,
-    initialData: sessionProfile,
+    placeholderData: sessionProfile,
+    staleTime: 5 * 60 * 1000, // 5 min cache to prevent refetch on every mount
   });
 
   const { requests: collabRequests } = useCollabRequests(user?.id);
@@ -57,6 +60,8 @@ const CreatorDashboard = () => {
     queryKey: ['brand-deals', user?.id],
     queryFn: fetchBrandDeals,
     enabled: !!user?.id,
+    placeholderData: [],
+    staleTime: 5 * 60 * 1000,
   });
 
   const handleRefresh = () => {
