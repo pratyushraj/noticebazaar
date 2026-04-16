@@ -490,6 +490,13 @@ const BrandMobileDashboard = ({
     tabParam === 'dashboard' || tabParam === 'collabs' || tabParam === 'creators' || tabParam === 'profile'
       ? tabParam
       : initialTab;
+
+  // Redirect /brand-dashboard?tab=create to brand-new-deal
+  useEffect(() => {
+    if (tabParam === 'create') {
+      navigate('/brand-new-deal', { replace: true });
+    }
+  }, [tabParam, navigate]);
 	  const activeCollabTab: BrandCollabTab = (() => {
 	    const raw = String(subtabParam || '').trim().toLowerCase();
 	    if (raw === 'pending' || raw === 'action_required' || raw === 'action-required' || raw === 'action') return 'action_required';
