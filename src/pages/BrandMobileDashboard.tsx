@@ -88,7 +88,8 @@ const hoursSince = (iso: string | Date | null | undefined) => {
 const safeImageSrc = (url: string | null | undefined) => {
   const s = typeof url === 'string' ? url : '';
   if (!s) return undefined;
-  if (s.includes('cdninstagram.com')) return undefined;
+  // Block all external URLs — only allow relative paths and data URIs
+  if (s.startsWith('http://') || s.startsWith('https://')) return undefined;
   return s;
 };
 
@@ -2341,7 +2342,7 @@ const BrandMobileDashboard = ({
 
                 <div className={cn('flex items-center gap-3 w-full border-t pt-4 mt-5', isDark ? 'border-border' : 'border-border')}>
                   <Avatar className={cn('w-11 h-11 border shadow-sm', isDark ? 'border-border' : 'border-border')}>
-                    <AvatarImage src={offer?.profiles?.avatar_url || offer?.profiles?.profile_image_url || ''} alt={creatorName || 'Creator'} />
+                    <AvatarImage src={safeImageSrc(offer?.profiles?.avatar_url || offer?.profiles?.profile_image_url)} alt={creatorName || 'Creator'} />
                     <AvatarFallback className={cn(isDark ? 'bg-card text-foreground' : 'bg-background text-muted-foreground')}>
                       {(creatorName || 'C').slice(0, 1).toUpperCase()}
                     </AvatarFallback>
@@ -5011,7 +5012,7 @@ const BrandMobileDashboard = ({
                     <div className="absolute inset-0 pointer-events-none bg-background" />
                     <div className="relative flex items-center gap-4">
                       <Avatar className={cn('w-14 h-14 border shadow-sm', isDark ? 'border-border' : 'border-border')}>
-                        <AvatarImage src={brandLogo} alt={brandName} />
+                        <AvatarImage src={safeImageSrc(brandLogo)} alt={brandName} />
                         <AvatarFallback>{brandName.slice(0, 1).toUpperCase()}</AvatarFallback>
                       </Avatar>
                       <div className="flex-1 min-w-0">
