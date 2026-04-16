@@ -19,8 +19,27 @@ const CreatorBottomNav = () => {
   const navigate = useNavigate();
   const { isKeyboardVisible } = useKeyboardAware();
 
-  const isActive = (item: typeof navItems[0]) =>
-    item.matchPaths.some(path => location.pathname.startsWith(path));
+  const tabParam = new URLSearchParams(location.search).get('tab');
+
+  const isActive = (item: typeof navItems[0]) => {
+    // Primary check: match by tab search param
+    const tabToMatch: Record<string, string> = {
+      'Home': '',
+      'Deals': 'deals',
+      'Payments': 'payments',
+      'Requests': 'deals',  // Requests uses subtab=pending under deals tab
+      'Profile': 'profile',
+    };
+    const itemTab = tabToMatch[item.label];
+    if (itemTab !== undefined) {
+      // Empty string = dashboard (no tab param)
+      if (!itemTab && !tabParam) return true;
+      if (itemTab && tabParam === itemTab) return true;
+    }
+    // Fallback: pathname match ONLY when no tab param is set
+    if (tabParam) return false;
+    return item.matchPaths.some(path => location.pathname.startsWith(path));
+  };
 
   const handleClick = (e: React.MouseEvent, to: string) => {
     e.preventDefault();
