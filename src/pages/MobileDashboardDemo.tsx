@@ -952,61 +952,69 @@ const MobileDashboardDemo = ({
         avatarFallbackUrl;
     const displayName = liveCollabProfile?.name || profile?.full_name || profile?.first_name || 'Pratyush';
     // ─── UNIFIED DEALS DEDUPLICATION ───
-    // Merge collabRequests (pending offers) and brandDeals (active deals) into ONE list.
-    // A collabRequest is excluded if the same brand+amount deal already exists in brandDeals
-    // (meaning it was accepted and is now active — don't show it in New Offers).
+    // Single source of truth: merge collabRequests + brandDeals, deduplicate by brand+amount.
+    // Canonical status priority: completed > active > pending
+    // A brand+amount tuple appears in exactly ONE tab.
     const unifiedDeals = React.useMemo(() => {
         const map = new Map<string, any>();
 
-        // Step 1: Add all brandDeals as authoritative (accepted/in-progress deals)
+        // Helper: get canonical status for a deal/item
+        const getCanonicalStatus = (item: any): 'completed' | 'active' | 'pending' => {
+            // Check brandDeals first
+            if (item._source === 'brandDeal') {
+                const s = normalizeDealStatus(item);
+                if (s.includes('completed') || Boolean(item.payment_received_date)) return 'completed';
+                return 'active';
+            }
+            // collabRequest: use API status
+            if (item.status === 'completed') return 'completed';
+            if (item.status === 'accepted') return 'active';
+            return 'pending';
+        };
+
+        // Helper: get brand+amount key (case-insensitive, amount-normalized)
+        const getBrandAmountKey = (item: any): string => {
+            const rawBrand = item.brand_name || item.raw?.brand_name || '';
+            const brand = rawBrand.trim().toLowerCase();
+            const rawAmount = item.exact_budget || item.budget_amount || item.deal_amount || item.raw?.exact_budget || item.raw?.budget_amount || item.raw?.deal_amount || 0;
+            const amount = Number(rawAmount);
+            return `${brand}|${amount}`;
+        };
+
+        // Step 1: Add all brandDeals first (accepted/in-progress deals)
         (brandDeals || []).forEach((d: any) => {
             if (!d?.id) return;
-            map.set(d.id, { ...d, _source: 'brandDeal' });
+            map.set(`bd:${d.id}`, { ...d, _source: 'brandDeal' });
         });
 
-        // Step 2: Add pending collabRequests — but skip if a brandDeal already exists
-        // for the same brand+amount (it was already accepted).
-        const seen = new Set<string>();
-        let skipCount = { alreadyAccepted: 0, notPending: 0, dup: 0, added: 0 };
+        // Step 2: Add all collabRequests — deduplicate against brandDeals by brand+amount.
+        // If a brandDeal already exists for brand+amount, skip (it's already active/completed).
         (collabRequests || []).forEach((req: any) => {
-            if (req.status !== 'pending') { skipCount.notPending++; return; }
-            // Support both flat brand_name and nested raw.brand_name
             const rawBrand = req.raw?.brand_name || '';
             const brand = (req.brand_name || rawBrand || '').trim().toLowerCase();
-            const rawAmount = req.raw?.exact_budget || req.raw?.budget_amount || req.raw?.deal_amount;
-            const amount = req.exact_budget || req.budget_amount || req.deal_amount || rawAmount || 0;
-            const dealAmount = Number(amount);
+            const rawAmount = req.exact_budget || req.budget_amount || req.deal_amount || req.raw?.exact_budget || req.raw?.budget_amount || req.raw?.deal_amount || 0;
+            const amount = Number(rawAmount);
+            const key = `${brand}|${amount}`;
 
-            // Check if this brand+amount already has an active brandDeal
-            const alreadyAccepted = (brandDeals || []).some((d: any) => {
+            // If brandDeal exists for this brand+amount → skip (already accepted/active)
+            const brandDealExists = (brandDeals || []).some((d: any) => {
                 if (!d?.id) return false;
                 const dBrand = (d.brand_name || '').trim().toLowerCase();
                 const dAmount = Number(d.deal_amount || 0);
-                const match = dBrand === brand && dAmount === dealAmount;
-                if (match) {
-                    console.log('[DEDUP] Skipping req=' + req.id + ' brand=' + brand + ' amt=' + dealAmount + ' — matches brandDeal id=' + d.id + ' brand=' + dBrand + ' amt=' + dAmount);
-                }
-                return match;
+                return dBrand === brand && dAmount === amount;
             });
-            if (alreadyAccepted) { skipCount.alreadyAccepted++; return; }
+            if (brandDealExists) return;
 
-            // Deduplicate pending requests by brand+amount
-            const key = [brand, req.collab_type, dealAmount].filter(Boolean).join('|');
-            if (seen.has(key)) { skipCount.dup++; return; }
-            seen.add(key);
+            // Skip if we already have a higher-priority entry for this brand+amount
+            const existing = map.get(key);
+            if (existing) {
+                const existingStatus = getCanonicalStatus(existing);
+                const newStatus = getCanonicalStatus({ ...req, _source: 'collabRequest' });
+                const priority = { completed: 3, active: 2, pending: 1 };
+                if (priority[existingStatus] >= priority[newStatus]) return;
+            }
 
-            // Use collabRequest id with prefix to avoid collision
             map.set(`cr:${req.id}`, { ...req, _source: 'collabRequest' });
-            skipCount.added++;
-        });
-
-        console.log('[DEBUG unifiedDeals]', {
-            brandDealsCount: (brandDeals||[]).length,
-            collabRequestsCount: (collabRequests||[]).length,
-            skipCount,
-            totalUnified: map.size,
-            brandDealBrands: (brandDeals||[]).map(d=>({brand:d.brand_name,amt:d.deal_amount,id:d.id})),
-            pendingCRBrands: (collabRequests||[]).filter(r=>r.status==='pending').map(r=>({brand:r.brand_name,amt:r.exact_budget,type:r.collab_type,id:r.id}))
         });
 
         return Array.from(map.values());
