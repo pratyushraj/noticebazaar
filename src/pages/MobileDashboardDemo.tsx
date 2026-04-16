@@ -982,7 +982,11 @@ const MobileDashboardDemo = ({
                 if (!d?.id) return false;
                 const dBrand = (d.brand_name || '').trim().toLowerCase();
                 const dAmount = Number(d.deal_amount || 0);
-                return dBrand === brand && dAmount === dealAmount;
+                const match = dBrand === brand && dAmount === dealAmount;
+                if (match) {
+                    console.log('[DEDUP] Skipping req=' + req.id + ' brand=' + brand + ' amt=' + dealAmount + ' — matches brandDeal id=' + d.id + ' brand=' + dBrand + ' amt=' + dAmount);
+                }
+                return match;
             });
             if (alreadyAccepted) { skipCount.alreadyAccepted++; return; }
 
@@ -1001,8 +1005,8 @@ const MobileDashboardDemo = ({
             collabRequestsCount: (collabRequests||[]).length,
             skipCount,
             totalUnified: map.size,
-            brandDealBrands: (brandDeals||[]).map(d=>({brand:d.brand_name,amt:d.deal_amount})),
-            pendingCRBrands: (collabRequests||[]).filter(r=>r.status==='pending').map(r=>({brand:r.brand_name,amt:r.exact_budget}))
+            brandDealBrands: (brandDeals||[]).map(d=>({brand:d.brand_name,amt:d.deal_amount,id:d.id})),
+            pendingCRBrands: (collabRequests||[]).filter(r=>r.status==='pending').map(r=>({brand:r.brand_name,amt:r.exact_budget,type:r.collab_type,id:r.id}))
         });
 
         return Array.from(map.values());
