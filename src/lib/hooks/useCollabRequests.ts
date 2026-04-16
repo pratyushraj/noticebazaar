@@ -39,30 +39,35 @@ const FAST_POLL_WINDOW_MS = 60 * 1000; // 60s burst on first dashboard view to s
 const FAST_POLL_INTERVAL_MS = 5 * 1000; // 5s
 
 async function fetchCollabRequests(): Promise<CollabRequest[]> {
-  const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
-  if (sessionError || !sessionData.session) {
-    throw new Error('Not authenticated');
+  try {
+    const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+    if (sessionError || !sessionData.session) {
+      throw new Error('Not authenticated');
+    }
+
+    const response = await fetch(`${getApiBaseUrl()}/api/collab-requests`, {
+      headers: {
+        Authorization: `Bearer ${sessionData.session.access_token}`,
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (response.status === 401) {
+      throw new Error('Session expired');
+    }
+
+    const data = await response.json();
+    if (!data.success) {
+      throw new Error(data.error || 'Failed to load collaboration requests');
+    }
+
+    const rows = (data.requests || []) as CollabRequest[];
+    // Ensure newest offers float to top for visibility.
+    return [...rows].sort((a, b) => String(b.created_at || '').localeCompare(String(a.created_at || '')));
+  } catch {
+    // Return empty array on network failure so UI shows empty state instead of crashing
+    return [];
   }
-
-  const response = await fetch(`${getApiBaseUrl()}/api/collab-requests`, {
-    headers: {
-      Authorization: `Bearer ${sessionData.session.access_token}`,
-      'Content-Type': 'application/json',
-    },
-  });
-
-  if (response.status === 401) {
-    throw new Error('Session expired');
-  }
-
-  const data = await response.json();
-  if (!data.success) {
-    throw new Error(data.error || 'Failed to load collaboration requests');
-  }
-
-  const rows = (data.requests || []) as CollabRequest[];
-  // Ensure newest offers float to top for visibility.
-  return [...rows].sort((a, b) => String(b.created_at || '').localeCompare(String(a.created_at || '')));
 }
 
 export function useCollabRequests(creatorId: string | undefined) {

@@ -19,20 +19,25 @@ async function fetchProfile(userId: string) {
 }
 
 async function fetchBrandDeals() {
-  const { data: sessionData } = await supabase.auth.getSession();
-  if (!sessionData.session) return [];
+  try {
+    const { data: sessionData } = await supabase.auth.getSession();
+    if (!sessionData.session) return [];
 
-  // Backend exposes creator deals at GET /api/deals/mine (not /api/deals).
-  const res = await fetch(`${getApiBaseUrl()}/api/deals/mine`, {
-    headers: { Authorization: `Bearer ${sessionData.session.access_token}` },
-  });
-  if (res.status === 404) return [];
-  if (!res.ok) {
-    const payload = await res.json().catch(() => ({}));
-    throw new Error(payload?.error || `Failed to fetch deals (${res.status})`);
+    // Backend exposes creator deals at GET /api/deals/mine (not /api/deals).
+    const res = await fetch(`${getApiBaseUrl()}/api/deals/mine`, {
+      headers: { Authorization: `Bearer ${sessionData.session.access_token}` },
+    });
+    if (res.status === 404) return [];
+    if (!res.ok) {
+      const payload = await res.json().catch(() => ({}));
+      throw new Error(payload?.error || `Failed to fetch deals (${res.status})`);
+    }
+    const data = await res.json().catch(() => ({}));
+    return data?.deals || [];
+  } catch {
+    // Return empty array on network failure so UI shows empty state instead of crashing
+    return [];
   }
-  const data = await res.json().catch(() => ({}));
-  return data?.deals || [];
 }
 
 const CreatorDashboard = () => {
