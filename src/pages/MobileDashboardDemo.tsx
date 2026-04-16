@@ -1016,10 +1016,31 @@ const MobileDashboardDemo = ({
         return Array.from(map.values());
     }, [collabRequests, brandDeals]);
 
-    // ─── TAB DERIVATION FROM UNIFIED LIST ───
+    // ─── PENDING OFFERS (New Offers tab) ───
+    // Strictly deduplicate by brand+amount so the same deal never appears twice in this tab.
+    // If a brand+amount has both accepted AND pending requests, show only the first pending.
     const pendingOffersDeduplicated = React.useMemo(() => {
-        return unifiedDeals.filter((d: any) => d._source === 'collabRequest');
-    }, [unifiedDeals]);
+        const seen = new Map<string, any>();
+        const result: any[] = [];
+        for (const d of collabRequests || []) {
+            if (d.status !== 'pending') continue;
+            const brand = normBrand(d.brand_name || d.raw?.brand_name || '');
+            const amount = normAmt(d.exact_budget || d.budget_amount || d.deal_amount ||
+                d.raw?.exact_budget || d.raw?.budget_amount || d.raw?.deal_amount || 0);
+            if (!brand || amount <= 0) continue;
+            // Skip if brandDeal already exists for this brand (deal was accepted)
+            const brandDealExists = (brandDeals || []).some((bd: any) =>
+                bd?.id && normBrand(bd.brand_name) === brand
+            );
+            if (brandDealExists) continue;
+            const key = `${brand}|${amount}`;
+            if (!seen.has(key)) {
+                seen.set(key, true);
+                result.push({ ...d, _dedupKey: key });
+            }
+        }
+        return result;
+    }, [collabRequests, brandDeals]);
 
     const displayOffers = React.useMemo(() => {
         return pendingOffersDeduplicated;
