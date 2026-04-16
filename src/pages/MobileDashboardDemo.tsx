@@ -957,7 +957,9 @@ const MobileDashboardDemo = ({
             const key = [req.brand_name, req.collab_type, req.exact_budget || req.budget_amount || req.deal_amount].filter(Boolean).join('|');
             if (seen.has(key)) return false;
             seen.add(key);
-            return true;
+            // NEW: Only include truly pending offers in New Offers tab
+            const s = normalizeDealStatus(req);
+            return s === 'pending' || s === 'offer_sent' || s === 'new' || s === 'sent';
         });
     }, [collabRequests]);
     const displayOffers = React.useMemo(() => {
@@ -967,13 +969,15 @@ const MobileDashboardDemo = ({
     const completedDealsList = React.useMemo(() => {
         return (brandDeals || []).filter((d: any) => {
             const s = normalizeDealStatus(d);
-            return s.includes('completed') || s === 'paid';
+            // Completed, paid, OR declined/cancelled/rejected
+            return s.includes('completed') || s === 'paid' || s === 'declined' || s === 'rejected' || s === 'cancelled';
         });
     }, [brandDeals]);
     const activeDealsList = React.useMemo(() => {
         return (brandDeals || []).filter((d: any) => {
             const s = normalizeDealStatus(d);
-            return !(s.includes('completed') || s === 'paid');
+            // Exclude completed, paid, AND rejected/cancelled/declined deals
+            return !(s.includes('completed') || s === 'paid' || s === 'declined' || s === 'rejected' || s === 'cancelled');
         });
     }, [brandDeals]);
     const actionRequiredDealsList = React.useMemo(() => {
