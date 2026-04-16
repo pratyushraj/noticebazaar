@@ -953,68 +953,64 @@ const MobileDashboardDemo = ({
     const displayName = liveCollabProfile?.name || profile?.full_name || profile?.first_name || 'Pratyush';
     // ─── UNIFIED DEALS DEDUPLICATION ───
     // Single source of truth: merge collabRequests + brandDeals, deduplicate by brand+amount.
-    // Canonical status priority: completed > active > pending
-    // A brand+amount tuple appears in exactly ONE tab.
+    // Rules:
+    //  1. brandDeals are always authoritative for their brand+amount
+    //  2. Accepted collabRequests are skipped if a brandDeal exists for the same brand (any amount)
+    //  3. Pending collabRequests are deduplicated by brand+amount (first one wins)
+    // Result: each brand+amount tuple appears in exactly ONE tab.
     const unifiedDeals = React.useMemo(() => {
         const map = new Map<string, any>();
 
-        // Helper: get canonical status for a deal/item
-        const getCanonicalStatus = (item: any): 'completed' | 'active' | 'pending' => {
-            // Check brandDeals first
-            if (item._source === 'brandDeal') {
-                const s = normalizeDealStatus(item);
-                if (s.includes('completed') || Boolean(item.payment_received_date)) return 'completed';
-                return 'active';
-            }
-            // collabRequest: use API status
-            if (item.status === 'completed') return 'completed';
-            if (item.status === 'accepted') return 'active';
-            return 'pending';
-        };
+        const normBrand = (b: string) => (b || '').trim().toLowerCase();
+        const normAmt = (a: any) => Number(a || 0);
 
-        // Helper: get brand+amount key (case-insensitive, amount-normalized)
-        const getBrandAmountKey = (item: any): string => {
-            const rawBrand = item.brand_name || item.raw?.brand_name || '';
-            const brand = rawBrand.trim().toLowerCase();
-            const rawAmount = item.exact_budget || item.budget_amount || item.deal_amount || item.raw?.exact_budget || item.raw?.budget_amount || item.raw?.deal_amount || 0;
-            const amount = Number(rawAmount);
-            return `${brand}|${amount}`;
-        };
-
-        // Step 1: Add all brandDeals first (accepted/in-progress deals)
+        // Step 1: Add all brandDeals as authoritative entries
         (brandDeals || []).forEach((d: any) => {
             if (!d?.id) return;
-            map.set(`bd:${d.id}`, { ...d, _source: 'brandDeal' });
+            const brand = normBrand(d.brand_name);
+            const amount = normAmt(d.deal_amount);
+            map.set(`bd:${d.id}`, { ...d, _source: 'brandDeal', _dedupKey: `${brand}|${amount}` });
         });
 
-        // Step 2: Add all collabRequests — deduplicate against brandDeals by brand+amount.
-        // If a brandDeal already exists for brand+amount, skip (it's already active/completed).
-        (collabRequests || []).forEach((req: any) => {
+        // Step 2: Process collabRequests — sort accepted first, then pending
+        // This ensures accepted collabRequests are checked before pending ones
+        const sorted = [...(collabRequests || [])].sort((a, b) => {
+            if (a.status === 'accepted' && b.status !== 'accepted') return -1;
+            if (b.status === 'accepted' && a.status !== 'accepted') return 1;
+            return 0;
+        });
+
+        sorted.forEach((req: any) => {
             const rawBrand = req.raw?.brand_name || '';
-            const brand = (req.brand_name || rawBrand || '').trim().toLowerCase();
-            const rawAmount = req.exact_budget || req.budget_amount || req.deal_amount || req.raw?.exact_budget || req.raw?.budget_amount || req.raw?.deal_amount || 0;
-            const amount = Number(rawAmount);
+            const brand = normBrand(req.brand_name || rawBrand);
+            const rawAmt = req.exact_budget || req.budget_amount || req.deal_amount ||
+                req.raw?.exact_budget || req.raw?.budget_amount || req.raw?.deal_amount || 0;
+            const amount = normAmt(rawAmt);
             const key = `${brand}|${amount}`;
 
-            // If brandDeal exists for this brand+amount → skip (already accepted/active)
-            const brandDealExists = (brandDeals || []).some((d: any) => {
-                if (!d?.id) return false;
-                const dBrand = (d.brand_name || '').trim().toLowerCase();
-                const dAmount = Number(d.deal_amount || 0);
-                return dBrand === brand && dAmount === amount;
-            });
-            if (brandDealExists) return;
+            // If a brandDeal exists for this brand (any amount), skip ALL collabRequests for this brand.
+            // brandDeals are authoritative — the deal is already accepted/in-progress.
+            const brandDealForBrand = (brandDeals || []).some((d: any) =>
+                d?.id && normBrand(d.brand_name) === brand
+            );
+            if (brandDealForBrand) return;
 
-            // Skip if we already have a higher-priority entry for this brand+amount
-            const existing = map.get(key);
-            if (existing) {
-                const existingStatus = getCanonicalStatus(existing);
-                const newStatus = getCanonicalStatus({ ...req, _source: 'collabRequest' });
-                const priority = { completed: 3, active: 2, pending: 1 };
-                if (priority[existingStatus] >= priority[newStatus]) return;
+            // No brandDeal for this brand.
+            // Accepted collabRequests: add only if amount > 0 (skip ₹0 noise)
+            if (req.status === 'accepted') {
+                if (amount > 0) {
+                    map.set(`cr:${req.id}`, { ...req, _source: 'collabRequest', _dedupKey: key });
+                }
+                return;
             }
 
-            map.set(`cr:${req.id}`, { ...req, _source: 'collabRequest' });
+            // Pending collabRequests: deduplicate by brand+amount (first wins)
+            if (req.status === 'pending') {
+                if (!map.has(key)) {
+                    map.set(`cr:${req.id}`, { ...req, _source: 'collabRequest', _dedupKey: key });
+                }
+                return;
+            }
         });
 
         return Array.from(map.values());
