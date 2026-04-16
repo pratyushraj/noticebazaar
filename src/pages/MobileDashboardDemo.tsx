@@ -967,8 +967,9 @@ const MobileDashboardDemo = ({
         // Step 2: Add pending collabRequests — but skip if a brandDeal already exists
         // for the same brand+amount (it was already accepted).
         const seen = new Set<string>();
+        let skipCount = { alreadyAccepted: 0, notPending: 0, dup: 0, added: 0 };
         (collabRequests || []).forEach((req: any) => {
-            if (req.status !== 'pending') return;
+            if (req.status !== 'pending') { skipCount.notPending++; return; }
             // Support both flat brand_name and nested raw.brand_name
             const rawBrand = req.raw?.brand_name || '';
             const brand = (req.brand_name || rawBrand || '').trim().toLowerCase();
@@ -983,15 +984,25 @@ const MobileDashboardDemo = ({
                 const dAmount = Number(d.deal_amount || 0);
                 return dBrand === brand && dAmount === dealAmount;
             });
-            if (alreadyAccepted) return; // Don't show in New Offers — deal already accepted
+            if (alreadyAccepted) { skipCount.alreadyAccepted++; return; }
 
             // Deduplicate pending requests by brand+amount
             const key = [brand, req.collab_type, dealAmount].filter(Boolean).join('|');
-            if (seen.has(key)) return;
+            if (seen.has(key)) { skipCount.dup++; return; }
             seen.add(key);
 
             // Use collabRequest id with prefix to avoid collision
             map.set(`cr:${req.id}`, { ...req, _source: 'collabRequest' });
+            skipCount.added++;
+        });
+
+        console.log('[DEBUG unifiedDeals]', {
+            brandDealsCount: (brandDeals||[]).length,
+            collabRequestsCount: (collabRequests||[]).length,
+            skipCount,
+            totalUnified: map.size,
+            brandDealBrands: (brandDeals||[]).map(d=>({brand:d.brand_name,amt:d.deal_amount})),
+            pendingCRBrands: (collabRequests||[]).filter(r=>r.status==='pending').map(r=>({brand:r.brand_name,amt:r.exact_budget}))
         });
 
         return Array.from(map.values());
