@@ -876,7 +876,7 @@ body {
 }
 
 /* Progress Bar Shimmer Animation */
-@keyframes shimmer {
+@keyframes progress-shimmer {
   0% {
     transform: translateX(-100%);
   }

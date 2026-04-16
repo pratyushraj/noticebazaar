@@ -24,12 +24,14 @@ export function ShimmerSkeleton({ className, rounded = 'md' }: ShimmerSkeletonPr
   return (
     <div
       className={cn(
-        'animate-shimmer bg-gradient-to-r',
-        'from-secondary/30 via-secondary/60 to-secondary/30',
+        'bg-gradient-to-r',
+        'from-neutral-200/50 via-neutral-100/80 to-neutral-200/50',
+        'dark:from-neutral-700/50 dark:via-neutral-600/80 dark:to-neutral-700/50',
         'bg-[length:200%_100%]',
         radiusClass,
         className
       )}
+      style={{ animation: 'shimmer 1.5s ease-in-out infinite' }}
       aria-hidden="true"
     />
   );
