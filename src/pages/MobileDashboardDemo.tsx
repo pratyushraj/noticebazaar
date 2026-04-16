@@ -2736,7 +2736,7 @@ const MobileDashboardDemo = ({
                                                         const handle = (profile.instagram_handle || '').replace('@', '').trim();
                                                         if (handle) window.open(`/${handle}`, '_blank');
                                                     }}
-                                                    className={cn("p-1.5 rounded-full transition-all active:scale-95", secondaryTextColor)}
+                                                    className={cn("min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full transition-all active:scale-95", secondaryTextColor)}
                                                     title="Preview your collab page"
                                                 >
                                                     <Eye className="w-5 h-5" />
@@ -2755,7 +2755,7 @@ const MobileDashboardDemo = ({
                                                             toast.success('Collab link copied!');
                                                         }
                                                     }}
-                                                    className={cn("p-1.5 rounded-full transition-all active:scale-95", secondaryTextColor)}
+                                                    className={cn("min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full transition-all active:scale-95", secondaryTextColor)}
                                                     title="Share your deal page"
                                                 >
                                                     <Share2 className="w-5 h-5" />
