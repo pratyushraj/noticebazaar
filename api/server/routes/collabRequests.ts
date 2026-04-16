@@ -1061,7 +1061,7 @@ router.get('/', async (req: AuthenticatedRequest, res: Response) => {
     });
 
     // ============================================================
-    // BACKEND DATA VALIDATION - Filter out garbage data
+    // BACKEND DATA VALIDATION + HARDENING
     // ============================================================
     const VALID_STATUSES = new Set([
       'pending', 'accepted', 'declined', 'countered', 'withdrawn',
@@ -1070,9 +1070,9 @@ router.get('/', async (req: AuthenticatedRequest, res: Response) => {
       'content_approved', 'payment_released', 'payment_received', 'completed',
       'fully_paid', 'payment_pending', 'disputed', 'cancelled',
       'drafting', 'awaiting_product_shipment',
-      'Active', 'Confirmed', 'Content Making', 'Content Delivered', 'Content Approved',
-      'Revision Requested', 'Revision Done', 'Payment Released', 'Payment Received',
-      'Completed', 'Fully Executed',
+      'active', 'confirmed', 'content making', 'content delivered', 'content approved',
+      'revision requested', 'revision done', 'payment released', 'payment received',
+      'completed', 'fully executed',
     ]);
 
     const isValidStatus = (s) => {
@@ -1081,27 +1081,47 @@ router.get('/', async (req: AuthenticatedRequest, res: Response) => {
       return VALID_STATUSES.has(n) || VALID_STATUSES.has(String(s).trim());
     };
 
-    let invalidCount = 0;
-    const cleanedRequests = (enrichedRequests || []).map((request: any) => {
-      const issues = [];
-      if (!request?.id) issues.push('missing_id');
-      if (!request?.brand_name || !String(request.brand_name).trim()) issues.push('empty_brand');
-      if (!request?.status || !isValidStatus(request.status)) issues.push('invalid_status');
+    const normalizeStatus = (s) => {
+      if (!s) return 'unknown';
+      const n = String(s).trim().toLowerCase().replace(/ /g, '_');
+      return VALID_STATUSES.has(n) ? String(s).trim() : 'unknown';
+    };
+
+    const logStructured = (level, msg, data) => {
+      const entry = {
+        ts: new Date().toISOString(),
+        level,
+        endpoint: '/api/collab-requests',
+        ...data,
+      };
+      if (level === 'warn') console.warn('[CollabRequests]', JSON.stringify(entry));
+      else console.error('[CollabRequests]', JSON.stringify(entry));
+    };
+
+    // --- Pass 1: Validate + sanitize each record ---
+    const validated = [];
+    const invalidRecords = [];
+
+    for (const request of enrichedRequests || []) {
+      const reasons = [];
+      if (!request?.id) reasons.push('missing_id');
+      if (!request?.brand_name || !String(request.brand_name).trim()) reasons.push('empty_brand');
+      if (!request?.status) reasons.push('missing_status');
+      else if (!isValidStatus(request.status)) reasons.push(`invalid_status:${request.status}`);
       const rawBudget = request?.exact_budget ?? request?.budget_amount ?? request?.deal_amount ?? 0;
       const amount = Number(rawBudget);
-      if (rawBudget != null && rawBudget !== 0 && !Number.isFinite(amount)) issues.push('invalid_budget');
+      if (rawBudget != null && rawBudget !== 0 && !Number.isFinite(amount)) reasons.push('invalid_budget');
 
-
-      if (issues.length > 0) {
-        invalidCount++;
-        console.warn(`[CollabRequests] Filtered invalid request:`, { id: request?.id, brand: request?.brand_name, issues });
-        return null;
+      if (reasons.length > 0) {
+        invalidRecords.push({ requestId: request?.id || 'n/a', brand: request?.brand_name || 'n/a', reasons });
+        logStructured('warn', 'record_filtered', { requestId: request?.id, brand: request?.brand_name, reasons });
+        continue;
       }
 
-      return {
+      validated.push({
         id: request.id,
         brand_name: String(request.brand_name).trim(),
-        status: request.status,
+        status: normalizeStatus(request.status),
         exact_budget: Number.isFinite(amount) ? amount : 0,
         budget_amount: Number.isFinite(amount) ? amount : 0,
         collab_type: request.collab_type || null,
@@ -1111,16 +1131,40 @@ router.get('/', async (req: AuthenticatedRequest, res: Response) => {
         raw: request.raw || null,
         brand_verified: request.brand_verified || false,
         counter_offer: request.counter_offer || null,
-      };
-    }).filter(Boolean);
-
-    if (invalidCount > 0) {
-      console.warn(`[CollabRequests] GET /: filtered ${invalidCount}/${enrichedRequests?.length || 0} invalid requests`);
+      });
     }
+
+    // --- Pass 2: Deduplicate by brand_name (keep first) ---
+    const seenBrands = new Map();
+    const deduplicated = [];
+    let duplicateCount = 0;
+
+    for (const request of validated) {
+      const norm = request.brand_name.toLowerCase().trim();
+      if (seenBrands.has(norm)) {
+        duplicateCount++;
+        logStructured('warn', 'deduplicated', { requestId: request.id, brand: request.brand_name, reason: 'duplicate_brand' });
+        continue;
+      }
+      seenBrands.set(norm, request.id);
+      deduplicated.push(request);
+    }
+
+    const filteredCount = invalidRecords.length;
+    const dedupCount = duplicateCount;
+
+    // --- Monitoring metrics ---
+    logStructured('warn', 'api_response_summary', {
+      totalRaw: enrichedRequests?.length || 0,
+      filteredCount,
+      duplicateCount: dedupCount,
+      returnedCount: deduplicated.length,
+    });
 
     res.json({
       success: true,
-      requests: cleanedRequests,
+      requests: deduplicated,
+      _debug: { filtered_count: filteredCount, duplicate_count: dedupCount },
     });
   } catch (error: any) {
     console.error('[CollabRequests] Error in GET /:', error);

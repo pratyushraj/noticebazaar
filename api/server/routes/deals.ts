@@ -218,7 +218,7 @@ router.get('/mine', async (req: AuthenticatedRequest, res: Response) => {
     }
 
     // ============================================================
-    // BACKEND DATA VALIDATION - Filter out garbage data
+    // BACKEND DATA VALIDATION + HARDENING
     // ============================================================
     const VALID_STATUSES = new Set([
       'pending', 'accepted', 'declined', 'countered', 'withdrawn',
@@ -227,9 +227,9 @@ router.get('/mine', async (req: AuthenticatedRequest, res: Response) => {
       'content_approved', 'payment_released', 'payment_received', 'completed',
       'fully_paid', 'payment_pending', 'disputed', 'cancelled',
       'drafting', 'awaiting_product_shipment',
-      'Active', 'Confirmed', 'Content Making', 'Content Delivered', 'Content Approved',
-      'Revision Requested', 'Revision Done', 'Payment Released', 'Payment Received',
-      'Completed', 'Fully Executed',
+      'active', 'confirmed', 'content making', 'content delivered', 'content approved',
+      'revision requested', 'revision done', 'payment released', 'payment received',
+      'completed', 'fully executed',
     ]);
 
     const isValidStatus = (s) => {
@@ -238,28 +238,46 @@ router.get('/mine', async (req: AuthenticatedRequest, res: Response) => {
       return VALID_STATUSES.has(n) || VALID_STATUSES.has(String(s).trim());
     };
 
-    const cleanedDeals = [];
-    let invalidCount = 0;
+    const normalizeStatus = (s) => {
+      if (!s) return 'unknown';
+      const n = String(s).trim().toLowerCase().replace(/ /g, '_');
+      return VALID_STATUSES.has(n) ? String(s).trim() : 'unknown';
+    };
+
+    const logStructured = (level, msg, data) => {
+      const entry = {
+        ts: new Date().toISOString(),
+        level,
+        endpoint: '/api/deals/mine',
+        ...data,
+      };
+      if (level === 'warn') console.warn('[Deals]', JSON.stringify(entry));
+      else console.error('[Deals]', JSON.stringify(entry));
+    };
+
+    // --- Pass 1: Validate + sanitize each record ---
+    const validated = [];
+    const invalidRecords = [];
 
     for (const deal of deals || []) {
-      const issues = [];
-      if (!deal?.id) issues.push('missing_id');
-      if (!deal?.brand_name || !String(deal.brand_name).trim()) issues.push('empty_brand');
-      if (!deal?.status || !isValidStatus(deal.status)) issues.push('invalid_status');
+      const reasons = [];
+      if (!deal?.id) reasons.push('missing_id');
+      if (!deal?.brand_name || !String(deal.brand_name).trim()) reasons.push('empty_brand');
+      if (!deal?.status) reasons.push('missing_status');
+      else if (!isValidStatus(deal.status)) reasons.push(`invalid_status:${deal.status}`);
       const amount = Number(deal?.deal_amount || 0);
-      if (deal?.deal_amount != null && !Number.isFinite(amount)) issues.push('invalid_amount');
+      if (deal?.deal_amount != null && !Number.isFinite(amount)) reasons.push('invalid_amount');
 
-
-      if (issues.length > 0) {
-        invalidCount++;
-        console.warn(`[Deals] Filtered invalid deal:`, { id: deal?.id, brand: deal?.brand_name, issues });
+      if (reasons.length > 0) {
+        invalidRecords.push({ dealId: deal?.id || 'n/a', brand: deal?.brand_name || 'n/a', reasons });
+        logStructured('warn', 'record_filtered', { dealId: deal?.id, brand: deal?.brand_name, reasons });
         continue;
       }
 
-      cleanedDeals.push({
+      validated.push({
         id: deal.id,
         brand_name: String(deal.brand_name).trim(),
-        status: deal.status,
+        status: normalizeStatus(deal.status),
         deal_amount: Number.isFinite(amount) ? amount : 0,
         creator_id: deal.creator_id || null,
         collab_type: deal.collab_type || null,
@@ -273,11 +291,38 @@ router.get('/mine', async (req: AuthenticatedRequest, res: Response) => {
       });
     }
 
-    if (invalidCount > 0) {
-      console.warn(`[Deals] /mine: filtered ${invalidCount}/${deals?.length || 0} invalid deals`);
+    // --- Pass 2: Deduplicate by brand_name (keep first) ---
+    const seenBrands = new Map();
+    const deduplicated = [];
+    let duplicateCount = 0;
+
+    for (const deal of validated) {
+      const norm = deal.brand_name.toLowerCase().trim();
+      if (seenBrands.has(norm)) {
+        duplicateCount++;
+        logStructured('warn', 'deduplicated', { dealId: deal.id, brand: deal.brand_name, reason: 'duplicate_brand' });
+        continue;
+      }
+      seenBrands.set(norm, deal.id);
+      deduplicated.push(deal);
     }
 
-    return res.json({ success: true, deals: cleanedDeals });
+    const filteredCount = invalidRecords.length;
+    const dedupCount = duplicateCount;
+
+    // --- Monitoring metrics ---
+    logStructured('warn', 'api_response_summary', {
+      totalRaw: deals?.length || 0,
+      filteredCount,
+      duplicateCount: dedupCount,
+      returnedCount: deduplicated.length,
+    });
+
+    return res.json({
+      success: true,
+      deals: deduplicated,
+      _debug: { filtered_count: filteredCount, duplicate_count: dedupCount },
+    });
   } catch (error: any) {
     console.error('[Deals] mine error:', error);
     return res.status(500).json({ success: false, error: error?.message || 'Internal server error' });
