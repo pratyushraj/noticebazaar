@@ -951,33 +951,71 @@ const MobileDashboardDemo = ({
         resolveAvatarUrl(profile?.avatar_url) ||
         avatarFallbackUrl;
     const displayName = liveCollabProfile?.name || profile?.full_name || profile?.first_name || 'Pratyush';
-    const pendingOffersDeduplicated = React.useMemo(() => {
-        const seen = new Set<string>();
-        return (collabRequests || []).filter((req: any) => {
-            // Only include pending requests in New Offers
-            if (req.status !== 'pending') return false;
-            const key = [req.brand_name, req.collab_type, req.exact_budget || req.budget_amount || req.deal_amount].filter(Boolean).join('|');
-            if (seen.has(key)) return false;
-            seen.add(key);
-            return true;
+    // ─── UNIFIED DEALS DEDUPLICATION ───
+    // Merge collabRequests (pending offers) and brandDeals (active deals) into ONE list.
+    // A collabRequest is excluded if the same brand+amount deal already exists in brandDeals
+    // (meaning it was accepted and is now active — don't show it in New Offers).
+    const unifiedDeals = React.useMemo(() => {
+        const map = new Map<string, any>();
+
+        // Step 1: Add all brandDeals as authoritative (accepted/in-progress deals)
+        (brandDeals || []).forEach((d: any) => {
+            if (!d?.id) return;
+            map.set(d.id, { ...d, _source: 'brandDeal' });
         });
-    }, [collabRequests]);
+
+        // Step 2: Add pending collabRequests — but skip if a brandDeal already exists
+        // for the same brand+amount (it was already accepted).
+        const seen = new Set<string>();
+        (collabRequests || []).forEach((req: any) => {
+            if (req.status !== 'pending') return;
+            const brand = (req.brand_name || '').trim().toLowerCase();
+            const amount = req.exact_budget || req.budget_amount || req.deal_amount || 0;
+            const dealAmount = Number(amount);
+
+            // Check if this brand+amount already has an active brandDeal
+            const alreadyAccepted = (brandDeals || []).some((d: any) => {
+                const dBrand = (d.brand_name || '').trim().toLowerCase();
+                const dAmount = Number(d.deal_amount || 0);
+                return dBrand === brand && dAmount === dealAmount && d.id;
+            });
+            if (alreadyAccepted) return; // Don't show in New Offers — deal already accepted
+
+            // Deduplicate pending requests by brand+amount
+            const key = [brand, req.collab_type, dealAmount].filter(Boolean).join('|');
+            if (seen.has(key)) return;
+            seen.add(key);
+
+            // Use collabRequest id with prefix to avoid collision
+            map.set(`cr:${req.id}`, { ...req, _source: 'collabRequest' });
+        });
+
+        return Array.from(map.values());
+    }, [collabRequests, brandDeals]);
+
+    // ─── TAB DERIVATION FROM UNIFIED LIST ───
+    const pendingOffersDeduplicated = React.useMemo(() => {
+        return unifiedDeals.filter((d: any) => d._source === 'collabRequest');
+    }, [unifiedDeals]);
+
     const displayOffers = React.useMemo(() => {
         return pendingOffersDeduplicated;
     }, [pendingOffersDeduplicated]);
     const pendingOffersCount = displayOffers.length;
     const completedDealsList = React.useMemo(() => {
-        return (brandDeals || []).filter((d: any) => {
+        return unifiedDeals.filter((d: any) => {
+            if (d._source === 'collabRequest') return false;
             const s = normalizeDealStatus(d);
             return s.includes('completed') || Boolean(d.payment_received_date);
         });
-    }, [brandDeals]);
+    }, [unifiedDeals]);
     const activeDealsList = React.useMemo(() => {
-        return (brandDeals || []).filter((d: any) => {
+        return unifiedDeals.filter((d: any) => {
+            if (d._source === 'collabRequest') return false;
             const s = normalizeDealStatus(d);
             return !(s.includes('completed') || Boolean(d.payment_received_date));
         });
-    }, [brandDeals]);
+    }, [unifiedDeals]);
     const actionRequiredDealsList = React.useMemo(() => {
         return (activeDealsList || []).filter((d: any) => Boolean(getCreatorDealCardUX(d).needsCreatorAction));
     }, [activeDealsList]);
@@ -986,18 +1024,19 @@ const MobileDashboardDemo = ({
     const activeDealsCount = activeDealsList.length;
     const completedDealsCount = completedDealsList.length;
     const pendingAmount = React.useMemo(() => {
-        return (brandDeals || []).reduce((sum, deal) => {
+        return unifiedDeals.reduce((sum, deal) => {
+            if (deal._source === 'collabRequest') return sum;
             const status = String(deal?.status || '').toLowerCase();
             return status.includes('completed') ? sum : sum + (deal.deal_amount || 0);
         }, 0);
-    }, [brandDeals]);
+    }, [unifiedDeals]);
 
     // Compute Monthly Revenue based on active deals this month
     const monthlyRevenue = React.useMemo(() => {
         if (stats?.earnings > 0 && stats?.timeframe === 'month') return stats.earnings;
         const currentMonth = new Date().getMonth();
         const currentYear = new Date().getFullYear();
-        return (brandDeals || []).reduce((sum, deal) => {
+        return unifiedDeals.filter(d => d._source !== 'collabRequest').reduce((sum, deal) => {
             // For completed deals use due_date (when payment was due)
             // For active deals use created_at (work is happening now, revenue counts this month)
             const rawStatus = normalizeDealStatus(deal);
@@ -1015,7 +1054,7 @@ const MobileDashboardDemo = ({
             }
             return sum + (isCurrentMonth ? (deal.deal_amount || 0) : 0);
         }, 0);
-    }, [stats?.earnings, brandDeals]);
+    }, [stats?.earnings, unifiedDeals]);
 
     useEffect(() => {
         const handle = (instagramHandle || '').trim();
@@ -1050,7 +1089,7 @@ const MobileDashboardDemo = ({
     const yearlyRevenue = React.useMemo(() => {
         if (stats?.earnings > 0 && stats?.timeframe === 'year') return stats.earnings;
         const currentYear = new Date().getFullYear();
-        return (brandDeals || []).reduce((sum, deal) => {
+        return unifiedDeals.filter(d => d._source !== 'collabRequest').reduce((sum, deal) => {
             const dateStr = deal.payment_received_date || deal.payment_expected_date || deal.due_date || deal.created_at;
             let isCurrentYear = true;
             if (dateStr) {
@@ -1059,12 +1098,12 @@ const MobileDashboardDemo = ({
             }
             return sum + (isCurrentYear ? (deal.deal_amount || 0) : 0);
         }, 0);
-    }, [stats?.earnings, brandDeals]);
+    }, [stats?.earnings, unifiedDeals]);
 
     const allTimeRevenue = React.useMemo(() => {
         if (stats?.earnings > 0 && stats?.timeframe === 'allTime') return stats.earnings;
-        return (brandDeals || []).reduce((sum, deal) => sum + (deal.deal_amount || 0), 0);
-    }, [stats?.earnings, brandDeals]);
+        return unifiedDeals.filter(d => d._source !== 'collabRequest').reduce((sum, deal) => sum + (deal.deal_amount || 0), 0);
+    }, [stats?.earnings, unifiedDeals]);
 
     useEffect(() => {
         const titles: Record<string, string> = {
