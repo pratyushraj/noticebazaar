@@ -9,6 +9,7 @@ const NotFound = lazy(() => import("@/pages/NotFound"));
 const Login = lazy(() => import("@/pages/Login"));
 const Signup = lazy(() => import("@/pages/Signup"));
 const ResetPassword = lazy(() => import("@/pages/ResetPassword"));
+const ForgotPassword = lazy(() => import("@/pages/ForgotPassword"));
 const LandingPage = lazy(() => import("@/pages/LandingPage"));
 const PrivacyPolicy = lazy(() => import("@/pages/PrivacyPolicy"));
 const TermsOfService = lazy(() => import("@/pages/TermsOfService"));
@@ -20,6 +21,7 @@ export const PublicRoutes = () => (
     <Route path="/login" element={<LazyRoute><Login /></LazyRoute>} />
     <Route path="/signup" element={<LazyRoute><Signup /></LazyRoute>} />
     <Route path="/reset-password" element={<LazyRoute><ResetPassword /></LazyRoute>} />
+    <Route path="/forgot-password" element={<LazyRoute><ForgotPassword /></LazyRoute>} />
     {/* Reserve /404 so it doesn't get interpreted as a collab username and loop */}
     <Route path="/404" element={<LazyRoute><NotFound /></LazyRoute>} />
     <Route path="/privacy-policy" element={<LazyRoute><PrivacyPolicy /></LazyRoute>} />
