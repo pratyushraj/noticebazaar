@@ -731,7 +731,9 @@ const CollabLinkLanding = () => {
 
   const isStep1Ready = Boolean(collabType && deliverables.length > 0);
   const isValidBrandEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(brandEmail);
-  const isStep2Ready = Boolean(brandEmail.trim() && isValidBrandEmail);
+  const needsProductImage = collabType === 'barter' || isHybridCollab(collabType);
+  const isProductImageReady = !needsProductImage || Boolean(String(barterProductImageUrl || '').trim());
+  const isStep2Ready = Boolean(brandEmail.trim() && isValidBrandEmail && isProductImageReady);
 
   const completionChecks = useMemo(() => ([
     { label: 'Collab type', complete: isStep1Ready },
@@ -1384,7 +1386,15 @@ const CollabLinkLanding = () => {
 
     if (currentStep === 2) {
       if (!isStep2Ready) {
-        toast.error('Please add your email');
+        if (!brandEmail.trim() || !isValidBrandEmail) {
+          toast.error('Please add your email');
+          return;
+        }
+        if (needsProductImage && !String(barterProductImageUrl || '').trim()) {
+          toast.error('Please upload a product image');
+          return;
+        }
+        toast.error('Please complete the required fields');
         return;
       }
       formRef.current?.requestSubmit();
