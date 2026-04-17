@@ -502,296 +502,204 @@ const CollabRequestBriefPage = () => {
         backTo="/creator-dashboard?tab=collabs&subtab=pending"
         backIconOnly
       >
-        <div className={cn(spacing.loose, "pb-32 md:pb-28")}>
-        {/* Offer Snapshot */}
-        <div className="rounded-[24px] md:rounded-[22px] bg-card backdrop-blur-md border border-border p-4 md:p-5 space-y-4">
-          <div className="flex items-start justify-between gap-3 min-w-0">
-            <div className="min-w-0">
-              <h2 className="text-lg md:text-[18px] font-bold text-foreground tracking-tight break-words flex items-center gap-2">
-                {request.brand_name ?? 'Brand'}
-              </h2>
-              <div className="flex items-center gap-2 mt-1.5 text-sm md:text-xs text-info/70">
-                {request.brand_email ? <span className="truncate">{request.brand_email}</span> : <span>Protected offer</span>}
-                {brandInstagramHandle && (
-                  <>
-                    <span className="text-info/60">•</span>
-                    <a
-                      href={`https://instagram.com/${brandInstagramHandle}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 text-info/80 hover:text-foreground transition-colors"
-                      aria-label={`Open ${request.brand_name || 'brand'} Instagram`}
-                    >
-                      <Instagram className="h-3.5 w-3.5" />
-                    </a>
-                  </>
-                )}
-                <span className="text-info/60">•</span>
-                <span className="inline-flex items-center gap-1">
-                  <Lock className="h-3 w-3" /> Creator Armour protected
+        {/* ─── STICKY CTA CARD ─── */}
+        <div className="sticky top-0 z-40 bg-[#0B0F14]/95 backdrop-blur-xl border-b border-border/60">
+          <div className="flex items-center justify-between px-4 pt-3 pb-2">
+            <div className="flex items-center gap-2 min-w-0">
+              <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center shrink-0">
+                <span className="text-xs font-black text-primary">
+                  {(request.brand_name ?? 'B').charAt(0).toUpperCase()}
                 </span>
               </div>
-            </div>
-            <span
-              className={cn(
-                "flex-shrink-0 px-2.5 py-1 rounded-md text-[11px] font-semibold border",
-                request.collab_type === 'barter'
-                  ? "bg-info/20 text-info border-info/30"
-                  : request.collab_type === 'paid'
-                    ? "bg-green-500/20 text-green-200 border-green-500/30"
-                    : "bg-indigo-500/20 text-indigo-200 border-indigo-500/30"
-              )}
-            >
-              {collabTypeLabel(request.collab_type)}
-            </span>
-          </div>
-
-          <div className="rounded-2xl bg-secondary/[0.06] border border-border/[0.08] p-4 md:p-4">
-            <div className="flex items-end justify-between gap-4">
               <div className="min-w-0">
-                <p className="text-[11px] font-medium text-info/60 uppercase tracking-wider">They're paying</p>
-                <p className="text-xl md:text-2xl font-black text-foreground tracking-tight mt-1">{budgetLabel}</p>
+                <p className="text-sm font-bold text-foreground truncate">{request.brand_name ?? 'Brand'}</p>
+                <p className="text-[11px] text-foreground/50 font-medium">
+                  {collabTypeLabel(request.collab_type)} • Creator Armour protected
+                </p>
               </div>
-              {timeLeft && (
-                <div
-                  className={cn(
-                    "shrink-0 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold border",
-                    timeLeft.tone === 'danger'
-                      ? "bg-destructive/10 text-destructive border-destructive/20"
-                      : timeLeft.tone === 'warn'
-                        ? "bg-warning/10 text-warning border-warning/20"
-                        : "bg-primary/10 text-primary border-primary/20"
-                  )}
-                >
-                  <Clock className="h-3.5 w-3.5" />
-                  {timeLeft.label}
-                </div>
-              )}
+            </div>
+            {timeLeft && (
+              <div className={cn(
+                "shrink-0 inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold border",
+                timeLeft.tone === 'danger'
+                  ? "bg-red-500/10 text-red-400 border-red-500/20"
+                  : timeLeft.tone === 'warn'
+                    ? "bg-amber-500/10 text-amber-400 border-amber-500/20"
+                    : "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
+              )}>
+                <Clock className="h-3 w-3" />
+                {timeLeft.label}
+              </div>
+            )}
+          </div>
+
+          <div className="px-4 pb-3 space-y-2.5">
+            <div className="flex items-end justify-between">
+              <div>
+                <p className="text-[11px] text-foreground/40 font-semibold uppercase tracking-wider">
+                  {isBarterLike(request.collab_type) ? "You'll receive" : "You'll earn"}
+                </p>
+                <p className="text-3xl font-black text-foreground tracking-tight leading-none">
+                  {budgetLabel}
+                </p>
+              </div>
+              <div className="text-right pb-0.5">
+                <p className="text-[10px] text-foreground/30">+₹0 platform fee</p>
+                <p className="text-[10px] text-emerald-400/60 font-medium">100% to you</p>
+              </div>
             </div>
 
-            <div className="mt-3 flex flex-wrap gap-2">
-              {deliverablesList.slice(0, 6).map((d, idx) => {
-                const chip = formatDeliverableChip(d);
-                return (
-                  <span
-                    key={idx}
-                    className="inline-flex items-center gap-2 px-3 py-2 rounded-full text-[13px] md:text-[12px] border border-border text-foreground/90 bg-secondary/[0.04]"
-                  >
-                    <span aria-hidden>{chip.emoji}</span>
-                    <span className="font-semibold">{chip.label}</span>
-                    {chip.count ? <span className="text-foreground/60 font-medium">×{chip.count}</span> : null}
-                  </span>
-                );
-              })}
-              {deadlineDate && !Number.isNaN(deadlineDate.getTime()) && (
-                <span className="inline-flex items-center gap-2 px-3 py-2 rounded-full text-[13px] md:text-[12px] border border-border text-info/90 bg-secondary/[0.02]">
-                  <span aria-hidden>📅</span>
-                  <span className="font-medium">Deadline</span>
-                  <span className="text-foreground/70">
-                    {deadlineDate.toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })}
-                  </span>
+            <button
+              type="button"
+              onClick={() => handleAccept()}
+              disabled={isAccepting || isDeclining}
+              className={cn(
+                "w-full h-12 rounded-xl font-black text-[15px] text-[#0B0F14] transition-all",
+                "bg-emerald-500 hover:bg-emerald-400 active:scale-[0.98]",
+                "focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-offset-2 focus:ring-offset-[#0B0F14]",
+                isAccepting ? "opacity-60" : ""
+              )}>
+              {isAccepting ? (
+                <span className="flex items-center justify-center gap-2">
+                  <Loader2 className="h-4 w-4 animate-spin" /> Accepting...
                 </span>
+              ) : (
+                "Accept deal"
               )}
+            </button>
+
+            <div className="flex gap-2">
+              <button
+                type="button"
+                className="flex-1 h-10 rounded-xl border border-border bg-card hover:bg-card/80 text-[13px] font-semibold text-foreground/80 transition-colors"
+                onClick={() => toast.info('Send your question to the brand')}>
+                Ask a question
+              </button>
+              <button
+                type="button"
+                onClick={() => { setCounterPrice(request.exact_budget ? String(request.exact_budget) : ''); setCounterNotes(''); setShowCounterDialog(true); }}
+                disabled={isAccepting || isDeclining}
+                className="h-10 px-3 rounded-xl border border-border bg-card hover:bg-card/80 text-[13px] font-semibold text-foreground/80 transition-colors">
+                Counter
+              </button>
+              <button
+                type="button"
+                onClick={handleDecline}
+                disabled={isAccepting || isDeclining}
+                className={cn(
+                  "h-10 px-3 rounded-xl border text-[13px] font-semibold transition-colors",
+                  "border-red-500/20 text-red-400/70 hover:text-red-400 hover:border-red-500/40 hover:bg-red-500/5",
+                  isDeclining ? "opacity-60" : ""
+                )}>
+                {isDeclining ? <Loader2 className="h-4 w-4 animate-spin mx-auto" /> : "Decline"}
+              </button>
+            </div>
+
+            <div className="flex items-center justify-center gap-1.5 pt-0.5">
+              <ShieldCheck className="h-3 w-3 text-emerald-500/50" />
+              <p className="text-[10px] text-foreground/30 font-medium">
+                Creator Armour protects your payment — deal moves to your dashboard
+              </p>
             </div>
           </div>
+        </div>
 
-          {/* What the brand wants */}
-          <div className="rounded-2xl bg-secondary/[0.03] border border-border/[0.06] p-4">
-            <p className="text-[11px] font-medium text-info/60 uppercase tracking-wider mb-2">What the brand wants</p>
-            <p className="text-sm text-info leading-relaxed whitespace-pre-wrap">
-              {request.campaign_description || '-'}
-            </p>
-          </div>
-
-          {/* Earnings Breakdown */}
-          <div className="rounded-2xl bg-secondary/[0.03] border border-border/[0.06] p-4">
-            <p className="text-[11px] font-medium text-info/60 uppercase tracking-wider mb-3">Deal value</p>
-            <div className="space-y-3 text-base md:text-sm">
-              {!isBarterLike(request.collab_type) && (
-                <>
-                  <div className="flex items-center justify-between text-foreground/85">
-                    <span>Offer budget</span>
-                    <span className="font-semibold text-foreground">{budgetLabel}</span>
-                  </div>
-                  <div className="flex items-center justify-between text-foreground/70">
-                    <span>Platform fee</span>
-                    <span className="font-semibold text-foreground">₹0</span>
-                  </div>
-                  <div className="h-px bg-card0 my-3" />
-                </>
-              )}
-              <div className="flex items-center justify-between text-foreground">
-                <span className="font-semibold">{isBarterLike(request.collab_type) ? "You'll receive" : "You'll get"}</span>
-                <span className="font-black text-primary text-lg md:text-base">{budgetLabel}</span>
-              </div>
-              {!isBarterLike(request.collab_type) && (
-                <p className="text-[13px] md:text-[11px] text-foreground/55 mt-3">Paid via bank transfer or UPI.</p>
-              )}
-            </div>
-          </div>
-
-          {/* Simple next-step explainer — extra bottom margin prevents overlap with sticky CTA */}
-          <div className="rounded-2xl bg-secondary/[0.02] border border-border/[0.06] p-4 mb-[160px] md:mb-0">
-            <p className="text-[11px] font-medium text-info/60 uppercase tracking-wider mb-3">If you accept</p>
-            <div className="grid grid-cols-1 gap-3 text-[13px] md:text-[12px] text-foreground/80">
-              <div className="flex items-center gap-3">
-                <CheckCircle2 className="h-5 w-5 text-primary flex-shrink-0" />
-                <span>The deal moves into your active workflow</span>
-              </div>
-              <div className="flex items-center gap-3">
-                <CheckCircle2 className="h-5 w-5 text-primary flex-shrink-0" />
-                <span>You only add price, address, or UPI when needed</span>
-              </div>
-              <div className="flex items-center gap-3">
-                <CheckCircle2 className="h-5 w-5 text-primary flex-shrink-0" />
-                <span>You can still track content, payment, and updates in one place</span>
+        <div className="px-4 pt-4 pb-8 space-y-4">
+          {deliverablesList.length > 0 && (
+            <div className="space-y-2">
+              <p className="text-[11px] font-semibold text-foreground/40 uppercase tracking-wider">Deliverables</p>
+              <div className="flex flex-wrap gap-2">
+                {deliverablesList.slice(0, 6).map((d, idx) => {
+                  const chip = formatDeliverableChip(d);
+                  return (
+                    <span
+                      key={idx}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[13px] font-semibold border border-border bg-card text-foreground/80"
+                    >
+                      <span className="text-foreground/50">{chip.emoji}</span>
+                      {chip.label}
+                      {chip.count ? <span className="text-foreground/40">×{chip.count}</span> : null}
+                    </span>
+                  );
+                })}
               </div>
             </div>
-          </div>
+          )}
 
-          {/* Mobile Sticky CTA */}
-          <div className="fixed inset-x-0 bottom-0 z-50 pb-safe md:hidden" role="region" aria-label="Offer actions">
-            <div className="mx-auto max-w-lg px-4 pb-4">
-              <div className="rounded-2xl border border-border bg-black/70 backdrop-blur-xl p-4 shadow-2xl">
-                <div className="flex items-center justify-between gap-3 mb-3">
-                  <div className="min-w-0">
-                    <p className="text-base font-bold text-foreground" id="offer-action-heading">Do you want this offer?</p>
-                    <p className="text-sm text-foreground/70">Accept it, counter it, or decline it.</p>
-                    {timeLeft && (
-                      <p className="mt-1 text-xs text-foreground/60 flex items-center gap-1.5" aria-live="polite">
-                        <Clock className="h-3.5 w-3.5" aria-hidden="true" /> {timeLeft.label}
-                      </p>
-                    )}
-                  </div>
-                  <div className="shrink-0">
-                    <div className="text-right">
-                      <p className="text-xs text-foreground/60">Deal value</p>
-                      <p className="text-lg font-black text-primary" aria-label={`Payment amount: ${budgetLabel}`}>{budgetLabel}</p>
-                    </div>
-                  </div>
+          {request.campaign_description && (
+            <div className="space-y-2">
+              <p className="text-[11px] font-semibold text-foreground/40 uppercase tracking-wider">Campaign brief</p>
+              <p className="text-[13px] text-foreground/70 leading-relaxed whitespace-pre-wrap">
+                {request.campaign_description}
+              </p>
+            </div>
+          )}
+
+          <details className="group rounded-xl border border-border/60 bg-card/40">
+            <summary className="flex items-center justify-between px-4 py-3 cursor-pointer list-none select-none">
+              <span className="text-[13px] font-semibold text-foreground/70">Deal details</span>
+              <svg className="h-4 w-4 text-foreground/30 group-open:rotate-180 transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M6 9l6 6 6-6"/></svg>
+            </summary>
+            <div className="px-4 pb-4 space-y-3 text-[13px]">
+              {request.usage_rights && (
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="h-4 w-4 text-emerald-400/70 shrink-0" />
+                  <span className="text-foreground/60">Usage rights included</span>
                 </div>
-
-                <div className="space-y-3" role="group" aria-labelledby="offer-action-heading">
-                  <button type="button"
-                    onClick={() => handleAccept()}
-                    disabled={isAccepting || isDeclining}
-                    className={cn(
-                      "w-full h-14 rounded-2xl font-black text-base text-foreground transition-all shadow-lg focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-offset-2 focus:ring-offset-black",
-                      isAccepting ? "bg-primary/60" : "bg-primary hover:bg-primary active:scale-[0.98]"
-                    )}
-                    aria-label={isAccepting ? 'Accepting deal, please wait' : 'Accept this offer'}
-                    aria-describedby="accept-offer-description"
+              )}
+              {isBarterLike(request.collab_type) && request.barter_description && (
+                <div className="space-y-1">
+                  <p className="text-foreground/40 text-[11px] font-medium uppercase tracking-wider">Product details</p>
+                  <p className="text-foreground/70">{request.barter_description}</p>
+                </div>
+              )}
+              {deadlineDate && !Number.isNaN(deadlineDate.getTime()) && (
+                <div className="flex items-center gap-2">
+                  <span className="text-foreground/40">📅</span>
+                  <span className="text-foreground/60">
+                    Deadline: {deadlineDate.toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' })}
+                  </span>
+                </div>
+              )}
+              <div className="flex items-center gap-2">
+                <span className="text-foreground/30">✉️</span>
+                <span className="text-foreground/50 truncate">{request.brand_email ?? 'Contact via Creator Armour'}</span>
+              </div>
+              {brandInstagramHandle && (
+                <div className="flex items-center gap-2">
+                  <Instagram className="h-4 w-4 text-foreground/30 shrink-0" />
+                  <a
+                    href={`https://instagram.com/${brandInstagramHandle}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-info/80 hover:text-info text-[13px] transition-colors"
                   >
-                    {isAccepting ? (
-                      <>
-                        <Loader2 className="h-5 w-5 animate-spin" aria-hidden="true" />
-                        Accepting...
-                      </>
-                    ) : (
-                      <>
-                        Accept offer
-                      </>
-                    )}
-                  </button>
-                  <div className="sr-only" id="accept-offer-description">
-                    This moves the offer into your active deal workflow
-                  </div>
-                  <div className="flex gap-3">
-                    <button type="button"
-                      onClick={() => { setCounterPrice(request.exact_budget ? String(request.exact_budget) : ''); setCounterNotes(''); setShowCounterDialog(true); }}
-                      disabled={isAccepting || isDeclining}
-                      className="flex-1 h-12 rounded-xl border border-info/40 text-info hover:text-foreground hover:bg-info/20 text-sm font-bold transition-all active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-blue-400/50 focus:ring-offset-2 focus:ring-offset-black"
-                      aria-label="Make a counter offer to negotiate terms"
-                    >
-                      Counter offer
-                    </button>
-                    <button type="button"
-                      onClick={handleDecline}
-                      disabled={isAccepting || isDeclining}
-                      className={cn(
-                        "flex-1 h-12 rounded-xl border border-destructive/30 text-destructive hover:text-destructive hover:bg-destructive/20 text-sm font-bold transition-all active:scale-[0.98] flex items-center justify-center gap-1.5 focus:outline-none focus:ring-2 focus:ring-red-400/50 focus:ring-offset-2 focus:ring-offset-black",
-                        isDeclining ? "opacity-60" : ""
-                      )}
-                      aria-label={isDeclining ? 'Declining offer, please wait' : 'Decline this offer'}
-                    >
-                      {isDeclining ? (
-                        <>
-                          <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
-                          Declining...
-                        </>
-                      ) : (
-                        <>
-                          <XCircle className="h-4 w-4" aria-hidden="true" />
-                          Decline
-                        </>
-                      )}
-                    </button>
-                  </div>
+                    @{brandInstagramHandle}
+                  </a>
                 </div>
-
-                {timeLeft?.tone === 'danger' && (
-                  <div className="mt-2 flex items-start gap-2 text-[11px] text-destructive/80">
-                    <AlertTriangle className="h-4 w-4 mt-0.5" />
-                    <p>Offer deadline is near — reply soon so you don't miss this.</p>
-                  </div>
-                )}
-                </div>
-              </div>
+              )}
             </div>
-          </div>
+          </details>
 
-          {/* Desktop CTA */}
-          <div className="hidden md:block mt-6">
-            <div className="rounded-2xl border border-border bg-card backdrop-blur-md p-4">
-              <div className="flex items-center justify-between gap-4 mb-4">
-                <div>
-                  <p className="text-lg font-bold text-foreground">Do you want this offer?</p>
-                  <p className="text-sm text-foreground/70">Accept it now, or counter if you want different terms.</p>
-                  {timeLeft && (
-                    <p className="mt-2 text-sm text-foreground/60 flex items-center gap-2">
-                      <Clock className="h-4 w-4" /> {timeLeft.label}
-                    </p>
-                  )}
-                </div>
-                <div className="text-right">
-                  <p className="text-xs text-foreground/60 uppercase tracking-wider">Deal value</p>
-                  <p className="text-2xl font-black text-primary">{budgetLabel}</p>
-                </div>
+          <div className="rounded-xl border border-emerald-500/10 bg-emerald-500/5 p-4 space-y-2">
+            <p className="text-[11px] font-bold text-emerald-400/80 uppercase tracking-wider">Why accept</p>
+            <div className="space-y-1.5">
+              <div className="flex items-start gap-2">
+                <CheckCircle2 className="h-4 w-4 text-emerald-400/60 mt-0.5 shrink-0" />
+                <p className="text-[13px] text-foreground/60">Payment tracked and protected by Creator Armour</p>
               </div>
-
-              <div className="flex gap-3">
-                <button type="button"
-                  onClick={() => handleAccept()}
-                  disabled={isAccepting || isDeclining}
-                  className={cn(
-                    "flex-1 h-14 rounded-xl font-black text-base uppercase tracking-wider text-foreground transition-colors shadow-lg",
-                    isAccepting ? "bg-primary/60" : "bg-primary hover:bg-primary"
-                  )}
-                >
-                  {isAccepting ? 'Accepting...' : 'Accept offer'}
-                </button>
-                <button type="button"
-                  onClick={() => { setCounterPrice(request.exact_budget ? String(request.exact_budget) : ''); setCounterNotes(''); setShowCounterDialog(true); }}
-                  disabled={isAccepting || isDeclining}
-                  className="h-14 px-6 rounded-xl border border-border text-foreground/85 hover:text-foreground hover:bg-card0 text-base font-bold transition-colors"
-                >
-                  Counter offer
-                </button>
-                <button type="button"
-                  onClick={handleDecline}
-                  disabled={isAccepting || isDeclining}
-                  className={cn(
-                    "h-14 px-5 rounded-xl border border-destructive/30 text-destructive hover:text-destructive hover:bg-destructive/20 text-base font-bold transition-colors flex items-center gap-1.5",
-                    isDeclining ? "opacity-60" : ""
-                  )}
-                  aria-label="Decline offer"
-                >
-                  {isDeclining ? <><Loader2 className="h-5 w-5 animate-spin" /> Declining...</> : <><XCircle className="h-5 w-5" /> Decline</>}
-                </button>
+              <div className="flex items-start gap-2">
+                <CheckCircle2 className="h-4 w-4 text-emerald-400/60 mt-0.5 shrink-0" />
+                <p className="text-[13px] text-foreground/60">Add your price and delivery details in one place</p>
+              </div>
+              <div className="flex items-start gap-2">
+                <CheckCircle2 className="h-4 w-4 text-emerald-400/60 mt-0.5 shrink-0" />
+                <p className="text-[13px] text-foreground/60">Track content review, payment, and updates in your dashboard</p>
               </div>
             </div>
           </div>
         </div>
+
       </CreatorNavigationWrapper>
       <Dialog open={showRequirementDialog} onOpenChange={setShowRequirementDialog}>
         <DialogContent className="border-border bg-[#121826] text-foreground">
