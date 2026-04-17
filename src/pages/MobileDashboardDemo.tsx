@@ -3296,6 +3296,168 @@ const MobileDashboardDemo = ({
                                                 <p className={cn("mt-1 text-[12px] font-semibold opacity-70", secondaryTextColor)}>This month</p>
                                             </button>
                                         </div>
+
+                                        {/* Performance Insight */}
+                                        <div className={cn(
+                                            "p-5 rounded-[22px] border flex items-center justify-between gap-4",
+                                            isDark ? "bg-card border-border" : "bg-white border-[#E5E7EB] shadow-sm"
+                                        )}>
+                                            <div className="min-w-0">
+                                                <div className="flex items-center gap-2 mb-2">
+                                                    <TrendingUp className={cn("w-4 h-4", isDark ? "text-emerald-300" : "text-emerald-700")} />
+                                                    <p className={cn("text-[14px] font-black tracking-tight", textColor)}>Performance Insight</p>
+                                                    <span className={cn("text-[10px] font-black px-2 py-0.5 rounded-full", isDark ? "bg-emerald-500/12 text-emerald-300 border border-emerald-400/20" : "bg-emerald-50 text-emerald-700 border border-emerald-100")}>New</span>
+                                                </div>
+                                                <p className={cn("text-[12px] font-semibold opacity-70 leading-relaxed", secondaryTextColor)}>
+                                                    You're getting 2x more offers than average creators. Reply faster to unlock premium brands.
+                                                </p>
+                                            </div>
+                                            <div className={cn("w-14 h-14 rounded-full border flex items-center justify-center shrink-0", isDark ? "border-border bg-background/40" : "border-[#E5E7EB] bg-[#F8FAFC]")}>
+                                                <BarChart3 className={cn("w-6 h-6", isDark ? "text-emerald-300" : "text-emerald-700")} />
+                                            </div>
+                                        </div>
+
+                                        {/* Grow Your Brand */}
+                                        <div className={cn(
+                                            "p-5 rounded-[22px] border",
+                                            isDark ? "bg-card border-border" : "bg-white border-[#E5E7EB] shadow-sm"
+                                        )}>
+                                            <div className="flex items-center justify-between gap-3 mb-3">
+                                                <div className="min-w-0">
+                                                    <p className={cn("text-[16px] font-black tracking-tight", textColor)}>Grow Your Brand</p>
+                                                    <p className={cn("text-[12px] font-semibold opacity-70", secondaryTextColor)}>Share your link with brands and get more deals</p>
+                                                </div>
+                                            </div>
+                                            <div className={cn(
+                                                "flex items-center gap-2 p-3 rounded-2xl border",
+                                                isDark ? "bg-background/40 border-border" : "bg-[#F8FAFC] border-[#E5E7EB]"
+                                            )}>
+                                                <p className={cn("text-[12px] font-mono font-semibold truncate", textColor)}>
+                                                    creatorarmour.com/collab/{username || 'creator'}
+                                                </p>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => { triggerHaptic(); handleCopyStorefront(); }}
+                                                    className={cn("ml-auto h-9 px-4 rounded-xl text-[12px] font-black active:scale-95 transition-all", isDark ? "bg-emerald-600 text-white" : "bg-emerald-600 text-white")}
+                                                >
+                                                    Copy
+                                                </button>
+                                            </div>
+                                            <div className="mt-4 grid grid-cols-3 gap-3">
+                                                <button
+                                                    type="button"
+                                                    onClick={() => { triggerHaptic(); handleShareOnWhatsApp(); }}
+                                                    className={cn("h-12 rounded-2xl border flex items-center justify-center text-[12px] font-black", isDark ? "bg-background/40 border-border text-foreground/80" : "bg-white border-[#E5E7EB] text-[#0F172A]")}
+                                                >
+                                                    WhatsApp
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => { triggerHaptic(); toast.message('Instagram', { description: 'Copy link and paste in your story/bio.' }); }}
+                                                    className={cn("h-12 rounded-2xl border flex items-center justify-center text-[12px] font-black", isDark ? "bg-background/40 border-border text-foreground/80" : "bg-white border-[#E5E7EB] text-[#0F172A]")}
+                                                >
+                                                    Instagram
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => { triggerHaptic(); setShowShareSheet(true); }}
+                                                    className={cn("h-12 rounded-2xl border flex items-center justify-center text-[12px] font-black", isDark ? "bg-background/40 border-border text-foreground/80" : "bg-white border-[#E5E7EB] text-[#0F172A]")}
+                                                >
+                                                    More
+                                                </button>
+                                            </div>
+                                            <p className={cn("mt-3 text-[11px] font-semibold opacity-60", secondaryTextColor)}>
+                                                Brands can view your profile and send you collab offers.
+                                            </p>
+                                        </div>
+
+                                        {/* Incoming Offers Preview */}
+                                        <div className={cn(
+                                            "p-5 rounded-[22px] border",
+                                            isDark ? "bg-card border-border" : "bg-white border-[#E5E7EB] shadow-sm"
+                                        )}>
+                                            <div className="flex items-center justify-between mb-4">
+                                                <p className={cn("text-[16px] font-black tracking-tight", textColor)}>
+                                                    Incoming Offers ({pendingOffersCount})
+                                                </p>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => { triggerHaptic(); setActiveTab('deals'); setCollabSubTab('pending'); }}
+                                                    className={cn("text-[12px] font-black", isDark ? "text-sky-300" : "text-sky-700")}
+                                                >
+                                                    View all →
+                                                </button>
+                                            </div>
+                                            <div className="space-y-3">
+                                                {pendingOffersDeduplicated.slice(0, 3).map((req: any, idx: number) => {
+                                                    const amount = Number(req?.exact_budget || req?.deal_amount || req?.barter_value || 0);
+                                                    const deliverables = (() => {
+                                                        const raw = req?.deliverables || req?.raw?.deliverables;
+                                                        try {
+                                                            const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;
+                                                            if (Array.isArray(parsed) && parsed.length > 0) {
+                                                                const first = parsed[0];
+                                                                if (typeof first === 'string') return first;
+                                                            }
+                                                        } catch { }
+                                                        return 'Reel';
+                                                    })();
+                                                    return (
+                                                        <div
+                                                            key={String(req?.id || idx)}
+                                                            role="button"
+                                                            tabIndex={0}
+                                                            onClick={() => { triggerHaptic(); setSelectedItem(req); setSelectedType('offer'); }}
+                                                            className={cn(
+                                                                "p-4 rounded-2xl border flex items-center gap-3 active:scale-[0.99] transition-all",
+                                                                isDark ? "bg-background/30 border-border" : "bg-[#F8FAFC] border-[#E5E7EB]"
+                                                            )}
+                                                        >
+                                                            <div className="w-12 h-12 rounded-2xl overflow-hidden border border-border shrink-0">
+                                                                {getBrandIcon(req?.brand_logo || req?.brand_logo_url || req?.logo_url, req?.category, req?.brand_name)}
+                                                            </div>
+                                                            <div className="min-w-0 flex-1">
+                                                                <p className={cn("text-[14px] font-black truncate", textColor)}>{String(req?.brand_name || 'Brand')}</p>
+                                                                <p className={cn("text-[12px] font-semibold opacity-70 truncate", secondaryTextColor)}>{deliverables}</p>
+                                                            </div>
+                                                            <div className="text-right shrink-0">
+                                                                <p className={cn("text-[14px] font-black tabular-nums", isDark ? "text-emerald-300" : "text-emerald-700")}>
+                                                                    ₹{Number.isFinite(amount) ? amount.toLocaleString() : '—'}
+                                                                </p>
+                                                                <div className="mt-2 flex items-center gap-2 justify-end">
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={async (e) => { e.stopPropagation(); if (!req?.isDemo) await handleAccept(req); }}
+                                                                        className={cn("h-8 px-3 rounded-xl text-[11px] font-black active:scale-95", isDark ? "bg-emerald-600 text-white" : "bg-emerald-600 text-white")}
+                                                                    >
+                                                                        Accept
+                                                                    </button>
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={async (e) => {
+                                                                            e.stopPropagation();
+                                                                            triggerHaptic(HapticPatterns.warning);
+                                                                            if (req?.isDemo) return;
+                                                                            if (onDeclineRequest) { try { await onDeclineRequest(req); } catch { } }
+                                                                        }}
+                                                                        className={cn("h-8 px-3 rounded-xl text-[11px] font-black border active:scale-95", isDark ? "border-destructive/50 text-destructive" : "border-destructive/40 text-destructive")}
+                                                                    >
+                                                                        Decline
+                                                                    </button>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    );
+                                                })}
+                                            </div>
+                                            <button
+                                                type="button"
+                                                onClick={() => { triggerHaptic(); setActiveTab('deals'); setCollabSubTab('pending'); }}
+                                                className={cn("mt-4 w-full text-center text-[12px] font-black", isDark ? "text-sky-300" : "text-sky-700")}
+                                            >
+                                                View all offers →
+                                            </button>
+                                        </div>
                                     </div>
 
                                     {/* Intake Link Promoters / Quick Share */}
