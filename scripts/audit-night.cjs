@@ -3,7 +3,7 @@ const fs = require('fs');
 const http = require('http');
 const { execSync } = require('child_process');
 
-const TUNNEL = 'https://sally-anthropology-tourism-incidents.trycloudflare.com';;;
+const TUNNEL = 'https://structure-fathers-adapted-childhood.trycloudflare.com';;;;
 const OLLAMA = 'http://20.197.60.36:11434';
 const CREATOR = { email: 'notice104@yopmail.com', pass: 'kickurass' };
 const BRAND = { email: 'mellowprints0707@yopmail.com', pass: 'kickurass' };
