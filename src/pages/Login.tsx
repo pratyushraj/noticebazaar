@@ -19,7 +19,8 @@ const getDashboardPathForRole = (role?: string | null, onboardingComplete?: bool
   if (role === 'brand') return '/brand-dashboard';
   if (role === 'chartered_accountant') return '/ca-dashboard';
   if (role === 'lawyer') return '/lawyer-dashboard';
-  return onboardingComplete ? '/creator-dashboard' : '/creator-onboarding';
+  // Don't block login behind onboarding.
+  return '/creator-dashboard';
 };
 
 const Login = () => {
@@ -344,11 +345,11 @@ const Login = () => {
               </div>
             </div>
             <div className="space-y-3">
-              <Button
+                <Button
                 onClick={async () => {
                   try {
-                    const redirectUrl = `${window.location.origin}/creator-onboarding`;
-                    sessionStorage.setItem('oauth_intended_route', 'creator-onboarding');
+                    const redirectUrl = `${window.location.origin}/creator-dashboard`;
+                    sessionStorage.setItem('oauth_intended_route', 'creator-dashboard');
                     const { data, error } = await supabase.auth.signInWithOAuth({
                       provider: 'google',
                       options: {

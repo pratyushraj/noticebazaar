@@ -446,12 +446,20 @@ const MobileDashboardDemo = ({
     const isDemoParamEnabled = ['1', 'true', 'yes'].includes(String(searchParams.get('demo') || '').toLowerCase());
     const isDemoOfferEnabled = Boolean(showDemoOffer || isDemoParamEnabled);
     const rawTab = searchParams.get('tab');
-    // Normalize legacy 'account' tab to 'profile'
-    const tabMap: Record<string, string> = { dashboard: 'dashboard', deals: 'deals', payments: 'payments', profile: 'profile', account: 'profile' };
+    // Normalize legacy tabs:
+    // - 'account' -> 'profile'
+    // - 'collabs' -> 'deals' (older deep-links used /creator-dashboard?tab=collabs)
+    const tabMap: Record<string, string> = { dashboard: 'dashboard', deals: 'deals', collabs: 'deals', payments: 'payments', profile: 'profile', account: 'profile' };
     const activeTab = (tabMap[rawTab || ''] || 'dashboard') as 'dashboard' | 'deals' | 'payments' | 'profile';
     const setActiveTab = (tab: string) => {
         const next = new URLSearchParams(searchParams);
         next.set('tab', tab);
+        // If we navigate away from deals, clear deals-specific params so we don't get forced back.
+        if (tab !== 'deals') {
+            next.delete('subtab');
+            next.delete('requestId');
+            next.delete('dealId');
+        }
         setSearchParams(next, { replace: true });
     };
 
@@ -463,13 +471,8 @@ const MobileDashboardDemo = ({
     const [showSharingTips, setShowSharingTips] = useState(false);
     const hasHandledDeepLinkRef = useRef(false);
     useEffect(() => {
-        // If URL has a deals subtab but activeTab is not 'deals', redirect to 'deals'
-        if (subtabParam && activeTab !== 'deals') {
-            const next = new URLSearchParams(searchParams);
-            next.set('tab', 'deals');
-            setSearchParams(next, { replace: true });
-            return;
-        }
+        // Don't force-switch tabs just because a stale `subtab` is present in the URL.
+        // Deals-specific params are cleared by `setActiveTab` when leaving the deals tab.
         if (activeTab !== 'deals') return;
 
         // Deep-link for Pending Offers (requestId)
@@ -545,7 +548,7 @@ const MobileDashboardDemo = ({
         if (!itemId) return null;
 
         if (selectedType === 'offer') return `/collab-requests/${itemId}/brief`;
-        if (selectedType === 'deal') return `/creator-dashboard?tab=collabs&subtab=active&dealId=${itemId}`;
+        if (selectedType === 'deal') return `/creator-dashboard?tab=deals&subtab=active&dealId=${itemId}`;
         return null;
     };
 
@@ -950,9 +953,12 @@ const MobileDashboardDemo = ({
     const usernameFallback = normalizedUsername && !isGeneratedCreatorHandle(normalizedUsername)
         ? normalizedUsername
         : '';
-    const username = instagramHandle || usernameFallback || 'creator';
+    // Only treat a handle as "real" when it comes from profile data; avoid defaulting to a fake
+    // 'creator' handle which causes the dashboard to show a misleading "offer/collab link" card.
+    const username = instagramHandle || usernameFallback || '';
     // Use DiceBear instead of ui-avatars.com (avoids external CDN dependency)
-    const avatarFallbackUrl = `https://api.dicebear.com/7.x/initials/svg?name=${encodeURIComponent(username)}&backgroundColor=10B981&textColor=ffffff`;
+    const avatarSeed = username || 'creator';
+    const avatarFallbackUrl = `https://api.dicebear.com/7.x/initials/svg?name=${encodeURIComponent(avatarSeed)}&backgroundColor=10B981&textColor=ffffff`;
     const resolveAvatarUrl = (candidate: any) => {
         const raw = String(candidate || '').trim();
         if (!raw) return '';
@@ -976,9 +982,10 @@ const MobileDashboardDemo = ({
             const key = idKey || comboKey;
             if (!key || seen.has(key)) return false;
             seen.add(key);
-            // Only include truly pending offers in New Offers tab
-            const s = normalizeDealStatus(req);
-            return s === 'pending' || s === 'offer_sent' || s === 'new' || s === 'sent';
+            // Only include truly pending collab requests as "New Offers".
+            // (Confirmed deals live in `brandDeals` and should never show offer CTAs like "deliver content".)
+            const status = String(req?.status || '').toLowerCase().trim();
+            return status === 'pending' || Boolean(req?.isDemo);
         });
     }, [collabRequests]);
     const displayOffers = React.useMemo(() => {
@@ -1152,6 +1159,15 @@ const MobileDashboardDemo = ({
             }
         }
     }, [activeTab]);
+
+    // When opening a settings sub-page (like payouts), force scroll to top.
+    React.useEffect(() => {
+        if (!activeSettingsPage) return;
+        if (!scrollRef.current) return;
+        requestAnimationFrame(() => {
+            if (scrollRef.current) scrollRef.current.scrollTop = 0;
+        });
+    }, [activeSettingsPage]);
     React.useEffect(() => {
         const meta = document.querySelector('meta[name=theme-color]');
         const orig = meta?.getAttribute('content');
@@ -1220,10 +1236,13 @@ const MobileDashboardDemo = ({
                 updated_at: new Date().toISOString(),
             };
 
-            const { error: coreError } = await (supabase as any)
+            // Request updated row back so we can detect "0 rows updated" (which otherwise looks like success).
+            const { data: updatedCore, error: coreError } = await (supabase as any)
                 .from('profiles')
                 .update(corePayload)
-                .eq('id', session.user.id);
+                .eq('id', session.user.id)
+                .select('id')
+                .maybeSingle();
 
             if (coreError) {
                 console.error('[handleSaveProfile] Core update failed:', {
@@ -1233,6 +1252,12 @@ const MobileDashboardDemo = ({
                     hint: coreError.hint,
                 });
                 throw coreError;
+            }
+            if (!updatedCore) {
+                // Supabase returns `data: null` when no rows matched (e.g. profile id mismatch / RLS).
+                // Do not show a false-positive "saved".
+                toast.error('Could not save: profile row not updated. Please contact support.');
+                return;
             }
 
             // Step 2: Update Instagram handle + collab username together.
@@ -2966,7 +2991,7 @@ const MobileDashboardDemo = ({
                             )}
 
                             {/* Share Link CTA - only for new accounts with no activity */}
-                            {activeDealsCount === 0 && pendingOffersCount === 0 && (!profile?.instagram_handle || !profile?.bio) && (
+                            {(!isLoadingDeals && !isLoadingProfile) && activeDealsCount === 0 && pendingOffersCount === 0 && (!profile?.instagram_handle || !profile?.bio) && (
                                 <div className="px-5 mb-4">
                                     <div className={cn("p-5 rounded-2xl border", isDark ? "bg-card border-[#2C2C2E]" : "bg-[#DCFCE7] border-[#16A34A]/20")}>
                                         <p className={cn("text-[14px] font-bold mb-3", isDark ? "text-foreground" : "text-[#0F172A]")}>Share your link to get your first offer</p>
@@ -2989,7 +3014,7 @@ const MobileDashboardDemo = ({
 
 
                             {/* Empty State vs Normal Metrics */}
-                            {activeDealsCount === 0 && pendingOffersCount === 0 && monthlyRevenue === 0 && collabRequests.length === 0 ? (
+                            {(!isLoadingDeals && !isLoadingProfile) && activeDealsCount === 0 && pendingOffersCount === 0 && monthlyRevenue === 0 && collabRequests.length === 0 ? (
                                 <>
                                     {/* Empty State Hero - Improved */}
                                     <div className="px-5 mb-8">
@@ -3184,6 +3209,7 @@ const MobileDashboardDemo = ({
                                     </div>
 
                                     {/* Intake Link Promoters / Quick Share */}
+                                    {!!username && (
                                     <div className="px-5 mb-8">
                                         <motion.div
                                             initial={{ opacity: 0, y: 15 }}
@@ -3210,7 +3236,7 @@ const MobileDashboardDemo = ({
                                             </div>
 
                                             <div className="mb-3 p-2.5 rounded-xl bg-background/60 border border-border">
-                                                <p className="text-[11px] font-mono font-medium text-center truncate" style={{ color: 'var(--foreground)', opacity: 0.7 }}>creatorarmour.com/{username}</p>
+                                                <p className="text-[11px] font-mono font-medium text-center truncate" style={{ color: 'var(--foreground)', opacity: 0.7 }}>creatorarmour.com/collab/{username}</p>
                                             </div>
 
                                             <div className="flex gap-2.5">
@@ -3241,6 +3267,7 @@ const MobileDashboardDemo = ({
                                             </p>
                                         </motion.div>
                                     </div>
+                                    )}
                                 </>
                             )}
 

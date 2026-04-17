@@ -65,6 +65,12 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
+  // Let the browser handle external avatar generation (DiceBear).
+  // Service-worker fetches can be blocked by CSP (`connect-src`) depending on environment.
+  if (url.hostname === 'api.dicebear.com') {
+    return;
+  }
+
   // Cache-first for images
   if (request.destination === 'image') {
     event.respondWith(
@@ -120,7 +126,7 @@ self.addEventListener('push', (event) => {
   let payload = {
     title: 'New Brand Offer',
     body: 'A brand wants to collaborate with you.',
-    url: '/creator-dashboard?tab=collabs&subtab=pending',
+    url: '/creator-dashboard?tab=deals&subtab=pending',
     icon: '/icon-192x192.png',
     badge: '/icon-192x192.png',
     tag: 'brand-offer',
@@ -165,7 +171,7 @@ self.addEventListener('push', (event) => {
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
   if (event.action === 'dismiss') return;
-  const targetUrl = event.notification?.data?.url || '/creator-dashboard?tab=collabs&subtab=pending';
+  const targetUrl = event.notification?.data?.url || '/creator-dashboard?tab=deals&subtab=pending';
   event.waitUntil(
     clients.matchAll({ type: 'window' }).then((windowClients) => {
       for (const client of windowClients) {

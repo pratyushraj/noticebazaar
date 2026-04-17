@@ -2,7 +2,9 @@ import { createContext, useContext, useMemo, ReactNode, useEffect, useState } fr
 import { useBrandDealById } from '@/lib/hooks/useBrandDeals';
 import { useIssues } from '@/lib/hooks/useIssues';
 import { useDealActionLogs } from '@/lib/hooks/useActionLogs';
-import { useSession } from './SessionContext';
+// IMPORTANT: Always import SessionContext via the alias path to avoid Vite module duplication
+// (alias + relative imports can create separate module instances, breaking React context identity).
+import { useSession } from '@/contexts/SessionContext';
 import { useQueryClient } from '@tanstack/react-query';
 import { getApiBaseUrl } from '@/lib/utils/api';
 import { supabase } from '@/integrations/supabase/client';
