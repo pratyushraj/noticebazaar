@@ -991,6 +991,65 @@ const MobileDashboardDemo = ({
         resolveAvatarUrl(profile?.avatar_url) ||
         avatarFallbackUrl;
     const displayName = liveCollabProfile?.name || profile?.full_name || profile?.first_name || 'Pratyush';
+
+    const uniqBy = <T,>(items: T[], keyFn: (row: T) => string) => {
+        const seen = new Set<string>();
+        const out: T[] = [];
+        for (const item of items) {
+            const k = String(keyFn(item) || '').trim();
+            if (!k || seen.has(k)) continue;
+            seen.add(k);
+            out.push(item);
+        }
+        return out;
+    };
+
+    const dealFingerprint = (row: any) => {
+        const signedKey = row?.signed_contract_path || row?.signed_contract_url || row?.signed_pdf_url || null;
+        if (signedKey) return `signed:${String(signedKey)}`;
+        const contractKey = row?.safe_contract_url || row?.contract_file_url || null;
+        if (contractKey) return `contract:${String(contractKey)}`;
+        const creator = String(row?.creator_id || row?.profiles?.id || '');
+        const amount = String(row?.deal_amount || row?.exact_budget || '');
+        const due = String(row?.due_date || row?.deadline || '');
+        const deliverables = String(row?.deliverables || row?.collab_type || '').toLowerCase();
+        return `fallback:${creator}:${amount}:${due}:${deliverables}`;
+    };
+
+    const uniqDeals = (rows: any[]) => {
+        const byFingerprint = uniqBy(rows, (r) => dealFingerprint(r));
+        const withId = byFingerprint.filter((x) => String(x?.id || x?.raw?.id || '').trim());
+        const withoutId = byFingerprint.filter((x) => !String(x?.id || x?.raw?.id || '').trim());
+        return [...uniqBy(withId, (x) => String(x?.id || x?.raw?.id || '').trim()), ...withoutId];
+    };
+
+    const offerKeyFromDeal = (deal: any) => {
+        const idKey = String(
+            deal?.collab_request_id ||
+            deal?.request_id ||
+            deal?.collabRequestId ||
+            deal?.raw?.collab_request_id ||
+            deal?.raw?.request_id ||
+            ''
+        ).trim();
+        if (idKey) return { idKey, comboKey: '' };
+        const brand = String(deal?.brand_name || deal?.brand?.name || deal?.raw?.brand_name || '').trim();
+        const type = String(deal?.collab_type || deal?.raw?.collab_type || '').trim();
+        const amt = String(deal?.deal_amount || deal?.exact_budget || deal?.raw?.deal_amount || '').trim();
+        const comboKey = [brand, type, amt].filter(Boolean).join('|');
+        return { idKey: '', comboKey };
+    };
+
+    const existingOfferKeys = React.useMemo(() => {
+        const ids = new Set<string>();
+        const combos = new Set<string>();
+        for (const d of uniqDeals(brandDeals || [])) {
+            const { idKey, comboKey } = offerKeyFromDeal(d);
+            if (idKey) ids.add(idKey);
+            if (comboKey) combos.add(comboKey);
+        }
+        return { ids, combos };
+    }, [brandDeals]);
     const pendingOffersDeduplicated = React.useMemo(() => {
         const seen = new Set<string>();
         return (collabRequests || []).filter((req: any) => {
@@ -1003,26 +1062,31 @@ const MobileDashboardDemo = ({
             // Only include truly pending collab requests as "New Offers".
             // (Confirmed deals live in `brandDeals` and should never show offer CTAs like "deliver content".)
             const status = String(req?.status || '').toLowerCase().trim();
-            return status === 'pending' || Boolean(req?.isDemo);
+            if (!(status === 'pending' || Boolean(req?.isDemo))) return false;
+
+            // Cross-endpoint dedupe: if a deal already exists for this request, don't show it as "New Offer".
+            if (idKey && existingOfferKeys.ids.has(idKey)) return false;
+            if (!idKey && comboKey && existingOfferKeys.combos.has(comboKey)) return false;
+            return true;
         });
-    }, [collabRequests]);
+    }, [collabRequests, existingOfferKeys]);
     const displayOffers = React.useMemo(() => {
         return pendingOffersDeduplicated;
     }, [pendingOffersDeduplicated]);
     const pendingOffersCount = displayOffers.length;
     const completedDealsList = React.useMemo(() => {
-        return (brandDeals || []).filter((d: any) => {
+        return uniqDeals((brandDeals || []).filter((d: any) => {
             const s = normalizeDealStatus(d);
             // Completed, paid, OR declined/cancelled/rejected
             return s.includes('completed') || s === 'paid' || s === 'declined' || s === 'rejected' || s === 'cancelled';
-        });
+        }));
     }, [brandDeals]);
     const activeDealsList = React.useMemo(() => {
-        return (brandDeals || []).filter((d: any) => {
+        return uniqDeals((brandDeals || []).filter((d: any) => {
             const s = normalizeDealStatus(d);
             // Exclude completed, paid, AND rejected/cancelled/declined deals
             return !(s.includes('completed') || s === 'paid' || s === 'declined' || s === 'rejected' || s === 'cancelled');
-        });
+        }));
     }, [brandDeals]);
     const actionRequiredDealsList = React.useMemo(() => {
         return (activeDealsList || []).filter((d: any) => Boolean(getCreatorDealCardUX(d).needsCreatorAction));
