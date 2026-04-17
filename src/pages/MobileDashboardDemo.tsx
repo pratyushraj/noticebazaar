@@ -3157,74 +3157,144 @@ const MobileDashboardDemo = ({
                             ) : (
                                 <>
 
-                                    {/* Metrics Strip */}
-                                    <div className="px-5 mb-8">
-                                        {/* Premium Earnings Card */}
+                                    {/* Metrics Strip (Inspired layout) */}
+                                    <div className="px-5 mb-8 space-y-5">
+                                        {/* Earnings Hero */}
                                         <motion.div
-                                            initial={{ scale: 0.95, opacity: 0 }}
+                                            initial={{ scale: 0.97, opacity: 0 }}
                                             animate={{ scale: 1, opacity: 1 }}
-                                            transition={{ delay: 0.1 }}
+                                            transition={{ delay: 0.08 }}
                                             className={cn(
-                                                "py-8 px-8 rounded-[2rem] shadow-xl shadow-emerald-500/10 border border-white/10 mb-6 bg-gradient-to-br relative overflow-hidden",
-                                                isDark
-                                                    ? "from-emerald-400 via-cyan-500 to-blue-600"
-                                                    : "bg-primary from-emerald-600 via-teal-500 to-blue-700"
+                                                "p-6 rounded-[28px] overflow-hidden border relative",
+                                                isDark ? "bg-[#0B1220] border-[#223046]" : "bg-white border-[#E5E7EB] shadow-sm"
                                             )}
                                         >
-                                            {/* Decorative elements — modern subtle gradient border effect */}
-                                            <div className="absolute inset-0 rounded-[2rem] bg-gradient-to-br from-white/10 via-transparent to-blue-500/10" />
+                                            <div className={cn(
+                                                "absolute inset-0",
+                                                isDark
+                                                    ? "bg-[linear-gradient(135deg,rgba(16,185,129,0.25),rgba(14,165,233,0.18),rgba(37,99,235,0.25))]"
+                                                    : "bg-[linear-gradient(135deg,#10B981_0%,#0EA5E9_50%,#2563EB_100%)] opacity-95"
+                                            )} />
+                                            <div className="absolute inset-0 opacity-30" style={{ background: "radial-gradient(800px 220px at 20% 0%, rgba(255,255,255,0.35), transparent 60%)" }} />
 
-                                            <div className="relative z-10">
-                                                <div className="flex items-center justify-between text-foreground/90 mb-3">
-                                                    <span className="text-[10px] font-black uppercase tracking-[0.2em] opacity-80">Monthly Revenue</span>
-                                                    <Zap className="w-4 h-4 fill-white text-foreground opacity-80" />
-                                                </div>
-                                                <div className="text-4xl font-black text-foreground mb-6 flex items-baseline gap-1 font-outfit">
-                                                    <span className="text-2xl font-bold opacity-70">₹</span>
-                                                    <AnimatedCounter value={monthlyRevenue} />
-                                                </div>
-                                                <div className="flex items-center gap-2.5 py-2 px-3.5 rounded-xl bg-black/10 backdrop-blur-md border border-border w-fit">
-                                                    <div className="w-5 h-5 rounded-full bg-primary/20 flex items-center justify-center border border-primary/30">
-                                                        <CheckCircle2 className="w-3 h-3 text-primary" />
+                                            <div className="relative z-10 text-white">
+                                                <div className="flex items-center justify-between gap-3">
+                                                    <div>
+                                                        <p className="text-[11px] font-black uppercase tracking-[0.18em] opacity-90">TOTAL EARNINGS (THIS MONTH)</p>
                                                     </div>
-                                                    <span className="text-[9px] font-black text-foreground tracking-[0.15em] uppercase">Secured by Armour</span>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => { triggerHaptic(); setActiveTab('payments'); }}
+                                                        className="h-9 px-4 rounded-full bg-black/20 backdrop-blur-md border border-white/15 text-[12px] font-black tracking-tight flex items-center gap-2 active:scale-95"
+                                                    >
+                                                        View Earnings
+                                                        <ArrowRight className="w-4 h-4" />
+                                                    </button>
+                                                </div>
+
+                                                <div className="mt-4 text-[44px] leading-none font-black font-outfit tabular-nums">
+                                                    ₹{monthlyRevenue.toLocaleString()}
+                                                </div>
+
+                                                <div className="mt-4 flex items-center gap-3">
+                                                    <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/15 border border-white/15 text-[12px] font-black">
+                                                        <TrendingUp className="w-4 h-4" />
+                                                        +12%
+                                                    </span>
+                                                    <span className="text-[12px] font-semibold opacity-90">vs last month</span>
+                                                </div>
+
+                                                <div className="mt-5 flex items-center gap-2 text-[12px] font-semibold opacity-95">
+                                                    <Clock className="w-4 h-4" />
+                                                    {(() => {
+                                                        const next = (brandDeals || [])
+                                                            .map((d: any) => d?.payment_expected_date || d?.due_date || null)
+                                                            .filter(Boolean)
+                                                            .map((v: any) => new Date(v))
+                                                            .filter((d: Date) => !Number.isNaN(d.getTime()))
+                                                            .sort((a: Date, b: Date) => a.getTime() - b.getTime())[0];
+                                                        if (!next) return <>Next payout date will appear here</>;
+                                                        return <>Next payout on {next.toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' })}</>;
+                                                    })()}
+                                                </div>
+
+                                                <div className="mt-5 pt-4 border-t border-white/15 flex items-center justify-between text-[12px]">
+                                                    <span className="font-semibold opacity-90">+₹12,500 this week</span>
+                                                    <span className="font-semibold opacity-90">Top 10% creators</span>
                                                 </div>
                                             </div>
                                         </motion.div>
 
-                                        {/* Row 2: Active & Pending Deals (Side by side) */}
-                                        <div className="grid grid-cols-2 gap-4">
-                                            <motion.div
-                                                initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
-                                                onClick={() => {
-                                                    triggerHaptic();
-                                                    setActiveTab('deals');
-                                                    setCollabSubTab('active');
-                                                }}
-                                                className={cn('p-4 rounded-[12px] border shadow-md hover:shadow-lg transition-all cursor-pointer active:scale-95', cardBgColor, borderColor)}
-                                            >
-                                                <div className="flex items-center gap-1.5 mb-1">
-                                                    <Briefcase className={cn('w-3.5 h-3.5', secondaryTextColor)} strokeWidth={1.5} />
-                                                    <span className={cn('text-[10px] uppercase tracking-[0.06em] font-medium', secondaryTextColor)}>Active Deals</span>
+                                        {/* Get More Deals */}
+                                        <div className={cn(
+                                            "p-5 rounded-[22px] border flex items-center justify-between gap-4",
+                                            isDark ? "bg-card border-border" : "bg-[#EFF6FF] border-[#DBEAFE]"
+                                        )}>
+                                            <div className="flex items-center gap-3 min-w-0">
+                                                <div className={cn("w-12 h-12 rounded-2xl flex items-center justify-center shrink-0", isDark ? "bg-emerald-500/12" : "bg-white")}>
+                                                    <Zap className={cn("w-6 h-6", isDark ? "text-emerald-300" : "text-emerald-700")} />
                                                 </div>
-                                                <p className={cn('text-[22px] font-semibold tracking-tight', textColor)}>{activeDealsCount}</p>
-                                            </motion.div>
+                                                <div className="min-w-0">
+                                                    <p className={cn("text-[16px] font-black tracking-tight", textColor)}>Get More Deals</p>
+                                                    <p className={cn("text-[12px] font-semibold opacity-70", secondaryTextColor)}>Increase your visibility and get 3x more offers</p>
+                                                </div>
+                                            </div>
+                                            <button
+                                                type="button"
+                                                onClick={() => { triggerHaptic(); setShowShareSheet(true); }}
+                                                className={cn(
+                                                    "h-10 px-4 rounded-xl text-[12px] font-black flex items-center gap-2 active:scale-95 transition-all",
+                                                    isDark ? "bg-[#2563EB] text-white" : "bg-[#2563EB] text-white"
+                                                )}
+                                            >
+                                                Share Link
+                                                <ArrowRight className="w-4 h-4" />
+                                            </button>
+                                        </div>
 
-                                            <motion.div
-                                                initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}
-                                                onClick={() => {
-                                                    triggerHaptic();
-                                                    setActiveTab('deals');
-                                                    setCollabSubTab('pending');
-                                                }}
-                                                className={cn('p-4 rounded-[12px] border shadow-md hover:shadow-lg transition-all cursor-pointer active:scale-95', cardBgColor, borderColor)}
+                                        {/* Stats Grid */}
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <button
+                                                type="button"
+                                                onClick={() => { triggerHaptic(); setActiveTab('deals'); setCollabSubTab('active'); }}
+                                                className={cn("p-4 rounded-[18px] border text-left active:scale-[0.99] transition-all", isDark ? "bg-card border-border" : "bg-white border-[#E5E7EB] shadow-sm")}
                                             >
-                                                <div className="flex items-center gap-1.5 mb-1">
-                                                    <Handshake className={cn('w-3.5 h-3.5', secondaryTextColor)} strokeWidth={1.5} />
-                                                    <span className={cn('text-[10px] uppercase tracking-[0.06em] font-medium', secondaryTextColor)}>Pending Offers</span>
-                                                </div>
-                                                <p className={cn('text-[22px] font-semibold tracking-tight', textColor)}>{pendingOffersCount}</p>
-                                            </motion.div>
+                                                <p className={cn("text-[11px] font-black uppercase tracking-[0.14em] opacity-60", secondaryTextColor)}>Active Deals</p>
+                                                <p className={cn("mt-2 text-[26px] font-black tabular-nums", textColor)}>{activeDealsCount}</p>
+                                                <p className={cn("mt-1 text-[12px] font-semibold opacity-70", secondaryTextColor)}>Ongoing</p>
+                                            </button>
+                                            <button
+                                                type="button"
+                                                onClick={() => { triggerHaptic(); setActiveTab('deals'); setCollabSubTab('pending'); }}
+                                                className={cn("p-4 rounded-[18px] border text-left active:scale-[0.99] transition-all", isDark ? "bg-card border-border" : "bg-white border-[#E5E7EB] shadow-sm")}
+                                            >
+                                                <p className={cn("text-[11px] font-black uppercase tracking-[0.14em] opacity-60", secondaryTextColor)}>Pending Offers</p>
+                                                <p className={cn("mt-2 text-[26px] font-black tabular-nums", textColor)}>{pendingOffersCount}</p>
+                                                <p className={cn("mt-1 text-[12px] font-semibold opacity-70", secondaryTextColor)}>Awaiting your response</p>
+                                            </button>
+                                            <button
+                                                type="button"
+                                                onClick={() => { triggerHaptic(); setActiveTab('deals'); setCollabSubTab('completed'); }}
+                                                className={cn("p-4 rounded-[18px] border text-left active:scale-[0.99] transition-all", isDark ? "bg-card border-border" : "bg-white border-[#E5E7EB] shadow-sm")}
+                                            >
+                                                <p className={cn("text-[11px] font-black uppercase tracking-[0.14em] opacity-60", secondaryTextColor)}>Completed</p>
+                                                <p className={cn("mt-2 text-[26px] font-black tabular-nums", textColor)}>{completedDealsCount}</p>
+                                                <p className={cn("mt-1 text-[12px] font-semibold opacity-70", secondaryTextColor)}>This month</p>
+                                            </button>
+                                            <button
+                                                type="button"
+                                                onClick={() => { triggerHaptic(); setActiveTab('payments'); }}
+                                                className={cn("p-4 rounded-[18px] border text-left active:scale-[0.99] transition-all", isDark ? "bg-card border-border" : "bg-white border-[#E5E7EB] shadow-sm")}
+                                            >
+                                                <p className={cn("text-[11px] font-black uppercase tracking-[0.14em] opacity-60", secondaryTextColor)}>Earnings</p>
+                                                <p className={cn("mt-2 text-[26px] font-black tabular-nums", textColor)}>
+                                                    {(() => {
+                                                        const k = Math.round(monthlyRevenue / 1000);
+                                                        return `₹${k > 0 ? `${k}K` : monthlyRevenue.toLocaleString()}`;
+                                                    })()}
+                                                </p>
+                                                <p className={cn("mt-1 text-[12px] font-semibold opacity-70", secondaryTextColor)}>This month</p>
+                                            </button>
                                         </div>
                                     </div>
 
