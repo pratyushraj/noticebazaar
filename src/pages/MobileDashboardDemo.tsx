@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import { trackEvent } from '@/lib/utils/analytics';
-import { User, Search, ShieldCheck, Handshake, Camera, Plus, LayoutDashboard, CreditCard, Briefcase, Menu, Instagram, Target, Dumbbell, Shirt, Sun, Moon, RefreshCw, Loader2, Bell, ChevronRight, Zap, Link2, CheckCircle2, Download, Clock, Info, Globe, Star, LogOut, Copy, Share2, QrCode, Eye, MoreHorizontal, Landmark, FileText, Smartphone, TrendingUp, BarChart3, Mail, MessageCircle, MessageSquare, Edit3, Send, X, XCircle, ExternalLink, AlertCircle, AlertTriangle, ArrowRight, Package, Flag, MapPin, Languages } from 'lucide-react';
+import { User, Search, ShieldCheck, Handshake, Camera, Plus, LayoutDashboard, CreditCard, Briefcase, Menu, Instagram, Target, Dumbbell, Shirt, Sun, Moon, RefreshCw, Loader2, Bell, ChevronRight, Zap, Rocket, Link2, CheckCircle2, Download, Clock, Info, Globe, Star, LogOut, Copy, Share2, QrCode, Eye, MoreHorizontal, Landmark, FileText, Smartphone, TrendingUp, BarChart3, Mail, MessageCircle, MessageSquare, Edit3, Send, X, XCircle, ExternalLink, AlertCircle, AlertTriangle, ArrowRight, Package, Flag, MapPin, Languages } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useSignOut } from '@/lib/hooks/useAuth';
@@ -3225,20 +3225,20 @@ const MobileDashboardDemo = ({
                                             </div>
                                         </motion.div>
 
-                                        {/* Get More Deals */}
-                                        <div className={cn(
-                                            "p-5 rounded-[22px] border flex items-center justify-between gap-4",
-                                            isDark ? "bg-card border-border" : "bg-[#EFF6FF] border-[#DBEAFE]"
-                                        )}>
-                                            <div className="flex items-center gap-3 min-w-0">
-                                                <div className={cn("w-12 h-12 rounded-2xl flex items-center justify-center shrink-0", isDark ? "bg-emerald-500/12" : "bg-white")}>
-                                                    <Zap className={cn("w-6 h-6", isDark ? "text-emerald-300" : "text-emerald-700")} />
-                                                </div>
-                                                <div className="min-w-0">
-                                                    <p className={cn("text-[16px] font-black tracking-tight", textColor)}>Get More Deals</p>
-                                                    <p className={cn("text-[12px] font-semibold opacity-70", secondaryTextColor)}>Increase your visibility and get 3x more offers</p>
-                                                </div>
-                                            </div>
+	                                        {/* Get More Deals */}
+	                                        <div className={cn(
+	                                            "p-5 rounded-[22px] border flex items-center justify-between gap-4",
+	                                            isDark ? "bg-card border-border" : "bg-[#EFF6FF] border-[#DBEAFE]"
+	                                        )}>
+	                                            <div className="flex items-center gap-3 min-w-0">
+	                                                <div className={cn("w-12 h-12 rounded-2xl flex items-center justify-center shrink-0", isDark ? "bg-emerald-500/12" : "bg-white")}>
+	                                                    <Rocket className={cn("w-6 h-6", isDark ? "text-emerald-300" : "text-emerald-700")} />
+	                                                </div>
+	                                                <div className="min-w-0">
+	                                                    <p className={cn("text-[16px] font-black tracking-tight", textColor)}>Get More Deals</p>
+	                                                    <p className={cn("text-[12px] font-semibold opacity-70", secondaryTextColor)}>Increase your visibility and get 3x more offers</p>
+	                                                </div>
+	                                            </div>
                                             <button
                                                 type="button"
                                                 onClick={() => { triggerHaptic(); setShowShareSheet(true); }}
@@ -3317,17 +3317,22 @@ const MobileDashboardDemo = ({
                                             </div>
                                         </div>
 
-                                        {/* Grow Your Brand */}
-                                        <div className={cn(
-                                            "p-5 rounded-[22px] border",
-                                            isDark ? "bg-card border-border" : "bg-white border-[#E5E7EB] shadow-sm"
-                                        )}>
-                                            <div className="flex items-center justify-between gap-3 mb-3">
-                                                <div className="min-w-0">
-                                                    <p className={cn("text-[16px] font-black tracking-tight", textColor)}>Grow Your Brand</p>
-                                                    <p className={cn("text-[12px] font-semibold opacity-70", secondaryTextColor)}>Share your link with brands and get more deals</p>
-                                                </div>
-                                            </div>
+	                                        {/* Grow Your Brand */}
+	                                        <div className={cn(
+	                                            "p-5 rounded-[22px] border",
+	                                            isDark ? "bg-card border-border" : "bg-white border-[#E5E7EB] shadow-sm"
+	                                        )}>
+	                                            <div className="flex items-center justify-between gap-3 mb-3">
+	                                                <div className="min-w-0 flex items-start gap-3">
+	                                                    <div className={cn("w-10 h-10 rounded-2xl flex items-center justify-center shrink-0", isDark ? "bg-emerald-500/12" : "bg-emerald-50")}>
+	                                                        <MessageCircle className={cn("w-5 h-5", isDark ? "text-emerald-300" : "text-emerald-700")} />
+	                                                    </div>
+	                                                    <div className="min-w-0">
+	                                                        <p className={cn("text-[16px] font-black tracking-tight", textColor)}>Grow Your Brand</p>
+	                                                    <p className={cn("text-[12px] font-semibold opacity-70", secondaryTextColor)}>Share your link with brands and get more deals</p>
+	                                                </div>
+	                                                </div>
+	                                            </div>
                                             <div className={cn(
                                                 "flex items-center gap-2 p-3 rounded-2xl border",
                                                 isDark ? "bg-background/40 border-border" : "bg-[#F8FAFC] border-[#E5E7EB]"
@@ -3343,14 +3348,15 @@ const MobileDashboardDemo = ({
                                                     Copy
                                                 </button>
                                             </div>
-                                            <div className="mt-4 grid grid-cols-3 gap-3">
-                                                <button
-                                                    type="button"
-                                                    onClick={() => { triggerHaptic(); handleShareOnWhatsApp(); }}
-                                                    className={cn("h-12 rounded-2xl border flex items-center justify-center text-[12px] font-black", isDark ? "bg-background/40 border-border text-foreground/80" : "bg-white border-[#E5E7EB] text-[#0F172A]")}
-                                                >
-                                                    WhatsApp
-                                                </button>
+	                                            <div className="mt-4 grid grid-cols-3 gap-3">
+	                                                <button
+	                                                    type="button"
+	                                                    onClick={() => { triggerHaptic(); handleShareOnWhatsApp(); }}
+	                                                    className={cn("h-12 rounded-2xl border flex items-center justify-center text-[12px] font-black", isDark ? "bg-background/40 border-border text-foreground/80" : "bg-white border-[#E5E7EB] text-[#0F172A]")}
+	                                                >
+	                                                    <MessageCircle className="w-4 h-4 mr-2" />
+	                                                    WhatsApp
+	                                                </button>
                                                 <button
                                                     type="button"
                                                     onClick={() => { triggerHaptic(); toast.message('Instagram', { description: 'Copy link and paste in your story/bio.' }); }}
