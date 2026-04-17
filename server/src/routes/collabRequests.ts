@@ -2629,9 +2629,48 @@ router.get('/', async (req: AuthenticatedRequest, res: Response) => {
       collab_type: normalizeCollabTypeForApi(request.collab_type) || request.collab_type,
     }));
 
+    // Output validation (server-side): never let corrupted requests reach the frontend.
+    // This prevents ghost cards / broken CTAs and keeps deal lifecycle deterministic.
+    const allowedStatuses = new Set(['pending', 'accepted', 'countered', 'declined']);
+    const isPaidLike = (t: string) => t === 'paid' || t === 'hybrid' || t === 'both';
+    const isBarterLike = (t: string) => t === 'barter' || t === 'hybrid' || t === 'both';
+
+    const sanitizedRequests = (normalizedRequests || []).filter((r: any) => {
+      const id = String(r?.id || '').trim();
+      const brand = String(r?.brand_name || '').trim();
+      if (!id || !brand) return false;
+
+      const statusNorm = String(r?.status || '').toLowerCase().trim();
+      if (!allowedStatuses.has(statusNorm)) return false;
+
+      const typeNorm = String(r?.collab_type || '').toLowerCase().trim();
+      const exactBudget = r?.exact_budget != null ? Number(r.exact_budget) : null;
+      const barterValue = r?.barter_value != null ? Number(r.barter_value) : null;
+      const dealAmount = r?.deal_amount != null ? Number(r.deal_amount) : null;
+      const hasPaidValue = (exactBudget != null && Number.isFinite(exactBudget) && exactBudget > 0) || (dealAmount != null && Number.isFinite(dealAmount) && dealAmount > 0);
+      const hasBarterValue = barterValue != null && Number.isFinite(barterValue) && barterValue > 0;
+
+      // For pending/countered, enforce that the offer has some positive value.
+      // This is critical for creator UX (budget chips, accept CTA, etc).
+      if (statusNorm === 'pending' || statusNorm === 'countered') {
+        if (isPaidLike(typeNorm) && !hasPaidValue) return false;
+        if (isBarterLike(typeNorm) && !hasBarterValue && !hasPaidValue) return false;
+      }
+      return true;
+    });
+
+    if ((normalizedRequests || []).length !== sanitizedRequests.length) {
+      console.warn('[CollabRequests] Filtered invalid requests:', {
+        total: (normalizedRequests || []).length,
+        kept: sanitizedRequests.length,
+        dropped: (normalizedRequests || []).length - sanitizedRequests.length,
+        creator_id: userId,
+      });
+    }
+
     const payload = {
       success: true,
-      requests: normalizedRequests,
+      requests: sanitizedRequests,
     };
     setCollabRequestsCache(cacheKey, payload);
     res.json(payload);

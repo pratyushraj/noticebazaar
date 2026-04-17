@@ -217,7 +217,49 @@ router.get('/mine', async (req: AuthenticatedRequest, res: Response) => {
       return res.status(500).json({ success: false, error: error.message || 'Failed to fetch deals' });
     }
 
-    return res.json({ success: true, deals: deals || [] });
+    const rows = (deals || []) as any[];
+
+    // Hardening: ensure creator dashboard never receives deals with 0/invalid amount.
+    // Mirror the filtering behavior from server/src/routes/deals.ts for consistency.
+    const needsAmountFix = rows.filter((d) => {
+      const amt = Number((d as any)?.deal_amount || 0);
+      const collabLike = String((d as any)?.collab_type || (d as any)?.deal_type || '').toLowerCase();
+      return (!Number.isFinite(amt) || amt <= 0) && !!String((d as any)?.collab_request_id || '').trim() && (collabLike.includes('barter') || collabLike.includes('hybrid') || collabLike.includes('both'));
+    });
+
+    if (needsAmountFix.length > 0) {
+      const ids = Array.from(new Set(needsAmountFix.map((d) => String((d as any).collab_request_id)).filter(Boolean)));
+      try {
+        const { data: requests } = await (supabase as any)
+          .from('collab_requests')
+          .select('id, exact_budget, barter_value, collab_type')
+          .in('id', ids);
+
+        const byId = new Map<string, any>();
+        for (const r of (requests || []) as any[]) byId.set(String(r.id), r);
+
+        for (const d of rows) {
+          const id = String((d as any)?.collab_request_id || '').trim();
+          if (!id) continue;
+          const r = byId.get(id);
+          if (!r) continue;
+          const exact = r.exact_budget != null ? Number(r.exact_budget) : null;
+          const barter = r.barter_value != null ? Number(r.barter_value) : null;
+          const computed = exact && exact > 0 ? exact : barter && barter > 0 ? barter : null;
+          if (computed && computed > 0) (d as any).deal_amount = computed;
+        }
+      } catch {
+        // ignore lookup failures; we'll filter invalid items below.
+      }
+    }
+
+    const sanitized = rows.filter((d) => {
+      const brand = String((d as any)?.brand_name || '').trim();
+      const amt = Number((d as any)?.deal_amount || 0);
+      return !!brand && Number.isFinite(amt) && amt > 0;
+    });
+
+    return res.json({ success: true, deals: sanitized });
   } catch (error: any) {
     console.error('[Deals] mine error:', error);
     return res.status(500).json({ success: false, error: error?.message || 'Internal server error' });
