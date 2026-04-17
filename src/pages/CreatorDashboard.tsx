@@ -8,19 +8,13 @@ import { getApiBaseUrl } from '@/lib/utils/api';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
-async function fetchProfile(userId: string) {
-  const { data, error } = await supabase
-    .from('profiles')
-    .select('*')
-    .eq('id', userId)
-    .single();
-  if (error) throw error;
-  return data;
-}
-
 async function fetchBrandDeals() {
   const { data: sessionData } = await supabase.auth.getSession();
-  if (!sessionData.session) return [];
+  if (!sessionData.session) {
+    const err: any = new Error('NOT_AUTHENTICATED');
+    err.status = 401;
+    throw err;
+  }
 
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), 5000); // 5s — fail fast if backend is down
@@ -31,6 +25,11 @@ async function fetchBrandDeals() {
     });
     clearTimeout(timeoutId);
     if (res.status === 404) return [];
+    if (res.status === 401) {
+      const err: any = new Error('SESSION_EXPIRED');
+      err.status = 401;
+      throw err;
+    }
     if (!res.ok) {
       const payload = await res.json().catch(() => ({}));
       throw new Error(payload?.error || `Failed to fetch deals (${res.status})`);
@@ -39,35 +38,34 @@ async function fetchBrandDeals() {
     return data?.deals || [];
   } catch (err: any) {
     clearTimeout(timeoutId);
-    if (err.name === 'AbortError') return []; // Backend unavailable — return empty gracefully
+    if (err.name === 'AbortError') {
+      const e: any = new Error('API_TIMEOUT');
+      e.status = 0;
+      throw e;
+    }
     throw err;
   }
 }
 
 const CreatorDashboard = () => {
-  const { user, profile: sessionProfile } = useSession();
+  const { user, profile, loading: isLoadingProfile } = useSession();
   const queryClient = useQueryClient();
 
-  const { data: profile, isLoading: isLoadingProfile } = useQuery({
-    queryKey: ['profile', user?.id],
-    queryFn: () => fetchProfile(user!.id),
-    enabled: !!user?.id,
-    initialData: sessionProfile,
-  });
+  const collabQuery = useCollabRequests(user?.id);
+  const { requests: collabRequests, isLoading: isLoadingCollab, error: collabError } = collabQuery;
 
-  const { requests: collabRequests, isLoading: isLoadingCollab } = useCollabRequests(user?.id);
-
-  const { data: brandDeals = [], isLoading: isLoadingBrandDeals } = useQuery({
+  const dealsQuery = useQuery({
     queryKey: ['brand-deals', user?.id],
     queryFn: fetchBrandDeals,
     enabled: !!user?.id,
     retry: false, // Don't retry — backend may be unavailable, fail fast
   });
+  const brandDeals = (dealsQuery.data ?? []) as any[];
+  const isLoadingBrandDeals = dealsQuery.isLoading;
 
   const handleRefresh = () => {
     queryClient.invalidateQueries({ queryKey: ['collab-requests'] });
     queryClient.invalidateQueries({ queryKey: ['brand-deals'] });
-    queryClient.invalidateQueries({ queryKey: ['profile'] });
   };
 
   const handleAcceptRequest = async (req: any) => {
@@ -129,6 +127,24 @@ const CreatorDashboard = () => {
       brandDeals={brandDeals}
       isLoadingProfile={!user?.id || isLoadingProfile}
       isLoadingDealsOverride={!user?.id || isLoadingCollab || isLoadingBrandDeals}
+      offersError={
+        collabError
+          ? ((collabError as any)?.message === 'API_TIMEOUT'
+            ? 'Offers could not load (timeout). Please retry.'
+            : (collabError as any)?.message === 'Session expired'
+              ? 'Session expired. Please sign in again.'
+              : 'Offers could not load. Please retry.')
+          : undefined
+      }
+      dealsError={
+        dealsQuery.error
+          ? ((dealsQuery.error as any)?.message === 'API_TIMEOUT'
+            ? 'Deals could not load (timeout). Please retry.'
+            : (dealsQuery.error as any)?.message === 'SESSION_EXPIRED'
+              ? 'Session expired. Please sign in again.'
+              : 'Deals could not load. Please retry.')
+          : undefined
+      }
       onAcceptRequest={handleAcceptRequest}
       onDeclineRequest={handleDeclineRequest}
       onRefresh={handleRefresh}

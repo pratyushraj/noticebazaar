@@ -51,6 +51,10 @@ interface MobileDashboardProps {
     isRefreshing?: boolean;
     onRefresh?: () => Promise<void>;
     onLogout?: () => void;
+    /** Non-empty means the backend request for offers failed; UI must not silently show empty lists. */
+    offersError?: string;
+    /** Non-empty means the backend request for deals failed; UI must not silently show empty lists. */
+    dealsError?: string;
     /**
      * If true, the dashboard may render demo-only UI (like the Interactive Demo Offer placeholder).
      * Default behavior is to avoid showing demo items for real accounts.
@@ -435,6 +439,8 @@ const MobileDashboardDemo = ({
     showDemoOffer = false,
     isLoadingProfile = false,
     isLoadingDealsOverride = false,
+    offersError,
+    dealsError,
 }: MobileDashboardProps) => {
     const navigate = useNavigate();
     const queryClient = useQueryClient();
@@ -642,6 +648,7 @@ const MobileDashboardDemo = ({
     const [dealFilters, setDealFilters] = useState({ status: 'all', sortBy: 'newest' });
     const [isLoadingDealsLocal, setIsLoadingDeals] = useState(false);
     const isLoadingDeals = isLoadingDealsOverride || isLoadingDealsLocal;
+    const hasDataLoadError = Boolean(offersError || dealsError);
     const contractSectionRef = useRef<HTMLDivElement | null>(null);
 
     // Prevent double scrollbar when item detail modal is open
@@ -2918,12 +2925,43 @@ const MobileDashboardDemo = ({
                                     </div>
                                 </div>
 
-                                {/* Greeting / Status */}
-                                <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
-                                    <div className="flex items-center justify-between">
-                                        {isLoadingProfile ? (
-                                            /* Profile loading — text fallback, no skeleton */
-                                            <span className="text-[15px] font-medium text-foreground/60">Loading...</span>
+	                                {/* Greeting / Status */}
+	                                <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
+	                                    {hasDataLoadError && (
+	                                        <div className="mb-3">
+	                                            <div className={cn(
+	                                                "rounded-2xl border px-4 py-3 flex items-start gap-3",
+	                                                isDark ? "bg-rose-500/10 border-rose-500/20" : "bg-rose-50 border-rose-200"
+	                                            )}>
+	                                                <AlertTriangle className={cn("w-5 h-5 mt-0.5 shrink-0", isDark ? "text-rose-300" : "text-rose-700")} />
+	                                                <div className="min-w-0">
+	                                                    <p className={cn("text-[13px] font-black", isDark ? "text-rose-200" : "text-rose-900")}>
+	                                                        Data failed to load
+	                                                    </p>
+	                                                    <p className={cn("text-[12px] font-semibold mt-0.5 leading-snug", isDark ? "text-rose-200/80" : "text-rose-800")}>
+	                                                        {offersError && dealsError
+	                                                            ? `${offersError} ${dealsError}`
+	                                                            : (offersError || dealsError)}
+	                                                    </p>
+	                                                    <button
+	                                                        type="button"
+	                                                        onClick={() => { void onRefresh?.(); }}
+	                                                        className={cn(
+	                                                            "mt-2 inline-flex items-center gap-2 text-[12px] font-black uppercase tracking-widest",
+	                                                            isDark ? "text-rose-200 hover:text-rose-100" : "text-rose-900 hover:text-rose-950"
+	                                                        )}
+	                                                    >
+	                                                        <RefreshCw className="w-3.5 h-3.5" />
+	                                                        Retry
+	                                                    </button>
+	                                                </div>
+	                                            </div>
+	                                        </div>
+	                                    )}
+	                                    <div className="flex items-center justify-between">
+	                                        {isLoadingProfile ? (
+	                                            /* Profile loading — text fallback, no skeleton */
+	                                            <span className="text-[15px] font-medium text-foreground/60">Loading...</span>
                                         ) : !profile ? (
                                             <span className="text-[15px] font-medium text-foreground/60">Welcome back</span>
                                         ) : (
