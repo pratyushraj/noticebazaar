@@ -172,11 +172,15 @@ const decodeHtmlEntities = (value: string) =>
       return Number.isFinite(codePoint) ? String.fromCodePoint(codePoint) : _;
     });
 
-const toTitleCaseName = (value: string) =>
+const sanitizeDisplayName = (value: string) =>
   decodeHtmlEntities(String(value || ''))
     .normalize('NFKD')
     .replace(/[\u0300-\u036f]/g, '')
-    .trim()
+    .replace(/\s+/g, ' ')
+    .trim();
+
+const toTitleCaseName = (value: string) =>
+  sanitizeDisplayName(value)
     .split(/\s+/)
     .filter(Boolean)
     .map((part) => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
@@ -710,14 +714,14 @@ const CollabLinkLanding = () => {
       });
     }
 
-    const nextName = latestName || creator.name;
-    const nextUsername = latestHandle || creator.username;
+    const nextName = sanitizeDisplayName(latestName || creator.name);
+    const nextUsername = sanitizeDisplayName(latestHandle || creator.username);
     const nextFollowers = latestFollowers || creator.followers || null;
     const nextProfilePhoto = latestProfilePhoto;
 
     const instagramHandle = nextPlatforms.find((platform) => platform.name.toLowerCase() === 'instagram')?.handle || '';
-    const isSameName = nextName === creator.name;
-    const isSameUsername = nextUsername === creator.username;
+    const isSameName = nextName === sanitizeDisplayName(creator.name);
+    const isSameUsername = nextUsername === sanitizeDisplayName(creator.username);
     const isSameInstagramHandle = instagramHandle === (creator.platforms.find((platform) => platform.name.toLowerCase() === 'instagram')?.handle || '');
     const isSameFollowers = nextFollowers === creator.followers;
     const isSamePhoto = nextProfilePhoto === creator.profile_photo;
@@ -1200,7 +1204,11 @@ const CollabLinkLanding = () => {
 
         if (data.success && data.creator) {
           console.log('[CollabLinkLanding] Creator loaded successfully:', data.creator);
-          setCreator(data.creator);
+          setCreator({
+            ...data.creator,
+            name: sanitizeDisplayName(data.creator.name || ''),
+            username: sanitizeDisplayName(data.creator.username || ''),
+          });
           trackEvent('collab_link_viewed', { username: normalizedUsername });
           // Track page view event (anonymous, no auth required)
           try {
