@@ -5074,8 +5074,27 @@ const MobileDashboardDemo = ({
                 </div>
 
                 {/* ─── NAVIGATION BAR (Redesigned) ─── */}
+                {/*
+                  Important: when an overlay/modal is open we must prevent the bottom nav from
+                  intercepting taps. This fixes "click interception" class bugs on mobile.
+                */}
+                {(() => {
+                    const isOverlayOpen =
+                        Boolean(selectedItem) ||
+                        showActionSheet ||
+                        showItemMenu ||
+                        showDeliverContentModal ||
+                        showReportIssueModal ||
+                        showCreatorSigningModal ||
+                        showPushInstallGuide ||
+                        showProgressSheet;
+                    return (
                 <div
-                    className={cn('fixed bottom-0 inset-x-0 border-t z-[1100] transition-all duration-500', isDark ? 'border-[#1F2937] bg-[#0B0F14]/90' : 'border-border bg-secondary/90')}
+                    className={cn(
+                        'fixed bottom-0 inset-x-0 border-t z-[1100] transition-all duration-500',
+                        isDark ? 'border-[#1F2937] bg-[#0B0F14]/90' : 'border-border bg-secondary/90',
+                        isOverlayOpen && 'pointer-events-none'
+                    )}
                     style={{ backdropFilter: 'blur(30px)', WebkitBackdropFilter: 'blur(30px)' }}
                 >
                     <div className="max-w-md md:max-w-2xl mx-auto flex items-center justify-between px-4 py-3 pb-safe gap-1" style={{ paddingBottom: 'max(env(safe-area-inset-bottom), 16px)' }}>
@@ -5100,6 +5119,8 @@ const MobileDashboardDemo = ({
                         </motion.button>
                     </div>
                 </div>
+                    );
+                })()}
 
                 {/* ─── ACTION SHEET ─── */}
                 <AnimatePresence>
@@ -5110,7 +5131,7 @@ const MobileDashboardDemo = ({
                                 animate={{ opacity: 1 }}
                                 exit={{ opacity: 0 }}
                                 onClick={() => setShowActionSheet(false)}
-                                className="fixed inset-0 z-[100] bg-black/40 backdrop-blur-md"
+                                className="fixed inset-0 z-[2900] bg-black/40 backdrop-blur-md"
                             />
                             <motion.div
                                 initial={{ y: '100%' }}
@@ -5118,7 +5139,7 @@ const MobileDashboardDemo = ({
                                 exit={{ y: '100%' }}
                                 transition={{ type: 'spring', damping: 25, stiffness: 200 }}
                                 className={cn(
-                                    "fixed bottom-0 inset-x-0 z-[110] rounded-t-[2.5rem] border-t p-6 pb-safe overflow-hidden shadow-2xl",
+                                    "fixed bottom-0 inset-x-0 z-[3000] rounded-t-[2.5rem] border-t p-6 pb-safe overflow-hidden shadow-2xl",
                                     isDark ? "bg-background border-border" : "bg-card border-border"
                                 )}
                             >
