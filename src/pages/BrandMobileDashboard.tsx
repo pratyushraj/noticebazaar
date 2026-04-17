@@ -598,6 +598,20 @@ const BrandMobileDashboard = ({
   const [isVerifyingBrandOTP, setIsVerifyingBrandOTP] = useState(false);
   const [isSigningBrandContract, setIsSigningBrandContract] = useState(false);
   const [brandSigningInitError, setBrandSigningInitError] = useState<string | null>(null);
+  const resolveDealProductImageUrl = (dealLike: any) =>
+    String(
+      dealLike?.barter_product_image_url ||
+      dealLike?.product_image_url ||
+      dealLike?.brand_submission_details?.barter_product_image_url ||
+      dealLike?.brand_submission_details?.product_image_url ||
+      dealLike?.brand_submission_details?.form_data?.barter_product_image_url ||
+      dealLike?.brand_submission_details?.form_data?.product_image_url ||
+      dealLike?.form_data?.barter_product_image_url ||
+      dealLike?.form_data?.product_image_url ||
+      dealLike?.form_data?.barterProductImageUrl ||
+      dealLike?.form_data?.productImageUrl ||
+      ''
+    ).trim();
 
   useEffect(() => {
     try {
@@ -1793,7 +1807,7 @@ const BrandMobileDashboard = ({
     const trackingUrl = String(offer?.tracking_url || '').trim();
     const courierName = String(offer?.courier_name || '').trim();
     const expectedDeliveryDate = String(offer?.expected_delivery_date || '').trim();
-    const productImageUrl = String(offer?.barter_product_image_url || offer?.product_image_url || '').trim();
+    const productImageUrl = resolveDealProductImageUrl(offer);
     const hasProductImage = Boolean(productImageUrl);
 
 			  const normalizedDealStatus = effectiveDealStatus(offer);
@@ -4153,11 +4167,11 @@ const BrandMobileDashboard = ({
                                           </div>
                                         </div>
 
-                                        {(String(item?.barter_product_image_url || item?.product_image_url || '').trim()) && (
+                                        {resolveDealProductImageUrl(item) && (
                                           <div className="mb-3 overflow-hidden rounded-2xl border border-border bg-background">
                                             <div className="relative aspect-[4/3] w-full">
                                               <img
-                                                src={safeImageSrc(String(item?.barter_product_image_url || item?.product_image_url || ''))}
+                                                src={safeImageSrc(resolveDealProductImageUrl(item))}
                                                 alt={`${creatorName} product preview`}
                                                 className="absolute inset-0 h-full w-full object-cover"
                                               />
@@ -4686,11 +4700,11 @@ const BrandMobileDashboard = ({
 	                                  </div>
 	                                </div>
 
-	                                {(String(item?.barter_product_image_url || item?.product_image_url || '').trim()) && (
+	                                {resolveDealProductImageUrl(item) && (
 	                                  <div className="mb-3 overflow-hidden rounded-2xl border border-border bg-background">
 	                                    <div className="relative aspect-[4/3] w-full">
 	                                      <img
-	                                        src={safeImageSrc(String(item?.barter_product_image_url || item?.product_image_url || ''))}
+	                                        src={safeImageSrc(resolveDealProductImageUrl(item))}
 	                                        alt={`${creatorName} product preview`}
 	                                        className="absolute inset-0 h-full w-full object-cover"
 	                                      />
