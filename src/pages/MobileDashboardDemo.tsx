@@ -3252,12 +3252,12 @@ const MobileDashboardDemo = ({
                                             </button>
                                         </div>
 
-                                        {/* Stats Grid */}
-                                        <div className="grid grid-cols-2 gap-4">
-                                            <button
-                                                type="button"
-                                                onClick={() => { triggerHaptic(); setActiveTab('deals'); setCollabSubTab('active'); }}
-                                                className={cn("p-4 rounded-[18px] border text-left active:scale-[0.99] transition-all", isDark ? "bg-card border-border" : "bg-white border-[#E5E7EB] shadow-sm")}
+	                                        {/* Stats Grid */}
+	                                        <div className="grid grid-cols-3 gap-3">
+	                                            <button
+	                                                type="button"
+	                                                onClick={() => { triggerHaptic(); setActiveTab('deals'); setCollabSubTab('active'); }}
+	                                                className={cn("p-4 rounded-[18px] border text-left active:scale-[0.99] transition-all", isDark ? "bg-card border-border" : "bg-white border-[#E5E7EB] shadow-sm")}
                                             >
                                                 <p className={cn("text-[11px] font-black uppercase tracking-[0.14em] opacity-60", secondaryTextColor)}>Active Deals</p>
                                                 <p className={cn("mt-2 text-[26px] font-black tabular-nums", textColor)}>{activeDealsCount}</p>
@@ -3272,30 +3272,16 @@ const MobileDashboardDemo = ({
                                                 <p className={cn("mt-2 text-[26px] font-black tabular-nums", textColor)}>{pendingOffersCount}</p>
                                                 <p className={cn("mt-1 text-[12px] font-semibold opacity-70", secondaryTextColor)}>Awaiting your response</p>
                                             </button>
-                                            <button
-                                                type="button"
-                                                onClick={() => { triggerHaptic(); setActiveTab('deals'); setCollabSubTab('completed'); }}
-                                                className={cn("p-4 rounded-[18px] border text-left active:scale-[0.99] transition-all", isDark ? "bg-card border-border" : "bg-white border-[#E5E7EB] shadow-sm")}
-                                            >
-                                                <p className={cn("text-[11px] font-black uppercase tracking-[0.14em] opacity-60", secondaryTextColor)}>Completed</p>
-                                                <p className={cn("mt-2 text-[26px] font-black tabular-nums", textColor)}>{completedDealsCount}</p>
-                                                <p className={cn("mt-1 text-[12px] font-semibold opacity-70", secondaryTextColor)}>This month</p>
-                                            </button>
-                                            <button
-                                                type="button"
-                                                onClick={() => { triggerHaptic(); setActiveTab('payments'); }}
-                                                className={cn("p-4 rounded-[18px] border text-left active:scale-[0.99] transition-all", isDark ? "bg-card border-border" : "bg-white border-[#E5E7EB] shadow-sm")}
-                                            >
-                                                <p className={cn("text-[11px] font-black uppercase tracking-[0.14em] opacity-60", secondaryTextColor)}>Earnings</p>
-                                                <p className={cn("mt-2 text-[26px] font-black tabular-nums", textColor)}>
-                                                    {(() => {
-                                                        const k = Math.round(monthlyRevenue / 1000);
-                                                        return `₹${k > 0 ? `${k}K` : monthlyRevenue.toLocaleString()}`;
-                                                    })()}
-                                                </p>
-                                                <p className={cn("mt-1 text-[12px] font-semibold opacity-70", secondaryTextColor)}>This month</p>
-                                            </button>
-                                        </div>
+	                                            <button
+	                                                type="button"
+	                                                onClick={() => { triggerHaptic(); setActiveTab('deals'); setCollabSubTab('completed'); }}
+	                                                className={cn("p-4 rounded-[18px] border text-left active:scale-[0.99] transition-all", isDark ? "bg-card border-border" : "bg-white border-[#E5E7EB] shadow-sm")}
+	                                            >
+	                                                <p className={cn("text-[11px] font-black uppercase tracking-[0.14em] opacity-60", secondaryTextColor)}>Completed</p>
+	                                                <p className={cn("mt-2 text-[26px] font-black tabular-nums", textColor)}>{completedDealsCount}</p>
+	                                                <p className={cn("mt-1 text-[12px] font-semibold opacity-70", secondaryTextColor)}>This month</p>
+	                                            </button>
+	                                        </div>
 
                                         {/* Performance Insight */}
                                         <div className={cn(
