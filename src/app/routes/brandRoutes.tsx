@@ -17,8 +17,6 @@ export const BrandRoutes = () => (
     <Route path="/brand-discover" element={<LazyRoute><ProtectedLayout allowedRoles={["brand"]}><BrandDiscoverPage /></ProtectedLayout></LazyRoute>} />
     <Route path="/brand-settings" element={<LazyRoute><ProtectedLayout allowedRoles={["brand"]}><BrandSettings /></ProtectedLayout></LazyRoute>} />
     <Route path="/upgrade" element={<Navigate to="/brand-dashboard" replace />} />
-    <Route path="/messages" element={<Navigate to="/brand-dashboard" replace />} />
-    <Route path="/messages/:conversationId" element={<Navigate to="/brand-dashboard" replace />} />
     <Route path="/contract-upload" element={<Navigate to="/brand-dashboard" replace />} />
   </>
 );
