@@ -19,7 +19,7 @@ import { CREATOR_ASSETS_BUCKET } from '@/lib/constants/storage';
 import { BrandSettingsPanel } from '@/pages/BrandSettings';
 import { toast } from 'sonner';
 
-type BrandTab = 'dashboard' | 'collabs' | 'creators' | 'profile';
+type BrandTab = 'dashboard' | 'collabs' | 'creators' | 'profile' | 'payments';
 type BrandCollabTab = 'action_required' | 'active' | 'completed';
 
 import type { Profile, BrandDeal } from '@/types';
@@ -486,8 +486,8 @@ const BrandMobileDashboard = ({
   const highlightedDealId = searchParams.get('dealId');
   const highlightedRequestId = searchParams.get('requestId');
   const activeTab: BrandTab =
-    tabParam === 'dashboard' || tabParam === 'collabs' || tabParam === 'creators' || tabParam === 'profile'
-      ? tabParam
+    tabParam === 'dashboard' || tabParam === 'collabs' || tabParam === 'creators' || tabParam === 'profile' || tabParam === 'payments'
+      ? (tabParam as BrandTab)
       : initialTab;
 	  const activeCollabTab: BrandCollabTab = (() => {
 	    const raw = String(subtabParam || '').trim().toLowerCase();
@@ -3841,9 +3841,9 @@ const BrandMobileDashboard = ({
                                     {contractsWaitingSignature} waiting for signature
                                   </span>
                                 )}
-                                {pendingCounterCount > 0 && (
+                                {0 > 0 && (
                                   <span className={cn('px-3 py-1.5 rounded-full border text-[10px] font-black uppercase tracking-widest', isDark ? 'border-rose-500/25 bg-rose-500/10 text-rose-200' : 'border-rose-200 bg-rose-50 text-rose-800')}>
-                                    {pendingCounterCount} counter{pendingCounterCount === 1 ? '' : 's'} to review
+                                    {0} counter{0 === 1 ? '' : 's'} to review
                                   </span>
                                 )}
                                 {offersExpiringSoon > 0 && (
@@ -3969,7 +3969,7 @@ const BrandMobileDashboard = ({
 	                          </div>
 	                          <div className={cn('mb-4 rounded-[24px] border p-1.5 flex gap-1.5 backdrop-blur-xl shadow-[0_14px_40px_rgba(15,23,42,0.08)]', isDark ? 'bg-secondary/[0.06] border-border' : 'bg-secondary/75 border-primary/80')}>
 	                            {[
-		                              { key: 'action_required', label: 'Action Required', count: offers.length },
+		                              { key: 'action_required', label: 'Action Required', count: pendingOffersList.filter((r: any) => normalizeStatus(r?.status) === 'countered').length },
 	                              { key: 'active', label: 'Active', count: activeDealsList.length },
 	                              { key: 'completed', label: 'Completed', count: completedDealsList.length },
 	                            ].map((item) => {
@@ -4009,7 +4009,9 @@ const BrandMobileDashboard = ({
 	                              <div className="p-8 text-center">
                                 <p className={cn('text-[13px] font-semibold', isDark ? 'text-foreground/75' : 'text-muted-foreground')}>
                                   {activeCollabTab === 'action_required'
-                                    ? 'All caught up! No pending offers right now.'
+                                    ? (pendingOffersList.length > 0
+                                        ? 'All caught up with offers needing your response — check the Active tab for pending requests.'
+                                        : 'All caught up! No pending offers right now.')
                                     : activeCollabTab === 'active'
                                       ? 'No active deals yet — finish a pending offer'
                                       : 'No completed deals yet — check back on active ones'}
@@ -4475,7 +4477,7 @@ const BrandMobileDashboard = ({
 
 		                  <div className={cn('mb-4 rounded-[22px] border p-1 flex gap-1 backdrop-blur-xl shadow-[0_14px_40px_rgba(15,23,42,0.10)]', isDark ? 'bg-secondary/[0.06] border-border' : 'bg-secondary/80 border-border/70')}>
 		                    {[
-			                      { key: 'action_required', label: 'Action Required', count: offers.length },
+			                      { key: 'action_required', label: 'Action Required', count: pendingOffersList.filter((r: any) => normalizeStatus(r?.status) === 'countered').length },
 		                      { key: 'active', label: 'Active', count: activeDealsList.length },
 		                      { key: 'completed', label: 'Completed', count: completedDealsList.length },
 		                    ].map((item) => {
@@ -5081,6 +5083,20 @@ const BrandMobileDashboard = ({
                     </motion.div>
                 </motion.div>
               )}
+
+              {activeTab === 'payments' && (
+                <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="pb-32">
+                  <div className={cn('mb-5 p-5 rounded-[28px] border overflow-hidden', borderColor, isDark ? 'bg-secondary/[0.04]' : 'bg-secondary/80 backdrop-blur-xl shadow-[0_18px_45px_rgba(15,23,42,0.08)]')}>
+                    <h2 className={cn('text-[16px] font-bold tracking-tight mb-1', textColor)}>Payments</h2>
+                    <p className={cn('text-[13px] opacity-60', secondaryTextColor)}>Track your completed deal payouts below.</p>
+                  </div>
+                  <div className={cn('p-5 rounded-[24px] border text-center', borderColor, isDark ? 'bg-card' : 'bg-secondary/80')}>
+                    <p className={cn('text-[13px] opacity-60', textColor)}>No completed payouts yet.</p>
+                    <p className={cn('text-[12px] mt-1 opacity-40', textColor)}>Payouts are processed after you mark a deal as complete.</p>
+                  </div>
+                </motion.div>
+              )}
+
 	              </>
 	            </div>
           </motion.div>

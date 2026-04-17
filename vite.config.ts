@@ -45,6 +45,12 @@ export default defineConfig(() => ({
     host: true,
     port: 8080,
     strictPort: true,
+    allowedHosts: [
+      'localhost',
+      '.trycloudflare.com',
+      '.ngrok.io',
+      '.framer.wtf',
+    ],
   },
   build: {
     sourcemap: false,

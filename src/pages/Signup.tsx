@@ -520,6 +520,7 @@ const Signup = () => {
           sessionStorage.removeItem('just_signed_up');
           setSignupPhase('opening');
           if (accountMode === 'brand') {
+            await ensureBrandWorkspace(sessionNow.user.id, emailAtSignup);
             navigate('/brand-dashboard', { replace: true });
           } else {
             // Onboarding will persist handle automatically (and never blocks the CTA).

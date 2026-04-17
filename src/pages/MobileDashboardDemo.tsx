@@ -90,7 +90,12 @@ const StatusBadge = ({ status }: { status: string }) => {
 };
 
 const renderBudgetValue = (item: any) => {
-    const exact = Number(item?.deal_amount || item?.exact_budget);
+    // Try all possible amount field names
+    const exact = Number(
+        item?.deal_amount ?? item?.exact_budget ?? item?.amount ??
+        item?.total_amount ?? item?.budget ??
+        (item?.amounts && item.amounts[0])
+    );
     if (Number.isFinite(exact) && exact > 0) return `₹${exact.toLocaleString()}`;
 
     // Check for budget range in nested properties
@@ -440,7 +445,10 @@ const MobileDashboardDemo = ({
     const [searchParams, setSearchParams] = useSearchParams();
     const isDemoParamEnabled = ['1', 'true', 'yes'].includes(String(searchParams.get('demo') || '').toLowerCase());
     const isDemoOfferEnabled = Boolean(showDemoOffer || isDemoParamEnabled);
-    const activeTab = (searchParams.get('tab') as 'dashboard' | 'deals' | 'payments' | 'profile') || 'dashboard';
+    const rawTab = searchParams.get('tab');
+    // Normalize legacy 'account' tab to 'profile'
+    const tabMap: Record<string, string> = { dashboard: 'dashboard', deals: 'deals', payments: 'payments', profile: 'profile', account: 'profile' };
+    const activeTab = (tabMap[rawTab || ''] || 'dashboard') as 'dashboard' | 'deals' | 'payments' | 'profile';
     const setActiveTab = (tab: string) => {
         const next = new URLSearchParams(searchParams);
         next.set('tab', tab);
@@ -455,6 +463,13 @@ const MobileDashboardDemo = ({
     const [showSharingTips, setShowSharingTips] = useState(false);
     const hasHandledDeepLinkRef = useRef(false);
     useEffect(() => {
+        // If URL has a deals subtab but activeTab is not 'deals', redirect to 'deals'
+        if (subtabParam && activeTab !== 'deals') {
+            const next = new URLSearchParams(searchParams);
+            next.set('tab', 'deals');
+            setSearchParams(next, { replace: true });
+            return;
+        }
         if (activeTab !== 'deals') return;
 
         // Deep-link for Pending Offers (requestId)
@@ -936,7 +951,8 @@ const MobileDashboardDemo = ({
         ? normalizedUsername
         : '';
     const username = instagramHandle || usernameFallback || 'creator';
-    const avatarFallbackUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(username)}&background=10B981&color=fff`;
+    // Use DiceBear instead of ui-avatars.com (avoids external CDN dependency)
+    const avatarFallbackUrl = `https://api.dicebear.com/7.x/initials/svg?name=${encodeURIComponent(username)}&backgroundColor=10B981&textColor=ffffff`;
     const resolveAvatarUrl = (candidate: any) => {
         const raw = String(candidate || '').trim();
         if (!raw) return '';
@@ -954,10 +970,13 @@ const MobileDashboardDemo = ({
     const pendingOffersDeduplicated = React.useMemo(() => {
         const seen = new Set<string>();
         return (collabRequests || []).filter((req: any) => {
-            const key = [req.brand_name, req.collab_type, req.exact_budget || req.budget_amount || req.deal_amount].filter(Boolean).join('|');
-            if (seen.has(key)) return false;
+            // Dedupe by request ID primarily; fall back to brand+type+budget combo
+            const idKey = String(req?.id || req?.request_id || '').trim();
+            const comboKey = [req.brand_name, req.collab_type, req.exact_budget || req.budget_amount || req.deal_amount].filter(Boolean).join('|');
+            const key = idKey || comboKey;
+            if (!key || seen.has(key)) return false;
             seen.add(key);
-            // NEW: Only include truly pending offers in New Offers tab
+            // Only include truly pending offers in New Offers tab
             const s = normalizeDealStatus(req);
             return s === 'pending' || s === 'offer_sent' || s === 'new' || s === 'sent';
         });
@@ -2548,7 +2567,18 @@ const MobileDashboardDemo = ({
                 );
             case 'logout':
                 triggerHaptic();
-                signOutMutation.mutate?.();
+                if (signOutMutation.mutate) {
+                    signOutMutation.mutate();
+                } else {
+                    // Fallback: clear auth state directly using sync Supabase import
+                    try {
+                        const { supabase } = require('@/integrations/supabase/client');
+                        supabase.auth.signOut({ scope: 'global' });
+                    } catch (_) { /* ignore */ }
+                    localStorage.clear();
+                    sessionStorage.clear();
+                    window.location.href = '/login';
+                }
                 setActiveSettingsPage(null);
                 setActiveTab('dashboard');
                 return null;
