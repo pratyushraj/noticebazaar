@@ -150,6 +150,12 @@ const getCreatorDealCardUX = (deal: any) => {
     const isCompleted = rawStatus.includes('completed') || rawStatus === 'paid';
     const isRevisionRequested = rawStatus.includes('revision_requested') || rawStatus.includes('changes_requested') || rawStatus.includes('brand_revision_requested');
     const isRevisionDone = rawStatus.includes('revision_done') || rawStatus.includes('revision_submitted');
+    const requiresShipping = inferCreatorRequiresShipping(deal);
+    const isAwaitingShipment =
+        requiresShipping &&
+        (rawStatus.includes('awaiting_product_shipment') ||
+            rawStatus.includes('awaiting_product') ||
+            rawStatus.includes('product_shipment_pending'));
     const isDelivered =
         rawStatus.includes('content_delivered') ||
         rawStatus.includes('draft_review') ||
@@ -160,7 +166,7 @@ const getCreatorDealCardUX = (deal: any) => {
         isRevisionDone;
     const isApproved = rawStatus.includes('content_approved');
     const isPaymentReleased = rawStatus.includes('payment_released');
-    const isMaking = rawStatus.includes('content_making') || rawStatus.includes('drafting') || rawStatus.includes('awaiting_product_shipment') || rawStatus.includes('awaiting product shipment');
+    const isMaking = rawStatus.includes('content_making') || rawStatus.includes('drafting');
     const isFullyExecuted = rawStatus.includes('fully_executed') || rawStatus === 'signed';
     const isContractPending = rawStatus.includes('contract_ready') || rawStatus === 'sent' || rawStatus.includes('signed_pending_creator') || rawStatus.includes('signed_by_brand') || rawStatus.includes('needs signature');
 
@@ -181,7 +187,7 @@ const getCreatorDealCardUX = (deal: any) => {
         : (isFullyExecuted || isMaking || isDelivered || isApproved || isPaymentReleased || isCompleted ? 'Contract: signed' : null);
 
     const needsSignature = isContractPending;
-    const needsCreatorAction = !isCompleted && !isApproved && !isPaymentReleased && (needsSignature || isRevisionRequested || isMaking);
+    const needsCreatorAction = !isCompleted && !isApproved && !isPaymentReleased && !isAwaitingShipment && (needsSignature || isRevisionRequested || isMaking);
 
     const urgencyLevel: 'critical' | 'warning' | 'normal' = daysUntilDue !== null && daysUntilDue <= 2
         ? 'critical'
@@ -217,6 +223,10 @@ const getCreatorDealCardUX = (deal: any) => {
         stagePill = 'AWAITING REVIEW';
         nextStep = 'Wait for brand approval';
         cta = 'Waiting for Review';
+    } else if (isAwaitingShipment) {
+        stagePill = 'AWAITING PRODUCT';
+        nextStep = 'Waiting for product shipment from brand';
+        cta = 'Waiting';
     } else if (isFullyExecuted) {
         stagePill = 'COLLAB STARTED';
         nextStep = 'Start creating content';
@@ -244,6 +254,7 @@ const getCreatorDealCardUX = (deal: any) => {
         isRevisionDone,
         isApproved,
         isPaymentReleased,
+        isAwaitingShipment,
         isMaking,
         stagePill,
         nextStep,
