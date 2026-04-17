@@ -2726,7 +2726,14 @@ const MobileDashboardDemo = ({
                                     { done: !!profile.bio, label: 'Add intro line', focus: 'bio' },
                                     { done: !!(profile.pricing_min || profile.avg_rate_reel), label: 'Set rates', focus: 'rates' },
                                     // Only ask for payout when it's actually needed (reduces day-0 drop-off)
-                                    ...(hasMonetizableActivity ? [{ done: !!profile.bank_upi, label: 'Add payout', focus: 'payout', tabLink: true }] : []),
+                                    ...(hasMonetizableActivity
+                                        ? [{
+                                            done: Boolean(String(profile.bank_upi || '').trim()),
+                                            label: 'Add payout',
+                                            focus: 'payout',
+                                            tabLink: true
+                                        }]
+                                        : []),
                                 ];
                                 const shouldShow = tasks.some(t => !t.done);
                                 if (!shouldShow) return null;
@@ -2764,16 +2771,18 @@ const MobileDashboardDemo = ({
                                             >
                                                 Set rates
                                             </button>
-                                            <button
-                                                onClick={() => {
-                                                    triggerHaptic();
-                                                    setActiveTab('profile');
-                                                    setActiveSettingsPage('payouts');
-                                                }}
-                                                className="text-[11px] font-bold px-3 py-1.5 rounded-full bg-card border border-primary text-primary active:scale-95"
-                                            >
-                                                Add payout method
-                                            </button>
+                                            {remaining.some((t) => t.focus === 'payout') && (
+                                                <button
+                                                    onClick={() => {
+                                                        triggerHaptic();
+                                                        setActiveTab('profile');
+                                                        setActiveSettingsPage('payouts');
+                                                    }}
+                                                    className="text-[11px] font-bold px-3 py-1.5 rounded-full bg-card border border-primary text-primary active:scale-95"
+                                                >
+                                                    Add payout method
+                                                </button>
+                                            )}
                                         </div>
                                     </div>
                                 );
