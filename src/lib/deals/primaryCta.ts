@@ -136,6 +136,20 @@ export const getCanonicalDealStatus = (deal: any): CanonicalDealStatus => {
 export const getDealPrimaryCta = (params: { role: DealRole; deal: any }): DealPrimaryCta => {
   const { role, deal } = params;
   const status = getCanonicalDealStatus(deal);
+  const requiresShipping =
+    typeof deal?.requires_shipping === 'boolean'
+      ? Boolean(deal.requires_shipping)
+      : typeof deal?.shipping_required === 'boolean'
+        ? Boolean(deal.shipping_required)
+        : String(deal?.collab_type || deal?.deal_type || deal?.raw?.collab_type || '')
+          .trim()
+          .toLowerCase()
+          .includes('barter') ||
+          ['both', 'hybrid', 'paid_barter'].includes(
+            String(deal?.collab_type || deal?.deal_type || deal?.raw?.collab_type || '').trim().toLowerCase(),
+          );
+  const shippingStatus = String(deal?.shipping_status || deal?.raw?.shipping_status || '').trim().toLowerCase();
+  const hasReceivedShipment = shippingStatus === 'delivered' || shippingStatus === 'received';
   const signatureSources = [
     deal,
     deal?.raw,
@@ -184,6 +198,12 @@ export const getDealPrimaryCta = (params: { role: DealRole; deal: any }): DealPr
   }
 
   // Creator
+  // Shipping deals: never show "Mark as Delivered" until the product shipment is received.
+  // (Some legacy states incorrectly set status=CONTENT_MAKING for barter/shipping deals.)
+  if (requiresShipping && !hasReceivedShipment) {
+    return { status, label: 'Waiting for Product', disabled: true, tone: 'waiting', action: 'none' };
+  }
+
   if (status === 'CONTRACT_READY' || status === 'SENT') {
     // If the creator already signed, they should see a waiting state until the brand signs.
     if (creatorSigned && !brandSigned) {
