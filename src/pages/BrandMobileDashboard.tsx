@@ -1793,6 +1793,8 @@ const BrandMobileDashboard = ({
     const trackingUrl = String(offer?.tracking_url || '').trim();
     const courierName = String(offer?.courier_name || '').trim();
     const expectedDeliveryDate = String(offer?.expected_delivery_date || '').trim();
+    const productImageUrl = String(offer?.barter_product_image_url || offer?.product_image_url || '').trim();
+    const hasProductImage = Boolean(productImageUrl);
 
 			  const normalizedDealStatus = effectiveDealStatus(offer);
 			  const canReviewContent = normalizedDealStatus === 'CONTENT_DELIVERED' || normalizedDealStatus === 'REVISION_DONE';
@@ -2319,6 +2321,21 @@ const BrandMobileDashboard = ({
                     {String(deliverables).replaceAll(',', ' •')}
                   </div>
                 </div>
+
+                {hasProductImage && (
+                  <div className="mt-5 overflow-hidden rounded-3xl border border-border bg-background">
+                    <div className="relative aspect-[16/10] w-full">
+                      <img
+                        src={safeImageSrc(productImageUrl)}
+                        alt={`${creatorName || 'Creator'} product preview`}
+                        className="absolute inset-0 h-full w-full object-cover"
+                      />
+                      <div className="absolute left-3 top-3 rounded-full bg-black/55 px-2.5 py-1 text-[10px] font-black uppercase tracking-widest text-white backdrop-blur-sm">
+                        Product image
+                      </div>
+                    </div>
+                  </div>
+                )}
 
                 {showSignatureDebug && (
                   <div className={cn('text-[11px] font-semibold mt-3', secondaryTextColor)}>
@@ -4117,28 +4134,43 @@ const BrandMobileDashboard = ({
 	                                          {isCountered ? 'Review counter terms.' : 'Follow up or edit the offer.'}
 	                                        </p>
 
-	                                        <div className="flex items-start justify-between gap-3 mb-3">
-	                                          <div className="flex items-center gap-3 min-w-0">
-	                                            <Avatar className={cn('w-11 h-11 border shadow-sm shrink-0', isDark ? 'border-border' : 'border-border')}>
-	                                              <AvatarImage src={safeImageSrc(item?.profiles?.avatar_url || item?.profiles?.profile_image_url || '')} alt={creatorName} />
+                                      <div className="flex items-start justify-between gap-3 mb-3">
+                                        <div className="flex items-center gap-3 min-w-0">
+                                          <Avatar className={cn('w-11 h-11 border shadow-sm shrink-0', isDark ? 'border-border' : 'border-border')}>
+                                            <AvatarImage src={safeImageSrc(item?.profiles?.avatar_url || item?.profiles?.profile_image_url || '')} alt={creatorName} />
 	                                              <AvatarFallback className={cn(isDark ? 'bg-card text-foreground' : 'bg-background text-muted-foreground')}>
 	                                                {creatorName.slice(0, 1).toUpperCase()}
 	                                              </AvatarFallback>
 	                                            </Avatar>
-	                                            <div className="min-w-0">
-	                                              <p className={cn('text-[15px] font-black truncate', textColor)}>{creatorName}</p>
-	                                              <p className={cn('text-[11px] mt-1 font-semibold truncate', secondaryTextColor)}>{creatorMeta}</p>
-	                                            </div>
-	                                          </div>
-	                                          <div className="text-right shrink-0">
-	                                            <p className={cn('text-[18px] font-black tracking-tight', textColor)}>{amount > 0 ? formatCompactINR(amount) : '—'}</p>
-	                                            <p className={cn('text-[9px] font-black uppercase tracking-widest opacity-40 mt-1', isDark ? 'text-primary' : 'text-primary')}>Campaign budget</p>
-	                                          </div>
-	                                        </div>
+                                            <div className="min-w-0">
+                                              <p className={cn('text-[15px] font-black truncate', textColor)}>{creatorName}</p>
+                                              <p className={cn('text-[11px] mt-1 font-semibold truncate', secondaryTextColor)}>{creatorMeta}</p>
+                                            </div>
+                                          </div>
+                                          <div className="text-right shrink-0">
+                                            <p className={cn('text-[18px] font-black tracking-tight', textColor)}>{amount > 0 ? formatCompactINR(amount) : '—'}</p>
+                                            <p className={cn('text-[9px] font-black uppercase tracking-widest opacity-40 mt-1', isDark ? 'text-primary' : 'text-primary')}>Campaign budget</p>
+                                          </div>
+                                        </div>
 
-	                                        <p className={cn('text-[12px] font-bold mb-3', isDark ? 'text-muted-foreground' : 'text-muted-foreground')}>
-	                                          {String(formatDeliverables(item) || item?.collab_type || 'Deliverables').replaceAll(',', ' • ')}
-	                                        </p>
+                                        {(String(item?.barter_product_image_url || item?.product_image_url || '').trim()) && (
+                                          <div className="mb-3 overflow-hidden rounded-2xl border border-border bg-background">
+                                            <div className="relative aspect-[4/3] w-full">
+                                              <img
+                                                src={safeImageSrc(String(item?.barter_product_image_url || item?.product_image_url || ''))}
+                                                alt={`${creatorName} product preview`}
+                                                className="absolute inset-0 h-full w-full object-cover"
+                                              />
+                                              <div className="absolute left-2 top-2 rounded-full bg-black/55 px-2 py-0.5 text-[9px] font-black uppercase tracking-widest text-white backdrop-blur-sm">
+                                                Product image
+                                              </div>
+                                            </div>
+                                          </div>
+                                        )}
+
+                                        <p className={cn('text-[12px] font-bold mb-3', isDark ? 'text-muted-foreground' : 'text-muted-foreground')}>
+                                          {String(formatDeliverables(item) || item?.collab_type || 'Deliverables').replaceAll(',', ' • ')}
+                                        </p>
 
 	                                        <div className={cn('rounded-2xl border px-3.5 py-2.5 mb-3 text-[11px] font-semibold', isDark ? 'bg-primary/10 text-primary border-primary/20' : 'bg-primary text-primary border-primary')}>
 	                                          <Landmark className="w-4 h-4 inline-block mr-2 -mt-0.5" />
@@ -4653,6 +4685,21 @@ const BrandMobileDashboard = ({
 	                                    </p>
 	                                  </div>
 	                                </div>
+
+	                                {(String(item?.barter_product_image_url || item?.product_image_url || '').trim()) && (
+	                                  <div className="mb-3 overflow-hidden rounded-2xl border border-border bg-background">
+	                                    <div className="relative aspect-[4/3] w-full">
+	                                      <img
+	                                        src={safeImageSrc(String(item?.barter_product_image_url || item?.product_image_url || ''))}
+	                                        alt={`${creatorName} product preview`}
+	                                        className="absolute inset-0 h-full w-full object-cover"
+	                                      />
+	                                      <div className="absolute left-2 top-2 rounded-full bg-black/55 px-2 py-0.5 text-[9px] font-black uppercase tracking-widest text-white backdrop-blur-sm">
+	                                        Product image
+	                                      </div>
+	                                    </div>
+	                                  </div>
+	                                )}
 
 	                                <div className="flex items-center justify-between gap-3 mb-3">
 	                                  <div className={cn('text-[13px] font-bold', isDark ? 'text-muted-foreground' : 'text-muted-foreground')}>

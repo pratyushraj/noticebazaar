@@ -96,6 +96,14 @@ export const ActionLog: React.FC<ActionLogProps> = ({ entries }) => {
         {entries.map((entry, index) => {
           const config = actionConfig[entry.type] || actionConfig.other;
           const Icon = config.icon;
+          const productImageUrl = String(entry.metadata?.barter_product_image_url || entry.metadata?.product_image_url || '').trim();
+          const shouldShowProductImage = Boolean(productImageUrl) && (
+            entry.type === 'upload' ||
+            entry.type === 'update' ||
+            entry.action.toLowerCase().includes('offer') ||
+            entry.action.toLowerCase().includes('deal') ||
+            entry.action.toLowerCase().includes('product')
+          );
 
           return (
             <motion.div
@@ -121,6 +129,18 @@ export const ActionLog: React.FC<ActionLogProps> = ({ entries }) => {
 
                 {entry.user && (
                   <p className="text-xs text-secondary mb-1">{entry.user}</p>
+                )}
+
+                {shouldShowProductImage && (
+                  <div className="mt-3 overflow-hidden rounded-lg border border-border bg-secondary/[0.04]">
+                    <div className="relative aspect-[16/9] w-full">
+                      <img
+                        src={productImageUrl}
+                        alt={`${entry.action} product preview`}
+                        className="absolute inset-0 h-full w-full object-cover"
+                      />
+                    </div>
+                  </div>
                 )}
               </div>
             </motion.div>

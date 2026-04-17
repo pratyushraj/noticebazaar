@@ -45,6 +45,8 @@ const CollabRequestsPage = () => {
   const [expandedDescriptions, setExpandedDescriptions] = useState<Record<string, boolean>>({});
   const [acceptingRequestId, setAcceptingRequestId] = useState<string | null>(null);
 
+  const getProductImageUrl = (request: CollabRequest) => String(request.barter_product_image_url || '').trim();
+
   useEffect(() => {
     if (error) {
       const msg = error instanceof Error ? error.message : 'Failed to load collaboration requests';
@@ -259,6 +261,7 @@ const CollabRequestsPage = () => {
             {pendingRequests.map((request) => {
               const deliverablesList = parseDeliverables(request.deliverables);
               const isDescriptionExpanded = !!expandedDescriptions[request.id];
+              const productImageUrl = getProductImageUrl(request);
               return (
                 <Card
                   key={request.id}
@@ -312,15 +315,15 @@ const CollabRequestsPage = () => {
                     )}
 
                     {/* Product preview */}
-                    {isBarterLike(request.collab_type) && (request.barter_product_image_url || failedBarterImages[request.id]) && (
+                    {isBarterLike(request.collab_type) && (productImageUrl || failedBarterImages[request.id]) && (
                       <div className="w-full rounded-lg overflow-hidden bg-secondary/[0.08] border border-border aspect-[4/3] min-h-[120px] relative">
-                        {request.barter_product_image_url && !failedBarterImages[request.id] ? (
+                        {productImageUrl && !failedBarterImages[request.id] ? (
                           <>
                             <span className="absolute bottom-2 left-2 z-10 px-2 py-1 rounded-lg text-[10px] font-medium text-foreground/95 bg-black/50 backdrop-blur-sm">
                               Product preview
                             </span>
                             <img
-                              src={request.barter_product_image_url}
+                              src={productImageUrl}
                               alt="Barter product"
                               className="w-full h-full object-cover"
                               onError={() => setFailedBarterImages((prev) => ({ ...prev, [request.id]: true }))}

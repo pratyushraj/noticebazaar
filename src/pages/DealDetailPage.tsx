@@ -1013,6 +1013,19 @@ function DealDetailPageContent() {
       });
     }
 
+    if (productImageUrl && deal.id) {
+      entries.push({
+        id: `action-${deal.id}-product-image`,
+        action: 'Product image shared in offer',
+        type: 'upload',
+        timestamp: deal.created_at || deal.updated_at || new Date().toISOString(),
+        user: 'Brand',
+        metadata: {
+          barter_product_image_url: productImageUrl,
+        },
+      });
+    }
+
     if (logs && Array.isArray(logs)) {
       logs.forEach((log: any) => {
         const timelineCopy = getTimelineEntryCopy(log.event);
@@ -1022,6 +1035,7 @@ function DealDetailPageContent() {
           type: timelineCopy.type as 'other' | 'payment' | 'update' | 'issue' | 'upload' | 'complete' | 'invoice',
           timestamp: log.created_at || new Date().toISOString(),
           user: timelineCopy.actor,
+          metadata: productImageUrl ? { barter_product_image_url: productImageUrl } : undefined,
         });
       });
     }
@@ -1062,6 +1076,7 @@ function DealDetailPageContent() {
     const previewUrl = ((deal as any)?.signed_contract_url as string | null | undefined) || deal?.contract_file_url;
     return previewUrl ? getFilenameFromUrl(previewUrl) : null;
   }, [deal?.contract_file_url, (deal as any)?.signed_contract_url]);
+  const productImageUrl = String((deal as any)?.barter_product_image_url || (deal as any)?.product_image_url || '').trim();
 
   // Extract deal status fields (must be defined before getContractStatus)
   const signedContractUrl = (deal as any)?.signed_contract_url as string | null | undefined;
@@ -2375,6 +2390,21 @@ Best regards`;
               </div>
             </div>
           </div>
+
+          {productImageUrl && (
+            <div className="mb-4 overflow-hidden rounded-2xl border border-border bg-secondary/[0.04]">
+              <div className="relative aspect-[16/10] w-full">
+                <img
+                  src={productImageUrl}
+                  alt={`${deal.brand_name} product preview`}
+                  className="absolute inset-0 h-full w-full object-cover"
+                />
+                <div className="absolute left-3 top-3 rounded-full bg-black/55 px-2.5 py-1 text-[10px] font-black uppercase tracking-widest text-white backdrop-blur-sm">
+                  Product image
+                </div>
+              </div>
+            </div>
+          )}
 
           <div className="bg-card rounded-xl p-4 border border-border/5 hover:border-border transition-colors">
             <div className="text-sm text-foreground/60 mb-1 flex items-center gap-1.5">

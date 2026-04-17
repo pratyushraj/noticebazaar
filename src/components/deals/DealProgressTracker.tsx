@@ -108,6 +108,21 @@ export const DealProgressTracker: React.FC<DealProgressTrackerProps> = ({ deal, 
                 )}
             </div>
 
+            {String(deal?.barter_product_image_url || deal?.product_image_url || '').trim() && (
+                <div className="mb-8 overflow-hidden rounded-2xl border border-border bg-secondary/[0.04]">
+                    <div className="relative aspect-[16/9] w-full">
+                        <img
+                            src={String(deal?.barter_product_image_url || deal?.product_image_url || '').trim()}
+                            alt={`${deal?.brand_name || 'Deal'} product preview`}
+                            className="absolute inset-0 h-full w-full object-cover"
+                        />
+                        <div className="absolute left-3 top-3 rounded-full bg-black/55 px-2.5 py-1 text-[10px] font-black uppercase tracking-widest text-white backdrop-blur-sm">
+                            Product image
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {/* Horizontal Timeline */}
             <div className="relative mb-12 overflow-x-auto pb-4 hide-scrollbar">
                 <div className="flex items-center justify-between min-w-[600px] relative px-2">
