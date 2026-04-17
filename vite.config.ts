@@ -51,6 +51,9 @@ export default defineConfig(() => ({
       '.ngrok.io',
       '.framer.wtf',
     ],
+    hmr: {
+      overlay: false,
+    },
   },
   build: {
     sourcemap: false,

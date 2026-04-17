@@ -266,6 +266,69 @@ const getCreatorDealCardUX = (deal: any) => {
     };
 };
 
+const DashboardLoadingStage = ({ isDark }: { isDark: boolean }) => {
+    return (
+        <div className="space-y-4">
+            <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.35 }}
+                className={cn(
+                    "relative overflow-hidden rounded-[2rem] border px-5 py-4",
+                    isDark ? "border-white/10 bg-white/5" : "border-slate-200 bg-white/80 shadow-sm"
+                )}
+            >
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/15 to-transparent animate-shimmer" />
+                <div className="relative flex items-center justify-between gap-4">
+                    <div>
+                        <p className={cn("text-[11px] font-black uppercase tracking-[0.28em]", isDark ? "text-primary/80" : "text-emerald-600")}>
+                            Loading dashboard
+                        </p>
+                        <p className={cn("mt-1 text-[14px] font-semibold", isDark ? "text-white/75" : "text-slate-700")}>
+                            Pulling offers, deals, and performance data
+                        </p>
+                    </div>
+                    <div className="relative flex h-12 w-12 items-center justify-center">
+                        <div className={cn("absolute inset-0 rounded-full animate-ping", isDark ? "bg-primary/20" : "bg-emerald-500/15")} />
+                        <Loader2 className={cn("relative h-5 w-5 animate-spin", isDark ? "text-primary" : "text-emerald-600")} />
+                    </div>
+                </div>
+            </motion.div>
+
+            <motion.div
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.05, duration: 0.35 }}
+                className="grid grid-cols-2 gap-3"
+            >
+                {[0, 1, 2, 3].map((i) => (
+                    <motion.div
+                        key={i}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.08 + i * 0.06, duration: 0.25 }}
+                    >
+                        <ShimmerSkeleton className="h-20 rounded-2xl" />
+                    </motion.div>
+                ))}
+            </motion.div>
+
+            <motion.div
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.18, duration: 0.35 }}
+                className="space-y-3"
+            >
+                <ShimmerSkeleton className="h-24 w-full rounded-3xl" />
+                <div className="grid grid-cols-2 gap-3">
+                    <ShimmerSkeleton className="h-24 rounded-2xl" />
+                    <ShimmerSkeleton className="h-24 rounded-2xl" />
+                </div>
+            </motion.div>
+        </div>
+    );
+};
+
 const getCreatorPaymentListUX = (deal: any) => {
     const ux = getCreatorDealCardUX(deal);
     const rawStatus = ux.rawStatus;
@@ -391,6 +454,7 @@ const buildProfileFormData = (profile: any, userEmail?: string | null) => {
 
         collaboration_preference: profile?.collaboration_preference || 'Hybrid',
         avg_rate_reel: profile?.avg_rate_reel || '5000',
+        story_price: profile?.typical_story_rate || profile?.story_price || '2000',
         content_niches: profile?.content_niches || ['Fashion', 'Tech', 'Lifestyle'],
         bank_account_name: profile?.bank_account_name || '',
         bank_upi: profile?.bank_upi || '',
@@ -630,6 +694,7 @@ const MobileDashboardDemo = ({
         }
     }, []);
     const [activeSettingsPage, setActiveSettingsPage] = useState<string | null>(null);
+    const [activeSettingsAnchor, setActiveSettingsAnchor] = useState<string | null>(null);
     const [showPushInstallGuide, setShowPushInstallGuide] = useState(false);
     const [processingDeal, setProcessingDeal] = React.useState<string | null>(null);
     const [selectedItem, setSelectedItem] = useState<any | null>(null);
@@ -650,6 +715,7 @@ const MobileDashboardDemo = ({
     const isLoadingDeals = isLoadingDealsOverride || isLoadingDealsLocal;
     const hasDataLoadError = Boolean(offersError || dealsError);
     const contractSectionRef = useRef<HTMLDivElement | null>(null);
+    const pricingSectionRef = useRef<HTMLDivElement | null>(null);
 
     // Prevent double scrollbar when item detail modal is open
     useEffect(() => {
@@ -662,6 +728,15 @@ const MobileDashboardDemo = ({
             document.body.style.overflow = '';
         };
     }, [selectedItem]);
+
+    useEffect(() => {
+        if (activeSettingsPage === 'portfolio' && activeSettingsAnchor === 'pricing') {
+            window.setTimeout(() => {
+                pricingSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                setActiveSettingsAnchor(null);
+            }, 50);
+        }
+    }, [activeSettingsPage, activeSettingsAnchor]);
 
     // When opening the deliver/revision modal, prefill with any previously submitted values.
     useEffect(() => {
@@ -1313,6 +1388,7 @@ const MobileDashboardDemo = ({
                 media_kit_url: profileFormData.media_kit_url || null,
                 open_to_collabs: profileFormData.open_to_collabs,
                 avg_rate_reel: Number(profileFormData.avg_rate_reel) || null,
+                typical_story_rate: Number(profileFormData.story_price) || null,
                 bank_account_name: profileFormData.bank_account_name?.trim() || null,
                 bank_upi: profileFormData.bank_upi?.trim() || null,
                 updated_at: new Date().toISOString(),
@@ -1819,6 +1895,45 @@ const MobileDashboardDemo = ({
                     <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} drag="x" dragConstraints={{ left: 0, right: 0 }} dragElastic={0.2} onDragEnd={(e, { offset, velocity }) => { if (offset.x > 50 || velocity.x > 500) { triggerHaptic(); setActiveSettingsPage(null); } }} className="pb-20 touch-pan-y">
                         <PageHeader title="Your Public Profile" />
                         <div className="px-4 space-y-6">
+                            <div ref={pricingSectionRef}>
+                                <SectionHeader title="Pricing" isDark={isDark} />
+                                <SettingsGroup isDark={isDark}>
+                                    <div className="p-4 space-y-4">
+                                        <div className="space-y-1.5">
+                                            <p className={cn("text-[11px] font-black uppercase tracking-wider opacity-40", textColor)}>Reel Rate</p>
+                                            <div className="flex items-center gap-2 border-b py-2" style={{ borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)' }}>
+                                                <span className="text-info font-black">₹</span>
+                                                <input
+                                                    className="bg-transparent outline-none font-medium text-[16px] flex-1"
+                                                    inputMode="numeric"
+                                                    placeholder="5000"
+                                                    value={profileFormData.avg_rate_reel || ''}
+                                                    onChange={(e) => setProfileFormData((p: any) => ({ ...p, avg_rate_reel: e.target.value }))}
+                                                />
+                                            </div>
+                                        </div>
+                                        <div className="space-y-1.5">
+                                            <p className={cn("text-[11px] font-black uppercase tracking-wider opacity-40", textColor)}>Story Rate</p>
+                                            <div className="flex items-center gap-2 border-b py-2" style={{ borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)' }}>
+                                                <span className="text-info font-black">₹</span>
+                                                <input
+                                                    className="bg-transparent outline-none font-medium text-[16px] flex-1"
+                                                    inputMode="numeric"
+                                                    placeholder="2000"
+                                                    value={profileFormData.story_price || ''}
+                                                    onChange={(e) => setProfileFormData((p: any) => ({ ...p, story_price: e.target.value }))}
+                                                />
+                                            </div>
+                                        </div>
+                                        <div className="space-y-1.5">
+                                            <p className={cn("text-[11px] font-black uppercase tracking-wider opacity-40", textColor)}>Package Summary</p>
+                                            <div className={cn("rounded-2xl px-4 py-3 text-[13px] font-medium", isDark ? "bg-card text-foreground/80" : "bg-secondary/30 text-black/70")}>
+                                                Create or update packages in your public profile to show brands your rates in a cleaner format.
+                                            </div>
+                                        </div>
+                                    </div>
+                                </SettingsGroup>
+                            </div>
                             <div className={cn("p-6 rounded-[2.5rem] border text-center relative overflow-hidden", isDark ? "bg-card border-[#2C2C2E]" : "bg-card border-[#E5E5EA] shadow-sm")}>
                                 <div className="w-20 h-20 bg-info/10 rounded-3xl flex items-center justify-center mx-auto mb-4">
                                     <Globe className="w-10 h-10 text-info" />
@@ -2791,11 +2906,19 @@ const MobileDashboardDemo = ({
                                 const hasMonetizableActivity = Array.isArray(brandDeals) && brandDeals.some((d: any) =>
                                     ['Payment Pending', 'Completed', 'Approved', 'Active', 'confirmed'].includes(String(d?.status || ''))
                                 );
+                                const hasSetRates = [
+                                    profile?.pricing_min,
+                                    profile?.avg_rate_reel,
+                                    profile?.reel_price,
+                                    profile?.typical_story_rate,
+                                    (profile as any)?.story_price,
+                                    (profile as any)?.suggested_reel_rate,
+                                ].some((value) => Number(value) > 0) || Boolean(profile?.deal_templates?.length);
 
                                 const tasks = [
                                     { done: !!profile.instagram_handle, label: 'Add Instagram', focus: 'instagram' },
                                     { done: !!profile.bio, label: 'Add intro line', focus: 'bio' },
-                                    { done: !!(profile.pricing_min || profile.avg_rate_reel), label: 'Set rates', focus: 'rates' },
+                                    { done: hasSetRates, label: 'Set rates', focus: 'rates' },
                                     // Only ask for payout when it's actually needed (reduces day-0 drop-off)
                                     ...(hasMonetizableActivity
                                         ? [{
@@ -2837,6 +2960,7 @@ const MobileDashboardDemo = ({
                                                     triggerHaptic();
                                                     setActiveTab('profile');
                                                     setActiveSettingsPage('portfolio');
+                                                    setActiveSettingsAnchor('pricing');
                                                 }}
                                                 className="text-[11px] font-bold px-3 py-1.5 rounded-full bg-card border border-primary text-primary active:scale-95"
                                             >
@@ -3602,11 +3726,7 @@ const MobileDashboardDemo = ({
 
                                         if (isLoadingDeals) {
                                             return (
-                                                <div className="space-y-4">
-                                                    <ShimmerSkeleton className="h-24 w-full rounded-2xl" />
-                                                    <ShimmerSkeleton className="h-24 w-full rounded-2xl" />
-                                                    <ShimmerSkeleton className="h-24 w-full rounded-2xl" />
-                                                </div>
+                                                <DashboardLoadingStage isDark={isDark} />
                                             );
                                         }
 
@@ -3848,12 +3968,7 @@ const MobileDashboardDemo = ({
                                     <h3 className={cn('text-sm font-bold tracking-tight mb-3', textColor)}>Your Performance</h3>
                                 </motion.div>
                                 {isLoadingDeals ? (
-                                    <div className="grid grid-cols-2 gap-3">
-                                        <ShimmerSkeleton className="h-20 rounded-2xl" />
-                                        <ShimmerSkeleton className="h-20 rounded-2xl" />
-                                        <ShimmerSkeleton className="h-20 rounded-2xl" />
-                                        <ShimmerSkeleton className="h-20 rounded-2xl" />
-                                    </div>
+                                    <DashboardLoadingStage isDark={isDark} />
                                 ) : (
                                     <DashboardMetricsCards
                                         totalDealValue={brandDeals?.reduce((sum: number, deal: any) => sum + (deal.deal_amount || 0), 0) || 0}

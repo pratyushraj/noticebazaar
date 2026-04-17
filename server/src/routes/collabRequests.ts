@@ -1732,14 +1732,12 @@ router.post('/:username/submit', async (req: Request, res: Response) => {
       });
     }
 
-    if (isBarterLikeCollab(collabTypeForDb)) {
-      const img = normalizeImageUrl(barter_product_image_url);
-      if (!img) {
-        return res.status(400).json({
-          success: false,
-          error: 'Product image is required for barter/hybrid offers',
-        });
-      }
+    const normalizedProductImage = normalizeImageUrl(barter_product_image_url);
+    if (!normalizedProductImage) {
+      return res.status(400).json({
+        success: false,
+        error: 'Product image is required',
+      });
     }
 
     // Get creator ID by username or instagram_handle
@@ -2031,11 +2029,9 @@ router.post('/:username/submit', async (req: Request, res: Response) => {
       insertData.exact_budget = basePayload.exact_budget ?? null;
     }
 
-    if (isBarterLikeCollab(basePayload.collab_type)) {
-      insertData.barter_description = basePayload.barter_description || null;
-      insertData.barter_value = basePayload.barter_value ?? null;
-      insertData.barter_product_image_url = basePayload.barter_product_image_url ?? null;
-    }
+    insertData.barter_description = basePayload.barter_description || null;
+    insertData.barter_value = basePayload.barter_value ?? null;
+    insertData.barter_product_image_url = normalizedProductImage;
 
     const requestOptionalFields = new Set([
       'shipping_required',

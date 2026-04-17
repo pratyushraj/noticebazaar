@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { useParams, useNavigate, useSearchParams, useLocation } from 'react-router-dom';
+import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -172,11 +173,15 @@ const decodeHtmlEntities = (value: string) =>
       return Number.isFinite(codePoint) ? String.fromCodePoint(codePoint) : _;
     });
 
-const toTitleCaseName = (value: string) =>
+const sanitizeDisplayName = (value: string) =>
   decodeHtmlEntities(String(value || ''))
     .normalize('NFKD')
     .replace(/[\u0300-\u036f]/g, '')
-    .trim()
+    .replace(/\s+/g, ' ')
+    .trim();
+
+const toTitleCaseName = (value: string) =>
+  sanitizeDisplayName(value)
     .split(/\s+/)
     .filter(Boolean)
     .map((part) => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
@@ -506,6 +511,22 @@ const CollabLinkLanding = () => {
   const [barterProductName, setBarterProductName] = useState('');
   const [barterProductCategory, setBarterProductCategory] = useState('');
   const [campaignCategory, setCampaignCategory] = useState('General');
+  const barterProductImageInputRef = useRef<HTMLInputElement | null>(null);
+  const openBarterImagePicker = () => {
+    console.log('[CollabLinkLanding] Opening barter image picker...');
+    const input = barterProductImageInputRef.current;
+    if (!input) {
+      console.error('[CollabLinkLanding] Image input ref is missing!');
+      toast.error('Image upload is currently unavailable. Please refresh.');
+      return;
+    }
+    if (barterImageUploading) {
+      console.warn('[CollabLinkLanding] Upload already in progress.');
+      return;
+    }
+
+    input.click();
+  };
 
   // If the visitor is already logged in as a brand, prefill the form from their profile.
   // We only fill blanks so we never overwrite what the user already typed.
@@ -710,14 +731,14 @@ const CollabLinkLanding = () => {
       });
     }
 
-    const nextName = latestName || creator.name;
-    const nextUsername = latestHandle || creator.username;
+    const nextName = sanitizeDisplayName(latestName || creator.name);
+    const nextUsername = sanitizeDisplayName(latestHandle || creator.username);
     const nextFollowers = latestFollowers || creator.followers || null;
     const nextProfilePhoto = latestProfilePhoto;
 
     const instagramHandle = nextPlatforms.find((platform) => platform.name.toLowerCase() === 'instagram')?.handle || '';
-    const isSameName = nextName === creator.name;
-    const isSameUsername = nextUsername === creator.username;
+    const isSameName = nextName === sanitizeDisplayName(creator.name);
+    const isSameUsername = nextUsername === sanitizeDisplayName(creator.username);
     const isSameInstagramHandle = instagramHandle === (creator.platforms.find((platform) => platform.name.toLowerCase() === 'instagram')?.handle || '');
     const isSameFollowers = nextFollowers === creator.followers;
     const isSamePhoto = nextProfilePhoto === creator.profile_photo;
@@ -749,8 +770,9 @@ const CollabLinkLanding = () => {
 
   const isStep1Ready = Boolean(collabType && deliverables.length > 0);
   const isValidBrandEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(brandEmail);
-  const needsProductImage = collabType === 'barter' || isHybridCollab(collabType);
-  const isProductImageReady = !needsProductImage || Boolean(String(barterProductImageUrl || '').trim());
+  const needsProductImage = isBarterLikeCollab(collabType);
+  const isProductImageRequired = isBarterLikeCollab(collabType);
+  const isProductImageReady = isProductImageRequired ? Boolean(String(barterProductImageUrl || '').trim()) : true;
   const isStep2Ready = Boolean(brandEmail.trim() && isValidBrandEmail && isProductImageReady);
 
   const completionChecks = useMemo(() => ([
@@ -1003,6 +1025,8 @@ const CollabLinkLanding = () => {
     const futureDate = new Date();
     futureDate.setDate(futureDate.getDate() + 14);
     setDeadline(futureDate.toISOString().split('T')[0]);
+    // Set a placeholder image for demo purposes so the flow can be completed
+    setBarterProductImageUrl('https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=800&auto=format&fit=crop&q=60');
     setErrors({});
     toast.success('Demo data filled!');
   };
@@ -1023,7 +1047,17 @@ const CollabLinkLanding = () => {
   // Upload barter product image and store public URL
   const handleBarterImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file || !username) return;
+    console.log('[CollabLinkLanding] Image file selected:', file?.name, file?.type, file?.size);
+    if (file) {
+      toast.info(`Uploading ${file.name}...`);
+    } else {
+      console.warn('[CollabLinkLanding] No file selected or cancelled.');
+      return;
+    }
+    if (!username) {
+      console.warn('[CollabLinkLanding] Missing username');
+      return;
+    }
     const allowed = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
     if (!allowed.includes(file.type)) {
       toast.error('Please upload a JPEG, PNG, WebP, or GIF image.');
@@ -1200,7 +1234,11 @@ const CollabLinkLanding = () => {
 
         if (data.success && data.creator) {
           console.log('[CollabLinkLanding] Creator loaded successfully:', data.creator);
-          setCreator(data.creator);
+          setCreator({
+            ...data.creator,
+            name: sanitizeDisplayName(data.creator.name || ''),
+            username: sanitizeDisplayName(data.creator.username || ''),
+          });
           trackEvent('collab_link_viewed', { username: normalizedUsername });
           // Track page view event (anonymous, no auth required)
           try {
@@ -1409,7 +1447,7 @@ const CollabLinkLanding = () => {
           return;
         }
         if (needsProductImage && !String(barterProductImageUrl || '').trim()) {
-          toast.error('Please upload a product image');
+          void openBarterImagePicker();
           return;
         }
         toast.error('Please complete the required fields');
@@ -1454,7 +1492,7 @@ const CollabLinkLanding = () => {
       }
     }
 
-    if ((collabType === 'barter' || isHybridCollab(collabType)) && !String(barterProductImageUrl || '').trim()) {
+    if (!String(barterProductImageUrl || '').trim()) {
       newErrors.barterProductImageUrl = 'Please upload a product image';
     }
 
@@ -3478,18 +3516,20 @@ const CollabLinkLanding = () => {
                                   <span className="text-[11px] font-bold text-slate-400">Required</span>
                                 )}
                               </div>
+                              <p className="mb-3 text-[12px] font-medium text-slate-500">
+                                Upload one clear product image before you send the offer.
+                              </p>
 
                               {barterProductImageUrl ? (
-                                <div className="flex items-center gap-3">
-                                  <div className="w-16 h-16 rounded-2xl overflow-hidden border border-slate-200 bg-white">
-                                    <img src={barterProductImageUrl} alt="Product" className="w-full h-full object-cover" />
-                                  </div>
-                                  <div className="flex-1 min-w-0">
-                                    <p className="text-[12px] font-semibold text-slate-600 truncate">Product image added</p>
-                                    <div className="mt-2 flex items-center gap-2">
-                                      <label
-                                        className="inline-flex items-center justify-center h-10 px-4 rounded-2xl bg-white border border-slate-200 text-slate-700 text-[12px] font-black cursor-pointer active:scale-[0.99] transition-all"
-                                      >
+                                <div className="space-y-3">
+                                  <div className="relative group aspect-video rounded-2xl overflow-hidden bg-slate-100 border border-slate-200">
+                                    <img 
+                                      src={barterProductImageUrl} 
+                                      alt="Product" 
+                                      className="h-full w-full object-cover transition-transform group-hover:scale-105"
+                                    />
+                                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                                      <label className="flex items-center justify-center h-9 px-4 rounded-full bg-white text-slate-900 text-xs font-bold cursor-pointer hover:bg-slate-50 transition-colors">
                                         Change
                                         <input
                                           type="file"
@@ -3499,12 +3539,12 @@ const CollabLinkLanding = () => {
                                           disabled={barterImageUploading}
                                         />
                                       </label>
-                                      <button
+                                      <button 
                                         type="button"
-                                        onClick={() => { setBarterProductImageUrl(''); }}
-                                        className="inline-flex items-center justify-center h-10 px-4 rounded-2xl bg-white border border-slate-200 text-slate-500 text-[12px] font-black active:scale-[0.99] transition-all"
+                                        onClick={() => setBarterProductImageUrl('')}
+                                        className="h-9 w-9 rounded-full bg-white/20 backdrop-blur-md text-white flex items-center justify-center hover:bg-white/30 transition-colors"
                                       >
-                                        Remove
+                                        <X className="h-4 w-4" />
                                       </button>
                                     </div>
                                   </div>
@@ -3512,12 +3552,12 @@ const CollabLinkLanding = () => {
                               ) : (
                                 <label
                                   className={cn(
-                                    "flex items-center justify-center h-12 rounded-2xl bg-white border text-[12px] font-black cursor-pointer active:scale-[0.99] transition-all",
+                                    "flex items-center justify-center h-12 w-full rounded-2xl bg-white border text-[12px] font-black cursor-pointer active:scale-[0.99] transition-all",
                                     errors.barterProductImageUrl ? "border-destructive text-destructive" : "border-slate-200 text-slate-700",
                                     barterImageUploading && "opacity-60 cursor-not-allowed"
                                   )}
                                 >
-                                  {barterImageUploading ? 'Uploading...' : 'Upload product image'}
+                                  {barterImageUploading ? 'Uploading...' : 'Add Product Image'}
                                   <input
                                     type="file"
                                     accept="image/*"
@@ -3616,8 +3656,13 @@ const CollabLinkLanding = () => {
                         )}
                           <Button
                             onClick={handleSubmit}
-                            disabled={submitting || !isStep2Ready}
-                            className="h-14 w-full rounded-2xl bg-[#0FA47F] border-2 border-[#0FA47F] text-white hover:bg-emerald-600 hover:border-emerald-600 font-black text-base shadow-lg active:scale-[0.98] transition-all"
+                            disabled={submitting}
+                            className={cn(
+                              "h-14 w-full rounded-2xl font-black text-base shadow-lg active:scale-[0.98] transition-all border-2",
+                              isStep2Ready 
+                                ? "bg-[#0FA47F] border-[#0FA47F] text-white hover:bg-emerald-600 hover:border-emerald-600" 
+                                : "bg-slate-200 border-slate-200 text-slate-500 hover:bg-slate-300 hover:border-slate-300"
+                            )}
                           >
                             <span className="flex items-center justify-center gap-2">
                               {submitting ? (
@@ -3628,7 +3673,7 @@ const CollabLinkLanding = () => {
                               ) : (
                                 <>
                                   <Send className="h-5 w-5" />
-                                  Send Offer
+                                  {isStep2Ready ? 'Send Offer' : 'Add product image to continue'}
                                 </>
                               )}
                             </span>
@@ -3689,7 +3734,7 @@ const CollabLinkLanding = () => {
                       <div className="flex flex-col gap-3 w-full">
                         <Button
                           onClick={handleSubmit}
-                          disabled={submitting || !isStep2Ready}
+                          disabled={submitting}
                           className="h-14 w-full min-w-0 rounded-full bg-[#0FA47F] border-2 border-[#0FA47F] text-white hover:bg-emerald-600 hover:border-emerald-600 font-black text-xs uppercase tracking-widest transition-all shadow-[0_14px_34px_rgba(15,164,127,0.22)] active:scale-95 group relative overflow-hidden"
                         >
                           <span className="flex items-center justify-center gap-2">
@@ -3701,7 +3746,7 @@ const CollabLinkLanding = () => {
                             ) : (
                               <>
                                 <Send className="h-4 w-4" />
-                                Send Offer
+                                {isStep2Ready ? 'Send Offer' : 'Add product image'}
                                 <ArrowRight className="h-4 w-4 ml-1" />
                               </>
                             )}
@@ -3840,7 +3885,7 @@ const CollabLinkLanding = () => {
 		                    }
 		                    : handleStickySubmit
 		                }
-	                disabled={submitting || (showCustomFlow && currentStep === 2 && hasStartedOffer && !isStep2Ready)}
+		                disabled={submitting || (showCustomFlow && currentStep === 2 && hasStartedOffer && !brandEmail.trim())}
 	                className={[
 	                  'w-full rounded-2xl font-black active:scale-[0.98] transition-all duration-300',
 	                  !showCustomFlow

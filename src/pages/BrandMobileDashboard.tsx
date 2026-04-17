@@ -2297,47 +2297,53 @@ const BrandMobileDashboard = ({
             <div className="p-5 relative overflow-hidden">
               <div className="absolute inset-0 pointer-events-none bg-background" />
               <div className="relative">
-	                <div className="flex items-center justify-between gap-3 mb-4">
-	                  <span className={cn('inline-flex items-center px-3 py-1.5 rounded-full border text-[11px] font-black uppercase tracking-widest', dealUi.tone)}>
-	                    {dealUi.label}
-	                  </span>
-	                  <span className={cn('inline-flex px-3 py-1.5 rounded-full border text-[11px] font-black uppercase tracking-widest', offer?.collab_type === 'barter' ? (isDark ? 'bg-warning/10 text-warning border-warning/20' : 'bg-warning text-warning border-warning') : (isDark ? 'bg-primary/10 text-primary border-primary/20' : 'bg-primary text-primary border-primary'))}>
-	                    {offer?.collab_type === 'barter' ? 'BARTER' : 'PAID CAMPAIGN'}
-	                  </span>
-	                </div>
-	
-	                {showSignatureDebug && (
-	                  <div className={cn('text-[11px] font-semibold mb-3', secondaryTextColor)}>
-	                    {(() => {
-	                      const hints = collectSignatureHints(offer);
-	                      const status = effectiveDealStatus(offer);
-	                      const raw = String(offer?.status || offer?.raw?.status || '—');
-	                      const esign = String(offer?.esign_status || offer?.raw?.esign_status || offer?.contract_status || offer?.raw?.contract_status || '');
-	                      return (
-	                        <span>
-	                          debugSig: status={status} raw={raw} esign={esign || '—'} brandKeys=[{hints.brand.join(',') || '—'}] creatorKeys=[{hints.creator.join(',') || '—'}]
-	                        </span>
-	                      );
-	                    })()}
-	                  </div>
-	                )}
+                <div className="flex items-center justify-between gap-3 mb-4">
+                  <span className={cn('inline-flex items-center px-3 py-1.5 rounded-full border text-[11px] font-black uppercase tracking-widest', dealUi.tone)}>
+                    {dealUi.label}
+                  </span>
+                  <span className={cn('inline-flex px-3 py-1.5 rounded-full border text-[11px] font-black uppercase tracking-widest', offer?.collab_type === 'barter' ? (isDark ? 'bg-warning/10 text-warning border-warning/20' : 'bg-warning text-warning border-warning') : (isDark ? 'bg-primary/10 text-primary border-primary/20' : 'bg-primary text-primary border-primary'))}>
+                    {offer?.collab_type === 'barter' ? 'BARTER' : 'PAID CAMPAIGN'}
+                  </span>
+                </div>
 
-	                <p className={cn('text-[42px] font-black leading-none tracking-tight', textColor)}>
-	                  {amount > 0 ? formatCompactINR(amount) : '—'}
-	                  <span className={cn('text-[18px] font-bold ml-2 opacity-60', textColor)}>Offer</span>
-                </p>
-                <p className={cn('text-[14px] font-bold mt-3', isDark ? 'text-muted-foreground' : 'text-muted-foreground')}>
-                  {String(deliverables).replaceAll(',', ' •')}
-                </p>
-
-                {typeof offer?.campaign_description === 'string' && offer.campaign_description.trim() && (
-                  <div className={cn('mt-4 rounded-2xl border px-4 py-3', isDark ? 'bg-card border-border' : 'bg-secondary/80 border-border')}>
-                    <p className={cn('text-[10px] font-black uppercase tracking-[0.16em] opacity-50 mb-1', textColor)}>Campaign brief</p>
-                    <p className={cn('text-[12px] font-semibold leading-relaxed whitespace-pre-wrap', isDark ? 'text-foreground/80' : 'text-muted-foreground')}>
-                      {offer.campaign_description.trim()}
+                <div className="flex items-end justify-between gap-3">
+                  <div>
+                    <p className={cn('text-[44px] font-black leading-none tracking-tight', textColor)}>
+                      {amount > 0 ? formatCompactINR(amount) : '—'}
+                    </p>
+                    <p className={cn('text-[15px] font-semibold mt-2', secondaryTextColor)}>
+                      Offer
                     </p>
                   </div>
+                  <div className={cn('pb-1 text-[14px] font-semibold', secondaryTextColor)}>
+                    {String(deliverables).replaceAll(',', ' •')}
+                  </div>
+                </div>
+
+                {showSignatureDebug && (
+                  <div className={cn('text-[11px] font-semibold mt-3', secondaryTextColor)}>
+                    {(() => {
+                      const hints = collectSignatureHints(offer);
+                      const status = effectiveDealStatus(offer);
+                      const raw = String(offer?.status || offer?.raw?.status || '—');
+                      const esign = String(offer?.esign_status || offer?.raw?.esign_status || offer?.contract_status || offer?.raw?.contract_status || '');
+                      return (
+                        <span>
+                          debugSig: status={status} raw={raw} esign={esign || '—'} brandKeys=[{hints.brand.join(',') || '—'}] creatorKeys=[{hints.creator.join(',') || '—'}]
+                        </span>
+                      );
+                    })()}
+                  </div>
                 )}
+
+                <div className={cn('mt-5 rounded-2xl border px-4 py-3', isDark ? 'bg-card border-border' : 'bg-secondary/80 border-border')}>
+                  <p className={cn('text-[10px] font-black uppercase tracking-[0.16em] opacity-50 mb-1', textColor)}>Campaign brief</p>
+                  <p className={cn('text-[12px] font-semibold leading-relaxed whitespace-pre-wrap', isDark ? 'text-foreground/80' : 'text-muted-foreground')}>
+                    {typeof offer?.campaign_description === 'string' && offer.campaign_description.trim()
+                      ? offer.campaign_description.trim()
+                      : 'Create an engaging reel showcasing the brand message and key product benefits.'}
+                  </p>
+                </div>
 
                 <div className={cn('flex items-center gap-3 w-full border-t pt-4 mt-5', isDark ? 'border-border' : 'border-border')}>
                   <Avatar className={cn('w-11 h-11 border shadow-sm', isDark ? 'border-border' : 'border-border')}>
