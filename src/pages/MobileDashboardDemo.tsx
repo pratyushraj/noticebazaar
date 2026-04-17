@@ -3463,7 +3463,8 @@ const MobileDashboardDemo = ({
                                 </>
                             )}
 
-                            {/* Brand Offers Section */}
+                            {/* Brand Offers Section (removed from dashboard; use Deals tab instead) */}
+                            {false && (
                             <div className="px-5 mb-8">
                                 <div className="flex items-center justify-between mb-5">
                                     <h2 className={cn('text-[16px] font-medium tracking-tight', textColor)}>Deals</h2>
@@ -3697,6 +3698,7 @@ const MobileDashboardDemo = ({
                                     })()}
                                 </AnimatePresence>
                             </div>
+                            )}
                         </>
                     )}
 
