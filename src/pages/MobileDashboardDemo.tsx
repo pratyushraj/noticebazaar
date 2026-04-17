@@ -5180,107 +5180,283 @@ const MobileDashboardDemo = ({
 
                                     <div className="flex-1 overflow-y-auto px-5 pt-5 pb-40 relative z-10">
 
-                                        {/* ── COMPACT BRAND HERO ── */}
-                                        <div className={cn("rounded-3xl border p-5 mb-6 flex flex-col items-center text-center", cardBgColor, borderColor)}>
-                                            <div className="flex flex-col items-center gap-2 mb-5 w-full">
-                                                {/* Status Row */}
-                                                <div className={cn("flex items-center px-3 py-1.5 rounded-full border shadow-sm mb-1",
-                                                    selectedType === 'deal'
-                                                        ? (isDark ? "bg-primary/10 border-primary/20" : "bg-primary border-primary")
-                                                        : (isDark ? "bg-warning/10 border-warning/20" : "bg-warning border-warning")
-                                                )}>
-                                                    <span className={cn("text-[11px] font-black tracking-widest uppercase flex items-center gap-1.5", selectedType === 'deal' ? (isDark ? 'text-primary' : 'text-primary') : (isDark ? 'text-warning' : 'text-warning'))}>
-                                                        {selectedType === 'deal' ? '🟢 Active Collaboration' : <><AlertTriangle className="w-3.5 h-3.5" strokeWidth={2.5} /> Awaiting Your Decision</>}
-                                                    </span>
+                                        {/* ── OFFER BRIEF HERO ── */}
+                                        {selectedType === 'offer' ? (
+                                            <div className="mb-6">
+                                                <div className="flex flex-col items-center text-center">
+                                                    <div className={cn(
+                                                        "inline-flex items-center gap-2 px-6 py-2.5 rounded-full text-[12px] font-black uppercase tracking-widest border",
+                                                        isDark ? "bg-amber-500/10 text-amber-300 border-amber-400/20" : "bg-amber-50 text-amber-700 border-amber-100"
+                                                    )}>
+                                                        <span aria-hidden>⏳</span>
+                                                        Awaiting your decision
+                                                    </div>
+                                                    <div className={cn(
+                                                        "mt-3 inline-flex items-center px-6 py-2.5 rounded-full text-[12px] font-black uppercase tracking-widest border",
+                                                        isDark ? "bg-emerald-500/12 text-emerald-300 border-emerald-400/20" : "bg-emerald-50 text-emerald-700 border-emerald-100"
+                                                    )}>
+                                                        {String(selectedItem?.collab_type || '').toLowerCase().includes('barter') ? 'FREE PRODUCTS' : 'PAID CAMPAIGN'}
+                                                    </div>
                                                 </div>
 
-                                                {/* Campaign Type Tag */}
-                                                {selectedItem.collab_type === 'barter' ? (
-                                                    <span className="text-[10px] font-black uppercase tracking-widest text-warning bg-warning/10 px-2 py-0.5 rounded-md">Free products Campaign</span>
-                                                ) : (
-                                                    <span className="text-[10px] font-black uppercase tracking-widest text-primary bg-primary/10 px-2 py-0.5 rounded-md">Paid Campaign</span>
-                                                )}
+                                                <div className={cn("mt-6 rounded-[26px] border p-4", isDark ? "bg-[#0B1220]/60 border-border" : "bg-white border-[#E5E7EB] shadow-sm")}>
+                                                    <div className="flex items-start gap-4">
+                                                        <div className={cn("w-[160px] h-[160px] rounded-[22px] overflow-hidden border shrink-0", isDark ? "border-border bg-card" : "border-[#E5E7EB] bg-[#F3F4F6]")}>
+                                                            {(() => {
+                                                                const candidates = [
+                                                                    selectedItem?.barter_product_image_url,
+                                                                    selectedItem?.barter_product_image,
+                                                                    selectedItem?.product_image_url,
+                                                                    selectedItem?.raw?.barter_product_image_url,
+                                                                    selectedItem?.raw?.product_image_url,
+                                                                ];
+                                                                const raw = candidates.map((x: any) => String(x || '').trim()).find((x) => x && x !== 'null' && x !== 'undefined') || '';
+                                                                const src = raw || 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&q=80&w=500';
+                                                                return <img src={src} alt="" className="w-full h-full object-cover" loading="lazy" />;
+                                                            })()}
+                                                        </div>
 
-                                                {/* Hero Budget */}
-                                                <p className={cn("text-[38px] font-black leading-none my-2 font-outfit tracking-tight", isDark ? "text-foreground" : "text-muted-foreground")}>
-                                                    {renderBudgetValue(selectedItem)} <span className={cn("text-[20px] font-bold opacity-60 ml-1", textColor)}>Offer</span>
-                                                </p>
+                                                        <div className="flex-1 min-w-0">
+                                                            <div className="flex items-end justify-between gap-3">
+                                                                <p className={cn("text-[40px] font-black tracking-tight leading-none", textColor)}>
+                                                                    {renderBudgetValue(selectedItem)}
+                                                                </p>
+                                                                <p className={cn("text-[14px] font-bold pb-1", textColor)}>
+                                                                    {(() => {
+                                                                        const raw = selectedItem?.deliverables || selectedItem?.raw?.deliverables;
+                                                                        try {
+                                                                            const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;
+                                                                            if (Array.isArray(parsed) && parsed.length > 0) {
+                                                                                const first = parsed[0];
+                                                                                if (typeof first === 'string') return first.includes('Reel') ? 'Reel' : first;
+                                                                                const ct = String(first?.contentType || first?.type || '').toLowerCase();
+                                                                                if (ct.includes('reel')) return 'Reel';
+                                                                                if (ct.includes('story')) return 'Story';
+                                                                                if (ct.includes('post')) return 'Post';
+                                                                            }
+                                                                        } catch { }
+                                                                        return 'Reel';
+                                                                    })()}
+                                                                </p>
+                                                            </div>
 
-                                                {/* Deliverables */}
-                                                <div className={cn("flex items-center justify-center flex-wrap gap-2 text-[14px] font-bold mt-1", isDark ? "text-muted-foreground" : "text-muted-foreground")}>
-                                                    {(() => {
-                                                        const raw = selectedItem.deliverables || selectedItem.raw?.deliverables;
-                                                        let items: string[] = ['🎬 1 Reel', '📱 2 Stories'];
-                                                        try {
-                                                            const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;
-                                                            if (Array.isArray(parsed) && parsed.length > 0) {
-                                                                items = parsed.map((d: any) => {
-                                                                    if (typeof d === 'string') return d;
-                                                                    const ct = (d.contentType || d.type || '').toLowerCase();
-                                                                    const count = d.count || d.quantity || 1;
-                                                                    let emoji = '📋', label = 'Content';
-                                                                    if (ct.includes('reel')) { emoji = '🎬'; label = 'Reel'; }
-                                                                    else if (ct.includes('story')) { emoji = '📱'; label = 'Story'; }
-                                                                    else if (ct.includes('post')) { emoji = '🖼'; label = 'Post'; }
-                                                                    return `${emoji} ${count} ${label}`;
-                                                                });
+                                                            <div className="mt-5 flex items-center gap-2">
+                                                                <ShieldCheck className={cn("w-4 h-4", isDark ? "text-emerald-300" : "text-emerald-600")} />
+                                                                <p className={cn("text-[13px] font-bold", isDark ? "text-emerald-300" : "text-emerald-700")}>
+                                                                    Payment secured after approval
+                                                                </p>
+                                                            </div>
+
+                                                            <div className={cn(
+                                                                "mt-5 rounded-2xl border px-4 py-3",
+                                                                isDark ? "bg-rose-500/10 border-rose-500/15" : "bg-rose-50 border-rose-100"
+                                                            )}>
+                                                                {(() => {
+                                                                    const deadlineRaw = selectedItem?.deadline || selectedItem?.due_date || selectedItem?.raw?.deadline || selectedItem?.raw?.due_date || null;
+                                                                    const deadlineDt = deadlineRaw ? new Date(deadlineRaw) : null;
+                                                                    const valid = deadlineDt && !Number.isNaN(deadlineDt.getTime());
+                                                                    const now = new Date();
+                                                                    const daysLeft = valid ? Math.max(0, Math.ceil((deadlineDt!.getTime() - now.getTime()) / 86400000)) : null;
+                                                                    const dayLabel = daysLeft === null ? '—' : `${daysLeft} day${daysLeft === 1 ? '' : 's'} left`;
+                                                                    return (
+                                                                        <div>
+                                                                            <div className={cn("flex items-center justify-center gap-2 text-[12px] font-black", isDark ? "text-rose-300" : "text-rose-600")}>
+                                                                                <Clock className="w-4 h-4" />
+                                                                                {dayLabel}
+                                                                            </div>
+                                                                            {valid && (
+                                                                                <p className={cn("mt-1 text-center text-[11px] font-semibold", isDark ? "text-foreground/60" : "text-slate-600")}>
+                                                                                    Deadline: {deadlineDt!.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })} (11:59 PM)
+                                                                                </p>
+                                                                            )}
+                                                                        </div>
+                                                                    );
+                                                                })()}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <div className="mt-4 space-y-3">
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => {
+                                                            if (processingDeal) return;
+                                                            if (selectedItem?.isDemo) {
+                                                                toast.success("This is a demo offer! Complete your profile to get real brand deals.");
+                                                                triggerHaptic(HapticPatterns.success);
+                                                                return;
                                                             }
-                                                        } catch (_) { }
-                                                        return items.map((d, i) => (
-                                                            <React.Fragment key={i}>
-                                                                <span>{d}</span>
-                                                                {i < items.length - 1 && <span className="opacity-40 px-1">•</span>}
-                                                            </React.Fragment>
-                                                        ));
+                                                            handleAccept(selectedItem);
+                                                        }}
+                                                        className="w-full h-[66px] rounded-2xl px-5 flex items-center justify-between bg-gradient-to-b from-[#1D4ED8] to-[#0B5BD3] text-white border border-[#1D4ED8] shadow-[0_16px_36px_rgba(37,99,235,0.30)] active:scale-[0.99] transition-all"
+                                                    >
+                                                        <div className="text-left">
+                                                            <p className="text-[16px] font-black">Accept Deal {renderBudgetValue(selectedItem)}</p>
+                                                            <p className="text-[12px] font-semibold opacity-90">Contract generated instantly</p>
+                                                        </div>
+                                                        <ChevronRight className="w-6 h-6 opacity-95" />
+                                                    </button>
+
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => {
+                                                            triggerHaptic();
+                                                            toast.message('Ask Brand Question', { description: 'Open messages or contact the brand from the offer thread.' });
+                                                        }}
+                                                        className={cn(
+                                                            "w-full h-14 rounded-2xl px-5 flex items-center justify-between border active:scale-[0.99] transition-all",
+                                                            isDark ? "bg-card border-border text-foreground" : "bg-white border-[#E5E7EB] text-slate-900"
+                                                        )}
+                                                    >
+                                                        <span className="flex items-center gap-3">
+                                                            <MessageCircle className={cn("w-5 h-5", isDark ? "text-foreground/80" : "text-slate-700")} />
+                                                            <span className="font-black text-[14px]">Ask Brand Question</span>
+                                                        </span>
+                                                        <ChevronRight className={cn("w-5 h-5", isDark ? "text-foreground/60" : "text-slate-500")} />
+                                                    </button>
+
+                                                    <div className="grid grid-cols-2 gap-3">
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => {
+                                                                triggerHaptic();
+                                                                toast.message('Counter Offer', { description: 'Open offer details to counter.' });
+                                                            }}
+                                                            className={cn(
+                                                                "h-14 rounded-2xl border font-black text-[14px] active:scale-[0.99] transition-all flex items-center justify-center gap-2",
+                                                                isDark ? "bg-card border-border text-info" : "bg-white border-[#E5E7EB] text-info"
+                                                            )}
+                                                        >
+                                                            <Edit3 className="w-4 h-4" />
+                                                            Counter Offer
+                                                        </button>
+                                                        <button
+                                                            type="button"
+                                                            onClick={async () => {
+                                                                triggerHaptic(HapticPatterns.warning);
+                                                                if (selectedItem?.isDemo) {
+                                                                    toast.message('This is a demo offer', { description: 'Decline is disabled for demo.' });
+                                                                    return;
+                                                                }
+                                                                if (onDeclineRequest) {
+                                                                    try { await onDeclineRequest(selectedItem); } catch { }
+                                                                }
+                                                                closeItemDetail();
+                                                            }}
+                                                            className={cn(
+                                                                "h-14 rounded-2xl border font-black text-[14px] active:scale-[0.99] transition-all flex items-center justify-center gap-2",
+                                                                isDark ? "bg-card border-destructive/35 text-destructive" : "bg-white border-destructive/25 text-destructive"
+                                                            )}
+                                                        >
+                                                            <XCircle className="w-4 h-4" />
+                                                            Decline Offer
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            <div className={cn("rounded-3xl border p-5 mb-6 flex flex-col items-center text-center", cardBgColor, borderColor)}>
+                                                <div className="flex flex-col items-center gap-2 mb-5 w-full">
+                                                    {/* Status Row */}
+                                                    <div className={cn("flex items-center px-3 py-1.5 rounded-full border shadow-sm mb-1",
+                                                        selectedType === 'deal'
+                                                            ? (isDark ? "bg-primary/10 border-primary/20" : "bg-primary border-primary")
+                                                            : (isDark ? "bg-warning/10 border-warning/20" : "bg-warning border-warning")
+                                                    )}>
+                                                        <span className={cn("text-[11px] font-black tracking-widest uppercase flex items-center gap-1.5", selectedType === 'deal' ? (isDark ? 'text-primary' : 'text-primary') : (isDark ? 'text-warning' : 'text-warning'))}>
+                                                            {selectedType === 'deal' ? '🟢 Active Collaboration' : <><AlertTriangle className="w-3.5 h-3.5" strokeWidth={2.5} /> Awaiting Your Decision</>}
+                                                        </span>
+                                                    </div>
+
+                                                    {/* Campaign Type Tag */}
+                                                    {selectedItem.collab_type === 'barter' ? (
+                                                        <span className="text-[10px] font-black uppercase tracking-widest text-warning bg-warning/10 px-2 py-0.5 rounded-md">Free products Campaign</span>
+                                                    ) : (
+                                                        <span className="text-[10px] font-black uppercase tracking-widest text-primary bg-primary/10 px-2 py-0.5 rounded-md">Paid Campaign</span>
+                                                    )}
+
+                                                    {/* Hero Budget */}
+                                                    <p className={cn("text-[38px] font-black leading-none my-2 font-outfit tracking-tight", isDark ? "text-foreground" : "text-muted-foreground")}>
+                                                        {renderBudgetValue(selectedItem)} <span className={cn("text-[20px] font-bold opacity-60 ml-1", textColor)}>Offer</span>
+                                                    </p>
+
+                                                    {/* Deliverables */}
+                                                    <div className={cn("flex items-center justify-center flex-wrap gap-2 text-[14px] font-bold mt-1", isDark ? "text-muted-foreground" : "text-muted-foreground")}>
+                                                        {(() => {
+                                                            const raw = selectedItem.deliverables || selectedItem.raw?.deliverables;
+                                                            let items: string[] = ['🎬 1 Reel', '📱 2 Stories'];
+                                                            try {
+                                                                const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;
+                                                                if (Array.isArray(parsed) && parsed.length > 0) {
+                                                                    items = parsed.map((d: any) => {
+                                                                        if (typeof d === 'string') return d;
+                                                                        const ct = (d.contentType || d.type || '').toLowerCase();
+                                                                        const count = d.count || d.quantity || 1;
+                                                                        let emoji = '📋', label = 'Content';
+                                                                        if (ct.includes('reel')) { emoji = '🎬'; label = 'Reel'; }
+                                                                        else if (ct.includes('story')) { emoji = '📱'; label = 'Story'; }
+                                                                        else if (ct.includes('post')) { emoji = '🖼'; label = 'Post'; }
+                                                                        return `${emoji} ${count} ${label}`;
+                                                                    });
+                                                                }
+                                                            } catch (_) { }
+                                                            return items.map((d, i) => (
+                                                                <React.Fragment key={i}>
+                                                                    <span>{d}</span>
+                                                                    {i < items.length - 1 && <span className="opacity-40 px-1">•</span>}
+                                                                </React.Fragment>
+                                                            ));
+                                                        })()}
+                                                    </div>
+
+                                                    {/* Deadline Top */}
+                                                    {selectedType === 'offer' && (() => {
+                                                        const rawDeadline = selectedItem.deadline || selectedItem.raw?.deadline;
+                                                        const deadline = rawDeadline ? new Date(rawDeadline) : null;
+                                                        if (!deadline || Number.isNaN(deadline.getTime())) {
+                                                            return <p className={cn("text-[12px] font-semibold mt-2", secondaryTextColor)}>No Deadline Set</p>;
+                                                        }
+                                                        return (
+                                                            <div className="flex items-center justify-center gap-1.5 mt-2 bg-destructive/10 text-destructive px-3 py-1 rounded-full shadow-sm">
+                                                                <Clock className="w-3.5 h-3.5" />
+                                                                <span className="text-[11px] font-black uppercase tracking-wider">Deadline: {deadline.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+                                                            </div>
+                                                        );
                                                     })()}
                                                 </div>
 
-                                                {/* Deadline Top */}
-                                                {selectedType === 'offer' && (() => {
-                                                    const rawDeadline = selectedItem.deadline || selectedItem.raw?.deadline;
-                                                    const deadline = rawDeadline ? new Date(rawDeadline) : null;
-                                                    if (!deadline || Number.isNaN(deadline.getTime())) {
-                                                        return <p className={cn("text-[12px] font-semibold mt-2", secondaryTextColor)}>No Deadline Set</p>;
-                                                    }
-                                                    return (
-                                                        <div className="flex items-center justify-center gap-1.5 mt-2 bg-destructive/10 text-destructive px-3 py-1 rounded-full shadow-sm">
-                                                            <Clock className="w-3.5 h-3.5" />
-                                                            <span className="text-[11px] font-black uppercase tracking-wider">Deadline: {deadline.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
-                                                        </div>
-                                                    );
-                                                })()}
-                                            </div>
-
-                                            {/* Brand Logo & Name */}
-                                            <div className={cn("flex items-center justify-center gap-3 w-full border-t pt-5 mt-1", isDark ? "border-border" : "border-border")}>
-                                                <div className={cn("w-8 h-8 rounded-xl border overflow-hidden flex items-center justify-center shrink-0 shadow-sm",
-                                                    selectedItem.collab_type === 'barter'
-                                                        ? (isDark ? "bg-warning/5 border-warning/20" : "bg-warning border-warning")
-                                                        : (isDark ? "bg-info/10 border-info/20" : "bg-info border-info")
-                                                )}>
-                                                    {getBrandIcon(
-                                                        selectedItem.brand_logo ||
-                                                        selectedItem.brand_logo_url ||
-                                                        selectedItem.logo_url ||
-                                                        selectedItem.raw?.brand_logo ||
-                                                        selectedItem.raw?.brand_logo_url ||
-                                                        selectedItem.raw?.logo_url ||
-                                                        (selectedItem as any)?.brand?.logo_url,
-                                                        selectedItem.category,
-                                                        selectedItem.brand_name || selectedItem.raw?.brand_name
-                                                    )}
-                                                </div>
-                                                <div className="flex flex-col text-left">
-                                                    <div className="flex items-center gap-1.5">
-                                                        <p className={cn("text-[14px] font-bold tracking-tight", textColor)}>
-                                                            {selectedItem.brand_name || 'Brand Name'}
-                                                        </p>
-                                                        <ShieldCheck className="w-3.5 h-3.5 text-info" strokeWidth={2.5} />
+                                                {/* Brand Logo & Name */}
+                                                <div className={cn("flex items-center justify-center gap-3 w-full border-t pt-5 mt-1", isDark ? "border-border" : "border-border")}>
+                                                    <div className={cn("w-8 h-8 rounded-xl border overflow-hidden flex items-center justify-center shrink-0 shadow-sm",
+                                                        selectedItem.collab_type === 'barter'
+                                                            ? (isDark ? "bg-warning/5 border-warning/20" : "bg-warning border-warning")
+                                                            : (isDark ? "bg-info/10 border-info/20" : "bg-info border-info")
+                                                    )}>
+                                                        {getBrandIcon(
+                                                            selectedItem.brand_logo ||
+                                                            selectedItem.brand_logo_url ||
+                                                            selectedItem.logo_url ||
+                                                            selectedItem.raw?.brand_logo ||
+                                                            selectedItem.raw?.brand_logo_url ||
+                                                            selectedItem.raw?.logo_url ||
+                                                            (selectedItem as any)?.brand?.logo_url,
+                                                            selectedItem.category,
+                                                            selectedItem.brand_name || selectedItem.raw?.brand_name
+                                                        )}
                                                     </div>
-                                                    <p className={cn("text-[10px] font-semibold mt-0.5", secondaryTextColor, isDark ? "" : "text-muted-foreground")}>Verified Brand</p>
+                                                    <div className="flex flex-col text-left">
+                                                        <div className="flex items-center gap-1.5">
+                                                            <p className={cn("text-[14px] font-bold tracking-tight", textColor)}>
+                                                                {selectedItem.brand_name || 'Brand Name'}
+                                                            </p>
+                                                            <ShieldCheck className="w-3.5 h-3.5 text-info" strokeWidth={2.5} />
+                                                        </div>
+                                                        <p className={cn("text-[10px] font-semibold mt-0.5", secondaryTextColor, isDark ? "" : "text-muted-foreground")}>Verified Brand</p>
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </div>
+                                        )}
 
                                         {/* ── BRAND DETAILS (Progressive Disclosure) ── */}
                                         <motion.div
@@ -5396,11 +5572,12 @@ const MobileDashboardDemo = ({
                                             </div>
                                         )}
 
-                                        {/* ── DELIVERABLES ── */}
-                                        <div className="mb-6">
-                                            <h4 className={cn("text-[13px] font-black uppercase tracking-wider mb-3 opacity-50", textColor)}>Deliverables</h4>
-                                            <div className="flex flex-wrap gap-2.5">
-                                                {(() => {
+	                                        {/* ── DELIVERABLES ── */}
+	                                        {selectedType !== 'offer' && (
+	                                        <div className="mb-6">
+	                                            <h4 className={cn("text-[13px] font-black uppercase tracking-wider mb-3 opacity-50", textColor)}>Deliverables</h4>
+	                                            <div className="flex flex-wrap gap-2.5">
+	                                                {(() => {
                                                     const raw = selectedItem.deliverables || selectedItem.raw?.deliverables;
                                                     let items: string[] = ['🎬 1 Instagram Reel', '📱 2 Stories'];
                                                     try {
@@ -5426,15 +5603,16 @@ const MobileDashboardDemo = ({
                                                             {d}
                                                         </div>
                                                     ));
-                                                })()}
-                                            </div>
-                                        </div>
+	                                                })()}
+	                                            </div>
+	                                        </div>
+	                                        )}
 
-                                        {/* ── PRODUCT PREVIEW (IF BARTER) ── */}
-                                        {selectedRequiresShipping && (
-                                            <div className="mb-6">
-                                                <h4 className={cn("text-[13px] font-black uppercase tracking-wider mb-3 opacity-50", textColor)}>Product Included</h4>
-                                                <div className={cn("rounded-xl border p-3 flex items-center gap-4", isDark ? "bg-card border-border" : "bg-background border-border")}>
+	                                        {/* ── PRODUCT PREVIEW (IF BARTER) ── */}
+	                                        {selectedType !== 'offer' && selectedRequiresShipping && (
+	                                            <div className="mb-6">
+	                                                <h4 className={cn("text-[13px] font-black uppercase tracking-wider mb-3 opacity-50", textColor)}>Product Included</h4>
+	                                                <div className={cn("rounded-xl border p-3 flex items-center gap-4", isDark ? "bg-card border-border" : "bg-background border-border")}>
                                                     <div className="w-16 h-16 rounded-xl bg-warning shrink-0 overflow-hidden border border-black/5">
                                                         <img src={selectedItem.product_image || "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&q=80&w=300"} alt="Product" className="w-full h-full object-cover" />
                                                     </div>
@@ -5444,8 +5622,8 @@ const MobileDashboardDemo = ({
                                                         <p className={cn("text-[12px] font-semibold", secondaryTextColor)}>Ships within 3 days</p>
                                                     </div>
                                                 </div>
-                                            </div>
-                                        )}
+	                                            </div>
+	                                        )}
 
                                         {selectedType === 'deal' && selectedRequiresShipping && (
                                             <div className="mb-6">
@@ -5739,11 +5917,11 @@ const MobileDashboardDemo = ({
                                             </div>
                                         </div>
 
-                                        {/* ── EARNINGS BREAKDOWN (Offers) ── */}
-                                        {selectedType === 'offer' && (
-                                            <div className="mb-6">
-                                                <h4 className={cn("text-[13px] font-black uppercase tracking-wider mb-3 opacity-50", textColor)}>Earnings Breakdown</h4>
-                                                <div className={cn("rounded-2xl border p-4", isDark ? "bg-card border-border" : "bg-card border-border shadow-sm")}>
+	                                        {/* ── EARNINGS BREAKDOWN (Offers) ── */}
+	                                        {false && selectedType === 'offer' && (
+	                                            <div className="mb-6">
+	                                                <h4 className={cn("text-[13px] font-black uppercase tracking-wider mb-3 opacity-50", textColor)}>Earnings Breakdown</h4>
+	                                                <div className={cn("rounded-2xl border p-4", isDark ? "bg-card border-border" : "bg-card border-border shadow-sm")}>
                                                     <div className="mb-5">
                                                         <p className={cn("text-[11px] font-black uppercase tracking-wider mb-1", isDark ? "text-primary" : "text-primary")}>You Receive</p>
                                                         <p className={cn("text-[32px] font-black leading-none", textColor)}>{renderBudgetValue(selectedItem)}</p>
@@ -5764,15 +5942,16 @@ const MobileDashboardDemo = ({
                                                         </div>
                                                     </div>
                                                 </div>
-                                            </div>
-                                        )}
+	                                            </div>
+	                                        )}
                                     </div>
 
-                                    {/* ── STICKY CTA BAR ── */}
-                                    <div className={cn(
-                                        "sticky bottom-0 left-0 right-0 px-5 pb-8 pt-4 border-t",
-                                        isDark ? "bg-[#0B0F14]/98 backdrop-blur-xl border-border" : "bg-secondary/98 backdrop-blur-xl border-border"
-                                    )}>
+	                                    {/* ── STICKY CTA BAR ── */}
+	                                    {selectedType !== 'offer' && (
+	                                    <div className={cn(
+	                                        "sticky bottom-0 left-0 right-0 px-5 pb-8 pt-4 border-t",
+	                                        isDark ? "bg-[#0B0F14]/98 backdrop-blur-xl border-border" : "bg-secondary/98 backdrop-blur-xl border-border"
+	                                    )}>
                                         <div className="space-y-2.5">
                                             <motion.button
                                                 whileTap={{ scale: 0.97 }}
@@ -5847,75 +6026,10 @@ const MobileDashboardDemo = ({
                                                 )}
                                             </motion.button>
 
-                                            {selectedType === 'offer' && (
-                                                <div className="flex flex-col gap-2.5 mt-3 pt-3">
-                                                    <button type="button"
-                                                        onClick={() => {
-                                                            triggerHaptic();
-                                                            if (selectedItem.isDemo) {
-                                                                toast.info("This is a demo offer! 😉");
-                                                                return;
-                                                            }
-                                                            toast.success("Messaging thread opened");
-                                                        }}
-                                                        className={cn("w-full py-3 rounded-2xl flex items-center justify-center gap-2 border transition-all active:scale-95",
-                                                            isDark ? "bg-card border-border hover:bg-secondary/50 text-foreground" : "bg-background border-border hover:bg-background text-muted-foreground")}
-                                                    >
-                                                        <MessageCircle className="w-4 h-4" />
-                                                        <span className="font-bold text-[14px]">Ask Brand Question</span>
-                                                    </button>
-
-                                                    <div className="flex gap-2.5">
-                                                        <button type="button"
-                                                            onClick={() => {
-                                                                triggerHaptic();
-                                                                if (selectedItem.isDemo) {
-                                                                    toast.info("You can't counter a demo offer! 😉");
-                                                                    return;
-                                                                }
-                                                                navigate(`/collab-requests/${selectedItem.id}/counter`, { state: { request: selectedItem.raw || selectedItem } });
-                                                            }}
-                                                            className={cn("flex-1 py-3 border-none flex items-center justify-center gap-1.5 transition-all active:scale-95")}
-                                                        >
-                                                            <Edit3 className="w-3.5 h-3.5 opacity-50 text-muted-foreground" />
-                                                            <span className={cn("font-bold text-[13px] opacity-70", isDark ? "text-foreground" : "text-muted-foreground")}>Counter Offer</span>
-                                                        </button>
-                                                        <button type="button"
-                                                            onClick={async () => {
-                                                                triggerHaptic();
-                                                                if (selectedItem.isDemo) {
-                                                                    toast.info("You can't decline a demo offer! 😉");
-                                                                    return;
-                                                                }
-                                                                const itemId = selectedItem?.id ?? selectedItem?.raw?.id;
-                                                                if (!itemId || String(itemId).trim().length < 10) {
-                                                                    toast.error("Couldn't identify this offer. Please re-open it from the list.", { id: 'decline-error' });
-                                                                    return;
-                                                                }
-                                                                if (selectedType !== 'offer') {
-                                                                    toast.error("Please open the offer details first.", { id: 'decline-error' });
-                                                                    return;
-                                                                }
-                                                                if (onDeclineRequest) {
-                                                                    try {
-                                                                        await onDeclineRequest(selectedItem);
-                                                                    } catch (err: any) {
-                                                                        // Error already handled & toasted inside handleDeclineRequest
-                                                                        console.error('Decline error:', err);
-                                                                    }
-                                                                }
-                                                                closeItemDetail();
-                                                            }}
-                                                            className={cn("flex-1 py-3 border-none flex items-center justify-center gap-1.5 transition-all active:scale-95 text-destructive/80")}
-                                                        >
-                                                            <XCircle className="w-3.5 h-3.5 opacity-50 text-destructive/60" />
-                                                            <span className="font-bold text-[13px] opacity-90">Decline Offer</span>
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                            )}
+                                            {/* Offers render their actions inside the main content (not sticky). */}
                                         </div>
                                     </div>
+                                    )}
 
                                     {/* Item menu (three-dots) */}
                                     <AnimatePresence>
