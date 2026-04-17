@@ -3317,61 +3317,67 @@ const MobileDashboardDemo = ({
                                             </div>
                                         </div>
 
-	                                        {/* Grow Your Brand */}
-	                                        <div className={cn(
-	                                            "p-5 rounded-[22px] border",
-	                                            isDark ? "bg-card border-border" : "bg-white border-[#E5E7EB] shadow-sm"
-	                                        )}>
-	                                            <div className="flex items-center justify-between gap-3 mb-3">
-	                                                <div className="min-w-0 flex items-start gap-3">
-	                                                    <div className={cn("w-10 h-10 rounded-2xl flex items-center justify-center shrink-0", isDark ? "bg-emerald-500/12" : "bg-emerald-50")}>
-	                                                        <MessageCircle className={cn("w-5 h-5", isDark ? "text-emerald-300" : "text-emerald-700")} />
-	                                                    </div>
-	                                                    <div className="min-w-0">
-	                                                        <p className={cn("text-[16px] font-black tracking-tight", textColor)}>Grow Your Brand</p>
-	                                                    <p className={cn("text-[12px] font-semibold opacity-70", secondaryTextColor)}>Share your link with brands and get more deals</p>
-	                                                </div>
-	                                                </div>
-	                                            </div>
-                                            <div className={cn(
-                                                "flex items-center gap-2 p-3 rounded-2xl border",
-                                                isDark ? "bg-background/40 border-border" : "bg-[#F8FAFC] border-[#E5E7EB]"
-                                            )}>
-                                                <p className={cn("text-[12px] font-mono font-semibold truncate", textColor)}>
-                                                    creatorarmour.com/collab/{username || 'creator'}
-                                                </p>
-                                                <button
-                                                    type="button"
-                                                    onClick={() => { triggerHaptic(); handleCopyStorefront(); }}
-                                                    className={cn("ml-auto h-9 px-4 rounded-xl text-[12px] font-black active:scale-95 transition-all", isDark ? "bg-emerald-600 text-white" : "bg-emerald-600 text-white")}
-                                                >
-                                                    Copy
-                                                </button>
-                                            </div>
-	                                            <div className="mt-4 grid grid-cols-3 gap-3">
+		                                        {/* Grow Your Brand */}
+		                                        <div className={cn(
+		                                            "p-5 rounded-[22px] border",
+		                                            isDark ? "bg-card border-border" : "bg-white border-[#E5E7EB] shadow-sm"
+		                                        )}>
+		                                            <div className="mb-3">
+		                                                <p className={cn("text-[16px] font-black tracking-tight", textColor)}>Grow Your Brand</p>
+		                                                <p className={cn("text-[12px] font-semibold opacity-70", secondaryTextColor)}>Share your link with brands and get more deals</p>
+		                                            </div>
+
+	                                            <div className={cn(
+	                                                "flex items-center gap-3 p-3 rounded-2xl border",
+	                                                isDark ? "bg-background/40 border-border" : "bg-[#F8FAFC] border-[#E5E7EB]"
+	                                            )}>
+	                                                <p className={cn("text-[12px] font-mono font-semibold truncate", textColor)}>
+	                                                    creatorarmour.com/{username || 'creator'}
+	                                                </p>
 	                                                <button
 	                                                    type="button"
-	                                                    onClick={() => { triggerHaptic(); handleShareOnWhatsApp(); }}
-	                                                    className={cn("h-12 rounded-2xl border flex items-center justify-center text-[12px] font-black", isDark ? "bg-background/40 border-border text-foreground/80" : "bg-white border-[#E5E7EB] text-[#0F172A]")}
+	                                                    onClick={() => { triggerHaptic(); handleCopyStorefront(); }}
+	                                                    className="ml-auto h-9 px-5 rounded-xl text-[12px] font-black bg-emerald-600 text-white active:scale-95 transition-all"
 	                                                >
-	                                                    <MessageCircle className="w-4 h-4 mr-2" />
-	                                                    WhatsApp
+	                                                    Copy
 	                                                </button>
-                                                <button
-                                                    type="button"
-                                                    onClick={() => { triggerHaptic(); toast.message('Instagram', { description: 'Copy link and paste in your story/bio.' }); }}
-                                                    className={cn("h-12 rounded-2xl border flex items-center justify-center text-[12px] font-black", isDark ? "bg-background/40 border-border text-foreground/80" : "bg-white border-[#E5E7EB] text-[#0F172A]")}
-                                                >
-                                                    Instagram
-                                                </button>
-                                                <button
-                                                    type="button"
-                                                    onClick={() => { triggerHaptic(); setShowShareSheet(true); }}
-                                                    className={cn("h-12 rounded-2xl border flex items-center justify-center text-[12px] font-black", isDark ? "bg-background/40 border-border text-foreground/80" : "bg-white border-[#E5E7EB] text-[#0F172A]")}
-                                                >
-                                                    More
-                                                </button>
-                                            </div>
+	                                            </div>
+
+		                                            <div className="mt-4 grid grid-cols-3 gap-3">
+		                                                <button
+		                                                    type="button"
+		                                                    onClick={() => { triggerHaptic(); handleShareOnWhatsApp(); }}
+		                                                    className={cn(
+		                                                        "h-14 rounded-2xl border flex flex-col items-center justify-center gap-1 active:scale-[0.99] transition-all",
+		                                                        isDark ? "bg-background/40 border-border" : "bg-white border-[#E5E7EB]"
+		                                                    )}
+		                                                >
+		                                                    <MessageCircle className={cn("w-5 h-5", isDark ? "text-emerald-300" : "text-emerald-600")} />
+		                                                    <span className={cn("text-[11px] font-bold", textColor)}>WhatsApp</span>
+		                                                </button>
+	                                                <button
+	                                                    type="button"
+	                                                    onClick={() => { triggerHaptic(); toast.message('Instagram', { description: 'Copy link and paste in your story/bio.' }); }}
+	                                                    className={cn(
+	                                                        "h-14 rounded-2xl border flex flex-col items-center justify-center gap-1 active:scale-[0.99] transition-all",
+	                                                        isDark ? "bg-background/40 border-border" : "bg-white border-[#E5E7EB]"
+	                                                    )}
+	                                                >
+	                                                    <Instagram className={cn("w-5 h-5", isDark ? "text-pink-300" : "text-pink-600")} />
+	                                                    <span className={cn("text-[11px] font-bold", textColor)}>Instagram</span>
+	                                                </button>
+	                                                <button
+	                                                    type="button"
+	                                                    onClick={() => { triggerHaptic(); setShowShareSheet(true); }}
+	                                                    className={cn(
+	                                                        "h-14 rounded-2xl border flex flex-col items-center justify-center gap-1 active:scale-[0.99] transition-all",
+	                                                        isDark ? "bg-background/40 border-border" : "bg-white border-[#E5E7EB]"
+	                                                    )}
+	                                                >
+	                                                    <MoreHorizontal className={cn("w-5 h-5", isDark ? "text-foreground/70" : "text-slate-700")} />
+	                                                    <span className={cn("text-[11px] font-bold", textColor)}>More</span>
+	                                                </button>
+	                                            </div>
                                             <p className={cn("mt-3 text-[11px] font-semibold opacity-60", secondaryTextColor)}>
                                                 Brands can view your profile and send you collab offers.
                                             </p>
