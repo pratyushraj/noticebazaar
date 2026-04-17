@@ -801,11 +801,6 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
             const profileFetchTimeoutMs = 2500;
             try {
               debugLog('[SessionContext] Fetching profile for user:', session.user.id);
-                const profilePromise = (supabase
-                  .from('profiles')
-                  .select('role, onboarding_complete, profile_completion') as any)
-                  .eq('id', session.user.id)
-                  .single();
               const timeoutFallback = { data: null as { role: string; onboarding_complete?: boolean } | null, error: { message: 'timeout' } };
               const result = await Promise.race([
                   fetchRedirectProfile(session.user.id),
@@ -817,7 +812,12 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
               const profileError = result?.error;
 
               if (profileError) {
-                debugWarn('[SessionContext] Profile fetch for redirect:', profileError.message);
+                if (profileError.message === 'timeout') {
+                  // Timeout is an expected fallback on slow networks; we still redirect by metadata role.
+                  debugLog('[SessionContext] Profile fetch for redirect: timeout');
+                } else {
+                  debugWarn('[SessionContext] Profile fetch for redirect:', profileError.message);
+                }
               }
 
               if (profileData) {

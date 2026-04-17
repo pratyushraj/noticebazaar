@@ -19,6 +19,25 @@ import { sendGenericPushNotificationToCreator } from '../services/pushNotificati
 
 const router = Router();
 
+// Tiny in-memory cache to hide Supabase latency for dashboard bootstraps.
+// TTL is intentionally short to avoid stale UX; client can still refetch anytime.
+const dealsMineCache = new Map<string, { expiresAt: number; value: any }>();
+const DEALS_MINE_CACHE_TTL_MS = 15_000;
+
+function getDealsMineCache(key: string) {
+  const hit = dealsMineCache.get(key);
+  if (!hit) return null;
+  if (Date.now() > hit.expiresAt) {
+    dealsMineCache.delete(key);
+    return null;
+  }
+  return hit.value;
+}
+
+function setDealsMineCache(key: string, value: any) {
+  dealsMineCache.set(key, { expiresAt: Date.now() + DEALS_MINE_CACHE_TTL_MS, value });
+}
+
 /** Mask phone for contract PDF: 98XXXXXX21 (first 2 + last 2 visible) */
 function maskPhone(phone: string): string {
   const digits = phone.replace(/\D/g, '');
@@ -409,12 +428,20 @@ router.get('/mine', authMiddleware, async (req: AuthenticatedRequest, res: Respo
       return res.status(403).json({ success: false, error: 'Creator access required' });
     }
 
+    const cacheKey = String(userId);
+    const cached = getDealsMineCache(cacheKey);
+    if (cached) {
+      return res.json(cached);
+    }
+
     const { deals, error } = await fetchDealsForCreator(userId, userEmail);
     if (error) {
       throw error;
     }
 
-    return res.json({ success: true, deals });
+    const payload = { success: true, deals };
+    setDealsMineCache(cacheKey, payload);
+    return res.json(payload);
   } catch (error: any) {
     console.error('[Deals] mine error:', error);
     return res.status(500).json({ success: false, error: error?.message || 'Internal server error' });
