@@ -626,6 +626,16 @@ router.post('/:username/submit', async (req: Request, res: Response) => {
       });
     }
 
+    if (collab_type === 'barter' || collab_type === 'both') {
+      const img = typeof barter_product_image_url === 'string' ? barter_product_image_url.trim() : '';
+      if (!img || !(img.startsWith('http://') || img.startsWith('https://'))) {
+        return res.status(400).json({
+          success: false,
+          error: 'Product image is required for barter/hybrid offers',
+        });
+      }
+    }
+
     // Get creator ID by username or instagram_handle
     const normalizedUsername = username.toLowerCase().trim();
 

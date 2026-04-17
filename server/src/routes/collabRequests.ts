@@ -1732,6 +1732,16 @@ router.post('/:username/submit', async (req: Request, res: Response) => {
       });
     }
 
+    if (isBarterLikeCollab(collabTypeForDb)) {
+      const img = normalizeImageUrl(barter_product_image_url);
+      if (!img) {
+        return res.status(400).json({
+          success: false,
+          error: 'Product image is required for barter/hybrid offers',
+        });
+      }
+    }
+
     // Get creator ID by username or instagram_handle
     const normalizedUsername = normalizeHandle(username) || username.toLowerCase().trim();
 
