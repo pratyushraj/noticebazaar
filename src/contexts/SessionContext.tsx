@@ -20,6 +20,8 @@ const debugError = (...args: unknown[]) => {
   if (import.meta.env.DEV) console.error(...args);
 };
 
+let hasLoggedMissingSessionProvider = false;
+
 type RedirectProfile = {
   role: string | null;
   onboarding_complete: boolean | null;
@@ -954,7 +956,11 @@ export const useSession = () => {
     // This should never happen if component is within SessionContextProvider
     // But during React's initial render or strict mode double-render, it might be temporarily undefined
     // Provide a fallback value instead of throwing to prevent crashes
-    debugError('[useSession] Context is undefined. This may indicate a component is outside SessionContextProvider or a timing issue.');
+    if (import.meta.env.DEV && !hasLoggedMissingSessionProvider) {
+      hasLoggedMissingSessionProvider = true;
+      // Use warn (not error) so we don't spam giant stacks during hot reload / strict-mode remounts.
+      debugWarn('[useSession] Context is undefined. This may indicate a component is outside SessionContextProvider or a timing issue.');
+    }
 
     // Return a safe fallback value to prevent crashes
     return {
