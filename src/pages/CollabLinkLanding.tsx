@@ -156,8 +156,26 @@ type CollabType = 'paid' | 'barter' | 'hybrid' | 'both' | 'affiliate';
 
 const isHybridCollab = (value: CollabType) => value === 'hybrid' || value === 'both';
 
-const toTitleCaseName = (value: string) =>
+const decodeHtmlEntities = (value: string) =>
   value
+    .replace(/&amp;/gi, '&')
+    .replace(/&lt;/gi, '<')
+    .replace(/&gt;/gi, '>')
+    .replace(/&quot;/gi, '"')
+    .replace(/&#39;/gi, "'")
+    .replace(/&#x([0-9a-f]+);?/gi, (_, hex) => {
+      const codePoint = Number.parseInt(hex, 16);
+      return Number.isFinite(codePoint) ? String.fromCodePoint(codePoint) : _;
+    })
+    .replace(/&#(\d+);?/g, (_, dec) => {
+      const codePoint = Number.parseInt(dec, 10);
+      return Number.isFinite(codePoint) ? String.fromCodePoint(codePoint) : _;
+    });
+
+const toTitleCaseName = (value: string) =>
+  decodeHtmlEntities(String(value || ''))
+    .normalize('NFKD')
+    .replace(/[\u0300-\u036f]/g, '')
     .trim()
     .split(/\s+/)
     .filter(Boolean)
@@ -1616,6 +1634,7 @@ const CollabLinkLanding = () => {
 
   // Generate SEO meta tags
   const creatorName = toTitleCaseName(creator.name || 'Creator');
+  const displayCreatorName = creatorName || 'Creator';
   const normalizedHandle = getPreferredPublicHandle(
     creator.platforms?.find((p) => p.name.toLowerCase() === 'instagram')?.handle,
     creator.username,
@@ -2280,13 +2299,13 @@ const CollabLinkLanding = () => {
                       {creator.profile_photo && !profilePhotoError ? (
                         <img
                           src={creator.profile_photo}
-                          alt={`${creator.name} profile`}
+                          alt={`${displayCreatorName} profile`}
                           className="w-full h-full object-cover"
                           onError={() => setProfilePhotoError(true)}
                         />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-teal-500/20 to-emerald-600/20 text-teal-700 font-black text-xl">
-                          {creator.name.slice(0, 1).toUpperCase()}
+                          {displayCreatorName.slice(0, 1).toUpperCase()}
                         </div>
                       )}
                     </div>
@@ -2305,12 +2324,12 @@ const CollabLinkLanding = () => {
                       {editMode ? (
                         <Input
                           className="h-7 text-[17px] font-black text-slate-900 w-auto min-w-[120px] px-2 bg-white/50 border-slate-300 border-dashed focus:border-teal-500 transition-all"
-                          defaultValue={creator.name}
+                          defaultValue={displayCreatorName}
                           onBlur={(e) => handleInlineProfileUpdate('name', e.target.value)}
                           placeholder="Your Name"
                         />
                       ) : (
-                        <h2 className="text-[17px] font-black text-slate-900 leading-tight">{creator.name}</h2>
+                        <h2 className="text-[17px] font-black text-slate-900 leading-tight">{displayCreatorName}</h2>
                       )}
                       {(creator as any)?.payout_verified || creator.onboarding_complete ? (
                         <div className="flex items-center gap-1 bg-blue-50 border border-blue-200 rounded-full px-2 py-0.5">
@@ -2381,7 +2400,7 @@ const CollabLinkLanding = () => {
 
                 <div className="max-w-xl relative">
                   <h1 className="text-[28px] md:text-4xl lg:text-[52px] font-[900] tracking-tight text-slate-900 mb-2.5 leading-[1.06]">
-                    Book {creatorName.split(' ')[0]} for brand collaborations
+                    Book {displayCreatorName.split(' ')[0]} for brand collaborations
                   </h1>
                   <p className="text-[14px] lg:text-[18px] font-medium text-slate-500 leading-relaxed max-w-xl">
                     Choose a ready-made service and send an offer in under 1 minute.

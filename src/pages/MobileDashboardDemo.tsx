@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import { trackEvent } from '@/lib/utils/analytics';
-import { User, Search, ShieldCheck, Handshake, Camera, Plus, LayoutDashboard, CreditCard, Briefcase, Menu, Instagram, Target, Dumbbell, Shirt, Sun, Moon, RefreshCw, Loader2, Bell, ChevronRight, Zap, Rocket, Link2, CheckCircle2, Download, Clock, Info, Globe, Star, LogOut, Copy, Share2, QrCode, Eye, MoreHorizontal, Landmark, FileText, Smartphone, TrendingUp, BarChart3, Mail, MessageCircle, MessageSquare, Edit3, Send, X, XCircle, ExternalLink, AlertCircle, AlertTriangle, ArrowRight, Package, Flag, MapPin, Languages } from 'lucide-react';
+import { User, Search, ShieldCheck, Handshake, Camera, Plus, LayoutDashboard, CreditCard, Briefcase, Menu, Instagram, Target, Dumbbell, Shirt, Sun, Moon, RefreshCw, Loader2, Bell, ChevronRight, Zap, Rocket, Link2, CheckCircle2, Download, Clock, Info, Globe, Star, LogOut, Copy, Share2, QrCode, Eye, MoreHorizontal, Landmark, FileText, Smartphone, TrendingUp, BarChart3, Mail, MessageCircle, MessageSquare, Edit3, Send, X, XCircle, ExternalLink, AlertCircle, AlertTriangle, ArrowRight, Package, Flag, MapPin, Languages, Lock as LockIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useSignOut } from '@/lib/hooks/useAuth';
@@ -5301,106 +5301,109 @@ const MobileDashboardDemo = ({
                                         </button>
                                     </div>
 
-                                    <div className="flex-1 overflow-y-auto px-5 pt-5 pb-40 relative z-10">
+                                    <div className="flex-1 overflow-y-auto px-4 sm:px-5 pt-4 sm:pt-5 pb-40 relative z-10">
 
                                         {/* ── OFFER BRIEF HERO ── */}
                                         {selectedType === 'offer' ? (
                                             <div className="mb-6">
-                                                <div className="flex flex-col items-center text-center">
+                                                <div className="flex flex-col items-center text-center gap-4 pt-1">
                                                     <div className={cn(
-                                                        "inline-flex items-center gap-2 px-6 py-2.5 rounded-full text-[12px] font-black uppercase tracking-widest border",
-                                                        isDark ? "bg-amber-500/10 text-amber-300 border-amber-400/20" : "bg-amber-50 text-amber-700 border-amber-100"
+                                                        "inline-flex items-center gap-2.5 px-5 py-2.5 rounded-full text-[12px] font-black uppercase tracking-[0.17em] border",
+                                                        isDark ? "bg-amber-500/12 text-amber-300 border-amber-400/15" : "bg-amber-50 text-amber-700 border-amber-100"
                                                     )}>
-                                                        <span aria-hidden>⏳</span>
+                                                        <Clock className="w-4 h-4" />
                                                         Awaiting your decision
                                                     </div>
                                                     <div className={cn(
-                                                        "mt-3 inline-flex items-center px-6 py-2.5 rounded-full text-[12px] font-black uppercase tracking-widest border",
-                                                        isDark ? "bg-emerald-500/12 text-emerald-300 border-emerald-400/20" : "bg-emerald-50 text-emerald-700 border-emerald-100"
+                                                        "inline-flex items-center gap-2.5 px-5 py-2 rounded-full text-[12px] font-black uppercase tracking-[0.16em] border",
+                                                        isDark ? "bg-emerald-500/12 text-emerald-300 border-emerald-400/15" : "bg-emerald-50 text-emerald-700 border-emerald-100"
                                                     )}>
-                                                        {String(selectedItem?.collab_type || '').toLowerCase().includes('barter') ? 'FREE PRODUCTS' : 'PAID CAMPAIGN'}
+                                                        {String(selectedItem?.collab_type || '').toLowerCase().includes('barter') ? 'Free Products' : 'Paid Campaign'}
                                                     </div>
                                                 </div>
 
-                                                <div className={cn("mt-6 rounded-[26px] border p-4", isDark ? "bg-[#0B1220]/60 border-border" : "bg-white border-[#E5E7EB] shadow-sm")}>
-                                                    <div className="flex items-start gap-4">
-                                                        <div className={cn("w-[160px] h-[160px] rounded-[22px] overflow-hidden border shrink-0", isDark ? "border-border bg-card" : "border-[#E5E7EB] bg-[#F3F4F6]")}>
-                                                            {(() => {
-                                                                const candidates = [
-                                                                    selectedItem?.barter_product_image_url,
-                                                                    selectedItem?.barter_product_image,
-                                                                    selectedItem?.product_image_url,
-                                                                    selectedItem?.raw?.barter_product_image_url,
-                                                                    selectedItem?.raw?.product_image_url,
-                                                                ];
-                                                                const raw = candidates.map((x: any) => String(x || '').trim()).find((x) => x && x !== 'null' && x !== 'undefined') || '';
-                                                                const src = raw || 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&q=80&w=500';
-                                                                return <img src={src} alt="" className="w-full h-full object-cover" loading="lazy" />;
-                                                            })()}
-                                                        </div>
-
-                                                        <div className="flex-1 min-w-0">
-                                                            <div className="flex items-end justify-between gap-3">
-                                                                <p className={cn("text-[40px] font-black tracking-tight leading-none", textColor)}>
-                                                                    {renderBudgetValue(selectedItem)}
-                                                                </p>
-                                                                <p className={cn("text-[14px] font-bold pb-1", textColor)}>
-                                                                    {(() => {
-                                                                        const raw = selectedItem?.deliverables || selectedItem?.raw?.deliverables;
-                                                                        try {
-                                                                            const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;
-                                                                            if (Array.isArray(parsed) && parsed.length > 0) {
-                                                                                const first = parsed[0];
-                                                                                if (typeof first === 'string') return first.includes('Reel') ? 'Reel' : first;
-                                                                                const ct = String(first?.contentType || first?.type || '').toLowerCase();
-                                                                                if (ct.includes('reel')) return 'Reel';
-                                                                                if (ct.includes('story')) return 'Story';
-                                                                                if (ct.includes('post')) return 'Post';
-                                                                            }
-                                                                        } catch { }
-                                                                        return 'Reel';
-                                                                    })()}
-                                                                </p>
-                                                            </div>
-
-                                                            <div className="mt-5 flex items-center gap-2">
-                                                                <ShieldCheck className={cn("w-4 h-4", isDark ? "text-emerald-300" : "text-emerald-600")} />
-                                                                <p className={cn("text-[13px] font-bold", isDark ? "text-emerald-300" : "text-emerald-700")}>
-                                                                    Payment secured after approval
-                                                                </p>
-                                                            </div>
-
-                                                            <div className={cn(
-                                                                "mt-5 rounded-2xl border px-4 py-3",
-                                                                isDark ? "bg-rose-500/10 border-rose-500/15" : "bg-rose-50 border-rose-100"
-                                                            )}>
+                                                <div className={cn("mt-6 rounded-[24px] border p-0 overflow-hidden", isDark ? "bg-[#0C1320]/70 border-border" : "bg-white border-[#E5E7EB] shadow-[0_1px_0_rgba(15,23,42,0.03)]")}>
+                                                    <div className="p-0">
+                                                        <div className="flex gap-4 p-4">
+                                                            <div className={cn("w-[170px] h-[224px] rounded-[18px] overflow-hidden shrink-0", isDark ? "bg-card" : "bg-[#F3F4F6]")}>
                                                                 {(() => {
-                                                                    const deadlineRaw = selectedItem?.deadline || selectedItem?.due_date || selectedItem?.raw?.deadline || selectedItem?.raw?.due_date || null;
-                                                                    const deadlineDt = deadlineRaw ? new Date(deadlineRaw) : null;
-                                                                    const valid = deadlineDt && !Number.isNaN(deadlineDt.getTime());
-                                                                    const now = new Date();
-                                                                    const daysLeft = valid ? Math.max(0, Math.ceil((deadlineDt!.getTime() - now.getTime()) / 86400000)) : null;
-                                                                    const dayLabel = daysLeft === null ? '—' : `${daysLeft} day${daysLeft === 1 ? '' : 's'} left`;
-                                                                    return (
-                                                                        <div>
-                                                                            <div className={cn("flex items-center justify-center gap-2 text-[12px] font-black", isDark ? "text-rose-300" : "text-rose-600")}>
-                                                                                <Clock className="w-4 h-4" />
-                                                                                {dayLabel}
-                                                                            </div>
-                                                                            {valid && (
-                                                                                <p className={cn("mt-1 text-center text-[11px] font-semibold", isDark ? "text-foreground/60" : "text-slate-600")}>
-                                                                                    Deadline: {deadlineDt!.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })} (11:59 PM)
-                                                                                </p>
-                                                                            )}
-                                                                        </div>
-                                                                    );
+                                                                    const candidates = [
+                                                                        selectedItem?.barter_product_image_url,
+                                                                        selectedItem?.barter_product_image,
+                                                                        selectedItem?.product_image_url,
+                                                                        selectedItem?.raw?.barter_product_image_url,
+                                                                        selectedItem?.raw?.product_image_url,
+                                                                    ];
+                                                                    const raw = candidates.map((x: any) => String(x || '').trim()).find((x) => x && x !== 'null' && x !== 'undefined') || '';
+                                                                    const src = raw || 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&q=80&w=500';
+                                                                    return <img src={src} alt="" className="w-full h-full object-cover" loading="lazy" />;
                                                                 })()}
                                                             </div>
+                                                            <div className="flex-1 min-w-0 pt-2 pr-1">
+                                                                <div className="flex items-start justify-between gap-3">
+                                                                    <div className="pt-10">
+                                                                        <p className={cn("text-[41px] leading-[0.92] font-black tracking-tight", textColor)}>
+                                                                            {renderBudgetValue(selectedItem)}
+                                                                        </p>
+                                                                        <p className={cn("text-[15px] font-bold mt-2", textColor)}>
+                                                                            {(() => {
+                                                                                const raw = selectedItem?.deliverables || selectedItem?.raw?.deliverables;
+                                                                                try {
+                                                                                    const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;
+                                                                                    if (Array.isArray(parsed) && parsed.length > 0) {
+                                                                                        const first = parsed[0];
+                                                                                        if (typeof first === 'string') return first.includes('Reel') ? 'Reel' : first;
+                                                                                        const ct = String(first?.contentType || first?.type || '').toLowerCase();
+                                                                                        if (ct.includes('reel')) return 'Reel';
+                                                                                        if (ct.includes('story')) return 'Story';
+                                                                                        if (ct.includes('post')) return 'Post';
+                                                                                    }
+                                                                                } catch {}
+                                                                                return 'Reel';
+                                                                            })()}
+                                                                        </p>
+                                                                    </div>
+                                                                </div>
+
+                                                                <div className="mt-6 flex items-center gap-2">
+                                                                    <ShieldCheck className={cn("w-4 h-4", isDark ? "text-emerald-300" : "text-emerald-600")} />
+                                                                    <p className={cn("text-[13px] font-bold", isDark ? "text-emerald-300" : "text-emerald-700")}>
+                                                                        Payment secured after approval
+                                                                    </p>
+                                                                </div>
+
+                                                                <div className={cn(
+                                                                    "mt-7 rounded-[16px] border px-4 py-4",
+                                                                    isDark ? "bg-rose-500/10 border-rose-500/15" : "bg-rose-50 border-rose-100"
+                                                                )}>
+                                                                    {(() => {
+                                                                        const deadlineRaw = selectedItem?.deadline || selectedItem?.due_date || selectedItem?.raw?.deadline || selectedItem?.raw?.due_date || null;
+                                                                        const deadlineDt = deadlineRaw ? new Date(deadlineRaw) : null;
+                                                                        const valid = deadlineDt && !Number.isNaN(deadlineDt.getTime());
+                                                                        const now = new Date();
+                                                                        const daysLeft = valid ? Math.max(0, Math.ceil((deadlineDt!.getTime() - now.getTime()) / 86400000)) : null;
+                                                                        const dayLabel = daysLeft === null ? '—' : `${daysLeft} days left`;
+                                                                        return (
+                                                                            <div>
+                                                                                <div className={cn("flex items-center justify-center gap-2 text-[12px] font-black", isDark ? "text-rose-300" : "text-rose-600")}>
+                                                                                    <Clock className="w-4 h-4" />
+                                                                                    {dayLabel}
+                                                                                </div>
+                                                                                {valid && (
+                                                                                    <p className={cn("mt-1 text-center text-[11px] font-semibold", isDark ? "text-foreground/60" : "text-slate-600")}>
+                                                                                        Deadline: {deadlineDt!.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })} (11:59 PM)
+                                                                                    </p>
+                                                                                )}
+                                                                            </div>
+                                                                        );
+                                                                    })()}
+                                                                </div>
+                                                            </div>
                                                         </div>
                                                     </div>
                                                 </div>
 
-                                                <div className="mt-4 space-y-3 relative z-30">
+                                                <div className="mt-4 space-y-3">
                                                     <button
                                                         type="button"
                                                         data-testid="offer-brief-accept"
@@ -5413,13 +5416,13 @@ const MobileDashboardDemo = ({
                                                             }
                                                             handleAccept(selectedItem);
                                                         }}
-                                                        className="w-full h-[66px] rounded-2xl px-5 flex items-center justify-between bg-gradient-to-b from-[#1D4ED8] to-[#0B5BD3] text-white border border-[#1D4ED8] shadow-[0_16px_36px_rgba(37,99,235,0.30)] active:scale-[0.99] transition-all relative z-40 scroll-mt-24 pointer-events-auto"
+                                                        className="w-full h-[82px] rounded-[18px] px-5 flex items-center justify-between bg-[#2563EB] text-white border border-[#2563EB] shadow-[0_14px_32px_rgba(37,99,235,0.28)] active:scale-[0.99] transition-all"
                                                     >
-                                                        <div className="text-left">
-                                                            <p className="text-[16px] font-black">Accept Deal {renderBudgetValue(selectedItem)}</p>
-                                                            <p className="text-[12px] font-semibold opacity-90">Contract generated instantly</p>
+                                                        <div className="text-center flex-1">
+                                                            <p className="text-[18px] font-black leading-none">Accept Deal {renderBudgetValue(selectedItem)}</p>
+                                                            <p className="text-[13px] font-semibold opacity-90 mt-1">Contract generated instantly</p>
                                                         </div>
-                                                        <ChevronRight className="w-6 h-6 opacity-95" />
+                                                        <ChevronRight className="w-6 h-6 opacity-95 shrink-0" />
                                                     </button>
 
                                                     <button
@@ -5429,7 +5432,7 @@ const MobileDashboardDemo = ({
                                                             toast.message('Ask Brand Question', { description: 'Open messages or contact the brand from the offer thread.' });
                                                         }}
                                                         className={cn(
-                                                            "w-full h-14 rounded-2xl px-5 flex items-center justify-between border active:scale-[0.99] transition-all",
+                                                            "w-full h-14 rounded-[14px] px-5 flex items-center justify-between border active:scale-[0.99] transition-all",
                                                             isDark ? "bg-card border-border text-foreground" : "bg-white border-[#E5E7EB] text-slate-900"
                                                         )}
                                                     >
@@ -5448,8 +5451,8 @@ const MobileDashboardDemo = ({
                                                                 toast.message('Counter Offer', { description: 'Open offer details to counter.' });
                                                             }}
                                                             className={cn(
-                                                                "h-14 rounded-2xl border font-black text-[14px] active:scale-[0.99] transition-all flex items-center justify-center gap-2",
-                                                                isDark ? "bg-card border-border text-info" : "bg-white border-[#E5E7EB] text-info"
+                                                                "h-14 rounded-[14px] border font-black text-[14px] active:scale-[0.99] transition-all flex items-center justify-center gap-2",
+                                                                isDark ? "bg-card border-[#1E3A8A]/40 text-info" : "bg-white border-[#93C5FD] text-info"
                                                             )}
                                                         >
                                                             <Edit3 className="w-4 h-4" />
@@ -5469,7 +5472,7 @@ const MobileDashboardDemo = ({
                                                                 closeItemDetail();
                                                             }}
                                                             className={cn(
-                                                                "h-14 rounded-2xl border font-black text-[14px] active:scale-[0.99] transition-all flex items-center justify-center gap-2",
+                                                                "h-14 rounded-[14px] border font-black text-[14px] active:scale-[0.99] transition-all flex items-center justify-center gap-2",
                                                                 isDark ? "bg-card border-destructive/35 text-destructive" : "bg-white border-destructive/25 text-destructive"
                                                             )}
                                                         >
@@ -5480,108 +5483,213 @@ const MobileDashboardDemo = ({
                                                 </div>
                                             </div>
                                         ) : (
-                                            <div className={cn("rounded-3xl border p-5 mb-6 flex flex-col items-center text-center", cardBgColor, borderColor)}>
-                                                <div className="flex flex-col items-center gap-2 mb-5 w-full">
-                                                    {/* Status Row */}
-                                                    <div className={cn("flex items-center px-3 py-1.5 rounded-full border shadow-sm mb-1",
-                                                        selectedType === 'deal'
-                                                            ? (isDark ? "bg-primary/10 border-primary/20" : "bg-primary border-primary")
-                                                            : (isDark ? "bg-warning/10 border-warning/20" : "bg-warning border-warning")
-                                                    )}>
-                                                        <span className={cn("text-[11px] font-black tracking-widest uppercase flex items-center gap-1.5", selectedType === 'deal' ? (isDark ? 'text-primary' : 'text-primary') : (isDark ? 'text-warning' : 'text-warning'))}>
-                                                            {selectedType === 'deal' ? '🟢 Active Collaboration' : <><AlertTriangle className="w-3.5 h-3.5" strokeWidth={2.5} /> Awaiting Your Decision</>}
-                                                        </span>
-                                                    </div>
-
-                                                    {/* Campaign Type Tag */}
-                                                    {selectedItem.collab_type === 'barter' ? (
-                                                        <span className="text-[10px] font-black uppercase tracking-widest text-warning bg-warning/10 px-2 py-0.5 rounded-md">Free products Campaign</span>
-                                                    ) : (
-                                                        <span className="text-[10px] font-black uppercase tracking-widest text-primary bg-primary/10 px-2 py-0.5 rounded-md">Paid Campaign</span>
-                                                    )}
-
-                                                    {/* Hero Budget */}
-                                                    <p className={cn("text-[38px] font-black leading-none my-2 font-outfit tracking-tight", isDark ? "text-foreground" : "text-muted-foreground")}>
-                                                        {renderBudgetValue(selectedItem)} <span className={cn("text-[20px] font-bold opacity-60 ml-1", textColor)}>Offer</span>
-                                                    </p>
-
-                                                    {/* Deliverables */}
-                                                    <div className={cn("flex items-center justify-center flex-wrap gap-2 text-[14px] font-bold mt-1", isDark ? "text-muted-foreground" : "text-muted-foreground")}>
-                                                        {(() => {
-                                                            const raw = selectedItem.deliverables || selectedItem.raw?.deliverables;
-                                                            let items: string[] = ['🎬 1 Reel', '📱 2 Stories'];
-                                                            try {
-                                                                const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;
-                                                                if (Array.isArray(parsed) && parsed.length > 0) {
-                                                                    items = parsed.map((d: any) => {
-                                                                        if (typeof d === 'string') return d;
-                                                                        const ct = (d.contentType || d.type || '').toLowerCase();
-                                                                        const count = d.count || d.quantity || 1;
-                                                                        let emoji = '📋', label = 'Content';
-                                                                        if (ct.includes('reel')) { emoji = '🎬'; label = 'Reel'; }
-                                                                        else if (ct.includes('story')) { emoji = '📱'; label = 'Story'; }
-                                                                        else if (ct.includes('post')) { emoji = '🖼'; label = 'Post'; }
-                                                                        return `${emoji} ${count} ${label}`;
-                                                                    });
-                                                                }
-                                                            } catch (_) { }
-                                                            return items.map((d, i) => (
-                                                                <React.Fragment key={i}>
-                                                                    <span>{d}</span>
-                                                                    {i < items.length - 1 && <span className="opacity-40 px-1">•</span>}
-                                                                </React.Fragment>
-                                                            ));
-                                                        })()}
-                                                    </div>
-
-                                                    {/* Deadline Top */}
-                                                    {selectedType === 'offer' && (() => {
-                                                        const rawDeadline = selectedItem.deadline || selectedItem.raw?.deadline;
-                                                        const deadline = rawDeadline ? new Date(rawDeadline) : null;
-                                                        if (!deadline || Number.isNaN(deadline.getTime())) {
-                                                            return <p className={cn("text-[12px] font-semibold mt-2", secondaryTextColor)}>No Deadline Set</p>;
-                                                        }
-                                                        return (
-                                                            <div className="flex items-center justify-center gap-1.5 mt-2 bg-destructive/10 text-destructive px-3 py-1 rounded-full shadow-sm">
-                                                                <Clock className="w-3.5 h-3.5" />
-                                                                <span className="text-[11px] font-black uppercase tracking-wider">Deadline: {deadline.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
-                                                            </div>
-                                                        );
-                                                    })()}
-                                                </div>
-
-                                                {/* Brand Logo & Name */}
-                                                <div className={cn("flex items-center justify-center gap-3 w-full border-t pt-5 mt-1", isDark ? "border-border" : "border-border")}>
-                                                    <div className={cn("w-8 h-8 rounded-xl border overflow-hidden flex items-center justify-center shrink-0 shadow-sm",
-                                                        selectedItem.collab_type === 'barter'
-                                                            ? (isDark ? "bg-warning/5 border-warning/20" : "bg-warning border-warning")
-                                                            : (isDark ? "bg-info/10 border-info/20" : "bg-info border-info")
-                                                    )}>
-                                                        {getBrandIcon(
-                                                            selectedItem.brand_logo ||
-                                                            selectedItem.brand_logo_url ||
-                                                            selectedItem.logo_url ||
-                                                            selectedItem.raw?.brand_logo ||
-                                                            selectedItem.raw?.brand_logo_url ||
-                                                            selectedItem.raw?.logo_url ||
-                                                            (selectedItem as any)?.brand?.logo_url,
-                                                            selectedItem.category,
-                                                            selectedItem.brand_name || selectedItem.raw?.brand_name
-                                                        )}
-                                                    </div>
-                                                    <div className="flex flex-col text-left">
-                                                        <div className="flex items-center gap-1.5">
-                                                            <p className={cn("text-[14px] font-bold tracking-tight", textColor)}>
-                                                                {selectedItem.brand_name || 'Brand Name'}
-                                                            </p>
-                                                            <ShieldCheck className="w-3.5 h-3.5 text-info" strokeWidth={2.5} />
+                                            <div className={cn("rounded-[28px] border p-4 mb-6", cardBgColor, borderColor)}>
+                                                <div className={cn(
+                                                    "rounded-[22px] border overflow-hidden p-0",
+                                                    isDark ? "bg-[#151922] border-[#293342]" : "bg-white border-[#E5E7EB]"
+                                                )}>
+                                                    <div className="relative">
+                                                        <div className="absolute inset-0">
+                                                            {(() => {
+                                                                const candidates = [
+                                                                    selectedItem?.brand_logo_url,
+                                                                    selectedItem?.brand_logo,
+                                                                    selectedItem?.product_image_url,
+                                                                    selectedItem?.raw?.brand_logo_url,
+                                                                    selectedItem?.raw?.product_image_url,
+                                                                ];
+                                                                const raw = candidates.map((x: any) => String(x || '').trim()).find((x) => x && x !== 'null' && x !== 'undefined') || '';
+                                                                const src = raw || 'https://images.unsplash.com/photo-1524169358666-79f22534bc6b?auto=format&fit=crop&q=80&w=1200';
+                                                                return <img src={src} alt="" className="w-full h-full object-cover" loading="lazy" />;
+                                                            })()}
+                                                            <div className={cn("absolute inset-0", isDark ? "bg-gradient-to-r from-black/45 via-black/20 to-black/40" : "bg-gradient-to-r from-white/20 via-transparent to-black/15")} />
                                                         </div>
-                                                        <p className={cn("text-[10px] font-semibold mt-0.5", secondaryTextColor, isDark ? "" : "text-muted-foreground")}>Verified Brand</p>
+                                                        <div className="relative z-10 px-4 pt-4 pb-5 min-h-[252px] flex flex-col justify-between">
+                                                            <div className="flex justify-center pt-10">
+                                                                <div className={cn(
+                                                                    "inline-flex items-center gap-2 px-4 py-2 rounded-full text-[11px] font-black uppercase tracking-[0.16em] border",
+                                                                    isDark ? "bg-emerald-500/12 text-emerald-300 border-emerald-400/20" : "bg-emerald-50 text-emerald-700 border-emerald-100"
+                                                                )}>
+                                                                    <ShieldCheck className="w-4 h-4" />
+                                                                    Active Collaboration
+                                                                </div>
+                                                            </div>
+
+                                                            <div className="grid grid-cols-[1.08fr_auto] gap-3 items-end">
+                                                                <div>
+                                                                    <p className={cn("text-[48px] leading-none font-black tracking-tight", isDark ? "text-white" : "text-slate-900")}>
+                                                                        {renderBudgetValue(selectedItem)}
+                                                                    </p>
+                                                                    <p className={cn("text-[17px] font-semibold mt-1", isDark ? "text-white/75" : "text-slate-700")}>Offer</p>
+                                                                </div>
+                                                                <div className="pb-2">
+                                                                    <div className={cn("flex items-center gap-2 text-[14px] font-black", isDark ? "text-white" : "text-slate-900")}>
+                                                                        {(() => {
+                                                                            const raw = selectedItem.deliverables || selectedItem.raw?.deliverables;
+                                                                            let items: string[] = ['1 Reel', '2 Stories'];
+                                                                            try {
+                                                                                const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;
+                                                                                if (Array.isArray(parsed) && parsed.length > 0) {
+                                                                                    items = parsed.map((d: any) => {
+                                                                                        if (typeof d === 'string') return d;
+                                                                                        const ct = (d.contentType || d.type || '').toLowerCase();
+                                                                                        const count = d.count || d.quantity || 1;
+                                                                                        let emoji = '📋', label = 'Content';
+                                                                                        if (ct.includes('reel')) { emoji = '🎬'; label = 'Reel'; }
+                                                                                        else if (ct.includes('story')) { emoji = '📱'; label = 'Stories'; }
+                                                                                        else if (ct.includes('post')) { emoji = '🖼'; label = 'Post'; }
+                                                                                        return `${emoji} ${count} ${label}`;
+                                                                                    });
+                                                                                }
+                                                                            } catch (_) {}
+                                                                            return items.map((d, i) => (
+                                                                                <React.Fragment key={i}>
+                                                                                    <span>{d}</span>
+                                                                                    {i < items.length - 1 && <span className="opacity-45 px-1">•</span>}
+                                                                                </React.Fragment>
+                                                                            ));
+                                                                        })()}
+                                                                    </div>
+                                                                    <div className="mt-3 flex items-center gap-2">
+                                                                        <ShieldCheck className={cn("w-4 h-4", isDark ? "text-emerald-300" : "text-emerald-500")} />
+                                                                        <p className={cn("text-[13px] font-bold", isDark ? "text-emerald-300" : "text-emerald-600")}>Payment secured after approval</p>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
                                         )}
 
+                                        <div className="mb-6 grid grid-cols-2 gap-3">
+                                            <div className={cn("rounded-2xl border p-4 flex flex-col justify-center", cardBgColor, borderColor)}>
+                                                <p className={cn("text-[11px] font-black uppercase tracking-wider mb-2 opacity-50", textColor)}>What you'll deliver</p>
+                                                <div className="flex flex-col gap-2">
+                                                    <div className="rounded-2xl border px-3 py-3 flex items-center justify-center gap-2 text-[14px] font-black" >
+                                                        <span>🎬</span> 1 Instagram Reel
+                                                    </div>
+                                                    <div className="rounded-2xl border px-3 py-3 flex items-center justify-center gap-2 text-[14px] font-black">
+                                                        <span>📱</span> 2 Stories
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div className={cn("rounded-2xl border p-4 flex flex-col justify-center", cardBgColor, borderColor)}>
+                                                <p className={cn("text-[11px] font-black uppercase tracking-wider mb-2 opacity-50", textColor)}>Payment Method</p>
+                                                <div className="flex items-center gap-2.5">
+                                                    <div className="w-8 h-8 rounded-lg bg-info/10 flex items-center justify-center">
+                                                        <Landmark className="w-4 h-4 text-info" />
+                                                    </div>
+                                                    <span className={cn("text-[14px] font-black leading-tight", textColor)}>
+                                                        UPI<br />Payout
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div className="mb-6">
+                                            <h4 className={cn("text-[13px] font-black uppercase tracking-wider mb-3 opacity-50", textColor)}>Usage Rights</h4>
+                                            <div className={cn("rounded-2xl border p-4 flex items-center gap-3", isDark ? "bg-emerald-500/10 border-emerald-500/20" : "bg-emerald-50 border-emerald-100")}>
+                                                <div className="w-12 h-12 rounded-full bg-emerald-500 flex items-center justify-center shrink-0">
+                                                    <LockIcon className="w-5 h-5 text-foreground" />
+                                                </div>
+                                                <div>
+                                                    <p className={cn("text-[14px] font-black leading-tight", textColor)}>Organic social media only</p>
+                                                    <p className={cn("text-[12px] font-semibold", secondaryTextColor)}>90 days limit</p>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div className="mb-6 grid grid-cols-2 gap-3">
+                                            <div className={cn("rounded-2xl border p-4 flex flex-col justify-center", cardBgColor, borderColor)}>
+                                                <p className={cn("text-[11px] font-black uppercase tracking-wider mb-2 opacity-50", textColor)}>Payment Method</p>
+                                                <div className="flex items-center gap-2.5">
+                                                    <div className="w-8 h-8 rounded-lg bg-info/10 flex items-center justify-center">
+                                                        <Landmark className="w-4 h-4 text-info" />
+                                                    </div>
+                                                    <span className={cn("text-[14px] font-black leading-tight", textColor)}>
+                                                        UPI Payout
+                                                    </span>
+                                                </div>
+                                            </div>
+                                            <div className={cn("rounded-2xl border p-4 flex flex-col justify-center", cardBgColor, borderColor)}>
+                                                <p className={cn("text-[11px] font-black uppercase tracking-wider mb-2 opacity-50", textColor)}>Deadline</p>
+                                                <span className={cn("text-[14px] font-black leading-tight mb-2", textColor)}>
+                                                    12 Apr 2026
+                                                </span>
+                                                <span className={cn("text-[11px] font-black tracking-tight flex items-center mt-1 text-destructive")}>
+                                                    ⚡ Overdue
+                                                </span>
+                                            </div>
+                                        </div>
+
+                                        <div className="mb-6">
+                                            <h4 className={cn("text-[13px] font-black uppercase tracking-wider mb-3 opacity-50", textColor)}>Contract Details</h4>
+                                            <div className={cn("rounded-2xl border p-4", isDark ? "bg-amber-500/5 border-amber-500/20" : "bg-amber-50 border-amber-200")}>
+                                                <div className="flex items-start justify-between gap-3">
+                                                    <div>
+                                                        <p className={cn("text-[16px] font-black leading-tight", textColor)}>Contract details unavailable</p>
+                                                        <p className={cn("text-[12px] font-semibold mt-1", secondaryTextColor)}>The contract will appear here once the brand finalizes the setup.</p>
+                                                    </div>
+                                                    <span className="px-3 py-1.5 rounded-full text-[11px] font-black uppercase tracking-wider border bg-amber-500/10 text-amber-600 border-amber-200">
+                                                        Pending
+                                                    </span>
+                                                </div>
+                                                <div className={cn("mt-4 rounded-2xl border px-4 py-3", isDark ? "bg-card border-border" : "bg-white border-border")}>
+                                                    <p className={cn("text-[11px] font-black uppercase tracking-wider opacity-50 mb-1", textColor)}>Document</p>
+                                                    <p className={cn("text-[13px] font-bold break-all", textColor)}>Contract is being prepared</p>
+                                                </div>
+                                                <div className="grid grid-cols-2 gap-2.5 mt-4">
+                                                    <button type="button" className="w-full py-3 rounded-2xl border text-[14px] font-black transition-all active:scale-[0.98] bg-background text-info border-info/40">
+                                                        Open Contract
+                                                    </button>
+                                                    <button type="button" className="w-full py-3 rounded-2xl border text-[14px] font-black transition-all active:scale-[0.98] bg-background text-info border-info/40">
+                                                        Copy Deal Link
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div className="mb-6">
+                                            <h4 className={cn("text-[13px] font-black uppercase tracking-wider mb-3 opacity-50", textColor)}>Legal Protection</h4>
+                                            <div className={cn("rounded-2xl border p-4", isDark ? "bg-emerald-500/5 border-emerald-500/20" : "bg-emerald-50 border-emerald-100")}>
+                                                <div className="flex items-center gap-3">
+                                                    <div className="w-10 h-10 rounded-full bg-emerald-500 flex items-center justify-center shrink-0">
+                                                        <ShieldCheck className="w-5 h-5 text-foreground" />
+                                                    </div>
+                                                    <div>
+                                                        <p className={cn("text-[14px] font-black leading-tight", isDark ? "text-emerald-300" : "text-emerald-700")}>Protected by Creator Armour</p>
+                                                        <p className={cn("text-[12px] font-semibold", isDark ? "text-emerald-300/80" : "text-emerald-700/80")}>Contract + rights + dispute support</p>
+                                                    </div>
+                                                </div>
+                                                <div className="mt-3 space-y-2">
+                                                    {['Contract auto-generated', 'Content rights secured', 'Dispute protection included'].map((label) => (
+                                                        <div key={label} className="flex items-center gap-2">
+                                                            <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                                                            <span className={cn("text-[12px] font-bold", textColor)}>{label}</span>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div className="mb-6">
+                                            <h4 className={cn("text-[13px] font-black uppercase tracking-wider mb-3 opacity-50", textColor)}>Brand Information</h4>
+                                            <motion.div className={cn("rounded-[22px] border overflow-hidden", cardBgColor, borderColor)} layout>
+                                                <button type="button" onClick={() => { triggerHaptic(); setShowBrandDetails(v => !v); }} className="w-full flex items-center gap-3 px-4 py-3 active:opacity-70 transition-opacity">
+                                                    <div className="w-10 h-10 rounded-full flex items-center justify-center bg-violet-500 text-foreground shrink-0">
+                                                        {String((selectedItem.brand_name || 'D').charAt(0)).toUpperCase()}
+                                                    </div>
+                                                    <div className="flex-1 text-left min-w-0">
+                                                        <p className={cn("text-[14px] font-black leading-tight", textColor)}>{selectedItem.brand_name || 'Demo Brand Co'}</p>
+                                                        <p className={cn("text-[11px] mt-0.5", secondaryTextColor)}>Verified Brand</p>
+                                                    </div>
+                                                    <ChevronRight className={cn("w-4 h-4", secondaryTextColor)} />
+                                                </button>
+                                            </motion.div>
+                                        </div>
+
+                                        {/* existing progressive disclosure and remaining detail sections can stay below */}
                                         {/* ── BRAND DETAILS (Progressive Disclosure) ── */}
                                         <motion.div
                                             className={cn("rounded-xl border mb-5 overflow-hidden", cardBgColor, borderColor)}
