@@ -767,6 +767,7 @@ const CollabLinkLanding = () => {
 
   const isDeadlineProvided = Boolean(deadline);
   const isBudgetProvided = collabType === 'affiliate' ? true : collabType === 'paid' ? Number(exactBudget) > 0 : collabType === 'barter' ? Number(barterValue) > 0 : collabType === 'hybrid' ? (Number(exactBudget) > 0 && Number(barterValue) > 0) : true;
+  const isBarterLikeCollab = (type: string | null | undefined) => type === 'barter' || type === 'hybrid' || type === 'both';
 
   const isStep1Ready = Boolean(collabType && deliverables.length > 0);
   const isValidBrandEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(brandEmail);
