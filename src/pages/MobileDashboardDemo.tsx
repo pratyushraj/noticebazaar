@@ -4751,7 +4751,7 @@ const MobileDashboardDemo = ({
 
                 {/* ─── NAVIGATION BAR (Redesigned) ─── */}
                 <div
-                    className={cn('fixed bottom-0 inset-x-0 border-t z-[1100] transition-all duration-500 xl:hidden', isDark ? 'border-[#1F2937] bg-[#0B0F14]/90' : 'border-border bg-secondary/90')}
+                    className={cn('fixed bottom-0 inset-x-0 border-t z-[1100] transition-all duration-500', isDark ? 'border-[#1F2937] bg-[#0B0F14]/90' : 'border-border bg-secondary/90')}
                     style={{ backdropFilter: 'blur(30px)', WebkitBackdropFilter: 'blur(30px)' }}
                 >
                     <div className="max-w-md md:max-w-2xl mx-auto flex items-center justify-between px-4 py-3 pb-safe gap-1" style={{ paddingBottom: 'max(env(safe-area-inset-bottom), 16px)' }}>
