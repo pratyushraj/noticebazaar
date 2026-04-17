@@ -44,6 +44,11 @@ self.addEventListener('fetch', (event) => {
   const { request } = event;
   const url = new URL(request.url);
 
+  // Cache API only supports http(s). Extensions can inject chrome-extension:// requests.
+  if (url.protocol !== 'http:' && url.protocol !== 'https:') {
+    return;
+  }
+
   // Never cache API calls
   if (url.pathname.startsWith('/api/')) {
     return;
