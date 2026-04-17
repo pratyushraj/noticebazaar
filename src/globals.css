@@ -1,3 +1,7 @@
+/* Design system tokens (neutral grayscale + subtle accent).
+   Must be before Tailwind directives to satisfy CSS @import ordering. */
+@import "./styles/design-tokens.css";
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -27,14 +31,7 @@
   }
 }
 
-/* Prevent flicker by ensuring body has background color */
-html {
-  background: #ffffff;
-}
-
-body {
-  background: #ffffff;
-}
+/* Prevent flicker: rely on semantic theme tokens, not hardcoded white. */
 
 /* Touch Feedback - Scale Animation */
 .touch-feedback {
@@ -1272,4 +1269,3 @@ textarea:focus-visible,
 .sonner-toast {
   z-index: 20100 !important;
 }
-

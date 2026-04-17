@@ -81,6 +81,29 @@ export default {
         success: "hsl(var(--success))",
         warning: "hsl(var(--warning))",
         destructive: "hsl(var(--destructive))",
+
+        // Design tokens (OKLCH/HEX), usable via `text-ds-text`, `bg-ds-surface-2`, etc.
+        // These are additive; existing app colors remain mapped to HSL variables.
+        ds: {
+          bg: "var(--ds-bg)",
+          surface1: "var(--ds-surface-1)",
+          surface2: "var(--ds-surface-2)",
+          surface3: "var(--ds-surface-3)",
+          text: "var(--ds-text)",
+          "text-muted": "var(--ds-text-muted)",
+          "text-subtle": "var(--ds-text-subtle)",
+          border: "var(--ds-border)",
+          "border-strong": "var(--ds-border-strong)",
+          accent: "var(--ds-accent)",
+          "accent-soft": "var(--ds-accent-soft)",
+          "accent-soft-border": "var(--ds-accent-soft-border)",
+          success: "var(--ds-success)",
+          warning: "var(--ds-warning)",
+          error: "var(--ds-error)",
+          "success-bg": "var(--ds-success-bg)",
+          "warning-bg": "var(--ds-warning-bg)",
+          "error-bg": "var(--ds-error-bg)",
+        },
       },
       borderRadius: {
         lg: "0.75rem",

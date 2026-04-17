@@ -1,0 +1,148 @@
+/*
+  Design Tokens (Light + Dark)
+  Goals:
+  - Neutral grayscale, subtle accent (blue-purple)
+  - Avoid pure #000/#fff
+  - Depth via layered surfaces (not heavy shadows)
+  - OKLCH first, with safe HEX fallback for older browsers
+
+  Usage:
+  - Prefer semantic tokens (bg/text/border/accent) in app code.
+  - Tailwind can consume these via arbitrary values or mapped theme extensions.
+*/
+
+:root {
+  /* ---------- Fallback (HEX) ---------- */
+  --ds-gray-1: #f6f7f9;
+  --ds-gray-2: #eef1f4;
+  --ds-gray-3: #e3e8ee;
+  --ds-gray-4: #d2dbe4;
+  --ds-gray-5: #b9c5d1;
+  --ds-gray-6: #93a3b5;
+  --ds-gray-7: #6f8194;
+  --ds-gray-8: #4c5b6b;
+  --ds-gray-9: #2a3440;
+  --ds-gray-10: #111821;
+
+  /* Accent (subtle blue-purple) */
+  --ds-accent: #5b72ff;
+  --ds-accent-2: #7a5cff;
+
+  /* Intent fallbacks */
+  --ds-success: #2bb673;
+  --ds-warning: #d6a21a;
+  --ds-error: #e0564f;
+
+  /* ---------- OKLCH overrides ---------- */
+  /* Grayscale scale: 10 steps */
+  --ds-gray-1: oklch(0.975 0.004 255);
+  --ds-gray-2: oklch(0.955 0.006 255);
+  --ds-gray-3: oklch(0.925 0.008 255);
+  --ds-gray-4: oklch(0.885 0.010 255);
+  --ds-gray-5: oklch(0.820 0.012 255);
+  --ds-gray-6: oklch(0.710 0.014 255);
+  --ds-gray-7: oklch(0.600 0.014 255);
+  --ds-gray-8: oklch(0.470 0.014 255);
+  --ds-gray-9: oklch(0.330 0.012 255);
+  --ds-gray-10: oklch(0.210 0.010 255);
+
+  /* Accent */
+  --ds-accent: oklch(0.660 0.120 265);
+  --ds-accent-2: oklch(0.640 0.110 285);
+
+  /* Intent */
+  --ds-success: oklch(0.650 0.100 145);
+  --ds-warning: oklch(0.760 0.120  85);
+  --ds-error:   oklch(0.620 0.150  25);
+
+  /* ---------- Semantic (Light) ---------- */
+  --ds-bg: var(--ds-gray-1);
+  --ds-surface-1: color-mix(in oklch, var(--ds-gray-2) 88%, var(--ds-accent) 12%);
+  --ds-surface-2: var(--ds-gray-2);
+  --ds-surface-3: var(--ds-gray-3);
+
+  --ds-text: var(--ds-gray-10);
+  --ds-text-muted: color-mix(in oklch, var(--ds-gray-10) 72%, var(--ds-gray-6));
+  --ds-text-subtle: color-mix(in oklch, var(--ds-gray-10) 55%, var(--ds-gray-6));
+
+  --ds-border: color-mix(in oklch, var(--ds-gray-4) 82%, var(--ds-gray-5));
+  --ds-border-strong: color-mix(in oklch, var(--ds-gray-5) 85%, var(--ds-gray-6));
+
+  --ds-accent-soft: color-mix(in oklch, var(--ds-accent) 14%, var(--ds-bg));
+  --ds-accent-soft-border: color-mix(in oklch, var(--ds-accent) 26%, var(--ds-border));
+  --ds-text-on-accent-soft: color-mix(in oklch, var(--ds-gray-10) 90%, var(--ds-gray-1));
+
+  --ds-hover: color-mix(in oklch, var(--ds-gray-10) 6%, var(--ds-bg));
+  --ds-active: color-mix(in oklch, var(--ds-gray-10) 10%, var(--ds-bg));
+
+  --ds-focus: color-mix(in oklch, var(--ds-accent) 70%, var(--ds-gray-6));
+  --ds-focus-bg: color-mix(in oklch, var(--ds-accent) 22%, var(--ds-bg));
+
+  --ds-success-bg: color-mix(in oklch, var(--ds-success) 18%, var(--ds-bg));
+  --ds-warning-bg: color-mix(in oklch, var(--ds-warning) 18%, var(--ds-bg));
+  --ds-error-bg: color-mix(in oklch, var(--ds-error) 18%, var(--ds-bg));
+
+  /* Depth: light shadows only. Use layers first. */
+  --ds-shadow-soft: 0 8px 24px oklch(0 0 0 / 0.06);
+  --ds-shadow-pop: 0 14px 40px oklch(0 0 0 / 0.08);
+
+  /* Optional: subtle premium gradient */
+  --ds-gradient-accent: linear-gradient(135deg, var(--ds-accent), var(--ds-accent-2));
+}
+
+/* Dark mode: prefer using `.dark` to match Tailwind's darkMode=class */
+.dark {
+  /* Fallback HEX */
+  --ds-gray-1: #0f141b;
+  --ds-gray-2: #141b24;
+  --ds-gray-3: #1a2330;
+  --ds-gray-4: #243041;
+  --ds-gray-5: #334258;
+  --ds-gray-6: #53657c;
+  --ds-gray-7: #778aa0;
+  --ds-gray-8: #9fb0c0;
+  --ds-gray-9: #dbe3ec;
+  --ds-gray-10: #f2f4f7;
+
+  /* OKLCH overrides */
+  --ds-gray-1: oklch(0.190 0.010 255);
+  --ds-gray-2: oklch(0.220 0.010 255);
+  --ds-gray-3: oklch(0.255 0.011 255);
+  --ds-gray-4: oklch(0.300 0.012 255);
+  --ds-gray-5: oklch(0.360 0.012 255);
+  --ds-gray-6: oklch(0.500 0.013 255);
+  --ds-gray-7: oklch(0.640 0.013 255);
+  --ds-gray-8: oklch(0.780 0.012 255);
+  --ds-gray-9: oklch(0.910 0.008 255);
+  --ds-gray-10: oklch(0.965 0.004 255);
+
+  --ds-bg: var(--ds-gray-1);
+  --ds-surface-1: color-mix(in oklch, var(--ds-gray-2) 86%, var(--ds-accent) 14%);
+  --ds-surface-2: var(--ds-gray-2);
+  --ds-surface-3: var(--ds-gray-3);
+
+  --ds-text: var(--ds-gray-10);
+  --ds-text-muted: color-mix(in oklch, var(--ds-gray-10) 74%, var(--ds-gray-7));
+  --ds-text-subtle: color-mix(in oklch, var(--ds-gray-10) 58%, var(--ds-gray-7));
+
+  --ds-border: color-mix(in oklch, var(--ds-gray-4) 72%, var(--ds-gray-3));
+  --ds-border-strong: color-mix(in oklch, var(--ds-gray-5) 78%, var(--ds-gray-3));
+
+  --ds-accent-soft: color-mix(in oklch, var(--ds-accent) 16%, var(--ds-bg));
+  --ds-accent-soft-border: color-mix(in oklch, var(--ds-accent) 30%, var(--ds-border));
+  --ds-text-on-accent-soft: color-mix(in oklch, var(--ds-gray-10) 92%, var(--ds-gray-1));
+
+  --ds-hover: color-mix(in oklch, var(--ds-gray-10) 5%, var(--ds-bg));
+  --ds-active: color-mix(in oklch, var(--ds-gray-10) 9%, var(--ds-bg));
+
+  --ds-focus: color-mix(in oklch, var(--ds-accent) 80%, var(--ds-gray-6));
+  --ds-focus-bg: color-mix(in oklch, var(--ds-accent) 24%, var(--ds-bg));
+
+  --ds-success-bg: color-mix(in oklch, var(--ds-success) 16%, var(--ds-bg));
+  --ds-warning-bg: color-mix(in oklch, var(--ds-warning) 16%, var(--ds-bg));
+  --ds-error-bg: color-mix(in oklch, var(--ds-error) 16%, var(--ds-bg));
+
+  --ds-shadow-soft: 0 10px 30px oklch(0 0 0 / 0.22);
+  --ds-shadow-pop: 0 18px 60px oklch(0 0 0 / 0.28);
+}
+
