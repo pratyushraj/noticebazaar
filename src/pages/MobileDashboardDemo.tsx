@@ -3460,66 +3460,8 @@ const MobileDashboardDemo = ({
                                         </div>
                                     </div>
 
-                                    {/* Intake Link Promoters / Quick Share */}
-                                    {!!username && (
-                                    <div className="px-5 mb-8">
-                                        <motion.div
-                                            initial={{ opacity: 0, y: 15 }}
-                                            animate={{ opacity: 1, y: 0 }}
-                                            transition={{ delay: 0.15 }}
-                                            className={cn(
-                                                "p-6 rounded-[2.5rem] border relative overflow-hidden group",
-                                                isDark ? "bg-background border-border/5" : "bg-card border-border shadow-sm"
-                                            )}
-                                        >
-                                            {/* Simple animated background element */}
-                                            <div className="absolute top-0 right-0 p-8 opacity-[0.03] group-hover:opacity-[0.06] transition-opacity">
-                                                <Link2 size={120} />
-                                            </div>
-
-                                            <div className="flex items-center gap-3 mb-4">
-                                                <div className="w-10 h-10 rounded-2xl bg-info/10 flex items-center justify-center">
-                                                    <Link2 className="w-5 h-5 text-info" />
-                                                </div>
-                                                <div>
-                                                    <h3 className={cn("text-[15px] font-bold tracking-tight", textColor)}>Promote Collab Link</h3>
-                                                    <p className={cn("text-[11px] opacity-40 uppercase font-black tracking-widest", textColor)}>Quick Share Tools</p>
-                                                </div>
-                                            </div>
-
-                                            <div className="mb-3 p-2.5 rounded-xl bg-background/60 border border-border">
-                                                <p className="text-[11px] font-mono font-medium text-center truncate" style={{ color: 'var(--foreground)', opacity: 0.7 }}>creatorarmour.com/collab/{username}</p>
-                                            </div>
-
-                                            <div className="flex gap-2.5">
-                                                <button type="button"
-                                                    onClick={handleCopyStorefront}
-                                                    className={cn(
-                                                        "flex-1 flex flex-col items-center justify-center py-4 rounded-[1.5rem] border transition-all active:scale-[0.97]",
-                                                        isDark ? "bg-card border-border hover:bg-secondary/50" : "bg-background border-border hover:bg-background shadow-sm"
-                                                    )}
-                                                >
-                                                    <Copy className="w-4 h-4 mb-2 opacity-60" />
-                                                    <span className={cn("text-[11px] font-bold font-outfit", textColor)}>Copy Bio Link</span>
-                                                </button>
-                                                <button type="button"
-                                                    onClick={handleCopyDMReply}
-                                                    className={cn(
-                                                        "flex-1 flex flex-col items-center justify-center py-4 rounded-[1.5rem] border transition-all active:scale-[0.97]",
-                                                        isDark ? "bg-card border-border hover:bg-secondary/50" : "bg-background border-border hover:bg-background shadow-sm"
-                                                    )}
-                                                >
-                                                    <MessageSquare className="w-4 h-4 mb-2 opacity-60" />
-                                                    <span className={cn("text-[11px] font-bold font-outfit", textColor)}>Copy DM Reply</span>
-                                                </button>
-                                            </div>
-
-                                            <p className={cn("text-[10px] text-center mt-3 opacity-40 font-medium italic", textColor)}>
-                                                Share your collab link with brands — they'll submit briefs directly
-                                            </p>
-                                        </motion.div>
-                                    </div>
-                                    )}
+                                    {/* NOTE: Collab link promotion is already covered above (Get More Deals + Grow Your Brand).
+                                       Keeping a single surface avoids duplicate "collab link" sections on the dashboard. */}
                                 </>
                             )}
 
@@ -3551,10 +3493,11 @@ const MobileDashboardDemo = ({
                                             .map(d => ({ ...d, isConfirmedDeal: true }))
                                             .slice(0, 5);
 
-                                        const pendingList = pendingOffersDeduplicated;
-                                        const showDemo = pendingList.length === 0 && confirmedDeals.length === 0 && isDemoOfferEnabled;
-                                        const pendingSection = showDemo ? [fakeDemoOffer, ...pendingList] : pendingList;
-                                        const hasAnyDeals = pendingList.length > 0 || confirmedDeals.length > 0;
+                                        // Dashboard already shows "Incoming Offers" above.
+                                        // Keep the lower list focused on active deals only to avoid duplicating offers.
+                                        const showDemo = confirmedDeals.length === 0 && isDemoOfferEnabled;
+                                        const pendingSection = showDemo ? [fakeDemoOffer] : [];
+                                        const hasAnyDeals = confirmedDeals.length > 0;
 
                                         if (isLoadingDeals) {
                                             return (
@@ -3572,10 +3515,15 @@ const MobileDashboardDemo = ({
                                                     <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-500 to-cyan-500 mx-auto mb-4 flex items-center justify-center shadow-lg shadow-blue-500/20">
                                                         <Briefcase className="w-7 h-7 text-white" />
                                                     </div>
-                                                    <h3 className={cn("text-[18px] font-black tracking-tight mb-2 font-outfit", textColor)}>Share your link to get brand requests</h3>
-                                                    <p className={cn("text-[13px] leading-relaxed opacity-70 mb-5", textColor)}>Share your collab link with brands — they'll submit briefs through it.</p>
-                                                    <p className={cn("text-[11px] font-mono font-medium mb-4 truncate", isDark ? "text-foreground/50" : "text-muted-foreground")}>creatorarmour.com/{username}</p>
-                                                    <button type="button" onClick={() => { triggerHaptic(); handleCopyStorefront(); }} className="h-12 px-6 rounded-2xl bg-gradient-to-r from-blue-600 to-cyan-500 text-white font-black text-[13px] shadow-lg shadow-blue-500/20 active:scale-95 transition-all">Copy Link</button>
+                                                    <h3 className={cn("text-[18px] font-black tracking-tight mb-2 font-outfit", textColor)}>No active deals yet</h3>
+                                                    <p className={cn("text-[13px] leading-relaxed opacity-70 mb-5", textColor)}>New offers will appear in the New Offers tab as soon as brands send them.</p>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => { triggerHaptic(); setActiveTab('deals'); setCollabSubTab('pending'); }}
+                                                        className="h-12 px-6 rounded-2xl bg-gradient-to-r from-blue-600 to-cyan-500 text-white font-black text-[13px] shadow-lg shadow-blue-500/20 active:scale-95 transition-all"
+                                                    >
+                                                        View New Offers
+                                                    </button>
                                                 </div>
                                             );
                                         }
