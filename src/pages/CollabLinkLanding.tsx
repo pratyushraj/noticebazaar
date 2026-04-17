@@ -170,6 +170,7 @@ interface FormErrors {
   campaignDescription?: string;
   deliverables?: string;
   budget?: string;
+  barterProductImageUrl?: string;
 }
 
 // Reserved usernames that should not be used for collab links
@@ -730,7 +731,9 @@ const CollabLinkLanding = () => {
 
   const isStep1Ready = Boolean(collabType && deliverables.length > 0);
   const isValidBrandEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(brandEmail);
-  const isStep2Ready = Boolean(brandEmail.trim() && isValidBrandEmail);
+  const needsProductImage = collabType === 'barter' || isHybridCollab(collabType);
+  const isProductImageReady = !needsProductImage || Boolean(String(barterProductImageUrl || '').trim());
+  const isStep2Ready = Boolean(brandEmail.trim() && isValidBrandEmail && isProductImageReady);
 
   const completionChecks = useMemo(() => ([
     { label: 'Collab type', complete: isStep1Ready },
@@ -941,6 +944,7 @@ const CollabLinkLanding = () => {
     barterValue,
     barterProductName,
     barterProductCategory,
+    barterProductImageUrl,
     campaignCategory,
     campaignDescription,
     deliverables,
@@ -959,6 +963,7 @@ const CollabLinkLanding = () => {
     if (typeof data.barterValue === 'string') setBarterValue(data.barterValue);
     if (typeof data.barterProductName === 'string') setBarterProductName(data.barterProductName);
     if (typeof data.barterProductCategory === 'string') setBarterProductCategory(data.barterProductCategory);
+    if (typeof data.barterProductImageUrl === 'string') setBarterProductImageUrl(data.barterProductImageUrl);
     if (typeof data.campaignCategory === 'string') setCampaignCategory(data.campaignCategory);
     if (typeof data.campaignDescription === 'string') setCampaignDescription(data.campaignDescription);
     if (Array.isArray(data.deliverables)) setDeliverables(data.deliverables.filter((d): d is string => typeof d === 'string'));
@@ -1381,7 +1386,15 @@ const CollabLinkLanding = () => {
 
     if (currentStep === 2) {
       if (!isStep2Ready) {
-        toast.error('Please add your email');
+        if (!brandEmail.trim() || !isValidBrandEmail) {
+          toast.error('Please add your email');
+          return;
+        }
+        if (needsProductImage && !String(barterProductImageUrl || '').trim()) {
+          toast.error('Please upload a product image');
+          return;
+        }
+        toast.error('Please complete the required fields');
         return;
       }
       formRef.current?.requestSubmit();
@@ -1421,6 +1434,10 @@ const CollabLinkLanding = () => {
       if (!budgetRange && !exactBudget) {
         newErrors.budget = 'Please specify paid budget details';
       }
+    }
+
+    if ((collabType === 'barter' || isHybridCollab(collabType)) && !String(barterProductImageUrl || '').trim()) {
+      newErrors.barterProductImageUrl = 'Please upload a product image';
     }
 
     setErrors(newErrors);
@@ -1472,7 +1489,7 @@ const CollabLinkLanding = () => {
           barter_value: barterValue ? parseFloat(barterValue) : null,
           barter_product_name: barterProductName || null,
           barter_product_category: barterProductCategory || null,
-          barter_product_image_url: null,
+          barter_product_image_url: barterProductImageUrl ? String(barterProductImageUrl).trim() : null,
           campaign_description: campaignDescription,
           deliverables: deliverables.map(d => `${d}${deliverableQuantities[d] > 1 ? ` (x${deliverableQuantities[d]})` : ''}`),
           usage_rights: false,
@@ -3432,6 +3449,71 @@ const CollabLinkLanding = () => {
                               placeholder="Product name you'll send"
                               className="h-12 px-4 rounded-xl border-white bg-white font-bold text-[14px] shadow-sm"
                             />
+
+                            <div>
+                              <div className="flex items-center justify-between gap-3 mb-2">
+                                <p className="text-[12px] font-black uppercase tracking-widest text-slate-500">Product image</p>
+                                {barterProductImageUrl ? (
+                                  <span className="text-[11px] font-bold text-emerald-700">Uploaded</span>
+                                ) : (
+                                  <span className="text-[11px] font-bold text-slate-400">Required</span>
+                                )}
+                              </div>
+
+                              {barterProductImageUrl ? (
+                                <div className="flex items-center gap-3">
+                                  <div className="w-16 h-16 rounded-2xl overflow-hidden border border-slate-200 bg-white">
+                                    <img src={barterProductImageUrl} alt="Product" className="w-full h-full object-cover" />
+                                  </div>
+                                  <div className="flex-1 min-w-0">
+                                    <p className="text-[12px] font-semibold text-slate-600 truncate">Product image added</p>
+                                    <div className="mt-2 flex items-center gap-2">
+                                      <label
+                                        className="inline-flex items-center justify-center h-10 px-4 rounded-2xl bg-white border border-slate-200 text-slate-700 text-[12px] font-black cursor-pointer active:scale-[0.99] transition-all"
+                                      >
+                                        Change
+                                        <input
+                                          type="file"
+                                          accept="image/*"
+                                          className="hidden"
+                                          onChange={handleBarterImageChange}
+                                          disabled={barterImageUploading}
+                                        />
+                                      </label>
+                                      <button
+                                        type="button"
+                                        onClick={() => { setBarterProductImageUrl(''); }}
+                                        className="inline-flex items-center justify-center h-10 px-4 rounded-2xl bg-white border border-slate-200 text-slate-500 text-[12px] font-black active:scale-[0.99] transition-all"
+                                      >
+                                        Remove
+                                      </button>
+                                    </div>
+                                  </div>
+                                </div>
+                              ) : (
+                                <label
+                                  className={cn(
+                                    "flex items-center justify-center h-12 rounded-2xl bg-white border text-[12px] font-black cursor-pointer active:scale-[0.99] transition-all",
+                                    errors.barterProductImageUrl ? "border-destructive text-destructive" : "border-slate-200 text-slate-700",
+                                    barterImageUploading && "opacity-60 cursor-not-allowed"
+                                  )}
+                                >
+                                  {barterImageUploading ? 'Uploading...' : 'Upload product image'}
+                                  <input
+                                    type="file"
+                                    accept="image/*"
+                                    className="hidden"
+                                    onChange={handleBarterImageChange}
+                                    disabled={barterImageUploading}
+                                  />
+                                </label>
+                              )}
+
+                              {errors.barterProductImageUrl && (
+                                <p className="mt-2 text-[12px] font-bold text-destructive">{errors.barterProductImageUrl}</p>
+                              )}
+                            </div>
+
                             {collabType === 'hybrid' && (
                               <div className="relative group">
                                 <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-black text-[15px] group-focus-within:text-slate-900 transition-colors">₹</div>

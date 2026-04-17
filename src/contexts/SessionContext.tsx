@@ -20,6 +20,8 @@ const debugError = (...args: unknown[]) => {
   if (import.meta.env.DEV) console.error(...args);
 };
 
+let hasLoggedMissingSessionProvider = false;
+
 type RedirectProfile = {
   role: string | null;
   onboarding_complete: boolean | null;
@@ -180,6 +182,8 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
         last_instagram_sync: null,
         instagram_profile_photo: null,
         avg_rate_reel: null,
+        bank_account_name: null,
+        bank_upi: null,
         pricing_min: null,
         pricing_avg: null,
         pricing_max: null,
@@ -224,6 +228,22 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
         if (Object.keys(handleData).length > 0) {
           usernameValue = (handleData as any)?.username || null;
           instagramHandleValue = (handleData as any)?.instagram_handle || null;
+        }
+      } catch (_error) {
+        // Optional fields may not exist in older schemas.
+      }
+
+      try {
+        const payoutData = await fetchOptionalProfileFields([
+          'bank_account_name',
+          'bank_upi',
+        ]);
+        if (Object.keys(payoutData).length > 0) {
+          optionalFields = {
+            ...optionalFields,
+            bank_account_name: (payoutData as any)?.bank_account_name ?? null,
+            bank_upi: (payoutData as any)?.bank_upi ?? null,
+          } as any;
         }
       } catch (_error) {
         // Optional fields may not exist in older schemas.
@@ -370,7 +390,7 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
         const doubleHashMatch = hash.match(/^#\/([^#]+)#(access_token|type=)/);
         if (doubleHashMatch) {
           debugLog('[SessionContext] Detected double hash format, extracting route and tokens...', hash);
-          // Extract the intended route (e.g., "creator-onboarding")
+          // Extract the intended route (e.g., "creator-dashboard")
           intendedRoute = doubleHashMatch[1];
           // Extract the access_token part (everything after the second #)
           const secondHashIndex = hash.indexOf('#', 1);
@@ -388,7 +408,7 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
             hashParams.get('type') === 'magiclink' ||
             hashParams.get('type') === 'recovery';
 
-          // Check if there's a route in the hash (e.g., #/creator-onboarding?access_token=...)
+          // Check if there's a route in the hash (e.g., #/creator-dashboard?access_token=...)
           const routeMatch = hash.match(/^#\/([^?#]+)/);
           if (routeMatch) {
             intendedRoute = routeMatch[1];
@@ -447,9 +467,9 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
                 debugLog('[SessionContext] Using stored intended route from sessionStorage:', intendedRoute);
               }
             } else if (!intendedRoute || intendedRoute === 'login') {
-              intendedRoute = 'creator-onboarding';
+              intendedRoute = 'creator-dashboard';
               if (import.meta.env?.DEV) {
-                debugLog('[SessionContext] No intended route found, defaulting to creator-onboarding');
+                debugLog('[SessionContext] No intended route found, defaulting to creator-dashboard');
               }
             }
           } else if (isUsernameRoute) {
@@ -499,44 +519,29 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
               } else if (sessionData.session) {
                 debugLog('[SessionContext] Session set successfully via manual token parsing');
                 // Use path-based route (BrowserRouter).
-                const metadataRole = getMetadataRole(sessionData.session.user as any);
-                let redirectPath =
-                  metadataRole === 'brand' ? '/brand-dashboard' :
-                  metadataRole === 'admin' ? '/admin-dashboard' :
-                  metadataRole === 'chartered_accountant' ? '/ca-dashboard' :
-                  metadataRole === 'lawyer' ? '/lawyer-dashboard' :
-                  '/creator-onboarding';
+                // Production safety: `profiles.role` is the only source of truth for redirects.
+                // Do not redirect based solely on user_metadata; wait for profile.
+                let redirectPath = '/creator-dashboard';
 
                 if (intendedRoute && intendedRoute !== 'login' && intendedRoute !== 'signup') {
                   redirectPath = `/${intendedRoute}`;
                 } else if (sessionData.session.user?.id) {
                   try {
                     const profileData = await fetchRedirectProfile(sessionData.session.user.id);
+                    const userEmail = sessionData.session.user.email?.toLowerCase();
+                    const isPratyush = userEmail === 'pratyushraj@outlook.com';
+                    const p = (profileData as any);
 
-                    if (profileData) {
-                      const userEmail = sessionData.session.user.email?.toLowerCase();
-                      const isPratyush = userEmail === 'pratyushraj@outlook.com';
-
-                      const p = (profileData as any);
-                      if (isPratyush) {
-                        redirectPath = '/creator-dashboard';
-                      } else if (p?.role === 'admin') {
-                        redirectPath = '/admin-dashboard';
-                        debugLog('[SessionContext] Admin user detected in initializeSession');
-                      } else if (p?.role === 'brand') {
-                        redirectPath = '/brand-dashboard';
-                      } else if (p?.role === 'chartered_accountant') {
-                        redirectPath = '/ca-dashboard';
-                      } else if (p?.role === 'lawyer') {
-                        redirectPath = '/lawyer-dashboard';
-                      } else {
-                        redirectPath = p?.onboarding_complete ? '/creator-dashboard' : '/creator-onboarding';
-                      }
-                    } else if (metadataRole === 'brand') {
-                      redirectPath = '/brand-dashboard';
-                    }
+                    if (isPratyush) redirectPath = '/creator-dashboard';
+                    else if (p?.role === 'admin') redirectPath = '/admin-dashboard';
+                    else if (p?.role === 'brand') redirectPath = '/brand-dashboard';
+                    else if (p?.role === 'chartered_accountant') redirectPath = '/ca-dashboard';
+                    else if (p?.role === 'lawyer') redirectPath = '/lawyer-dashboard';
+                    else redirectPath = '/creator-dashboard';
                   } catch (error) {
                     debugError('[SessionContext] Error fetching profile in initializeSession:', error);
+                    // If profile can't be read, don't guess; let ProtectedRoute hold the user on a loader + retry.
+                    return;
                   }
                 }
 
@@ -601,14 +606,20 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
             !hasRouteInHash
           ) {
             debugLog('[SessionContext] Session exists on bare root/login, navigating to dashboard...');
-            const metadataRole = getMetadataRole(currentSession.user as any);
-            const defaultPath =
-              metadataRole === 'brand' ? '/brand-dashboard' :
-              metadataRole === 'admin' ? '/admin-dashboard' :
-              metadataRole === 'chartered_accountant' ? '/ca-dashboard' :
-              metadataRole === 'lawyer' ? '/lawyer-dashboard' :
-              '/creator-dashboard';
-            navigate(defaultPath, { replace: true });
+            try {
+              const profileData = await fetchRedirectProfile(currentSession.user.id);
+              const p = (profileData as any);
+              const defaultPath =
+                p?.role === 'brand' ? '/brand-dashboard' :
+                p?.role === 'admin' ? '/admin-dashboard' :
+                p?.role === 'chartered_accountant' ? '/ca-dashboard' :
+                p?.role === 'lawyer' ? '/lawyer-dashboard' :
+                '/creator-dashboard';
+              navigate(defaultPath, { replace: true });
+            } catch (e) {
+              debugWarn('[SessionContext] Unable to fetch profile for root/login redirect; skipping redirect until profile is available.');
+              return;
+            }
           }
         }
       } catch (e: any) {
@@ -673,13 +684,13 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
           }
         } else {
           // Hash might already be normalized (#access_token=...) or have route in query (#/route?access_token=...)
-          // Check if there's a route in the hash (e.g., #/creator-onboarding?access_token=...)
+          // Check if there's a route in the hash (e.g., #/creator-dashboard?access_token=...)
           const routeMatch = hash.match(/^#\/([^?#]+)/);
           if (routeMatch) {
             intendedRoute = routeMatch[1];
           }
           // If hash is normalized (#access_token=...), we need to get route from sessionStorage or check if it's a known OAuth route
-          // For now, if no route found and we have tokens, default to creator-onboarding (common OAuth target)
+          // If no route found and we have tokens, default to creator-dashboard
           if (!intendedRoute && (hash.includes('access_token') || hash.includes('type='))) {
             // Try to get intended route from sessionStorage (set by initializeSession)
             const storedRoute = sessionStorage.getItem('oauth_intended_route');
@@ -757,7 +768,7 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
           }
 
           // If we're already on a dashboard path, skip profile fetch and redirect (avoids timeout + log spam on token refresh / repeated SIGNED_IN)
-          const dashboardPaths = ['/creator-dashboard', '/admin-dashboard', '/ca-dashboard', '/lawyer-dashboard', '/creator-onboarding'];
+          const dashboardPaths = ['/creator-dashboard', '/admin-dashboard', '/ca-dashboard', '/lawyer-dashboard'];
           if (dashboardPaths.includes(pathname)) {
             setIsAuthInitializing(false);
             return;
@@ -772,13 +783,7 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
             userEmail: session?.user?.email
           });
 
-          const metadataRole = getMetadataRole(session.user as any);
-          let targetPath =
-            metadataRole === 'brand' ? '/brand-dashboard' :
-            metadataRole === 'admin' ? '/admin-dashboard' :
-            metadataRole === 'chartered_accountant' ? '/ca-dashboard' :
-            metadataRole === 'lawyer' ? '/lawyer-dashboard' :
-            '/creator-onboarding';
+          let targetPath = '/creator-dashboard';
 
           // Routes that should redirect admin users to admin dashboard instead
           const adminOnlyRoutes = ['admin-influencers', 'admin-discovery'];
@@ -796,67 +801,22 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
             }
           }
 
-          if ((targetPath === '/creator-dashboard' || targetPath === '/creator-onboarding') && session?.user?.id) {
-            // Fetch profile to determine role-based redirect and onboarding status, with 2.5s timeout
-            const profileFetchTimeoutMs = 2500;
+          if (session?.user?.id) {
             try {
-              debugLog('[SessionContext] Fetching profile for user:', session.user.id);
-                const profilePromise = (supabase
-                  .from('profiles')
-                  .select('role, onboarding_complete, profile_completion') as any)
-                  .eq('id', session.user.id)
-                  .single();
-              const timeoutFallback = { data: null as { role: string; onboarding_complete?: boolean } | null, error: { message: 'timeout' } };
-              const result = await Promise.race([
-                  fetchRedirectProfile(session.user.id),
-                  new Promise<typeof timeoutFallback>((resolve) =>
-                    setTimeout(() => resolve(timeoutFallback), profileFetchTimeoutMs)
-                  ),
-              ]);
-              const profileData = result?.data ?? null;
-              const profileError = result?.error;
-
-              if (profileError) {
-                debugWarn('[SessionContext] Profile fetch for redirect:', profileError.message);
-              }
-
-              if (profileData) {
-                debugLog('[SessionContext] Profile fetched, role:', profileData.role, 'onboarding_complete:', profileData.onboarding_complete);
-                const userEmail = session.user.email?.toLowerCase();
-                const isPratyush = userEmail === 'pratyushraj@outlook.com';
-
-                const p = (profileData as any);
-                if (isPratyush) {
-                  targetPath = '/creator-dashboard';
-                } else if (p?.role === 'admin') {
-                  targetPath = '/admin-dashboard';
-                  debugLog('[SessionContext] Admin user detected, redirecting to admin dashboard');
-                } else if (p?.role === 'brand') {
-                  targetPath = '/brand-dashboard';
-                } else if (p?.role === 'chartered_accountant') {
-                  targetPath = '/ca-dashboard';
-                } else if (p?.role === 'lawyer') {
-                  targetPath = '/lawyer-dashboard';
-                } else {
-                  targetPath = p?.onboarding_complete ? '/creator-dashboard' : '/creator-onboarding';
-                }
-              } else {
-                debugLog('[SessionContext] No profile data / timeout, defaulting by metadata role');
-                targetPath =
-                  metadataRole === 'brand' ? '/brand-dashboard' :
-                  metadataRole === 'admin' ? '/admin-dashboard' :
-                  metadataRole === 'chartered_accountant' ? '/ca-dashboard' :
-                  metadataRole === 'lawyer' ? '/lawyer-dashboard' :
-                  '/creator-onboarding';
-              }
+              debugLog('[SessionContext] Fetching profile for redirect (profiles.role source of truth):', session.user.id);
+              const profileData = await fetchRedirectProfile(session.user.id);
+              const userEmail = session.user.email?.toLowerCase();
+              const isPratyush = userEmail === 'pratyushraj@outlook.com';
+              const p = (profileData as any);
+              if (isPratyush) targetPath = '/creator-dashboard';
+              else if (p?.role === 'admin') targetPath = '/admin-dashboard';
+              else if (p?.role === 'brand') targetPath = '/brand-dashboard';
+              else if (p?.role === 'chartered_accountant') targetPath = '/ca-dashboard';
+              else if (p?.role === 'lawyer') targetPath = '/lawyer-dashboard';
+              else targetPath = '/creator-dashboard';
             } catch (error) {
-              debugWarn('[SessionContext] Profile fetch for redirect failed, redirecting by metadata role:', error);
-              targetPath =
-                metadataRole === 'brand' ? '/brand-dashboard' :
-                metadataRole === 'admin' ? '/admin-dashboard' :
-                metadataRole === 'chartered_accountant' ? '/ca-dashboard' :
-                metadataRole === 'lawyer' ? '/lawyer-dashboard' :
-                '/creator-onboarding';
+              debugWarn('[SessionContext] Profile fetch for redirect failed; skipping redirect until profile is available:', error);
+              return;
             }
           }
 
@@ -936,7 +896,11 @@ export const useSession = () => {
     // This should never happen if component is within SessionContextProvider
     // But during React's initial render or strict mode double-render, it might be temporarily undefined
     // Provide a fallback value instead of throwing to prevent crashes
-    debugError('[useSession] Context is undefined. This may indicate a component is outside SessionContextProvider or a timing issue.');
+    if (import.meta.env.DEV && !hasLoggedMissingSessionProvider) {
+      hasLoggedMissingSessionProvider = true;
+      // Use warn (not error) so we don't spam giant stacks during hot reload / strict-mode remounts.
+      debugWarn('[useSession] Context is undefined. This may indicate a component is outside SessionContextProvider or a timing issue.');
+    }
 
     // Return a safe fallback value to prevent crashes
     return {

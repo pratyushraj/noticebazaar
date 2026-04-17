@@ -2,7 +2,7 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import { ShieldCheck, ArrowLeft, Loader2 } from 'lucide-react';
-import { useNavigate, Link } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useSession } from '@/contexts/SessionContext';
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
@@ -10,25 +10,14 @@ import { toast } from 'sonner';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
-const LOGIN_LOADING_TIMEOUT_MS = 2000;
 const getErrorMessage = (error: unknown, fallback = 'An error occurred. Please try again.') =>
   error instanceof Error ? error.message : fallback;
 
-const getDashboardPathForRole = (role?: string | null, onboardingComplete?: boolean | null) => {
-  if (role === 'admin') return '/admin-dashboard';
-  if (role === 'brand') return '/brand-dashboard';
-  if (role === 'chartered_accountant') return '/ca-dashboard';
-  if (role === 'lawyer') return '/lawyer-dashboard';
-  return onboardingComplete ? '/creator-dashboard' : '/creator-onboarding';
-};
-
 const Login = () => {
-  const navigate = useNavigate();
-  const { session, loading, profile } = useSession();
+  const { session, loading } = useSession();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [loadingTimedOut, setLoadingTimedOut] = useState(false);
 
   useEffect(() => {
     document.title = 'Sign In | Creator Armour';
@@ -36,109 +25,19 @@ const Login = () => {
     meta?.setAttribute('content', 'Sign in to see your brand offers, active deals, and payments in one place.');
   }, []);
 
-  // If session check takes too long (e.g. network/Supabase slow), show form so user isn't stuck
+  // Login page no longer owns redirect logic.
+  // SessionContext + ProtectedRoute control all navigation after auth.
   useEffect(() => {
-    if (!loading) {
-      setLoadingTimedOut(false);
-      return;
-    }
-    const timer = setTimeout(() => setLoadingTimedOut(true), LOGIN_LOADING_TIMEOUT_MS);
-    return () => clearTimeout(timer);
-  }, [loading]);
-
-  useEffect(() => {
-    // Check for OAuth errors in query parameters first
     const urlParams = new URLSearchParams(window.location.search);
-    const error = urlParams.get('error');
-    const errorCode = urlParams.get('error_code');
-    const errorDescription = urlParams.get('error_description');
+    const error = urlParams.get('error') || urlParams.get('error_code') || urlParams.get('error_description');
+    if (!error) return;
 
-    if (error || errorCode || errorDescription) {
-      console.error('[Login] OAuth error detected:', { error, errorCode, errorDescription });
-
-      // Clean the URL immediately to prevent routing issues
-      const cleanUrl = window.location.pathname + window.location.hash;
-      window.history.replaceState({}, '', cleanUrl);
-
-      // Show user-friendly error message
-      let errorMessage = 'Google sign-in failed. Please try again.';
-
-      if (errorDescription) {
-        const decodedDescription = decodeURIComponent(errorDescription);
-        if (decodedDescription.includes('Unable to exchange external code')) {
-          errorMessage = 'Google sign-in timed out or was cancelled. Please try signing in again.';
-        } else if (decodedDescription.includes('invalid_client')) {
-          errorMessage = 'Google sign-in is temporarily unavailable. Please try again in a few minutes or use email/password.';
-        } else if (decodedDescription.includes('access_denied')) {
-          errorMessage = 'Google sign-in was cancelled. Please try again.';
-        }
-      }
-
-      toast.error(errorMessage, {
-        duration: 5000,
-      });
-
-      // Clear any OAuth-related sessionStorage
-      sessionStorage.removeItem('oauth_intended_route');
-
-      return; // Don't proceed with normal OAuth callback handling
-    }
-
-    // If session loading is finished and a session exists, redirect.
-    // But check if we're coming from OAuth callback first
-    const hash = window.location.hash;
-    const isOAuthCallback = hash.includes('access_token') ||
-      hash.includes('type=recovery') ||
-      hash.includes('type=magiclink') ||
-      urlParams.get('code') !== null; // OAuth code in query params
-
-    // Check if we just came from OAuth (check sessionStorage for OAuth intent)
-    const hasOAuthIntent = sessionStorage.getItem('oauth_intended_route') !== null;
-
-    // If we have a session and we're not in the middle of OAuth callback, redirect
-    // Also wait a bit if we just came from OAuth to let SessionContext process it
-	    if (!loading && session && !isOAuthCallback) {
-	      // If we have OAuth intent, wait a bit longer for SessionContext to redirect
-	      const delay = hasOAuthIntent ? 1000 : 200;
-	      console.log('[Login] Session exists, redirecting to dashboard', { hasOAuthIntent, delay });
-	      const timer = setTimeout(() => {
-	        // If we're still on /login, do a role-based redirect as a fallback.
-	        // (SessionContext should usually handle this, but this prevents brand users landing on creator routes.)
-	        if (window.location.pathname === '/login') {
-	          navigate(getDashboardPathForRole(profile?.role, profile?.onboarding_complete), { replace: true });
-	        }
-	      }, delay);
-	      return () => clearTimeout(timer);
-	    }
-
-    // If we're in OAuth callback but session isn't established yet, wait for it
-    if (!loading && !session && (isOAuthCallback || hasOAuthIntent)) {
-      console.log('[Login] OAuth callback detected, waiting for session...');
-      // Wait up to 5 seconds for session to be established
-      const maxWait = 5000;
-      const startTime = Date.now();
-      const checkSession = setInterval(() => {
-        supabase.auth.getSession().then(({ data: { session: currentSession } }) => {
-          if (currentSession) {
-            console.log('[Login] Session established after OAuth, redirecting...');
-            clearInterval(checkSession);
-            // Let SessionContext handle the redirect, but if it doesn't, redirect here
-	            setTimeout(() => {
-	              const currentHash = window.location.hash;
-	              if (currentHash.includes('access_token') || currentHash === '' || window.location.pathname === '/login') {
-	                navigate(getDashboardPathForRole(profile?.role, profile?.onboarding_complete), { replace: true });
-	              }
-	            }, 500);
-	          } else if (Date.now() - startTime > maxWait) {
-	            console.warn('[Login] Session not established after OAuth, timeout');
-            clearInterval(checkSession);
-          }
-        });
-      }, 200);
-
-      return () => clearInterval(checkSession);
-    }
-	  }, [session, loading, navigate, profile]);
+    // Clean URL to prevent loops (and keep the login screen usable).
+    const cleanUrl = window.location.pathname + window.location.hash;
+    window.history.replaceState({}, '', cleanUrl);
+    sessionStorage.removeItem('oauth_intended_route');
+    toast.error('Sign-in failed. Please try again.');
+  }, []);
 
   const handleEmailPasswordLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -232,7 +131,7 @@ const Login = () => {
         </div>
 
         {/* Loading: wait for session (with timeout so user isn't stuck) */}
-        {loading && !loadingTimedOut && !session && (
+        {loading && !session && (
           <div className="mb-6 flex flex-col items-center justify-center py-10 gap-4">
             <Loader2 className="h-10 w-10 animate-spin text-primary" aria-hidden="true" />
             <p className="text-muted-foreground text-sm font-bold tracking-widest uppercase">Checking your sign-in...</p>
@@ -243,33 +142,13 @@ const Login = () => {
         {session && (
           <div className="mb-6 space-y-4">
             <p className="text-muted-foreground text-sm text-center font-medium">
-              {loading ? 'Authenticating…' : 'Signed in. Opening your deals…'}
+              {loading ? 'Authenticating…' : 'Signed in. Opening your dashboard…'}
             </p>
-            <Button
-              onClick={() => navigate(getDashboardPathForRole(profile?.role, profile?.onboarding_complete), { replace: true })}
-              className="w-full bg-primary hover:bg-primary text-foreground font-black h-14 rounded-2xl shadow-xl shadow-emerald-600/20 transition-all active:scale-[0.98] uppercase tracking-widest text-xs"
-            >
-              Continue
-            </Button>
           </div>
         )}
 
-        {/* Timed out */}
-        {loading && loadingTimedOut && !session && (
-          <>
-            <p className="text-foreground/60 text-[11px] font-black uppercase tracking-widest text-center mb-6">Still loading? Use the form below to sign in.</p>
-            <Button
-              type="button"
-              onClick={() => navigate('/demo-dashboard', { replace: true })}
-              className="w-full mb-4 bg-muted hover:bg-muted/80 text-muted-foreground font-black h-12 rounded-2xl transition-all active:scale-[0.98] uppercase tracking-widest text-xs"
-            >
-              Try Demo Mode
-            </Button>
-          </>
-        )}
-
         {/* Primary: Email/Password Login */}
-        {(!loading || loadingTimedOut) && !session && (
+        {!session && (
           <div className="mb-8">
             <form onSubmit={handleEmailPasswordLogin} className="space-y-4">
               <div className="space-y-2">
@@ -333,7 +212,7 @@ const Login = () => {
 	        )}
 
         {/* Secondary: Other Sign-in Methods */}
-        {(!loading || loadingTimedOut) && !session && (
+        {!session && (
           <div className="mb-8">
             <div className="relative mb-6">
               <div className="absolute inset-0 flex items-center">
@@ -344,11 +223,11 @@ const Login = () => {
               </div>
             </div>
             <div className="space-y-3">
-              <Button
+                <Button
                 onClick={async () => {
                   try {
-                    const redirectUrl = `${window.location.origin}/creator-onboarding`;
-                    sessionStorage.setItem('oauth_intended_route', 'creator-onboarding');
+                    const redirectUrl = `${window.location.origin}/creator-dashboard`;
+                    sessionStorage.setItem('oauth_intended_route', 'creator-dashboard');
                     const { data, error } = await supabase.auth.signInWithOAuth({
                       provider: 'google',
                       options: {

@@ -207,7 +207,7 @@ const CollabRequestBriefPage = () => {
   }, []);
 
   if (!effectiveRequestId) {
-    navigate('/creator-dashboard?tab=collabs&subtab=pending', { replace: true });
+    navigate('/creator-dashboard?tab=deals&subtab=pending', { replace: true });
     return null;
   }
 
@@ -218,7 +218,7 @@ const CollabRequestBriefPage = () => {
         subtitle="Loading offer..."
         compactHeader
         showBackButton
-        backTo="/creator-dashboard?tab=collabs&subtab=pending"
+        backTo="/creator-dashboard?tab=deals&subtab=pending"
         backIconOnly
       >
         <div className={cn(spacing.loose, "pb-24")}>
@@ -238,7 +238,7 @@ const CollabRequestBriefPage = () => {
         subtitle="Offer not available"
         compactHeader
         showBackButton
-        backTo="/creator-dashboard?tab=collabs&subtab=pending"
+        backTo="/creator-dashboard?tab=deals&subtab=pending"
         backIconOnly
       >
         <div className={cn(spacing.loose, "pb-24")}>
@@ -246,7 +246,7 @@ const CollabRequestBriefPage = () => {
             <p className="text-sm font-semibold text-foreground mb-1">Couldn't open this offer</p>
             <p className="text-sm text-foreground/60">{loadError || 'Unknown error'}</p>
             <button type="button"
-              onClick={() => navigate('/creator-dashboard?tab=collabs&subtab=pending', { replace: true })}
+              onClick={() => navigate('/creator-dashboard?tab=deals&subtab=pending', { replace: true })}
               className="mt-4 inline-flex items-center justify-center rounded-xl bg-info hover:bg-info text-foreground text-sm font-semibold px-4 py-2 transition-colors"
             >
               Back to offers
@@ -357,7 +357,7 @@ const CollabRequestBriefPage = () => {
 
         navigate(targetPath, { replace: true });
       } else {
-        navigate('/creator-dashboard?tab=collabs&subtab=active', { replace: true });
+        navigate('/creator-dashboard?tab=deals&subtab=active', { replace: true });
       }
     } catch (err: any) {
       toast.error(err?.message || 'Failed to accept offer');
@@ -438,7 +438,7 @@ const CollabRequestBriefPage = () => {
 
       trackEvent('creator_declined_request', { request_id: effectiveRequestId, creator_id: profile?.id });
       toast.success('Offer declined');
-      navigate('/creator-dashboard?tab=collabs&subtab=pending', { replace: true });
+      navigate('/creator-dashboard?tab=deals&subtab=pending', { replace: true });
     } catch (err: any) {
       toast.error(err?.message || 'Failed to decline offer');
     } finally {
@@ -478,7 +478,7 @@ const CollabRequestBriefPage = () => {
       trackEvent('creator_countered_request', { request_id: effectiveRequestId, creator_id: profile?.id });
       toast.success('Counter offer sent');
       setShowCounterDialog(false);
-      navigate('/creator-dashboard?tab=collabs&subtab=pending', { replace: true });
+      navigate('/creator-dashboard?tab=deals&subtab=pending', { replace: true });
     } catch (err: any) {
       toast.error(err?.message || 'Failed to submit counter offer');
     } finally {
@@ -499,7 +499,7 @@ const CollabRequestBriefPage = () => {
         subtitle={subtitle}
         compactHeader
         showBackButton
-        backTo="/creator-dashboard?tab=collabs&subtab=pending"
+        backTo="/creator-dashboard?tab=deals&subtab=pending"
         backIconOnly
       >
         {/* ─── STICKY CTA CARD ─── */}

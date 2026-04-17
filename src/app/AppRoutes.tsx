@@ -3,6 +3,7 @@ import { SessionContextProvider } from "@/contexts/SessionContext";
 import { SidebarProvider } from "@/contexts/SidebarContext";
 import AddToHomeScreen from "@/components/mobile/AddToHomeScreen";
 import { PublicRoutes } from "./routes/publicRoutes";
+import { SharedRoutes } from "./routes/sharedRoutes";
 import { ClientRoutes } from "./routes/clientRoutes";
 import { CreatorRoutes } from "./routes/creatorRoutes";
 import { BrandRoutes } from "./routes/brandRoutes";
@@ -15,6 +16,7 @@ export default function AppRoutes() {
       <SidebarProvider>
         <Routes>
           {PublicRoutes()}
+          {SharedRoutes()}
           {ClientRoutes()}
           {CreatorRoutes()}
           {BrandRoutes()}

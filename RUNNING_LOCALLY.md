@@ -2,23 +2,23 @@
 
 ## 🚀 Quick Start
 
-### Frontend (Port 5173)
+### Frontend (Port 8080)
 ```bash
-npm run dev
+pnpm dev
 ```
-**URL:** http://localhost:5173
+**URL:** http://localhost:8080
 
 ### Backend (Port 3001)
 ```bash
 cd server
-npm run dev
+pnpm dev
 ```
 **URL:** http://localhost:3001
 
 ## 📋 Current Status
 
 ### Frontend Server
-- ✅ Running on http://localhost:5173
+- ✅ Running on http://localhost:8080
 - ✅ Vite dev server active
 - ✅ Hot module replacement enabled
 
@@ -28,7 +28,7 @@ npm run dev
   2. Add your Supabase credentials:
      - `SUPABASE_URL`
      - `SUPABASE_SERVICE_ROLE_KEY`
-  3. Then run: `cd server && npm run dev`
+  3. Then run: `cd server && pnpm dev`
 
 ## 🔧 Setup Backend
 
@@ -44,12 +44,13 @@ npm run dev
    SUPABASE_URL=https://your-project.supabase.co
    SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
    FRONTEND_URL=http://localhost:5173
+   # (Vite currently runs on http://localhost:8080 in this repo)
    STORAGE_BUCKET=creator-assets
    ```
 
 3. **Start backend:**
    ```bash
-   npm run dev
+   pnpm dev
    ```
 
 ## 🗄️ Database Setup
@@ -74,16 +75,16 @@ psql $DATABASE_URL -f scripts/seed-demo-data.sql
 
 ## 🧪 Test the Setup
 
-1. **Frontend:** Open http://localhost:5173
+1. **Frontend:** Open http://localhost:8080
 2. **Backend Health:** http://localhost:3001/health
 3. **Login:** Use your existing account credentials
-4. **Advisor Dashboard:** http://localhost:5173/advisor-dashboard (admin/CA roles)
+4. **Advisor Dashboard:** http://localhost:8080/advisor-dashboard (admin/CA roles)
 
 ## 🐛 Troubleshooting
 
 ### Frontend won't start
 - Clear cache: `rm -rf node_modules/.vite`
-- Check port 5173 is free: `lsof -ti:5173`
+- Check port 8080 is free: `lsof -ti:8080`
 
 ### Backend won't start
 - Check `.env` file exists in `server/` directory
@@ -93,6 +94,7 @@ psql $DATABASE_URL -f scripts/seed-demo-data.sql
 ### 504 Outdated Optimize Dep errors
 - Already fixed! Cache cleared and imports corrected
 - Just restart: `npm run dev`
+- Just restart: `pnpm dev`
 
 ## 📚 Next Steps
 
@@ -104,8 +106,7 @@ psql $DATABASE_URL -f scripts/seed-demo-data.sql
 
 ## 🔗 Useful URLs
 
-- **Frontend:** http://localhost:5173
+- **Frontend:** http://localhost:8080
 - **Backend API:** http://localhost:3001
 - **Health Check:** http://localhost:3001/health
-- **Advisor Dashboard:** http://localhost:5173/advisor-dashboard
-
+- **Advisor Dashboard:** http://localhost:8080/advisor-dashboard

@@ -80,6 +80,7 @@ async function fetchCollabRequests(): Promise<CollabRequest[]> {
 export function useCollabRequests(creatorId: string | undefined) {
   const queryClient = useQueryClient();
   const hookStartedAtRef = useRef<number>(Date.now());
+  const lastRealtimeUpdateAtRef = useRef<number>(0);
 
   // Realtime: surface new offers immediately.
   useEffect(() => {
@@ -98,6 +99,7 @@ export function useCollabRequests(creatorId: string | undefined) {
             filter: `creator_id=eq.${creatorId}`,
           },
           () => {
+            lastRealtimeUpdateAtRef.current = Date.now();
             queryClient.invalidateQueries({ queryKey: ['collab-requests'] });
           },
         )
@@ -122,6 +124,8 @@ export function useCollabRequests(creatorId: string | undefined) {
     staleTime: STALE_TIME_MS,
     refetchInterval: (query) => {
       if (typeof document !== 'undefined' && document.visibilityState === 'hidden') return false;
+      // If realtime just fired, skip polling briefly to avoid double-fetch/flicker.
+      if (Date.now() - lastRealtimeUpdateAtRef.current < 8_000) return false;
       const withinBurst = Date.now() - hookStartedAtRef.current < FAST_POLL_WINDOW_MS;
       const current = (query.state.data as CollabRequest[] | undefined) ?? [];
       // Poll faster only when the creator is likely waiting for first offers.

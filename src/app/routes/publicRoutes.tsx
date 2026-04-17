@@ -4,6 +4,7 @@ import LegacyCollabRedirect from "@/components/collab/LegacyCollabRedirect";
 import LegacyCollabSuccessRedirect from "@/components/collab/LegacyCollabSuccessRedirect";
 import LegacyCreatorProfileRedirect from "@/components/collab/LegacyCreatorProfileRedirect";
 import { LazyRoute } from "./routeElements";
+import ReservedUsernameGuard from "@/components/collab/ReservedUsernameGuard";
 
 const NotFound = lazy(() => import("@/pages/NotFound"));
 const Login = lazy(() => import("@/pages/Login"));
@@ -29,9 +30,8 @@ export const PublicRoutes = () => (
     <Route path="/creator/:username" element={<LegacyCreatorProfileRedirect />} />
     <Route path="/settings" element={<Navigate to="/creator-profile" replace />} />
     <Route path="/brand-opportunities" element={<Navigate to="/creator-dashboard" replace />} />
-    <Route path="/messages" element={<Navigate to="/creator-dashboard" replace />} />
-    <Route path="/:username" element={<LazyRoute><CollabLinkLanding /></LazyRoute>} />
-    <Route path="/:username/success" element={<LazyRoute><CollabLinkLanding /></LazyRoute>} />
+    <Route path="/:username" element={<ReservedUsernameGuard><LazyRoute><CollabLinkLanding /></LazyRoute></ReservedUsernameGuard>} />
+    <Route path="/:username/success" element={<ReservedUsernameGuard><LazyRoute><CollabLinkLanding /></LazyRoute></ReservedUsernameGuard>} />
     <Route path="/collab/:username" element={<LegacyCollabRedirect />} />
     <Route path="/collab/:username/success" element={<LegacyCollabSuccessRedirect />} />
     <Route path="*" element={<LazyRoute><NotFound /></LazyRoute>} />

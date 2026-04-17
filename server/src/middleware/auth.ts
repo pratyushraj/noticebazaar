@@ -15,6 +15,42 @@ export interface AuthenticatedRequest extends express.Request {
   };
 }
 
+const DEBUG_AUTH_MW = (process.env.DEBUG_AUTH_MW || '').toLowerCase() === 'true';
+
+// Cache to avoid repeated Supabase network calls on every API hit.
+// This dramatically improves local dev latency while keeping correctness (short TTL).
+const AUTH_CACHE_TTL_MS = 60_000;
+const authUserCache = new Map<string, { expiresAt: number; user: { id: string; email?: string } }>();
+const roleCache = new Map<string, { expiresAt: number; role: string }>();
+
+function getAuthUserFromCache(token: string) {
+  const hit = authUserCache.get(token);
+  if (!hit) return null;
+  if (Date.now() > hit.expiresAt) {
+    authUserCache.delete(token);
+    return null;
+  }
+  return hit.user;
+}
+
+function setAuthUserCache(token: string, user: { id: string; email?: string }) {
+  authUserCache.set(token, { expiresAt: Date.now() + AUTH_CACHE_TTL_MS, user });
+}
+
+function getRoleFromCache(userId: string) {
+  const hit = roleCache.get(userId);
+  if (!hit) return null;
+  if (Date.now() > hit.expiresAt) {
+    roleCache.delete(userId);
+    return null;
+  }
+  return hit.role;
+}
+
+function setRoleCache(userId: string, role: string) {
+  roleCache.set(userId, { expiresAt: Date.now() + AUTH_CACHE_TTL_MS, role });
+}
+
 function decodeJwtPayload(token: string): Record<string, any> | null {
   try {
     const parts = token.split('.');
@@ -64,11 +100,12 @@ export const authMiddleware = async (
       return res.status(500).json({ error: 'Server configuration error: Supabase not initialized. Please check environment variables.' });
     }
 
-    // DEBUG: Log all hits to authMiddleware
-    console.log(`[AuthMiddleware] Hit: ${req.method} ${req.path}`, {
-      hasAuthHeader: !!req.headers?.authorization,
-      authHeaderPrefix: req.headers?.authorization?.substring(0, 15)
-    });
+    if (DEBUG_AUTH_MW) {
+      console.log(`[AuthMiddleware] Hit: ${req.method} ${req.path}`, {
+        hasAuthHeader: !!req.headers?.authorization,
+        authHeaderPrefix: req.headers?.authorization?.substring(0, 15)
+      });
+    }
 
     const authHeader = req.headers?.authorization;
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -82,6 +119,18 @@ export const authMiddleware = async (
     }
 
     const allowOfflineFallback = shouldAllowOfflineJwtAuth();
+
+    // Fast path: cached auth+role.
+    const cachedUser = getAuthUserFromCache(token);
+    if (cachedUser) {
+      const cachedRole = getRoleFromCache(cachedUser.id);
+      req.user = {
+        id: cachedUser.id,
+        email: cachedUser.email,
+        role: cachedRole || 'creator',
+      };
+      return next();
+    }
 
     // Get user with timeout protection
     let user, authError;
@@ -167,14 +216,22 @@ export const authMiddleware = async (
       });
     }
 
-    // Get user profile for role (with timeout)
+    // Cache verified user for subsequent requests.
+    setAuthUserCache(token, { id: user.id, email: user.email });
+
+    // Get user profile for role (with timeout), with caching
+    let role: string | null = getRoleFromCache(user.id);
     let profile;
     try {
-      const profileResult = await Promise.race([
-        supabase.from('profiles').select('role').eq('id', user.id).single(),
-        new Promise((_, reject) => setTimeout(() => reject(new Error('Profile timeout')), 3000))
-      ]) as any;
-      profile = profileResult.data;
+      if (!role) {
+        const profileResult = await Promise.race([
+          supabase.from('profiles').select('role').eq('id', user.id).single(),
+          new Promise((_, reject) => setTimeout(() => reject(new Error('Profile timeout')), 3000))
+        ]) as any;
+        profile = profileResult.data;
+        role = profile?.role || null;
+        if (role) setRoleCache(user.id, role);
+      }
     } catch (err: any) {
       // If profile query times out or fails, continue with default role
       console.warn('Profile query failed, using default role:', err.message);
@@ -184,7 +241,7 @@ export const authMiddleware = async (
     req.user = {
       id: user.id,
       email: user.email,
-      role: profile?.role || 'creator'
+      role: role || profile?.role || 'creator'
     };
 
     next();

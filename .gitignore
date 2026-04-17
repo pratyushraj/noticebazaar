@@ -62,6 +62,9 @@ server/.env
 playwright-report/
 test-results/
 
+# Local audit artifacts
+reports/ui-audit-*/
+
 # Temp/output
 tmp/
 coverage/
