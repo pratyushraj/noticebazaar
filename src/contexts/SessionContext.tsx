@@ -234,6 +234,28 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
       }
 
       try {
+        const pricingData = await fetchOptionalProfileFields([
+          'avg_rate_reel',
+        ]);
+        if (Object.keys(pricingData).length > 0) {
+          optionalFields = {
+            ...optionalFields,
+            avg_rate_reel: (pricingData as any)?.avg_rate_reel ?? null,
+            reel_price: (pricingData as any)?.reel_price ?? null,
+            pricing_min: (pricingData as any)?.pricing_min ?? null,
+            pricing_avg: (pricingData as any)?.pricing_avg ?? null,
+            pricing_max: (pricingData as any)?.pricing_max ?? null,
+            typical_story_rate: (pricingData as any)?.typical_story_rate ?? null,
+            story_price: (pricingData as any)?.story_price ?? null,
+            instagram_followers: (pricingData as any)?.instagram_followers ?? null,
+            last_instagram_sync: (pricingData as any)?.last_instagram_sync ?? null,
+          } as any;
+        }
+      } catch (_error) {
+        // Optional fields may not exist in older schemas.
+      }
+
+      try {
         const payoutData = await fetchOptionalProfileFields([
           'bank_account_name',
           'bank_upi',

@@ -14,6 +14,7 @@ interface ActivityItem {
   timestamp: Date;
   icon?: React.ReactNode;
   actionUrl?: string;
+  imageUrl?: string;
 }
 
 interface ActivityFeedProps {
@@ -149,15 +150,26 @@ const ActivityFeed: React.FC<ActivityFeedProps> = ({
                     isDark ? 'hover:bg-opacity-20' : 'hover:bg-opacity-30'
                   )}
                 >
-                  {/* Icon */}
-                  <div className={cn(
-                    'flex-shrink-0 p-2 rounded-lg mt-0.5',
-                    isDark ? 'bg-secondary/50' : 'bg-background'
-                  )}>
-                    <div className={config.color}>
-                      {activity.icon || config.icon}
+                  {/* Icon / Thumbnail */}
+                  {activity.imageUrl ? (
+                    <div className="flex-shrink-0 mt-0.5">
+                      <img
+                        src={activity.imageUrl}
+                        alt=""
+                        className="w-11 h-11 rounded-lg object-cover border border-border"
+                        loading="lazy"
+                      />
                     </div>
-                  </div>
+                  ) : (
+                    <div className={cn(
+                      'flex-shrink-0 p-2 rounded-lg mt-0.5',
+                      isDark ? 'bg-secondary/50' : 'bg-background'
+                    )}>
+                      <div className={config.color}>
+                        {activity.icon || config.icon}
+                      </div>
+                    </div>
+                  )}
 
                   {/* Content */}
                   <div className="flex-1 min-w-0">

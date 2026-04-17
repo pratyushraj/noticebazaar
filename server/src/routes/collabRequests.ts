@@ -1733,10 +1733,12 @@ router.post('/:username/submit', async (req: Request, res: Response) => {
     }
 
     const normalizedProductImage = normalizeImageUrl(barter_product_image_url);
-    if (!normalizedProductImage) {
+    const productImageRequiredByBackend = isBarterLikeCollab(collab_type);
+    
+    if (productImageRequiredByBackend && !normalizedProductImage) {
       return res.status(400).json({
         success: false,
-        error: 'Product image is required',
+        error: 'Product image is required for barter collaborations',
       });
     }
 
@@ -2744,7 +2746,20 @@ router.post('/accept/confirm', async (req: AuthenticatedRequest, res: Response) 
       dealAmount = request.exact_budget || 0;
     }
     const isBarter = normalizeCollabTypeForDb(request.collab_type) === 'barter';
-
+    const normalizedProductImage = normalizeImageUrl((request as any).barter_product_image_url);
+    const requestFormData =
+      request && typeof (request as any).form_data === 'object' && (request as any).form_data !== null
+        ? { ...(request as any).form_data }
+        : {};
+    const persistedFormData = normalizedProductImage
+      ? {
+          ...requestFormData,
+          barter_product_image_url: normalizedProductImage,
+          product_image_url: normalizedProductImage,
+        }
+      : Object.keys(requestFormData).length > 0
+        ? requestFormData
+        : undefined;
     const dealData: any = {
       creator_id: userId,
       brand_id: request.brand_id || null,
@@ -2763,6 +2778,8 @@ router.post('/accept/confirm', async (req: AuthenticatedRequest, res: Response) 
       created_via: 'collab_request',
       brand_address: request.brand_address,
       brand_phone: request.brand_phone,
+      barter_product_image_url: normalizedProductImage,
+      form_data: persistedFormData,
       // collab_request_id: request.id, // Column currently missing in production DB
     };
     const { data: deal, error: dealError } = await supabase
@@ -3017,9 +3034,10 @@ router.patch('/:id/accept', async (req: AuthenticatedRequest, res: Response) => 
     }
 
     if (request.status !== 'pending') {
+      console.log(`[CollabRequests] Accept failed: Request ${id} has status "${request.status}" (expected "pending")`);
       return res.status(400).json({
         success: false,
-        error: 'Request has already been processed',
+        error: `Request has already been processed (current status: ${request.status})`,
       });
     }
 
@@ -3040,6 +3058,20 @@ router.patch('/:id/accept', async (req: AuthenticatedRequest, res: Response) => 
     }
 
     const isBarter = normalizeCollabTypeForDb(request.collab_type) === 'barter';
+    const normalizedProductImage = normalizeImageUrl((request as any).barter_product_image_url);
+    const requestFormData =
+      request && typeof (request as any).form_data === 'object' && (request as any).form_data !== null
+        ? { ...(request as any).form_data }
+        : {};
+    const persistedFormData = normalizedProductImage
+      ? {
+          ...requestFormData,
+          barter_product_image_url: normalizedProductImage,
+          product_image_url: normalizedProductImage,
+        }
+      : Object.keys(requestFormData).length > 0
+        ? requestFormData
+        : undefined;
 
     // Create brand deal
     const dealData: any = {
@@ -3059,6 +3091,8 @@ router.patch('/:id/accept', async (req: AuthenticatedRequest, res: Response) => 
       created_via: 'collab_request',
       brand_address: request.brand_address,
       brand_phone: request.brand_phone,
+      barter_product_image_url: normalizedProductImage,
+      form_data: persistedFormData,
       // collab_request_id: request.id, // Column currently missing in production DB
     };
 
@@ -3069,6 +3103,8 @@ router.patch('/:id/accept', async (req: AuthenticatedRequest, res: Response) => 
       'created_via',
       'brand_address',
       'brand_phone',
+      'barter_product_image_url',
+      'form_data',
       'progress_percentage',
     ]);
 

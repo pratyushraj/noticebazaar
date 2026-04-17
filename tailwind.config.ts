@@ -80,6 +80,7 @@ export default {
         // Semantic
         success: "hsl(var(--success))",
         warning: "hsl(var(--warning))",
+        info: "hsl(var(--info))",
         destructive: "hsl(var(--destructive))",
 
         // Design tokens (OKLCH/HEX), usable via `text-ds-text`, `bg-ds-surface-2`, etc.

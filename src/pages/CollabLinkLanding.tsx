@@ -771,8 +771,8 @@ const CollabLinkLanding = () => {
 
   const isStep1Ready = Boolean(collabType && deliverables.length > 0);
   const isValidBrandEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(brandEmail);
-  const needsProductImage = isBarterLikeCollab(collabType);
-  const isProductImageRequired = isBarterLikeCollab(collabType);
+  const needsProductImage = Boolean(selectedTemplateId) || isBarterLikeCollab(collabType);
+  const isProductImageRequired = Boolean(selectedTemplateId) || isBarterLikeCollab(collabType);
   const isProductImageReady = isProductImageRequired ? Boolean(String(barterProductImageUrl || '').trim()) : true;
   const isStep2Ready = Boolean(brandEmail.trim() && isValidBrandEmail && isProductImageReady);
 
@@ -3493,20 +3493,24 @@ const CollabLinkLanding = () => {
                           </div>
                         )}
 
-                        {/* Product details (for barter/hybrid) */}
-                        {(collabType === 'barter' || collabType === 'hybrid') && (
+                        {/* Product image / product details */}
+                        {needsProductImage && (
                           <div className="bg-slate-50 rounded-[32px] p-6 border border-slate-200 shadow-inner space-y-4">
-                            <label htmlFor="barter-product-name-input" className={`block text-[15px] font-black text-slate-800 mb-2 ${typeLabel} flex items-center gap-2`}>
-                              <Package className="h-5 w-5 text-slate-900" />
-                              Product details
-                            </label>
-                            <Input
-                              id="barter-product-name-input"
-                              value={barterProductName}
-                              onChange={(e) => setBarterProductName(e.target.value)}
-                              placeholder="Product name you'll send"
-                              className="h-12 px-4 rounded-xl border-white bg-white font-bold text-[14px] shadow-sm"
-                            />
+                            {(collabType === 'barter' || collabType === 'hybrid') && (
+                              <>
+                                <label htmlFor="barter-product-name-input" className={`block text-[15px] font-black text-slate-800 mb-2 ${typeLabel} flex items-center gap-2`}>
+                                  <Package className="h-5 w-5 text-slate-900" />
+                                  Product details
+                                </label>
+                                <Input
+                                  id="barter-product-name-input"
+                                  value={barterProductName}
+                                  onChange={(e) => setBarterProductName(e.target.value)}
+                                  placeholder="Product name you'll send"
+                                  className="h-12 px-4 rounded-xl border-white bg-white font-bold text-[14px] shadow-sm"
+                                />
+                              </>
+                            )}
 
                             <div>
                               <div className="flex items-center justify-between gap-3 mb-2">
