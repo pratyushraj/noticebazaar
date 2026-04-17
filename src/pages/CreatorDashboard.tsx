@@ -63,6 +63,10 @@ const CreatorDashboard = () => {
   const brandDeals = (dealsQuery.data ?? []) as any[];
   const isLoadingBrandDeals = dealsQuery.isLoading;
 
+  // Production safety: avoid partial render flicker on first load.
+  // We only "release" the dashboard once both endpoints have settled (success or error).
+  const isDashboardSettled = !!user?.id && !isLoadingCollab && !isLoadingBrandDeals && !isLoadingProfile;
+
   const handleRefresh = () => {
     queryClient.invalidateQueries({ queryKey: ['collab-requests'] });
     queryClient.invalidateQueries({ queryKey: ['brand-deals'] });
@@ -126,7 +130,8 @@ const CreatorDashboard = () => {
       collabRequests={collabRequests}
       brandDeals={brandDeals}
       isLoadingProfile={!user?.id || isLoadingProfile}
-      isLoadingDealsOverride={!user?.id || isLoadingCollab || isLoadingBrandDeals}
+      // Hold skeleton until both offers+deals have resolved; prevents 0-count flicker and cross-tab ghosting.
+      isLoadingDealsOverride={!user?.id || !isDashboardSettled}
       offersError={
         collabError
           ? ((collabError as any)?.message === 'API_TIMEOUT'
