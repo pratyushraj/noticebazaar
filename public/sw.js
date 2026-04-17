@@ -59,6 +59,12 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
+  // Let the browser handle external font provider requests.
+  // If the SW fetches these, it is governed by `connect-src` CSP and can be blocked.
+  if (url.hostname === 'cdn.fontshare.com' || url.hostname === 'api.fontshare.com') {
+    return;
+  }
+
   // Cache-first for images
   if (request.destination === 'image') {
     event.respondWith(
