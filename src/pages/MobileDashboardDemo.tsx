@@ -5277,9 +5277,10 @@ const MobileDashboardDemo = ({
                                                     </div>
                                                 </div>
 
-                                                <div className="mt-4 space-y-3">
+                                                <div className="mt-4 space-y-3 relative z-30">
                                                     <button
                                                         type="button"
+                                                        data-testid="offer-brief-accept"
                                                         onClick={() => {
                                                             if (processingDeal) return;
                                                             if (selectedItem?.isDemo) {
@@ -5289,7 +5290,7 @@ const MobileDashboardDemo = ({
                                                             }
                                                             handleAccept(selectedItem);
                                                         }}
-                                                        className="w-full h-[66px] rounded-2xl px-5 flex items-center justify-between bg-gradient-to-b from-[#1D4ED8] to-[#0B5BD3] text-white border border-[#1D4ED8] shadow-[0_16px_36px_rgba(37,99,235,0.30)] active:scale-[0.99] transition-all"
+                                                        className="w-full h-[66px] rounded-2xl px-5 flex items-center justify-between bg-gradient-to-b from-[#1D4ED8] to-[#0B5BD3] text-white border border-[#1D4ED8] shadow-[0_16px_36px_rgba(37,99,235,0.30)] active:scale-[0.99] transition-all relative z-40 scroll-mt-24 pointer-events-auto"
                                                     >
                                                         <div className="text-left">
                                                             <p className="text-[16px] font-black">Accept Deal {renderBudgetValue(selectedItem)}</p>

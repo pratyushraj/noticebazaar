@@ -134,8 +134,8 @@ const fetchDealForViewer = async (dealId: string) => {
 
 const fetchDealsForCreator = async (creatorId: string, creatorEmail?: string | null) => {
   const selectAttempts = [
-    { select: 'id, status, creator_id, brand_id, brand_email, brand_name, collab_type, deal_type, deal_amount, due_date, progress_percentage, payment_released_at, payment_received_date, utr_number, shipping_required, content_submission_url, content_url, content_notes, brand_approval_status, created_at, updated_at', canUseCreatorId: true },
-    { select: 'id, status, creator_id, brand_id, brand_email, brand_name, collab_type, deal_type, deal_amount, due_date, payment_released_at, payment_received_date, utr_number, content_submission_url, content_url, content_notes, created_at, updated_at', canUseCreatorId: true },
+    { select: 'id, status, creator_id, brand_id, brand_email, brand_name, collab_type, deal_type, deal_amount, collab_request_id, due_date, progress_percentage, payment_released_at, payment_received_date, utr_number, shipping_required, content_submission_url, content_url, content_notes, brand_approval_status, created_at, updated_at', canUseCreatorId: true },
+    { select: 'id, status, creator_id, brand_id, brand_email, brand_name, collab_type, deal_type, deal_amount, collab_request_id, due_date, payment_released_at, payment_received_date, utr_number, content_submission_url, content_url, content_notes, created_at, updated_at', canUseCreatorId: true },
     { select: 'id, status, creator_id, brand_email, brand_name, deal_type, deal_amount, due_date, created_at, updated_at', canUseCreatorId: true },
     { select: 'id, status, creator_id, brand_email, brand_name, deal_type, deal_amount, due_date, created_at', canUseCreatorId: true },
   ];
@@ -146,7 +146,49 @@ const fetchDealsForCreator = async (creatorId: string, creatorEmail?: string | n
 
     const { data, error } = await query;
     if (!error) {
-      return { deals: (data || []) as any[], error: null };
+      const deals = (data || []) as any[];
+
+      // Hardening: ensure creator dashboard never receives deals with 0/invalid amount.
+      // Some legacy barter/hybrid conversions wrote `deal_amount=0` when the request had no budget/value.
+      const needsAmountFix = deals.filter((d) => {
+        const amt = Number((d as any)?.deal_amount || 0);
+        const collabLike = String((d as any)?.collab_type || (d as any)?.deal_type || '').toLowerCase();
+        return (!Number.isFinite(amt) || amt <= 0) && !!String((d as any)?.collab_request_id || '').trim() && (collabLike.includes('barter') || collabLike.includes('hybrid') || collabLike.includes('both'));
+      });
+
+      if (needsAmountFix.length > 0) {
+        const ids = Array.from(new Set(needsAmountFix.map((d) => String((d as any).collab_request_id)).filter(Boolean)));
+        try {
+          const { data: requests } = await (supabase as any)
+            .from('collab_requests')
+            .select('id, exact_budget, barter_value, collab_type')
+            .in('id', ids);
+
+          const byId = new Map<string, any>();
+          for (const r of (requests || []) as any[]) byId.set(String(r.id), r);
+
+          for (const d of deals) {
+            const id = String((d as any)?.collab_request_id || '').trim();
+            if (!id) continue;
+            const r = byId.get(id);
+            if (!r) continue;
+            const exact = r.exact_budget != null ? Number(r.exact_budget) : null;
+            const barter = r.barter_value != null ? Number(r.barter_value) : null;
+            const computed = exact && exact > 0 ? exact : barter && barter > 0 ? barter : null;
+            if (computed && computed > 0) (d as any).deal_amount = computed;
+          }
+        } catch {
+          // ignore lookup failures; we'll filter invalid items below.
+        }
+      }
+
+      const sanitized = deals.filter((d) => {
+        const brand = String((d as any)?.brand_name || '').trim();
+        const amt = Number((d as any)?.deal_amount || 0);
+        return !!brand && Number.isFinite(amt) && amt > 0;
+      });
+
+      return { deals: sanitized, error: null };
     }
 
     if (!isMissingColumnError(error)) {
