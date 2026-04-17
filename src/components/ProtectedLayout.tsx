@@ -18,7 +18,7 @@ const ProtectedLayout = ({ children, allowedRoles }: ProtectedLayoutProps) => {
   const isAdvisorRoute = location.pathname.startsWith('/advisor-dashboard');
   const isLawyerRoute = location.pathname.startsWith('/lawyer-dashboard');
   const creatorAllowed = !!allowedRoles?.includes('creator');
-  const isCreatorProfile = profile?.role === 'creator' || (!profile?.role && creatorAllowed);
+  const isCreatorProfile = profile?.role === 'creator';
   const enforceAppMode = creatorAllowed && isCreatorProfile;
 
   // Standalone dashboards (advisor/lawyer) don't need Layout wrapper

@@ -194,20 +194,38 @@ async function selectDealsSubtab(page: Page, name: 'New Offers' | 'Active Deals'
 async function openFirstOfferFromNewOffers(page: Page) {
   await selectDealsSubtab(page, 'New Offers');
 
-  // Prefer clicking the card body rather than directly clicking accept.
-  const rupee = page.locator('text=/₹\\s?[0-9][0-9,]*/').first();
-  if (await rupee.isVisible({ timeout: 8000 }).catch(() => false)) {
-    await rupee.click();
+  // Wait for offers list to render (avoid clicking during skeleton/redirect).
+  await page.waitForLoadState('networkidle').catch(() => {});
+
+  // Prefer clicking the offer card container (not the Accept button).
+  // Find a budget label and click its nearest "card" ancestor.
+  const budget = page.locator('text=/₹\\s?[0-9][0-9,]*/').first();
+  if (await budget.isVisible({ timeout: 12000 }).catch(() => false)) {
+    const card = budget.locator('xpath=ancestor::*[contains(@class,"rounded")][1]');
+    if (await card.isVisible({ timeout: 1500 }).catch(() => false)) {
+      await card.click();
+      return;
+    }
+    await budget.click();
     return;
   }
 
-  // Fallback: click first card-ish container.
-  const firstCard = page.locator('article, [role="article"], .rounded-2xl, .rounded-3xl').first();
-  await firstCard.click({ timeout: 8000 });
+  // Fallback: click first offer-like card (exclude bottom nav buttons).
+  const firstCard = page
+    .locator('div')
+    .filter({ has: page.getByRole('button', { name: /accept deal/i }) })
+    .first();
+  if (await firstCard.isVisible({ timeout: 8000 }).catch(() => false)) {
+    await firstCard.click();
+    return;
+  }
+
+  throw new Error('No offers found to open in New Offers tab');
 }
 
 async function acceptInOfferBrief(page: Page) {
-  await expect(page.getByText('Offer Brief', { exact: true })).toBeVisible({ timeout: 15000 });
+  // Overlay title can take a moment after click/animation.
+  await expect(page.getByText('Offer Brief', { exact: true })).toBeVisible({ timeout: 25000 });
   await screenshotTab(page, 'offer-brief');
 
   const brandSubtitle = page.locator('p').filter({ hasText: /brand/i }).first();
@@ -268,8 +286,53 @@ async function acceptInOfferBrief(page: Page) {
   await waitForDashboardIdle(page);
 }
 
+async function extractCreatorHandleFromDashboard(page: Page): Promise<string> {
+  // The dashboard exposes a collab link like "creatorarmour.com/<handle>".
+  const linkText = page.locator('text=/creatorarmour\\.com\\/[a-z0-9._-]+/i').first();
+  if (await linkText.isVisible({ timeout: 8000 }).catch(() => false)) {
+    const raw = (await linkText.innerText()).trim();
+    const match = raw.match(/creatorarmour\.com\/([a-z0-9._-]+)/i);
+    if (match?.[1]) return match[1].toLowerCase();
+  }
+
+  // Fallback: look for any mention of "creatorarmour.com/" inside the DOM.
+  const html = await page.content();
+  const match = html.match(/creatorarmour\.com\/([a-z0-9._-]+)/i);
+  if (match?.[1]) return match[1].toLowerCase();
+
+  throw new Error('Could not infer creator handle from dashboard');
+}
+
+async function seedOfferViaPublicCollabLink(browser: any, handle: string) {
+  const ctx = await browser.newContext({ viewport: { width: 390, height: 844 } });
+  const page = await ctx.newPage();
+  await page.goto(`${RESOLVED_BASE_URL || FALLBACK_BASE_URLS[0]}/${handle}`, { waitUntil: 'load' });
+
+  // Pick a package if prompted.
+  const chooseBtn = page.getByRole('button', { name: /choose( this)? service/i }).first();
+  if (await chooseBtn.isVisible({ timeout: 4000 }).catch(() => false)) await chooseBtn.click();
+
+  // Fill brand offer form (best-effort selectors used elsewhere in repo).
+  await page.locator('#brand-name-input').fill(`QA Brand ${Date.now().toString().slice(-4)}`).catch(() => {});
+  await page.locator('#brand-email-input').fill(`qa.brand.${Date.now()}@example.com`).catch(() => {});
+  await page.locator('#campaign-description-input').fill('Need one Instagram reel to promote our launch.').catch(() => {});
+
+  const budgetInput = page.locator('#offer-budget-input');
+  if (await budgetInput.isVisible({ timeout: 2000 }).catch(() => false)) {
+    await budgetInput.fill('15000');
+  }
+  const deadlineInput = page.locator('#offer-deadline-input');
+  if (await deadlineInput.isVisible({ timeout: 2000 }).catch(() => false)) {
+    await deadlineInput.fill('2026-04-20');
+  }
+
+  await page.getByRole('button', { name: /send offer/i }).last().click();
+  await page.waitForURL(new RegExp(`/${handle}/success`), { timeout: 30000 });
+  await ctx.close();
+}
+
 test.describe('Deterministic Deal Lifecycle (UI + API)', () => {
-  test('creator lifecycle: screenshot tabs, accept + decline + refresh consistency (5 runs)', async ({ page }) => {
+  test('creator lifecycle: screenshot tabs, accept + decline + refresh consistency (5 runs)', async ({ page, browser }) => {
     test.setTimeout(8 * 60 * 1000);
 
     const api = attachApiRecorder(page);
@@ -279,6 +342,12 @@ test.describe('Deterministic Deal Lifecycle (UI + API)', () => {
     page.on('pageerror', (err) => pageErrors.push(err.message));
 
     await login(page, CREATOR.email, CREATOR.password);
+
+    // Ensure we have at least one new offer to exercise the lifecycle.
+    // This avoids flakiness when the inbox is empty.
+    await gotoCreatorDeals(page);
+    const handle = await extractCreatorHandleFromDashboard(page);
+    await seedOfferViaPublicCollabLink(browser, handle);
 
     // 1) Dashboard load + Deals tab + screenshots
     await gotoCreatorDeals(page);

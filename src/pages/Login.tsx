@@ -10,7 +10,6 @@ import { toast } from 'sonner';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
-const LOGIN_LOADING_TIMEOUT_MS = 2000;
 const getErrorMessage = (error: unknown, fallback = 'An error occurred. Please try again.') =>
   error instanceof Error ? error.message : fallback;
 
@@ -19,23 +18,12 @@ const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [loadingTimedOut, setLoadingTimedOut] = useState(false);
 
   useEffect(() => {
     document.title = 'Sign In | Creator Armour';
     const meta = document.querySelector('meta[name="description"]');
     meta?.setAttribute('content', 'Sign in to see your brand offers, active deals, and payments in one place.');
   }, []);
-
-  // If session check takes too long (e.g. network/Supabase slow), show form so user isn't stuck
-  useEffect(() => {
-    if (!loading) {
-      setLoadingTimedOut(false);
-      return;
-    }
-    const timer = setTimeout(() => setLoadingTimedOut(true), LOGIN_LOADING_TIMEOUT_MS);
-    return () => clearTimeout(timer);
-  }, [loading]);
 
   // Login page no longer owns redirect logic.
   // SessionContext + ProtectedRoute control all navigation after auth.
@@ -143,7 +131,7 @@ const Login = () => {
         </div>
 
         {/* Loading: wait for session (with timeout so user isn't stuck) */}
-        {loading && !loadingTimedOut && !session && (
+        {loading && !session && (
           <div className="mb-6 flex flex-col items-center justify-center py-10 gap-4">
             <Loader2 className="h-10 w-10 animate-spin text-primary" aria-hidden="true" />
             <p className="text-muted-foreground text-sm font-bold tracking-widest uppercase">Checking your sign-in...</p>
@@ -159,22 +147,8 @@ const Login = () => {
           </div>
         )}
 
-        {/* Timed out */}
-        {loading && loadingTimedOut && !session && (
-          <>
-            <p className="text-foreground/60 text-[11px] font-black uppercase tracking-widest text-center mb-6">Still loading? Use the form below to sign in.</p>
-            <Button
-              type="button"
-              onClick={() => navigate('/demo-dashboard', { replace: true })}
-              className="w-full mb-4 bg-muted hover:bg-muted/80 text-muted-foreground font-black h-12 rounded-2xl transition-all active:scale-[0.98] uppercase tracking-widest text-xs"
-            >
-              Try Demo Mode
-            </Button>
-          </>
-        )}
-
         {/* Primary: Email/Password Login */}
-        {(!loading || loadingTimedOut) && !session && (
+        {!session && (
           <div className="mb-8">
             <form onSubmit={handleEmailPasswordLogin} className="space-y-4">
               <div className="space-y-2">
@@ -238,7 +212,7 @@ const Login = () => {
 	        )}
 
         {/* Secondary: Other Sign-in Methods */}
-        {(!loading || loadingTimedOut) && !session && (
+        {!session && (
           <div className="mb-8">
             <div className="relative mb-6">
               <div className="absolute inset-0 flex items-center">

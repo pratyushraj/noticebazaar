@@ -75,7 +75,8 @@ const ProtectedRoute = ({ children, allowedRoles, requiredRole }: ProtectedRoute
   const navigate = useNavigate();
   const location = useLocation();
   const { session, authStatus, profile, refetchProfile, user, isAuthInitializing } = useSession();
-  const requestedRole = inferRequestedRole(location.pathname, allowedRoles, (user?.user_metadata || {}) as Record<string, unknown>);
+  // Do not infer role from path/metadata for authorization decisions.
+  // `profiles.role` is the single source of truth.
   const isLoading = authStatus === 'loading' || (session && !profile);
 
   // Route guard logic
@@ -83,8 +84,7 @@ const ProtectedRoute = ({ children, allowedRoles, requiredRole }: ProtectedRoute
     if (authStatus === 'loading') return;
 
     const path = location.pathname;
-    const handle = (profile?.instagram_handle || profile?.username || '').replace(/^@/, '').trim();
-    const userRole = profile?.role || 'creator';
+    const userRole = profile?.role || null;
 
     // Unauthenticated — redirect to login
     if (!session && authStatus === 'unauthenticated' && !routes.isRoot(path) && !routes.isAuth(path)) {
@@ -96,17 +96,12 @@ const ProtectedRoute = ({ children, allowedRoles, requiredRole }: ProtectedRoute
 
     const targetDashboard = getTargetDashboard(profile);
 
-    // Redirect from login/root to dashboard
-    if (routes.isRoot(path) || routes.isAuth(path)) {
-      navigate(targetDashboard, { replace: true });
-      return;
-    }
-
     // Role-based access control
     const effectiveAllowedRoles = allowedRoles ?? (requiredRole ? [requiredRole] : undefined);
 
     if (effectiveAllowedRoles && effectiveAllowedRoles.length > 0) {
-      const hasRole = effectiveAllowedRoles.includes(userRole) || (!profile.role && effectiveAllowedRoles.includes('creator'));
+      // If role is missing, treat as setup issue (don't silently treat as creator).
+      const hasRole = !!userRole && effectiveAllowedRoles.includes(userRole as AppRole);
       if (!hasRole) {
         navigate(targetDashboard, { replace: true });
         return;
@@ -117,12 +112,12 @@ const ProtectedRoute = ({ children, allowedRoles, requiredRole }: ProtectedRoute
         navigate('/lawyer-dashboard', { replace: true });
         return;
       }
-      if ((userRole === 'creator' || !userRole) && (routes.isLawyer(path) || routes.isAdvisor(path) || routes.isAdmin(path) || routes.isCA(path))) {
+      if (userRole === 'creator' && (routes.isLawyer(path) || routes.isAdvisor(path) || routes.isAdmin(path) || routes.isCA(path))) {
         navigate('/creator-dashboard', { replace: true });
         return;
       }
     }
-  }, [session, authStatus, profile, allowedRoles, requiredRole, navigate, location.pathname, user, refetchProfile]);
+  }, [session, authStatus, profile, allowedRoles, requiredRole, navigate, location.pathname]);
 
   // --- Render logic ---
 
