@@ -2019,11 +2019,7 @@ const CollabLinkLanding = () => {
       outcome: item.outcome || 'Shared campaign proof',
       proofLabel: item.proofLabel || 'Past Work',
     }))
-    : [
-      { id: 'demo-1', name: 'boAt', type: 'Launch reel', outcome: '42K views in 5 days', proofLabel: 'Electronics' },
-      { id: 'demo-2', name: 'Mamaearth', type: 'Routine stories', outcome: 'High-intent skincare audience fit', proofLabel: 'Beauty' },
-      { id: 'demo-3', name: 'Lenskart', type: 'Review package', outcome: 'Strong click-through and saves', proofLabel: 'Lifestyle' },
-    ];
+    : [];
   const showPackagesSection = creator.collab_show_packages !== false;
   const showTrustSections = creator.collab_show_trust_signals !== false;
   const showAudienceSections = creator.collab_show_audience_snapshot !== false;

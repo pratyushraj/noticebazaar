@@ -1091,6 +1091,7 @@ router.get('/:username', async (req: Request, res: Response) => {
           open_to_collabs,
           content_niches,
           media_kit_url,
+          portfolio_links,
           avg_rate_reel,
           avg_reel_views_manual,
           avg_likes_manual,
@@ -1124,6 +1125,25 @@ router.get('/:username', async (req: Request, res: Response) => {
       // Merge extended data if available (ignore errors for missing columns)
       if (extendedProfile) {
         profile = { ...profile, ...extendedProfile };
+      }
+
+      // Fetch portfolio/media-kit separately so a missing optional column in the larger
+      // extended select does not drop the creator's public work highlights.
+      const { data: portfolioProfile } = await supabase
+        .from('profiles')
+        .select('portfolio_links, media_kit_url')
+        .eq('id', profile.id)
+        .maybeSingle();
+
+      if (portfolioProfile) {
+        const nextProfile: Record<string, unknown> = { ...profile };
+        if (Array.isArray((portfolioProfile as any).portfolio_links)) {
+          nextProfile.portfolio_links = (portfolioProfile as any).portfolio_links;
+        }
+        if (typeof (portfolioProfile as any).media_kit_url === 'string' || (portfolioProfile as any).media_kit_url === null) {
+          nextProfile.media_kit_url = (portfolioProfile as any).media_kit_url;
+        }
+        profile = nextProfile as typeof profile;
       }
 
       // Fetch optional trust arrays separately so older schemas don't break the main extended select.
@@ -1501,6 +1521,7 @@ router.get('/:username', async (req: Request, res: Response) => {
         open_to_collabs: (profile as any).open_to_collabs !== false,
         content_niches: Array.isArray((profile as any).content_niches) ? (profile as any).content_niches : [],
         media_kit_url: (profile as any).media_kit_url || null,
+        portfolio_links: Array.isArray((profile as any).portfolio_links) ? (profile as any).portfolio_links : [],
         audience_gender_split: (profile as any).audience_gender_split || null,
         top_cities: Array.isArray((profile as any).top_cities) ? (profile as any).top_cities : [],
         audience_age_range: (profile as any).audience_age_range || null,
