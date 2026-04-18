@@ -2896,6 +2896,46 @@ const CollabLinkLanding = () => {
                     Past Work <span className="text-slate-400 font-black">(social proof)</span>
                   </h3>
                 </div>
+                {creator.portfolio_links && creator.portfolio_links.filter((l) => l && l.trim()).length > 0 && (
+                  <div className="mb-4">
+                    <p className="mb-3 text-[11px] font-black uppercase tracking-[0.12em] text-slate-500">Work Highlights</p>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                      {creator.portfolio_links.filter((l) => l && l.trim()).slice(0, 4).map((link, idx) => {
+                        const href = link.startsWith('http') ? link : `https://${link}`;
+                        const isInsta = href.includes('instagram.com');
+                        const isYT = href.includes('youtube.com') || href.includes('youtu.be');
+                        const isReel = href.includes('instagram.com/reels') || href.includes('instagram.com/reel');
+                        const isShort = href.includes('youtube.com/shorts');
+                        const isPost = href.includes('instagram.com/p/');
+                        const label = isReel ? 'Instagram Reel' : isShort ? 'YouTube Short' : isPost ? 'Instagram Post' : isYT ? 'YouTube' : isInsta ? 'Instagram' : 'Work Link';
+                        return (
+                          <a
+                            key={`${href}-${idx}`}
+                            href={href}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-3 py-3 hover:border-emerald-300 hover:bg-emerald-50/40 transition-all"
+                          >
+                            <div className="w-10 h-10 rounded-2xl bg-white border border-slate-200 flex items-center justify-center shrink-0">
+                              {isInsta ? (
+                                <Instagram className="w-4 h-4 text-pink-600" />
+                              ) : isYT ? (
+                                <Youtube className="w-4 h-4 text-red-600" />
+                              ) : (
+                                <ExternalLink className="w-4 h-4 text-slate-500" />
+                              )}
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <p className="text-[12px] font-black text-slate-900 uppercase tracking-[0.06em]">{label}</p>
+                              <p className="text-[11px] font-semibold text-slate-500 truncate">Highlight #{idx + 1}</p>
+                            </div>
+                            <ArrowRight className="w-4 h-4 text-slate-400 shrink-0" />
+                          </a>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
 	                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
 		                  {recentCollaborations.map((item) => (
 		                    <div key={item.id || item.name} className="rounded-2xl border border-slate-200/70 bg-white px-3 py-3 shadow-[0_6px_16px_rgba(15,23,42,0.05)]">
