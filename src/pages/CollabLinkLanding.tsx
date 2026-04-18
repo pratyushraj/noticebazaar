@@ -271,6 +271,8 @@ const getInstagramEmbedUrl = (href: string) => {
   return '';
 };
 
+const isPortfolioVideoUrl = (value: string) => /\.(mp4|mov|webm|m4v)(\?|#|$)/i.test(String(value || '').trim());
+
 const PRODUCT_CATEGORY_OPTIONS = [
   { value: 'fashion', label: '👗 Fashion & Clothing' },
   { value: 'beauty', label: '💄 Beauty & Skincare' },
@@ -2935,15 +2937,16 @@ const CollabLinkLanding = () => {
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       {creator.portfolio_links.filter((l) => l && l.trim()).slice(0, 4).map((link, idx) => {
                         const href = link.startsWith('http') ? link : `https://${link}`;
+                        const isVideoUpload = isPortfolioVideoUrl(href);
                         const isInsta = href.includes('instagram.com');
                         const isYT = href.includes('youtube.com') || href.includes('youtu.be');
                         const isReel = href.includes('instagram.com/reels') || href.includes('instagram.com/reel');
                         const isShort = href.includes('youtube.com/shorts');
                         const isPost = href.includes('instagram.com/p/');
-                        const label = isReel ? 'Instagram Reel' : isShort ? 'YouTube Short' : isPost ? 'Instagram Post' : isYT ? 'YouTube' : isInsta ? 'Instagram' : 'Work Link';
+                        const label = isVideoUpload ? 'Uploaded Video' : isReel ? 'Instagram Reel' : isShort ? 'YouTube Short' : isPost ? 'Instagram Post' : isYT ? 'YouTube' : isInsta ? 'Instagram' : 'Work Link';
                         const instagramEmbedUrl = isInsta ? getInstagramEmbedUrl(href) : '';
                         const youtubeEmbedUrl = isYT ? getYoutubeEmbedUrl(href) : '';
-                        const embedUrl = instagramEmbedUrl || youtubeEmbedUrl;
+                        const embedUrl = isVideoUpload ? '' : (instagramEmbedUrl || youtubeEmbedUrl);
                         return (
                           <div
                             key={`${href}-${idx}`}
@@ -2955,6 +2958,8 @@ const CollabLinkLanding = () => {
                                   <Instagram className="w-4 h-4 text-pink-600" />
                                 ) : isYT ? (
                                   <Youtube className="w-4 h-4 text-red-600" />
+                                ) : isVideoUpload ? (
+                                  <Clapperboard className="w-4 h-4 text-emerald-600" />
                                 ) : (
                                   <ExternalLink className="w-4 h-4 text-slate-500" />
                                 )}
@@ -2964,7 +2969,19 @@ const CollabLinkLanding = () => {
                                 <p className="text-[11px] font-semibold text-slate-500 truncate">Highlight #{idx + 1}</p>
                               </div>
                             </div>
-                            {embedUrl ? (
+                            {isVideoUpload ? (
+                              <div className="bg-black">
+                                <video
+                                  src={href}
+                                  className="h-[360px] md:h-[420px] w-full object-cover"
+                                  muted
+                                  autoPlay
+                                  loop
+                                  playsInline
+                                  preload="metadata"
+                                />
+                              </div>
+                            ) : embedUrl ? (
                               <div className="bg-white">
                                 <iframe
                                   src={embedUrl}

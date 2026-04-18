@@ -53,6 +53,10 @@ export const ALLOWED_FILE_TYPES = {
     'image/png',
     'image/jpeg',
     'image/jpg',
+    'video/mp4',
+    'video/quicktime',
+    'video/webm',
+    'video/x-m4v',
   ],
 } as const;
 
@@ -61,6 +65,7 @@ export const FILE_EXTENSIONS = {
   doc: ['.doc'],
   docx: ['.docx'],
   image: ['.png', '.jpg', '.jpeg'],
+  video: ['.mp4', '.mov', '.webm', '.m4v'],
 } as const;
 
 // ============================================
@@ -126,6 +131,7 @@ export function validateFileType(file: File, category: FileCategory): { valid: b
     ...FILE_EXTENSIONS.doc,
     ...FILE_EXTENSIONS.docx,
     ...FILE_EXTENSIONS.image,
+    ...FILE_EXTENSIONS.video,
   ];
   
   if (allowedExtensions.includes(extension)) {
@@ -393,4 +399,3 @@ export function getFileCategoryFromPath(path: string): FileCategory {
   if (path.includes('expense')) return 'expense';
   return 'document';
 }
-

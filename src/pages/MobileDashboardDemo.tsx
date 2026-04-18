@@ -42,6 +42,7 @@ import { VerificationBadge } from '@/components/ui/VerificationBadge';
 import { NotificationPermission } from '@/components/ui/NotificationPermission';
 import { ShimmerSkeleton } from '@/components/ui/ShimmerSkeleton';
 import confetti from 'canvas-confetti';
+import { uploadFile } from '@/lib/services/fileService';
 
 interface MobileDashboardProps {
     profile?: any;
@@ -181,6 +182,8 @@ const resolveCreatorDealProductImage = (item: any) => {
     if (/^www\./i.test(raw)) return `https://${raw}`;
     return raw;
 };
+
+const isPortfolioVideoUrl = (value: string) => /\.(mp4|mov|webm|m4v)(\?|#|$)/i.test(String(value || '').trim());
 
 const getCreatorDealCardUX = (deal: any) => {
     const rawStatus = normalizeDealStatus(deal);
@@ -1482,6 +1485,7 @@ const MobileDashboardDemo = ({
     };
 
     const [isSavingProfile, setIsSavingProfile] = useState(false);
+    const [uploadingPortfolioSlot, setUploadingPortfolioSlot] = useState<number | null>(null);
     const [profileFormData, setProfileFormData] = useState<any>(buildProfileFormData(profile, user?.email || null));
 
     useEffect(() => {
@@ -1619,6 +1623,31 @@ const MobileDashboardDemo = ({
             window.setTimeout(() => setIsCollabLinkCopied(false), 1800);
         } catch (e) {
             toast.error("Failed to copy link");
+        }
+    };
+
+    const handlePortfolioVideoUpload = async (slotIdx: number, file: File) => {
+        if (!session?.user?.id) return;
+        setUploadingPortfolioSlot(slotIdx);
+        try {
+            const result = await uploadFile(file, {
+                category: 'document',
+                userId: session.user.id,
+                fileName: `portfolio-video-${slotIdx + 1}`,
+                folder: 'portfolio-videos',
+            });
+
+            setProfileFormData((prev: any) => {
+                const updated = [...(prev.portfolio_links || [])];
+                while (updated.length <= slotIdx) updated.push('');
+                updated[slotIdx] = result.url;
+                return { ...prev, portfolio_links: updated };
+            });
+            toast.success('Video uploaded. Tap Save All Changes to publish it.');
+        } catch (error: any) {
+            toast.error(error?.message || 'Failed to upload video');
+        } finally {
+            setUploadingPortfolioSlot(null);
         }
     };
 
@@ -2460,40 +2489,73 @@ const MobileDashboardDemo = ({
                                             const currentLinks: string[] = profileFormData.portfolio_links || [];
                                             const val = currentLinks[slotIdx] || '';
                                             return (
-                                                <div key={slotIdx} className="relative">
-                                                    <div className={cn(
-                                                        "absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5 rounded-md flex items-center justify-center text-[9px] font-black shrink-0",
-                                                        val ? "bg-primary/15 text-primary" : (isDark ? "bg-white/5 text-white/20" : "bg-slate-100 text-slate-400")
-                                                    )}>{slotIdx + 1}</div>
-                                                    <input
-                                                        type="url"
-                                                        value={val}
-                                                        placeholder={`Reel/Short link #${slotIdx + 1}...`}
-                                                        onChange={(e) => {
-                                                            const updated = [...currentLinks];
-                                                            // extend array if needed
-                                                            while (updated.length <= slotIdx) updated.push('');
-                                                            updated[slotIdx] = e.target.value;
-                                                            setProfileFormData((p: any) => ({ ...p, portfolio_links: updated }));
-                                                        }}
-                                                        className={cn(
-                                                            "w-full pl-10 pr-4 py-3 rounded-2xl border text-[13px] font-semibold outline-none transition-all",
-                                                            val ? (isDark ? "border-primary/40 bg-primary/5 text-foreground" : "border-emerald-300 bg-emerald-50/50 text-black") : (isDark ? "bg-[#0B0F14] border-border text-foreground focus:border-primary/40" : "bg-[#F9FAFB] border-[#E5E7EB] text-black focus:border-emerald-400 focus:bg-white")
-                                                        )}
-                                                    />
-                                                    {val && (
-                                                        <button
-                                                            type="button"
-                                                            onClick={() => {
+                                                <div key={slotIdx} className="space-y-2">
+                                                    {val && isPortfolioVideoUrl(val) && (
+                                                        <div className={cn("overflow-hidden rounded-2xl border", isDark ? "border-border bg-[#0B0F14]" : "border-[#E5E7EB] bg-slate-50")}>
+                                                            <video
+                                                                src={val}
+                                                                className="w-full h-40 object-cover"
+                                                                muted
+                                                                playsInline
+                                                                loop
+                                                                autoPlay
+                                                            />
+                                                        </div>
+                                                    )}
+                                                    <div className="relative">
+                                                        <div className={cn(
+                                                            "absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5 rounded-md flex items-center justify-center text-[9px] font-black shrink-0",
+                                                            val ? "bg-primary/15 text-primary" : (isDark ? "bg-white/5 text-white/20" : "bg-slate-100 text-slate-400")
+                                                        )}>{slotIdx + 1}</div>
+                                                        <input
+                                                            type="url"
+                                                            value={val}
+                                                            placeholder={`Reel/Short link or uploaded video URL #${slotIdx + 1}...`}
+                                                            onChange={(e) => {
                                                                 const updated = [...currentLinks];
-                                                                updated[slotIdx] = '';
+                                                                while (updated.length <= slotIdx) updated.push('');
+                                                                updated[slotIdx] = e.target.value;
                                                                 setProfileFormData((p: any) => ({ ...p, portfolio_links: updated }));
                                                             }}
-                                                            className="absolute right-3.5 top-1/2 -translate-y-1/2"
-                                                        >
-                                                            <X className="w-3.5 h-3.5 text-slate-400" />
-                                                        </button>
-                                                    )}
+                                                            className={cn(
+                                                                "w-full pl-10 pr-12 py-3 rounded-2xl border text-[13px] font-semibold outline-none transition-all",
+                                                                val ? (isDark ? "border-primary/40 bg-primary/5 text-foreground" : "border-emerald-300 bg-emerald-50/50 text-black") : (isDark ? "bg-[#0B0F14] border-border text-foreground focus:border-primary/40" : "bg-[#F9FAFB] border-[#E5E7EB] text-black focus:border-emerald-400 focus:bg-white")
+                                                            )}
+                                                        />
+                                                        {val && (
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => {
+                                                                    const updated = [...currentLinks];
+                                                                    updated[slotIdx] = '';
+                                                                    setProfileFormData((p: any) => ({ ...p, portfolio_links: updated }));
+                                                                }}
+                                                                className="absolute right-3.5 top-1/2 -translate-y-1/2"
+                                                            >
+                                                                <X className="w-3.5 h-3.5 text-slate-400" />
+                                                            </button>
+                                                        )}
+                                                    </div>
+                                                    <div className="flex items-center gap-2 px-1">
+                                                        <label className={cn(
+                                                            "inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-[10px] font-black uppercase tracking-wider cursor-pointer transition-all",
+                                                            isDark ? "border-border bg-[#0B0F14] text-foreground hover:border-primary/40" : "border-[#E5E7EB] bg-white text-slate-700 hover:border-emerald-300"
+                                                        )}>
+                                                            {uploadingPortfolioSlot === slotIdx ? 'Uploading…' : 'Upload video'}
+                                                            <input
+                                                                type="file"
+                                                                accept="video/mp4,video/quicktime,video/webm,video/x-m4v"
+                                                                className="hidden"
+                                                                disabled={uploadingPortfolioSlot !== null}
+                                                                onChange={(e) => {
+                                                                    const file = e.target.files?.[0];
+                                                                    if (file) void handlePortfolioVideoUpload(slotIdx, file);
+                                                                    e.currentTarget.value = '';
+                                                                }}
+                                                            />
+                                                        </label>
+                                                        <p className={cn("text-[10px] opacity-50", textColor)}>Upload is preferred. Links still work.</p>
+                                                    </div>
                                                 </div>
                                             );
                                         })}
