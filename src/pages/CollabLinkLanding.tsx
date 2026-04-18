@@ -22,6 +22,7 @@ import { useSession } from '@/contexts/SessionContext';
 import { VerificationBadge } from '@/components/ui/VerificationBadge';
 import { useUpdateProfile } from '@/lib/hooks/useProfiles';
 import { useSignOut } from '@/lib/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
 
 // Generic JSON-LD injector for page-specific schema markup
 const JsonLdSchema = ({ schema, schemaKey }: { schema: any; schemaKey: string }) => {
@@ -1215,11 +1216,32 @@ const CollabLinkLanding = () => {
 
         if (data.success && data.creator) {
           console.log('[CollabLinkLanding] Creator loaded successfully:', data.creator);
-          setCreator({
+          const baseCreator = {
             ...data.creator,
             name: sanitizeDisplayName(data.creator.name || ''),
             username: sanitizeDisplayName(data.creator.username || ''),
-          });
+          };
+          setCreator(baseCreator);
+
+          // Supplement with portfolio fields not returned by the backend API
+          if (data.creator.id) {
+            try {
+              const { data: portfolioRow } = await (supabase as any)
+                .from('profiles')
+                .select('portfolio_links, media_kit_url')
+                .eq('id', data.creator.id)
+                .single();
+              if (portfolioRow) {
+                setCreator((prev: any) => ({
+                  ...prev,
+                  portfolio_links: portfolioRow.portfolio_links || prev.portfolio_links || [],
+                  media_kit_url: portfolioRow.media_kit_url || prev.media_kit_url || null,
+                }));
+              }
+            } catch (_e) {
+              // Non-critical — portfolio section will just be hidden
+            }
+          }
           trackEvent('collab_link_viewed', { username: normalizedUsername });
           // Track page view event (anonymous, no auth required)
           try {
