@@ -271,6 +271,22 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
         // Optional fields may not exist in older schemas.
       }
 
+      try {
+        const portfolioData = await fetchOptionalProfileFields([
+          'portfolio_links',
+          'media_kit_url',
+        ]);
+        if (Object.keys(portfolioData).length > 0) {
+          optionalFields = {
+            ...optionalFields,
+            portfolio_links: (portfolioData as any)?.portfolio_links || [],
+            media_kit_url: (portfolioData as any)?.media_kit_url ?? null,
+          } as any;
+        }
+      } catch (_error) {
+        // Optional fields may not exist in older schemas.
+      }
+
       // Brand-specific fields are not part of the narrow "core" query above.
       // Fetch them opportunistically so the brand console can render name/email,
       // but don't fail if the columns don't exist in older environments.
