@@ -1,53 +1,38 @@
-"use client";
-
 import React, { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Check, Trash2, Clock, RotateCcw, Sparkles, Layout, Settings2 } from 'lucide-react';
-import { DealTemplate } from '@/types';
 import { cn } from '@/lib/utils';
+
+// Using the same interface as CollabLinkLanding
+interface DealTemplate {
+  id: string;
+  label: string;
+  icon: string;
+  budget: number;
+  type: 'paid' | 'barter';
+  category: string;
+  description: string;
+  deliverables: string[];
+  quantities: Record<string, number>;
+  deadlineDays: number;
+  notes?: string;
+  isPopular?: boolean;
+  addons?: { id: string, label: string, price: number }[];
+}
 
 interface FiverrPackageEditorProps {
   templates: DealTemplate[] | null;
+  avg_rate_reel?: number;
   onChange: (updatedTemplates: DealTemplate[]) => void;
   disabled?: boolean;
 }
 
-const DEFAULT_TEMPLATES: DealTemplate[] = [
-  {
-    id: 'basic',
-    name: 'Basic Starter',
-    description: '1 Professional Reel (up to 30s) with basic editing and raw footage.',
-    rate: 5000,
-    deliverables: ['1x Instagram Reel', 'Usage rights (30 days)'],
-    turnaround_days: 3,
-    revision_count: 1,
-  },
-  {
-    id: 'standard',
-    name: 'Standard Growth',
-    description: '1 High-quality Reel + 2 Stories with trending audio and custom captions.',
-    rate: 12000,
-    deliverables: ['1x Premium Reel', '2x Instagram Stories', 'Usage rights (90 days)', 'Brand tagging'],
-    turnaround_days: 5,
-    revision_count: 2,
-    is_default: true,
-  },
-  {
-    id: 'premium',
-    name: 'Premium Campaign',
-    description: 'Full campaign including Reel, Stories, and static Post with professional grading.',
-    rate: 25000,
-    deliverables: ['1x Cinematic Reel', '3x Stories', '1x Carousel Post', 'Full usage rights', 'Source files'],
-    turnaround_days: 7,
-    revision_count: 3,
-  }
-];
-
 const FiverrPackageEditor: React.FC<FiverrPackageEditorProps> = ({
   templates,
+  avg_rate_reel = 5000,
   onChange,
   disabled = false
 }) => {
@@ -56,11 +41,88 @@ const FiverrPackageEditor: React.FC<FiverrPackageEditorProps> = ({
 
   useEffect(() => {
     if (templates && templates.length > 0) {
-      setLocalTemplates(templates);
+      // Map old fields to new fields if necessary to avoid data loss
+      const mappedTemplates = templates.map(t => ({
+        ...t,
+        label: t.label || (t as any).name || 'Package',
+        budget: t.budget || (t as any).rate || 0,
+        deadlineDays: t.deadlineDays || (t as any).turnaround_days || 7,
+        isPopular: t.isPopular || (t as any).is_default || false,
+        icon: t.icon || '📦',
+        type: t.type || 'paid',
+        category: t.category || 'Creator Service',
+        quantities: t.quantities || {},
+      }));
+
+      // AUTO-UPDATE LOGIC: If the user changed their baseline rate, 
+      // we should update standard templates IF they haven't been customized to a specific weird amount.
+      // This solves the "wrong price" issue when changing baseline rate.
+      const prevReelRate = Number(localTemplates.find(t => t.id === 'basic')?.budget) || 0;
+      const currentReelRate = Number(avg_rate_reel);
+      
+      if (prevReelRate > 0 && currentReelRate !== prevReelRate) {
+        const updated = mappedTemplates.map(t => {
+          if (t.id === 'basic' && (t.budget === prevReelRate || t.budget === 0)) {
+             return { ...t, budget: currentReelRate };
+          }
+          if (t.id === 'standard' && (t.budget === prevReelRate * 2 || t.budget === 0)) {
+             return { ...t, budget: currentReelRate * 2 };
+          }
+          // Only update if they look like they were using the previous default logic
+          return t;
+        });
+        setLocalTemplates(updated);
+        onChange(updated);
+      } else {
+        setLocalTemplates(mappedTemplates);
+      }
     } else {
-      setLocalTemplates(DEFAULT_TEMPLATES);
+      // Generate defaults based on avg_rate_reel
+      const reelRate = Number(avg_rate_reel) || 5000;
+      const defaults: DealTemplate[] = [
+        {
+          id: 'basic',
+          label: 'Basic Starter',
+          icon: '🚀',
+          description: '1 Professional Reel (up to 30s) with basic editing and raw footage.',
+          budget: reelRate,
+          type: 'paid',
+          category: 'Instagram Reel',
+          deliverables: ['Instagram Reel'],
+          quantities: { 'Instagram Reel': 1 },
+          deadlineDays: 3,
+        },
+        {
+          id: 'standard',
+          label: 'Standard Growth',
+          icon: '⭐',
+          description: '1 High-quality Reel + 2 Stories with trending audio and custom captions.',
+          budget: Math.round(reelRate * 2),
+          type: 'paid',
+          category: 'Instagram Reel + Stories',
+          deliverables: ['Instagram Reel', 'Instagram Stories'],
+          quantities: { 'Instagram Reel': 1, 'Instagram Stories': 2 },
+          deadlineDays: 5,
+          isPopular: true,
+        },
+        {
+          id: 'barter',
+          label: 'Product Review',
+          icon: '📦',
+          description: 'In-depth product unboxing and review with 1 story mention. Free product as payment.',
+          budget: 0,
+          type: 'barter',
+          category: 'Unboxing',
+          deliverables: ['Unboxing Video', 'Instagram Story'],
+          quantities: { 'Unboxing Video': 1, 'Instagram Story': 1 },
+          deadlineDays: 14,
+        }
+      ];
+      setLocalTemplates(defaults);
+      // Trigger update so parent knows about initial dynamic rates
+      onChange(defaults);
     }
-  }, [templates]);
+  }, [templates, avg_rate_reel]);
 
   const handleUpdate = (id: string, updates: Partial<DealTemplate>) => {
     const next = localTemplates.map(t => t.id === id ? { ...t, ...updates } : t);
@@ -103,10 +165,7 @@ const FiverrPackageEditor: React.FC<FiverrPackageEditorProps> = ({
           </h3>
           <p className="text-[11px] text-muted-foreground">Define your Basic, Standard, and Premium tiers.</p>
         </div>
-        <div className="bg-primary/10 text-primary text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-tight flex items-center gap-1">
-          <Sparkles className="w-3 h-3" />
-          Fiverr Style
-        </div>
+
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
@@ -128,13 +187,18 @@ const FiverrPackageEditor: React.FC<FiverrPackageEditorProps> = ({
               {/* Header */}
               <div className="p-4 border-b border-border/50">
                 <div className="flex justify-between items-start mb-2">
-                  <span className={cn(
-                    "text-[10px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded",
-                    template.id === 'basic' ? "bg-background/20 text-muted-foreground" :
-                    isStandard ? "bg-primary/20 text-primary" : "bg-warning/20 text-warning"
-                  )}>
-                    {template.id}
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <span className={cn(
+                      "text-[10px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded",
+                      template.id === 'basic' ? "bg-background/20 text-muted-foreground" :
+                      isStandard ? "bg-primary/20 text-primary" : "bg-warning/20 text-warning"
+                    )}>
+                      {template.id}
+                    </span>
+                    {template.isPopular && (
+                      <span className="text-[9px] bg-amber-500 text-white font-black px-1.5 py-0.5 rounded uppercase tracking-tighter">Most Popular</span>
+                    )}
+                  </div>
                   <button type="button" 
                     onClick={() => setExpandedId(isExpanded ? null : template.id)}
                     className="p-1 hover:bg-secondary/50 rounded-full transition-colors"
@@ -143,19 +207,22 @@ const FiverrPackageEditor: React.FC<FiverrPackageEditorProps> = ({
                   </button>
                 </div>
                 
-                <Input
-                  value={template.name}
-                  onChange={(e) => handleUpdate(template.id, { name: e.target.value })}
-                  disabled={disabled}
-                  className="bg-transparent border-none p-0 text-sm font-bold shadow-none focus-visible:ring-0 h-auto mb-1"
-                />
+                <div className="flex items-center gap-2">
+                  <span className="text-lg">{template.icon}</span>
+                  <Input
+                    value={template.label}
+                    onChange={(e) => handleUpdate(template.id, { label: e.target.value })}
+                    disabled={disabled}
+                    className="bg-transparent border-none p-0 text-sm font-bold shadow-none focus-visible:ring-0 h-auto"
+                  />
+                </div>
                 
                 <div className="flex items-baseline gap-1 mt-2">
                   <span className="text-lg font-black tracking-tight">₹</span>
                   <Input
                     type="number"
-                    value={template.rate || 0}
-                    onChange={(e) => handleUpdate(template.id, { rate: parseInt(e.target.value) || 0 })}
+                    value={template.budget || 0}
+                    onChange={(e) => handleUpdate(template.id, { budget: parseInt(e.target.value) || 0 })}
                     disabled={disabled}
                     className="bg-transparent border-none p-0 text-2xl font-black shadow-none focus-visible:ring-0 h-auto w-24"
                   />
@@ -213,28 +280,25 @@ const FiverrPackageEditor: React.FC<FiverrPackageEditorProps> = ({
                       <div className="flex items-center gap-1.5">
                         <Input
                           type="number"
-                          value={template.turnaround_days || 0}
-                          onChange={(e) => handleUpdate(template.id, { turnaround_days: parseInt(e.target.value) || 0 })}
+                          value={template.deadlineDays || 0}
+                          onChange={(e) => handleUpdate(template.id, { deadlineDays: parseInt(e.target.value) || 0 })}
                           disabled={disabled}
                           className="h-8 text-xs bg-muted/50 border-border/5 w-12"
                         />
                         <span className="text-[10px] text-muted-foreground font-medium">Days</span>
                       </div>
                     </div>
-                    <div className="space-y-1">
-                      <label className="text-[10px] text-muted-foreground flex items-center gap-1">
-                        <RotateCcw className="w-3 h-3" /> Revisions
-                      </label>
-                      <div className="flex items-center gap-1.5">
-                        <Input
-                          type="number"
-                          value={template.revision_count || 0}
-                          onChange={(e) => handleUpdate(template.id, { revision_count: parseInt(e.target.value) || 0 })}
-                          disabled={disabled}
-                          className="h-8 text-xs bg-muted/50 border-border/5 w-12"
-                        />
-                        <span className="text-[10px] text-muted-foreground font-medium">Times</span>
-                      </div>
+                    <div className="space-y-1 flex flex-col justify-end">
+                      <button
+                        type="button"
+                        onClick={() => handleUpdate(template.id, { isPopular: !template.isPopular })}
+                        className={cn(
+                          "h-8 px-2 rounded-lg text-[10px] font-black uppercase tracking-tight border transition-all",
+                          template.isPopular ? "bg-amber-500 text-white border-amber-600" : "bg-white text-muted-foreground border-border/50"
+                        )}
+                      >
+                        {template.isPopular ? "Unmark Popular" : "Mark Popular"}
+                      </button>
                     </div>
                   </div>
                 )}

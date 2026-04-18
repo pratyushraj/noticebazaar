@@ -10,7 +10,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { Edit, Plus, Instagram, Youtube, Twitter, Facebook, CheckCircle2, Loader2, ExternalLink, ChevronDown, ShieldCheck, Rocket, Target, IndianRupee, Package, MapPin, FileText, Wallet, Calendar, TrendingUp, Lock, Clapperboard, Send, FileCheck, BadgeCheck, Clock, PenLine, Zap, ArrowRight, ChevronRight, Sparkles, X, Check, Link2, Briefcase } from 'lucide-react';
+import { Edit, Plus, Instagram, Youtube, Twitter, Facebook, CheckCircle2, Loader2, ExternalLink, ChevronDown, ShieldCheck, Rocket, Target, IndianRupee, Package, MapPin, FileText, Wallet, Calendar, TrendingUp, Lock, Clapperboard, Send, FileCheck, BadgeCheck, Clock, PenLine, Zap, ArrowRight, ChevronRight, Sparkles, X, Check, Link2, Briefcase, Image as ImageIcon } from 'lucide-react';
 import { toast } from 'sonner';
 import { triggerHaptic, HapticPatterns } from '@/lib/utils/haptics';
 import { trackEvent } from '@/lib/utils/analytics';
@@ -614,80 +614,64 @@ const CollabLinkLanding = () => {
   useEffect(() => {
     if (creator) {
       if (creator.deal_templates && creator.deal_templates.length > 0) {
-        // Validate saved templates have reasonable prices, regenerate any with ₹0
-        const roundToCleanPrice = (n: number): number => {
-          if (n >= 10000) return Math.round(n / 1000) * 1000;
-          if (n >= 5000) return Math.round(n / 500) * 500;
-          if (n >= 1000) return Math.round(n / 100) * 100;
-          return Math.round(n / 50) * 50;
-        };
-        const fallbackRate = creator.suggested_reel_rate || (creator as any).avg_rate_reel || 5000;
-        const validatedTemplates = creator.deal_templates.slice(0, 3).map((t, i) => {
-          if (t.budget > 0) return t;
-          // Fix ₹0 templates with sensible defaults
+        const fallbackRate = (creator as any).avg_rate_reel || creator.suggested_reel_rate || 5000;
+        const validatedTemplates = creator.deal_templates.slice(0, 4).map((t, i) => {
+          // If it's a barter deal or has a price, keep it
+          if (t.budget > 0 || t.type === 'barter') return t;
+          
+          // Otherwise use sensible defaults based on reel rate
           const fallbackBudgets = [
-            roundToCleanPrice(Math.max(fallbackRate, 1000)),
-            roundToCleanPrice(Math.max(fallbackRate * 1.5, 1500)),
-            roundToCleanPrice(Math.max(fallbackRate * 0.5, 2000)),
+            fallbackRate,
+            Math.round(fallbackRate * 2),
+            Math.round(fallbackRate * 4),
+            0 // Barter
           ];
-          return { ...t, budget: fallbackBudgets[i] || roundToCleanPrice(fallbackRate) };
+          return { ...t, budget: fallbackBudgets[i] ?? 0 };
         });
         setLocalDealTemplates(validatedTemplates);
       } else {
         // Generate Default Templates based on reel rate
-        const suggestedRate = creator.suggested_reel_rate || (creator as any).avg_rate_reel || 5000;
-        const reelRate = suggestedRate;
-
-        const roundToCleanPrice = (n: number): number => {
-          if (n >= 10000) return Math.round(n / 1000) * 1000;
-          if (n >= 5000) return Math.round(n / 500) * 500;
-          if (n >= 1000) return Math.round(n / 100) * 100;
-          return Math.round(n / 50) * 50;
-        };
+        const reelRate = (creator as any).avg_rate_reel || creator.suggested_reel_rate || 5000;
 
         const defaultTemplates: DealTemplate[] = [
           {
-            id: 'starter_package',
-            label: 'Starter Creator Package',
-            icon: '🎬',
-            budget: roundToCleanPrice(Math.max(reelRate, 1000)),
+            id: 'basic',
+            label: 'Basic Starter',
+            icon: '🚀',
+            budget: reelRate,
             type: 'paid',
             category: creator.category || 'Lifestyle',
-            description: '1 High-quality Instagram Reel with professional hooks and brand tagging.',
-            deliverables: ['Reel'],
-            quantities: { 'Reel': 1 },
-            deadlineDays: creator.min_lead_time_days || 7,
-            notes: 'Includes 1 revision. Collaborative post included.',
-            addons: [
-              { id: 'addon_story', label: '+ Extra Story', price: 200 },
-              { id: 'addon_revision', label: '+ Extra revision', price: 300 }
-            ]
+            description: '1 Professional Reel (up to 30s) with basic editing and raw footage.',
+            deliverables: ['Instagram Reel'],
+            quantities: { 'Instagram Reel': 1 },
+            deadlineDays: 3,
+            notes: 'Basic starting package'
           },
           {
-            id: 'engagement_package',
-            label: 'Engagement Package',
-            icon: '🔥',
-            budget: roundToCleanPrice(Math.max(reelRate * 1.5, 1500)),
+            id: 'standard',
+            label: 'Standard Growth',
+            icon: '⭐',
+            budget: Math.round(reelRate * 2),
             type: 'paid',
             category: creator.category || 'Lifestyle',
-            description: '1 Reel + 2 Engagement Stories to maximize reach and drive action.',
-            deliverables: ['Reel', 'Story'],
-            quantities: { 'Reel': 1, 'Story': 2 },
-            deadlineDays: creator.min_lead_time_days || 10,
-            notes: 'Stories include direct link + Polls for engagement.',
-            isPopular: true
+            description: '1 High-quality Reel + 2 Stories with trending audio and custom captions.',
+            deliverables: ['Instagram Reel', 'Instagram Stories'],
+            quantities: { 'Instagram Reel': 1, 'Instagram Stories': 2 },
+            deadlineDays: 5,
+            isPopular: true,
+            notes: 'Most popular option'
           },
           {
             id: 'product_review',
             label: 'Product Review',
             icon: '📦',
-            budget: roundToCleanPrice(Math.max(reelRate * 0.5, 2000)),
+            budget: 0,
             type: 'barter',
             category: creator.category || 'Lifestyle',
             description: 'In-depth product unboxing and review with 1 story mention.',
             deliverables: ['Unboxing Video', 'Story'],
             quantities: { 'Unboxing Video': 1, 'Story': 1 },
-            deadlineDays: creator.min_lead_time_days || 14,
+            deadlineDays: 14,
             notes: 'Product must be shipped before shoot. Honest review only.'
           }
         ];
@@ -709,6 +693,8 @@ const CollabLinkLanding = () => {
     const latestName = `${profile?.first_name || ''} ${profile?.last_name || ''}`.trim();
     const latestFollowers = Number((profile as any)?.instagram_followers || 0) || null;
     const latestProfilePhoto = (profile as any)?.instagram_profile_photo || profile?.avatar_url || creator.profile_photo || null;
+    const latestReelRate = Number((profile as any)?.avg_rate_reel || 0) || null;
+    const latestTemplates = (profile as any)?.deal_templates || [];
 
     const nextPlatforms = Array.isArray(creator.platforms)
       ? creator.platforms.map((platform) =>
@@ -742,28 +728,22 @@ const CollabLinkLanding = () => {
     const isSameInstagramHandle = instagramHandle === (creator.platforms.find((platform) => platform.name.toLowerCase() === 'instagram')?.handle || '');
     const isSameFollowers = nextFollowers === creator.followers;
     const isSamePhoto = nextProfilePhoto === creator.profile_photo;
+    const isSameRate = latestReelRate === (creator as any).avg_rate_reel;
+    const isSameTemplates = JSON.stringify(latestTemplates) === JSON.stringify(creator.deal_templates);
 
-    if (isSameName && isSameUsername && isSameInstagramHandle && isSameFollowers && isSamePhoto) return;
+    if (isSameName && isSameUsername && isSameInstagramHandle && isSameFollowers && isSamePhoto && isSameRate && isSameTemplates) return;
 
     setCreator((prev) => prev ? {
       ...prev,
       name: nextName,
       username: nextUsername,
-      platforms: nextPlatforms,
       followers: nextFollowers,
       profile_photo: nextProfilePhoto,
-    } : prev);
-  }, [
-    creator,
-    user?.id,
-    profile?.first_name,
-    profile?.last_name,
-    profile?.instagram_handle,
-    profile?.username,
-    profile?.avatar_url,
-    (profile as any)?.instagram_profile_photo,
-    (profile as any)?.instagram_followers,
-  ]);
+      platforms: nextPlatforms,
+      avg_rate_reel: latestReelRate,
+      deal_templates: latestTemplates
+    } : null);
+  }, [profile, user?.id, creator]);
 
   const isDeadlineProvided = Boolean(deadline);
   const isBudgetProvided = collabType === 'affiliate' ? true : collabType === 'paid' ? Number(exactBudget) > 0 : collabType === 'barter' ? Number(barterValue) > 0 : collabType === 'hybrid' ? (Number(exactBudget) > 0 && Number(barterValue) > 0) : true;
@@ -771,10 +751,10 @@ const CollabLinkLanding = () => {
 
   const isStep1Ready = Boolean(collabType && deliverables.length > 0);
   const isValidBrandEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(brandEmail);
-  const needsProductImage = Boolean(selectedTemplateId) || isBarterLikeCollab(collabType);
   const isProductImageRequired = Boolean(selectedTemplateId) || isBarterLikeCollab(collabType);
   const isProductImageReady = isProductImageRequired ? Boolean(String(barterProductImageUrl || '').trim()) : true;
-  const isStep2Ready = Boolean(brandEmail.trim() && isValidBrandEmail && isProductImageReady);
+  const isLogoReady = Boolean(String(brandLogoUrl || '').trim());
+  const isStep2Ready = Boolean(brandEmail.trim() && isValidBrandEmail && isProductImageReady && isLogoReady);
 
   const completionChecks = useMemo(() => ([
     { label: 'Collab type', complete: isStep1Ready },
@@ -1447,7 +1427,7 @@ const CollabLinkLanding = () => {
           toast.error('Please add your email');
           return;
         }
-        if (needsProductImage && !String(barterProductImageUrl || '').trim()) {
+        if (isProductImageRequired && !String(barterProductImageUrl || '').trim()) {
           void openBarterImagePicker();
           return;
         }
@@ -1497,6 +1477,10 @@ const CollabLinkLanding = () => {
       newErrors.barterProductImageUrl = 'Please upload a product image';
     }
 
+    if (!String(brandLogoUrl || '').trim()) {
+      newErrors.brandLogoUrl = 'Please upload your brand logo';
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -1538,7 +1522,7 @@ const CollabLinkLanding = () => {
           brand_phone: null,
           brand_website: null,
           brand_instagram: brandInstagram || null,
-          brand_logo_url: null,
+          brand_logo_url: brandLogoUrl ? String(brandLogoUrl).trim() : null,
           collab_type: collabType,
           budget_range: budgetRange || null,
           exact_budget: exactBudget ? parseFloat(exactBudget) : null,
@@ -2250,78 +2234,7 @@ const CollabLinkLanding = () => {
       <div className="light min-h-screen overflow-x-hidden selection:bg-teal-500/30 text-slate-900 relative" style={{ backgroundColor: "#F7F9FB" }}>
         <div className="hidden lg:block pointer-events-none absolute -top-24 -left-20 w-[420px] h-[420px] rounded-full bg-teal-500/10 blur-3xl" />
         <div className="hidden lg:block pointer-events-none absolute top-[18%] -right-24 w-[380px] h-[380px] rounded-full bg-blue-500/10 blur-3xl" />
-        {isOwner && (
-          <div className="bg-[#004D40] text-emerald-50 px-4 py-2 flex flex-wrap items-center justify-between gap-y-2 sticky top-0 z-[100] shadow-lg border-b border-emerald-400/20 backdrop-blur-md bg-opacity-90">
-            <div className="flex items-center gap-3 min-w-0">
-              <div className="bg-emerald-400/20 p-1.5 rounded-full">
-                <ShieldCheck className="w-4 h-4 text-emerald-400" />
-              </div>
-              <div className="hidden sm:block">
-                <p className="text-[11px] font-black uppercase tracking-widest leading-none mb-0.5">Owner View</p>
-                <p className="text-[10px] text-emerald-300/80 font-medium">
-                  {previewAsBrand ? 'Brand preview mode is active.' : 'You are viewing your own collab link as brands see it.'}
-                </p>
-              </div>
-              <div className="sm:hidden">
-                <p className="text-[10px] font-black uppercase tracking-widest leading-none">Your Collab Link</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-2 flex-wrap justify-end">
-              {editMode && profileSaveStatusLabel && (
-                <div className={`hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider ${profileSaveStatus === 'error'
-                  ? 'bg-rose-100 text-rose-700 border border-rose-200'
-                  : profileSaveStatus === 'saving'
-                    ? 'bg-amber-100 text-amber-700 border border-amber-200'
-                    : 'bg-emerald-100 text-emerald-700 border border-emerald-200'
-                  }`}>
-                  {profileSaveStatus === 'saving' ? <Loader2 className="w-3 h-3 animate-spin" /> : <CheckCircle2 className="w-3 h-3" />}
-                  {profileSaveStatusLabel}
-                </div>
-              )}
-              <Button
-                onClick={() => {
-                  setPreviewAsBrand((prev) => {
-                    const next = !prev;
-                    if (next) setEditMode(false);
-                    if (next && hasIncompleteSetup) {
-                      toast.warning('Setup is incomplete. Brands may see missing details.');
-                    }
-                    return next;
-                  });
-                }}
-                size="sm"
-                variant="outline"
-                className={`${previewAsBrand ? 'bg-white text-slate-900' : 'bg-white/10 text-white'} border-white/30 transition-all text-[11px] font-bold h-7 px-3 rounded-full shadow-sm`}
-              >
-                {previewAsBrand ? 'Back to Owner View' : 'Preview as Brand'}
-              </Button>
-              <Button
-                onClick={() => signOutMutation.mutate()}
-                size="sm"
-                disabled={signOutMutation.isPending}
-                variant="outline"
-                className="bg-white/10 text-white hover:bg-white/20 border-white/30 transition-all text-[11px] font-bold h-7 px-3 rounded-full shadow-sm"
-              >
-                {signOutMutation.isPending ? (
-                  <>
-                    <Loader2 className="w-3 h-3 mr-1 animate-spin" />
-                    Logging out...
-                  </>
-                ) : (
-                  'Log out'
-                )}
-              </Button>
-              <Button
-                onClick={handleEditModeToggle}
-                size="sm"
-                disabled={previewAsBrand}
-                className={`${editMode ? 'bg-white text-emerald-900 hover:bg-slate-100' : 'bg-emerald-500 text-white hover:bg-emerald-400'} border-none transition-all text-[11px] font-bold h-7 px-4 rounded-full shadow-sm`}
-              >
-                {editMode ? 'Finish Editing' : 'Edit Profile'}
-              </Button>
-            </div>
-          </div>
-        )}
+
 	        <div className="container mx-auto px-4 md:px-6 pt-4 pb-36 md:pb-10 md:pt-10 max-w-lg md:max-w-4xl lg:max-w-[1280px] relative">
 	          <div className="flex flex-col md:grid md:grid-cols-[minmax(0,1fr)_380px] items-start gap-7 md:gap-8 w-full">
 
@@ -2340,6 +2253,7 @@ const CollabLinkLanding = () => {
                           src={creator.profile_photo}
                           alt={`${displayCreatorName} profile`}
                           className="w-full h-full object-cover"
+                          referrerPolicy="no-referrer"
                           onError={() => setProfilePhotoError(true)}
                         />
                       ) : (
@@ -3174,52 +3088,74 @@ const CollabLinkLanding = () => {
 	                  </div>
 	                )}
 
-                  {/* NEW: Public Portfolio & Past Brands */}
-                  {(!editMode && ((creator.portfolio_links && creator.portfolio_links.length > 0) || (creator.past_brands && creator.past_brands.length > 0))) && (
+                  {/* NEW: Public Portfolio & Media Kit */}
+                  {(!editMode && ((creator.portfolio_links && creator.portfolio_links.length > 0) || (creator as any).media_kit_url)) && (
                     <div className="mt-8 pt-6 border-t border-slate-200 space-y-6">
                       {creator.portfolio_links && creator.portfolio_links.length > 0 && (
-                        <div>
-                          <h3 className="text-sm font-bold text-slate-900 mb-3 flex items-center gap-2">
-                            <Link2 className="h-4 w-4 text-emerald-600" />
-                            Featured Portfolio
+                        <div className="space-y-4">
+                          <h3 className="text-[13px] font-black uppercase tracking-[0.1em] text-slate-500 mb-4 flex items-center justify-between">
+                            <span className="flex items-center gap-2">
+                                <Clapperboard className="h-4 w-4 text-emerald-600" />
+                                Work Portfolio
+                            </span>
+                            <span className="text-[10px] font-bold bg-emerald-50 text-emerald-600 px-2 py-0.5 rounded-full uppercase tracking-widest">Featured</span>
                           </h3>
-                          <div className="flex flex-col gap-2">
+                          <div className="grid grid-cols-1 gap-3">
                             {creator.portfolio_links.map((link, idx) => (
                               <a
                                 key={idx}
                                 href={link.startsWith('http') ? link : `https://${link}`}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="flex items-center gap-2 p-3 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 hover:border-slate-300 transition-all group"
+                                className="flex items-center gap-4 p-4 rounded-2xl border border-slate-200 bg-white hover:border-emerald-200 hover:shadow-lg hover:shadow-emerald-500/5 transition-all group relative overflow-hidden"
                               >
-                                <div className="w-8 h-8 rounded-lg bg-white border border-slate-200 flex items-center justify-center shrink-0 shadow-sm group-hover:scale-105 transition-transform">
-                                  {link.includes('instagram.com') ? <Instagram className="w-4 h-4 text-pink-600" /> : <ExternalLink className="w-4 h-4 text-slate-400" />}
+                                <div className="absolute top-0 right-0 w-16 h-16 bg-gradient-to-br from-emerald-50/50 to-transparent rounded-bl-full pointer-events-none" />
+                                <div className="w-12 h-12 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center shrink-0 shadow-sm group-hover:scale-105 transition-transform">
+                                  {link.includes('instagram.com') ? (
+                                    <Instagram className="w-6 h-6 text-pink-600" /> 
+                                  ) : link.includes('youtube.com') || link.includes('youtu.be') ? (
+                                    <Youtube className="w-6 h-6 text-red-600" />
+                                  ) : (
+                                    <ExternalLink className="w-6 h-6 text-slate-400" />
+                                  )}
                                 </div>
-                                <span className="text-[13px] font-semibold text-slate-700 truncate flex-1 leading-snug">
-                                  {link.replace(/^https?:\/\/(www\.)?/, '').replace(/\/$/, '')}
-                                </span>
+                                <div className="min-w-0 flex-1">
+                                  <p className="text-[14px] font-black text-slate-800 leading-tight mb-0.5 truncate uppercase tracking-tight">
+                                    {link.includes('instagram.com/reels') ? 'View Reel' : 
+                                     link.includes('instagram.com/p') ? 'View Post' : 
+                                     link.includes('youtube.com/shorts') ? 'View Short' : 'View Work'}
+                                  </p>
+                                  <p className="text-[11px] font-bold text-slate-400 truncate opacity-80">
+                                    {link.replace(/^https?:\/\/(www\.)?/, '').replace(/\/$/, '')}
+                                  </p>
+                                </div>
+                                <ChevronRight className="w-5 h-5 text-slate-300 group-hover:text-emerald-500 transition-colors" />
                               </a>
                             ))}
                           </div>
                         </div>
                       )}
 
-                      {creator.past_brands && creator.past_brands.length > 0 && (
-                        <div>
-                          <h3 className="text-sm font-bold text-slate-900 mb-3 flex items-center gap-2">
-                            <Briefcase className="h-4 w-4 text-emerald-600" />
-                            Trusted By Brands
-                          </h3>
-                          <div className="flex flex-wrap gap-2">
-                            {creator.past_brands.map((brand, idx) => (
-                              <div
-                                key={idx}
-                                className="px-3 py-1.5 rounded-lg border border-slate-200 bg-white shadow-sm text-[12px] font-black uppercase tracking-wider text-slate-700"
-                              >
-                                {brand}
+                      {(creator as any).media_kit_url && (
+                        <div className="pt-2">
+                          <a
+                            href={(creator as any).media_kit_url.startsWith('http') ? (creator as any).media_kit_url : `https://${(creator as any).media_kit_url}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center justify-between p-4 rounded-2xl bg-slate-900 text-white hover:bg-black transition-all shadow-xl shadow-slate-200"
+                          >
+                            <div className="flex items-center gap-3">
+                              <div className="relative">
+                                <FileCheck className="w-5 h-5 text-emerald-400" />
+                                <div className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-emerald-500 rounded-full animate-ping" />
                               </div>
-                            ))}
-                          </div>
+                              <div className="flex flex-col">
+                                <span className="text-[13px] font-black uppercase tracking-widest leading-none">Open Full Media Kit</span>
+                                <span className="text-[10px] font-bold text-slate-400 mt-1 uppercase tracking-tight opacity-80">Stats, Pricing & More</span>
+                              </div>
+                            </div>
+                            <ExternalLink className="w-4 h-4 text-white/40" />
+                          </a>
                         </div>
                       )}
                     </div>
@@ -3456,6 +3392,53 @@ const CollabLinkLanding = () => {
                               placeholder="Brand Instagram (optional)"
                               className="h-12 px-4 rounded-xl border-white bg-white font-semibold text-[14px] shadow-sm"
                             />
+
+                            {/* Brand Logo Upload */}
+                            <div className="pt-2">
+                              <p className="block text-[12px] font-black uppercase tracking-widest text-slate-500 mb-2">Brand Logo</p>
+                              {brandLogoUrl ? (
+                                <div className="flex items-center gap-3 bg-white p-2.5 rounded-2xl shadow-sm border border-slate-200">
+                                  <div className="h-12 w-12 rounded-[14px] bg-slate-50 border border-slate-100 overflow-hidden flex-shrink-0 relative">
+                                    <img src={brandLogoUrl} alt="Brand Logo" className="w-full h-full object-contain" referrerPolicy="no-referrer" />
+                                  </div>
+                                  <div className="flex-1">
+                                    <p className="text-[13px] font-bold text-slate-900 leading-tight">Logo Uploaded</p>
+                                    <Button
+                                      type="button"
+                                      variant="ghost"
+                                      onClick={() => setBrandLogoUrl('')}
+                                      className="h-auto p-0 text-[11px] font-bold text-red-500 hover:text-red-600 hover:bg-transparent mt-1"
+                                    >
+                                      Remove
+                                    </Button>
+                                  </div>
+                                </div>
+                              ) : (
+                                <div className="relative">
+                                  <input
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={handleLogoChange}
+                                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                                    disabled={brandLogoUploading}
+                                  />
+                                  <div className={`w-full h-14 rounded-xl border-2 border-dashed flex items-center justify-center gap-2 transition-all ${
+                                    errors.brandLogoUrl ? 'border-red-300 bg-red-50/50 text-red-600' : 'border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50 text-slate-600'
+                                  }`}>
+                                    {brandLogoUploading ? (
+                                      <Loader2 className="w-4 h-4 animate-spin" />
+                                    ) : (
+                                      <ImageIcon className="w-4 h-4" />
+                                    )}
+                                    <span className="text-[13px] font-bold">
+                                      {brandLogoUploading ? 'Uploading...' : 'Upload brand logo'}
+                                    </span>
+                                  </div>
+                                </div>
+                              )}
+                              {errors.brandLogoUrl && <p className="text-red-500 text-[11px] font-bold mt-1.5 ml-1">{errors.brandLogoUrl}</p>}
+                            </div>
+
                           </div>
                         </div>
 
@@ -3494,7 +3477,7 @@ const CollabLinkLanding = () => {
                         )}
 
                         {/* Product image / product details */}
-                        {needsProductImage && (
+                        {isProductImageRequired && (
                           <div className="bg-slate-50 rounded-[32px] p-6 border border-slate-200 shadow-inner space-y-4">
                             {(collabType === 'barter' || collabType === 'hybrid') && (
                               <>
@@ -3532,6 +3515,7 @@ const CollabLinkLanding = () => {
                                       src={barterProductImageUrl} 
                                       alt="Product" 
                                       className="h-full w-full object-cover transition-transform group-hover:scale-105"
+                                      referrerPolicy="no-referrer"
                                     />
                                     <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
                                       <label className="flex items-center justify-center h-9 px-4 rounded-full bg-white text-slate-900 text-xs font-bold cursor-pointer hover:bg-slate-50 transition-colors">

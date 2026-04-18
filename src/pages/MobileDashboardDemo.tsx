@@ -2,7 +2,10 @@ import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import { trackEvent } from '@/lib/utils/analytics';
-import { User, Search, ShieldCheck, Handshake, Camera, Plus, LayoutDashboard, CreditCard, Briefcase, Menu, Instagram, Target, Dumbbell, Shirt, Sun, Moon, RefreshCw, Loader2, Bell, ChevronRight, Zap, Rocket, Link2, CheckCircle2, Download, Clock, Info, Globe, Star, LogOut, Copy, Share2, QrCode, Eye, MoreHorizontal, Landmark, FileText, Smartphone, TrendingUp, BarChart3, Mail, MessageCircle, MessageSquare, Edit3, Send, X, XCircle, ExternalLink, AlertCircle, AlertTriangle, ArrowRight, Package, Flag, MapPin, Languages, Lock as LockIcon } from 'lucide-react';
+import { DashboardEmptyState } from '../components/Dashboard/EmptyState';
+import { PaymentsTab } from '../components/Dashboard/PaymentsTab';
+import { AccountTab } from '../components/Dashboard/AccountTab';
+import { User, Search, ShieldCheck, Handshake, Camera, Plus, LayoutDashboard, CreditCard, Briefcase, Menu, Instagram, Target, Dumbbell, Shirt, Sun, Moon, RefreshCw, Loader2, Bell, ChevronRight, Zap, Rocket, Link2, CheckCircle2, Download, Clock, Info, Globe, Star, LogOut, Copy, Share2, QrCode, Eye, MoreHorizontal, Landmark, FileText, Smartphone, TrendingUp, BarChart3, Mail, MessageCircle, MessageSquare, Edit3, Send, X, XCircle, ExternalLink, AlertCircle, AlertTriangle, ArrowRight, Package, Flag, MapPin, Languages, Lock as LockIcon, ArrowUpRight, Wallet, HelpCircle, Sparkles, Youtube, Twitter, Heart, Trash2, Smartphone as SmartphoneIcon, Users, Calendar, ShoppingBag, Video, BookOpen, GraduationCap, Laugh, Coffee, Layers, Flame } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useSignOut } from '@/lib/hooks/useAuth';
@@ -392,30 +395,30 @@ const AnimatedCounter = ({ value }: { value: number }) => {
 };
 
 // Helper components for iOS-style Settings
-const SettingsRow = ({ icon, label, subtext, iconBg, hasChevron, isDark, textColor, onClick, rightElement, labelClassName }: any) => (
+const SettingsRow = ({ icon, label, subtext, iconColorClass, hasChevron, isDark, onClick, rightElement, labelClassName }: any) => (
     <div
         onClick={onClick}
         className={cn(
-            "flex items-center gap-4 py-4 px-4 active:bg-opacity-50 transition-all cursor-pointer group",
-            isDark ? "active:bg-card" : "active:bg-background"
+            "flex items-center gap-4 py-4 px-4 active:opacity-60 transition-all cursor-pointer group",
+            isDark ? "hover:bg-white/5 active:bg-white/10" : "hover:bg-slate-50 active:bg-slate-100"
         )}
     >
-        <div className={cn("w-8 h-8 rounded-lg flex items-center justify-center shadow-sm shrink-0", iconBg)}>
+        <div className={cn("w-6 h-6 flex items-center justify-center shrink-0", iconColorClass)}>
             {React.cloneElement(icon, { size: 20, strokeWidth: 1.5 })}
         </div>
         <div className="flex-1 min-w-0">
-            <p className={cn("text-[17px] font-medium leading-tight", textColor, labelClassName)}>{label}</p>
-            {subtext && <p className={cn("text-[13px] opacity-50 mt-0.5", textColor)}>{subtext}</p>}
+            <p className={cn("text-[15px] font-bold leading-tight", isDark ? "text-white" : "text-[#111827]", labelClassName)}>{label}</p>
+            {subtext && <p className={cn("text-[12.5px] font-medium leading-tight mt-1 opacity-70", isDark ? "text-white/80" : "text-[#6B7280]")}>{subtext}</p>}
         </div>
         {rightElement}
-        {hasChevron && !rightElement && <ChevronRight className="w-5 h-5 opacity-20" />}
+        {hasChevron && !rightElement && <ChevronRight className={cn("w-5 h-5", isDark ? "text-[#5C5E64]" : "text-slate-400")} />}
     </div>
 );
 
 const SettingsGroup = ({ children, isDark }: any) => (
     <div className={cn(
-        "mx-4 overflow-hidden rounded-2xl border mb-8",
-        isDark ? "bg-card border-[#2C2C2E] divide-[#2C2C2E]" : "bg-card border-[#E5E5EA] divide-[#E5E5EA] shadow-sm",
+        "mx-5 overflow-hidden rounded-xl border mb-6",
+        isDark ? "bg-[#1B1D23] border-[#2B2D33] divide-[#2B2D33]" : "bg-white border-[#E5E7EB] divide-[#E5E7EB] shadow-[0_1px_2px_rgba(0,0,0,0.02)]",
         "divide-y"
     )}>
         {children}
@@ -424,8 +427,8 @@ const SettingsGroup = ({ children, isDark }: any) => (
 
 const SectionHeader = ({ title, isDark }: any) => (
     <p className={cn(
-        "px-8 mb-2 text-[13px] font-bold uppercase tracking-wider opacity-40",
-        isDark ? "text-foreground" : "text-black"
+        "px-6 mb-2 mt-4 text-[11px] font-black uppercase tracking-[0.08em] opacity-80",
+        isDark ? "text-white/60" : "text-[#6B7280]"
     )}>
         {title}
     </p>
@@ -435,13 +438,13 @@ const ToggleSwitch = ({ active, onToggle, isDark }: any) => (
     <button type="button"
         onClick={(e) => { e.stopPropagation(); onToggle(); }}
         className={cn(
-            "w-11 h-6 rounded-full relative transition-colors duration-200 ease-in-out",
-            active ? "bg-green-500" : (isDark ? "bg-[#39393D]" : "bg-[#E9E9EB]")
+            "w-[42px] h-[24px] rounded-full relative transition-colors duration-200 ease-in-out px-0.5",
+            active ? "bg-[#10B981]" : (isDark ? "bg-[#39393D]" : "bg-[#E5E7EB]")
         )}
     >
         <motion.div
-            animate={{ x: active ? 22 : 2 }}
-            className="absolute top-0.5 left-0.5 w-5 h-5 bg-card rounded-full shadow-md"
+            animate={{ x: active ? 18 : 0 }}
+            className="w-5 h-5 bg-white rounded-full shadow-sm"
         />
     </button>
 );
@@ -484,8 +487,9 @@ const buildProfileFormData = (profile: any, userEmail?: string | null) => {
         open_to_collabs: profile?.open_to_collabs ?? true,
 
         collaboration_preference: profile?.collaboration_preference || 'Hybrid',
-        avg_rate_reel: profile?.avg_rate_reel || '5000',
-        story_price: profile?.typical_story_rate || profile?.story_price || '2000',
+        avg_rate_reel: profile?.avg_rate_reel || profile?.suggested_reel_rate || '5000',
+        suggested_reel_rate: profile?.suggested_reel_rate || profile?.avg_rate_reel || '5000',
+        story_price: profile?.story_price || '2000',
         content_niches: profile?.content_niches || ['Fashion', 'Tech', 'Lifestyle'],
         bank_account_name: profile?.bank_account_name || '',
         bank_upi: profile?.bank_upi || '',
@@ -641,6 +645,15 @@ const MobileDashboardDemo = ({
     });
     const [showItemMenu, setShowItemMenu] = useState(false);
     const [showProgressSheet, setShowProgressSheet] = useState(false);
+    
+    const totalFollowers = (profile?.platforms || []).reduce((acc: number, p: any) => acc + (p.followers || 0), 0) || 50000;
+    const pricingEstimate = (() => {
+        if (totalFollowers < 5000) return { range: '₹1,500–₹3,500', label: '<5k' };
+        if (totalFollowers < 20000) return { range: '₹3,000–₹7,000', label: '5k–20k' };
+        if (totalFollowers < 100000) return { range: '₹6,000–₹18,000', label: '20k–100k' };
+        if (totalFollowers < 500000) return { range: '₹15,000–₹45,000', label: '100k–500k' };
+        return { range: '₹50,000+', label: '500k+' };
+    })();
 
     useEffect(() => {
         const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
@@ -1329,9 +1342,14 @@ const MobileDashboardDemo = ({
                 const data = await response.json().catch(() => null);
                 const creator = data?.creator;
                 if (!creator) return;
+                const photoUrl = creator.profile_photo || null;
+                const proxiedPhoto = photoUrl && (photoUrl.includes('fbcdn.net') || photoUrl.includes('instagram.com'))
+                    ? `https://wsrv.nl/?url=${encodeURIComponent(photoUrl)}`
+                    : photoUrl;
+
                 setLiveCollabProfile({
                     name: creator.name || null,
-                    profile_photo: creator.profile_photo || null,
+                    profile_photo: proxiedPhoto,
                 });
             } catch {
                 // Ignore transient failures; fallback profile data remains visible.
@@ -1496,9 +1514,20 @@ const MobileDashboardDemo = ({
                 bio: profileFormData.bio || null,
                 location: location,
                 media_kit_url: profileFormData.media_kit_url || null,
+                portfolio_links: profileFormData.portfolio_links || [],
                 open_to_collabs: profileFormData.open_to_collabs,
                 avg_rate_reel: Number(profileFormData.avg_rate_reel) || null,
-                typical_story_rate: Number(profileFormData.story_price) || null,
+                suggested_reel_rate: Number(profileFormData.avg_rate_reel) || null,
+                suggested_paid_range_min: Number(profileFormData.avg_rate_reel) || null,
+                suggested_paid_range_max: Number(profileFormData.avg_rate_reel) ? Number(profileFormData.avg_rate_reel) * 1.5 : null,
+                story_price: Number(profileFormData.story_price) || null,
+                audience_gender_split: profileFormData.audience_gender_split || null,
+                audience_age_range: profileFormData.audience_age_range || null,
+                primary_audience_language: profileFormData.primary_audience_language || null,
+                top_cities: profileFormData.top_cities || [],
+                collaboration_preference: profileFormData.collaboration_preference || 'Hybrid',
+                past_brands: profileFormData.past_brands || [],
+                deal_templates: profileFormData.deal_templates || [],
                 bank_account_name: profileFormData.bank_account_name?.trim() || null,
                 bank_upi: profileFormData.bank_upi?.trim() || null,
                 updated_at: new Date().toISOString(),
@@ -1878,6 +1907,10 @@ const MobileDashboardDemo = ({
         };
 
         const safeLogo = normalizeLogoUrl(logo);
+        const proxiedLogo = safeLogo && (safeLogo.includes('fbcdn.net') || safeLogo.includes('instagram.com'))
+            ? `https://wsrv.nl/?url=${encodeURIComponent(safeLogo)}`
+            : safeLogo;
+
         if (safeLogo) {
             const isSvg = /\.svg(\?|#|$)/i.test(safeLogo);
             return (
@@ -1886,7 +1919,7 @@ const MobileDashboardDemo = ({
                         <div className={cn("absolute inset-0 z-0", isDark ? "bg-secondary/90" : "bg-card")} />
                     )}
                     <img alt=""
-                        src={safeLogo}
+                        src={proxiedLogo}
                         className="w-full h-full object-contain absolute inset-0 z-10 p-1"
                         loading="lazy"
                         decoding="async"
@@ -1906,7 +1939,7 @@ const MobileDashboardDemo = ({
     };
 
     const renderSettingsPage = () => {
-        const PageHeader = ({ title }: { title: string }) => (
+        const PageHeader = ({ title, subtitle }: { title: string, subtitle?: string }) => (
             <div className={cn("px-6 pt-16 pb-6 flex items-center gap-4 bg-transparent")}>
                 <motion.button
                     whileTap={{ scale: 0.9 }}
@@ -1915,7 +1948,10 @@ const MobileDashboardDemo = ({
                 >
                     <ChevronRight className="w-5 h-5 rotate-180" />
                 </motion.button>
-                <h1 className={cn("text-2xl font-black tracking-tight", textColor)}>{title}</h1>
+                <div>
+                    <h1 className={cn("text-2xl font-black tracking-tight", textColor)}>{title}</h1>
+                    {subtitle && <p className={cn("text-[12px] font-bold opacity-40 uppercase tracking-widest mt-0.5", textColor)}>{subtitle}</p>}
+                </div>
             </div>
         );
 
@@ -1993,8 +2029,8 @@ const MobileDashboardDemo = ({
                                 </div>
                             </SettingsGroup>
                             <div className="px-4 pt-4">
-                                <button type="button" onClick={handleSaveProfile} disabled={isSavingProfile} className="w-full bg-info text-foreground font-black py-4 rounded-2xl shadow-lg shadow-blue-500/20 active:scale-95 transition-all uppercase tracking-widest text-[12px] disabled:opacity-50 disabled:active:scale-100">
-                                    {isSavingProfile ? 'Saving...' : 'Save Profile'}
+                                <button type="button" onClick={handleSaveProfile} disabled={isSavingProfile} className="w-full bg-info text-foreground font-bold py-2.5 rounded-xl active:scale-95 transition-all uppercase tracking-widest text-[11px] disabled:opacity-50 disabled:active:scale-100 shadow-sm shadow-info/10">
+                                    {isSavingProfile ? 'Saving...' : 'Update Details'}
                                 </button>
                             </div>
                         </div>
@@ -2018,7 +2054,7 @@ const MobileDashboardDemo = ({
                                                     inputMode="numeric"
                                                     placeholder="5000"
                                                     value={profileFormData.avg_rate_reel || ''}
-                                                    onChange={(e) => setProfileFormData((p: any) => ({ ...p, avg_rate_reel: e.target.value }))}
+                                                    onChange={(e) => setProfileFormData((p: any) => ({ ...p, avg_rate_reel: e.target.value, suggested_reel_rate: e.target.value }))}
                                                 />
                                             </div>
                                         </div>
@@ -2062,58 +2098,8 @@ const MobileDashboardDemo = ({
                                 <SettingsRow icon={<Link2 />} iconBg="bg-info" label="Media Kit" subtext="Connect your external deck" isDark={isDark} textColor={textColor} hasChevron onClick={() => setActiveSettingsPage('personal')} />
                             </SettingsGroup>
                             <div className="px-4 pt-4">
-                                <button type="button" onClick={handleSaveProfile} disabled={isSavingProfile} className="w-full bg-info text-foreground font-black py-4 rounded-2xl shadow-lg shadow-blue-500/20 active:scale-95 transition-all uppercase tracking-widest text-[12px] disabled:opacity-50 disabled:active:scale-100">
+                                <button type="button" onClick={handleSaveProfile} disabled={isSavingProfile} className="w-full bg-info text-foreground font-bold py-3 rounded-xl active:scale-95 transition-all uppercase tracking-widest text-[11px] disabled:opacity-50 disabled:active:scale-100">
                                     {isSavingProfile ? 'Saving...' : 'Save Public Profile'}
-                                </button>
-                            </div>
-                        </div>
-                    </motion.div>
-                );
-            case 'payouts':
-                return (
-                    <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} drag="x" dragConstraints={{ left: 0, right: 0 }} dragElastic={0.2} onDragEnd={(e, { offset, velocity }) => { if (offset.x > 50 || velocity.x > 500) { triggerHaptic(); setActiveSettingsPage(null); } }} className="pb-20 touch-pan-y">
-                        <PageHeader title="Payout Methods" />
-                        <div className="px-4 space-y-6">
-                            <SectionHeader title="Connected Payouts" isDark={isDark} />
-                            <SettingsGroup isDark={isDark}>
-                                <div className="p-4 space-y-4">
-                                    <div className="space-y-1.5">
-                                        <p className={cn("text-[11px] font-black uppercase tracking-wider opacity-40", textColor)}>Account holder name</p>
-                                        <div className="flex items-center gap-2 border-b py-2" style={{ borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)' }}>
-                                            <Landmark className="w-4 h-4 text-info" />
-                                            <input
-                                                className="bg-transparent outline-none font-medium text-[16px] flex-1"
-                                                placeholder="Your payout name"
-                                                value={profileFormData.bank_account_name || ''}
-                                                onChange={(e) => setProfileFormData((p: any) => ({ ...p, bank_account_name: e.target.value }))}
-                                            />
-                                        </div>
-                                    </div>
-                                    <div className="space-y-1.5">
-                                        <div className="flex items-center justify-between gap-3">
-                                            <p className={cn("text-[11px] font-black uppercase tracking-wider opacity-40", textColor)}>UPI ID</p>
-                                            <span className="text-[10px] font-black text-primary">PRIMARY</span>
-                                        </div>
-                                        <div className="flex items-center gap-2 border-b py-2" style={{ borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)' }}>
-                                            <Smartphone className="w-4 h-4 text-primary" />
-                                            <input
-                                                className="bg-transparent outline-none font-medium text-[16px] flex-1"
-                                                placeholder="yourname@upi"
-                                                value={profileFormData.bank_upi || ''}
-                                                onChange={(e) => setProfileFormData((p: any) => ({ ...p, bank_upi: e.target.value }))}
-                                                autoCapitalize="none"
-                                                autoCorrect="off"
-                                            />
-                                        </div>
-                                        <p className={cn("text-[12px] font-medium", secondaryTextColor)}>
-                                            Brands use this UPI ID when releasing collaboration payments.
-                                        </p>
-                                    </div>
-                                </div>
-                            </SettingsGroup>
-                            <div className="px-4 pt-4">
-                                <button type="button" onClick={handleSaveProfile} disabled={isSavingProfile} className="w-full bg-info text-foreground font-black py-4 rounded-2xl shadow-lg shadow-blue-500/20 active:scale-95 transition-all uppercase tracking-widest text-[12px] disabled:opacity-50 disabled:active:scale-100">
-                                    {isSavingProfile ? 'Saving...' : 'Save Payout Details'}
                                 </button>
                             </div>
                         </div>
@@ -2145,631 +2131,401 @@ const MobileDashboardDemo = ({
                         </div>
                     </motion.div>
                 );
-            case 'earnings':
-                return (
-                    <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} drag="x" dragConstraints={{ left: 0, right: 0 }} dragElastic={0.2} onDragEnd={(e, { offset, velocity }) => { if (offset.x > 50 || velocity.x > 500) { triggerHaptic(); setActiveSettingsPage(null); } }} className="pb-20 touch-pan-y">
-                        <PageHeader title="Earnings & History" />
-                        <div className="px-4 space-y-6">
-                            <div className={cn("p-6 rounded-[2.5rem] bg-background border border-border text-foreground")}>
-                                <p className="text-[11px] font-black uppercase tracking-[0.2em] opacity-50 mb-4">Total Revenue Generated</p>
-                                <div className="text-4xl font-black font-outfit mb-6 tabular-nums">₹{allTimeRevenue.toLocaleString()}</div>
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div className="bg-card p-4 rounded-2xl border border-border/5">
-                                        <p className="text-[10px] font-bold opacity-40 mb-1">THIS YEAR</p>
-                                        <p className="text-lg font-bold tabular-nums">₹{yearlyRevenue.toLocaleString()}</p>
-                                    </div>
-                                    <div className="bg-card p-4 rounded-2xl border border-border/5">
-                                        <p className="text-[10px] font-bold opacity-40 mb-1">LAST MONTH</p>
-                                        <p className="text-lg font-bold text-primary tabular-nums">₹{monthlyRevenue.toLocaleString()}</p>
-                                    </div>
-                                </div>
-                            </div>
-                            <SectionHeader title="Financial Reports" isDark={isDark} />
-                            <SettingsGroup isDark={isDark}>
-                                <SettingsRow icon={<FileText />} iconBg="bg-info" label="Tax Invoices (GST)" subtext="Download monthly summaries" isDark={isDark} textColor={textColor} hasChevron />
-                                <SettingsRow icon={<Download />} iconBg="bg-primary" label="Payout Statements" subtext="Detailed breakdown of fees" isDark={isDark} textColor={textColor} hasChevron />
-                            </SettingsGroup>
-                        </div>
-                    </motion.div>
-                );
             case 'collab-link':
                 return (
-                    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="pb-32">
-                        <PageHeader title="Collab Link Performance" />
-                        <div className="px-4 space-y-6">
-                            {/* Performance Header */}
-                            <div className={cn("p-6 rounded-[2.5rem] border relative overflow-hidden", isDark ? "bg-card border-[#2C2C2E]" : "bg-card border-[#E5E5EA] shadow-sm")}>
-                                <div className="flex items-center justify-between mb-6">
-                                    <div className="w-12 h-12 bg-info/10 rounded-2xl flex items-center justify-center">
-                                        <TrendingUp className="w-6 h-6 text-info" />
-                                    </div>
-                                    <div className="text-right">
-                                        <p className={cn("text-[10px] font-black uppercase tracking-[0.2em] opacity-40 mb-1", textColor)}>Overall Score</p>
-                                        <div className="flex items-baseline gap-1 justify-end">
-                                            <span className={cn("text-2xl font-black font-outfit", textColor)}>72</span>
-                                            <span className={cn("text-sm font-bold opacity-30", textColor)}>/ 100</span>
+                    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="pb-20">
+                        <PageHeader 
+                            title="Collab Page Setup" 
+                            subtitle="Optimize your profile to get more deals" 
+                        />
+                        
+                        <div className="px-4 space-y-7">
+                            {/* ── 0. PREVIEW & STATUS ── */}
+                            <div className="space-y-3">
+                                <div className={cn("p-4 rounded-[28px] border flex items-center justify-between", isDark ? "bg-card border-border shadow-2xl shadow-black/20" : "bg-white border-[#E5E7EB] shadow-sm")}>
+                                    <div className="flex items-center gap-3">
+                                        <div className={cn("w-10 h-10 rounded-2xl flex items-center justify-center", profileFormData.open_to_collabs ? (isDark ? "bg-emerald-500/20 text-emerald-400" : "bg-emerald-50 text-emerald-600 shadow-sm") : "bg-slate-500/10 text-slate-400")}>
+                                            <Zap className={cn("w-6 h-6", profileFormData.open_to_collabs && "animate-pulse")} />
+                                        </div>
+                                        <div>
+                                            <p className={cn("text-[14px] font-black", textColor)}>Accepting New Deals</p>
+                                            <p className={cn("text-[11px] opacity-60 font-bold", textColor)}>{profileFormData.open_to_collabs ? "Your profile is LIVE" : "Profile hidden from brands"}</p>
                                         </div>
                                     </div>
+                                    <ToggleSwitch
+                                        active={profileFormData.open_to_collabs}
+                                        onToggle={(val) => { triggerHaptic(); setProfileFormData((p: any) => ({ ...p, open_to_collabs: val })); if (val) toast.success("You're now LIVE to brands!"); }}
+                                        isDark={isDark}
+                                    />
                                 </div>
-                                <h3 className={cn("text-xl font-bold tracking-tight mb-1", textColor)}>creatorarmour.com/{username}</h3>
-                                <div className="grid grid-cols-2 gap-2 mt-4">
-                                    <button type="button"
-                                        onClick={() => {
-                                            const link = `${window.location.origin}/${username}`;
-                                            navigator.clipboard.writeText(link);
-                                            toast.success('Link copied');
-                                            triggerHaptic();
-                                        }}
-                                        className="bg-info text-foreground font-black py-3 rounded-xl text-[11px] active:scale-95 transition-all uppercase tracking-widest shadow-lg shadow-blue-500/20"
-                                    >
-                                        Copy Link
-                                    </button>
-                                    <button type="button"
-                                        onClick={() => {
-                                            triggerHaptic();
-                                            window.open(`/${username}`, '_blank');
-                                        }}
-                                        className={cn("flex items-center justify-center gap-2 font-bold py-3 rounded-xl text-[11px] border active:scale-95 transition-all text-muted-foreground uppercase tracking-widest", isDark ? "border-border" : "border-black/5")}
-                                    >
-                                        <ExternalLink className="w-3.5 h-3.5" /> Preview
-                                    </button>
-                                    <button type="button"
-                                        onClick={() => {
-                                            const link = `${window.location.origin}/${username}`;
-                                            const message = encodeURIComponent(`For collaborations, submit here:\n\n${link}`);
-                                            window.open(`https://wa.me/?text=${message}`, '_blank');
-                                            triggerHaptic();
-                                        }}
-                                        className={cn("flex items-center justify-center gap-2 font-bold py-3 rounded-xl text-[11px] border active:scale-95 transition-all uppercase tracking-widest", isDark ? "bg-primary/10 border-primary/20 text-primary" : "bg-primary border-primary text-primary")}
-                                    >
-                                        <MessageCircle className="w-3.5 h-3.5" /> WhatsApp
-                                    </button>
-                                    <button type="button"
-                                        onClick={() => {
-                                            const link = `${window.location.origin}/${username}`;
-                                            navigator.clipboard.writeText(link);
-                                            toast.success('Copied! Paste in your Bio.');
-                                            triggerHaptic();
-                                        }}
-                                        className={cn("flex items-center justify-center gap-2 font-bold py-3 rounded-xl text-[11px] border active:scale-95 transition-all uppercase tracking-widest", isDark ? "bg-pink-500/10 border-pink-500/20 text-pink-400" : "bg-pink-50 border-pink-100 text-pink-600")}
-                                    >
-                                        <Instagram className="w-3.5 h-3.5" /> Instagram
-                                    </button>
-                                </div>
-                            </div>
 
-                            <SectionHeader title="Status" isDark={isDark} />
-                            <SettingsGroup isDark={isDark}>
-                                <SettingsRow
-                                    icon={<CheckCircle2 />} iconBg="bg-primary"
-                                    label="Open for Collaborations"
-                                    subtext={profileFormData.open_to_collabs ? "Brands can send you offers" : "Profile currently hidden from search"}
-                                    isDark={isDark} textColor={textColor}
-                                    rightElement={
-                                        <ToggleSwitch
-                                            active={profileFormData.open_to_collabs}
-                                            onToggle={(val) => setProfileFormData((p: any) => ({ ...p, open_to_collabs: val }))}
-                                            isDark={isDark}
-                                        />
-                                    }
-                                />
-                            </SettingsGroup>
-
-                            {/* Optimization Wizard - Moved to Collab Link */}
-                            <div className="bg-gradient-to-br from-blue-500/20 to-indigo-500/10 rounded-[2.5rem] p-6 border border-info/20 relative overflow-hidden group">
-                                <div className="absolute top-0 right-0 p-6 opacity-10 pointer-events-none group-hover:scale-110 transition-transform duration-500">
-                                    <Zap className="w-16 h-16 text-info fill-blue-500" />
-                                </div>
-                                <div className="relative z-10">
-                                    <div className="flex items-center gap-2 mb-2">
-                                        <div className="w-9 h-9 rounded-2xl bg-info flex items-center justify-center shadow-lg shadow-blue-500/20">
-                                            <Zap className="w-5 h-5 text-foreground fill-white" />
-                                        </div>
-                                        <h3 className={cn("font-black text-[17px] tracking-tight", textColor)}>Optimization Wizard</h3>
+                                <div className={cn("p-4 rounded-[28px] border flex items-center gap-4", isDark ? "bg-card border-border shadow-2xl shadow-black/20" : "bg-white border-[#E5E7EB] shadow-sm")}>
+                                    <div className={cn("w-12 h-12 rounded-2xl flex items-center justify-center shrink-0", isDark ? "bg-primary/20" : "bg-emerald-50")}>
+                                        <Globe className={cn("w-6 h-6", isDark ? "text-primary" : "text-emerald-600")} />
                                     </div>
-                                    <p className={cn("text-[13px] font-medium opacity-60 mb-5 leading-relaxed", textColor)}>
-                                        Your profile conversion is currently <span className="text-info font-black">Good</span>.
-                                        Let AI analyze your bio and historical rates to boost brand appeal.
-                                    </p>
-                                    <div className="flex flex-wrap gap-2.5">
+                                    <div className="flex-1 min-w-0">
+                                        <p className={cn("text-[13px] font-black truncate opacity-50 uppercase tracking-widest", textColor)}>Public Link</p>
+                                        <p className={cn("text-[14px] font-black truncate", textColor)}>noticebazaar.com/{username}</p>
+                                    </div>
+                                    <div className="flex gap-2">
                                         <button type="button"
-                                            onClick={() => {
-                                                triggerHaptic();
-                                                toast.promise(new Promise(r => setTimeout(r, 1500)), {
-                                                    loading: 'AI analyzing your bio...',
-                                                    success: 'Bio optimized! Click "Review" to see changes.',
-                                                    error: 'Analysis failed'
-                                                });
-                                            }}
-                                            className={cn("flex-1 py-3.5 rounded-2xl text-[11px] font-black uppercase tracking-widest transition-all active:scale-95", isDark ? "bg-card border border-border text-foreground" : "bg-card border border-border text-muted-foreground shadow-sm")}
+                                            onClick={() => { triggerHaptic(); window.open(`${window.location.origin}/${username}`, '_blank'); }}
+                                            className={cn("p-2.5 rounded-xl border transition-all active:scale-95", isDark ? "bg-white/5 border-white/10 text-white" : "bg-white border-slate-200 text-slate-700 shadow-sm")}
                                         >
-                                            Enhance Bio
+                                            <ExternalLink className="w-4 h-4" />
                                         </button>
                                         <button type="button"
-                                            onClick={() => {
-                                                triggerHaptic();
-                                                toast.promise(new Promise(r => setTimeout(r, 2000)), {
-                                                    loading: 'Pricing AI calculating smart rates...',
-                                                    success: 'Smart Rates generated!',
-                                                    error: 'Pricing analysis failed'
-                                                });
-                                            }}
-                                            className="flex-1 bg-info hover:bg-info text-foreground rounded-2xl py-3.5 text-[11px] font-black uppercase tracking-widest transition-all shadow-lg shadow-blue-500/20 active:scale-95"
+                                            onClick={() => { navigator.clipboard.writeText(`${window.location.origin}/${username}`); toast.success('Link copied!'); triggerHaptic(); }}
+                                            className={cn("px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-wider shrink-0 transition-all active:scale-95 shadow-lg", isDark ? "bg-primary text-white shadow-primary/20" : "bg-emerald-600 text-white shadow-emerald-500/30")}
                                         >
-                                            Smart Rates
+                                            Copy
                                         </button>
                                     </div>
                                 </div>
                             </div>
 
-                            {/* Fiverr Packages - Moved to Collab Link */}
-                            <SectionHeader title="Collaboration Packages" isDark={isDark} />
-                            <div className="px-0">
-                                <FiverrPackageEditor
-                                    packages={profileFormData.deal_templates || []}
-                                    onChange={(pkgs) => setProfileFormData(p => ({ ...p, deal_templates: pkgs }))}
-                                />
+                            <div>
+                                <p className={cn("text-[11px] font-black uppercase tracking-widest opacity-60 mb-3 px-1", textColor)}>1. Identity</p>
+                                <div className={cn("rounded-[28px] border p-5 space-y-6", isDark ? "bg-card border-border shadow-2xl shadow-black/20" : "bg-white border-[#E5E7EB] shadow-sm")}>
+                                    <div className="space-y-4">
+                                        <div className="space-y-1.5 px-1">
+                                            <div className="flex items-center justify-between">
+                                                <p className={cn("text-[10px] font-black uppercase tracking-wider opacity-50", textColor)}>Instagram Handle</p>
+                                                <Instagram className="w-3.5 h-3.5 text-pink-500 opacity-60" />
+                                            </div>
+                                            <div className="relative">
+                                                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-primary font-black text-[13px]">@</span>
+                                                <input
+                                                    type="text"
+                                                    value={profileFormData.instagram_handle || ''}
+                                                    onChange={(e) => setProfileFormData({ ...profileFormData, instagram_handle: e.target.value.replace('@', '') })}
+                                                    placeholder="your.handle"
+                                                    className={cn("w-full pl-8 pr-4 py-3.5 rounded-2xl border text-[13px] font-semibold outline-none transition-all", isDark ? "bg-[#0B0F14] border-border text-foreground focus:border-primary/50" : "bg-[#F9FAFB] border-[#E5E7EB] text-black focus:border-emerald-400 focus:bg-white")}
+                                                />
+                                            </div>
+                                        </div>
+
+                                        <div className="space-y-1.5 px-1">
+                                            <div className="flex items-center justify-between">
+                                                <p className={cn("text-[10px] font-black uppercase tracking-wider opacity-50", textColor)}>Bio / Pitch Title</p>
+                                                <Edit3 className="w-3.5 h-3.5 text-primary opacity-60" />
+                                            </div>
+                                            <input
+                                                type="text"
+                                                value={profileFormData.bio || ''}
+                                                onChange={(e) => setProfileFormData({ ...profileFormData, bio: e.target.value })}
+                                                placeholder="e.g. Minimalist Tech & Lifestyle Content"
+                                                className={cn("w-full px-4 py-3.5 rounded-2xl border text-[13px] font-semibold outline-none transition-all", isDark ? "bg-[#0B0F14] border-border text-foreground focus:border-primary/50" : "bg-[#F9FAFB] border-[#E5E7EB] text-black focus:border-emerald-400 focus:bg-white")}
+                                            />
+                                        </div>
+
+                                        <div className="space-y-1.5 px-1">
+                                            <div className="flex items-center justify-between">
+                                                <p className={cn("text-[10px] font-black uppercase tracking-wider opacity-50", textColor)}>Base Location</p>
+                                                <MapPin className="w-3.5 h-3.5 text-primary opacity-60" />
+                                            </div>
+                                            <input
+                                                type="text"
+                                                value={profileFormData.location || profileFormData.city || ''}
+                                                onChange={(e) => setProfileFormData({ ...profileFormData, location: e.target.value, city: e.target.value })}
+                                                placeholder="e.g. Mumbai, India"
+                                                className={cn("w-full px-4 py-3.5 rounded-2xl border text-[13px] font-semibold outline-none transition-all", isDark ? "bg-[#0B0F14] border-border text-foreground focus:border-primary/50" : "bg-[#F9FAFB] border-[#E5E7EB] text-black focus:border-emerald-400 focus:bg-white")}
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
 
-                            <SectionHeader title="Collaboration Type" isDark={isDark} />
-                            <div className="flex gap-2">
-                                {['Paid', 'Free products', 'Hybrid'].map((type) => (
-                                    <button type="button"
-                                        key={type}
-                                        onClick={() => setProfileFormData((p: any) => ({ ...p, collaboration_preference: type }))}
-                                        className={cn(
-                                            "flex-1 py-3 rounded-xl border text-[11px] font-black uppercase tracking-widest transition-all",
-                                            (profileFormData.collaboration_preference || 'Hybrid').toLowerCase() === type.toLowerCase()
-                                                ? "bg-background border-border text-foreground"
-                                                : (isDark ? "bg-card border-border text-foreground" : "bg-card border-border text-muted-foreground")
-                                        )}
-                                    >
-                                        {type}
-                                    </button>
-                                ))}
+                            <div>
+                                <p className={cn("text-[11px] font-black uppercase tracking-widest opacity-60 mb-3 px-1", textColor)}>2. Audience</p>
+                                <div className={cn("rounded-[28px] border p-5 space-y-6", isDark ? "bg-card border-border shadow-2xl shadow-black/20" : "bg-white border-[#E5E7EB] shadow-sm")}>
+                                    <div className="grid grid-cols-1 gap-6">
+                                        <div className="space-y-3 px-1">
+                                            <div className="flex items-center justify-between">
+                                                <p className={cn("text-[10px] font-black uppercase tracking-wider opacity-50", textColor)}>Gender Split</p>
+                                                <Users className="w-3.5 h-3.5 opacity-20" />
+                                            </div>
+                                            <div className="flex flex-wrap gap-2">
+                                                {['Women 70%+', 'Women 60%+', 'Men 60%+', 'Men 70%+', 'Balanced Mix'].map((split) => {
+                                                    const isSelected = profileFormData.audience_gender_split === split;
+                                                    return (
+                                                        <button 
+                                                            key={split}
+                                                            type="button"
+                                                            onClick={() => { triggerHaptic(); setProfileFormData({ ...profileFormData, audience_gender_split: isSelected ? '' : split }); }}
+                                                            className={cn(
+                                                                "px-3 py-2 rounded-xl text-[11px] font-black border transition-all active:scale-95",
+                                                                isSelected 
+                                                                    ? (isDark ? "bg-primary/20 border-primary/40 text-primary" : "bg-emerald-500 border-emerald-500 text-white shadow-md shadow-emerald-500/10")
+                                                                    : (isDark ? "bg-white/5 border-white/10 text-white/40" : "bg-[#F3F4F6] border-[#E5E7EB] text-[#374151]")
+                                                            )}
+                                                        >
+                                                            {split}
+                                                        </button>
+                                                    );
+                                                })}
+                                            </div>
+                                        </div>
+
+                                        <div className="space-y-3 px-1">
+                                            <div className="flex items-center justify-between">
+                                                <p className={cn("text-[10px] font-black uppercase tracking-wider opacity-50", textColor)}>Primary Age Range</p>
+                                                <Calendar className="w-3.5 h-3.5 opacity-20" />
+                                            </div>
+                                            <div className="flex flex-wrap gap-2">
+                                                {['13–17', '18–24', '25–34', '35–44', '45+'].map((age) => {
+                                                    const isSelected = profileFormData.audience_age_range === age;
+                                                    return (
+                                                        <button 
+                                                            key={age}
+                                                            type="button"
+                                                            onClick={() => { triggerHaptic(); setProfileFormData({ ...profileFormData, audience_age_range: isSelected ? '' : age }); }}
+                                                            className={cn(
+                                                                "px-3 py-2 rounded-xl text-[11px] font-black border transition-all active:scale-95",
+                                                                isSelected 
+                                                                    ? (isDark ? "bg-primary/20 border-primary/40 text-primary" : "bg-emerald-500 border-emerald-500 text-white shadow-md shadow-emerald-500/10")
+                                                                    : (isDark ? "bg-white/5 border-white/10 text-white/40" : "bg-[#F3F4F6] border-[#E5E7EB] text-[#374151]")
+                                                            )}
+                                                        >
+                                                            {age}
+                                                        </button>
+                                                    );
+                                                })}
+                                            </div>
+                                        </div>
+
+                                        <div className="space-y-3 px-1">
+                                            <div className="flex items-center justify-between">
+                                                <p className={cn("text-[10px] font-black uppercase tracking-wider opacity-50", textColor)}>Top Cities</p>
+                                                <MapPin className="w-3.5 h-3.5 opacity-20" />
+                                            </div>
+                                            <div className="flex flex-wrap gap-2 mb-1">
+                                                {(profileFormData.top_cities || []).map((city: string, idx: number) => (
+                                                    <div key={idx} className={cn("flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[11px] font-black border animate-in zoom-in-95 duration-200", isDark ? "bg-primary/10 border-primary/20 text-primary" : "bg-emerald-50 border-emerald-200 text-emerald-700 shadow-sm")}>
+                                                        {city}
+                                                        <X className="w-3 h-3 cursor-pointer opacity-60 hover:opacity-100" onClick={() => {
+                                                            const newCities = [...profileFormData.top_cities];
+                                                            newCities.splice(idx, 1);
+                                                            setProfileFormData({ ...profileFormData, top_cities: newCities });
+                                                        }} />
+                                                    </div>
+                                                ))}
+                                            </div>
+                                            <div className="flex flex-wrap gap-1.5">
+                                                {['Delhi', 'Mumbai', 'Bangalore', 'Hyderabad', 'Pune', 'Chennai'].map((city) => {
+                                                    const isAdded = (profileFormData.top_cities || []).includes(city);
+                                                    if (isAdded) return null;
+                                                    return (
+                                                        <button 
+                                                            key={city}
+                                                            type="button"
+                                                            onClick={() => { triggerHaptic(); setProfileFormData({ ...profileFormData, top_cities: [...(profileFormData.top_cities || []), city] }); }}
+                                                            className={cn("px-2.5 py-1.5 rounded-lg text-[10px] font-black border border-dashed transition-all active:scale-95", isDark ? "bg-white/5 border-white/10 text-white/30" : "bg-slate-50 border-slate-200 text-slate-400")}
+                                                        >
+                                                            + {city}
+                                                        </button>
+                                                    );
+                                                })}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex items-center justify-center gap-1.5 mt-2 pt-4 border-t border-slate-100/10">
+                                        <Sparkles className="w-3 h-3 text-primary" />
+                                        <p className={cn("text-[11px] font-bold text-center", textColor)}>
+                                            Add audience data <span className={isDark ? "text-primary/80" : "text-emerald-600"}> (+20% deals)</span>
+                                        </p>
+                                    </div>
+                                </div>
                             </div>
 
-                            <SectionHeader title="Niche Alignment" isDark={isDark} />
-                            <SettingsGroup isDark={isDark}>
-                                <div className="p-4 space-y-4">
-                                    <div className="space-y-1.5">
-                                        <p className={cn("text-[11px] font-black uppercase tracking-wider opacity-40", textColor)}>Content Niches</p>
-                                        <div className="flex flex-wrap gap-2 pt-2">
-                                            {(profileFormData.content_niches || ['Fashion', 'Tech', 'Lifestyle']).map((niche: string) => (
-                                                <div key={niche} className={cn("px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider border", isDark ? "bg-card border-border text-foreground" : "bg-info border-info text-info")}>
-                                                    {niche}
-                                                </div>
+                            <div>
+                                <p className={cn("text-[11px] font-black uppercase tracking-widest opacity-60 mb-3 px-1", textColor)}>3. Content & Vibe</p>
+                                <div className={cn("rounded-[28px] border p-5 space-y-7", isDark ? "bg-card border-border shadow-2xl shadow-black/20" : "bg-white border-[#E5E7EB] shadow-sm")}>
+                                    <div className="space-y-3 px-1">
+                                        <div className="flex flex-col">
+                                            <p className={cn("text-[10px] font-black uppercase tracking-wider opacity-50", textColor)}>Select Your Vibe</p>
+                                            <p className="text-[9px] text-primary/60 font-black uppercase tracking-tighter">Choose max 3</p>
+                                        </div>
+                                        <div className="flex flex-wrap gap-2">
+                                            {[
+                                                { label: 'Cinematic', icon: <Video className="w-3.5 h-3.5" /> },
+                                                { label: 'Educational', icon: <GraduationCap className="w-3.5 h-3.5" /> },
+                                                { label: 'Humor', icon: <Laugh className="w-3.5 h-3.5" /> },
+                                                { label: 'Lifestyle', icon: <Coffee className="w-3.5 h-3.5" /> },
+                                                { label: 'Review', icon: <Star className="w-3.5 h-3.5" /> },
+                                                { label: 'Minimalist', icon: <Layers className="w-3.5 h-3.5" /> },
+                                                { label: 'High Energy', icon: <Flame className="w-3.5 h-3.5" /> }
+                                            ].map((vibe) => {
+                                                const isSelected = (profileFormData.content_vibes || []).includes(vibe.label);
+                                                return (
+                                                    <button type="button" key={vibe.label}
+                                                        onClick={() => {
+                                                            triggerHaptic();
+                                                            const current = profileFormData.content_vibes || [];
+                                                            if (isSelected) setProfileFormData((p: any) => ({ ...p, content_vibes: current.filter((v: string) => v !== vibe.label) }));
+                                                            else {
+                                                                if (current.length >= 3) { toast.error('Choose max 3 vibes'); return; }
+                                                                setProfileFormData((p: any) => ({ ...p, content_vibes: [...current, vibe.label] }));
+                                                            }
+                                                        }}
+                                                        className={cn(
+                                                            "px-3.5 py-2.5 rounded-xl text-[11px] font-black tracking-tight border flex items-center gap-2 transition-all active:scale-95",
+                                                            isSelected 
+                                                                ? (isDark ? "bg-primary text-white border-primary shadow-lg shadow-primary/20" : "bg-emerald-500 border-emerald-500 text-white shadow-md shadow-emerald-500/10")
+                                                                : (isDark ? "bg-white/5 border-white/10 text-white/40" : "bg-slate-50 border-slate-200 text-slate-500")
+                                                        )}
+                                                    >
+                                                        {vibe.icon}
+                                                        {vibe.label}
+                                                    </button>
+                                                );
+                                            })}
+                                        </div>
+                                    </div>
+
+                                    <div className="space-y-3 px-1">
+                                        <p className={cn("text-[10px] font-black uppercase tracking-wider opacity-50", textColor)}>Main Platform</p>
+                                        <div className="flex gap-2">
+                                            {[
+                                                { label: 'Instagram', icon: <Instagram className="w-3.5 h-3.5" /> },
+                                                { label: 'YouTube', icon: <Youtube className="w-3.5 h-3.5" /> },
+                                                { label: 'Twitter/X', icon: <Twitter className="w-3.5 h-3.5" /> }
+                                            ].map((plat) => (
+                                                <button type="button" key={plat.label}
+                                                    onClick={() => { triggerHaptic(); setProfileFormData((p: any) => ({ ...p, primary_platform: plat.label })); }}
+                                                    className={cn(
+                                                        "flex-1 py-3.5 rounded-2xl border flex items-center justify-center gap-2 text-[11px] font-black transition-all",
+                                                        (profileFormData.primary_platform || 'Instagram') === plat.label
+                                                            ? (isDark ? "bg-primary/20 border-primary/40 text-primary" : "bg-emerald-50 border-emerald-500 text-emerald-700 shadow-sm")
+                                                            : (isDark ? "bg-transparent border-white/10 text-white/30" : "bg-white border-[#E5E7EB] text-[#6B7280]")
+                                                    )}
+                                                >
+                                                    {plat.label}
+                                                </button>
                                             ))}
-                                            <button type="button" className={cn("px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider border border-dashed", isDark ? "border-border text-foreground/40" : "border-black/10 text-black/40")}>
-                                                + ADD
-                                            </button>
                                         </div>
                                     </div>
                                 </div>
-                            </SettingsGroup>
+                            </div>
 
-                            {/* Audience Demographics */}
-                            <SettingsGroup title="Audience Demographics" icon={<Target className="w-5 h-5 text-secondary" />} isDark={isDark}>
+                            <div>
+                                <p className={cn("text-[11px] font-black uppercase tracking-widest opacity-60 mb-3 px-1", textColor)}>4. Earnings & Packages</p>
                                 <div className="space-y-4">
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div className="space-y-2">
-                                            <p className={cn("text-[10px] font-black uppercase tracking-[0.15em] opacity-50 pl-1", textColor)}>Gender Split</p>
-                                            <input
-                                                type="text"
-                                                placeholder="e.g. 70% Women"
-                                                className={cn("w-full px-4 py-3.5 rounded-[1.25rem] border text-[13px] font-semibold transition-all duration-300 outline-none", isDark ? "bg-[#0B0F14]/50 border-border/[0.08] text-foreground focus:border-primary/50 focus:bg-[#0B0F14] shadow-inner" : "bg-background border-border focus:bg-card focus:border-info shadow-sm")}
-                                                value={profileFormData.audience_gender_split}
-                                                onChange={(e) => setProfileFormData({ ...profileFormData, audience_gender_split: e.target.value })}
-                                            />
+                                    <div className={cn("rounded-[28px] border overflow-hidden", isDark ? "bg-card border-border shadow-2xl shadow-black/20" : "bg-white border-[#E5E7EB] shadow-sm")}>
+                                        <div className="p-5 bg-primary/5">
+                                            <div className="flex items-center justify-between mb-3">
+                                                <p className={cn("text-[10px] font-black uppercase tracking-widest opacity-60", textColor)}>Baseline Reel Rate</p>
+                                                <TrendingUp className="w-3.5 h-3.5 text-primary" />
+                                            </div>
+                                            <div className="flex items-center gap-3">
+                                                <span className="text-2xl font-black text-primary">₹</span>
+                                                <input
+                                                    type="number"
+                                                    value={profileFormData.avg_rate_reel || ''}
+                                                    onChange={(e) => setProfileFormData({ ...profileFormData, avg_rate_reel: e.target.value })}
+                                                    placeholder="5000"
+                                                    className={cn("w-full bg-transparent border-none text-[28px] font-black outline-none placeholder:opacity-20", textColor)}
+                                                />
+                                            </div>
+                                            <p className="mt-2 text-[10px] font-bold opacity-60 leading-tight">
+                                                This sets your starting price for custom collab offers.
+                                            </p>
                                         </div>
-                                        <div className="space-y-2">
-                                            <p className={cn("text-[10px] font-black uppercase tracking-[0.15em] opacity-50 pl-1", textColor)}>Age Range</p>
-                                            <input
-                                                type="text"
-                                                placeholder="e.g. 18-24"
-                                                className={cn("w-full px-4 py-3.5 rounded-[1.25rem] border text-[13px] font-semibold transition-all duration-300 outline-none", isDark ? "bg-[#0B0F14]/50 border-border/[0.08] text-foreground focus:border-primary/50 focus:bg-[#0B0F14] shadow-inner" : "bg-background border-border focus:bg-card focus:border-info shadow-sm")}
-                                                value={profileFormData.audience_age_range}
-                                                onChange={(e) => setProfileFormData({ ...profileFormData, audience_age_range: e.target.value })}
+                                    </div>
+                                    
+                                    <div className={cn("rounded-[28px] border overflow-hidden", isDark ? "bg-card border-border shadow-2xl shadow-black/20" : "bg-white border-[#E5E7EB] shadow-sm")}>
+                                        <div className="p-0">
+                                            <FiverrPackageEditor
+                                                templates={profileFormData.deal_templates || []}
+                                                avg_rate_reel={Number(profileFormData.avg_rate_reel)}
+                                                onChange={(pkgs) => setProfileFormData(p => ({ ...p, deal_templates: pkgs }))}
                                             />
                                         </div>
                                     </div>
-                                    <div className="space-y-2">
-                                        <p className={cn("text-[10px] font-black uppercase tracking-[0.15em] opacity-50 pl-1", textColor)}>Top Cities</p>
-                                        <div className="flex flex-wrap gap-2 mb-3">
-                                            {(profileFormData.top_cities || []).map((city: string, idx: number) => (
-                                                <div key={idx} className={cn("flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-[10px] font-black uppercase tracking-wider backdrop-blur-sm", isDark ? "bg-secondary/50 border-purple-500/20 text-secondary shadow-[0_0_10px_rgba(168,85,247,0.1)]" : "bg-secondary border-purple-100 text-secondary")}>
-                                                    {city}
-                                                    <X className="w-3 h-3 cursor-pointer opacity-60 hover:opacity-100 transition-opacity" onClick={() => {
-                                                        const newCities = [...profileFormData.top_cities];
-                                                        newCities.splice(idx, 1);
-                                                        setProfileFormData({ ...profileFormData, top_cities: newCities });
+                                </div>
+                            </div>
+
+                            {/* ── 5. PAST WORK ── */}
+                            <div>
+                                <p className={cn("text-[11px] font-black uppercase tracking-widest opacity-60 mb-3 px-1", textColor)}>5. Past Partnerships</p>
+                                <div className={cn("rounded-[28px] border p-5 space-y-7", isDark ? "bg-card border-border shadow-2xl shadow-black/20" : "bg-white border-[#E5E7EB] shadow-sm")}>
+                                    {/* Portfolio Links (Option 1) */}
+                                    <div className="space-y-4">
+                                        <div className="flex items-center justify-between px-1">
+                                            <p className={cn("text-[10px] font-black uppercase tracking-wider opacity-50", textColor)}>Work Highlights (Best Reels/Videos)</p>
+                                            <Clapperboard className="w-3.5 h-3.5 text-primary opacity-60" />
+                                        </div>
+                                        <div className="space-y-2">
+                                            {(profileFormData.portfolio_links || []).map((link: string, idx: number) => (
+                                                <div key={idx} className={cn("flex items-center justify-between p-3 rounded-2xl border", isDark ? "bg-white/5 border-white/5" : "bg-slate-50 border-slate-100")}>
+                                                    <div className="flex items-center gap-3 min-w-0">
+                                                        <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                                                            <Link2 className="w-4 h-4 text-primary" />
+                                                        </div>
+                                                        <p className={cn("text-[12px] font-bold truncate pr-12", textColor)}>{link}</p>
+                                                    </div>
+                                                    <X className="w-4 h-4 text-slate-400 cursor-pointer" onClick={() => {
+                                                        const nl = [...profileFormData.portfolio_links]; nl.splice(idx, 1);
+                                                        setProfileFormData({ ...profileFormData, portfolio_links: nl });
                                                     }} />
                                                 </div>
                                             ))}
                                         </div>
-                                        <div className="relative group">
-                                            <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 opacity-40 group-focus-within:opacity-100 group-focus-within:text-primary transition-colors" />
-                                            <input
-                                                type="text"
-                                                placeholder="Add city & press enter..."
-                                                className={cn("w-full pl-11 pr-12 py-3.5 rounded-[1.25rem] border text-[13px] font-semibold transition-all duration-300 outline-none", isDark ? "bg-[#0B0F14]/50 border-border/[0.08] text-foreground focus:border-primary/50 focus:bg-[#0B0F14] shadow-inner hover:border-border" : "bg-background border-border focus:bg-card focus:border-info shadow-sm")}
-                                                onKeyDown={(e) => {
-                                                    if (e.key === 'Enter') {
-                                                        const target = e.target as HTMLInputElement;
-                                                        if (target.value.trim()) {
-                                                            setProfileFormData({ ...profileFormData, top_cities: [...(profileFormData.top_cities || []), target.value.trim()] });
-                                                            target.value = '';
-                                                        }
-                                                    }
-                                                }}
-                                            />
-                                            <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center justify-center w-7 h-7 rounded-lg bg-card opacity-50 group-focus-within:opacity-100 group-focus-within:bg-primary/20 transition-all pointer-events-none">
-                                                <Plus className="w-4 h-4 group-focus-within:text-primary" />
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div className="space-y-2 mt-2">
-                                        <p className={cn("text-[10px] font-black uppercase tracking-[0.15em] opacity-50 pl-1", textColor)}>Primary Language</p>
-                                        <div className="relative group">
-                                            <Languages className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 opacity-40 group-focus-within:opacity-100 group-focus-within:text-primary transition-colors" />
-                                            <input
-                                                type="text"
-                                                placeholder="e.g. Hindi, English"
-                                                className={cn("w-full pl-11 pr-4 py-3.5 rounded-[1.25rem] border text-[13px] font-semibold transition-all duration-300 outline-none", isDark ? "bg-[#0B0F14]/50 border-border/[0.08] text-foreground focus:border-primary/50 focus:bg-[#0B0F14] shadow-inner hover:border-border" : "bg-background border-border focus:bg-card focus:border-info shadow-sm")}
-                                                value={profileFormData.primary_audience_language}
-                                                onChange={(e) => setProfileFormData({ ...profileFormData, primary_audience_language: e.target.value })}
-                                            />
-                                        </div>
-                                    </div>
-                                </div>
-                            </SettingsGroup>
-
-                            {/* Public Portfolio */}
-                            <SettingsGroup title="Public Portfolio" icon={<Search className="w-5 h-5 text-info" />} isDark={isDark}>
-                                <div className="space-y-2">
-                                    <p className={cn("text-[10px] font-black uppercase tracking-[0.15em] opacity-50 pl-1", textColor)}>Featured Work Gallery</p>
-                                    <p className={cn("text-[10px] font-semibold opacity-60 mb-2 pl-1", textColor)}>Add links to your top-performing Reels or Posts</p>
-                                    <div className="flex flex-col gap-2 mb-3">
-                                        {(profileFormData.portfolio_links || []).map((link: string, idx: number) => (
-                                            <div key={idx} className={cn("flex items-center gap-2 px-3 py-2.5 rounded-[1rem] border text-[11px] font-black w-full shadow-sm backdrop-blur-sm", isDark ? "bg-info/10 border-info/20 text-info shadow-[0_0_15px_rgba(59,130,246,0.1)]" : "bg-info border-info text-info")}>
-                                                <Link2 className="w-4 h-4 shrink-0 opacity-70" />
-                                                <span className="truncate flex-1 mt-0.5">{link}</span>
-                                                <X className="w-4 h-4 cursor-pointer shrink-0 opacity-50 hover:opacity-100 transition-opacity" onClick={() => {
-                                                    const newLinks = [...profileFormData.portfolio_links];
-                                                    newLinks.splice(idx, 1);
-                                                    setProfileFormData({ ...profileFormData, portfolio_links: newLinks });
-                                                }} />
-                                            </div>
-                                        ))}
-                                    </div>
-                                    <div className="relative group">
-                                        <Link2 className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 opacity-40 group-focus-within:opacity-100 group-focus-within:text-primary transition-colors" />
                                         <input
                                             type="url"
-                                            placeholder="https://instagram.com/reel/..."
-                                            className={cn("w-full pl-11 pr-12 py-3.5 rounded-[1.25rem] border text-[13px] font-semibold transition-all duration-300 outline-none", isDark ? "bg-[#0B0F14]/50 border-border/[0.08] text-foreground focus:border-primary/50 focus:bg-[#0B0F14] shadow-inner hover:border-border" : "bg-background border-border focus:bg-card focus:border-info shadow-sm")}
+                                            placeholder="Paste Instagram/YouTube link & Enter..."
+                                            className={cn("w-full px-4 py-3.5 rounded-2xl border text-[13px] font-semibold outline-none transition-all", isDark ? "bg-[#0B0F14] border-border text-foreground focus:border-primary/50" : "bg-[#F9FAFB] border-[#E5E7EB] text-black focus:border-emerald-400 focus:bg-white")}
                                             onKeyDown={(e) => {
                                                 if (e.key === 'Enter') {
                                                     const target = e.target as HTMLInputElement;
                                                     if (target.value.trim()) {
+                                                        triggerHaptic();
                                                         setProfileFormData({ ...profileFormData, portfolio_links: [...(profileFormData.portfolio_links || []), target.value.trim()] });
                                                         target.value = '';
                                                     }
                                                 }
                                             }}
                                         />
-                                        <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center justify-center w-7 h-7 rounded-lg bg-card opacity-50 group-focus-within:opacity-100 group-focus-within:bg-primary/20 transition-all pointer-events-none">
-                                            <Plus className="w-4 h-4 group-focus-within:text-primary" />
-                                        </div>
                                     </div>
-                                </div>
 
-                                <div className="space-y-2 pt-2">
-                                    <p className={cn("text-[10px] font-black uppercase tracking-[0.15em] opacity-50 pl-1", textColor)}>Past Brands</p>
-                                    <div className="flex flex-wrap gap-2 mb-3">
-                                        {(profileFormData.past_brands || []).map((brand: string, idx: number) => (
-                                            <div key={idx} className={cn("flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-[10px] font-black uppercase tracking-wider backdrop-blur-sm", isDark ? "bg-card border-border text-foreground shadow-sm" : "bg-background border-border text-muted-foreground")}>
-                                                {brand}
-                                                <X className="w-3 h-3 cursor-pointer opacity-50 hover:opacity-100 transition-opacity" onClick={() => {
-                                                    const newBrands = [...profileFormData.past_brands];
-                                                    newBrands.splice(idx, 1);
-                                                    setProfileFormData({ ...profileFormData, past_brands: newBrands });
-                                                }} />
-                                            </div>
-                                        ))}
-                                    </div>
-                                    <div className="relative group">
-                                        <Briefcase className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 opacity-40 group-focus-within:opacity-100 group-focus-within:text-primary transition-colors" />
-                                        <input
-                                            type="text"
-                                            placeholder="Add past brand & press enter..."
-                                            className={cn("w-full pl-11 pr-12 py-3.5 rounded-[1.25rem] border text-[13px] font-semibold transition-all duration-300 outline-none", isDark ? "bg-[#0B0F14]/50 border-border/[0.08] text-foreground focus:border-primary/50 focus:bg-[#0B0F14] shadow-inner hover:border-border" : "bg-background border-border focus:bg-card focus:border-info shadow-sm")}
-                                            onKeyDown={(e) => {
-                                                if (e.key === 'Enter') {
-                                                    const target = e.target as HTMLInputElement;
-                                                    if (target.value.trim()) {
-                                                        setProfileFormData({ ...profileFormData, past_brands: [...(profileFormData.past_brands || []), target.value.trim()] });
-                                                        target.value = '';
-                                                    }
-                                                }
-                                            }}
-                                        />
-                                        <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center justify-center w-7 h-7 rounded-lg bg-card opacity-50 group-focus-within:opacity-100 group-focus-within:bg-primary/20 transition-all pointer-events-none">
-                                            <Plus className="w-4 h-4 group-focus-within:text-primary" />
+                                    {/* Media Kit (Option 3) */}
+                                    <div className="space-y-3 px-1">
+                                        <div className="flex items-center justify-between">
+                                            <p className={cn("text-[10px] font-black uppercase tracking-wider opacity-50", textColor)}>Detailed Media Kit (PDF/Drive)</p>
+                                            <BadgeCheck className="w-3.5 h-3.5 text-primary opacity-60" />
                                         </div>
-                                    </div>
-                                </div>
-                            </SettingsGroup>
-
-                            {/* Performance & Availability */}
-                            <SettingsGroup title="Performance & Availability" icon={<Zap className="w-5 h-5 text-warning" />} isDark={isDark}>
-                                <div className="space-y-4">
-                                    <div className="grid grid-cols-2 gap-3">
-                                        <div className="space-y-1.5">
-                                            <p className={cn("text-[11px] font-black uppercase tracking-wider opacity-40", textColor)}>Monthly Slots</p>
-                                            <input
-                                                type="number"
-                                                placeholder="e.g. 5"
-                                                className={cn("w-full px-4 py-3 rounded-2xl border text-sm font-bold", isDark ? "bg-card border-border text-foreground" : "bg-background border-border")}
-                                                value={profileFormData.active_brand_collabs_month}
-                                                onChange={(e) => setProfileFormData({ ...profileFormData, active_brand_collabs_month: e.target.value })}
-                                            />
-                                        </div>
-                                        <div className="space-y-1.5">
-                                            <p className={cn("text-[11px] font-black uppercase tracking-wider opacity-40", textColor)}>Past Campaigns</p>
-                                            <input
-                                                type="number"
-                                                placeholder="e.g. 12"
-                                                className={cn("w-full px-4 py-3 rounded-2xl border text-sm font-bold", isDark ? "bg-card border-border text-foreground" : "bg-background border-border")}
-                                                value={profileFormData.past_brand_count}
-                                                onChange={(e) => setProfileFormData({ ...profileFormData, past_brand_count: e.target.value })}
-                                            />
-                                        </div>
-                                    </div>
-                                    <div className="space-y-1.5">
-                                        <p className={cn("text-[11px] font-black uppercase tracking-wider opacity-40", textColor)}>Posting Frequency</p>
                                         <input
-                                            type="text"
-                                            placeholder="e.g. 3-4 times / week"
-                                            className={cn("w-full px-4 py-3 rounded-2xl border text-sm font-bold", isDark ? "bg-card border-border text-foreground" : "bg-background border-border")}
-                                            value={profileFormData.posting_frequency}
-                                            onChange={(e) => setProfileFormData({ ...profileFormData, posting_frequency: e.target.value })}
+                                            type="url"
+                                            value={profileFormData.media_kit_url || ''}
+                                            onChange={(e) => setProfileFormData({ ...profileFormData, media_kit_url: e.target.value })}
+                                            placeholder="Canva or Google Drive link..."
+                                            className={cn("w-full px-4 py-3.5 rounded-2xl border text-[13px] font-semibold outline-none transition-all", isDark ? "bg-[#0B0F14] border-border text-foreground focus:border-primary/50" : "bg-[#F9FAFB] border-[#E5E7EB] text-black focus:border-emerald-400 focus:bg-white")}
                                         />
-                                    </div>
-                                    <div className="grid grid-cols-2 gap-3">
-                                        <div className="space-y-1.5">
-                                            <p className={cn("text-[11px] font-black uppercase tracking-wider opacity-40", textColor)}>Self-Reported Views</p>
-                                            <input
-                                                type="number"
-                                                placeholder="Avg Views"
-                                                className={cn("w-full px-4 py-3 rounded-2xl border text-sm font-bold", isDark ? "bg-card border-border text-foreground" : "bg-background border-border")}
-                                                value={profileFormData.avg_reel_views_manual}
-                                                onChange={(e) => setProfileFormData({ ...profileFormData, avg_reel_views_manual: e.target.value })}
-                                            />
-                                        </div>
-                                        <div className="space-y-1.5">
-                                            <p className={cn("text-[11px] font-black uppercase tracking-wider opacity-40", textColor)}>Self-Reported Likes</p>
-                                            <input
-                                                type="number"
-                                                placeholder="Avg Likes"
-                                                className={cn("w-full px-4 py-3 rounded-2xl border text-sm font-bold", isDark ? "bg-card border-border text-foreground" : "bg-background border-border")}
-                                                value={profileFormData.avg_likes_manual}
-                                                onChange={(e) => setProfileFormData({ ...profileFormData, avg_likes_manual: e.target.value })}
-                                            />
-                                        </div>
-                                    </div>
-                                </div>
-                            </SettingsGroup>
-
-                            {/* Trust & Professional Notes */}
-                            <SettingsGroup title="Professional Collab Notes" icon={<ShieldCheck className="w-5 h-5 text-primary" />} isDark={isDark}>
-                                <div className="space-y-4">
-                                    <div className="space-y-1.5">
-                                        <p className={cn("text-[11px] font-black uppercase tracking-wider opacity-40", textColor)}>Audience Relevance Note</p>
-                                        <textarea
-                                            placeholder="e.g. Strong relevance for North India beauty enthusiasts."
-                                            className={cn("w-full px-4 py-3 rounded-2xl border text-sm font-bold min-h-[80px]", isDark ? "bg-card border-border text-foreground" : "bg-background border-border")}
-                                            value={profileFormData.collab_audience_relevance_note}
-                                            onChange={(e) => setProfileFormData({ ...profileFormData, collab_audience_relevance_note: e.target.value })}
-                                        />
-                                    </div>
-                                    <div className="space-y-1.5">
-                                        <p className={cn("text-[11px] font-black uppercase tracking-wider opacity-40", textColor)}>Response Policy</p>
-                                        <input
-                                            type="text"
-                                            placeholder="e.g. Brands receive response same day"
-                                            className={cn("w-full px-4 py-3 rounded-2xl border text-sm font-bold", isDark ? "bg-card border-border text-foreground" : "bg-background border-border")}
-                                            value={profileFormData.collab_response_behavior_note}
-                                            onChange={(e) => setProfileFormData({ ...profileFormData, collab_response_behavior_note: e.target.value })}
-                                        />
-                                    </div>
-                                    <div className="space-y-1.5">
-                                        <p className={cn("text-[11px] font-black uppercase tracking-wider opacity-40", textColor)}>DM Policy</p>
-                                        <input
-                                            type="text"
-                                            placeholder="e.g. No DMs required — I reply here."
-                                            className={cn("w-full px-4 py-3 rounded-2xl border text-sm font-bold", isDark ? "bg-card border-border text-foreground" : "bg-background border-border")}
-                                            value={profileFormData.collab_cta_dm_note}
-                                            onChange={(e) => setProfileFormData({ ...profileFormData, collab_cta_dm_note: e.target.value })}
-                                        />
-                                    </div>
-                                    <div className="space-y-1.5">
-                                        <p className={cn("text-[11px] font-black uppercase tracking-wider opacity-40", textColor)}>Notification Policy</p>
-                                        <input
-                                            type="text"
-                                            placeholder="e.g. Creator notified instantly."
-                                            className={cn("w-full px-4 py-3 rounded-2xl border text-sm font-bold", isDark ? "bg-card border-border text-foreground" : "bg-background border-border")}
-                                            value={profileFormData.collab_cta_trust_note}
-                                            onChange={(e) => setProfileFormData({ ...profileFormData, collab_cta_trust_note: e.target.value })}
-                                        />
-                                    </div>
-                                    <div className="space-y-1.5">
-                                        <p className={cn("text-[11px] font-black uppercase tracking-wider opacity-40", textColor)}>Platform Model</p>
-                                        <input
-                                            type="text"
-                                            placeholder="e.g. Direct collaboration — no middle agency."
-                                            className={cn("w-full px-4 py-3 rounded-2xl border text-sm font-bold", isDark ? "bg-card border-border text-foreground" : "bg-background border-border")}
-                                            value={profileFormData.collab_cta_platform_note}
-                                            onChange={(e) => setProfileFormData({ ...profileFormData, collab_cta_platform_note: e.target.value })}
-                                        />
-                                    </div>
-                                </div>
-                            </SettingsGroup>
-
-                            <button type="button" onClick={handleSaveProfile} disabled={isSavingProfile} className="w-full bg-info text-foreground font-black py-4 rounded-2xl shadow-lg shadow-blue-500/20 active:scale-95 transition-all uppercase tracking-widest text-[12px] disabled:opacity-50 disabled:active:scale-100">
-                                {isSavingProfile ? 'Saving...' : 'Save All Collab Settings'}
-                            </button>
-                            {/* Analytics Grid */}
-                            <SectionHeader title="Performance Metrics" isDark={isDark} />
-                            <div className="grid grid-cols-3 gap-3">
-                                <div className={cn("p-4 rounded-2xl border", isDark ? "bg-card border-border/5" : "bg-card border-border shadow-sm")}>
-                                    <p className={cn("text-[10px] font-bold uppercase tracking-widest opacity-40 mb-2", textColor)}>Views</p>
-                                    <div className={cn("text-2xl font-black font-outfit", textColor)}>274</div>
-                                    <div className="flex items-center gap-1 mt-1">
-                                        <TrendingUp className="w-3 h-3 text-primary" />
-                                        <span className="text-[10px] font-bold text-primary">+12%</span>
-                                    </div>
-                                </div>
-                                <div className={cn("p-4 rounded-2xl border", isDark ? "bg-card border-border/5" : "bg-card border-border shadow-sm")}>
-                                    <p className={cn("text-[10px] font-bold uppercase tracking-widest opacity-40 mb-2", textColor)}>Requests</p>
-                                    <div className={cn("text-2xl font-black font-outfit", textColor)}>14</div>
-                                    <div className="flex items-center gap-1 mt-1">
-                                        <TrendingUp className="w-3 h-3 text-primary" />
-                                        <span className="text-[10px] font-bold text-primary">+8%</span>
-                                    </div>
-                                </div>
-                                <div className={cn("p-4 rounded-2xl border", isDark ? "bg-card border-border/5" : "bg-card border-border shadow-sm")}>
-                                    <p className={cn("text-[10px] font-bold uppercase tracking-widest opacity-40 mb-2", textColor)}>Conv.</p>
-                                    <div className={cn("text-2xl font-black font-outfit", textColor)}>5.1%</div>
-                                    <div className="flex items-center gap-1 mt-1">
-                                        <TrendingUp className="w-3 h-3 text-warning rotate-180" />
-                                        <span className="text-[10px] font-bold text-warning">-2%</span>
                                     </div>
                                 </div>
                             </div>
 
-                            {/* Weekly Trend Chart (SVG) */}
-                            <div className={cn("p-6 rounded-[2.5rem] border", isDark ? "bg-card border-border/5" : "bg-card border-border shadow-sm")}>
-                                <div className="flex items-center justify-between mb-6">
-                                    <h4 className={cn("text-sm font-black uppercase tracking-wider opacity-40", textColor)}>Weekly Traffic</h4>
-                                    <span className={cn("text-[10px] font-bold px-2 py-0.5 rounded-full bg-primary/10 text-primary")}>Last 7 Days</span>
-                                </div>
-                                <div className="h-24 w-full relative">
-                                    <svg viewBox="0 0 100 40" className="w-full h-full">
-                                        <defs>
-                                            <linearGradient id="chartGradient" x1="0" y1="0" x2="0" y2="1">
-                                                <stop offset="0%" stopColor="#3B82F6" stopOpacity="0.4" />
-                                                <stop offset="100%" stopColor="#3B82F6" stopOpacity="0" />
-                                            </linearGradient>
-                                        </defs>
-                                        <path
-                                            d="M0,35 Q10,30 20,25 T40,28 T60,15 T80,18 T100,5"
-                                            fill="none"
-                                            stroke="#3B82F6"
-                                            strokeWidth="2"
-                                            strokeLinecap="round"
-                                        />
-                                        <path
-                                            d="M0,35 Q10,30 20,25 T40,28 T60,15 T80,18 T100,5 L100,40 L0,40 Z"
-                                            fill="url(#chartGradient)"
-                                        />
-                                    </svg>
-                                    <div className="absolute inset-x-0 bottom-0 flex justify-between text-[8px] font-bold opacity-30 mt-2 px-1">
-                                        <span>MON</span><span>TUE</span><span>WED</span><span>THU</span><span>FRI</span><span>SAT</span><span>SUN</span>
-                                    </div>
-                                </div>
+                            {/* ── SAVE ── */}
+                            <div className="pt-4">
+                                <button type="button" onClick={handleSaveProfile} disabled={isSavingProfile}
+                                    className={cn("w-full py-4.5 rounded-[18px] font-black uppercase tracking-widest text-[13px] flex items-center justify-center gap-3 active:scale-[0.98] transition-all", isDark ? "bg-primary text-white shadow-lg shadow-primary/30" : "bg-emerald-600 text-white shadow-xl shadow-emerald-500/20")}>
+                                    {isSavingProfile ? (
+                                        <>
+                                            <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                            Saving Profile...
+                                        </>
+                                    ) : (
+                                        <>
+                                            <ShieldCheck className="w-4 h-4" />
+                                            Save All Changes
+                                        </>
+                                    )}
+                                </button>
+                                <p className={cn("mt-5 text-center text-[10px] font-bold opacity-30 px-8 leading-normal uppercase tracking-tighter", textColor)}>
+                                    Changes are instant. View your public landing page to see updates.
+                                </p>
                             </div>
-
-                            {/* Conversion insights */}
-                            <SectionHeader title="Conversion Funnel" isDark={isDark} />
-                            <div className={cn("p-6 rounded-[2.5rem] border", isDark ? "bg-card border-border/5" : "bg-card border-border shadow-sm")}>
-                                <div className="space-y-6">
-                                    <div className="flex items-center justify-between">
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-8 h-8 rounded-lg bg-info/10 flex items-center justify-center"><Eye className="w-4 h-4 text-info" /></div>
-                                            <p className={cn("text-sm font-bold", textColor)}>Profile Views</p>
-                                        </div>
-                                        <p className={cn("text-sm font-black font-outfit", textColor)}>843</p>
-                                    </div>
-                                    <div className="flex items-center justify-between relative">
-                                        <div className="absolute -left-4 top-1/2 -translate-y-1/2 w-0.5 h-12 bg-background/10" />
-                                        <div className="flex items-center gap-3 ml-2">
-                                            <div className="w-8 h-8 rounded-lg bg-warning/10 flex items-center justify-center"><Handshake className="w-4 h-4 text-warning" /></div>
-                                            <p className={cn("text-sm font-bold", textColor)}>Started Form</p>
-                                        </div>
-                                        <p className={cn("text-sm font-black font-outfit", textColor)}>92</p>
-                                    </div>
-                                    <div className="flex items-center justify-between">
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center"><CheckCircle2 className="w-4 h-4 text-primary" /></div>
-                                            <p className={cn("text-sm font-bold", textColor)}>Completed Deals</p>
-                                        </div>
-                                        <p className={cn("text-sm font-black font-outfit", textColor)}>14</p>
-                                    </div>
-                                </div>
-                                <div className={cn("mt-6 p-3 rounded-xl bg-warning/5 border border-warning/10 flex items-center gap-2")}>
-                                    <Zap className="w-3.5 h-3.5 text-warning" />
-                                    <p className="text-[10px] font-black tracking-tight text-warning">Brands checking profile but not converting. Try adding Audience Stats.</p>
-                                </div>
-                            </div>
-
-                            {/* Optimization Tips */}
-                            <SectionHeader title="Boost Your Conversions" isDark={isDark} />
-                            <div className="grid grid-cols-1 gap-3">
-                                <div className={cn("p-4 rounded-2xl border flex items-center gap-4 transition-all hover:scale-[1.02]", isDark ? "bg-card border-[#2C2C2E]" : "bg-card border-border shadow-sm")}>
-                                    <div className="w-10 h-10 bg-indigo-500/10 rounded-xl flex items-center justify-center shrink-0">
-                                        <BarChart3 className="w-5 h-5 text-indigo-500" />
-                                    </div>
-                                    <div className="flex-1 min-w-0">
-                                        <p className={cn("text-[14px] font-bold leading-tight", textColor)}>Add Audience Stats</p>
-                                        <p className={cn("text-[11px] opacity-40 mt-1", textColor)}>Brands verify niche alignment via demographics</p>
-                                    </div>
-                                    <span className="text-[10px] font-black text-info">+12% SCORE</span>
-                                </div>
-                                <div className={cn("p-4 rounded-2xl border flex items-center gap-4 transition-all hover:scale-[1.02]", isDark ? "bg-card border-[#2C2C2E]" : "bg-card border-border shadow-sm")}>
-                                    <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center shrink-0">
-                                        <Star className="w-5 h-5 text-primary" />
-                                    </div>
-                                    <div className="flex-1 min-w-0">
-                                        <p className={cn("text-[14px] font-bold leading-tight", textColor)}>Link Top Collaborations</p>
-                                        <p className={cn("text-[11px] opacity-40 mt-1", textColor)}>Showcase high-performing past brand deals</p>
-                                    </div>
-                                    <span className="text-[10px] font-black text-info">+8% SCORE</span>
-                                </div>
-                                <div className={cn("p-4 rounded-2xl border flex items-center gap-4 transition-all hover:scale-[1.02]", isDark ? "bg-card border-[#2C2C2E]" : "bg-card border-border shadow-sm")}>
-                                    <div className="w-10 h-10 bg-warning/10 rounded-xl flex items-center justify-center shrink-0">
-                                        <CreditCard className="w-5 h-5 text-warning" />
-                                    </div>
-                                    <div className="flex-1 min-w-0">
-                                        <p className={cn("text-[14px] font-bold leading-tight", textColor)}>Set Rate Expectations</p>
-                                        <p className={cn("text-[11px] opacity-40 mt-1", textColor)}>Filter out low-budget offers automatically</p>
-                                    </div>
-                                    <span className="text-[10px] font-black text-info">+5% SCORE</span>
-                                </div>
-                            </div>
-
-                            {/* AI Brand Match - KILLER FEATURE */}
-                            <SectionHeader title="AI Recommended Brands" isDark={isDark} />
-                            <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide -mx-4 px-4">
-                                {[
-                                    { name: 'boAt', logo: 'B', color: 'bg-violet-600' },
-                                    { name: 'MamaEarth', logo: 'M', color: 'bg-teal-600' },
-                                    { name: 'Lenskart', logo: 'L', color: 'bg-primary' },
-                                    { name: 'Nykaa', logo: 'N', color: 'bg-pink-600' },
-                                ].map((brand, i) => (
-                                    <div key={i} className={cn("w-32 shrink-0 p-4 rounded-3xl border text-center transition-all", isDark ? "bg-card border-border/5" : "bg-card border-border shadow-sm")}>
-                                        <div className={cn("w-12 h-12 rounded-2xl flex items-center justify-center mx-auto mb-3 text-foreground font-black text-xl shadow-lg", brand.color)}>
-                                            {brand.logo}
-                                        </div>
-                                        <p className={cn("text-[13px] font-black tracking-tight mb-1", textColor)}>{brand.name}</p>
-                                        <p className="text-[9px] font-black text-primary uppercase tracking-widest">94% Match</p>
-                                    </div>
-                                ))}
-                            </div>
-
-                            <button type="button" className="w-full bg-info text-foreground font-black py-4 rounded-2xl shadow-lg shadow-blue-500/20 active:scale-95 transition-all uppercase tracking-widest text-[11px] flex items-center justify-center gap-2">
-                                <Zap className="w-4 h-4 fill-white" /> Upgrade To Growth Pro
-                            </button>
                         </div>
                     </motion.div>
                 );
@@ -3025,7 +2781,6 @@ const MobileDashboardDemo = ({
                                     profile?.pricing_min,
                                     profile?.avg_rate_reel,
                                     profile?.reel_price,
-                                    profile?.typical_story_rate,
                                     (profile as any)?.story_price,
                                     (profile as any)?.suggested_reel_rate,
                                 ].some((value) => Number(value) > 0) || Boolean(profile?.deal_templates?.length);
@@ -3074,7 +2829,7 @@ const MobileDashboardDemo = ({
                                                 onClick={() => {
                                                     triggerHaptic();
                                                     setActiveTab('profile');
-                                                    setActiveSettingsPage('portfolio');
+                                                    setActiveSettingsPage('collab-link');
                                                     setActiveSettingsAnchor('pricing');
                                                 }}
                                                 className="text-[11px] font-bold px-3 py-1.5 rounded-full bg-card border border-primary text-primary active:scale-95"
@@ -4231,284 +3986,164 @@ const MobileDashboardDemo = ({
                                         initial={{ opacity: 0, x: -10 }}
                                         animate={{ opacity: 1, x: 0 }}
                                         exit={{ opacity: 0, x: 10 }}
-                                        className={cn("p-5 rounded-2xl border mb-5", cardBgColor, borderColor)}
+                                        className="mb-8"
                                     >
-                                        <div className="flex items-center justify-between mb-6">
-                                            <h2 className={cn("text-xl font-bold", textColor)}>Active Deals</h2>
-                                            {activeDealsCount > 0 && (
-                                                <span className="px-3 py-1 bg-info/10 text-info rounded-full text-xs font-bold">
-                                                    {activeDealsCount} live
-                                                </span>
-                                            )}
+                                        <div className="flex items-center justify-between mb-4 mt-2">
+                                            <h2 className={cn("text-[20px] font-black tracking-tight", isDark ? "text-white" : "text-slate-900")}>Active Deals</h2>
+                                            <div className="flex items-center gap-1.5 cursor-pointer">
+                                                <span className={cn("text-[12px] font-semibold opacity-60", isDark ? "text-white/60" : "text-slate-500")}>Sort: Deadline (Soonest)</span>
+                                                <svg className="w-3.5 h-3.5 opacity-60" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                                                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                                                </svg>
+                                            </div>
+                                        </div>
+
+                                        <div className={cn("mb-5 p-3 rounded-[12px] flex items-center justify-between", isDark ? "bg-[#1B253C] border border-[#23304C]" : "bg-[#F0F7FF] border border-[#DCEBFE]")}>
+                                            <div className="flex flex-1 items-center gap-3">
+                                                <div className="shrink-0 w-[18px] h-[18px] rounded-full border-[1.5px] border-blue-400 text-blue-500 flex items-center justify-center font-bold text-[10px] leading-none pb-[1px] ml-1">i</div>
+                                                <p className={cn("text-[12px] font-semibold leading-snug", isDark ? "text-blue-200/90" : "text-blue-900/90")}>Complete and deliver on time to build trust and get more deals.</p>
+                                            </div>
+                                            <button className={cn("ml-3 shrink-0 px-3.5 py-1.5 rounded-full border text-[11px] font-bold active:scale-95 transition-all", isDark ? "border-blue-500/50 text-blue-400 bg-[#162032]" : "border-blue-300 text-blue-700 bg-white")}>
+                                                View Tips
+                                            </button>
                                         </div>
 
                                         {activeDealsCount > 0 ? (
                                             <div className="space-y-4">
-                                                {(() => {
-                                                    const insights = activeDealsList.slice(0, 50).reduce(
-                                                        (acc: any, deal: any) => {
-                                                            const ux = getCreatorDealCardUX(deal);
-                                                            if (ux.needsSignature) acc.signature += 1;
-                                                            if (ux.isRevisionRequested) acc.revision += 1;
-                                                            if (ux.isMaking) acc.drafts += 1;
-                                                            if (ux.urgencyLevel === 'critical' && !String(deal?.status || '').toLowerCase().includes('completed')) acc.risk += 1;
-                                                            return acc;
-                                                        },
-                                                        { signature: 0, revision: 0, drafts: 0, risk: 0 }
-                                                    );
-
-                                                    const items: Array<{ label: string; count: number; tone: 'amber' | 'red' | 'blue' }> = [
-                                                        { label: 'Signature pending', count: insights.signature, tone: 'amber' },
-                                                        { label: 'Revision requested', count: insights.revision, tone: 'red' },
-                                                        { label: 'Drafts to submit', count: insights.drafts, tone: 'blue' },
-                                                    ].filter((x) => x.count > 0);
-
-                                                    if (items.length === 0) return null;
-
-                                                    return (
-                                                        <div
-                                                            role="button"
-                                                            tabIndex={0}
-                                                            onClick={() => {
-                                                                triggerHaptic();
-                                                                const firstRisk = brandDeals.find((d: any) => {
-                                                                    const ux = getCreatorDealCardUX(d);
-                                                                    return ux.urgencyLevel === 'critical' && !String(d?.status || '').toLowerCase().includes('completed');
-                                                                });
-                                                                const firstSig = brandDeals.find((d: any) => getCreatorDealCardUX(d).needsSignature);
-                                                                const firstRev = brandDeals.find((d: any) => getCreatorDealCardUX(d).isRevisionRequested);
-                                                                const firstDraft = brandDeals.find((d: any) => getCreatorDealCardUX(d).isMaking);
-                                                                const target = firstRisk || firstSig || firstRev || firstDraft;
-                                                                if (target) {
-                                                                    setSelectedItem(target);
-                                                                    setSelectedType('deal');
-                                                                }
-                                                            }}
-                                                            className={cn(
-                                                                "p-4 rounded-2xl border mb-1 transition-all active:scale-[0.99]",
-                                                                isDark ? "bg-card hover:bg-secondary/50" : "bg-background hover:bg-card",
-                                                                borderColor
-                                                            )}
-                                                        >
-                                                            <div className="flex items-center justify-between gap-3 mb-2">
-                                                                <div className="flex items-center gap-2 min-w-0">
-                                                                    <p className={cn("text-[11px] font-black uppercase tracking-widest opacity-60 truncate", textColor)}>Needs attention</p>
-                                                                </div>
-                                                                {insights.risk > 0 && (
-                                                                    <span
-                                                                        className={cn(
-                                                                            "text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded-full border shrink-0",
-                                                                            isDark ? "bg-destructive/10 text-destructive border-destructive/20" : "bg-destructive/10 text-destructive border-destructive/20 shadow-sm"
-                                                                        )}
-                                                                    >
-                                                                        {insights.risk} AT RISK
-                                                                    </span>
-                                                                )}
-                                                            </div>
-
-                                                            <div className="flex flex-wrap gap-2">
-                                                                {items.map((it) => {
-                                                                    const pluralize = (singular: string, plural: string) => (it.count === 1 ? singular : plural);
-                                                                    const label =
-                                                                        it.label === 'Signature pending'
-                                                                            ? pluralize('Signature pending', 'Signatures pending')
-                                                                            : it.label === 'Revision requested'
-                                                                                ? pluralize('Revision requested', 'Revisions requested')
-                                                                                : it.label === 'Drafts to submit'
-                                                                                    ? pluralize('Draft to submit', 'Drafts to submit')
-                                                                                    : it.label;
-
-                                                                    const toneCls =
-                                                                        it.tone === 'amber'
-                                                                            ? (isDark ? "bg-warning/10 text-warning border-warning/20" : "bg-warning/10 text-warning border-warning/20")
-                                                                            : it.tone === 'red'
-                                                                                ? (isDark ? "bg-destructive/10 text-destructive border-destructive/20" : "bg-destructive/10 text-destructive border-destructive/20")
-                                                                                : (isDark ? "bg-info/10 text-info border-info/20" : "bg-info/10 text-info border-info/20");
-
-                                                                    const onChip = () => {
-                                                                        triggerHaptic();
-                                                                        const target =
-                                                                            it.label === 'Signature pending'
-                                                                                ? activeDealsList.find((d: any) => getCreatorDealCardUX(d).needsSignature)
-                                                                                : it.label === 'Revision requested'
-                                                                                    ? activeDealsList.find((d: any) => getCreatorDealCardUX(d).isRevisionRequested)
-                                                                                    : activeDealsList.find((d: any) => getCreatorDealCardUX(d).isMaking);
-                                                                        if (target) {
-                                                                            setSelectedItem(target);
-                                                                            setSelectedType('deal');
-                                                                        }
-                                                                    };
-
-                                                                    return (
-                                                                        <button
-                                                                            type="button"
-                                                                            key={it.label}
-                                                                            onClick={(e) => {
-                                                                                e.stopPropagation();
-                                                                                onChip();
-                                                                            }}
-                                                                            className={cn("px-3 py-1.5 rounded-full text-[11px] font-bold border", toneCls)}
-                                                                        >
-                                                                            {it.count} {label}
-                                                                        </button>
-                                                                    );
-                                                                })}
-                                                            </div>
-                                                        </div>
-                                                    );
-                                                })()}
                                                 {activeDealsList.slice(0, 10).map((deal: any, idx: number) => {
                                                     const ux = getCreatorDealCardUX(deal);
+                                                    const budget = Number(deal?.deal_amount || deal?.exact_budget || 0);
+
+                                                    // Use ux format for due text or fallback to explicit wording
+                                                    let dueText = ux.daysUntilDue === null
+                                                        ? null
+                                                        : ux.daysUntilDue < 0
+                                                            ? `OVERDUE ${Math.abs(ux.daysUntilDue)}D`
+                                                            : `${ux.daysUntilDue} DAYS LEFT`;
+                                                    
+                                                    const productImage = resolveCreatorDealProductImage(deal);
+                                                    const contractSigned =
+                                                        !ux.needsSignature &&
+                                                        (ux.rawStatus.includes('fully_executed') ||
+                                                            ux.rawStatus === 'signed' ||
+                                                            ux.rawStatus.includes('content_') ||
+                                                            ux.rawStatus.includes('payment_released') ||
+                                                            ux.rawStatus.includes('completed'));
+                                                            
+                                                    const deliverablesContent = (() => {
+                                                        const raw = deal?.deliverables || deal?.raw?.deliverables;
+                                                        try {
+                                                            const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;
+                                                            if (Array.isArray(parsed) && parsed.length > 0) {
+                                                                const types = parsed.map((d: any) => {
+                                                                    if (typeof d === 'string') return d.includes('Reel') ? 'Reel' : d;
+                                                                    const ct = String(d?.contentType || d?.type || '').toLowerCase();
+                                                                    const count = Number(d?.count || d?.quantity || 1) || 1;
+                                                                    const label = ct.includes('reel') ? 'Reel' : ct.includes('story') ? 'Story' : 'Post';
+                                                                    return count > 1 ? `${label} (x${count})` : label;
+                                                                });
+                                                                return types.join(' + ');
+                                                            }
+                                                        } catch {}
+                                                        return 'Reel';
+                                                    })();                                                    
 
                                                     return (
                                                         <motion.div
                                                             key={idx}
                                                             whileTap={{ scale: 0.98 }}
                                                             onTap={() => {
-                                                                
                                                                 triggerHaptic();
                                                                 setSelectedItem(deal);
                                                                 setSelectedType('deal');
                                                             }}
                                                             className={cn(
-                                                                "p-4 rounded-2xl border transition-all duration-200 group active:scale-[0.99] hover:-translate-y-[1px] relative cursor-pointer",
-                                                                borderColor,
-                                                                isDark ? "bg-card active:bg-secondary/50" : "bg-card shadow-sm active:bg-background"
+                                                                "p-4 rounded-[20px] border transition-all duration-200 group active:scale-[0.99] relative cursor-pointer shadow-[0_1px_3px_rgba(0,0,0,0.02)]",
+                                                                isDark ? "bg-[#101217] border-[#292B33]" : "bg-white border-[#E5E7EB]"
                                                             )}
                                                         >
-                                                            {(() => {
-                                                                const budget = Number(deal?.deal_amount || deal?.exact_budget || 0);
-                                                                const dueText = ux.daysUntilDue === null
-                                                                    ? null
-                                                                    : ux.daysUntilDue < 0
-                                                                        ? `Overdue ${Math.abs(ux.daysUntilDue)}d`
-                                                                        : `Due in ${ux.daysUntilDue}d`;
-                                                                const dueTone =
-                                                                    ux.urgencyLevel === 'critical'
-                                                                        ? (isDark ? "text-destructive" : "text-destructive")
-                                                                        : ux.urgencyLevel === 'warning'
-                                                                            ? (isDark ? "text-warning" : "text-warning")
-                                                                            : (isDark ? "text-warning" : "text-warning");
+                                                            {/* Row 1: Pills */}
+                                                            <div className="flex items-center justify-between mb-4">
+                                                                <div className={cn("px-2.5 py-1 rounded-[6px] text-[10px] font-black tracking-widest uppercase inline-flex items-center justify-center", 
+                                                                    ux.urgencyLevel === 'warning' ? (isDark ? "bg-amber-500/10 text-amber-500" : "bg-amber-50 text-amber-600") :
+                                                                    ux.rawStatus.includes('content_') || contractSigned && ux.progressStep > 2 ? (isDark ? "bg-purple-500/10 text-[#C084FC]" : "bg-purple-50 text-purple-600") : 
+                                                                    (isDark ? "bg-blue-500/10 text-[#60A5FA]" : "bg-blue-50 text-blue-600")
+                                                                )}>
+                                                                    {ux.stagePill || "IN PROGRESS"}
+                                                                </div>
+                                                                {dueText && (
+                                                                    <div className={cn("flex items-center gap-1.5 px-2 py-1 rounded-[6px] text-[10px] font-black tracking-widest uppercase", 
+                                                                        isDark ? "bg-red-500/10 text-red-500" : "bg-red-50 text-red-600"
+                                                                    )}>
+                                                                        <Clock className="w-3 h-3" />
+                                                                        {dueText}
+                                                                    </div>
+                                                                )}
+                                                            </div>
 
-                                                                const cta = getDealPrimaryCta({ role: 'creator', deal });
-                                                                const ctaLabel = cta.label;
-                                                                const productImage = resolveCreatorDealProductImage(deal);
-                                                                const contractSigned =
-                                                                    !ux.needsSignature &&
-                                                                    (ux.rawStatus.includes('fully_executed') ||
-                                                                        ux.rawStatus === 'signed' ||
-                                                                        ux.rawStatus.includes('content_') ||
-                                                                        ux.rawStatus.includes('payment_released') ||
-                                                                        ux.rawStatus.includes('completed'));
-
-                                                                return (
-                                                                    <div className="flex flex-col">
-                                                                        <div className="flex gap-4">
-                                                                            {/* Left: Campaign Preview Image */}
-                                                                            <div className={cn(
-                                                                                "w-[108px] h-[92px] rounded-2xl overflow-hidden border shrink-0 shadow-lg relative group",
-                                                                                isDark ? "border-border/30 bg-secondary/30" : "border-border bg-muted/20"
-                                                                            )}>
-                                                                                {productImage ? (
-                                                                                    <img src={productImage} alt="" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" loading="lazy" />
-                                                                                ) : (
-                                                                                    <div className={cn("w-full h-full flex items-center justify-center", isDark ? "bg-gradient-to-br from-blue-500/10 to-violet-500/10" : "bg-gradient-to-br from-blue-50 to-violet-50")}>
-                                                                                        {getBrandIcon(
-                                                                                            deal.brand_logo || deal.brand_logo_url || deal.logo_url || deal.raw?.brand_logo || deal.raw?.brand_logo_url || (deal as any).brand?.logo_url,
-                                                                                            deal.category,
-                                                                                            deal.brand_name
-                                                                                        )}
-                                                                                    </div>
-                                                                                )}
-                                                                                <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                                                                            </div>
-
-                                                                            {/* Right: Deal Details */}
-                                                                            <div className="flex-1 min-w-0 flex flex-col justify-between py-0.5">
-                                                                                <div className="flex items-start justify-between gap-2">
-                                                                                    <div className="min-w-0">
-                                                                                        <h4 className={cn("text-[17px] font-black tracking-tight leading-tight truncate", textColor)}>{deal.brand_name}</h4>
-                                                                                        <p className={cn("text-[11px] font-bold mt-1 opacity-60 truncate", secondaryTextColor)}>
-                                                                                            {deal.category || 'Collaboration'}
-                                                                                        </p>
-                                                                                    </div>
-                                                                                    <div className="text-right shrink-0">
-                                                                                        <p className={cn("text-[18px] font-black tracking-tighter leading-none", textColor)}>
-                                                                                            {budget > 0 ? `₹${budget.toLocaleString()}` : '—'}
-                                                                                        </p>
-                                                                                    </div>
-                                                                                </div>
-
-                                                                                <div className="mt-3 space-y-2">
-                                                                                    {dueText && (
-                                                                                        <div className={cn("inline-flex items-center gap-1.5 px-2 py-1 rounded-lg border text-[10px] font-black uppercase tracking-widest", 
-                                                                                            ux.urgencyLevel === 'critical' ? "bg-destructive/10 border-destructive/20 text-destructive" :
-                                                                                            ux.urgencyLevel === 'warning' ? "bg-warning/10 border-warning/20 text-warning" :
-                                                                                            "bg-emerald-500/10 border-emerald-500/20 text-emerald-500 shadow-sm shadow-emerald-500/5")}>
-                                                                                            <Clock className="w-3 h-3" />
-                                                                                            {dueText}
-                                                                                        </div>
-                                                                                    )}
-                                                                                    
-                                                                                    <div className={cn(
-                                                                                        "flex items-center gap-2 text-[11px] font-bold",
-                                                                                        ux.needsSignature ? "text-warning" : contractSigned ? "text-primary" : secondaryTextColor
-                                                                                    )}>
-                                                                                        {ux.needsSignature ? <AlertCircle className="w-3.5 h-3.5" /> : contractSigned ? <ShieldCheck className="w-3.5 h-3.5" /> : <FileEdit className="w-3.5 h-3.5 opacity-40" />}
-                                                                                        <span>{ux.needsSignature ? 'Signature required' : contractSigned ? 'Contract signed' : (ux.contractLabel || 'In progress')}</span>
-                                                                                    </div>
-                                                                                </div>
-                                                                            </div>
+                                                            {/* Row 2: Image & Text */}
+                                                            <div className="flex gap-4 mb-4">
+                                                                <div className={cn("w-[84px] h-[84px] rounded-2xl overflow-hidden border shrink-0 shadow-sm relative group", isDark ? "border-[#2C2C2E] bg-secondary/30" : "border-[#E5E7EB] bg-slate-50")}>
+                                                                    {productImage ? (
+                                                                        <img src={productImage} alt="" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" loading="lazy" />
+                                                                    ) : (
+                                                                        <div className={cn("w-full h-full flex items-center justify-center", isDark ? "bg-gradient-to-br from-blue-500/10 to-violet-500/10" : "bg-gradient-to-br from-blue-50 to-violet-50")}>
+                                                                            {getBrandIcon(deal.brand_logo || deal.brand_logo_url || deal.logo_url || deal.raw?.brand_logo || deal.raw?.brand_logo_url || (deal as any).brand?.logo_url, deal.category, deal.brand_name)}
                                                                         </div>
-
-                                                                        {/* Progress Section */}
-                                                                        <div className="mt-5 flex items-center justify-between gap-4">
-                                                                            <div className="flex-1 flex items-center gap-1.5 h-1.5">
-                                                                                {Array.from({ length: 5 }).map((_, i) => (
-                                                                                    <div
-                                                                                        key={i}
-                                                                                        className={cn(
-                                                                                            "h-full flex-1 rounded-full transition-all duration-700",
-                                                                                            i < ux.progressStep
-                                                                                                ? (isDark ? "bg-primary shadow-[0_0_10px_rgba(34,197,94,0.4)]" : "bg-primary")
-                                                                                                : (isDark ? "bg-secondary/40" : "bg-muted")
-                                                                                        )}
-                                                                                    />
-                                                                                ))}
-                                                                            </div>
-                                                                            <span className={cn(
-                                                                                "text-[10px] font-black uppercase tracking-[0.15em] px-2.5 py-1.5 rounded-xl border shrink-0",
-                                                                                ux.needsCreatorAction
-                                                                                    ? (isDark ? "border-warning/30 bg-warning/10 text-warning" : "border-warning/20 bg-warning/5 text-warning")
-                                                                                    : (isDark ? "border-border/60 bg-card/30 text-foreground/40" : "border-border bg-muted/20 text-muted-foreground/60")
-                                                                            )}>
-                                                                                {ux.stagePill}
+                                                                    )}
+                                                                </div>
+                                                                <div className="flex-1 flex justify-between py-0.5">
+                                                                    <div className="flex flex-col justify-center min-w-0 pr-2">
+                                                                        <h4 className={cn("text-[17px] font-black tracking-tight leading-tight truncate", isDark ? "text-white" : "text-black")}>{deal.brand_name}</h4>
+                                                                        <p className="text-[13px] font-bold text-[#10B981] mt-0.5 truncate">{deliverablesContent}</p>
+                                                                        <div className="mt-1.5 flex">
+                                                                            <span className={cn("px-2.5 py-[3px] rounded-full text-[10px] font-bold", isDark ? "bg-[#1E3029] text-[#4ADE80]" : "bg-[#ECFDF5] text-[#059669]")}>
+                                                                                Full Payment
                                                                             </span>
                                                                         </div>
-
-                                                                        <button type="button"
-                                                                            onPointerDown={(e) => e.stopPropagation()}
-                                                                            onClick={(e) => {
-                                                                                e.stopPropagation();
-                                                                                triggerHaptic();
-                                                                                setSelectedItem(deal);
-                                                                                setSelectedType('deal');
-                                                                            }}
-                                                                            disabled={cta.disabled}
-                                                                            className={cn(
-                                                                                "mt-5 h-12 w-full rounded-2xl text-[14px] font-black tracking-tight transition-all duration-300 active:scale-[0.97] flex items-center justify-center gap-2",
-                                                                                dealPrimaryCtaButtonClass(cta.tone),
-                                                                                cta.disabled && "opacity-60 cursor-not-allowed active:scale-100"
-                                                                            )}
-                                                                        >
-                                                                            {cta.action === 'mark_delivered' && <Zap className="w-4 h-4 fill-current" />}
-                                                                            {cta.action === 'sign' && <PenTool className="w-4 h-4" />}
-                                                                            {cta.action === 'submit_draft' && <ChevronRight className="w-4 h-4" />}
-                                                                            {ctaLabel}
-                                                                        </button>
                                                                     </div>
-                                                                );
-                                                            })()}
+                                                                    <div className="text-right flex flex-col justify-center shrink-0">
+                                                                        <p className={cn("text-[20px] font-black tracking-tighter leading-none whitespace-nowrap", isDark ? "text-white" : "text-black")}>
+                                                                            {budget > 0 ? `₹${budget.toLocaleString()}` : '—'}
+                                                                        </p>
+                                                                        <p className={cn("text-[11px] font-semibold opacity-50 mt-1 whitespace-nowrap", isDark ? "text-white" : "text-[#6B7280]")}>You'll earn</p>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+
+                                                            {/* Row 3: Progress Bar */}
+                                                            {ux.urgencyLevel === 'warning' && false ? ( // Fallback to raw text if needed, but progress bar looks better overall. Let's force progress bar.
+                                                                <div className="mb-4 pt-1">
+                                                                   <p className={cn("text-[11px] font-semibold", isDark ? "text-white/60" : "text-[#6B7280]")}>
+                                                                        Deliver by 22 Apr 2026, 11:59 PM
+                                                                    </p>
+                                                                </div>
+                                                            ) : (
+                                                                <div className="mb-5 pt-1">
+                                                                    <div className="flex items-center gap-3 mb-2">
+                                                                        <span className={cn("text-[12px] font-bold", isDark ? "text-white" : "text-[#111827]")}>Progress</span>
+                                                                        <div className="flex-1 h-1.5 rounded-full overflow-hidden bg-[#E5E7EB] dark:bg-[#2C2C2E]">
+                                                                            <div className="h-full bg-[#10B981] rounded-full" style={{ width: `${(Math.max(1, ux.progressStep) / 5) * 100}%` }} />
+                                                                        </div>
+                                                                        <span className={cn("text-[12px] font-bold", isDark ? "text-white" : "text-[#111827]")}>{Math.round((Math.max(1, ux.progressStep) / 5) * 100)}%</span>
+                                                                    </div>
+                                                                    <p className={cn("text-[11.5px] font-medium opacity-60 leading-tight", isDark ? "text-white/60" : "text-[#6B7280]")}>
+                                                                        {ux.progressLabel || (ux.progressStep <= 1 ? "Content creation in progress" : "Script approved • Recording in progress")}
+                                                                    </p>
+                                                                </div>
+                                                            )}
+
+                                                            {/* Row 4: Buttons */}
+                                                            <div className={cn("pt-3.5 border-t flex gap-2", isDark ? "border-[#2C2C2E]" : "border-[#E5E7EB]")}>
+                                                                <button type="button" onClick={(e) => { e.stopPropagation(); triggerHaptic(); setSelectedItem(deal); setSelectedType('deal'); }} className={cn("flex-1 h-10 rounded-xl flex items-center justify-center gap-2 text-[12px] font-bold transition-all active:scale-[0.98]", isDark ? "text-white hover:bg-secondary/50" : "text-[#374151] hover:bg-slate-50")}>
+                                                                    <FileText className="w-4 h-4 opacity-60" />
+                                                                    View Details
+                                                                </button>
+                                                                <button type="button" onClick={(e) => { e.stopPropagation(); triggerHaptic(); toast.message('Message Brand', {description: 'Direct thread opening...'}); }} className={cn("flex-1 h-10 rounded-xl flex items-center justify-center gap-2 text-[12px] font-bold transition-all active:scale-[0.98]", isDark ? "text-white hover:bg-secondary/50" : "text-[#374151] hover:bg-slate-50")}>
+                                                                    <MessageCircle className="w-4 h-4 opacity-60" />
+                                                                    Message Brand
+                                                                </button>
+                                                            </div>
                                                         </motion.div>
                                                     );
                                                 })}
@@ -4736,29 +4371,23 @@ const MobileDashboardDemo = ({
                                             };
 
                                             if (offers.length === 0) {
+                                                const completionScore = (() => {
+                                                    let score = 20;
+                                                    if (profileFormData.bank_upi) score += 20;
+                                                    if (profileFormData.audience_gender_split) score += 20;
+                                                    if (profileFormData.content_vibes?.length > 0) score += 20;
+                                                    if (profileFormData.deal_templates?.length > 0) score += 20;
+                                                    return score;
+                                                })();
+
                                                 return (
-                                                    <div className={cn(
-                                                        "p-6 rounded-[2rem] border text-center",
-                                                        isDark ? "bg-card border-border" : "bg-card border-border shadow-sm"
-                                                    )}>
-                                                        <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-amber-500 to-orange-500 mx-auto mb-4 flex items-center justify-center shadow-lg shadow-amber-500/20">
-                                                            <Handshake className="w-7 h-7 text-white" />
-                                                        </div>
-                                                        <h3 className={cn("text-[18px] font-black tracking-tight mb-2 font-outfit", textColor)}>No new offers yet</h3>
-                                                        <p className={cn("text-[13px] leading-relaxed opacity-70 mb-5", textColor)}>
-                                                            Share your creator link to start receiving structured brand offers here.
-                                                        </p>
-                                                        <button
-                                                            type="button"
-                                                            onClick={() => {
-                                                                triggerHaptic();
-                                                                handleShareOnWhatsApp();
-                                                            }}
-                                                            className="h-12 px-6 rounded-2xl bg-gradient-to-r from-blue-600 to-cyan-500 text-white font-black text-[13px] shadow-lg shadow-blue-500/20 active:scale-95 transition-all"
-                                                        >
-                                                            Share Link
-                                                        </button>
-                                                    </div>
+                                                    <DashboardEmptyState 
+                                                        isDark={isDark}
+                                                        textColor={textColor}
+                                                        completionScore={completionScore}
+                                                        onOptimize={() => { triggerHaptic(); setActiveTab('profile'); setActiveSettingsPage('collab-link'); }}
+                                                        onShare={() => { triggerHaptic(); handleShareOnWhatsApp(); }}
+                                                    />
                                                 );
                                             }
 
@@ -4963,237 +4592,29 @@ const MobileDashboardDemo = ({
 
                     {/* ─── OTHER TABS (Simplified for UI flow) ─── */}
                     {activeTab === 'profile' && (
-                        <div className={cn("animate-in fade-in slide-in-from-bottom-4 duration-500 pb-32 min-h-screen relative bg-transparent")}>
+                        <div className={cn("animate-in fade-in slide-in-from-bottom-4 duration-500 relative bg-transparent")}>
                             <AnimatePresence mode="wait">
                                 {!activeSettingsPage ? (
-                                    <motion.div
-                                        key="settings-main"
-                                        initial={{ opacity: 0, x: 0 }}
-                                        animate={{ opacity: 1, x: 0 }}
-                                        exit={{ opacity: 0, x: -20 }}
-                                        className="w-full"
-                                    >
-                                        <div className={cn("px-5 pt-14 pb-4 bg-transparent")}>
-                                            <h1 className={cn("text-[32px] leading-none font-black tracking-tight", textColor)}>Account</h1>
-                                            <p className={cn("text-[13px] mt-1 font-medium opacity-60", textColor)}>
-                                                Manage your creator profile, link, payouts, and alerts
-                                            </p>
-                                        </div>
-
-                                        <div className="space-y-3">
-                                            {/* 1. TOP CARD (Identity + quick actions) */}
-                                            <div className="px-4">
-                                                <div className={cn(
-                                                    "p-5 rounded-[28px] transition-all border shadow-sm relative overflow-hidden",
-                                                    isDark ? "bg-card border-[#2C2C2E]" : "bg-white border-[#E5E7EB]"
-                                                )}>
-                                                    <div className={cn(
-                                                        "absolute inset-x-0 top-0 h-24 opacity-80 pointer-events-none",
-                                                        isDark
-                                                            ? "bg-gradient-to-r from-emerald-500/10 via-cyan-500/10 to-blue-500/10"
-                                                            : "bg-gradient-to-r from-emerald-50 via-cyan-50 to-blue-50"
-                                                    )} />
-                                                    <div className="relative flex items-start gap-4 mb-5">
-                                                        <div className="relative shrink-0">
-                                                            <div className="w-20 h-20 rounded-[24px] overflow-hidden border border-border">
-                                                                <img
-                                                                    src={avatarUrl}
-                                                                    alt="avatar"
-                                                                    className="w-full h-full object-cover"
-                                                                    onError={(e) => {
-                                                                        (e.currentTarget as HTMLImageElement).onerror = null;
-                                                                        (e.currentTarget as HTMLImageElement).src = avatarFallbackUrl;
-                                                                    }}
-                                                                />
-                                                            </div>
-                                                            <button
-                                                                type="button"
-                                                                onClick={() => setActiveSettingsPage('personal')}
-                                                                className={cn(
-                                                                    "absolute -bottom-1 -right-1 w-8 h-8 rounded-full border-2 flex items-center justify-center shadow-sm active:scale-95",
-                                                                    isDark ? "bg-card border-[#2C2C2E] text-foreground" : "bg-white border-white text-[#0F172A]"
-                                                                )}
-                                                            >
-                                                                <Camera className="w-4 h-4" />
-                                                            </button>
-                                                        </div>
-                                                        <div className="min-w-0 flex-1">
-                                                            <div className="flex flex-wrap items-center gap-2 mb-1">
-                                                                <h2 className={cn("text-[30px] leading-none font-black tracking-tight", textColor)}>
-                                                                    {profile?.first_name || username || 'Creator'}
-                                                                </h2>
-                                                                <span className={cn(
-                                                                    "inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-[0.16em] border",
-                                                                    isDark ? "bg-primary/10 text-primary border-primary/20" : "bg-blue-50 text-blue-600 border-blue-100"
-                                                                )}>
-                                                                    <ShieldCheck className="w-3 h-3" />
-                                                                    Verified
-                                                                </span>
-                                                            </div>
-                                                            <p className={cn("text-[18px] font-semibold opacity-55", textColor)}>
-                                                                @{username || 'creator'}
-                                                            </p>
-                                                            <div className="mt-4 flex flex-wrap gap-2">
-                                                                <div className={cn("px-3 py-2 rounded-2xl border", isDark ? "bg-background border-border" : "bg-background border-[#E5E7EB]")}>
-                                                                    <p className={cn("text-[10px] font-black uppercase tracking-[0.16em] opacity-45 mb-1", textColor)}>Creator link</p>
-                                                                    <p className={cn("text-[11px] font-bold truncate max-w-[140px]", profile?.instagram_handle ? "text-primary" : textColor)}>
-                                                                        {profile?.instagram_handle ? `creatorarmour.com/${username}` : 'Setup needed'}
-                                                                    </p>
-                                                                </div>
-                                                                <div className={cn("px-3 py-2 rounded-2xl border", isDark ? "bg-background border-border" : "bg-background border-[#E5E7EB]")}>
-                                                                    <p className={cn("text-[10px] font-black uppercase tracking-[0.16em] opacity-45 mb-1", textColor)}>New offers</p>
-                                                                    <p className={cn("text-[12px] font-bold", textColor)}>{pendingOffersCount}</p>
-                                                                </div>
-                                                                <div className={cn("px-3 py-2 rounded-2xl border", isDark ? "bg-background border-border" : "bg-background border-[#E5E7EB]")}>
-                                                                    <p className={cn("text-[10px] font-black uppercase tracking-[0.16em] opacity-45 mb-1", textColor)}>Pending ₹</p>
-                                                                    <p className={cn("text-[12px] font-bold", textColor)}>₹{pendingAmount.toLocaleString()}</p>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    <div className="relative grid grid-cols-2 gap-3 mb-4">
-                                                        <button
-                                                            type="button"
-                                                            onClick={() => setActiveSettingsPage('portfolio')}
-                                                            className={cn(
-                                                                "h-12 rounded-2xl font-black text-[13px] active:scale-95 transition-all flex items-center justify-center gap-2",
-                                                                isDark ? "bg-primary text-white" : "bg-primary text-white shadow-lg shadow-primary/15"
-                                                            )}
-                                                        >
-                                                            <Edit3 className="w-4 h-4" />
-                                                            Edit Public Profile
-                                                        </button>
-                                                        <button
-                                                            type="button"
-                                                            onClick={() => window.open(`/${username || 'creator'}`, '_blank')}
-                                                            className={cn(
-                                                                "h-12 rounded-2xl border font-bold text-[13px] active:scale-95 transition-all flex items-center justify-center gap-2",
-                                                                isDark ? "bg-card border-border text-foreground" : "bg-white border-border text-black shadow-sm"
-                                                            )}
-                                                        >
-                                                            <Eye className="w-4 h-4" />
-                                                            Preview Link
-                                                        </button>
-                                                    </div>
-                                                    <div className={cn(
-                                                        "flex items-center justify-between gap-3 p-3 rounded-2xl border",
-                                                        isDark ? "bg-background border-border" : "bg-[#F8FAFC] border-[#E5E7EB]"
-                                                    )}>
-                                                        <div className="min-w-0">
-                                                            <p className={cn("text-[10px] font-black uppercase tracking-[0.18em] opacity-45 mb-1", textColor)}>Creator link</p>
-                                                            <p className={cn("text-[13px] font-bold truncate", textColor)}>
-                                                                creatorarmour.com/{profile?.instagram_handle || username || 'creator'}
-                                                            </p>
-                                                        </div>
-                                                        <button
-                                                            type="button"
-                                                            onClick={handleCopyStorefront}
-                                                            className={cn(
-                                                                "shrink-0 h-10 px-4 rounded-xl font-black text-[12px] active:scale-95 transition-all",
-                                                                isDark ? "bg-primary/10 text-primary border border-primary/20" : "bg-white text-primary border border-primary/20"
-                                                            )}
-                                                        >
-                                                            Copy
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            {/* Status Feedback */}
-                                            {activeDealsCount === 0 && pendingOffersCount === 0 ? (
-                                                <div className="px-4">
-                                                    <div className={cn("p-4 rounded-2xl border", isDark ? "bg-[#111827]/40 border-border" : "bg-green-50 border-green-100")}>
-                                                        <p className={cn("text-sm font-bold mb-1", isDark ? "text-foreground" : "text-green-800")}>Share your link to get brand requests</p>
-                                                        <p className={cn("text-xs opacity-70 mb-3", isDark ? "text-foreground" : "text-green-700")}>Brand briefs from your collab link will appear here.</p>
-                                                        <button
-                                                            type="button"
-                                                            onClick={handleShareOnWhatsApp}
-                                                            className={cn(
-                                                                "h-10 px-4 rounded-xl font-black text-[12px] active:scale-95 transition-all",
-                                                                isDark ? "bg-primary text-white" : "bg-[#16A34A] text-white"
-                                                            )}
-                                                        >
-                                                            Share Link
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                            ) : null}
-
-                                            {/* 2. QUICK NAV */}
-                                            <div className="px-4">
-                                                <div className="grid grid-cols-2 gap-3">
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => { setActiveTab('deals'); setCollabSubTab('pending'); }}
-                                                        className={cn("h-14 rounded-2xl border font-bold text-[12px] active:scale-95 transition-all flex flex-col items-center justify-center leading-tight", isDark ? "bg-card border-border text-foreground" : "bg-white border-border text-black shadow-sm")}
-                                                    >
-                                                        <span className="text-primary text-[16px] font-black">{pendingOffersCount}</span>
-                                                        New Offers
-                                                    </button>
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => setActiveTab('payments')}
-                                                        className={cn("h-14 rounded-2xl border font-bold text-[12px] active:scale-95 transition-all flex flex-col items-center justify-center leading-tight", isDark ? "bg-card border-border text-foreground" : "bg-white border-border text-black shadow-sm")}
-                                                    >
-                                                        <span className="text-primary text-[16px] font-black">₹{pendingAmount.toLocaleString()}</span>
-                                                        Pending Payouts
-                                                    </button>
-                                                </div>
-                                            </div>
-
-                                            {/* 3. CREATOR PROFILE */}
-                                            <div className="pt-2">
-                                                <SectionHeader title="Profile & Link" isDark={isDark} />
-                                                <SettingsGroup isDark={isDark}>
-                                                    <SettingsRow icon={<FileText />} iconBg="bg-primary" label="Your Public Profile" subtext="Bio, proof & what brands see" isDark={isDark} textColor={textColor} hasChevron onClick={() => setActiveSettingsPage('portfolio')} />
-                                                    <SettingsRow icon={<Link2 />} iconBg="bg-violet-500" label="Creator Link" subtext="Manage your public intake page" isDark={isDark} textColor={textColor} hasChevron onClick={() => setActiveSettingsPage('collab-link')} />
-                                                    <SettingsRow icon={<User />} iconBg="bg-slate-500" label="Personal Information" subtext="Name, identity, and legal details" isDark={isDark} textColor={textColor} hasChevron onClick={() => setActiveSettingsPage('personal')} />
-                                                </SettingsGroup>
-                                            </div>
-
-                                            {/* 4. MONEY */}
-                                            <div>
-                                                <SectionHeader title="Money" isDark={isDark} />
-                                                <SettingsGroup isDark={isDark}>
-                                                    <SettingsRow icon={<Landmark />} iconBg="bg-indigo-500" label="Payout Methods" subtext="Manage UPI and bank accounts" isDark={isDark} textColor={textColor} hasChevron onClick={() => setActiveSettingsPage('payouts')} />
-                                                    <SettingsRow icon={<CreditCard />} iconBg="bg-cyan-500" label="Earnings & History" subtext="Revenue, payouts, and statements" isDark={isDark} textColor={textColor} hasChevron onClick={() => setActiveSettingsPage('earnings')} />
-                                                </SettingsGroup>
-                                            </div>
-
-                                            {/* 5. APP PREFERENCES */}
-                                            <div>
-                                                <SectionHeader title="App Preferences" isDark={isDark} />
-                                                <SettingsGroup isDark={isDark}>
-                                                    <SettingsRow icon={<Bell />} iconBg="bg-rose-500" label="Notifications" subtext="Offer alerts, contracts, and payments" isDark={isDark} textColor={textColor} hasChevron onClick={() => setActiveSettingsPage('notifications')} />
-                                                    <SettingsRow icon={isDark ? <Sun /> : <Moon />} iconBg="bg-background" label="Appearance" subtext="Dark mode and theme" isDark={isDark} textColor={textColor} hasChevron onClick={() => setActiveSettingsPage('dark-mode')} />
-                                                </SettingsGroup>
-                                            </div>
-
-                                            {/* 6. TRUST & SUPPORT */}
-                                            <div>
-                                                <SectionHeader title="Trust & Support" isDark={isDark} />
-                                                <SettingsGroup isDark={isDark}>
-                                                    <SettingsRow icon={<ShieldCheck />} iconBg="bg-info" label="Armour Verification" subtext="Trust features and fraud protection" isDark={isDark} textColor={textColor} hasChevron onClick={() => setActiveSettingsPage('verification')} />
-                                                    <SettingsRow icon={<Info />} iconBg="bg-slate-500" label="About Creator Armour" subtext="Version, help, and support" isDark={isDark} textColor={textColor} hasChevron onClick={() => setActiveSettingsPage('about')} />
-                                                </SettingsGroup>
-                                            </div>
-
-                                            {/* 7. SESSION */}
-                                            <div>
-                                                <SectionHeader title="Session" isDark={isDark} />
-                                                <SettingsGroup isDark={isDark}>
-                                                    <SettingsRow icon={<LogOut />} iconBg="bg-destructive" label="Log Out" subtext="Securely sign out of your account" isDark={isDark} textColor={textColor} hasChevron onClick={() => setActiveSettingsPage('logout')} />
-                                                </SettingsGroup>
-                                            </div>
-                                        </div>
-                                    </motion.div>
+                                    <AccountTab 
+                                        isDark={isDark}
+                                        textColor={textColor}
+                                        secondaryTextColor={secondaryTextColor}
+                                        profile={profile}
+                                        username={username}
+                                        avatarUrl={avatarUrl}
+                                        avatarFallbackUrl={avatarFallbackUrl}
+                                        isPushSubscribed={isPushSubscribed}
+                                        setActiveSettingsPage={setActiveSettingsPage}
+                                        setActiveTab={setActiveTab}
+                                        triggerHaptic={triggerHaptic}
+                                    />
                                 ) : (
                                     <motion.div
                                         key="settings-page"
                                         initial={{ opacity: 0, x: 20 }}
                                         animate={{ opacity: 1, x: 0 }}
                                         exit={{ opacity: 0, x: 20 }}
-                                        className="w-full min-h-screen"
+                                        className="w-full"
                                     >
                                         {renderSettingsPage()}
                                     </motion.div>
@@ -5202,145 +4623,22 @@ const MobileDashboardDemo = ({
                         </div>
                     )}
 
+
                     {activeTab === 'payments' && (
-                        <div className="px-5 pt-8 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-20">
-                            {/* Header */}
-                            <div className="flex items-center justify-between mb-6">
-                                <div>
-                                    <h1 className={cn("text-2xl font-black tracking-tight", textColor)}>Payments</h1>
-                                    <p className={cn("text-[11px] font-medium opacity-60", textColor)}>Track pending payments and completed payouts</p>
-                                </div>
-                                <button type="button" className={cn("p-2.5 rounded-xl border flex items-center justify-center", cardBgColor, borderColor)}>
-                                    <Download className={cn("w-5 h-5", secondaryTextColor)} />
-                                </button>
-                            </div>
-
-                            {/* Main Highlight: Pending Amount */}
-                            <motion.div
-                                initial={{ scale: 0.95, opacity: 0 }}
-                                animate={{ scale: 1, opacity: 1 }}
-                                transition={{ delay: 0.1 }}
-                                className={cn(
-                                    "py-7 px-7 rounded-[2.25rem] shadow-xl border-0 mb-6 bg-gradient-to-br relative overflow-hidden",
-                                    isDark
-                                        ? "from-emerald-400 via-cyan-500 to-blue-600 shadow-blue-500/20"
-                                        : "from-emerald-500 via-cyan-500 to-blue-700 shadow-blue-500/15"
-                                )}
-                            >
-                                <div className="absolute -top-10 -right-10 w-32 h-32 bg-secondary/50 rounded-full blur-3xl" />
-                                <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-secondary/50 rounded-full blur-3xl" />
-                                <div className="relative z-10">
-                                    <div className="flex items-center justify-between text-foreground/90 mb-3">
-                                        <div className="space-y-0.5">
-                                            <span className="block text-[10px] font-black uppercase tracking-[0.2em] opacity-85 text-foreground">Pending Amount</span>
-                                            <span className="block text-[11px] font-semibold text-foreground/70">Released after content approval</span>
-                                        </div>
-                                        <div className="p-2 rounded-xl bg-secondary/12 backdrop-blur-md border border-border">
-                                            <Clock className="w-4 h-4 text-foreground" />
-                                        </div>
-                                    </div>
-                                    <div className="text-4xl font-black text-foreground mb-5 flex items-baseline gap-1 font-outfit">
-                                        <span className="text-2xl font-bold opacity-75">₹</span>
-                                        <AnimatedCounter value={brandDeals.reduce((sum, d) => sum + (d.status?.toLowerCase() !== 'completed' ? (d.deal_amount || 0) : 0), 0)} />
-                                    </div>
-                                    <div className="flex items-center gap-2.5 py-2 px-3.5 rounded-xl bg-black/10 backdrop-blur-md border border-border w-fit">
-                                        <div className="w-5 h-5 rounded-full bg-secondary/15 flex items-center justify-center border border-border">
-                                            <ShieldCheck className="w-3 h-3 text-foreground/90" />
-                                        </div>
-                                        <span className="text-[9px] font-black text-foreground tracking-[0.15em] uppercase">Creator Armour protection active</span>
-                                    </div>
-                                </div>
-                            </motion.div>
-
-                            {/* Secondary Stats Row */}
-                            <div className="grid grid-cols-2 gap-3 mb-6">
-                                <div className={cn("p-5 rounded-2xl border", cardBgColor, borderColor)}>
-                                    <p className={cn("text-[10px] font-bold uppercase tracking-widest opacity-50 mb-2", textColor)}>Paid This Month</p>
-                                    <div className="flex items-baseline gap-1 font-outfit">
-                                        <span className={cn("text-xl font-bold", isDark ? "text-primary" : "text-primary")}>₹</span>
-                                        <span className={cn("text-2xl font-black", isDark ? "text-primary" : "text-primary")}>{monthlyRevenue.toLocaleString()}</span>
-                                    </div>
-                                </div>
-                                <div className={cn("p-5 rounded-2xl border", cardBgColor, borderColor)}>
-                                    <p className={cn("text-[10px] font-bold uppercase tracking-widest opacity-50 mb-2", textColor)}>Total Earnings</p>
-                                    <div className="flex items-baseline gap-1 font-outfit">
-                                        <span className={cn("text-xl font-bold", textColor)}>₹</span>
-                                        <span className={cn("text-2xl font-black", textColor)}>{allTimeRevenue.toLocaleString()}</span>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Transaction List */}
-                            <div className="space-y-3">
-                                {brandDeals.length > 0 ? (
-                                    brandDeals.map((deal: any, idx: number) => (
-                                        (() => {
-                                            const payUx = getCreatorPaymentListUX(deal);
-                                            const badgeClass = payUx.tone === 'success'
-                                                ? (isDark ? "bg-primary/12 text-primary border-primary/20" : "bg-primary/10 text-primary border-primary/15")
-                                                : payUx.tone === 'warning'
-                                                    ? (isDark ? "bg-warning/14 text-warning border-warning/25" : "bg-warning/10 text-warning border-warning/15")
-                                                    : payUx.tone === 'neutral'
-                                                        ? (isDark ? "bg-secondary/50 text-foreground/80 border-border" : "bg-background/5 text-muted-foreground border-border")
-                                                        : (isDark ? "bg-info/14 text-info border-sky-400/25" : "bg-info/10 text-info border-sky-500/15");
-
-                                            return (
-                                                <motion.div
-                                                    key={idx}
-                                                    initial={{ opacity: 0, y: 10 }}
-                                                    animate={{ opacity: 1, y: 0 }}
-                                                    transition={{ delay: idx * 0.05 }}
-                                                    onClick={() => { triggerHaptic(); setSelectedPayment(deal); }}
-                                                    className={cn("p-5 rounded-2xl border flex items-center justify-between group active:scale-[0.98] transition-all cursor-pointer", cardBgColor, borderColor)}
-                                                >
-                                                    <div className="flex items-center gap-4">
-                                                        <div className={cn("w-10 h-10 rounded-xl border overflow-hidden flex items-center justify-center text-lg font-black", borderColor, isDark ? "bg-card" : "bg-background")}>
-                                                            {getBrandIcon(deal.brand_logo_url || deal.logo_url, deal.category, deal.brand_name)}
-                                                        </div>
-                                                        <div>
-                                                            <p className={cn("font-bold text-[15px]", textColor)}>{deal.brand_name || 'Brand Partner'}</p>
-                                                            <div className="mt-1 flex items-center gap-2 min-w-0">
-                                                                <span className={cn("inline-flex px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-widest border", badgeClass)}>
-                                                                    {payUx.label}
-                                                                </span>
-                                                                <span className={cn("text-[11px] font-semibold opacity-60 truncate", textColor)}>{payUx.sublabel}</span>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    <div className="flex items-center gap-2">
-                                                        <div className="text-right">
-                                                            <p className={cn("font-black text-[16px] font-outfit", textColor)}>₹{(deal.deal_amount || 0).toLocaleString()}</p>
-                                                        </div>
-                                                        <ChevronRight className={cn("w-4 h-4 opacity-30", textColor)} />
-                                                    </div>
-                                                </motion.div>
-                                            );
-                                        })()
-                                    ))
-                                ) : (
-                                    <div className="text-center py-12">
-                                        <div className="w-16 h-16 rounded-full bg-background/10 flex items-center justify-center mx-auto mb-4 border border-border">
-                                            <div className="w-16 h-16 rounded-full bg-emerald-500/10 flex items-center justify-center mx-auto mb-4 border border-emerald-200/40">
-                                              <svg className="w-8 h-8" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" fill="#16A34A" opacity="0.15"/><path d="M12 2C7.03 2 3 6.03 3 11c0 2.7 1.2 5.13 3.1 6.87L12 22l5.9-4.13A9.96 9.96 0 0021 11c0-4.97-4.03-9-9-9zm0 16H8v-2h4v2zm0-4H8v-2h4v2zm5-3h4v2h-4v-2zm-5-5a1 1 0 100-2 1 1 0 000 2z" fill="#16A34A" opacity="0.8"/></svg>
-                                            </div>
-                                        </div>
-                                        <h3 className={cn("text-[18px] font-black tracking-tight mb-2 font-outfit", textColor)}>Your earnings will appear here</h3>
-                                        <p className={cn("text-sm font-bold opacity-30", textColor)}>Complete your first brand deal to start earning</p>
-                                        <button
-                                            type="button"
-                                            onClick={() => {
-                                                triggerHaptic();
-                                                handleShareOnWhatsApp();
-                                            }}
-                                            className="mt-4 h-11 px-5 rounded-2xl bg-primary text-white font-black text-[13px] shadow-lg shadow-primary/20 active:scale-95 transition-all inline-flex items-center justify-center gap-2"
-                                        >
-                                            <MessageCircle className="w-4 h-4" />
-                                            Share link to get first offer
-                                        </button>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
+                        <PaymentsTab 
+                            isDark={isDark}
+                            textColor={textColor}
+                            profileFormData={profileFormData}
+                            setProfileFormData={setProfileFormData}
+                            handleSaveProfile={handleSaveProfile}
+                            isSavingProfile={isSavingProfile}
+                            profile={profile}
+                            brandDeals={brandDeals}
+                            getCreatorPaymentListUX={getCreatorPaymentListUX}
+                            getBrandIcon={getBrandIcon}
+                            triggerHaptic={triggerHaptic}
+                            setSelectedPayment={setSelectedPayment}
+                        />
                     )}
                 </div>
 
@@ -5751,34 +5049,38 @@ const MobileDashboardDemo = ({
                                                     "rounded-[22px] border overflow-hidden p-0",
                                                     isDark ? "bg-[#151922] border-[#293342]" : "bg-white border-[#E5E7EB]"
                                                 )}>
-                                                    <div className="relative">
-                                                        <div className="absolute inset-0">
+                                                    <div className="p-4">
+                                                        <div className={cn("w-full h-52 sm:h-64 rounded-[20px] overflow-hidden", isDark ? "bg-card" : "bg-slate-100")}>
                                                             {(() => {
                                                                 const src = resolveCreatorDealProductImage(selectedItem) || 'https://images.unsplash.com/photo-1524169358666-79f22534bc6b?auto=format&fit=crop&q=80&w=1200';
                                                                 return <img src={src} alt="" className="w-full h-full object-cover" loading="lazy" />;
                                                             })()}
-                                                            <div className={cn("absolute inset-0", isDark ? "bg-gradient-to-r from-black/45 via-black/20 to-black/40" : "bg-gradient-to-r from-white/20 via-transparent to-black/15")} />
                                                         </div>
-                                                        <div className="relative z-10 px-4 pt-4 pb-5 min-h-[252px] flex flex-col justify-between">
-                                                            <div className="flex justify-center pt-10">
+                                                        
+                                                        <div className="mt-5 space-y-5">
+                                                            <div className="flex items-center justify-between">
                                                                 <div className={cn(
-                                                                    "inline-flex items-center gap-2 px-4 py-2 rounded-full text-[11px] font-black uppercase tracking-[0.16em] border",
+                                                                    "inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-[0.12em] border shadow-sm",
                                                                     isDark ? "bg-emerald-500/12 text-emerald-300 border-emerald-400/20" : "bg-emerald-50 text-emerald-700 border-emerald-100"
                                                                 )}>
-                                                                    <ShieldCheck className="w-4 h-4" />
+                                                                    <ShieldCheck className="w-3.5 h-3.5" />
                                                                     Active Collaboration
+                                                                </div>
+                                                                <div className={cn("flex items-center gap-1.5 text-[12px] font-bold opacity-40", textColor)}>
+                                                                    <Package className="w-3.5 h-3.5" />
+                                                                    #{selectedItem.id?.slice(0, 8).toUpperCase()}
                                                                 </div>
                                                             </div>
 
-                                                            <div className="grid grid-cols-[1.08fr_auto] gap-3 items-end">
-                                                                <div>
-                                                                    <p className={cn("text-[48px] leading-none font-black tracking-tight", isDark ? "text-white" : "text-slate-900")}>
+                                                            <div className="flex items-end justify-between gap-4">
+                                                                <div className="min-w-0">
+                                                                    <p className={cn("text-[38px] leading-none font-black tracking-tight", textColor)}>
                                                                         {renderBudgetValue(selectedItem)}
                                                                     </p>
-                                                                    <p className={cn("text-[17px] font-semibold mt-1", isDark ? "text-white/75" : "text-slate-700")}>Offer</p>
+                                                                    <p className={cn("text-[14px] font-bold mt-1.5 opacity-40 uppercase tracking-widest", textColor)}>Campaign Reward</p>
                                                                 </div>
-                                                                <div className="pb-2">
-                                                                    <div className={cn("flex items-center gap-2 text-[14px] font-black", isDark ? "text-white" : "text-slate-900")}>
+                                                                <div className="text-right">
+                                                                    <div className={cn("text-[13px] font-black flex items-center justify-end gap-1.5 mb-2", textColor)}>
                                                                         {(() => {
                                                                             const raw = selectedItem.deliverables || selectedItem.raw?.deliverables;
                                                                             let items: string[] = ['1 Reel', '2 Stories'];
@@ -5789,7 +5091,7 @@ const MobileDashboardDemo = ({
                                                                                         if (typeof d === 'string') return d;
                                                                                         const ct = (d.contentType || d.type || '').toLowerCase();
                                                                                         const count = d.count || d.quantity || 1;
-                                                                                        let emoji = '📋', label = 'Content';
+                                                                                        let emoji = '', label = 'Content';
                                                                                         if (ct.includes('reel')) { emoji = '🎬'; label = 'Reel'; }
                                                                                         else if (ct.includes('story')) { emoji = '📱'; label = 'Stories'; }
                                                                                         else if (ct.includes('post')) { emoji = '🖼'; label = 'Post'; }
@@ -5800,14 +5102,14 @@ const MobileDashboardDemo = ({
                                                                             return items.map((d, i) => (
                                                                                 <React.Fragment key={i}>
                                                                                     <span>{d}</span>
-                                                                                    {i < items.length - 1 && <span className="opacity-45 px-1">•</span>}
+                                                                                    {i < items.length - 1 && <span className="opacity-20 px-0.5">•</span>}
                                                                                 </React.Fragment>
                                                                             ));
                                                                         })()}
                                                                     </div>
-                                                                    <div className="mt-3 flex items-center gap-2">
-                                                                        <ShieldCheck className={cn("w-4 h-4", isDark ? "text-emerald-300" : "text-emerald-500")} />
-                                                                        <p className={cn("text-[13px] font-bold", isDark ? "text-emerald-300" : "text-emerald-600")}>Payment secured after approval</p>
+                                                                    <div className="flex items-center justify-end gap-1.5">
+                                                                        <CheckCircle2 className={cn("w-3.5 h-3.5", isDark ? "text-emerald-300" : "text-emerald-500")} />
+                                                                        <p className={cn("text-[11px] font-bold", isDark ? "text-emerald-300" : "text-emerald-600")}>Payment Secured</p>
                                                                     </div>
                                                                 </div>
                                                             </div>
@@ -5817,134 +5119,7 @@ const MobileDashboardDemo = ({
                                             </div>
                                         )}
 
-                                        <div className="mb-6 grid grid-cols-2 gap-3">
-                                            <div className={cn("rounded-2xl border p-4 flex flex-col justify-center", cardBgColor, borderColor)}>
-                                                <p className={cn("text-[11px] font-black uppercase tracking-wider mb-2 opacity-50", textColor)}>What you'll deliver</p>
-                                                <div className="flex flex-col gap-2">
-                                                    <div className="rounded-2xl border px-3 py-3 flex items-center justify-center gap-2 text-[14px] font-black" >
-                                                        <span>🎬</span> 1 Instagram Reel
-                                                    </div>
-                                                    <div className="rounded-2xl border px-3 py-3 flex items-center justify-center gap-2 text-[14px] font-black">
-                                                        <span>📱</span> 2 Stories
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div className={cn("rounded-2xl border p-4 flex flex-col justify-center", cardBgColor, borderColor)}>
-                                                <p className={cn("text-[11px] font-black uppercase tracking-wider mb-2 opacity-50", textColor)}>Payment Method</p>
-                                                <div className="flex items-center gap-2.5">
-                                                    <div className="w-8 h-8 rounded-lg bg-info/10 flex items-center justify-center">
-                                                        <Landmark className="w-4 h-4 text-info" />
-                                                    </div>
-                                                    <span className={cn("text-[14px] font-black leading-tight", textColor)}>
-                                                        UPI<br />Payout
-                                                    </span>
-                                                </div>
-                                            </div>
-                                        </div>
 
-                                        <div className="mb-6">
-                                            <h4 className={cn("text-[13px] font-black uppercase tracking-wider mb-3 opacity-50", textColor)}>Usage Rights</h4>
-                                            <div className={cn("rounded-2xl border p-4 flex items-center gap-3", isDark ? "bg-emerald-500/10 border-emerald-500/20" : "bg-emerald-50 border-emerald-100")}>
-                                                <div className="w-12 h-12 rounded-full bg-emerald-500 flex items-center justify-center shrink-0">
-                                                    <LockIcon className="w-5 h-5 text-foreground" />
-                                                </div>
-                                                <div>
-                                                    <p className={cn("text-[14px] font-black leading-tight", textColor)}>Organic social media only</p>
-                                                    <p className={cn("text-[12px] font-semibold", secondaryTextColor)}>90 days limit</p>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <div className="mb-6 grid grid-cols-2 gap-3">
-                                            <div className={cn("rounded-2xl border p-4 flex flex-col justify-center", cardBgColor, borderColor)}>
-                                                <p className={cn("text-[11px] font-black uppercase tracking-wider mb-2 opacity-50", textColor)}>Payment Method</p>
-                                                <div className="flex items-center gap-2.5">
-                                                    <div className="w-8 h-8 rounded-lg bg-info/10 flex items-center justify-center">
-                                                        <Landmark className="w-4 h-4 text-info" />
-                                                    </div>
-                                                    <span className={cn("text-[14px] font-black leading-tight", textColor)}>
-                                                        UPI Payout
-                                                    </span>
-                                                </div>
-                                            </div>
-                                            <div className={cn("rounded-2xl border p-4 flex flex-col justify-center", cardBgColor, borderColor)}>
-                                                <p className={cn("text-[11px] font-black uppercase tracking-wider mb-2 opacity-50", textColor)}>Deadline</p>
-                                                <span className={cn("text-[14px] font-black leading-tight mb-2", textColor)}>
-                                                    12 Apr 2026
-                                                </span>
-                                                <span className={cn("text-[11px] font-black tracking-tight flex items-center mt-1 text-destructive")}>
-                                                    ⚡ Overdue
-                                                </span>
-                                            </div>
-                                        </div>
-
-                                        <div className="mb-6">
-                                            <h4 className={cn("text-[13px] font-black uppercase tracking-wider mb-3 opacity-50", textColor)}>Contract Details</h4>
-                                            <div className={cn("rounded-2xl border p-4", isDark ? "bg-amber-500/5 border-amber-500/20" : "bg-amber-50 border-amber-200")}>
-                                                <div className="flex items-start justify-between gap-3">
-                                                    <div>
-                                                        <p className={cn("text-[16px] font-black leading-tight", textColor)}>Contract details unavailable</p>
-                                                        <p className={cn("text-[12px] font-semibold mt-1", secondaryTextColor)}>The contract will appear here once the brand finalizes the setup.</p>
-                                                    </div>
-                                                    <span className="px-3 py-1.5 rounded-full text-[11px] font-black uppercase tracking-wider border bg-amber-500/10 text-amber-600 border-amber-200">
-                                                        Pending
-                                                    </span>
-                                                </div>
-                                                <div className={cn("mt-4 rounded-2xl border px-4 py-3", isDark ? "bg-card border-border" : "bg-white border-border")}>
-                                                    <p className={cn("text-[11px] font-black uppercase tracking-wider opacity-50 mb-1", textColor)}>Document</p>
-                                                    <p className={cn("text-[13px] font-bold break-all", textColor)}>Contract is being prepared</p>
-                                                </div>
-                                                <div className="grid grid-cols-2 gap-2.5 mt-4">
-                                                    <button type="button" className="w-full py-3 rounded-2xl border text-[14px] font-black transition-all active:scale-[0.98] bg-background text-info border-info/40">
-                                                        Open Contract
-                                                    </button>
-                                                    <button type="button" className="w-full py-3 rounded-2xl border text-[14px] font-black transition-all active:scale-[0.98] bg-background text-info border-info/40">
-                                                        Copy Deal Link
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <div className="mb-6">
-                                            <h4 className={cn("text-[13px] font-black uppercase tracking-wider mb-3 opacity-50", textColor)}>Legal Protection</h4>
-                                            <div className={cn("rounded-2xl border p-4", isDark ? "bg-emerald-500/5 border-emerald-500/20" : "bg-emerald-50 border-emerald-100")}>
-                                                <div className="flex items-center gap-3">
-                                                    <div className="w-10 h-10 rounded-full bg-emerald-500 flex items-center justify-center shrink-0">
-                                                        <ShieldCheck className="w-5 h-5 text-foreground" />
-                                                    </div>
-                                                    <div>
-                                                        <p className={cn("text-[14px] font-black leading-tight", isDark ? "text-emerald-300" : "text-emerald-700")}>Protected by Creator Armour</p>
-                                                        <p className={cn("text-[12px] font-semibold", isDark ? "text-emerald-300/80" : "text-emerald-700/80")}>Contract + rights + dispute support</p>
-                                                    </div>
-                                                </div>
-                                                <div className="mt-3 space-y-2">
-                                                    {['Contract auto-generated', 'Content rights secured', 'Dispute protection included'].map((label) => (
-                                                        <div key={label} className="flex items-center gap-2">
-                                                            <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-                                                            <span className={cn("text-[12px] font-bold", textColor)}>{label}</span>
-                                                        </div>
-                                                    ))}
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <div className="mb-6">
-                                            <h4 className={cn("text-[13px] font-black uppercase tracking-wider mb-3 opacity-50", textColor)}>Brand Information</h4>
-                                            <motion.div className={cn("rounded-[22px] border overflow-hidden", cardBgColor, borderColor)} layout>
-                                                <button type="button" onClick={() => { triggerHaptic(); setShowBrandDetails(v => !v); }} className="w-full flex items-center gap-3 px-4 py-3 active:opacity-70 transition-opacity">
-                                                    <div className="w-10 h-10 rounded-full flex items-center justify-center bg-violet-500 text-foreground shrink-0">
-                                                        {String((selectedItem.brand_name || 'D').charAt(0)).toUpperCase()}
-                                                    </div>
-                                                    <div className="flex-1 text-left min-w-0">
-                                                        <p className={cn("text-[14px] font-black leading-tight", textColor)}>{selectedItem.brand_name || 'Demo Brand Co'}</p>
-                                                        <p className={cn("text-[11px] mt-0.5", secondaryTextColor)}>Verified Brand</p>
-                                                    </div>
-                                                    <ChevronRight className={cn("w-4 h-4", secondaryTextColor)} />
-                                                </button>
-                                            </motion.div>
-                                        </div>
-
-                                        {/* existing progressive disclosure and remaining detail sections can stay below */}
                                         {/* ── BRAND DETAILS (Progressive Disclosure) ── */}
                                         <motion.div
                                             className={cn("rounded-xl border mb-5 overflow-hidden", cardBgColor, borderColor)}
@@ -6374,18 +5549,18 @@ const MobileDashboardDemo = ({
                                             <h4 className={cn("text-[13px] font-black uppercase tracking-wider mb-3 opacity-50", textColor)}>Legal Protection</h4>
                                             <div className={cn(
                                                 "rounded-2xl border p-4 relative overflow-hidden",
-                                                isDark ? "bg-primary/5 border-primary/20" : "bg-primary border-primary"
+                                                isDark ? "bg-primary/5 border-primary/20" : "bg-emerald-50 border-emerald-200"
                                             )}>
                                                 <div className="absolute inset-y-0 left-0 w-1.5 bg-primary rounded-r-full" />
                                                 <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/10 to-transparent pointer-events-none" />
 
                                                 <div className="flex items-center gap-3 relative">
                                                     <div className="w-9 h-9 rounded-xl bg-primary flex items-center justify-center shrink-0 shadow-[0_4px_15px_rgba(16,185,129,0.3)]">
-                                                        <ShieldCheck className="w-5 h-5 text-foreground" strokeWidth={2.5} />
+                                                        <ShieldCheck className="w-5 h-5 text-white" strokeWidth={2.5} />
                                                     </div>
                                                     <div className="flex-1 min-w-0">
-                                                        <p className={cn("font-black text-[14px] leading-tight", isDark ? "text-primary" : "text-primary")}>Protected by Creator Armour</p>
-                                                        <p className={cn("text-[11px] font-semibold mt-0.5", isDark ? "text-primary/70" : "text-primary/80")}>Contract + rights + dispute support</p>
+                                                        <p className={cn("font-black text-[14px] leading-tight", isDark ? "text-primary" : "text-emerald-700")}>Protected by Creator Armour</p>
+                                                        <p className={cn("text-[11px] font-semibold mt-0.5", isDark ? "text-primary/70" : "text-emerald-600")}>Contract + rights + dispute support</p>
                                                     </div>
                                                 </div>
 
@@ -6396,8 +5571,8 @@ const MobileDashboardDemo = ({
                                                         'Dispute protection included',
                                                     ].map((t) => (
                                                         <div key={t} className="flex items-center gap-2">
-                                                            <CheckCircle2 className="w-4 h-4 text-primary shrink-0" />
-                                                            <span className={cn("text-[12px] font-bold", isDark ? "text-primary/85" : "text-primary/90")}>{t}</span>
+                                                            <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+                                                            <span className={cn("text-[12px] font-bold", isDark ? "text-primary/85" : "text-emerald-700/90")}>{t}</span>
                                                         </div>
                                                     ))}
                                                 </div>
@@ -7202,21 +6377,21 @@ const MobileDashboardDemo = ({
                                 </div>
 
                                 {/* ── CONTRACT ── */}
-                                <div className={cn("rounded-2xl border p-4", isDark ? "bg-primary/5 border-primary/20" : "bg-primary border-primary")}>
+                                <div className={cn("rounded-2xl border p-4", isDark ? "bg-primary/5 border-primary/20" : "bg-emerald-50 border-emerald-200")}>
                                     <div className="flex items-center gap-2 mb-3">
                                         <div className="w-8 h-8 rounded-xl bg-primary flex items-center justify-center">
-                                            <ShieldCheck className="w-4 h-4 text-foreground" strokeWidth={2.5} />
+                                            <ShieldCheck className="w-4 h-4 text-white" strokeWidth={2.5} />
                                         </div>
                                         <div>
-                                            <p className={cn("text-[13px] font-black leading-tight", isDark ? "text-primary" : "text-primary")}>Creator Armour Protected</p>
-                                            <p className={cn("text-[11px] font-semibold", isDark ? "text-primary/60" : "text-primary/70")}>Content Rights Agreement</p>
+                                            <p className={cn("text-[13px] font-black leading-tight", isDark ? "text-primary" : "text-emerald-700")}>Creator Armour Protected</p>
+                                            <p className={cn("text-[11px] font-semibold", isDark ? "text-primary/60" : "text-emerald-600")}>Content Rights Agreement</p>
                                         </div>
                                     </div>
                                     <button type="button"
                                         onClick={() => { triggerHaptic(); import('sonner').then(m => m.toast('Contract download coming soon')); }}
                                         className={cn(
                                             "w-full py-2.5 rounded-xl text-[13px] font-black border flex items-center justify-center gap-2 active:scale-[0.98] transition-all",
-                                            isDark ? "bg-primary/10 border-primary/20 text-primary" : "bg-primary/10 border-primary/30 text-primary"
+                                            isDark ? "bg-primary/10 border-primary/20 text-primary" : "bg-white border-emerald-200 text-emerald-700 hover:bg-emerald-100/50"
                                         )}
                                     >
                                         <Download className="w-4 h-4" />
