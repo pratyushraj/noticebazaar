@@ -43,6 +43,7 @@ import { NotificationPermission } from '@/components/ui/NotificationPermission';
 import { ShimmerSkeleton } from '@/components/ui/ShimmerSkeleton';
 import confetti from 'canvas-confetti';
 import { uploadFile } from '@/lib/services/fileService';
+import type { PortfolioItem } from '@/types';
 
 interface MobileDashboardProps {
     profile?: any;
@@ -184,6 +185,86 @@ const resolveCreatorDealProductImage = (item: any) => {
 };
 
 const isPortfolioVideoUrl = (value: string) => /\.(mp4|mov|webm|m4v)(\?|#|$)/i.test(String(value || '').trim());
+
+const inferPortfolioPlatform = (value: string) => {
+    const href = String(value || '').trim().toLowerCase();
+    if (!href) return 'external';
+    if (isPortfolioVideoUrl(href)) return 'upload';
+    if (href.includes('instagram.com')) return 'instagram';
+    if (href.includes('youtube.com') || href.includes('youtu.be')) return 'youtube';
+    return 'external';
+};
+
+const normalizePortfolioItems = (rawItems: any, legacyLinks?: string[] | null): PortfolioItem[] => {
+    const normalizedFromItems = Array.isArray(rawItems)
+        ? rawItems
+            .map((item: any, index: number) => {
+                const sourceUrl = String(item?.sourceUrl || item?.url || item?.link || '').trim();
+                if (!sourceUrl) return null;
+                const mediaType = item?.mediaType === 'video' || isPortfolioVideoUrl(sourceUrl) ? 'video' : 'link';
+                return {
+                    id: String(item?.id || `portfolio-item-${index + 1}`),
+                    sourceUrl,
+                    posterUrl: String(item?.posterUrl || item?.thumbnailUrl || '').trim() || null,
+                    title: String(item?.title || '').trim() || null,
+                    mediaType,
+                    platform: String(item?.platform || inferPortfolioPlatform(sourceUrl)).trim() || null,
+                    brand: item?.brand,
+                    campaignType: item?.campaignType,
+                    outcome: item?.outcome,
+                    proofLabel: item?.proofLabel,
+                } satisfies PortfolioItem;
+            })
+            .filter(Boolean) as PortfolioItem[]
+        : [];
+
+    if (normalizedFromItems.length > 0) {
+        return normalizedFromItems.slice(0, 4);
+    }
+
+    return (Array.isArray(legacyLinks) ? legacyLinks : [])
+        .map((value, index) => {
+            const sourceUrl = String(value || '').trim();
+            if (!sourceUrl) return null;
+            const mediaType = isPortfolioVideoUrl(sourceUrl) ? 'video' : 'link';
+            return {
+                id: `portfolio-link-${index + 1}`,
+                sourceUrl,
+                posterUrl: null,
+                title: null,
+                mediaType,
+                platform: inferPortfolioPlatform(sourceUrl),
+            } satisfies PortfolioItem;
+        })
+        .filter(Boolean)
+        .slice(0, 4) as PortfolioItem[];
+};
+
+const buildPortfolioSlots = (rawItems: any, legacyLinks?: string[] | null): PortfolioItem[] => {
+    const items = Array.isArray(rawItems) && rawItems.length > 0
+        ? rawItems.map((item: any, index: number) => ({
+            id: String(item?.id || `portfolio-item-${index + 1}`),
+            sourceUrl: String(item?.sourceUrl || item?.url || item?.link || '').trim(),
+            posterUrl: String(item?.posterUrl || item?.thumbnailUrl || '').trim() || null,
+            title: String(item?.title || '').trim() || '',
+            mediaType: item?.mediaType || (isPortfolioVideoUrl(String(item?.sourceUrl || item?.url || item?.link || '')) ? 'video' : 'link'),
+            platform: item?.platform || inferPortfolioPlatform(String(item?.sourceUrl || item?.url || item?.link || '')),
+        }))
+        : normalizePortfolioItems([], legacyLinks);
+
+    const slots = items.slice(0, 4);
+    while (slots.length < 4) {
+        slots.push({
+            id: `portfolio-item-${slots.length + 1}`,
+            sourceUrl: '',
+            posterUrl: null,
+            title: '',
+            mediaType: 'link',
+            platform: 'external',
+        });
+    }
+    return slots;
+};
 
 const getCreatorDealCardUX = (deal: any) => {
     const rawStatus = normalizeDealStatus(deal);
@@ -477,6 +558,7 @@ const parseLocationParts = (location?: string | null) => {
 const buildProfileFormData = (profile: any, userEmail?: string | null) => {
     const fullName = `${profile?.first_name || ''} ${profile?.last_name || ''}`.trim() || profile?.full_name || '';
     const parsedLocation = parseLocationParts(profile?.location);
+    const portfolioItems = buildPortfolioSlots(profile?.portfolio_items || profile?.collab_past_work_items, profile?.portfolio_links);
     return {
         full_name: fullName,
         email: profile?.email || userEmail || '',
@@ -517,7 +599,8 @@ const buildProfileFormData = (profile: any, userEmail?: string | null) => {
         collab_response_behavior_note: profile?.collab_response_behavior_note || '',
         campaign_slot_note: profile?.campaign_slot_note || '',
         // NEW: Public Portfolio
-        portfolio_links: Array.isArray(profile?.portfolio_links) ? profile.portfolio_links : [],
+        portfolio_items: portfolioItems,
+        portfolio_links: portfolioItems.map((item) => item.sourceUrl || '').filter(Boolean),
         past_brands: Array.isArray(profile?.past_brands) ? profile.past_brands : [],
         // NEW: CTA & Social Customization
         collab_cta_trust_note: profile?.collab_cta_trust_note || '',
@@ -1511,6 +1594,7 @@ const MobileDashboardDemo = ({
             if (profileFormData.pincode) locParts.push(profileFormData.pincode.trim());
             const location = locParts.join(', ') || null;
 
+            const normalizedPortfolioItems = normalizePortfolioItems(profileFormData.portfolio_items, profileFormData.portfolio_links);
             const corePayload: Record<string, unknown> = {
                 first_name,
                 last_name,
@@ -1518,7 +1602,8 @@ const MobileDashboardDemo = ({
                 bio: profileFormData.bio || null,
                 location: location,
                 media_kit_url: profileFormData.media_kit_url || null,
-                portfolio_links: profileFormData.portfolio_links || [],
+                portfolio_links: normalizedPortfolioItems.map((item) => item.sourceUrl || '').filter(Boolean),
+                collab_past_work_items: normalizedPortfolioItems,
                 open_to_collabs: profileFormData.open_to_collabs,
                 avg_rate_reel: Number(profileFormData.avg_rate_reel) || null,
                 suggested_reel_rate: Number(profileFormData.avg_rate_reel) || null,
@@ -1626,6 +1711,39 @@ const MobileDashboardDemo = ({
         }
     };
 
+    const generateVideoPosterFile = async (file: File, slotIdx: number): Promise<File | null> => {
+        if (typeof document === 'undefined') return null;
+        const objectUrl = URL.createObjectURL(file);
+        try {
+            const video = document.createElement('video');
+            video.src = objectUrl;
+            video.muted = true;
+            video.playsInline = true;
+            video.preload = 'metadata';
+
+            await new Promise<void>((resolve, reject) => {
+                video.onloadeddata = () => resolve();
+                video.onerror = () => reject(new Error('Failed to load uploaded video for poster generation.'));
+            });
+
+            const canvas = document.createElement('canvas');
+            canvas.width = video.videoWidth || 720;
+            canvas.height = video.videoHeight || 1280;
+            const context = canvas.getContext('2d');
+            if (!context) return null;
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+            const blob = await new Promise<Blob | null>((resolve) => {
+                canvas.toBlob(resolve, 'image/jpeg', 0.82);
+            });
+            if (!blob) return null;
+
+            return new File([blob], `portfolio-poster-${slotIdx + 1}.jpg`, { type: 'image/jpeg' });
+        } finally {
+            URL.revokeObjectURL(objectUrl);
+        }
+    };
+
     const handlePortfolioVideoUpload = async (slotIdx: number, file: File) => {
         if (!session?.user?.id) return;
         setUploadingPortfolioSlot(slotIdx);
@@ -1636,12 +1754,42 @@ const MobileDashboardDemo = ({
                 fileName: `portfolio-video-${slotIdx + 1}`,
                 folder: 'portfolio-videos',
             });
+            const posterFile = await generateVideoPosterFile(file, slotIdx);
+            const posterResult = posterFile
+                ? await uploadFile(posterFile, {
+                    category: 'document',
+                    userId: session.user.id,
+                    fileName: `portfolio-poster-${slotIdx + 1}`,
+                    folder: 'portfolio-posters',
+                })
+                : null;
 
             setProfileFormData((prev: any) => {
-                const updated = [...(prev.portfolio_links || [])];
-                while (updated.length <= slotIdx) updated.push('');
-                updated[slotIdx] = result.url;
-                return { ...prev, portfolio_links: updated };
+                const updated = buildPortfolioSlots(prev.portfolio_items, prev.portfolio_links);
+                while (updated.length <= slotIdx) {
+                    updated.push({
+                        id: `portfolio-item-${updated.length + 1}`,
+                        sourceUrl: '',
+                        title: '',
+                        mediaType: 'link',
+                        platform: 'external',
+                    });
+                }
+                const existing = updated[slotIdx] || { id: `portfolio-item-${slotIdx + 1}` };
+                updated[slotIdx] = {
+                    ...existing,
+                    id: String(existing.id || `portfolio-item-${slotIdx + 1}`),
+                    sourceUrl: result.url,
+                    posterUrl: posterResult?.url || existing.posterUrl || null,
+                    title: existing.title || `Work Highlight ${slotIdx + 1}`,
+                    mediaType: 'video',
+                    platform: 'upload',
+                };
+                return {
+                    ...prev,
+                    portfolio_items: updated,
+                    portfolio_links: updated.map((item) => item.sourceUrl || '').filter(Boolean),
+                };
             });
             toast.success('Video uploaded. Tap Save All Changes to publish it.');
         } catch (error: any) {
@@ -2486,62 +2634,132 @@ const MobileDashboardDemo = ({
                                             <Clapperboard className="w-3.5 h-3.5 text-primary opacity-60" />
                                         </div>
                                         {[0, 1, 2, 3].map((slotIdx) => {
-                                            const currentLinks: string[] = profileFormData.portfolio_links || [];
-                                            const val = currentLinks[slotIdx] || '';
+                                            const portfolioItems: PortfolioItem[] = buildPortfolioSlots(profileFormData.portfolio_items, profileFormData.portfolio_links);
+                                            const item = portfolioItems[slotIdx] || {
+                                                id: `portfolio-item-${slotIdx + 1}`,
+                                                sourceUrl: '',
+                                                posterUrl: null,
+                                                title: '',
+                                                mediaType: 'link',
+                                                platform: 'external',
+                                            };
+                                            const val = item.sourceUrl || '';
+                                            const isVideo = item.mediaType === 'video' || isPortfolioVideoUrl(val);
+                                            const updatePortfolioItem = (patch: Partial<PortfolioItem>) => {
+                                                const updated = buildPortfolioSlots(profileFormData.portfolio_items, profileFormData.portfolio_links);
+                                                while (updated.length <= slotIdx) {
+                                                    updated.push({
+                                                        id: `portfolio-item-${updated.length + 1}`,
+                                                        sourceUrl: '',
+                                                        posterUrl: null,
+                                                        title: '',
+                                                        mediaType: 'link',
+                                                        platform: 'external',
+                                                    });
+                                                }
+                                                updated[slotIdx] = {
+                                                    ...updated[slotIdx],
+                                                    id: String(updated[slotIdx]?.id || `portfolio-item-${slotIdx + 1}`),
+                                                    ...patch,
+                                                };
+                                                setProfileFormData((p: any) => ({
+                                                    ...p,
+                                                    portfolio_items: updated,
+                                                    portfolio_links: updated.map((entry) => entry.sourceUrl || '').filter(Boolean),
+                                                }));
+                                            };
                                             return (
-                                                <div key={slotIdx} className="space-y-2">
-                                                    {val && isPortfolioVideoUrl(val) && (
-                                                        <div className={cn("overflow-hidden rounded-2xl border", isDark ? "border-border bg-[#0B0F14]" : "border-[#E5E7EB] bg-slate-50")}>
-                                                            <video
-                                                                src={val}
-                                                                className="w-full h-40 object-cover"
-                                                                muted
-                                                                playsInline
-                                                                loop
-                                                                autoPlay
-                                                            />
+                                                <div key={slotIdx} className={cn("space-y-3 rounded-[22px] border p-3.5", isDark ? "border-border bg-[#0B0F14]" : "border-[#E5E7EB] bg-slate-50/60")}>
+                                                    <div className="flex items-center justify-between gap-3">
+                                                        <div className="flex items-center gap-2">
+                                                            <div className={cn(
+                                                                "w-7 h-7 rounded-xl flex items-center justify-center text-[10px] font-black",
+                                                                val ? "bg-primary/15 text-primary" : (isDark ? "bg-white/5 text-white/30" : "bg-white text-slate-400 border border-slate-200")
+                                                            )}>{slotIdx + 1}</div>
+                                                            <div>
+                                                                <p className={cn("text-[11px] font-black uppercase tracking-wider", textColor)}>
+                                                                    {isVideo ? 'Uploaded video' : 'Link highlight'}
+                                                                </p>
+                                                                <p className={cn("text-[10px] opacity-50", textColor)}>
+                                                                    {val ? inferPortfolioPlatform(val) : 'Add a video or paste a public link'}
+                                                                </p>
+                                                            </div>
                                                         </div>
-                                                    )}
-                                                    <div className="relative">
-                                                        <div className={cn(
-                                                            "absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5 rounded-md flex items-center justify-center text-[9px] font-black shrink-0",
-                                                            val ? "bg-primary/15 text-primary" : (isDark ? "bg-white/5 text-white/20" : "bg-slate-100 text-slate-400")
-                                                        )}>{slotIdx + 1}</div>
-                                                        <input
-                                                            type="url"
-                                                            value={val}
-                                                            placeholder={`Reel/Short link or uploaded video URL #${slotIdx + 1}...`}
-                                                            onChange={(e) => {
-                                                                const updated = [...currentLinks];
-                                                                while (updated.length <= slotIdx) updated.push('');
-                                                                updated[slotIdx] = e.target.value;
-                                                                setProfileFormData((p: any) => ({ ...p, portfolio_links: updated }));
-                                                            }}
-                                                            className={cn(
-                                                                "w-full pl-10 pr-12 py-3 rounded-2xl border text-[13px] font-semibold outline-none transition-all",
-                                                                val ? (isDark ? "border-primary/40 bg-primary/5 text-foreground" : "border-emerald-300 bg-emerald-50/50 text-black") : (isDark ? "bg-[#0B0F14] border-border text-foreground focus:border-primary/40" : "bg-[#F9FAFB] border-[#E5E7EB] text-black focus:border-emerald-400 focus:bg-white")
-                                                            )}
-                                                        />
                                                         {val && (
                                                             <button
                                                                 type="button"
-                                                                onClick={() => {
-                                                                    const updated = [...currentLinks];
-                                                                    updated[slotIdx] = '';
-                                                                    setProfileFormData((p: any) => ({ ...p, portfolio_links: updated }));
-                                                                }}
-                                                                className="absolute right-3.5 top-1/2 -translate-y-1/2"
+                                                                onClick={() => updatePortfolioItem({ sourceUrl: '', posterUrl: null, title: '', mediaType: 'link', platform: 'external' })}
+                                                                className="rounded-full p-1"
                                                             >
                                                                 <X className="w-3.5 h-3.5 text-slate-400" />
                                                             </button>
                                                         )}
                                                     </div>
-                                                    <div className="flex items-center gap-2 px-1">
+
+                                                    {(item.posterUrl || (val && isVideo)) && (
+                                                        <div className={cn("overflow-hidden rounded-2xl border", isDark ? "border-border bg-[#0B0F14]" : "border-[#E5E7EB] bg-slate-50")}>
+                                                            {item.posterUrl ? (
+                                                                <img
+                                                                    src={item.posterUrl}
+                                                                    alt={item.title || `Portfolio item ${slotIdx + 1}`}
+                                                                    className="w-full h-40 object-cover"
+                                                                />
+                                                            ) : (
+                                                                <video
+                                                                    src={val}
+                                                                    className="w-full h-40 object-cover"
+                                                                    muted
+                                                                    playsInline
+                                                                    loop
+                                                                    autoPlay
+                                                                />
+                                                            )}
+                                                        </div>
+                                                    )}
+                                                    <input
+                                                        type="text"
+                                                        value={item.title || ''}
+                                                        placeholder={`Title for highlight #${slotIdx + 1}`}
+                                                        onChange={(e) => updatePortfolioItem({ title: e.target.value })}
+                                                        className={cn(
+                                                            "w-full px-4 py-3 rounded-2xl border text-[13px] font-semibold outline-none transition-all",
+                                                            isDark ? "bg-card border-border text-foreground focus:border-primary/50" : "bg-white border-[#E5E7EB] text-black focus:border-emerald-400"
+                                                        )}
+                                                    />
+                                                    <div className="relative">
+                                                        <input
+                                                            type="url"
+                                                            value={val}
+                                                            placeholder={`Reel/Short link or uploaded video URL #${slotIdx + 1}`}
+                                                            onChange={(e) => {
+                                                                const nextValue = e.target.value;
+                                                                updatePortfolioItem({
+                                                                    sourceUrl: nextValue,
+                                                                    mediaType: isPortfolioVideoUrl(nextValue) ? 'video' : 'link',
+                                                                    platform: inferPortfolioPlatform(nextValue),
+                                                                });
+                                                            }}
+                                                            className={cn(
+                                                                "w-full px-4 pr-12 py-3 rounded-2xl border text-[13px] font-semibold outline-none transition-all",
+                                                                val ? (isDark ? "border-primary/40 bg-primary/5 text-foreground" : "border-emerald-300 bg-emerald-50/50 text-black") : (isDark ? "bg-[#0B0F14] border-border text-foreground focus:border-primary/40" : "bg-[#F9FAFB] border-[#E5E7EB] text-black focus:border-emerald-400 focus:bg-white")
+                                                            )}
+                                                        />
+                                                        {val && !isVideo && (
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => window.open(val.startsWith('http') ? val : `https://${val}`, '_blank', 'noopener,noreferrer')}
+                                                                className="absolute right-3.5 top-1/2 -translate-y-1/2"
+                                                            >
+                                                                <ExternalLink className="w-3.5 h-3.5 text-slate-400" />
+                                                            </button>
+                                                        )}
+                                                    </div>
+                                                    <div className="flex flex-wrap items-center gap-2 px-1">
                                                         <label className={cn(
                                                             "inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-[10px] font-black uppercase tracking-wider cursor-pointer transition-all",
-                                                            isDark ? "border-border bg-[#0B0F14] text-foreground hover:border-primary/40" : "border-[#E5E7EB] bg-white text-slate-700 hover:border-emerald-300"
+                                                            isDark ? "border-border bg-card text-foreground hover:border-primary/40" : "border-[#E5E7EB] bg-white text-slate-700 hover:border-emerald-300"
                                                         )}>
-                                                            {uploadingPortfolioSlot === slotIdx ? 'Uploading…' : 'Upload video'}
+                                                            {uploadingPortfolioSlot === slotIdx ? 'Uploading…' : (isVideo ? 'Replace video' : 'Upload video')}
                                                             <input
                                                                 type="file"
                                                                 accept="video/mp4,video/quicktime,video/webm,video/x-m4v"
@@ -2554,12 +2772,14 @@ const MobileDashboardDemo = ({
                                                                 }}
                                                             />
                                                         </label>
-                                                        <p className={cn("text-[10px] opacity-50", textColor)}>Upload is preferred. Links still work.</p>
+                                                        <span className={cn("text-[10px] opacity-50", textColor)}>
+                                                            Upload is preferred. Links still work as fallback.
+                                                        </span>
                                                     </div>
                                                 </div>
                                             );
                                         })}
-                                        <p className={cn("text-[10px] opacity-40 px-1", textColor)}>Links auto-save when you tap "Save All Changes" below</p>
+                                        <p className={cn("text-[10px] opacity-40 px-1", textColor)}>Videos store a poster image automatically. Changes publish when you tap "Save All Changes".</p>
                                     </div>
 
                                     {/* Media Kit (Option 3) */}

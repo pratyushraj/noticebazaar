@@ -23,6 +23,7 @@ import { VerificationBadge } from '@/components/ui/VerificationBadge';
 import { useUpdateProfile } from '@/lib/hooks/useProfiles';
 import { useSignOut } from '@/lib/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
+import type { PortfolioItem } from '@/types';
 
 // Generic JSON-LD injector for page-specific schema markup
 const JsonLdSchema = ({ schema, schemaKey }: { schema: any; schemaKey: string }) => {
@@ -97,13 +98,8 @@ interface Creator {
   collab_show_trust_signals?: boolean | null;
   collab_show_audience_snapshot?: boolean | null;
   collab_show_past_work?: boolean | null;
-  collab_past_work_items?: Array<{
-    id: string;
-    brand: string;
-    campaignType: string;
-    outcome: string;
-    proofLabel?: string | null;
-  }> | null;
+  collab_past_work_items?: PortfolioItem[] | null;
+  portfolio_items?: PortfolioItem[] | null;
   performance_proof?: {
     median_reel_views?: number | null;
     avg_likes?: number | null;
@@ -272,6 +268,57 @@ const getInstagramEmbedUrl = (href: string) => {
 };
 
 const isPortfolioVideoUrl = (value: string) => /\.(mp4|mov|webm|m4v)(\?|#|$)/i.test(String(value || '').trim());
+
+const inferPortfolioPlatform = (value: string) => {
+  const href = String(value || '').trim().toLowerCase();
+  if (!href) return 'external';
+  if (isPortfolioVideoUrl(href)) return 'upload';
+  if (href.includes('instagram.com')) return 'instagram';
+  if (href.includes('youtube.com') || href.includes('youtu.be')) return 'youtube';
+  return 'external';
+};
+
+const normalizePortfolioItems = (rawItems: any, legacyLinks?: string[] | null): PortfolioItem[] => {
+  const normalizedFromItems = Array.isArray(rawItems)
+    ? rawItems
+      .map((item: any, index: number) => {
+        const sourceUrl = String(item?.sourceUrl || item?.url || item?.link || '').trim();
+        if (!sourceUrl) return null;
+        const mediaType = item?.mediaType === 'video' || isPortfolioVideoUrl(sourceUrl) ? 'video' : 'link';
+        return {
+          id: String(item?.id || `portfolio-item-${index + 1}`),
+          sourceUrl,
+          posterUrl: String(item?.posterUrl || item?.thumbnailUrl || '').trim() || null,
+          title: String(item?.title || '').trim() || null,
+          mediaType,
+          platform: String(item?.platform || inferPortfolioPlatform(sourceUrl)).trim() || null,
+          brand: item?.brand,
+          campaignType: item?.campaignType,
+          outcome: item?.outcome,
+          proofLabel: item?.proofLabel,
+        } satisfies PortfolioItem;
+      })
+      .filter(Boolean) as PortfolioItem[]
+    : [];
+
+  if (normalizedFromItems.length > 0) return normalizedFromItems.slice(0, 4);
+
+  return (Array.isArray(legacyLinks) ? legacyLinks : [])
+    .map((value, index) => {
+      const sourceUrl = String(value || '').trim();
+      if (!sourceUrl) return null;
+      return {
+        id: `portfolio-link-${index + 1}`,
+        sourceUrl,
+        posterUrl: null,
+        title: null,
+        mediaType: isPortfolioVideoUrl(sourceUrl) ? 'video' : 'link',
+        platform: inferPortfolioPlatform(sourceUrl),
+      } satisfies PortfolioItem;
+    })
+    .filter(Boolean)
+    .slice(0, 4) as PortfolioItem[];
+};
 
 const PRODUCT_CATEGORY_OPTIONS = [
   { value: 'fashion', label: '👗 Fashion & Clothing' },
@@ -2035,6 +2082,7 @@ const CollabLinkLanding = () => {
 
   const dealTemplates = localDealTemplates;
   const selectedTemplate = dealTemplates.find((template) => template.id === selectedTemplateId) || null;
+  const portfolioItems = normalizePortfolioItems(creator.portfolio_items || creator.collab_past_work_items, creator.portfolio_links);
   const pastWorkItems = Array.isArray(creator.collab_past_work_items)
     ? creator.collab_past_work_items
       .map((item, index) => ({
@@ -2931,19 +2979,19 @@ const CollabLinkLanding = () => {
                     Past Work <span className="text-slate-400 font-black">(social proof)</span>
                   </h3>
                 </div>
-                {creator.portfolio_links && creator.portfolio_links.filter((l) => l && l.trim()).length > 0 && (
+                {portfolioItems.length > 0 && (
                   <div className="mb-4">
                     <p className="mb-3 text-[11px] font-black uppercase tracking-[0.12em] text-slate-500">Work Highlights</p>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      {creator.portfolio_links.filter((l) => l && l.trim()).slice(0, 4).map((link, idx) => {
-                        const href = link.startsWith('http') ? link : `https://${link}`;
-                        const isVideoUpload = isPortfolioVideoUrl(href);
+                      {portfolioItems.map((item, idx) => {
+                        const href = String(item.sourceUrl || '').startsWith('http') ? String(item.sourceUrl || '') : `https://${String(item.sourceUrl || '')}`;
+                        const isVideoUpload = item.mediaType === 'video' || isPortfolioVideoUrl(href);
                         const isInsta = href.includes('instagram.com');
                         const isYT = href.includes('youtube.com') || href.includes('youtu.be');
                         const isReel = href.includes('instagram.com/reels') || href.includes('instagram.com/reel');
                         const isShort = href.includes('youtube.com/shorts');
                         const isPost = href.includes('instagram.com/p/');
-                        const label = isVideoUpload ? 'Uploaded Video' : isReel ? 'Instagram Reel' : isShort ? 'YouTube Short' : isPost ? 'Instagram Post' : isYT ? 'YouTube' : isInsta ? 'Instagram' : 'Work Link';
+                        const label = item.title || (isVideoUpload ? 'Uploaded Video' : isReel ? 'Instagram Reel' : isShort ? 'YouTube Short' : isPost ? 'Instagram Post' : isYT ? 'YouTube' : isInsta ? 'Instagram' : 'Work Link');
                         const instagramEmbedUrl = isInsta ? getInstagramEmbedUrl(href) : '';
                         const youtubeEmbedUrl = isYT ? getYoutubeEmbedUrl(href) : '';
                         const embedUrl = isVideoUpload ? '' : (instagramEmbedUrl || youtubeEmbedUrl);
@@ -2973,6 +3021,7 @@ const CollabLinkLanding = () => {
                               <div className="bg-black">
                                 <video
                                   src={href}
+                                  poster={item.posterUrl || undefined}
                                   className="h-[360px] md:h-[420px] w-full object-cover"
                                   muted
                                   autoPlay
@@ -3258,9 +3307,9 @@ const CollabLinkLanding = () => {
 	                )}
 
                   {/* NEW: Public Portfolio & Media Kit */}
-                  {(!editMode && ((creator.portfolio_links && creator.portfolio_links.length > 0) || (creator as any).media_kit_url)) && (
+                  {(!editMode && (portfolioItems.length > 0 || (creator as any).media_kit_url)) && (
                     <div className="mt-8 pt-6 border-t border-slate-200 space-y-6">
-                      {creator.portfolio_links && creator.portfolio_links.length > 0 && (
+                      {portfolioItems.length > 0 && (
                         <div className="space-y-4">
                           <h3 className="text-[13px] font-black uppercase tracking-[0.1em] text-slate-500 mb-4 flex items-center justify-between">
                             <span className="flex items-center gap-2">
@@ -3270,7 +3319,8 @@ const CollabLinkLanding = () => {
                             <span className="text-[10px] font-bold bg-emerald-50 text-emerald-600 px-2 py-0.5 rounded-full uppercase tracking-widest">Featured</span>
                           </h3>
                           <div className="grid grid-cols-2 gap-3">
-                            {creator.portfolio_links.filter(l => l && l.trim()).slice(0, 4).map((link, idx) => {
+                            {portfolioItems.map((item, idx) => {
+                              const link = String(item.sourceUrl || '');
                               const isInsta = link.includes('instagram.com');
                               const isYT = link.includes('youtube.com') || link.includes('youtu.be');
                               const isReel = link.includes('instagram.com/reels') || link.includes('instagram.com/reel');

@@ -7,6 +7,7 @@ import { useMemo, useCallback } from 'react';
 import { useGenerateTaxFilings } from './useTaxFilings'; // NEW: Import the new hook
 import { logger } from '@/lib/utils/logger';
 import { getApiBaseUrl } from '@/lib/utils/api';
+import type { PortfolioItem } from '@/types';
 
 const unsupportedProfileColumns = new Set<string>();
 
@@ -320,13 +321,7 @@ interface UpdateProfileVariables {
   collab_show_trust_signals?: boolean | null;
   collab_show_audience_snapshot?: boolean | null;
   collab_show_past_work?: boolean | null;
-  collab_past_work_items?: Array<{
-    id: string;
-    brand: string;
-    campaignType: string;
-    outcome: string;
-    proofLabel?: string | null;
-  }> | null;
+  collab_past_work_items?: PortfolioItem[] | null;
   auto_pricing_enabled?: boolean | null;
   deal_templates?: any[] | null;
   reel_price?: number | null;
@@ -346,6 +341,7 @@ interface UpdateProfileVariables {
   testimonials?: string[] | null;
   case_studies?: string[] | null;
   portfolio_links?: string[] | null;
+  portfolio_items?: PortfolioItem[] | null;
   upi_id?: string | null;
   takes_advance?: boolean | null;
   completed_deals?: number | null;
@@ -557,13 +553,7 @@ export const useUpdateProfile = () => {
         collab_cta_trust_note?: string | null;
         collab_cta_dm_note?: string | null;
         collab_cta_platform_note?: string | null;
-        collab_past_work_items?: Array<{
-          id: string;
-          brand: string;
-          campaignType: string;
-          outcome: string;
-          proofLabel?: string | null;
-        }> | null;
+        collab_past_work_items?: PortfolioItem[] | null;
         auto_pricing_enabled?: boolean | null;
         deal_templates?: any[] | null;
         reel_price?: number | null;
@@ -583,6 +573,7 @@ export const useUpdateProfile = () => {
         testimonials?: string[] | null;
         case_studies?: string[] | null;
         portfolio_links?: string[] | null;
+        portfolio_items?: PortfolioItem[] | null;
         upi_id?: string | null;
         takes_advance?: boolean | null;
         completed_deals?: number | null;

@@ -2,6 +2,19 @@
 import { Tables } from './supabase';
 import { LucideIcon } from 'lucide-react'; // Import LucideIcon for CreatorKpi
 
+export interface PortfolioItem {
+  id: string;
+  sourceUrl?: string | null;
+  posterUrl?: string | null;
+  title?: string | null;
+  mediaType?: 'video' | 'link' | null;
+  platform?: string | null;
+  brand?: string;
+  campaignType?: string;
+  outcome?: string;
+  proofLabel?: string | null;
+}
+
 // Deal Template for creator collaboration packages
 export interface DealTemplate {
   id: string;
@@ -107,13 +120,7 @@ export type Profile = Tables<'profiles'> & {
   collab_show_trust_signals?: boolean | null;
   collab_show_audience_snapshot?: boolean | null;
   collab_show_past_work?: boolean | null;
-  collab_past_work_items?: Array<{
-    id: string;
-    brand: string;
-    campaignType: string;
-    outcome: string;
-    proofLabel?: string | null;
-  }> | null;
+  collab_past_work_items?: PortfolioItem[] | null;
   // NEW: Qualification & Deal Rules
   min_deal_value?: number | null;
   min_lead_time_days?: number | null;
@@ -131,6 +138,7 @@ export type Profile = Tables<'profiles'> & {
   testimonials?: string[] | null;
   case_studies?: string[] | null;
   portfolio_links?: string[] | null;
+  portfolio_items?: PortfolioItem[] | null;
   upi_id?: string | null;
   takes_advance?: boolean | null;
   completed_deals?: number | null;
