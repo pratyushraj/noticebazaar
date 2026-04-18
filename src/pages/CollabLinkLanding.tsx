@@ -238,6 +238,39 @@ const DELIVERABLE_OPTIONS = [
   { label: 'Custom', value: 'Custom', icon: <Target className="h-3.5 w-3.5 text-slate-400 inline-block" /> },
 ];
 
+const getYoutubeEmbedUrl = (href: string) => {
+  try {
+    const url = new URL(href);
+    if (url.hostname.includes('youtu.be')) {
+      const id = url.pathname.replace('/', '').trim();
+      return id ? `https://www.youtube.com/embed/${id}` : '';
+    }
+    if (url.hostname.includes('youtube.com')) {
+      const shortsMatch = url.pathname.match(/\/shorts\/([^/?]+)/i);
+      if (shortsMatch?.[1]) return `https://www.youtube.com/embed/${shortsMatch[1]}`;
+      const id = url.searchParams.get('v');
+      return id ? `https://www.youtube.com/embed/${id}` : '';
+    }
+  } catch {
+    return '';
+  }
+  return '';
+};
+
+const getInstagramEmbedUrl = (href: string) => {
+  try {
+    const url = new URL(href);
+    if (!url.hostname.includes('instagram.com')) return '';
+    const cleanedPath = url.pathname.replace(/\/+$/, '');
+    if (/\/(reel|reels|p)\//i.test(cleanedPath)) {
+      return `https://www.instagram.com${cleanedPath}/embed`;
+    }
+  } catch {
+    return '';
+  }
+  return '';
+};
+
 const PRODUCT_CATEGORY_OPTIONS = [
   { value: 'fashion', label: '👗 Fashion & Clothing' },
   { value: 'beauty', label: '💄 Beauty & Skincare' },
@@ -2899,7 +2932,7 @@ const CollabLinkLanding = () => {
                 {creator.portfolio_links && creator.portfolio_links.filter((l) => l && l.trim()).length > 0 && (
                   <div className="mb-4">
                     <p className="mb-3 text-[11px] font-black uppercase tracking-[0.12em] text-slate-500">Work Highlights</p>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       {creator.portfolio_links.filter((l) => l && l.trim()).slice(0, 4).map((link, idx) => {
                         const href = link.startsWith('http') ? link : `https://${link}`;
                         const isInsta = href.includes('instagram.com');
@@ -2908,29 +2941,68 @@ const CollabLinkLanding = () => {
                         const isShort = href.includes('youtube.com/shorts');
                         const isPost = href.includes('instagram.com/p/');
                         const label = isReel ? 'Instagram Reel' : isShort ? 'YouTube Short' : isPost ? 'Instagram Post' : isYT ? 'YouTube' : isInsta ? 'Instagram' : 'Work Link';
+                        const instagramEmbedUrl = isInsta ? getInstagramEmbedUrl(href) : '';
+                        const youtubeEmbedUrl = isYT ? getYoutubeEmbedUrl(href) : '';
+                        const embedUrl = instagramEmbedUrl || youtubeEmbedUrl;
                         return (
-                          <a
+                          <div
                             key={`${href}-${idx}`}
-                            href={href}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-3 py-3 hover:border-emerald-300 hover:bg-emerald-50/40 transition-all"
+                            className="overflow-hidden rounded-[22px] border border-slate-200 bg-slate-50 shadow-[0_10px_24px_rgba(15,23,42,0.05)]"
                           >
-                            <div className="w-10 h-10 rounded-2xl bg-white border border-slate-200 flex items-center justify-center shrink-0">
-                              {isInsta ? (
-                                <Instagram className="w-4 h-4 text-pink-600" />
-                              ) : isYT ? (
-                                <Youtube className="w-4 h-4 text-red-600" />
-                              ) : (
-                                <ExternalLink className="w-4 h-4 text-slate-500" />
-                              )}
+                            <div className="flex items-center justify-between gap-3 border-b border-slate-200 bg-white px-3 py-2.5">
+                              <div className="flex items-center gap-2 min-w-0">
+                                <div className="w-9 h-9 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-center shrink-0">
+                                  {isInsta ? (
+                                    <Instagram className="w-4 h-4 text-pink-600" />
+                                  ) : isYT ? (
+                                    <Youtube className="w-4 h-4 text-red-600" />
+                                  ) : (
+                                    <ExternalLink className="w-4 h-4 text-slate-500" />
+                                  )}
+                                </div>
+                                <div className="min-w-0">
+                                  <p className="text-[12px] font-black text-slate-900 uppercase tracking-[0.06em]">{label}</p>
+                                  <p className="text-[11px] font-semibold text-slate-500 truncate">Highlight #{idx + 1}</p>
+                                </div>
+                              </div>
+                              <a
+                                href={href}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-white px-2.5 py-1 text-[10px] font-black uppercase tracking-wider text-slate-600 hover:border-emerald-300 hover:text-emerald-700"
+                              >
+                                Open
+                                <ArrowRight className="w-3.5 h-3.5" />
+                              </a>
                             </div>
-                            <div className="min-w-0 flex-1">
-                              <p className="text-[12px] font-black text-slate-900 uppercase tracking-[0.06em]">{label}</p>
-                              <p className="text-[11px] font-semibold text-slate-500 truncate">Highlight #{idx + 1}</p>
-                            </div>
-                            <ArrowRight className="w-4 h-4 text-slate-400 shrink-0" />
-                          </a>
+                            {embedUrl ? (
+                              <div className="bg-white">
+                                <iframe
+                                  src={embedUrl}
+                                  title={`${label} ${idx + 1}`}
+                                  className="h-[360px] md:h-[420px] w-full"
+                                  loading="lazy"
+                                  allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
+                                  allowFullScreen
+                                />
+                              </div>
+                            ) : (
+                              <a
+                                href={href}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex h-[220px] items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100 text-slate-500 hover:text-slate-700"
+                              >
+                                <div className="text-center px-4">
+                                  <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-2xl border border-slate-200 bg-white">
+                                    <ExternalLink className="w-5 h-5" />
+                                  </div>
+                                  <p className="text-[12px] font-black uppercase tracking-[0.06em] text-slate-800">{label}</p>
+                                  <p className="mt-1 text-[11px] font-semibold text-slate-500">Tap to open this work sample</p>
+                                </div>
+                              </a>
+                            )}
+                          </div>
                         );
                       })}
                     </div>
