@@ -2133,7 +2133,7 @@ const MobileDashboardDemo = ({
                 );
             case 'collab-link':
                 return (
-                    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="pb-20">
+                    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="pb-20 touch-pan-y">
                         <PageHeader 
                             title="Collab Page Setup" 
                             subtitle="Optimize your profile to get more deals" 
@@ -2412,7 +2412,7 @@ const MobileDashboardDemo = ({
                             <div>
                                 <p className={cn("text-[11px] font-black uppercase tracking-widest opacity-60 mb-3 px-1", textColor)}>4. Earnings & Packages</p>
                                 <div className="space-y-4">
-                                    <div className={cn("rounded-[28px] border overflow-hidden", isDark ? "bg-card border-border shadow-2xl shadow-black/20" : "bg-white border-[#E5E7EB] shadow-sm")}>
+                                    <div className={cn("rounded-[28px] border", isDark ? "bg-card border-border shadow-2xl shadow-black/20" : "bg-white border-[#E5E7EB] shadow-sm")}>
                                         <div className="p-5 bg-primary/5">
                                             <div className="flex items-center justify-between mb-3">
                                                 <p className={cn("text-[10px] font-black uppercase tracking-widest opacity-60", textColor)}>Baseline Reel Rate</p>
@@ -2434,7 +2434,7 @@ const MobileDashboardDemo = ({
                                         </div>
                                     </div>
                                     
-                                    <div className={cn("rounded-[28px] border overflow-hidden", isDark ? "bg-card border-border shadow-2xl shadow-black/20" : "bg-white border-[#E5E7EB] shadow-sm")}>
+                                    <div className={cn("rounded-[28px] border", isDark ? "bg-card border-border shadow-2xl shadow-black/20" : "bg-white border-[#E5E7EB] shadow-sm")}>
                                         <div className="p-0">
                                             <FiverrPackageEditor
                                                 templates={profileFormData.deal_templates || []}
@@ -4614,7 +4614,7 @@ const MobileDashboardDemo = ({
                                         initial={{ opacity: 0, x: 20 }}
                                         animate={{ opacity: 1, x: 0 }}
                                         exit={{ opacity: 0, x: 20 }}
-                                        className="w-full"
+                                        className="w-full touch-pan-y"
                                     >
                                         {renderSettingsPage()}
                                     </motion.div>
