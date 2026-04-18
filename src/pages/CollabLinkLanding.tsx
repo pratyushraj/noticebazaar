@@ -3100,38 +3100,42 @@ const CollabLinkLanding = () => {
                             </span>
                             <span className="text-[10px] font-bold bg-emerald-50 text-emerald-600 px-2 py-0.5 rounded-full uppercase tracking-widest">Featured</span>
                           </h3>
-                          <div className="grid grid-cols-1 gap-3">
-                            {creator.portfolio_links.map((link, idx) => (
-                              <a
-                                key={idx}
-                                href={link.startsWith('http') ? link : `https://${link}`}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="flex items-center gap-4 p-4 rounded-2xl border border-slate-200 bg-white hover:border-emerald-200 hover:shadow-lg hover:shadow-emerald-500/5 transition-all group relative overflow-hidden"
-                              >
-                                <div className="absolute top-0 right-0 w-16 h-16 bg-gradient-to-br from-emerald-50/50 to-transparent rounded-bl-full pointer-events-none" />
-                                <div className="w-12 h-12 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center shrink-0 shadow-sm group-hover:scale-105 transition-transform">
-                                  {link.includes('instagram.com') ? (
-                                    <Instagram className="w-6 h-6 text-pink-600" /> 
-                                  ) : link.includes('youtube.com') || link.includes('youtu.be') ? (
-                                    <Youtube className="w-6 h-6 text-red-600" />
-                                  ) : (
-                                    <ExternalLink className="w-6 h-6 text-slate-400" />
-                                  )}
-                                </div>
-                                <div className="min-w-0 flex-1">
-                                  <p className="text-[14px] font-black text-slate-800 leading-tight mb-0.5 truncate uppercase tracking-tight">
-                                    {link.includes('instagram.com/reels') ? 'View Reel' : 
-                                     link.includes('instagram.com/p') ? 'View Post' : 
-                                     link.includes('youtube.com/shorts') ? 'View Short' : 'View Work'}
-                                  </p>
-                                  <p className="text-[11px] font-bold text-slate-400 truncate opacity-80">
-                                    {link.replace(/^https?:\/\/(www\.)?/, '').replace(/\/$/, '')}
-                                  </p>
-                                </div>
-                                <ChevronRight className="w-5 h-5 text-slate-300 group-hover:text-emerald-500 transition-colors" />
-                              </a>
-                            ))}
+                          <div className="grid grid-cols-2 gap-3">
+                            {creator.portfolio_links.filter(l => l && l.trim()).slice(0, 4).map((link, idx) => {
+                              const isInsta = link.includes('instagram.com');
+                              const isYT = link.includes('youtube.com') || link.includes('youtu.be');
+                              const isReel = link.includes('instagram.com/reels') || link.includes('instagram.com/reel');
+                              const isShort = link.includes('youtube.com/shorts');
+                              const isPost = link.includes('instagram.com/p/');
+                              const label = isReel ? 'Instagram Reel' : isShort ? 'YouTube Short' : isPost ? 'IG Post' : isYT ? 'YouTube' : isInsta ? 'Instagram' : 'View Work';
+                              const href = link.startsWith('http') ? link : `https://${link}`;
+                              return (
+                                <a
+                                  key={idx}
+                                  href={href}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="flex flex-col items-center justify-center gap-2.5 p-4 rounded-2xl border border-slate-200 bg-white hover:border-emerald-300 hover:shadow-xl hover:shadow-emerald-500/8 transition-all group text-center"
+                                >
+                                  <div className={`w-11 h-11 rounded-2xl flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform ${isInsta ? 'bg-gradient-to-br from-pink-50 to-purple-50 border border-pink-100' : isYT ? 'bg-red-50 border border-red-100' : 'bg-slate-50 border border-slate-100'}`}>
+                                    {isInsta ? (
+                                      <Instagram className="w-5 h-5 text-pink-600" />
+                                    ) : isYT ? (
+                                      <Youtube className="w-5 h-5 text-red-600" />
+                                    ) : (
+                                      <ExternalLink className="w-5 h-5 text-slate-400" />
+                                    )}
+                                  </div>
+                                  <div>
+                                    <p className="text-[11px] font-black text-slate-800 leading-tight uppercase tracking-tight">{label}</p>
+                                    <p className="text-[10px] font-bold text-slate-400 mt-0.5">#{idx + 1} · Tap to view</p>
+                                  </div>
+                                  <div className="w-full py-1.5 rounded-xl bg-slate-50 border border-slate-100 text-[10px] font-black uppercase tracking-wider text-slate-500 group-hover:bg-emerald-50 group-hover:border-emerald-200 group-hover:text-emerald-700 transition-colors">
+                                    Watch ↗
+                                  </div>
+                                </a>
+                              );
+                            })}
                           </div>
                         </div>
                       )}

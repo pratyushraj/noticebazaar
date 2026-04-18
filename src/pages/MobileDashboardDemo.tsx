@@ -2450,43 +2450,54 @@ const MobileDashboardDemo = ({
                             <div>
                                 <p className={cn("text-[11px] font-black uppercase tracking-widest opacity-60 mb-3 px-1", textColor)}>5. Past Partnerships</p>
                                 <div className={cn("rounded-[28px] border p-5 space-y-7", isDark ? "bg-card border-border shadow-2xl shadow-black/20" : "bg-white border-[#E5E7EB] shadow-sm")}>
-                                    {/* Portfolio Links (Option 1) */}
-                                    <div className="space-y-4">
+                                    {/* Portfolio Links — 4 fixed slots */}
+                                    <div className="space-y-3">
                                         <div className="flex items-center justify-between px-1">
-                                            <p className={cn("text-[10px] font-black uppercase tracking-wider opacity-50", textColor)}>Work Highlights (Best Reels/Videos)</p>
+                                            <p className={cn("text-[10px] font-black uppercase tracking-wider opacity-50", textColor)}>Work Highlights (Up to 4 Reels/Videos)</p>
                                             <Clapperboard className="w-3.5 h-3.5 text-primary opacity-60" />
                                         </div>
-                                        <div className="space-y-2">
-                                            {(profileFormData.portfolio_links || []).map((link: string, idx: number) => (
-                                                <div key={idx} className={cn("flex items-center justify-between p-3 rounded-2xl border", isDark ? "bg-white/5 border-white/5" : "bg-slate-50 border-slate-100")}>
-                                                    <div className="flex items-center gap-3 min-w-0">
-                                                        <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-                                                            <Link2 className="w-4 h-4 text-primary" />
-                                                        </div>
-                                                        <p className={cn("text-[12px] font-bold truncate pr-12", textColor)}>{link}</p>
-                                                    </div>
-                                                    <X className="w-4 h-4 text-slate-400 cursor-pointer" onClick={() => {
-                                                        const nl = [...profileFormData.portfolio_links]; nl.splice(idx, 1);
-                                                        setProfileFormData({ ...profileFormData, portfolio_links: nl });
-                                                    }} />
+                                        {[0, 1, 2, 3].map((slotIdx) => {
+                                            const currentLinks: string[] = profileFormData.portfolio_links || [];
+                                            const val = currentLinks[slotIdx] || '';
+                                            return (
+                                                <div key={slotIdx} className="relative">
+                                                    <div className={cn(
+                                                        "absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5 rounded-md flex items-center justify-center text-[9px] font-black shrink-0",
+                                                        val ? "bg-primary/15 text-primary" : (isDark ? "bg-white/5 text-white/20" : "bg-slate-100 text-slate-400")
+                                                    )}>{slotIdx + 1}</div>
+                                                    <input
+                                                        type="url"
+                                                        value={val}
+                                                        placeholder={`Reel/Short link #${slotIdx + 1}...`}
+                                                        onChange={(e) => {
+                                                            const updated = [...currentLinks];
+                                                            // extend array if needed
+                                                            while (updated.length <= slotIdx) updated.push('');
+                                                            updated[slotIdx] = e.target.value;
+                                                            setProfileFormData((p: any) => ({ ...p, portfolio_links: updated }));
+                                                        }}
+                                                        className={cn(
+                                                            "w-full pl-10 pr-4 py-3 rounded-2xl border text-[13px] font-semibold outline-none transition-all",
+                                                            val ? (isDark ? "border-primary/40 bg-primary/5 text-foreground" : "border-emerald-300 bg-emerald-50/50 text-black") : (isDark ? "bg-[#0B0F14] border-border text-foreground focus:border-primary/40" : "bg-[#F9FAFB] border-[#E5E7EB] text-black focus:border-emerald-400 focus:bg-white")
+                                                        )}
+                                                    />
+                                                    {val && (
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => {
+                                                                const updated = [...currentLinks];
+                                                                updated[slotIdx] = '';
+                                                                setProfileFormData((p: any) => ({ ...p, portfolio_links: updated }));
+                                                            }}
+                                                            className="absolute right-3.5 top-1/2 -translate-y-1/2"
+                                                        >
+                                                            <X className="w-3.5 h-3.5 text-slate-400" />
+                                                        </button>
+                                                    )}
                                                 </div>
-                                            ))}
-                                        </div>
-                                        <input
-                                            type="url"
-                                            placeholder="Paste Instagram/YouTube link & Enter..."
-                                            className={cn("w-full px-4 py-3.5 rounded-2xl border text-[13px] font-semibold outline-none transition-all", isDark ? "bg-[#0B0F14] border-border text-foreground focus:border-primary/50" : "bg-[#F9FAFB] border-[#E5E7EB] text-black focus:border-emerald-400 focus:bg-white")}
-                                            onKeyDown={(e) => {
-                                                if (e.key === 'Enter') {
-                                                    const target = e.target as HTMLInputElement;
-                                                    if (target.value.trim()) {
-                                                        triggerHaptic();
-                                                        setProfileFormData({ ...profileFormData, portfolio_links: [...(profileFormData.portfolio_links || []), target.value.trim()] });
-                                                        target.value = '';
-                                                    }
-                                                }
-                                            }}
-                                        />
+                                            );
+                                        })}
+                                        <p className={cn("text-[10px] opacity-40 px-1", textColor)}>Links auto-save when you tap "Save All Changes" below</p>
                                     </div>
 
                                     {/* Media Kit (Option 3) */}
