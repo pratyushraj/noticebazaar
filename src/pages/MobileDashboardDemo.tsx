@@ -2165,17 +2165,17 @@ const MobileDashboardDemo = ({
                                     </div>
                                     <div className="flex-1 min-w-0">
                                         <p className={cn("text-[13px] font-black truncate opacity-50 uppercase tracking-widest", textColor)}>Public Link</p>
-                                        <p className={cn("text-[14px] font-black truncate", textColor)}>noticebazaar.com/{username}</p>
+                                        <p className={cn("text-[14px] font-black truncate", textColor)}>creatorarmour.com/{username}</p>
                                     </div>
                                     <div className="flex gap-2">
                                         <button type="button"
-                                            onClick={() => { triggerHaptic(); window.open(`${window.location.origin}/${username}`, '_blank'); }}
+                                            onClick={() => { triggerHaptic(); window.open(`https://creatorarmour.com/${username}`, '_blank'); }}
                                             className={cn("p-2.5 rounded-xl border transition-all active:scale-95", isDark ? "bg-white/5 border-white/10 text-white" : "bg-white border-slate-200 text-slate-700 shadow-sm")}
                                         >
                                             <ExternalLink className="w-4 h-4" />
                                         </button>
                                         <button type="button"
-                                            onClick={() => { navigator.clipboard.writeText(`${window.location.origin}/${username}`); toast.success('Link copied!'); triggerHaptic(); }}
+                                            onClick={() => { navigator.clipboard.writeText(`creatorarmour.com/${username}`); toast.success('Link copied!'); triggerHaptic(); }}
                                             className={cn("px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-wider shrink-0 transition-all active:scale-95 shadow-lg", isDark ? "bg-primary text-white shadow-primary/20" : "bg-emerald-600 text-white shadow-emerald-500/30")}
                                         >
                                             Copy
