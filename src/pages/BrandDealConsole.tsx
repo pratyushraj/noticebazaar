@@ -52,7 +52,7 @@ const STAGES: { id: Stage; label: string; description: string }[] = [
     { id: 'PROPOSAL', label: 'Proposal', description: 'Reviewing initial brief' },
     { id: 'INTAKE', label: 'Deal Lock', description: 'Mutual commitment layer' },
     { id: 'SIGNING', label: 'Signing', description: 'Contract legally binding' },
-    { id: 'ESCROW', label: 'Security', description: 'Payment protection active' },
+    { id: 'ESCROW', label: 'Security', description: 'Payment validation phase' },
     { id: 'EXECUTING', label: 'Execution', description: 'Content production phase' },
     { id: 'VESTED', label: 'Vested', description: 'Campaign closed' }
 ];
@@ -803,7 +803,7 @@ const BrandDealConsole = () => {
                                 </h4>
                                 <div className="space-y-4">
                                     <div className="flex items-center justify-between">
-                                        <span className="text-sm text-muted-foreground">Escrow Protection</span>
+                                        <span className="text-sm text-muted-foreground">Secure Payouts</span>
                                         <span className="text-[10px] font-bold text-primary bg-primary/10 px-1.5 py-0.5 rounded border border-primary/20 uppercase">Enabled</span>
                                     </div>
                                     <div className="flex items-center justify-between">

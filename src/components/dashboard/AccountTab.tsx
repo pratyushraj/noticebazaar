@@ -1,8 +1,9 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { 
-    ShieldCheck, ChevronRight, Link2, Landmark, TrendingUp, 
-    Bell, User, Briefcase, Sun, Moon, LogOut 
+    ShieldCheck, ChevronRight, Link2, Landmark, 
+    Bell, User, Sun, Moon, LogOut, CheckCircle2,
+    ExternalLink
 } from 'lucide-react';
 import { cn } from '../../lib/utils';
 
@@ -22,8 +23,6 @@ interface AccountTabProps {
 
 export const AccountTab: React.FC<AccountTabProps> = ({
     isDark,
-    textColor,
-    secondaryTextColor,
     profile,
     username,
     avatarUrl,
@@ -36,89 +35,235 @@ export const AccountTab: React.FC<AccountTabProps> = ({
     return (
         <motion.div 
             key="settings-main" 
-            initial={{ opacity: 0 }} 
-            animate={{ opacity: 1 }} 
+            initial={{ opacity: 0, y: 10 }} 
+            animate={{ opacity: 1, y: 0 }} 
             exit={{ opacity: 0, x: -20 }} 
-            className="w-full"
+            className={cn(
+                "w-full min-h-screen px-5 pt-12 pb-32 relative overflow-hidden",
+                isDark ? "bg-gradient-to-b from-[#031B1A] to-[#020617]" : "bg-slate-50"
+            )}
         >
-            {/* ── HEADER ── */}
-            <div className="px-5 pt-14 pb-6">
-                <h1 className={cn("text-[30px] font-black tracking-tight", isDark ? "text-white" : "text-[#111827]")}>Account</h1>
+            {/* Radial Glow (Dark Mode Only) */}
+            {isDark && (
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-64 h-64 bg-emerald-500/5 blur-[100px] pointer-events-none" />
+            )}
+
+            {/* Header */}
+            <div className="mb-8 relative z-10">
+                <h1 className={cn("text-3xl font-black tracking-tight", isDark ? "text-white" : "text-slate-900")}>Account</h1>
+                <p className={cn("text-sm font-medium", isDark ? "text-slate-400" : "text-slate-500")}>Manage your professional identity</p>
             </div>
 
-            <div className="space-y-4 pb-32">
-
-                {/* ── PROFILE CARD ── */}
-                <div className="px-5">
-                    <button type="button" onClick={() => { triggerHaptic(); setActiveSettingsPage('personal'); }}
-                        className={cn("w-full p-4 rounded-2xl border flex items-center gap-4 active:scale-[0.98] transition-all", isDark ? "bg-card border-border" : "bg-white border-[#E5E7EB] shadow-sm")}>
-                        <img src={avatarUrl} alt="avatar" className="w-14 h-14 rounded-full object-cover shrink-0"
-                            onError={(e) => { (e.currentTarget as HTMLImageElement).onerror = null; (e.currentTarget as HTMLImageElement).src = avatarFallbackUrl; }} />
-                        <div className="flex-1 text-left min-w-0">
-                            <div className="flex items-center gap-1.5">
-                                <span className={cn("text-[17px] font-black tracking-tight", isDark ? "text-white" : "text-[#111827]")}>{profile?.first_name || username || 'Creator'}</span>
-                                <ShieldCheck className="w-4 h-4 text-blue-500" />
-                            </div>
-                            <p className={cn("text-[13px] mt-0.5 opacity-50", textColor)}>@{username || 'creator'} · Tap to edit profile</p>
+            {/* Profile Hero Card */}
+            <motion.div 
+                whileTap={{ scale: 0.98 }}
+                onClick={() => { triggerHaptic(); setActiveSettingsPage('personal'); }}
+                className={cn(
+                    "p-5 rounded-[2rem] border mb-10 flex flex-col gap-6 cursor-pointer group transition-all duration-300 relative z-10",
+                    isDark ? "bg-[#0B1324] border-white/5 shadow-2xl" : "bg-white border-slate-200 shadow-xl shadow-slate-200/40"
+                )}
+            >
+                <div className="flex items-center gap-4">
+                    <div className="relative">
+                        <img 
+                            src={avatarUrl} 
+                            alt="avatar" 
+                            className={cn(
+                                "w-14 h-14 rounded-full object-cover ring-2",
+                                isDark ? "ring-white/10" : "ring-green-100 shadow-sm"
+                            )}
+                            onError={(e) => { (e.currentTarget as HTMLImageElement).onerror = null; (e.currentTarget as HTMLImageElement).src = avatarFallbackUrl; }} 
+                        />
+                        {/* Status Dot */}
+                        <div className="absolute right-0 bottom-0.5 w-3.5 h-3.5 bg-green-500 rounded-full border-2 border-[#0B1324]" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-0.5">
+                            <h2 className={cn("text-lg font-bold tracking-tight", isDark ? "text-white" : "text-slate-900")}>
+                                {profile?.first_name || username || 'Creator'}
+                            </h2>
+                            <span className={cn(
+                                "px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border",
+                                isDark ? "bg-blue-500/10 text-blue-400 border-blue-500/20" : "bg-blue-50 text-blue-600 border-blue-100"
+                            )}>Verified</span>
                         </div>
-                        <ChevronRight className={cn("w-4 h-4 opacity-30 shrink-0", textColor)} />
-                    </button>
+                        <p className={cn("text-sm font-medium", isDark ? "text-slate-400" : "text-slate-500")}>@{username || 'creator'}</p>
+                    </div>
+                    <ChevronRight className={cn("w-5 h-5 transition-transform group-hover:translate-x-1", isDark ? "text-white/20" : "text-slate-300")} />
                 </div>
 
-                {/* ── 2×2 QUICK TILES ── */}
-                <div className="px-5">
-                    <p className={cn("text-[11px] font-black uppercase tracking-widest mb-3 px-0.5 opacity-40", textColor)}>Quick Settings</p>
-                    <div className="grid grid-cols-2 gap-3">
-                        {[
-                            { icon: <Link2 className="w-5 h-5" />, label: 'Collab Page', sub: 'Packages & links', iconBg: isDark ? 'bg-emerald-500/15 text-emerald-400' : 'bg-emerald-50 text-emerald-600', onClick: () => setActiveSettingsPage('collab-link') },
-                            { icon: <Landmark className="w-5 h-5" />, label: 'Payments', sub: 'Bank & UPI', iconBg: isDark ? 'bg-violet-500/15 text-violet-400' : 'bg-violet-50 text-violet-600', onClick: () => { setActiveTab('payments'); triggerHaptic(); } },
-                            { icon: <Bell className="w-5 h-5" />, label: 'Alerts', sub: isPushSubscribed ? 'Enabled' : 'Push notifications', iconBg: isDark ? 'bg-amber-500/15 text-amber-400' : 'bg-amber-50 text-amber-600', onClick: () => setActiveSettingsPage('notifications') },
-                            { icon: <User className="w-5 h-5" />, label: 'Identity', sub: 'Personal info', iconBg: isDark ? 'bg-sky-500/15 text-sky-400' : 'bg-sky-50 text-sky-600', onClick: () => setActiveSettingsPage('personal') },
-                        ].map((t, idx) => (
-                            <button key={idx} type="button"
-                                onClick={t.onClick}
-                                className={cn("flex flex-col items-start gap-3 p-4 rounded-2xl border text-left active:scale-[0.97] transition-all", isDark ? "bg-card border-border" : "bg-white border-[#E5E7EB] shadow-sm")}>
-                                <div className={cn("w-9 h-9 rounded-xl flex items-center justify-center", t.iconBg)}>{t.icon}</div>
-                                <div>
-                                    <p className={cn("text-[14px] font-black leading-tight", textColor)}>{t.label}</p>
-                                    <p className={cn("text-[11px] mt-0.5 opacity-45", textColor)}>{t.sub}</p>
-                                </div>
-                            </button>
-                        ))}
+                <div className={cn("h-[1px] w-full", isDark ? "bg-white/10" : "bg-slate-100")} />
+
+                <div className="flex items-center justify-between px-2">
+                    <div className="text-center">
+                        <p className={cn("text-xl font-bold", isDark ? "text-white" : "text-slate-900")}>307M</p>
+                        <p className={cn("text-[10px] font-bold uppercase tracking-widest", isDark ? "text-slate-400" : "text-slate-500")}>Followers</p>
+                    </div>
+                    <div className={cn("w-[1px] h-8", isDark ? "bg-white/10" : "bg-slate-100")} />
+                    <div className="text-center">
+                        <p className={cn("text-xl font-bold", isDark ? "text-white" : "text-slate-900")}>3h</p>
+                        <p className={cn("text-[10px] font-bold uppercase tracking-widest", isDark ? "text-slate-400" : "text-slate-500")}>Response</p>
                     </div>
                 </div>
+            </motion.div>
 
-                {/* ── MORE LIST ── */}
-                <div className="px-5">
-                    <p className={cn("text-[11px] font-black uppercase tracking-widest mb-3 px-0.5 opacity-40", textColor)}>Preferences</p>
-                    <div className={cn("rounded-2xl border overflow-hidden", isDark ? "bg-card border-border" : "bg-white border-[#E5E7EB] shadow-sm")}>
-                        {[
-                            { icon: <ShieldCheck className="w-4 h-4" />, iconBg: isDark ? 'bg-emerald-500/15 text-emerald-400' : 'bg-emerald-50 text-emerald-600', label: 'Armour Verification', sub: 'Identity secured', page: 'verification' },
-                            { icon: isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />, iconBg: isDark ? 'bg-slate-500/15 text-slate-400' : 'bg-slate-100 text-slate-600', label: 'Visual Theme', sub: isDark ? 'Dark Mode' : 'Light Mode', page: 'dark-mode' },
-                        ].map((row, i, arr) => (
-                            <button key={row.page} type="button"
-                                onClick={() => { triggerHaptic(); setActiveSettingsPage(row.page); }}
-                                className={cn("w-full flex items-center gap-3 px-4 py-3.5 active:opacity-60 transition-opacity", i < arr.length - 1 ? (isDark ? "border-b border-border" : "border-b border-[#F3F4F6]") : "")}>
-                                <div className={cn("w-8 h-8 rounded-xl flex items-center justify-center shrink-0", row.iconBg)}>{row.icon}</div>
-                                <div className="flex-1 text-left min-w-0">
-                                    <p className={cn("text-[14px] font-bold leading-tight", textColor)}>{row.label}</p>
-                                    <p className={cn("text-[11px] opacity-40 mt-0.5", textColor)}>{row.sub}</p>
-                                </div>
-                                <ChevronRight className={cn("w-4 h-4 opacity-25 shrink-0", textColor)} />
-                            </button>
-                        ))}
-                    </div>
+            {/* Business Priority Section */}
+            <div className="mb-10 relative z-10">
+                <h4 className={cn("text-xs font-bold uppercase tracking-[0.2em] mb-4 px-1", isDark ? "text-slate-400" : "text-slate-400")}>Business Identity</h4>
+                <div className="grid grid-cols-2 gap-3">
+                    {[
+                        { 
+                            id: 'collab-link', 
+                            icon: <Link2 className="w-5 h-5" />, 
+                            label: 'Collab Page', 
+                            status: 'Live', 
+                            accent: isDark ? 'text-green-400' : 'text-emerald-600',
+                            onClick: () => setActiveSettingsPage('collab-link')
+                        },
+                        { 
+                            id: 'payments', 
+                            icon: <Landmark className="w-5 h-5" />, 
+                            label: 'Payments', 
+                            status: 'UPI Linked', 
+                            accent: isDark ? 'text-blue-400' : 'text-blue-600',
+                            onClick: () => { setActiveTab('payments'); triggerHaptic(); }
+                        },
+                        { 
+                            id: 'personal', 
+                            icon: <User className="w-5 h-5" />, 
+                            label: 'Identity', 
+                            status: 'Verified', 
+                            accent: isDark ? 'text-purple-400' : 'text-purple-600',
+                            onClick: () => setActiveSettingsPage('personal')
+                        },
+                        { 
+                            id: 'notifications', 
+                            icon: <Bell className="w-5 h-5" />, 
+                            label: 'Alerts', 
+                            status: isPushSubscribed ? 'On' : 'Off', 
+                            accent: isPushSubscribed ? (isDark ? 'text-orange-400' : 'text-orange-600') : 'text-slate-500',
+                            onClick: () => setActiveSettingsPage('notifications')
+                        },
+                    ].map((item) => (
+                        <motion.button 
+                            key={item.id}
+                            whileTap={{ scale: 0.98 }}
+                            onClick={item.onClick}
+                            className={cn(
+                                "p-4 rounded-3xl border text-left flex flex-col gap-4 transition-all duration-200",
+                                isDark 
+                                    ? "bg-[#0B1324] border-white/5 hover:bg-white/5" 
+                                    : "bg-white border-slate-200 shadow-sm hover:bg-slate-50"
+                            )}
+                        >
+                            <div className={cn(
+                                "w-10 h-10 rounded-2xl flex items-center justify-center shadow-sm",
+                                isDark ? "bg-white/5" : "bg-slate-50",
+                                item.accent
+                            )}>
+                                {item.icon}
+                            </div>
+                            <div>
+                                <p className={cn("text-[15px] font-bold", isDark ? "text-white" : "text-slate-900")}>{item.label}</p>
+                                <p className={cn("text-[11px] font-bold uppercase tracking-wider mt-1", item.accent)}>
+                                    {item.status}
+                                </p>
+                            </div>
+                        </motion.button>
+                    ))}
                 </div>
+            </div>
 
-                {/* ── LOGOUT ── */}
-                <div className="px-5 pt-2">
-                    <button type="button" onClick={() => { triggerHaptic(); setActiveSettingsPage('logout'); }}
-                        className={cn("w-full py-4 rounded-2xl border font-bold text-[15px] flex items-center justify-center gap-2 active:scale-[0.98] transition-all", isDark ? "bg-card border-border text-destructive" : "bg-white border-[#E5E7EB] text-destructive shadow-sm")}>
-                        <LogOut className="w-4 h-4" />
-                        Log Out
+            {/* Preferences */}
+            <div className="mb-12 relative z-10">
+                <h4 className={cn("text-xs font-bold uppercase tracking-[0.2em] mb-4 px-1", isDark ? "text-slate-400" : "text-slate-400")}>System & Privacy</h4>
+                <div className={cn(
+                    "rounded-[2rem] border overflow-hidden",
+                    isDark ? "bg-[#0B1324] border-white/5 divide-y divide-white/10" : "bg-white border-slate-200 shadow-sm divide-y divide-slate-100"
+                )}>
+                    <button 
+                        onClick={() => { triggerHaptic(); setActiveSettingsPage('verification'); }}
+                        className="w-full p-5 flex items-center justify-between active:bg-white/5 transition-all"
+                    >
+                        <div className="flex items-center gap-4">
+                            <div className={cn(
+                                "w-10 h-10 rounded-2xl flex items-center justify-center",
+                                isDark ? "bg-white/5 text-slate-300" : "bg-slate-50 text-slate-600"
+                            )}>
+                                <ShieldCheck className="w-5 h-5" />
+                            </div>
+                            <div className="text-left">
+                                <p className={cn("text-[15px] font-bold", isDark ? "text-white" : "text-slate-900")}>Armour Verification</p>
+                                <span className={cn(
+                                    "px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border",
+                                    isDark ? "bg-green-500/10 text-green-400 border-green-500/10" : "bg-emerald-50 text-emerald-600 border-green-100"
+                                )}>Protected</span>
+                            </div>
+                        </div>
+                        <ChevronRight className={cn("w-5 h-5", isDark ? "text-white/20" : "text-slate-300")} />
+                    </button>
+
+                    <button 
+                        onClick={() => { triggerHaptic(); setActiveSettingsPage('dark-mode'); }}
+                        className="w-full p-5 flex items-center justify-between active:bg-white/5 transition-all"
+                    >
+                        <div className="flex items-center gap-4">
+                            <div className={cn(
+                                "w-10 h-10 rounded-2xl flex items-center justify-center",
+                                isDark ? "bg-white/5 text-slate-300" : "bg-slate-50 text-slate-600"
+                            )}>
+                                {isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+                            </div>
+                            <div className="text-left">
+                                <p className={cn("text-[15px] font-bold", isDark ? "text-white" : "text-slate-900")}>Visual Theme</p>
+                                <p className={cn("text-xs font-medium", isDark ? "text-slate-400" : "text-slate-400")}>{isDark ? 'Dark Mode' : 'Light Mode'}</p>
+                            </div>
+                        </div>
+                        {/* Custom ToggleSwitch Style Switch */}
+                        <div className={cn(
+                            "w-10 h-6 rounded-full relative transition-all duration-300 p-1 flex items-center",
+                            isDark ? "bg-blue-500 shadow-inner" : "bg-slate-200"
+                        )}>
+                            <motion.div 
+                                animate={{ x: isDark ? 16 : 0 }}
+                                className="w-4 h-4 bg-white rounded-full shadow-md"
+                            />
+                        </div>
+                    </button>
+                    
+                    <button 
+                        onClick={() => { triggerHaptic(); setActiveSettingsPage('personal'); }}
+                        className="w-full p-5 flex items-center justify-between active:bg-white/5 transition-all"
+                    >
+                        <div className="flex items-center gap-4">
+                            <div className={cn(
+                                "w-10 h-10 rounded-2xl flex items-center justify-center",
+                                isDark ? "bg-white/5 text-slate-300" : "bg-slate-50 text-slate-600"
+                            )}>
+                                <ExternalLink className="w-5 h-5" />
+                            </div>
+                            <div className="text-left">
+                                <p className={cn("text-[15px] font-bold", isDark ? "text-white" : "text-slate-900")}>Privacy Policy</p>
+                                <p className={cn("text-xs font-medium", isDark ? "text-slate-400" : "text-slate-400")}>Terms & Data</p>
+                            </div>
+                        </div>
+                        <ChevronRight className={cn("w-5 h-5", isDark ? "text-white/20" : "text-slate-300")} />
                     </button>
                 </div>
+            </div>
 
+            {/* Logout */}
+            <div className="flex justify-center relative z-10">
+                <button 
+                    onClick={() => { triggerHaptic(); setActiveSettingsPage('logout'); }}
+                    className={cn(
+                        "flex items-center gap-2 font-bold text-sm active:scale-95 transition-all py-4 px-8 rounded-full",
+                        isDark ? "text-red-400 bg-red-500/5 hover:bg-red-500/10" : "text-red-500 bg-red-50 hover:bg-red-100"
+                    )}
+                >
+                    <LogOut className="w-4 h-4" />
+                    Sign Out Account
+                </button>
             </div>
         </motion.div>
     );

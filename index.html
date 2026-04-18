@@ -142,31 +142,7 @@
     }
     </script>
 
-  <!-- Google tag (gtag.js) - Google Analytics -->
-  <script>
-    (function () {
-      const hostname = window.location.hostname || '';
-      const userAgent = navigator.userAgent || '';
-      const isLocal = hostname === 'localhost' || hostname === '127.0.0.1';
-      const isAutomated =
-        navigator.webdriver === true ||
-        /HeadlessChrome|Playwright|Puppeteer/i.test(userAgent);
-
-      if (isLocal || isAutomated) {
-        return;
-      }
-
-      window.dataLayer = window.dataLayer || [];
-      function gtag() { dataLayer.push(arguments); }
-      window.gtag = gtag;
-      gtag('js', new Date());
-      const script = document.createElement('script');
-      script.async = true;
-      script.src = 'https://www.googletagmanager.com/gtag/js?id=G-PYTGVWEEVP';
-      document.head.appendChild(script);
-      try { gtag('config', 'G-PYTGVWEEVP'); } catch (e) { console.warn('GA failed', e); }
-    })();
-  </script>
+  <!-- Removed invalid Google Analytics tag (gtag.js) -->
 
   <!-- Lazy Load Calendly -->
   <script type="text/javascript">

@@ -76,3 +76,4 @@ RENDER_ENV_VARIABLES.txt
 
 # Nested repos / local clones
 server/nanobot/
+.env*.local

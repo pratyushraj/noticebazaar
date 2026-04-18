@@ -1,8 +1,9 @@
 import React from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { 
-    HelpCircle, ShieldCheck, Info, Wallet, ArrowUpRight, 
-    FileText, ChevronRight, Smartphone, Landmark, Download 
+    HelpCircle, ShieldCheck, Wallet, ArrowUpRight, 
+    FileText, ChevronRight, Smartphone, Landmark, Download,
+    CheckCircle2, Clock, AlertCircle, History
 } from 'lucide-react';
 import { cn } from '../../lib/utils';
 
@@ -23,7 +24,6 @@ interface PaymentsTabProps {
 
 export const PaymentsTab: React.FC<PaymentsTabProps> = ({
     isDark,
-    textColor,
     profileFormData,
     setProfileFormData,
     handleSaveProfile,
@@ -35,215 +35,183 @@ export const PaymentsTab: React.FC<PaymentsTabProps> = ({
     triggerHaptic,
     setSelectedPayment
 }) => {
+    // Group transactions by date
+    const groupedTransactions = React.useMemo(() => {
+        const groups: Record<string, any[]> = {};
+        const sortedDeals = [...brandDeals].sort((a, b) => 
+            new Date(b.completed_at || b.updated_at || b.created_at).getTime() - 
+            new Date(a.completed_at || a.updated_at || a.created_at).getTime()
+        );
+
+        sortedDeals.forEach(deal => {
+            const date = new Date(deal.completed_at || deal.updated_at || deal.created_at);
+            const key = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+            if (!groups[key]) groups[key] = [];
+            groups[key].push(deal);
+        });
+        return Object.entries(groups);
+    }, [brandDeals]);
+
     return (
-        <div className="px-5 pt-8 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-20">
-            {/* Payments Header */}
-            <div className="flex items-center justify-between mb-6 px-1">
+        <div className="px-5 pt-8 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-32">
+            {/* Header */}
+            <div className="flex items-center justify-between mb-6">
                 <div>
-                    <h2 className={cn("text-[26px] font-black tracking-tight leading-none mb-1", isDark ? "text-white" : "text-[#111827]")}>Payments</h2>
-                    <p className={cn("text-[13px] font-bold opacity-60", isDark ? "text-white" : "text-[#6B7280]")}>Manage your earnings & payouts</p>
+                    <h2 className={cn("text-3xl font-bold tracking-tight", isDark ? "text-slate-100" : "text-slate-900")}>Earnings</h2>
+                    <p className="text-slate-500 text-sm font-medium">Manage your payouts and revenue</p>
                 </div>
-                <button className={cn("w-10 h-10 rounded-full flex items-center justify-center border shadow-sm transition-all active:scale-[0.98]", isDark ? "bg-[#1B1D23] border-[#2B2D33]" : "bg-white border-[#E5E7EB]")}>
-                    <HelpCircle className={cn("w-[20px] h-[20px] opacity-70", isDark ? "text-white" : "text-[#111827]")} />
+                <button className={cn("w-10 h-10 rounded-full flex items-center justify-center border transition-all active:scale-95", isDark ? "bg-slate-800 border-slate-700" : "bg-white border-slate-200 shadow-sm")}>
+                    <HelpCircle className="w-5 h-5 text-slate-400" />
                 </button>
             </div>
 
-            {/* Creator Armour Banner */}
-            <div className={cn("mb-6 p-4 rounded-3xl border relative overflow-hidden", isDark ? "bg-gradient-to-br from-[#06180F] to-[#122A1E] border-emerald-900/50 shadow-[0_4px_24px_rgba(16,185,129,0.05)]" : "bg-gradient-to-br from-emerald-50 to-teal-50 border-emerald-200/60 shadow-sm")}>
-                <div className="absolute top-[-20%] right-[-10%] w-[150px] h-[150px] bg-emerald-500/20 blur-[60px] rounded-full pointer-events-none" />
-                <div className="flex items-start gap-4 relative z-10">
-                    <div className={cn("w-[42px] h-[42px] rounded-full flex items-center justify-center shrink-0 border", isDark ? "bg-[#1E3029]/80 border-emerald-500/30" : "bg-white border-emerald-200/80 shadow-sm")}>
-                        <ShieldCheck className={cn("w-[22px] h-[22px]", isDark ? "text-emerald-400" : "text-emerald-600")} strokeWidth={2.5} />
-                    </div>
-                    <div className="pt-0.5">
-                        <h3 className={cn("text-[15px] font-black tracking-tight mb-1", isDark ? "text-emerald-400" : "text-emerald-700")}>Creator Armour Active</h3>
-                        <p className={cn("text-[12px] font-bold leading-snug", isDark ? "text-[#9CA3AF]" : "text-emerald-900/70")}>Your payouts are secured in escrow. Escalate any disputes directly from the contract.</p>
-                    </div>
-                </div>
-            </div>
-
-            {/* Main Earnings Card */}
+            {/* Earnings Hero Card */}
             <motion.div
-                initial={{ scale: 0.95, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                className={cn("p-5 rounded-[24px] border shadow-sm mb-10 relative overflow-hidden", isDark ? "bg-[#1B1D23] border-[#2B2D33]" : "bg-white border-[#E5E7EB]")}
+                initial={{ y: 20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                className={cn("p-6 rounded-[2.5rem] border mb-8 relative overflow-hidden", isDark ? "bg-slate-900 border-slate-800" : "bg-white border-slate-200 shadow-xl shadow-slate-200/50")}
             >
-                <div className="flex justify-between items-start mb-6 relative z-10">
+                <div className="flex justify-between items-start mb-8">
                     <div>
-                        <div className="flex items-center gap-1.5 mb-1.5">
-                            <span className={cn("text-[12px] font-bold tracking-tight opacity-90", isDark ? "text-white" : "text-[#111827]")}>Total Earnings</span>
-                            <Info className="w-3.5 h-3.5 opacity-50" />
-                        </div>
-                        <div className={cn("text-[32px] font-black tracking-tighter mb-1.5 leading-none", isDark ? "text-white" : "text-[#111827]")}>
+                        <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Total Revenue</p>
+                        <h3 className={cn("text-4xl font-bold tracking-tight mb-2", isDark ? "text-white" : "text-slate-900")}>
                             ₹48,750
-                        </div>
-                        <div className="text-[11px] font-bold text-emerald-500 flex items-center gap-1">
-                            +12.5% <span className={cn("font-semibold", isDark ? "text-white/50" : "text-[#6B7280]")}>vs last month</span>
-                            <ArrowUpRight className="w-3 h-3 ml-0.5" />
+                        </h3>
+                        <div className="flex items-center gap-2">
+                            <span className="text-green-600 text-[13px] font-bold flex items-center gap-0.5">
+                                <TrendingUp className="w-3.5 h-3.5" /> +12.5%
+                            </span>
+                            <span className="text-slate-400 text-[13px] font-medium">vs last month</span>
                         </div>
                     </div>
-                    <div className={cn("w-14 h-14 rounded-full flex items-center justify-center shrink-0", isDark ? "bg-[#1E3029]" : "bg-[#ECFDF5]")}>
-                        <Wallet className="w-6 h-6 text-[#10B981]" />
+                    <div className={cn("w-14 h-14 rounded-2xl flex items-center justify-center", isDark ? "bg-slate-800" : "bg-slate-50")}>
+                        <Wallet className="w-7 h-7 text-blue-600" />
                     </div>
                 </div>
 
-                <div className={cn("h-[1px] w-full mb-6 relative z-10", isDark ? "bg-[#2B2D33]" : "bg-[#F3F4F6]")} />
-
-                <div className="grid grid-cols-3 gap-0 relative z-10">
-                    <div className="flex flex-col pr-3">
-                        <span className={cn("text-[10px] font-bold opacity-60 mb-2 truncate", isDark ? "text-white" : "text-[#111827]")}>Available to Payout</span>
-                        <span className="text-[17px] font-black text-[#10B981] mb-4 truncate">₹18,250</span>
-                        <button className={cn("py-2 px-0 rounded-xl text-[11px] font-black transition-all", isDark ? "bg-[#1E3029] text-[#10B981]" : "bg-[#ECFDF5] text-[#059669]")}>Withdraw</button>
+                <div className="grid grid-cols-2 gap-4">
+                    <div className={cn("p-4 rounded-2xl border", isDark ? "bg-slate-800/40 border-slate-700" : "bg-orange-50/30 border-orange-100/50")}>
+                        <div className="flex items-center gap-2 mb-2">
+                            <div className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse" />
+                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Processing</p>
+                        </div>
+                        <p className={cn("text-xl font-bold", isDark ? "text-slate-200" : "text-slate-900")}>₹22,500</p>
                     </div>
-                    <div className={cn("flex flex-col border-l px-3", isDark ? "border-[#2B2D33]" : "border-[#F3F4F6]")}>
-                        <span className={cn("text-[10px] font-bold opacity-60 mb-2 truncate", isDark ? "text-white" : "text-[#111827]")}>Pending</span>
-                        <span className="text-[17px] font-black text-amber-500 mb-4 truncate">₹22,500</span>
-                        <button className={cn("py-2 px-0 rounded-xl text-[11px] font-black transition-all", isDark ? "bg-amber-500/10 text-amber-500" : "bg-amber-50 text-amber-600")}>View Details</button>
-                    </div>
-                    <div className={cn("flex flex-col border-l pl-3", isDark ? "border-[#2B2D33]" : "border-[#F3F4F6]")}>
-                        <span className={cn("text-[10px] font-bold opacity-60 mb-2 truncate", isDark ? "text-white" : "text-[#111827]")}>Paid Out</span>
-                        <span className={cn("text-[17px] font-black mb-4 truncate", isDark ? "text-white/90" : "text-[#6B7280]")}>₹8,000</span>
-                        <button className={cn("py-2 px-0 rounded-xl text-[11px] font-black transition-all", isDark ? "bg-[#2B2D33] text-white/80" : "bg-[#F3F4F6] text-[#4B5563]")}>View History</button>
+                    <div className={cn("p-4 rounded-2xl border", isDark ? "bg-slate-800/40 border-slate-700" : "bg-green-50/30 border-green-100/50")}>
+                        <div className="flex items-center gap-2 mb-2">
+                            <div className="w-1.5 h-1.5 rounded-full bg-green-500" />
+                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Paid Out</p>
+                        </div>
+                        <p className={cn("text-xl font-bold", isDark ? "text-slate-200" : "text-slate-900")}>₹26,250</p>
                     </div>
                 </div>
             </motion.div>
 
-            {/* Financial Reports */}
-            <h3 className={cn("text-[16px] font-black tracking-tight mb-4 px-1", isDark ? "text-white" : "text-[#111827]")}>Financial Reports</h3>
-            <div className={cn("rounded-[24px] border shadow-sm mb-10 overflow-hidden", isDark ? "bg-[#1B1D23] border-[#2B2D33]" : "bg-white border-[#E5E7EB]")}>
-                <button className={cn("w-full p-4 flex items-center justify-between border-b transition-colors", isDark ? "hover:bg-[#2B2D33]/50 border-white/5" : "hover:bg-slate-50 border-slate-100")}>
-                    <div className="flex items-center gap-3">
-                        <div className={cn("w-9 h-9 rounded-xl flex items-center justify-center bg-blue-500/15 text-blue-400")}>
-                            <FileText className="w-5 h-5" />
-                        </div>
-                        <div className="text-left">
-                            <p className={cn("text-[14px] font-bold", isDark ? "text-white" : "text-[#111827]")}>Tax Invoices (GST)</p>
-                            <p className={cn("text-[11px] opacity-40 font-semibold", isDark ? "text-white" : "text-[#111827]")}>Download monthly summaries</p>
-                        </div>
-                    </div>
-                    <Download className="w-4 h-4 opacity-40" />
-                </button>
-                <button className={cn("w-full p-4 flex items-center justify-between transition-colors", isDark ? "hover:bg-[#2B2D33]/50" : "hover:bg-slate-50")}>
-                    <div className="flex items-center gap-3">
-                        <div className={cn("w-9 h-9 rounded-xl flex items-center justify-center bg-emerald-500/15 text-emerald-400")}>
-                            <Download className="w-5 h-5" />
-                        </div>
-                        <div className="text-left">
-                            <p className={cn("text-[14px] font-bold", isDark ? "text-white" : "text-[#111827]")}>Payout Statements</p>
-                            <p className={cn("text-[11px] opacity-40 font-semibold", isDark ? "text-white" : "text-[#111827]")}>Detailed breakdown of fees</p>
-                        </div>
-                    </div>
-                    <Download className="w-4 h-4 opacity-40" />
-                </button>
-            </div>
-
-            {/* Payout Methods Section */}
-            <h3 className={cn("text-[16px] font-black tracking-tight mb-4 px-1", isDark ? "text-white" : "text-[#111827]")}>Payout Methods</h3>
-            <div className="space-y-3 mb-10">
-                <div className={cn("rounded-[24px] border p-4 shadow-sm", isDark ? "bg-[#1B1D23] border-[#2B2D33]" : "bg-white border-[#E5E7EB]")}>
-                    <div className="flex items-center justify-between mb-4">
-                        <div className="flex items-center gap-4">
-                            <div className={cn("w-[42px] h-[42px] rounded-full flex items-center justify-center shrink-0", isDark ? "bg-[#1E3029]" : "bg-[#ECFDF5]")}>
-                                <Smartphone className="w-5 h-5 text-[#10B981]" />
-                            </div>
-                            <div>
-                                <div className="flex items-center gap-2 mb-1">
-                                    <span className={cn("text-[15px] font-bold", isDark ? "text-white" : "text-[#111827]")}>UPI Transfer</span>
-                                    <span className={cn("px-1.5 py-0.5 rounded-[4px] text-[8px] font-black uppercase tracking-wider", isDark ? "bg-[#1E3029] text-[#10B981]" : "bg-[#ECFDF5] text-[#059669]")}>Primary</span>
-                                </div>
-                                <input 
-                                    className="bg-transparent text-[13px] font-semibold opacity-60 outline-none w-full"
-                                    value={profileFormData.bank_upi || ''}
-                                    onChange={(e) => setProfileFormData(p => ({ ...p, bank_upi: e.target.value }))}
-                                    placeholder="yourname@upi"
-                                />
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div className={cn("h-[1px] w-full mb-4", isDark ? "bg-[#2B2D33]" : "bg-[#F3F4F6]")} />
-                    
+            {/* Payout Method */}
+            <div className="mb-10">
+                <div className="flex items-center justify-between mb-4 px-1">
+                    <h4 className={cn("text-sm font-bold uppercase tracking-widest text-slate-400")}>Payout Method</h4>
+                    <button className="text-xs font-bold text-blue-600">Edit Details</button>
+                </div>
+                <div className={cn("p-5 rounded-3xl border flex items-center justify-between", isDark ? "bg-slate-900 border-slate-800" : "bg-white border-slate-200 shadow-sm")}>
                     <div className="flex items-center gap-4">
-                        <div className={cn("w-[42px] h-[42px] rounded-full flex items-center justify-center shrink-0", isDark ? "bg-[#1E3029]" : "bg-[#ECFDF5]")}>
-                            <Landmark className="w-5 h-5 text-[#10B981]" />
+                        <div className={cn("w-12 h-12 rounded-2xl flex items-center justify-center", isDark ? "bg-slate-800 text-slate-300" : "bg-slate-50 text-slate-600")}>
+                            <Landmark className="w-6 h-6" />
                         </div>
-                        <div className="flex-1">
-                            <p className={cn("text-[11px] font-bold opacity-40 uppercase mb-1", textColor)}>Account Holder</p>
-                            <input 
-                                className="bg-transparent text-[14px] font-bold outline-none w-full"
-                                value={profileFormData.bank_account_name || ''}
-                                onChange={(e) => setProfileFormData(p => ({ ...p, bank_account_name: e.target.value }))}
-                                placeholder="Legal Name on Bank Account"
-                            />
+                        <div>
+                            <div className="flex items-center gap-2 mb-0.5">
+                                <p className={cn("text-[15px] font-bold", isDark ? "text-white" : "text-slate-900")}>UPI Transfer</p>
+                                <span className={cn("px-1.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-green-50 text-green-600 border border-green-100")}>Verified</span>
+                            </div>
+                            <p className="text-xs font-medium text-slate-400 font-mono tracking-tight">{profileFormData.bank_upi ? `${profileFormData.bank_upi.split('@')[0].slice(0,3)}*****@${profileFormData.bank_upi.split('@')[1]}` : 'Not set'}</p>
                         </div>
                     </div>
-
-                    {(profileFormData.bank_upi !== profile?.bank_upi || profileFormData.bank_account_name !== profile?.bank_account_name) && (
-                        <button 
-                            onClick={handleSaveProfile}
-                            className="w-full mt-4 bg-primary text-white py-3 rounded-xl font-black text-[12px] uppercase tracking-wider transition-all"
-                        >
-                            {isSavingProfile ? 'Saving...' : 'Save Payout Info'}
-                        </button>
-                    )}
+                    <ChevronRight className="w-5 h-5 text-slate-300" />
                 </div>
             </div>
 
-            {/* Recent Transactions Section */}
-            <div className="flex items-center justify-between mb-4 px-1">
-                <h3 className={cn("text-[16px] font-black tracking-tight", isDark ? "text-white" : "text-[#111827]")}>Recent Transactions</h3>
-                <button className="text-[12px] font-bold text-blue-500 hover:text-blue-600 transition-colors">View All</button>
+            {/* Transactions */}
+            <div className="mb-6 px-1 flex items-center justify-between">
+                <h4 className={cn("text-sm font-bold uppercase tracking-widest text-slate-400")}>Transactions</h4>
+                <button className="text-xs font-bold text-slate-500 flex items-center gap-1">
+                    <History className="w-3.5 h-3.5" /> View All
+                </button>
             </div>
-            
-            <div className={cn("rounded-[24px] border shadow-sm mb-10 overflow-hidden", isDark ? "bg-[#1B1D23] border-[#2B2D33]" : "bg-white border-[#E5E7EB]")}>
-                {brandDeals.length > 0 ? (
-                    brandDeals.map((deal: any, idx: number) => {
-                        const payUx = getCreatorPaymentListUX(deal);
-                        const isProcessing = payUx.tone === 'warning';
-                        
-                        return (
-                            <div key={idx} className={cn("flex items-center justify-between p-4 border-b group active:scale-[0.98] transition-all cursor-pointer", isDark ? "border-[#2B2D33]" : "border-[#F3F4F6]")} onClick={() => { triggerHaptic(); setSelectedPayment(deal); }}>
-                                <div className="flex items-center gap-4">
-                                    <div className={cn("w-[42px] h-[42px] rounded-full flex items-center justify-center shrink-0 shadow-sm overflow-hidden", isDark ? "bg-[#1E3029]" : "bg-[#ECFDF5]", isDark ? "text-emerald-500" : "text-emerald-600")}>
-                                        {getBrandIcon(deal.brand_logo_url || deal.logo_url, deal.category, deal.brand_name)}
-                                    </div>
-                                    <div className="flex flex-col justify-center">
-                                        <div className={cn("text-[15px] font-bold mb-0.5 leading-none", isDark ? "text-white" : "text-[#111827]")}>{deal.brand_name || 'Brand Partner'}</div>
-                                        <div className={cn("text-[12px] font-semibold opacity-60 mb-1 leading-none pt-0.5", isDark ? "text-white" : "text-[#6B7280]")}>{payUx.sublabel || deal.collab_type || 'Collaboration'}</div>
-                                        <div className={cn("text-[10px] font-bold opacity-40 leading-none", isDark ? "text-white" : "text-[#6B7280]")}>
-                                            {new Date(deal.completed_at || deal.updated_at || deal.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+
+            <div className="space-y-8">
+                {brandDeals.length > 0 ? groupedTransactions.map(([date, deals]) => (
+                    <div key={date} className="space-y-3">
+                        <p className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] px-1">{date}</p>
+                        <div className={cn("rounded-[2rem] border overflow-hidden", isDark ? "bg-slate-900 border-slate-800" : "bg-white border-slate-200 shadow-sm")}>
+                            {deals.map((deal, idx) => {
+                                const payUx = getCreatorPaymentListUX(deal);
+                                const isProcessing = payUx.tone === 'warning';
+                                return (
+                                    <div 
+                                        key={deal.id || idx} 
+                                        className={cn("p-4 flex items-center justify-between active:bg-slate-50 transition-colors border-b last:border-0", isDark ? "border-slate-800 active:bg-slate-800" : "border-slate-100")}
+                                        onClick={() => { triggerHaptic(); setSelectedPayment(deal); }}
+                                    >
+                                        <div className="flex items-center gap-4 min-w-0">
+                                            <div className="w-11 h-11 rounded-xl bg-slate-50 border border-slate-100 p-1.5 overflow-hidden shrink-0">
+                                                {getBrandIcon(deal.brand_logo_url || deal.logo_url, deal.category, deal.brand_name)}
+                                            </div>
+                                            <div className="min-w-0">
+                                                <p className={cn("text-[15px] font-bold truncate", isDark ? "text-white" : "text-slate-900")}>{deal.brand_name || 'Brand Partner'}</p>
+                                                <p className="text-xs font-medium text-slate-500">{isProcessing ? 'Processing Payout' : 'Campaign Payout'}</p>
+                                            </div>
+                                        </div>
+                                        <div className="text-right shrink-0">
+                                            <p className={cn("text-[15px] font-bold mb-1", isDark ? "text-white" : "text-slate-900")}>₹{(deal.deal_amount || 0).toLocaleString()}</p>
+                                            <span className={cn(
+                                                "px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider",
+                                                isProcessing 
+                                                    ? "bg-orange-50 text-orange-600 border border-orange-100" 
+                                                    : "bg-green-50 text-green-600 border border-green-100"
+                                            )}>
+                                                {isProcessing ? 'Processing' : 'Paid'}
+                                            </span>
                                         </div>
                                     </div>
-                                </div>
-                                <div className="text-right flex flex-col justify-center items-end">
-                                    <div className={cn("text-[15px] font-black mb-1.5", isDark ? "text-white" : "text-[#111827]")}>₹{(deal.deal_amount || 0).toLocaleString()}</div>
-                                    <div className={cn(
-                                        "px-2 py-0.5 rounded-[4px] text-[9px] font-black uppercase tracking-wider", 
-                                        isProcessing 
-                                            ? (isDark ? 'bg-amber-500/10 text-amber-500' : 'bg-amber-50 text-amber-600')
-                                            : (isDark ? 'bg-[#1E3029] text-emerald-500' : 'bg-[#ECFDF5] text-[#059669]')
-                                    )}>
-                                        {payUx.label || (isProcessing ? 'Processing' : 'Completed')}
-                                    </div>
-                                </div>
-                            </div>
-                        );
-                    })
-                ) : (
-                    <div className="text-center py-12">
-                        <h3 className={cn("text-[18px] font-black tracking-tight mb-2 font-outfit", isDark ? "text-white" : "text-[#111827]")}>No recent transactions</h3>
-                        <p className={cn("text-sm font-bold opacity-30", isDark ? "text-white" : "text-[#111827]")}>Complete your first brand deal to start earning</p>
+                                );
+                            })}
+                        </div>
+                    </div>
+                )) : (
+                    <div className="py-20 text-center px-6">
+                        <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <Wallet className="w-8 h-8 text-slate-300" />
+                        </div>
+                        <h3 className={cn("text-lg font-bold mb-1", isDark ? "text-white" : "text-slate-900")}>No payouts yet</h3>
+                        <p className="text-sm text-slate-500 leading-relaxed">Accept brand deals and complete collaborators to see your earnings here.</p>
                     </div>
                 )}
-                
-                <button className={cn("w-full p-4 flex items-center justify-between transition-colors", isDark ? "hover:bg-[#2B2D33]/50 active:bg-[#2B2D33]" : "hover:bg-slate-50 active:bg-slate-100")}>
-                    <div className="flex items-center gap-2.5">
-                        <FileText className="w-[18px] h-[18px] text-[#3B82F6]" />
-                        <span className="text-[13px] font-bold text-[#3B82F6]">View All Transactions</span>
+            </div>
+
+            {/* Reports Section */}
+            <div className="mt-12 grid grid-cols-2 gap-3">
+                <button className={cn("p-4 rounded-2xl border text-left flex flex-col gap-3", isDark ? "bg-slate-900 border-slate-800" : "bg-white border-slate-200")}>
+                    <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center">
+                        <FileText className="w-5 h-5 text-blue-600" />
                     </div>
-                    <ChevronRight className="w-[18px] h-[18px] text-[#3B82F6] opacity-60" />
+                    <div>
+                        <p className={cn("text-[13px] font-bold", isDark ? "text-white" : "text-slate-900")}>Tax Invoices</p>
+                        <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Download GST</p>
+                    </div>
+                </button>
+                <button className={cn("p-4 rounded-2xl border text-left flex flex-col gap-3", isDark ? "bg-slate-900 border-slate-800" : "bg-white border-slate-200")}>
+                    <div className="w-10 h-10 rounded-xl bg-purple-50 flex items-center justify-center">
+                        <Download className="w-5 h-5 text-purple-600" />
+                    </div>
+                    <div>
+                        <p className={cn("text-[13px] font-bold", isDark ? "text-white" : "text-slate-900")}>Statements</p>
+                        <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Fee breakdown</p>
+                    </div>
                 </button>
             </div>
         </div>
     );
 };
+
+// Types/Icons needed locally if not imported
+import { TrendingUp, QrCode, MoreHorizontal, Sun, Moon, Bell, Menu, LayoutDashboard, Briefcase, User, Send, X, AlertTriangle, Instagram, BarChart3, Share2, Copy, Eye, ArrowRight } from 'lucide-react';
