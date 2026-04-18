@@ -243,13 +243,13 @@ const getYoutubeEmbedUrl = (href: string) => {
     const url = new URL(href);
     if (url.hostname.includes('youtu.be')) {
       const id = url.pathname.replace('/', '').trim();
-      return id ? `https://www.youtube.com/embed/${id}` : '';
+      return id ? `https://www.youtube.com/embed/${id}?autoplay=1&mute=1&playsinline=1&rel=0` : '';
     }
     if (url.hostname.includes('youtube.com')) {
       const shortsMatch = url.pathname.match(/\/shorts\/([^/?]+)/i);
-      if (shortsMatch?.[1]) return `https://www.youtube.com/embed/${shortsMatch[1]}`;
+      if (shortsMatch?.[1]) return `https://www.youtube.com/embed/${shortsMatch[1]}?autoplay=1&mute=1&playsinline=1&rel=0`;
       const id = url.searchParams.get('v');
-      return id ? `https://www.youtube.com/embed/${id}` : '';
+      return id ? `https://www.youtube.com/embed/${id}?autoplay=1&mute=1&playsinline=1&rel=0` : '';
     }
   } catch {
     return '';
@@ -2949,31 +2949,20 @@ const CollabLinkLanding = () => {
                             key={`${href}-${idx}`}
                             className="overflow-hidden rounded-[22px] border border-slate-200 bg-slate-50 shadow-[0_10px_24px_rgba(15,23,42,0.05)]"
                           >
-                            <div className="flex items-center justify-between gap-3 border-b border-slate-200 bg-white px-3 py-2.5">
-                              <div className="flex items-center gap-2 min-w-0">
-                                <div className="w-9 h-9 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-center shrink-0">
-                                  {isInsta ? (
-                                    <Instagram className="w-4 h-4 text-pink-600" />
-                                  ) : isYT ? (
-                                    <Youtube className="w-4 h-4 text-red-600" />
-                                  ) : (
-                                    <ExternalLink className="w-4 h-4 text-slate-500" />
-                                  )}
-                                </div>
-                                <div className="min-w-0">
-                                  <p className="text-[12px] font-black text-slate-900 uppercase tracking-[0.06em]">{label}</p>
-                                  <p className="text-[11px] font-semibold text-slate-500 truncate">Highlight #{idx + 1}</p>
-                                </div>
+                            <div className="flex items-center gap-2 border-b border-slate-200 bg-white px-3 py-2.5">
+                              <div className="w-9 h-9 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-center shrink-0">
+                                {isInsta ? (
+                                  <Instagram className="w-4 h-4 text-pink-600" />
+                                ) : isYT ? (
+                                  <Youtube className="w-4 h-4 text-red-600" />
+                                ) : (
+                                  <ExternalLink className="w-4 h-4 text-slate-500" />
+                                )}
                               </div>
-                              <a
-                                href={href}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-white px-2.5 py-1 text-[10px] font-black uppercase tracking-wider text-slate-600 hover:border-emerald-300 hover:text-emerald-700"
-                              >
-                                Open
-                                <ArrowRight className="w-3.5 h-3.5" />
-                              </a>
+                              <div className="min-w-0">
+                                <p className="text-[12px] font-black text-slate-900 uppercase tracking-[0.06em]">{label}</p>
+                                <p className="text-[11px] font-semibold text-slate-500 truncate">Highlight #{idx + 1}</p>
+                              </div>
                             </div>
                             {embedUrl ? (
                               <div className="bg-white">
