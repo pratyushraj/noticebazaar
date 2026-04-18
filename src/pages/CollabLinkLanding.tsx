@@ -1224,22 +1224,55 @@ const CollabLinkLanding = () => {
           setCreator(baseCreator);
 
           // Supplement with portfolio fields not returned by the backend API
-          if (data.creator.id) {
+          // We query by username (not ID) because RLS on profiles may block unauthenticated id-based reads
+          if (data.creator.id || data.creator.username || data.creator.handle) {
             try {
-              const { data: portfolioRow } = await (supabase as any)
-                .from('profiles')
-                .select('portfolio_links, media_kit_url')
-                .eq('id', data.creator.id)
-                .single();
+              const handle = (data.creator.username || data.creator.handle || '').toLowerCase().trim();
+              let portfolioRow: any = null;
+
+              // Try by username first
+              if (handle) {
+                const { data: rowByUsername, error: errByUsername } = await (supabase as any)
+                  .from('profiles')
+                  .select('portfolio_links, media_kit_url')
+                  .eq('username', handle)
+                  .maybeSingle();
+                if (!errByUsername && rowByUsername) {
+                  portfolioRow = rowByUsername;
+                } else if (errByUsername) {
+                  console.warn('[CollabLinkLanding] portfolio fetch by username failed:', errByUsername?.message);
+                }
+              }
+
+              // Fallback: try by ID
+              if (!portfolioRow && data.creator.id) {
+                const { data: rowById, error: errById } = await (supabase as any)
+                  .from('profiles')
+                  .select('portfolio_links, media_kit_url')
+                  .eq('id', data.creator.id)
+                  .maybeSingle();
+                if (!errById && rowById) {
+                  portfolioRow = rowById;
+                } else if (errById) {
+                  console.warn('[CollabLinkLanding] portfolio fetch by id failed:', errById?.message);
+                }
+              }
+
               if (portfolioRow) {
+                const links = Array.isArray(portfolioRow.portfolio_links)
+                  ? portfolioRow.portfolio_links.filter((l: string) => l && l.trim())
+                  : [];
+                console.log('[CollabLinkLanding] Portfolio loaded:', { links, media_kit_url: portfolioRow.media_kit_url });
                 setCreator((prev: any) => ({
                   ...prev,
-                  portfolio_links: portfolioRow.portfolio_links || prev.portfolio_links || [],
+                  portfolio_links: links.length > 0 ? links : (prev.portfolio_links || []),
                   media_kit_url: portfolioRow.media_kit_url || prev.media_kit_url || null,
                 }));
+              } else {
+                console.warn('[CollabLinkLanding] No portfolio row found for creator');
               }
             } catch (_e) {
-              // Non-critical — portfolio section will just be hidden
+              console.warn('[CollabLinkLanding] Portfolio supplement fetch failed (non-critical):', _e);
             }
           }
           trackEvent('collab_link_viewed', { username: normalizedUsername });
