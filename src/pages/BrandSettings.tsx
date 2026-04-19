@@ -394,8 +394,8 @@ export const BrandSettingsPanel = ({
 
       {/* ── Sticky Save ────────────────────────────────────────────────── */}
       <div
-        className="fixed bottom-0 inset-x-0 z-40 px-4 pt-4"
-        style={{ paddingBottom: 'max(env(safe-area-inset-bottom), 80px)', background: 'linear-gradient(to top, #061318 55%, transparent)' }}
+        className="fixed bottom-0 inset-x-0 z-40 px-4 pt-5"
+        style={{ paddingBottom: 'max(env(safe-area-inset-bottom), 84px)', background: 'linear-gradient(to top, #061318 65%, rgba(6,19,24,0.9) 85%, transparent 100%)' }}
       >
         <div className="max-w-md mx-auto">
           {isDirty && !isSaving && (
@@ -414,7 +414,7 @@ export const BrandSettingsPanel = ({
                 ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-[0_6px_28px_rgba(16,185,129,0.28)] active:scale-[0.98]'
                 : justSaved
                   ? 'bg-emerald-500/10 border border-emerald-500/20 text-emerald-400'
-                  : 'bg-white/[0.04] border border-white/8 text-white/20 cursor-not-allowed'
+                  : 'bg-white/[0.08] border border-white/[0.14] text-white/30 cursor-not-allowed'
             )}
           >
             {isSaving || logoUploading ? (

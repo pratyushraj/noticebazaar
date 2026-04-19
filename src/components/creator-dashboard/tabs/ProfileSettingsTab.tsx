@@ -66,11 +66,17 @@ const ProfileSettingsTab = ({ profile, onLogout }: ProfileSettingsTabProps) => {
             {/* Profile Header */}
             <div className="flex flex-col items-center py-8">
                 <div className="w-24 h-24 rounded-full border-2 border-blue-500/30 p-1 mb-4">
-                    <img
-                        src={profile?.avatar_url || `https://ui-avatars.com/api/?name=${profile?.first_name || 'Creator'}`}
-                        alt="Profile"
-                        className="w-full h-full rounded-full object-cover"
-                    />
+                    {profile?.avatar_url ? (
+                        <img
+                            src={profile.avatar_url}
+                            alt="Profile"
+                            className="w-full h-full rounded-full object-cover"
+                        />
+                    ) : (
+                        <div className="w-full h-full rounded-full bg-emerald-500/20 flex items-center justify-center text-emerald-300 text-3xl font-bold select-none">
+                            {(profile?.first_name || 'C').slice(0, 1).toUpperCase()}
+                        </div>
+                    )}
                 </div>
                 <h2 className={typography.h2}>{profile?.first_name} {profile?.last_name}</h2>
                 <p className="text-white/40 text-sm mt-1">{profile?.instagram_handle || 'Content Creator'}</p>

@@ -194,13 +194,13 @@ export const parseLocationParts = (location?: string | null) => {
     return { address, city, pincode };
 };
 
-export const resolveAvatarUrl = (candidate: any, username: string = 'creator') => {
+export const resolveAvatarUrl = (candidate: any, _username: string = 'creator') => {
     const raw = String(candidate || '').trim();
-    const avatarFallbackUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(username)}&background=10B981&color=fff`;
-    if (!raw) return avatarFallbackUrl;
+    // Return null so AvatarFallback (initials) renders — avoids ui-avatars.com CORS issues
+    if (!raw) return null;
     if (/^(https?:)?\/\//i.test(raw)) return raw.startsWith('//') ? `https:${raw}` : raw;
     if (/^(data:|blob:)/i.test(raw)) return raw;
-    return avatarFallbackUrl;
+    return null;
 };
 
 export const buildProfileFormData = (profile: any, userEmail?: string | null) => {

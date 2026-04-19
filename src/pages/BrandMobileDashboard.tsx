@@ -874,9 +874,8 @@ const BrandMobileDashboard = ({
 
   const brandLogo = useMemo(() => {
     const src = profile?.avatar_url || profile?.logo_url || brandLogoDbUrl;
-    if (src) return src;
-    return `https://ui-avatars.com/api/?name=${encodeURIComponent(brandName)}&background=10B981&color=fff`;
-  }, [profile?.avatar_url, profile?.logo_url, brandLogoDbUrl, brandName]);
+    return src || null; // Let AvatarFallback render initials — avoids ui-avatars.com CORS issues
+  }, [profile?.avatar_url, profile?.logo_url, brandLogoDbUrl]);
 
   const hasUploadedBrandLogo = useMemo(() => {
     return !!(profile?.avatar_url || profile?.logo_url || brandLogoDbUrl);
