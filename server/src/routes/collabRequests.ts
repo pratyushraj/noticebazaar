@@ -3729,4 +3729,66 @@ router.patch('/:id/decline', async (req: AuthenticatedRequest, res: Response) =>
   }
 });
 
+/**
+ * GET /lookup-brand
+ * Fetch brand logo and brand name from registered dashboard email to autofill public forms.
+ */
+router.get('/lookup-brand', async (req: Request, res: Response) => {
+  try {
+    const email = (req.query.email as string)?.trim().toLowerCase();
+    if (!email) {
+      return res.status(400).json({ success: false, error: 'Email query parameter is required' });
+    }
+
+    if (!supabaseInitialized) {
+      return res.status(503).json({ success: false, error: 'Database connection not initialized' });
+    }
+
+    // 1. Check brand_users first (Registered Brands)
+    const { data: brandUser, error: brandUserErr } = await supabase
+      .from('brand_users')
+      .select('brand_name, brand_logo_url, instagram_handle')
+      .eq('email', email)
+      .limit(1)
+      .maybeSingle();
+
+    if (brandUser && !brandUserErr) {
+      return res.json({
+        success: true,
+        data: {
+          brand_name: brandUser.brand_name || null,
+          logo: brandUser.brand_logo_url || null,
+          instagram: brandUser.instagram_handle || null
+        }
+      });
+    }
+
+    // 2. Check past collab_requests if no registered brand exists
+    // This allows returning logos for unregistered brands that have previously submitted requests
+    const { data: pastRequest, error: pastReqErr } = await supabase
+      .from('collab_requests')
+      .select('brand_name, brand_logo_url, brand_instagram')
+      .eq('brand_email', email)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (pastRequest && !pastReqErr && pastRequest.brand_name) {
+      return res.json({
+        success: true,
+        data: {
+          brand_name: pastRequest.brand_name || null,
+          logo: pastRequest.brand_logo_url || null,
+          instagram: pastRequest.brand_instagram || null
+        }
+      });
+    }
+
+    return res.json({ success: false, error: 'No brand found with this email' });
+  } catch (error: any) {
+    console.error('[CollabRequests] Error in /lookup-brand:', error);
+    res.status(500).json({ success: false, error: 'Internal server error during brand lookup' });
+  }
+});
+
 export default router;

@@ -10,7 +10,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { Edit, Plus, Instagram, Youtube, Twitter, Facebook, CheckCircle2, Loader2, ExternalLink, ChevronDown, ShieldCheck, Rocket, Target, IndianRupee, Package, MapPin, FileText, Wallet, Calendar, TrendingUp, Lock, Clapperboard, Send, FileCheck, BadgeCheck, Clock, PenLine, Zap, ArrowRight, ChevronRight, Sparkles, X, Check, Link2, Briefcase, Image as ImageIcon } from 'lucide-react';
+import { Edit, Plus, Instagram, Youtube, Twitter, Facebook, CheckCircle2, Loader2, ExternalLink, ChevronDown, ShieldCheck, Rocket, Target, IndianRupee, Package, MapPin, FileText, Wallet, Calendar, TrendingUp, Lock, Clapperboard, Send, FileCheck, BadgeCheck, Clock, PenLine, Zap, ArrowRight, ChevronRight, Sparkles, X, Check, Link2, Briefcase, Upload, Image as ImageIcon } from 'lucide-react';
 import { toast } from 'sonner';
 import { triggerHaptic, HapticPatterns } from '@/lib/utils/haptics';
 import { trackEvent } from '@/lib/utils/analytics';
@@ -191,6 +191,7 @@ interface FormErrors {
   deliverables?: string;
   budget?: string;
   barterProductImageUrl?: string;
+  brandLogoUrl?: string;
 }
 
 // Reserved usernames that should not be used for collab links
@@ -594,6 +595,63 @@ const CollabLinkLanding = () => {
   const [barterProductName, setBarterProductName] = useState('');
   const [barterProductCategory, setBarterProductCategory] = useState('');
   const [campaignCategory, setCampaignCategory] = useState('General');
+  const [lookupStatus, setLookupStatus] = useState<'idle' | 'loading' | 'found' | 'not_found'>('idle');
+  const [lookupData, setLookupData] = useState<{ brand_name?: string; logo?: string; instagram?: string } | null>(null);
+  const [useBrandProfile, setUseBrandProfile] = useState(false);
+
+  const [campaignDescription, setCampaignDescription] = useState('');
+  const [deliverables, setDeliverables] = useState<string[]>([]);
+  const [deliverableQuantities, setDeliverableQuantities] = useState<Record<string, number>>({});
+  const [deadline, setDeadline] = useState('');
+  const [hasStartedOffer, setHasStartedOffer] = useState(false);
+  const [showMobileAudienceDetails, setShowMobileAudienceDetails] = useState(false);
+  const [openAccordionValue, setOpenAccordionValue] = useState<string | undefined>("item-1");
+  const [errors, setErrors] = useState<FormErrors>({});
+  const [readinessBadgeSparkle, setReadinessBadgeSparkle] = useState(false);
+  const [profilePhotoError, setProfilePhotoError] = useState(false);
+  const [profileSaveStatus, setProfileSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
+  const [lastProfileSaveAt, setLastProfileSaveAt] = useState<Date | null>(null);
+  const [previewAsBrand, setPreviewAsBrand] = useState(false);
+  const [barterProductImageUrl, setBarterProductImageUrl] = useState<string>('');
+  const [barterImageUploading, setBarterImageUploading] = useState(false);
+  const [brandLogoUrl, setBrandLogoUrl] = useState<string>('');
+  const [brandLogoUploading, setBrandLogoUploading] = useState(false);
+  const [showSaveDraftModal, setShowSaveDraftModal] = useState(false);
+  const [draftEmail, setDraftEmail] = useState('');
+  const [saveDraftSubmitting, setSaveDraftSubmitting] = useState(false);
+  const [newNicheInput, setNewNicheInput] = useState('');
+  const [showCustomFlow, setShowCustomFlow] = useState(false);
+  const [templateContinueNudge, setTemplateContinueNudge] = useState(0);
+  const [localDealTemplates, setLocalDealTemplates] = useState<DealTemplate[]>([]);
+  const [isEditingTemplates, setIsEditingTemplates] = useState(false);
+  const [editingTemplate, setEditingTemplate] = useState<DealTemplate | null>(null);
+  const [showSubmittingTrust, setShowSubmittingTrust] = useState(false);
+  const submittingChecklist = [
+    "Authenticating Brand Profile...",
+    "Verifying Terms of Collaboration...",
+    "Sending Direct Notification...",
+    "Securing Deal Proposal..."
+  ];
+  const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(null);
+
+  const isBudgetProvided = collabType === 'affiliate' ? true : collabType === 'paid' ? Number(exactBudget) > 0 : collabType === 'barter' ? Number(barterValue) > 0 : collabType === 'hybrid' ? (Number(exactBudget) > 0 && Number(barterValue) > 0) : true;
+  const isBarterLikeCollab = (type: string | null | undefined) => type === 'barter' || type === 'hybrid' || type === 'both';
+
+  const isStep1Ready = Boolean(collabType && deliverables.length > 0);
+  const isValidBrandEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(brandEmail);
+  const isProductImageRequired = Boolean(selectedTemplateId) || isBarterLikeCollab(collabType);
+  const isProductImageReady = isProductImageRequired ? Boolean(String(barterProductImageUrl || '').trim()) : true;
+  const isLogoReady = Boolean(String(brandLogoUrl || '').trim());
+  const isStep2Ready = Boolean(brandEmail.trim() && isValidBrandEmail && isProductImageReady && isLogoReady);
+
+  const completionChecks = useMemo(() => ([
+    { label: 'Collab type', complete: isStep1Ready },
+    { label: 'Contact', complete: isStep2Ready },
+  ]), [
+    isStep1Ready,
+    isStep2Ready,
+  ]);
+
   const barterProductImageInputRef = useRef<HTMLInputElement | null>(null);
   const openBarterImagePicker = () => {
     console.log('[CollabLinkLanding] Opening barter image picker...');
@@ -611,6 +669,28 @@ const CollabLinkLanding = () => {
     input.click();
   };
 
+  // --- NEW: PASTE IMAGE SUPPORT ---
+  useEffect(() => {
+    const handlePaste = (e: ClipboardEvent) => {
+      // Only handle paste if the form is already deep enough
+      if (!hasStartedOffer || currentStep !== 2) return;
+      
+      const items = e.clipboardData?.items;
+      if (!items) return;
+      for (let i = 0; i < items.length; i++) {
+        if (items[i].type.indexOf('image') !== -1) {
+          const file = items[i].getAsFile();
+          if (file) {
+            handleBarterImageChange({ target: { files: [file] } } as any);
+            toast.success('Image pasted from clipboard!');
+          }
+        }
+      }
+    };
+    window.addEventListener('paste', handlePaste);
+    return () => window.removeEventListener('paste', handlePaste);
+  }, [hasStartedOffer, currentStep]);
+
   // If the visitor is already logged in as a brand, prefill the form from their profile.
   // We only fill blanks so we never overwrite what the user already typed.
   useEffect(() => {
@@ -622,30 +702,104 @@ const CollabLinkLanding = () => {
       'Brand';
 
     const inferredEmail = (profile.email || user?.email || '').trim();
+    const inferredLogo = (profile as any).business_logo_url || (profile as any).logo_url || profile.avatar_url || '';
 
     setBrandName((prev) => (prev.trim() ? prev : inferredBrandName));
     setBrandEmail((prev) => (prev.trim() ? prev : inferredEmail));
+    setBrandLogoUrl((prev) => (prev.trim() ? prev : inferredLogo));
+    setUseBrandProfile(true);
   }, [profile?.id, profile?.role, user?.email]);
-  const [campaignDescription, setCampaignDescription] = useState('');
-  const [deliverables, setDeliverables] = useState<string[]>([]);
-  const [deliverableQuantities, setDeliverableQuantities] = useState<Record<string, number>>({});
-  const [deadline, setDeadline] = useState('');
-  const [hasStartedOffer, setHasStartedOffer] = useState(false);
-  const [showMobileAudienceDetails, setShowMobileAudienceDetails] = useState(false);
-  const [openAccordionValue, setOpenAccordionValue] = useState<string | undefined>("item-1");
-  // const [showAdvancedMobileOptions, setShowAdvancedMobileOptions] = useState(false);
-  const [errors, setErrors] = useState<FormErrors>({});
-  const formRef = useRef<HTMLFormElement | null>(null);
-  const readinessBadgeRef = useRef<HTMLDivElement | null>(null);
-  const [readinessBadgeSparkle, setReadinessBadgeSparkle] = useState(false);
-  const [profilePhotoError, setProfilePhotoError] = useState(false);
-  const [profileSaveStatus, setProfileSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
-  const [lastProfileSaveAt, setLastProfileSaveAt] = useState<Date | null>(null);
-  const [previewAsBrand, setPreviewAsBrand] = useState(false);
-  const [barterProductImageUrl, setBarterProductImageUrl] = useState<string>('');
-  const [barterImageUploading, setBarterImageUploading] = useState(false);
-  const [brandLogoUrl, setBrandLogoUrl] = useState<string>('');
-  const [brandLogoUploading, setBrandLogoUploading] = useState(false);
+
+  // --- NEW: DRAFT PERSISTENCE ---
+  const STORAGE_KEY = `collab_draft_${username}`;
+  
+  // Restore on mount
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        const data = JSON.parse(saved);
+        if (data.collabType) setCollabType(data.collabType);
+        if (data.brandName && !brandName) setBrandName(data.brandName);
+        if (data.brandEmail && !brandEmail) setBrandEmail(data.brandEmail);
+        if (data.brandInstagram && !brandInstagram) setBrandInstagram(data.brandInstagram);
+        if (data.campaignDescription) setCampaignDescription(data.campaignDescription);
+        if (data.exactBudget) setExactBudget(data.exactBudget);
+        if (data.deadline) setDeadline(data.deadline);
+        
+        // Only show toast if there's significant progress
+        if (data.brandName || data.campaignDescription || data.exactBudget) {
+          toast('Welcome back! Draft restored.', {
+            icon: '📝',
+            duration: 3000,
+          });
+        }
+
+        // If we filled anything, mark as having started offer
+        setHasStartedOffer(true);
+      }
+    } catch (e) {
+      console.warn('[Draft] Failed to restore:', e);
+    }
+  }, [username]);
+
+  // Persist on change
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      const data = {
+        collabType,
+        brandName,
+        brandEmail,
+        brandInstagram,
+        campaignDescription,
+        exactBudget,
+        deadline,
+        timestamp: Date.now()
+      };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    }, 1000);
+    return () => clearTimeout(timer);
+  }, [collabType, brandName, brandEmail, brandInstagram, campaignDescription, exactBudget, deadline, STORAGE_KEY]);
+
+  // --- NEW: SMART EMAIL LOOKUP ---
+  useEffect(() => {
+    const email = brandEmail.trim().toLowerCase();
+    if (!email || !email.includes('@') || email.length < 5) {
+      setLookupStatus('idle');
+      return;
+    }
+
+    // Skip if already found / logged in with this email
+    if (useBrandProfile && email === (profile?.email || user?.email || '').toLowerCase()) return;
+
+    const timer = setTimeout(async () => {
+      setLookupStatus('loading');
+      try {
+        const apiBase = getApiBaseUrl(); 
+        const res = await fetch(`${apiBase}/api/collab/lookup-brand?email=${encodeURIComponent(email)}`);
+        const json = await res.json();
+        
+        if (res.ok && json.success && json.data) {
+          setLookupStatus('found');
+          setLookupData(json.data);
+          
+          // Auto-fill if empty
+          if (!brandName.trim() && json.data.brand_name) setBrandName(json.data.brand_name);
+          if (!brandLogoUrl && json.data.logo) setBrandLogoUrl(json.data.logo);
+          if (!brandInstagram.trim() && json.data.instagram) setBrandInstagram(json.data.instagram);
+          
+          setUseBrandProfile(true);
+        } else {
+          setLookupStatus('not_found');
+          setLookupData(null);
+        }
+      } catch (e) {
+        setLookupStatus('idle'); // Silent fail
+      }
+    }, 600);
+    
+    return () => clearTimeout(timer);
+  }, [brandEmail, profile, user, useBrandProfile, brandName, brandLogoUrl, brandInstagram]);
 
   const jumpToOfferForm = (options?: { openCustom?: boolean }) => {
     setHasStartedOffer(true);
@@ -670,18 +824,8 @@ const CollabLinkLanding = () => {
   }, [searchParams, hasStartedOffer]);
 
   // Save and continue later
-  const [showSaveDraftModal, setShowSaveDraftModal] = useState(false);
-  const [draftEmail, setDraftEmail] = useState('');
-  const [saveDraftSubmitting, setSaveDraftSubmitting] = useState(false);
-  const [newNicheInput, setNewNicheInput] = useState('');
-  const [showCustomFlow, setShowCustomFlow] = useState(false);
-  const [templateContinueNudge, setTemplateContinueNudge] = useState(0);
-
-  // Deal Templates State (Moved up to fix Hook Order violations)
-  const [localDealTemplates, setLocalDealTemplates] = useState<DealTemplate[]>([]);
-  const [isEditingTemplates, setIsEditingTemplates] = useState(false);
-  const [editingTemplate, setEditingTemplate] = useState<DealTemplate | null>(null);
-  const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(null);
+  const formRef = useRef<HTMLFormElement | null>(null);
+  const readinessBadgeRef = useRef<HTMLDivElement | null>(null);
   const headerSectionRef = useRef<HTMLDivElement | null>(null);
   const overviewSectionRef = useRef<HTMLDivElement | null>(null);
   const packagesSectionRef = useRef<HTMLDivElement | null>(null);
@@ -829,29 +973,6 @@ const CollabLinkLanding = () => {
   }, [profile, user?.id, creator]);
 
   const isDeadlineProvided = Boolean(deadline);
-  const isBudgetProvided = collabType === 'affiliate' ? true : collabType === 'paid' ? Number(exactBudget) > 0 : collabType === 'barter' ? Number(barterValue) > 0 : collabType === 'hybrid' ? (Number(exactBudget) > 0 && Number(barterValue) > 0) : true;
-  const isBarterLikeCollab = (type: string | null | undefined) => type === 'barter' || type === 'hybrid' || type === 'both';
-
-  const isStep1Ready = Boolean(collabType && deliverables.length > 0);
-  const isValidBrandEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(brandEmail);
-  const isProductImageRequired = Boolean(selectedTemplateId) || isBarterLikeCollab(collabType);
-  const isProductImageReady = isProductImageRequired ? Boolean(String(barterProductImageUrl || '').trim()) : true;
-  const isLogoReady = Boolean(String(brandLogoUrl || '').trim());
-  const isStep2Ready = Boolean(brandEmail.trim() && isValidBrandEmail && isProductImageReady && isLogoReady);
-
-  const completionChecks = useMemo(() => ([
-    { label: 'Collab type', complete: isStep1Ready },
-    { label: 'Contact', complete: isStep2Ready },
-  ]), [
-    isStep1Ready,
-    isStep2Ready,
-  ]);
-
-  const [showSubmittingTrust, setShowSubmittingTrust] = useState(false);
-  const submittingChecklist = [
-    'Sending offer...',
-    'Notifying creator...',
-  ];
 
   const typeSectionTitle = 'bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent';
   const typeLabel = 'bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent';
@@ -2373,1024 +2494,138 @@ const CollabLinkLanding = () => {
 	          <div className="flex flex-col md:grid md:grid-cols-[minmax(0,1fr)_380px] items-start gap-7 md:gap-8 w-full">
 
             {/* LEFT COLUMN - Creator Context */}
-		            <div className="w-full shrink-0 space-y-3 lg:space-y-5 z-10">
+		            <div className="w-full shrink-0 z-10">
+  <div className="flex flex-col items-center justify-center pt-8 pb-4">
+    <div className="w-[100px] h-[100px] rounded-full overflow-hidden border border-slate-100 shadow-sm relative mb-4">
+      {creator.profile_photo ? (
+        <img src={creator.profile_photo} alt={displayCreatorName} className="w-full h-full object-cover" />
+      ) : (
+        <div className="w-full h-full flex items-center justify-center bg-teal-50 text-teal-700 font-black text-3xl">
+          {displayCreatorName.charAt(0)}
+        </div>
+      )}
+      <div className="absolute bottom-1 right-1 bg-white rounded-full p-0.5">
+        <VerificationBadge size="sm" />
+      </div>
+    </div>
+    
+    <h1 className="text-2xl font-black text-slate-900 mb-1">{displayCreatorName}</h1>
+    <h2 className="text-[12px] font-black text-emerald-600 tracking-wider uppercase">@{normalizedHandle}</h2>
+    
+    <div className="flex justify-center flex-wrap gap-2 mt-4">
+      <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-slate-200">
+        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+        <span className="text-[9px] font-black tracking-widest text-slate-500 uppercase">Typical Collab: {creator.collab_deal_preference === 'barter_only' ? 'Barter' : 'Paid'}</span>
+      </div>
+      <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-amber-200 bg-amber-50">
+        <Sparkles className="w-3 h-3 text-amber-500" />
+        <span className="text-[9px] font-black tracking-widest text-amber-700 uppercase">Fast Response</span>
+      </div>
+    </div>
+  </div>
 
-              {/* Header - Hero */}
-              <div ref={headerSectionRef} className="mb-5 pt-2 lg:mb-0 lg:pt-0 relative">
-                <div className="absolute -top-10 left-1/2 -translate-x-1/2 w-64 h-64 bg-teal-500/8 rounded-full blur-3xl pointer-events-none" />
+  {showPackagesSection && (
+    <div className="mt-8 mb-12 w-full max-w-[500px] mx-auto px-4 sm:px-0">
+      <div className="mb-6">
+        <h3 className="text-[20px] font-bold text-slate-900 leading-tight">Services</h3>
+        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">Select a package to start</p>
+      </div>
 
-                <div className="flex items-center gap-3.5 mb-5 md:mb-7 relative">
-                  <div className="relative shrink-0">
-                    <div className="w-14 h-14 rounded-2xl overflow-hidden border-2 border-slate-200 shadow-lg mt-0.5">
-                      {creator.profile_photo && !profilePhotoError ? (
-                        <img
-                          src={creator.profile_photo}
-                          alt={`${displayCreatorName} profile`}
-                          className="w-full h-full object-cover"
-                          referrerPolicy="no-referrer"
-                          onError={() => setProfilePhotoError(true)}
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-teal-500/20 to-emerald-600/20 text-teal-700 font-black text-xl">
-                          {displayCreatorName.slice(0, 1).toUpperCase()}
-                        </div>
-                      )}
-                    </div>
-                    {/* Verification Badge — shown when payout_verified or onboarding_complete */}
-                    {(creator as any)?.payout_verified || creator.onboarding_complete ? (
-                      <div className="absolute -bottom-0.5 -right-0.5">
-                        <VerificationBadge size="md" />
-                      </div>
-                    ) : (
-                      <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-emerald-500 rounded-full border-2 border-slate-50" />
-                    )}
-                  </div>
-
-                  <div className="flex flex-col">
-                    <div className="flex items-center gap-1.5">
-                      {editMode ? (
-                        <Input
-                          className="h-7 text-[17px] font-black text-slate-900 w-auto min-w-[120px] px-2 bg-white/50 border-slate-300 border-dashed focus:border-teal-500 transition-all"
-                          defaultValue={displayCreatorName}
-                          onBlur={(e) => handleInlineProfileUpdate('name', e.target.value)}
-                          placeholder="Your Name"
-                        />
-                      ) : (
-                        <h2 className="text-[17px] font-black text-slate-900 leading-tight">{displayCreatorName}</h2>
-                      )}
-                      {(creator as any)?.payout_verified || creator.onboarding_complete ? (
-                        <div className="flex items-center gap-1 bg-blue-50 border border-blue-200 rounded-full px-2 py-0.5">
-                          <CheckCircle2 className="h-3 w-3 text-blue-500" />
-                          <span className="text-[10px] font-black text-blue-600 uppercase tracking-wider">Verified</span>
-                        </div>
-                      ) : null}
-                    </div>
-                    {editMode ? (
-                      <div className="mt-1 flex gap-2 items-center">
-                        <span className="text-[11px] text-slate-400 font-bold uppercase tracking-widest">Category:</span>
-                        <Input
-                          className="h-6 text-[12px] font-bold text-teal-600 px-2 bg-white/50 border-slate-300 border-dashed w-32"
-                          defaultValue={creator.category || ''}
-                          onBlur={(e) => handleInlineProfileUpdate('creator_category', e.target.value)}
-                          placeholder="e.g. Lifestyle"
-                        />
-                      </div>
-                    ) : (
-                      <div className="flex flex-col gap-1 mt-1">
-                        <a
-                          href={`https://instagram.com/${normalizedHandle}`}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="text-[13px] text-teal-600 font-bold hover:underline w-fit"
-                        >
-                          @{normalizedHandle}
-                        </a>
-
-	                        <div className="mt-0.5 flex flex-col gap-0.5 text-[11px] font-medium text-slate-500 leading-snug">
-	                          <p>
-	                            {formatFollowers(primaryFollowers)} followers <span className="text-slate-300">•</span>{' '}
-	                            {avgReelViews ? `${Math.round(Number(avgReelViews) * 0.8 / 1000)}K–${Math.round(Number(avgReelViews) * 1.6 / 1000)}K` : '3K–10K'} avg views
-	                          </p>
-	                          <p>
-	                            {Math.round(Number(creator.trust_stats?.completion_rate ?? completionRate) || 0) || '—'}% reliability <span className="text-slate-300">•</span>{' '}
-	                            replies in {displayResponseLine.replace('~', '')}
-	                          </p>
-	                          <p>
-	                            {creator.category || creator.content_niches?.slice(0, 2).join(' / ') || 'Creator'} <span className="text-slate-300">•</span>{' '}
-	                            {audienceRegionLabel || 'India'}
-	                          </p>
-	                        </div>
-	                        <div className="mt-2 flex flex-col gap-1.5 text-[10.5px] font-semibold text-slate-500">
-	                          <div className="flex items-center gap-2">
-	                            <Zap className="h-3.5 w-3.5 text-amber-600" />
-	                            <span title={isDemoAnalytics.brandsContactedThisWeek ? estimatedAnalyticsTooltip : undefined}>
-	                              {displayAnalytics.brandsContactedThisWeek} brands contacted this creator this week
-	                            </span>
-	                          </div>
-	                          <div className="flex items-center gap-2">
-	                            <Zap className="h-3.5 w-3.5 text-teal-600" />
-	                            <span title={isDemoAnalytics.avgResponseTimeHours ? estimatedAnalyticsTooltip : undefined}>
-	                              Responds in {displayResponseLine.replace('~', '')}
-	                            </span>
-	                          </div>
-	                          <div className="flex items-center gap-2">
-	                            <TrendingUp className="h-3.5 w-3.5 text-slate-600" />
-	                            <span title={isDemoAnalytics.avgCampaignReach ? estimatedAnalyticsTooltip : undefined}>
-	                              Performance reach {Math.round(displayAnalytics.avgCampaignReach / 1000)}K
-	                            </span>
-	                          </div>
-	                        </div>
-	                      </div>
-	                    )}
-                  </div>
-                </div>
-
-                <div className="max-w-xl relative">
-                  <h1 className="text-[28px] md:text-4xl lg:text-[52px] font-[900] tracking-tight text-slate-900 mb-2.5 leading-[1.06]">
-                    Book {displayCreatorName.split(' ')[0]} for brand collaborations
-                  </h1>
-                  <p className="text-[14px] lg:text-[18px] font-medium text-slate-500 leading-relaxed max-w-xl">
-                    Choose a ready-made service and send an offer in under 1 minute.
-                  </p>
-                  <div className="mt-4 flex flex-col items-start gap-2">
-                    <Button
-                      type="button"
-                      onClick={() => document.getElementById('packages-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
-                      className="h-12 rounded-2xl bg-[#0FA47F] px-5 text-[11px] font-black uppercase tracking-[0.16em] text-white shadow-[0_10px_26px_rgba(15,164,127,0.20)] hover:bg-emerald-600"
-                    >
-                      Choose a Service
-                    </Button>
-                    <p className="text-[12px] font-semibold text-slate-500">
-                      No cold DM needed. Creator is notified instantly.
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              {/* 1. Trust Indicators (Creator-specific) */}
-	              <div className={`mb-3 md:mb-4 relative z-10 animate-in fade-in slide-in-from-bottom-2 duration-500 delay-150 ${showTrustSections ? '' : 'hidden'}`}>
-                <div className="grid grid-cols-3 gap-2.5 px-0">
-                  {[
-                    {
-                      label: `Replies in ${displayResponseLine.replace('~', '')}`,
-                      icon: <Zap className="h-5 w-5 md:h-6 md:w-6 text-emerald-700" />,
-                      desc: 'Fast response',
-                    },
-                    {
-                      label: `${Math.round(Number(creator.trust_stats?.completion_rate ?? completionRate) || 0) || 95}% delivery success`,
-                      icon: <ShieldCheck className="h-5 w-5 md:h-6 md:w-6 text-teal-700" />,
-                      desc: 'Reliability',
-                    },
-                    {
-                      label: `${creator.trust_stats?.brands_count || recentCollaborations.length || 3} brand collaborations`,
-                      icon: <BadgeCheck className="h-5 w-5 md:h-6 md:w-6 text-blue-700" />,
-                      desc: 'Social proof',
-                    },
-                  ].map((item, idx) => (
-                    <div key={idx} className="flex flex-col items-center text-center gap-1.5 rounded-2xl bg-white p-2 shadow-[0_6px_18px_rgba(15,23,42,0.06)] border border-slate-200/90 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_10px_26px_rgba(15,23,42,0.10)] hover:border-slate-300 active:scale-[0.985]">
-                      <div className={`shrink-0 rounded-xl p-2.5 border ${idx === 0 ? 'bg-emerald-100 border-emerald-200 text-emerald-700' :
-                        idx === 1 ? 'bg-teal-100 border-teal-200 text-teal-700' :
-                          'bg-blue-100 border-blue-200 text-blue-700'
-                        }`}>{item.icon}</div>
-                      <div>
-                        <p className="text-[10px] md:text-[11px] font-black text-slate-900 leading-tight mb-0.5">{item.label}</p>
-                        <p className="text-[8px] md:text-[10px] text-slate-400 font-bold uppercase tracking-tight">{item.desc}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {isOwner && editMode && !previewAsBrand && (
-                <div className="mb-6 md:mb-8 rounded-2xl border border-emerald-200 bg-emerald-50/60 p-4 shadow-[0_4px_14px_rgba(16,185,129,0.08)]">
-                  <div className="flex items-center justify-between mb-3">
-                    <p className="text-[11px] font-black uppercase tracking-widest text-emerald-700">Setup Checklist</p>
-                    <span className="text-[11px] font-black text-emerald-700">{setupCompletedCount}/{effectiveSetupChecklist.length} Complete</span>
-                  </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                    {effectiveSetupChecklist.map((item) => (
-                      <div
-                        key={item.key}
-                        className={`flex items-center gap-2 rounded-xl border px-3 py-2 ${item.complete
-                          ? 'border-emerald-200 bg-white text-emerald-700'
-                          : 'border-slate-200 bg-white text-slate-500'
-                          }`}
-                      >
-                        {item.complete ? (
-                          <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-600" />
-                        ) : (
-                          <Clock className="h-4 w-4 shrink-0 text-slate-400" />
-                        )}
-                        <span className="text-[12px] font-bold">{item.label}</span>
-                      </div>
-                    ))}
+      <div className="flex flex-col gap-5">
+        {dealTemplates.map((template, idx) => {
+          const isBarter = template.type === 'barter';
+          const formatPrice = (p) => "₹" + p.toLocaleString('en-IN');
+          
+          return (
+            <div key={template.id} className={cn(
+              "rounded-[28px] p-5 sm:p-6 relative shadow-sm transition-all duration-200 hover:-translate-y-0.5",
+              template.isPopular ? "border-2 border-emerald-500 bg-white" : "border border-slate-100 bg-white hover:border-slate-200 hover:shadow-md"
+            )}>
+              {template.isPopular && (
+                <div className="absolute -top-3 left-6 z-10">
+                  <div className="bg-emerald-500 text-white text-[9px] font-black uppercase tracking-widest px-3 py-1 rounded-full shadow-sm">
+                    Most Popular
                   </div>
                 </div>
               )}
-              {/* 3. Creator Snapshot Accordion (Premium Indian Context) */}
-              <div ref={overviewSectionRef} className={showTrustSections || showAudienceSections ? '' : 'hidden'}>
-                <Accordion
-                  type="single"
-                  collapsible
-	                  className="w-full mb-3 relative z-20"
-                  value={openAccordionValue}
-                  onValueChange={setOpenAccordionValue}
-                >
-                <AccordionItem value="item-1" className="rounded-2xl overflow-hidden border-b-0" style={{ border: "1.5px solid #DDE8E6", background: "#FDFFFE", boxShadow: "0 4px 12px rgba(0,0,0,0.04)" }}>
-                  <AccordionTrigger className="flex items-center justify-between px-5 py-4 border-b border-slate-100 hover:no-underline">
-                    <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-xl bg-teal-50 border border-teal-100 flex items-center justify-center">
-                        <TrendingUp className="w-4 h-4 text-teal-600" />
-                      </div>
-                      <div className="text-left">
-                        <h3 className="text-[16px] font-black text-slate-900 leading-tight">Why Brands Book</h3>
-                        <p className="text-[9px] text-slate-500 font-bold uppercase tracking-wider mt-0.5">Performance & Trust</p>
-                      </div>
-                    </div>
-                    {audienceRegionLabel && (
-                      <span className="flex items-center gap-1 text-[10px] font-black text-teal-700 bg-teal-50 border border-teal-200 rounded-full px-2.5 py-1 uppercase tracking-wide mr-2">
-                        <MapPin className="w-3 h-3" />{audienceRegionLabel}
-                      </span>
-                    )}
-                  </AccordionTrigger>
-                  <AccordionContent className="p-4 space-y-8 bg-[#F7F9FB]">
-                    {showTrustSections && (
-                    <div className="space-y-8">
-                    {/* 1. Creator Insights Grid */}
-                    <div className="space-y-3">
-                      <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-widest pl-1">Creator Performance</h4>
-                      <div className="grid grid-cols-2 gap-2.5">
-                        {/* Avg Reel Views */}
-                        <div className="bg-white p-3.5 rounded-xl border border-[#EEF2F5] shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
-                          <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1">Engagement</p>
-                          {editMode ? (
-                            <Input
-                              type="number"
-                              className="h-7 text-[16px] font-black text-slate-900 px-1 bg-slate-50 border-slate-200 border-dashed"
-                              defaultValue={creator.avg_reel_views || ''}
-                              onBlur={(e) => handleInlineProfileUpdate('avg_reel_views', Number(e.target.value))}
-                              placeholder="0"
-                            />
-                          ) : avgReelViews ? (
-                            <p className="text-[18px] font-black text-slate-900 leading-tight">
-                              {Number(avgReelViews) >= 1000 ? `${Math.round(Number(avgReelViews) / 1000)}K+` : avgReelViews}
-                            </p>
-                          ) : (
-                            <p className="text-[18px] font-black text-slate-300">—</p>
-                          )}
-                        </div>
-
-                        {/* Response Time */}
-                        <div className="bg-white p-3.5 rounded-xl border border-[#EEF2F5] shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
-                          <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1">Response Time</p>
-                          {(avgResponseHours && avgResponseHours > 0) ? (
-                            <p className="text-[18px] font-black text-slate-900 leading-tight">{`${Math.round(avgResponseHours)}h`}</p>
-                          ) : (
-                            <p className="text-[18px] font-black text-slate-300">—</p>
-                          )}
-                        </div>
-
-                        {/* Brands Worked */}
-                        <div className="bg-white p-3.5 rounded-xl border border-[#EEF2F5] shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
-                          <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1">Brands Worked</p>
-                          {editMode ? (
-                            <Input
-                              type="number"
-                              className="h-7 text-[16px] font-black text-slate-900 px-1 bg-slate-50 border-slate-200 border-dashed"
-                              defaultValue={creator.past_brand_count || ''}
-                              onBlur={(e) => handleInlineProfileUpdate('past_brand_count', Number(e.target.value))}
-                              placeholder="0"
-                            />
-                          ) : (creator.trust_stats?.brands_count != null && creator.trust_stats.brands_count > 0) ? (
-                            <p className="text-[18px] font-black text-emerald-600 leading-tight">{creator.trust_stats.brands_count}</p>
-                          ) : (
-                            <p className="text-[18px] font-black text-slate-400 leading-tight">New</p>
-                          )}
-                        </div>
-
-                        {/* Delivery success / Completion Rate */}
-                        <div className="bg-white p-3.5 rounded-xl border border-[#EEF2F5] shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
-                          <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1">Delivery success</p>
-                          {(creator.trust_stats?.completion_rate != null && creator.trust_stats.completion_rate > 0) ? (
-                            <p className="text-[18px] font-black text-slate-900 leading-tight">{`${Math.round(creator.trust_stats.completion_rate)}%`}</p>
-                          ) : (
-                            <p className="text-[18px] font-black text-slate-300">—</p>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* 2. Creator Logistics Grid */}
-                    <div className="space-y-3">
-                      <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-widest pl-1">Creator Logistics</h4>
-                      <div className="grid grid-cols-2 gap-2.5">
-                        <div className="bg-white p-3.5 rounded-xl border border-[#EEF2F5] shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
-                          <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1">Availability</p>
-                          <p className="text-[13px] font-black text-emerald-600 leading-tight">Open this month</p>
-                        </div>
-                        <div className="bg-white p-3.5 rounded-xl border border-[#EEF2F5] shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
-                          <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1">Base City</p>
-                          <p className="text-[13px] font-black text-slate-900 leading-tight truncate">{audienceRegionLabel || 'Global'}</p>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* 3. Typical Collab Rate (Anchor) */}
-                    <div className="space-y-3">
-                      <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-widest pl-1">Typical Collab Rate</h4>
-                      <div className="bg-white p-4 rounded-xl border border-[#EEF2F5] shadow-[0_2px_8px_rgba(0,0,0,0.02)] flex flex-col gap-3">
-                        <div>
-                          {editMode ? (
-                            <div className="flex items-center gap-2">
-                              <span className="text-[14px] font-black text-slate-900 leading-tight">₹</span>
-                              <Input
-                                type="number"
-                                className="h-8 text-[16px] font-black text-slate-900 px-2 bg-slate-50 border-slate-200 border-dashed w-32"
-                                defaultValue={creator.suggested_reel_rate || ''}
-                                onBlur={(e) => handleInlineProfileUpdate('suggested_reel_rate', Number(e.target.value))}
-                                placeholder="Base Rate"
-                              />
-                            </div>
-                          ) : (
-                            <p className="text-[20px] font-black text-slate-900 leading-tight">
-                              {(() => {
-                                const reelRate = creator.suggested_reel_rate;
-                                const paidMin = creator.suggested_paid_range_min;
-                                const paidMax = creator.suggested_paid_range_max;
-                                if (paidMin && paidMax) {
-                                  return `₹${Math.round(paidMin / 1000)}K – ₹${Math.round(paidMax / 1000)}K`;
-                                }
-                                if (reelRate) {
-                                  return `₹${Math.round(reelRate / 1000)}K+`;
-                                }
-                                return '—';
-                              })()}
-                            </p>
-                          )}
-                        </div>
-                        <div className="pt-3 border-t border-[#EEF2F5]">
-                          <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2">Includes</p>
-                          <ul className="space-y-1.5">
-                            <li className="flex items-center gap-2 text-[12px] font-bold text-slate-700">
-                              <Check className="w-3.5 h-3.5 text-emerald-500" strokeWidth={2.5} />
-                              1 Reel
-                            </li>
-                            <li className="flex items-center gap-2 text-[12px] font-bold text-slate-700">
-                              <Check className="w-3.5 h-3.5 text-emerald-500" strokeWidth={2.5} />
-                              Stories usually included
-                            </li>
-                            <li className="flex items-center gap-2 text-[12px] font-bold text-slate-700">
-                              <Check className="w-3.5 h-3.5 text-emerald-500" strokeWidth={2.5} />
-                              Delivery: 3–5 days
-                            </li>
-                          </ul>
-                        </div>
-                      </div>
-                    </div>
-                    </div>
-                    )}
-
-                    {/* 4. Audience Insights Grid */}
-                    {showAudienceSections && (
-                    <div className="space-y-3 pb-4">
-                      <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-widest pl-1">Audience Snapshot</h4>
-                      <div className="grid grid-cols-2 gap-2.5">
-                        <div className="bg-white p-3.5 rounded-xl border border-[#EEF2F5] shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
-                          <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1">Core Geo</p>
-                          <p className="text-[13px] font-black text-slate-900 leading-tight truncate">{audienceCities[0] || 'India'}</p>
-                        </div>
-                        <div className="bg-white p-3.5 rounded-xl border border-[#EEF2F5] shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
-                          <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1">Age Group</p>
-                          <p className="text-[13px] font-black text-slate-900 leading-tight">{creator.audience_age_range || '18–34'}</p>
-                        </div>
-                        <div className="bg-white p-3.5 rounded-xl border border-[#EEF2F5] shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
-                          <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1">Reel Views</p>
-                          <p className="text-[15px] font-black text-slate-900 leading-tight">
-                            {avgReelViews
-                              ? `${Math.round(Number(avgReelViews) * 0.8 / 1000)}K–${Math.round(Number(avgReelViews) * 1.6 / 1000)}K`
-                              : '3K–10K'
-                            }
-                          </p>
-                        </div>
-                        <div className="bg-white p-3.5 rounded-xl border border-[#EEF2F5] shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
-                          <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1">Story Reach</p>
-                          <p className="text-[15px] font-black text-slate-900 leading-tight">
-                            {`${Math.round(primaryFollowers * 0.04 / 1000)}K–${Math.round(primaryFollowers * 0.09 / 1000)}K`}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                    )}
-                  </AccordionContent>
-                </AccordionItem>
-                </Accordion>
+              
+              <div className="flex justify-between items-start mb-3">
+                <h4 className="text-[18px] sm:text-[20px] font-black text-slate-900 leading-tight">{template.label}</h4>
+                <div className={cn(
+                  "w-10 h-10 rounded-full flex items-center justify-center text-lg shadow-sm border",
+                  template.isPopular ? "bg-amber-50 border-amber-100" : "bg-slate-50 border-slate-100"
+                )}>
+                  {template.icon || '📦'}
+                </div>
               </div>
-	            {/* LEFT COLUMN continues below (services + bio) */}
-
-            {/* Value prop — eyebrow divider before services */}
-            {showPackagesSection && (
-              <div className="flex items-center gap-2 px-1 mb-2">
-                <div className="flex-1 h-px bg-gradient-to-r from-transparent via-slate-200 to-transparent" />
-                <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Services offered</p>
-                <div className="flex-1 h-px bg-gradient-to-r from-transparent via-slate-200 to-transparent" />
-              </div>
-            )}
-
-            {/* 1.5. Services (Moved higher for conversion speed) */}
-		            <div id="packages-section" ref={packagesSectionRef} className={`deal-templates-section mb-2 md:mb-4 relative z-10 animate-in fade-in slide-in-from-bottom-2 duration-500 delay-200 w-full p-4 lg:p-6 rounded-3xl ${showPackagesSection ? '' : 'hidden'}`} style={{ background: "linear-gradient(180deg,#F0FBF7 0%,#F7F9FB 100%)", border: "1px solid #D4EDDF", boxShadow: "0 16px 40px rgba(15,23,42,0.06)" }}>
-	              <div className="flex items-center justify-between mb-3.5">
-                <div className="flex flex-col">
-                  <span className="text-[10px] font-black uppercase tracking-widest mb-1 px-1" style={{ color: "#0FA47F" }}>Fastest way to collaborate</span>
-                  <div className="flex items-center gap-2">
-                    <Sparkles className="h-4 w-4 text-amber-500" />
-                    <span className="text-[15px] font-black text-slate-800 tracking-tight">Choose how you'd like to collaborate</span>
-                  </div>
-                  {isOwner && !previewAsBrand && (
-                    <p className="mt-1 text-[11px] font-semibold text-slate-500">
-                      Tip: Use <span className="text-slate-700 font-black">Manage</span> to edit service name, deliverables, price, and mark one as Most Popular.
-                    </p>
+              
+              <p className="text-[14px] text-slate-500 font-medium mb-8 leading-relaxed max-w-[85%]">
+                {template.description}
+              </p>
+              
+              <div className="flex justify-between items-end mt-auto">
+                <span className={cn(
+                  "text-[22px] sm:text-[26px] font-black tracking-tight",
+                  template.isPopular ? "text-emerald-500" : "text-slate-900"
+                )}>
+                  {isBarter ? "Barter" : formatPrice(template.budget)}
+                </span>
+                
+                <button
+                  onClick={() => {
+                    handleTemplateSelect(template);
+                    setCurrentStep(2);
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                  }}
+                  className={cn(
+                    "px-6 py-2.5 rounded-full font-bold text-[13px] transition-all active:scale-95 shadow-sm transform hover:-translate-y-0.5",
+                    template.isPopular 
+                      ? "bg-emerald-500 text-white hover:bg-emerald-600 shadow-emerald-500/20" 
+                      : "bg-slate-50 text-slate-600 hover:bg-slate-100 border border-slate-200"
                   )}
-                </div>
-                {isOwner && (
-                  <button type="button"
-                    onClick={() => setIsEditingTemplates(!isEditingTemplates)}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-100/80 hover:bg-slate-200 transition-all text-slate-600 active:scale-95"
-                  >
-                    <Edit className="h-3 w-3" />
-                    <span className="text-[10px] font-black uppercase tracking-tight">Manage</span>
-                  </button>
-                )}
-              </div>
-
-	              <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5 items-stretch">
-	                {dealTemplates.map((template, idx) => {
-                  const deliverablesList = template.deliverables.map(d => {
-                    const qty = template.quantities[d] || 1;
-                    if (d === 'Unboxing Video') return `${qty} Unboxing`;
-                    return `${qty} ${d.replace('Instagram ', '')}`;
-                  }).join(' + ');
-
-                  return (
-	                    <div
-	                      key={template.id}
-	                      className={`relative group/card ${idx === 2 ? 'md:col-span-2' : ''}`}
-	                    >
-                      {template.isPopular && (
-	                        <div className="absolute -top-8 left-1/2 -translate-x-1/2 z-20 whitespace-nowrap">
-                          <div className="bg-gradient-to-r from-amber-200 via-amber-300 to-orange-300 text-[#3D2602] text-[10px] font-black px-4 py-1.5 rounded-full border border-amber-200 shadow-[0_20px_44px_rgba(245,158,11,0.55)] uppercase tracking-wider flex items-center gap-1.5 scale-[1.02]">
-                            <Sparkles className="h-3 w-3" />
-                            Most Popular
-                          </div>
-                        </div>
-                      )}
-	                      <button type="button"
-	                        onClick={() => handleTemplateSelect(template)}
-		                        className={`w-full h-full text-left p-3 lg:p-3.5 rounded-3xl border transition-all duration-300 group min-h-[292px] md:min-h-[318px] lg:min-h-[324px] flex flex-col relative hover:-translate-y-1 hover:scale-[1.02] active:scale-[0.98] ${selectedTemplateId === template.id ? 'border-[#0FA47F] border-2 bg-[linear-gradient(180deg,#F4FCF8_0%,#ECF8F5_100%)] shadow-[0_22px_48px_rgba(15,164,127,0.24)] scale-[1.02] ring-2 ring-emerald-200/80' : template.isPopular ? 'border-2 border-amber-300 bg-[linear-gradient(180deg,#FFF7DA_0%,#FDEFC7_100%)] shadow-[0_22px_56px_rgba(245,158,11,0.22)] ring-1 ring-amber-200/60 scale-[1.02]' : 'border-slate-200 bg-[linear-gradient(180deg,#FFFFFF_0%,#F8FBFA_100%)] hover:border-teal-400 hover:bg-teal-50/70 shadow-[0_10px_24px_rgba(15,23,42,0.12)] hover:shadow-[0_22px_44px_rgba(15,23,42,0.18)]'}`}
-		                      >
-	                        {selectedTemplateId === template.id && (
-	                          <div className="absolute top-3 right-3 z-10">
-	                            <div className="flex items-center gap-1.5 bg-[#0FA47F] text-white px-2.5 py-1 rounded-full shadow-[0_10px_22px_rgba(15,164,127,0.28)] border border-white/20">
-	                              <Check className="w-3.5 h-3.5" strokeWidth={3} />
-	                              <span className="text-[10px] font-black uppercase tracking-wider">Selected</span>
-	                            </div>
-	                          </div>
-	                        )}
-                        <div className="flex items-center justify-between mb-2.5">
-                          <div className={`w-9 h-9 rounded-2xl ${template.isPopular ? 'bg-white/80 border-amber-200' : 'bg-white border-slate-100'} border flex items-center justify-center shadow-sm text-lg`}>
-                            {template.icon}
-                          </div>
-	                          {selectedTemplateId === template.id ? (
-	                            <div className="bg-[#0FA47F] text-white rounded-full p-1 shadow-sm animate-in zoom-in duration-300 opacity-0">
-	                              <CheckCircle2 className="w-5 h-5" />
-	                            </div>
-	                          ) : (
-	                            <ChevronRight className="w-4 h-4 text-slate-300 group-hover:text-teal-500 group-hover:translate-x-0.5 transition-all" />
-	                          )}
-                        </div>
-                        <div className="flex-1">
-                          <p className="text-[14px] lg:text-[16px] font-black text-slate-900 mb-0.5">{template.label}</p>
-                          <div className="mb-1.5">
-                            <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Includes</p>
-                            <div className="space-y-1">
-                              {template.deliverables.map((d, di) => {
-                                const qty = template.quantities[d] || 1;
-                                const label = d === 'Unboxing Video' ? 'Unboxing' : d.replace('Instagram ', '');
-                                return (
-                                  <div key={di} className="flex items-center gap-1.5">
-                                    <div className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: "#0FA47F", opacity: 0.7 }} />
-                                    <span className="text-[11px] lg:text-[13px] font-bold text-slate-600">{qty} {label}</span>
-                                  </div>
-                                );
-                              })}
-                            </div>
-                            {template.type === 'barter' && (
-                              <p className="mt-2 text-[11px] font-bold text-slate-600">
-                                Free products as payment
-                              </p>
-                            )}
-                            {template.addons && template.addons.length > 0 && (
-                              <div className="mt-2.5">
-                                <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Add-ons Available</p>
-                                <div className="space-y-1">
-                                  {template.addons.map((addon, ai) => (
-                                    <div key={addon.id || ai} className="flex items-center justify-between gap-1.5 bg-slate-50 border border-slate-100/60 rounded px-2 py-1">
-                                      <span className="text-[10px] lg:text-[11px] font-bold text-slate-600 truncate">{addon.label}</span>
-                                      <span className="text-[10px] lg:text-[11px] font-black text-teal-600">+₹{addon.price}</span>
-                                    </div>
-                                  ))}
-                                </div>
-                              </div>
-                            )}
-                            <div className="mt-2.5 flex items-center gap-1.5 py-1 px-2 bg-slate-50 border border-slate-100/50 rounded-lg w-fit">
-                              <Clock className="w-3 h-3 text-slate-400" />
-                              <span className="text-[10px] lg:text-[11px] font-black text-slate-500 uppercase tracking-tight">Days to make content: {template.deadlineDays || 7} days</span>
-                            </div>
-                          </div>
-                        </div>
-                        <div className={`mt-auto pt-2.5 border-t flex flex-col gap-2 ${template.isPopular ? 'border-amber-200/80' : 'border-slate-100/60'}`}>
-                          {template.isPopular && (
-                            <p className="text-[9px] font-bold text-amber-700 italic leading-tight">
-                              Most brands choose this package for higher engagement
-                            </p>
-                          )}
-                          <div className="flex flex-col gap-2">
-	                            <p className={`leading-[0.92] tracking-tight drop-shadow-[0_1px_0_rgba(0,0,0,0.06)] ${template.type === 'barter' ? 'text-[26px] xl:text-[38px]' : 'text-[38px] md:text-[44px] xl:text-[54px]'} font-black ${template.isPopular ? 'text-[#0B8E6E]' : 'text-[#0FA47F]'}`}>
-                              {template.type === 'barter' ? 'Free products as payment' : `₹${template.budget.toLocaleString()}`}
-                            </p>
-                            <p className="text-[9px] font-black uppercase tracking-[0.18em] text-slate-500 -mt-1">Starting price</p>
-	                            <div className="w-full px-3 py-1.5 rounded-xl transition-all border font-black uppercase tracking-wider group-active:scale-95 flex items-center justify-center gap-1.5 text-[10px] lg:text-[11px]" style={selectedTemplateId === template.id ? { backgroundColor: "#0FA47F", color: "white", borderColor: "#0FA47F" } : { backgroundColor: "#0FA47F", color: "white", borderColor: "#0FA47F" }}>
-	                              {selectedTemplateId === template.id ? (
-	                                '✓ Selected'
-	                              ) : (
-	                                'Choose this service'
-	                              )}
-	                            </div>
-                          </div>
-                        </div>
-                      </button>
-
-                      {isOwner && isEditingTemplates && (
-                        <div className="absolute top-2 right-2 z-10">
-                          <button type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setEditingTemplate(template);
-                            }}
-                            className="p-1.5 rounded-full bg-white border border-slate-200 shadow-sm hover:border-teal-500 hover:text-teal-600 transition-all active:scale-90"
-                          >
-                            <Edit className="h-3 w-3" />
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-
-              {!showCustomFlow && (
-                <div className="mt-4 text-center">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setShowCustomFlow(true);
-                      setCurrentStep(1);
-                      setSelectedTemplateId(null);
-                      triggerHaptic(HapticPatterns.success);
-                    }}
-                    className="text-[11px] font-black uppercase tracking-[0.14em] text-slate-500 hover:text-slate-900"
-                  >
-                    Need something custom? Create a custom deal
-                  </button>
-                </div>
-              )}
-
-              {!showCustomFlow && (
-                <div className={`mt-3.5 rounded-2xl border border-slate-200 bg-gradient-to-br from-slate-50 via-white to-slate-100 p-4 lg:p-5 text-slate-800 relative overflow-hidden shadow-[0_8px_20px_rgba(15,23,42,0.08)] ${showPackagesSection ? '' : 'hidden'}`}>
-                  <div className="absolute -top-12 -right-8 w-28 h-28 bg-slate-300/20 blur-2xl rounded-full" />
-                  <p className="text-[9px] font-black uppercase tracking-widest text-slate-500 mb-1.5">How It Works</p>
-                  <h3 className="text-[18px] lg:text-[22px] leading-[1.2] font-black text-slate-900 mb-2">
-                    Send an offer in under a minute
-                  </h3>
-                  <p className="text-[12px] lg:text-[13px] text-slate-600 font-semibold leading-relaxed max-w-xl">
-                    Choose a service, add a short brief, and send the offer. Legal details come later only if the creator is interested.
-                  </p>
-	                  <div className="mt-2.5 grid grid-cols-3 gap-2">
-	                    {[
-	                      { n: 1, title: 'Choose service', icon: <Package className="w-3.5 h-3.5 text-slate-700" /> },
-	                      { n: 2, title: 'Add brief + budget', icon: <PenLine className="w-3.5 h-3.5 text-slate-700" /> },
-	                      { n: 3, title: 'Creator reviews it', icon: <Send className="w-3.5 h-3.5 text-slate-700" /> },
-	                    ].map((step) => (
-	                      <div key={step.n} className="rounded-xl bg-white border border-slate-200 px-2 py-1.5 flex flex-col gap-0.5">
-	                        <div className="flex items-center justify-end">
-	                          <span className="w-5 h-5 rounded-lg bg-slate-50 border border-slate-200 flex items-center justify-center">{step.icon}</span>
-	                        </div>
-	                        <p className="text-[10.5px] font-black text-slate-800 leading-tight">
-	                          0{step.n} {step.title}
-	                        </p>
-	                      </div>
-	                    ))}
-	                  </div>
-	                </div>
-              )}
-
-              <div className={`mt-3.5 rounded-2xl border border-slate-200 bg-white p-4 lg:p-5 shadow-[0_8px_20px_rgba(15,23,42,0.06)] ${showPastWorkSection ? '' : 'hidden'}`}>
-                <div className="flex items-center justify-between mb-2.5">
-                  <h3 className="text-[14px] font-black text-slate-900 tracking-tight">
-                    Past Work <span className="text-slate-400 font-black">(social proof)</span>
-                  </h3>
-                </div>
-                {portfolioItems.length > 0 && (
-                  <div className="mb-4">
-                    <p className="mb-3 text-[11px] font-black uppercase tracking-[0.12em] text-slate-500">Work Highlights</p>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      {portfolioItems.map((item, idx) => {
-                        const href = String(item.sourceUrl || '').startsWith('http') ? String(item.sourceUrl || '') : `https://${String(item.sourceUrl || '')}`;
-                        const isVideoUpload = item.mediaType === 'video' || isPortfolioVideoUrl(href);
-                        const isInsta = href.includes('instagram.com');
-                        const isYT = href.includes('youtube.com') || href.includes('youtu.be');
-                        const isReel = href.includes('instagram.com/reels') || href.includes('instagram.com/reel');
-                        const isShort = href.includes('youtube.com/shorts');
-                        const isPost = href.includes('instagram.com/p/');
-                        const label = item.title || (isVideoUpload ? 'Uploaded Video' : isReel ? 'Instagram Reel' : isShort ? 'YouTube Short' : isPost ? 'Instagram Post' : isYT ? 'YouTube' : isInsta ? 'Instagram' : 'Work Link');
-                        const instagramEmbedUrl = isInsta ? getInstagramEmbedUrl(href) : '';
-                        const youtubeEmbedUrl = isYT ? getYoutubeEmbedUrl(href) : '';
-                        const embedUrl = isVideoUpload ? '' : (instagramEmbedUrl || youtubeEmbedUrl);
-                        return (
-                          <div
-                            key={`${href}-${idx}`}
-                            className="overflow-hidden rounded-[22px] border border-slate-200 bg-slate-50 shadow-[0_10px_24px_rgba(15,23,42,0.05)]"
-                          >
-                            <div className="flex items-center gap-2 border-b border-slate-200 bg-white px-3 py-2.5">
-                              <div className="w-9 h-9 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-center shrink-0">
-                                {isInsta ? (
-                                  <Instagram className="w-4 h-4 text-pink-600" />
-                                ) : isYT ? (
-                                  <Youtube className="w-4 h-4 text-red-600" />
-                                ) : isVideoUpload ? (
-                                  <Clapperboard className="w-4 h-4 text-emerald-600" />
-                                ) : (
-                                  <ExternalLink className="w-4 h-4 text-slate-500" />
-                                )}
-                              </div>
-                              <div className="min-w-0">
-                                <p className="text-[12px] font-black text-slate-900 uppercase tracking-[0.06em]">{label}</p>
-                                <p className="text-[11px] font-semibold text-slate-500 truncate">Highlight #{idx + 1}</p>
-                              </div>
-                            </div>
-                            {isVideoUpload ? (
-                              <div className="bg-black">
-                                <video
-                                  src={href}
-                                  poster={item.posterUrl || undefined}
-                                  className="h-[360px] md:h-[420px] w-full object-cover"
-                                  muted
-                                  autoPlay
-                                  loop
-                                  playsInline
-                                  preload="metadata"
-                                />
-                              </div>
-                            ) : embedUrl ? (
-                              <div className="bg-white">
-                                <iframe
-                                  src={embedUrl}
-                                  title={`${label} ${idx + 1}`}
-                                  className="h-[360px] md:h-[420px] w-full"
-                                  loading="lazy"
-                                  allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
-                                  allowFullScreen
-                                />
-                              </div>
-                            ) : (
-                              <a
-                                href={href}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="flex h-[220px] items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100 text-slate-500 hover:text-slate-700"
-                              >
-                                <div className="text-center px-4">
-                                  <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-2xl border border-slate-200 bg-white">
-                                    <ExternalLink className="w-5 h-5" />
-                                  </div>
-                                  <p className="text-[12px] font-black uppercase tracking-[0.06em] text-slate-800">{label}</p>
-                                  <p className="mt-1 text-[11px] font-semibold text-slate-500">Tap to open this work sample</p>
-                                </div>
-                              </a>
-                            )}
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
-	                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-		                  {recentCollaborations.map((item) => (
-		                    <div key={item.id || item.name} className="rounded-2xl border border-slate-200/70 bg-white px-3 py-3 shadow-[0_6px_16px_rgba(15,23,42,0.05)]">
-		                      <p className="text-[12px] font-black text-slate-900 leading-tight">{item.name}</p>
-		                      <p className="text-[11px] font-semibold text-slate-600 mt-0.5">{item.type}</p>
-                          {item.proofLabel && (
-                            <p className="mt-2 inline-flex rounded-full border border-slate-200 bg-slate-50 px-2 py-1 text-[9px] font-black uppercase tracking-widest text-slate-500">
-                              {item.proofLabel}
-                            </p>
-                          )}
-		                      <p className="text-[11px] font-black text-slate-900 mt-2 leading-snug">{item.outcome}</p>
-		                    </div>
-		                  ))}
-	                </div>
+                >
+                  Select
+                </button>
               </div>
             </div>
+          );
+        })}
 
-	            {/* About Creator (desktop expanded, mobile collapsed with "Read more") */}
-		            <div className="space-y-6">
-	              <div className="bg-white rounded-xl p-4 lg:p-6 border border-slate-200 shadow-sm relative overflow-hidden">
-	                <div className="absolute top-0 left-0 w-1 h-full bg-teal-500" />
+        <button 
+          onClick={() => {
+            setCollabType('paid');
+            setExactBudget('');
+            setSelectedTemplateId(null);
+            setCurrentStep(2);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          }}
+          className="w-full py-5 mt-4 rounded-[28px] border border-dashed border-slate-300 text-slate-400 font-bold text-[11px] uppercase tracking-widest hover:border-slate-400 hover:text-slate-500 transition-colors bg-white/40 active:scale-95 hover:bg-slate-50/50"
+        >
+          + Propose Custom Service
+        </button>
+      </div>
 
-                  {/* Mobile header + disclosure */}
-                  <div className="md:hidden flex items-start justify-between gap-3 mb-4">
-                    <div className="min-w-0">
-                      <h2 className="text-[14px] font-black text-slate-900 tracking-tight">About the creator</h2>
-                      <p className="text-[11px] text-slate-500 font-semibold mt-0.5">Bio and active platforms</p>
-                    </div>
-                    {!editMode && (
-                      <button type="button"
-                        aria-expanded={aboutCreatorOpen}
-                        aria-controls="about-creator-panel"
-                        onClick={() => setAboutCreatorOpen(v => !v)}
-                        className="shrink-0 rounded-full border border-slate-200 bg-white px-3 py-2 text-[11px] font-black text-slate-700 hover:bg-slate-50 active:scale-[0.98] transition-all flex items-center gap-1"
-                      >
-                        {aboutCreatorOpen ? 'Show less' : 'Read more'}
-                        <ChevronDown className={`h-4 w-4 transition-transform ${aboutCreatorOpen ? 'rotate-180' : ''}`} />
-                      </button>
-                    )}
-                  </div>
+      <div className="mt-14 text-center">
+        <p className="text-[10px] font-black uppercase tracking-widest text-slate-300 mb-4">About Creator</p>
+        <p className="text-[13px] font-semibold italic text-slate-400 max-w-[280px] mx-auto leading-relaxed">
+          "{formatFollowers(primaryFollowers)} Followers, 1 Following, 2,438 Posts"
+        </p>
+      </div>
 
-                  {/* Mobile preview (collapsed) */}
-                  {!editMode && !aboutCreatorOpen && (
-                    <div className="md:hidden">
-                      {creatorBio && (
-                        <p className="text-slate-700 leading-relaxed font-medium line-clamp-4">
-                          {creatorBio}
-                        </p>
-                      )}
-                      {(() => {
-                        const ig = creator.platforms.find(p => p.name?.toLowerCase() === 'instagram');
-                        if (!ig?.handle) return null;
-                        const handle = ig.handle.replace('@', '');
-                        return (
-                          <a
-                            href={`https://instagram.com/${handle}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="mt-3 inline-flex items-center gap-1 text-[12px] font-semibold text-slate-600 hover:text-slate-900 transition-colors"
-                          >
-                            Active on Instagram <span className="font-black text-foreground">@{handle}</span>
-                            <ExternalLink className="h-3.5 w-3.5 opacity-60" />
-                          </a>
-                        );
-                      })()}
-                    </div>
-                  )}
+      <div className="mt-16 text-center pb-12 border-t border-slate-100/80 pt-10">
+        <div className="flex items-center justify-center gap-2 mb-3">
+          <ShieldCheck className="w-4 h-4 text-emerald-400/60" />
+          <span className="text-[10px] font-black uppercase tracking-[0.2em] text-emerald-400/60">Secured by Creator Armour</span>
+        </div>
+        <p className="text-[12px] font-medium text-slate-400/80 max-w-[240px] mx-auto leading-relaxed">
+          By sending an offer, you agree to our standard terms and creator's specific rules.
+        </p>
+      </div>
+    </div>
+  )}
 
-                  {/* Full content (always shown on desktop, toggled on mobile) */}
-                  <div
-                    id="about-creator-panel"
-                    className={(aboutCreatorOpen || editMode) ? '' : 'hidden md:block'}
-                  >
-	                {editMode ? (
-	                  <div className="mb-6 relative">
-	                    <div className="absolute -top-6 left-0 flex items-center gap-1">
-	                      <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none">Creator Bio</p>
-			            </div>
-                    <Textarea
-                      className="bg-slate-50 border-slate-300 border-dashed text-slate-700 leading-relaxed font-medium min-h-[100px] focus:border-teal-500 transition-all"
-                      defaultValue={creator.bio || ''}
-                      onBlur={(e) => handleInlineProfileUpdate('bio', e.target.value)}
-                      placeholder="Brief introduction for brands..."
-                    />
-                    <p className="text-[9px] text-slate-400 mt-1">Updates immediately when you click outside</p>
-                  </div>
-	                ) : creatorBio && (
-	                  <p className="text-slate-700 leading-relaxed mb-6 font-medium">
-	                    {creatorBio}
-	                  </p>
-	                )}
-
-	                {creator.platforms.length > 0 && (
-                  <div className="space-y-3">
-                    <h2 className="text-xl font-semibold text-slate-900 mb-3">
-                      Active on {creator.platforms.length > 1 ? 'Platforms' : 'Platform'}
-                    </h2>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
-                      {creator.platforms.map((platform, idx) => {
-                        const isInstagram = platform.name.toLowerCase() === 'instagram';
-                        return (
-                          <div key={idx} className="flex items-center gap-3 text-slate-100/85">
-                            {getPlatformIcon(platform.name)}
-                            <div className="flex-1">
-                              <p className="font-medium text-slate-900">{platform.name}</p>
-                              {isInstagram && platform.handle ? (
-                                <a
-                                  href={`https://instagram.com/${platform.handle.replace('@', '')}`}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="text-sm text-slate-600 hover:text-slate-900 transition-colors flex items-center gap-1"
-                                >
-                                  @{platform.handle.replace('@', '')}
-                                  <ExternalLink className="h-3 w-3 opacity-60" />
-                                </a>
-                              ) : (
-                                <p className="text-sm text-slate-200/90">
-                                  {platform.handle}
-                                </p>
-                              )}
-                              {platform.followers && (
-                                <p className="text-xs text-slate-200/65 mt-1">
-                                  {platform.followers >= 1000
-                                    ? `${(platform.followers / 1000).toFixed(1)}K followers`
-                                    : `${platform.followers} followers`}
-                                </p>
-                              )}
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
-
-                {/* Open to collabs + niches + media kit (creator readiness for brands) */}
-	                {(creator.open_to_collabs !== false || (creator.content_niches && creator.content_niches.length > 0) || creator.media_kit_url) && (
-	                  <div ref={nichesSectionRef} className="mt-8 pt-6 border-t border-slate-200 space-y-3">
-                    {creator.open_to_collabs !== false && (
-                      <p className="text-sm text-emerald-600 font-medium flex items-center gap-2">
-                        <CheckCircle2 className="h-4 w-4 shrink-0" />
-                        Actively open to collaborations
-                      </p>
-                    )}
-                    {editMode ? (
-                      <div className="mt-4 pt-4 border-t border-slate-100">
-                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 flex items-center justify-between">
-                          Content Niches
-                          <span className="text-[8px] font-bold text-slate-300 italic normal-case tracking-normal">Add relevant tags for your profile</span>
-                        </p>
-                        <div className="flex flex-wrap gap-2 mb-3">
-                          {creator.content_niches?.map((niche, i) => (
-                            <Badge
-                              key={i}
-                              variant="secondary"
-                              className="bg-teal-50 text-teal-700 border-teal-100 pl-3 pr-1 py-1 flex items-center gap-1 group"
-                            >
-                              {niche}
-                              <button type="button"
-                                onClick={() => {
-                                  const updated = creator.content_niches?.filter(n => n !== niche);
-                                  handleInlineProfileUpdate('content_niches', updated);
-                                }}
-                                className="hover:bg-teal-200/50 rounded-full p-0.5 transition-colors"
-                              >
-                                <X className="h-3 w-3" />
-                              </button>
-                            </Badge>
-                          ))}
-                        </div>
-                        <div className="flex gap-2">
-                          <Input
-                            placeholder="New niche..."
-                            value={newNicheInput}
-                            onChange={(e) => setNewNicheInput(e.target.value)}
-                            onKeyDown={(e) => {
-                              if (e.key === 'Enter') {
-                                const val = newNicheInput.trim();
-                                if (val) {
-                                  const updated = [...(creator.content_niches || []), val];
-                                  handleInlineProfileUpdate('content_niches', updated);
-                                  setNewNicheInput('');
-                                }
-                              }
-                            }}
-                            className="h-8 text-xs border-dashed bg-slate-50"
-                          />
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="h-8 text-xs border-dashed border-teal-200 text-teal-600 hover:bg-teal-50"
-                            onClick={() => {
-                              const val = newNicheInput.trim();
-                              if (val) {
-                                const updated = [...(creator.content_niches || []), val];
-                                handleInlineProfileUpdate('content_niches', updated);
-                                setNewNicheInput('');
-                              }
-                            }}
-                          >
-                            Add
-                          </Button>
-                        </div>
-                      </div>
-                    ) : creator.content_niches && creator.content_niches.length > 0 && (
-                      <div>
-                        <p className="text-xs text-slate-400 mb-1">Content niches</p>
-                        <div className="flex flex-wrap gap-2">
-                          {creator.content_niches.map((niche, i) => (
-                            <Badge key={i} variant="secondary" className="bg-slate-100 text-slate-600 border-slate-200">
-                              {niche}
-                            </Badge>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                    {editMode ? (
-                      <div className="mt-4 pt-4 border-t border-slate-100">
-                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Media Kit Link (URL)</p>
-                        <Input
-                          className="h-8 text-xs bg-slate-50 border-dashed"
-                          defaultValue={creator.media_kit_url || ''}
-                          onBlur={(e) => handleInlineProfileUpdate('media_kit_url', e.target.value)}
-                          placeholder="e.g. https://canva.com/your-media-kit"
-                        />
-                      </div>
-                    ) : creator.media_kit_url && (
-                      <div>
-                        <a
-                          href={creator.media_kit_url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-sm text-slate-600 hover:text-slate-900 inline-flex items-center gap-1"
-                        >
-                          <ExternalLink className="h-4 w-4 shrink-0" />
-                          Media kit
-                        </a>
-                        <p className="text-xs text-slate-100/70 mt-1">Ready for brand collaborations</p>
-                      </div>
-                    )}
-	                  </div>
-	                )}
-
-                  {/* NEW: Public Portfolio & Media Kit */}
-                  {(!editMode && (portfolioItems.length > 0 || (creator as any).media_kit_url)) && (
-                    <div className="mt-8 pt-6 border-t border-slate-200 space-y-6">
-                      {portfolioItems.length > 0 && (
-                        <div className="space-y-4">
-                          <h3 className="text-[13px] font-black uppercase tracking-[0.1em] text-slate-500 mb-4 flex items-center justify-between">
-                            <span className="flex items-center gap-2">
-                                <Clapperboard className="h-4 w-4 text-emerald-600" />
-                                Work Portfolio
-                            </span>
-                            <span className="text-[10px] font-bold bg-emerald-50 text-emerald-600 px-2 py-0.5 rounded-full uppercase tracking-widest">Featured</span>
-                          </h3>
-                          <div className="grid grid-cols-2 gap-3">
-                            {portfolioItems.map((item, idx) => {
-                              const link = String(item.sourceUrl || '');
-                              const isInsta = link.includes('instagram.com');
-                              const isYT = link.includes('youtube.com') || link.includes('youtu.be');
-                              const isReel = link.includes('instagram.com/reels') || link.includes('instagram.com/reel');
-                              const isShort = link.includes('youtube.com/shorts');
-                              const isPost = link.includes('instagram.com/p/');
-                              const label = isReel ? 'Instagram Reel' : isShort ? 'YouTube Short' : isPost ? 'IG Post' : isYT ? 'YouTube' : isInsta ? 'Instagram' : 'View Work';
-                              const href = link.startsWith('http') ? link : `https://${link}`;
-                              return (
-                                <a
-                                  key={idx}
-                                  href={href}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="flex flex-col items-center justify-center gap-2.5 p-4 rounded-2xl border border-slate-200 bg-white hover:border-emerald-300 hover:shadow-xl hover:shadow-emerald-500/8 transition-all group text-center"
-                                >
-                                  <div className={`w-11 h-11 rounded-2xl flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform ${isInsta ? 'bg-gradient-to-br from-pink-50 to-purple-50 border border-pink-100' : isYT ? 'bg-red-50 border border-red-100' : 'bg-slate-50 border border-slate-100'}`}>
-                                    {isInsta ? (
-                                      <Instagram className="w-5 h-5 text-pink-600" />
-                                    ) : isYT ? (
-                                      <Youtube className="w-5 h-5 text-red-600" />
-                                    ) : (
-                                      <ExternalLink className="w-5 h-5 text-slate-400" />
-                                    )}
-                                  </div>
-                                  <div>
-                                    <p className="text-[11px] font-black text-slate-800 leading-tight uppercase tracking-tight">{label}</p>
-                                    <p className="text-[10px] font-bold text-slate-400 mt-0.5">#{idx + 1} · Tap to view</p>
-                                  </div>
-                                  <div className="w-full py-1.5 rounded-xl bg-slate-50 border border-slate-100 text-[10px] font-black uppercase tracking-wider text-slate-500 group-hover:bg-emerald-50 group-hover:border-emerald-200 group-hover:text-emerald-700 transition-colors">
-                                    Watch ↗
-                                  </div>
-                                </a>
-                              );
-                            })}
-                          </div>
-                        </div>
-                      )}
-
-                      {(creator as any).media_kit_url && (
-                        <div className="pt-2">
-                          <a
-                            href={(creator as any).media_kit_url.startsWith('http') ? (creator as any).media_kit_url : `https://${(creator as any).media_kit_url}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="flex items-center justify-between p-4 rounded-2xl bg-slate-900 text-white hover:bg-black transition-all shadow-xl shadow-slate-200"
-                          >
-                            <div className="flex items-center gap-3">
-                              <div className="relative">
-                                <FileCheck className="w-5 h-5 text-emerald-400" />
-                                <div className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-emerald-500 rounded-full animate-ping" />
-                              </div>
-                              <div className="flex flex-col">
-                                <span className="text-[13px] font-black uppercase tracking-widest leading-none">Open Full Media Kit</span>
-                                <span className="text-[10px] font-bold text-slate-400 mt-1 uppercase tracking-tight opacity-80">Stats, Pricing & More</span>
-                              </div>
-                            </div>
-                            <ExternalLink className="w-4 h-4 text-white/40" />
-                          </a>
-                        </div>
-                      )}
-                    </div>
-                  )}
-
-                  </div>
-	              </div>
-		            </div>
-
-	            </div> {/* END LEFT COLUMN */}
-
-	            {/* RIGHT COLUMN - Offer Form */}
+</div>
+{/* RIGHT COLUMN - Offer Form */}
 			            <div className="w-full md:w-[380px] md:max-w-[380px] md:justify-self-end md:pb-32 md:sticky md:top-24 self-start">
               {/* 4. The main offer formation form (Unified for desktop/mobile) */}
               <div id="core-offer-form" className={`mt-2 lg:mt-0 w-full rounded-[28px] p-5 md:p-8 lg:p-10 mb-6 text-slate-900 bg-white relative transition-all duration-200 ease-out`} style={{ border: "1.5px solid #E2EAE8", boxShadow: "0 18px 42px rgba(0,77,64,0.10),0 4px 12px rgba(0,0,0,0.06)" }}>
@@ -3561,78 +2796,122 @@ const CollabLinkLanding = () => {
                                   {selectedTemplate.type === 'barter' ? 'Free products as payment' : `₹${selectedTemplate.budget.toLocaleString('en-IN')}`} • {selectedTemplate.deliverables.length} deliverable{selectedTemplate.deliverables.length === 1 ? '' : 's'} • {selectedTemplate.deadlineDays || 7} days
                                 </p>
                               </div>
-                              <Button
-                                type="button"
-                                variant="outline"
-                                onClick={() => {
-                                  setShowCustomFlow(false);
-                                  setCurrentStep(1);
-                                  triggerHaptic(HapticPatterns.selection);
-                                  requestAnimationFrame(() => {
-                                    document.getElementById('packages-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                                  });
-                                }}
-                                className="h-9 rounded-2xl border-emerald-200 text-emerald-800 hover:bg-emerald-50 font-black text-[10px] uppercase tracking-widest"
-                              >
-                                Change
-                              </Button>
+                              <div className="shrink-0 flex flex-col items-end gap-2">
+                                <div className="bg-[#0FA47F] text-white rounded-full p-1 shadow-sm">
+                                  <CheckCircle2 className="w-5 h-5" />
+                                </div>
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  onClick={() => {
+                                    setShowCustomFlow(false);
+                                    setCurrentStep(1);
+                                    triggerHaptic(HapticPatterns.selection);
+                                  }}
+                                  className="h-8 rounded-2xl border-emerald-200 text-emerald-800 hover:bg-emerald-50 font-black text-[10px] uppercase tracking-widest px-3"
+                                >
+                                  Change service
+                                </Button>
+                              </div>
                             </div>
                           </div>
                         )}
-
                         {/* Contact Section */}
-                        <div className="bg-slate-50 rounded-[24px] md:rounded-[32px] p-4 md:p-6 border border-slate-200 shadow-inner space-y-3">
-                          <p className={`block text-base font-black text-slate-800 mb-1 ${typeLabel}`}>
-                            Send your offer
-                          </p>
-                          <p className="text-[12px] font-semibold text-slate-500">
-                            We only collect legal details if the creator is interested.
-                          </p>
+                        <div className="bg-slate-50 rounded-[24px] md:rounded-[32px] p-4 md:p-6 border border-slate-200 shadow-inner space-y-4">
+                          <div className="flex items-center justify-between gap-1">
+                            <p className={`block text-[15px] font-black text-slate-800 ${typeLabel}`}>
+                              {useBrandProfile ? 'Using recognized brand' : 'Send your offer'}
+                            </p>
+                            {useBrandProfile && (
+                              <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-700 text-[10px] font-black uppercase tracking-wider animate-in zoom-in-50 duration-300">
+                                <CheckCircle2 className="h-3 w-3" />
+                                Brand Recognized
+                              </div>
+                            )}
+                          </div>
                           
-                          <div className="space-y-3">
-                            <label htmlFor="brand-name-input" className="sr-only">Brand name</label>
-                            <Input
-                              id="brand-name-input"
-                              value={brandName}
-                              onChange={(e) => setBrandName(e.target.value)}
-                              placeholder="Brand or company name"
-                              className="h-14 px-4 rounded-xl border-white bg-white font-bold text-base shadow-sm"
-                            />
-                            <label htmlFor="brand-email-input" className="sr-only">Work email</label>
-                            <Input
-                              id="brand-email-input"
-                              type="email"
-                              value={brandEmail}
-                              onChange={(e) => setBrandEmail(e.target.value)}
-                              placeholder="your@company.com"
-                              className="h-14 px-4 rounded-xl border-white bg-white font-bold text-base shadow-sm"
-                            />
+                          <div className="space-y-3.5">
+                            <div className="relative group">
+                              <label htmlFor="brand-email-input" className="sr-only">Work email</label>
+                              <Input
+                                id="brand-email-input"
+                                type="email"
+                                value={brandEmail}
+                                onChange={(e) => setBrandEmail(e.target.value)}
+                                placeholder="your@company.com"
+                                className="h-14 px-4 rounded-xl border-white bg-white font-bold text-base shadow-sm focus-visible:ring-2 focus-visible:ring-emerald-500/30 transition-all"
+                              />
+                              <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-2">
+                                {lookupStatus === 'loading' && <Loader2 className="h-4 w-4 animate-spin text-slate-400" />}
+                                {lookupStatus === 'found' && <div className="p-1 rounded-full bg-emerald-500 text-white animate-in zoom-in-75"><Check className="h-3 w-3" /></div>}
+                              </div>
+                            </div>
+                            
+                            {lookupStatus === 'found' && lookupData && (
+                              <div className="flex items-center gap-2 px-1 text-[11px] font-bold text-emerald-700 animate-in fade-in slide-in-from-top-1">
+                                <Sparkles className="h-3 w-3" />
+                                Recognized as {lookupData.brand_name}
+                              </div>
+                            )}
+
+                            <div className="space-y-1">
+                              <label htmlFor="brand-name-input" className="sr-only">Brand name</label>
+                              <Input
+                                id="brand-name-input"
+                                value={brandName}
+                                onChange={(e) => setBrandName(e.target.value)}
+                                placeholder="Brand or company name"
+                                className="h-14 px-4 rounded-xl border-white bg-white font-bold text-base shadow-sm focus-visible:ring-2 focus-visible:ring-emerald-500/30 transition-all"
+                              />
+                            </div>
+
                             <label htmlFor="brand-instagram-input" className="sr-only">Brand Instagram</label>
                             <Input
                               id="brand-instagram-input"
                               value={brandInstagram}
                               onChange={(e) => setBrandInstagram(e.target.value)}
-                              placeholder="Brand Instagram (optional)"
-                              className="h-12 px-4 rounded-xl border-white bg-white font-semibold text-[14px] shadow-sm"
+                              placeholder="@brand_instagram (optional)"
+                              className="h-12 px-4 rounded-xl border-white bg-white font-semibold text-[14px] shadow-sm focus-visible:ring-2 focus-visible:ring-emerald-500/30 transition-all"
                             />
 
+                            {(useBrandProfile || lookupStatus === 'found') && (
+                              <Button
+                                type="button"
+                                variant="outline"
+                                onClick={() => {
+                                  setUseBrandProfile(false);
+                                  setLookupStatus('idle');
+                                  setBrandName('');
+                                  setBrandEmail('');
+                                  setBrandLogoUrl('');
+                                  setBrandInstagram('');
+                                  toast.info('Form cleared');
+                                }}
+                                className="h-8 rounded-lg border-slate-200 text-slate-500 text-[9px] font-black uppercase tracking-wider px-3 w-full border-dashed hover:bg-slate-100"
+                              >
+                                Not your brand? Use different details
+                              </Button>
+                            )}
                             {/* Brand Logo Upload */}
                             <div className="pt-2">
-                              <p className="block text-[12px] font-black uppercase tracking-widest text-slate-500 mb-2">Brand Logo</p>
+                              <div className="flex items-center justify-between mb-2">
+                                <p className="text-[11px] font-black uppercase tracking-widest text-slate-500">Brand Logo</p>
+                                {brandLogoUrl && <span className="text-[10px] font-black text-emerald-600 flex items-center gap-1"><Sparkles className="h-2.5 w-2.5" /> Auto-fetched</span>}
+                              </div>
                               {brandLogoUrl ? (
-                                <div className="flex items-center gap-3 bg-white p-2.5 rounded-2xl shadow-sm border border-slate-200">
+                                <div className="flex items-center gap-3 bg-white p-2.5 rounded-2xl shadow-sm border border-slate-200 animate-in fade-in zoom-in-95 duration-200">
                                   <div className="h-12 w-12 rounded-[14px] bg-slate-50 border border-slate-100 overflow-hidden flex-shrink-0 relative">
                                     <img src={brandLogoUrl} alt="Brand Logo" className="w-full h-full object-contain" referrerPolicy="no-referrer" />
                                   </div>
                                   <div className="flex-1">
-                                    <p className="text-[13px] font-bold text-slate-900 leading-tight">Logo Uploaded</p>
+                                    <p className="text-[13px] font-bold text-slate-900 leading-tight">Logo Ready</p>
                                     <Button
                                       type="button"
                                       variant="ghost"
                                       onClick={() => setBrandLogoUrl('')}
                                       className="h-auto p-0 text-[11px] font-bold text-red-500 hover:text-red-600 hover:bg-transparent mt-1"
                                     >
-                                      Remove
+                                      Change logo
                                     </Button>
                                   </div>
                                 </div>
@@ -3645,9 +2924,10 @@ const CollabLinkLanding = () => {
                                     className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
                                     disabled={brandLogoUploading}
                                   />
-                                  <div className={`w-full h-14 rounded-xl border-2 border-dashed flex items-center justify-center gap-2 transition-all ${
-                                    errors.brandLogoUrl ? 'border-red-300 bg-red-50/50 text-red-600' : 'border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50 text-slate-600'
-                                  }`}>
+                                  <div className={cn(
+                                    "w-full h-14 rounded-xl border-2 border-dashed flex items-center justify-center gap-2 transition-all",
+                                    errors.brandLogoUrl ? 'border-red-300 bg-red-50/50 text-red-600' : 'border-slate-200 bg-white hover:border-slate-400 hover:bg-slate-50 text-slate-600'
+                                  )}>
                                     {brandLogoUploading ? (
                                       <Loader2 className="w-4 h-4 animate-spin" />
                                     ) : (
@@ -3661,7 +2941,6 @@ const CollabLinkLanding = () => {
                               )}
                               {errors.brandLogoUrl && <p className="text-red-500 text-[11px] font-bold mt-1.5 ml-1">{errors.brandLogoUrl}</p>}
                             </div>
-
                           </div>
                         </div>
 
@@ -3673,31 +2952,10 @@ const CollabLinkLanding = () => {
                             id="campaign-description-input"
                             value={campaignDescription}
                             onChange={(e) => setCampaignDescription(e.target.value)}
-                            placeholder="Describe your brand, goals, and what you're looking for..."
-                            className="min-h-[110px] rounded-2xl border-white bg-white px-4 py-3 text-[14px] font-medium shadow-sm"
+                            placeholder="Tell the creator about your campaign, product, or vision..."
+                            className="min-h-[120px] rounded-2xl border-white bg-white px-4 py-3 font-semibold text-[15px] shadow-sm resize-none focus-visible:ring-2 focus-visible:ring-emerald-500/30 transition-all"
                           />
                         </div>
-
-                        {/* Budget (for paid deals) */}
-                        {collabType === 'paid' && (
-                          <div className="bg-slate-50 rounded-[32px] p-6 border border-slate-200 shadow-inner">
-                            <label htmlFor="offer-budget-input" className={`block text-[15px] font-black text-slate-800 mb-3 ${typeLabel} flex items-center gap-2`}>
-                              <IndianRupee className="h-5 w-5 text-slate-900" />
-                              Your budget
-                            </label>
-                            <div className="relative group">
-                              <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-black text-[15px] group-focus-within:text-slate-900 transition-colors">₹</div>
-                              <Input
-                                id="offer-budget-input"
-                                type="number"
-                                value={exactBudget}
-                                onChange={(e) => setExactBudget(e.target.value)}
-                                placeholder="Enter your budget"
-                                className="h-14 pl-10 pr-6 rounded-2xl border-white bg-white font-black text-[15px] shadow-sm focus:border-slate-300 transition-all"
-                              />
-                            </div>
-                          </div>
-                        )}
 
                         {/* Product image / product details */}
                         {isProductImageRequired && (
@@ -3713,7 +2971,7 @@ const CollabLinkLanding = () => {
                                   value={barterProductName}
                                   onChange={(e) => setBarterProductName(e.target.value)}
                                   placeholder="Product name you'll send"
-                                  className="h-12 px-4 rounded-xl border-white bg-white font-bold text-[14px] shadow-sm"
+                                  className="h-12 px-4 rounded-xl border-white bg-white font-bold text-[14px] shadow-sm focus-visible:ring-2 focus-visible:ring-emerald-500/30"
                                 />
                               </>
                             )}
@@ -3722,13 +2980,13 @@ const CollabLinkLanding = () => {
                               <div className="flex items-center justify-between gap-3 mb-2">
                                 <p className="text-[12px] font-black uppercase tracking-widest text-slate-500">Product image</p>
                                 {barterProductImageUrl ? (
-                                  <span className="text-[11px] font-bold text-emerald-700">Uploaded</span>
+                                  <span className="text-[11px] font-bold text-emerald-700 flex items-center gap-1"><Check className="h-3 w-3" /> Ready</span>
                                 ) : (
                                   <span className="text-[11px] font-bold text-slate-400">Required</span>
                                 )}
                               </div>
                               <p className="mb-3 text-[12px] font-medium text-slate-500">
-                                Upload one clear product image before you send the offer.
+                                Upload a clear image or <span className="font-bold text-slate-700">Paste (Ctrl+V)</span> from clipboard.
                               </p>
 
                               {barterProductImageUrl ? (
@@ -3764,12 +3022,19 @@ const CollabLinkLanding = () => {
                               ) : (
                                 <label
                                   className={cn(
-                                    "flex items-center justify-center h-12 w-full rounded-2xl bg-white border text-[12px] font-black cursor-pointer active:scale-[0.99] transition-all",
-                                    errors.barterProductImageUrl ? "border-destructive text-destructive" : "border-slate-200 text-slate-700",
+                                    "flex items-center justify-center h-14 w-full rounded-2xl bg-white border-2 border-dashed text-[13px] font-black cursor-pointer active:scale-[0.99] transition-all",
+                                    errors.barterProductImageUrl ? "border-destructive text-destructive" : "border-slate-200 text-slate-500 hover:border-slate-400 hover:bg-slate-50",
                                     barterImageUploading && "opacity-60 cursor-not-allowed"
                                   )}
                                 >
-                                  {barterImageUploading ? 'Uploading...' : 'Add Product Image'}
+                                  {barterImageUploading ? (
+                                    <div className="flex items-center gap-2"><Loader2 className="h-4 w-4 animate-spin" /> Uploading...</div>
+                                  ) : (
+                                    <div className="flex flex-col items-center gap-1">
+                                      <div className="flex items-center gap-2"><Upload className="h-4 w-4" /> Add Product Image</div>
+                                      <span className="text-[10px] text-slate-300 font-bold uppercase tracking-widest">(Drag & Drop or Paste)</span>
+                                    </div>
+                                  )}
                                   <input
                                     type="file"
                                     accept="image/*"
@@ -3793,33 +3058,111 @@ const CollabLinkLanding = () => {
                                   type="number"
                                   value={exactBudget}
                                   onChange={(e) => setExactBudget(e.target.value)}
-                                  placeholder="Plus cash amount (optional)"
-                                  className="h-14 pl-10 pr-6 rounded-2xl border-white bg-white font-black text-[15px] shadow-sm focus:border-slate-300 transition-all"
+                                  placeholder="Plus cash amount"
+                                  className="h-14 pl-10 pr-6 rounded-2xl border-white bg-white font-black text-[15px] shadow-sm focus-visible:ring-2 focus-visible:ring-emerald-500/30 transition-all"
                                 />
                               </div>
                             )}
                           </div>
                         )}
 
-                        <div className="bg-slate-50 rounded-[24px] md:rounded-[32px] p-4 md:p-6 border border-slate-200 shadow-inner">
-                          <label htmlFor="offer-deadline-input" className={`block text-[15px] font-black text-slate-800 mb-3 ${typeLabel} flex items-center gap-2`}>
-                            <Calendar className="h-5 w-5 text-slate-900" />
-                            Deadline
-                          </label>
-                          <Input
-                            id="offer-deadline-input"
-                            type="date"
-                            value={deadline}
-                            onChange={(e) => setDeadline(e.target.value)}
-                            className="h-14 rounded-2xl border-white bg-white px-4 font-bold text-[15px] shadow-sm"
-                          />
+                        {collabType === 'paid' && (
+                          <div className="bg-slate-50 rounded-[32px] p-6 border border-slate-200 shadow-inner">
+                            <label htmlFor="budget-input" className={`block text-[15px] font-black text-slate-800 mb-3 ${typeLabel} flex items-center gap-2`}>
+                              <Wallet className="h-5 w-5 text-slate-900" />
+                              What's your budget?
+                            </label>
+                            <div className="space-y-4">
+                              <div className="relative group">
+                                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-black text-[15px] group-focus-within:text-slate-900 transition-colors">₹</div>
+                                <Input
+                                  id="budget-input"
+                                  type="number"
+                                  value={exactBudget}
+                                  onChange={(e) => setExactBudget(e.target.value)}
+                                  placeholder="Amount (e.g. 5000)"
+                                  className="h-14 pl-10 pr-6 rounded-2xl border-white bg-white font-black text-[15px] shadow-sm focus-visible:ring-2 focus-visible:ring-emerald-500/30 transition-all"
+                                />
+                              </div>
+                              <div className="flex items-center gap-2 flex-wrap">
+                                {[1000, 3000, 5000, 10000].map((amt) => {
+                                  const matchesPackage = localDealTemplates.some(t => t.budget === amt);
+                                  return (
+                                    <button
+                                      key={amt}
+                                      type="button"
+                                      onClick={() => {
+                                        setExactBudget(String(amt));
+                                        triggerHaptic(HapticPatterns.light);
+                                      }}
+                                      className={cn(
+                                        "px-3 py-1.5 rounded-lg border text-[11px] font-black transition-all active:scale-95",
+                                        exactBudget === String(amt)
+                                          ? "bg-slate-900 border-slate-900 text-white shadow-md scale-105"
+                                          : matchesPackage 
+                                            ? "bg-emerald-50 border-emerald-200 text-emerald-700 hover:border-emerald-300" 
+                                            : "bg-white border-slate-200 text-slate-600 hover:border-slate-300"
+                                      )}
+                                    >
+                                      ₹{amt.toLocaleString('en-IN')}
+                                    </button>
+                                  );
+                                })}
+                              </div>
+                              {selectedTemplate && String(selectedTemplate.budget) === exactBudget && (
+                                <p className="text-[11px] font-bold text-emerald-600 flex items-center gap-1.5 animate-in fade-in slide-in-from-left-2">
+                                  <Sparkles className="h-3 w-3" />
+                                  Matches '{selectedTemplate.label}' package price
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                        )}
+
+                        <div className="bg-slate-50 rounded-[32px] p-6 border border-slate-200 shadow-inner space-y-4">
+                          <div>
+                            <label htmlFor="offer-deadline-input" className={`block text-[15px] font-black text-slate-800 mb-3 ${typeLabel} flex items-center gap-2`}>
+                              <Calendar className="h-5 w-5 text-slate-900" />
+                              Deadline
+                            </label>
+                            <div className="space-y-4">
+                              <Input
+                                id="offer-deadline-input"
+                                type="date"
+                                value={deadline}
+                                onChange={(e) => setDeadline(e.target.value)}
+                                className="h-14 rounded-2xl border-white bg-white px-4 font-bold text-[15px] shadow-sm focus-visible:ring-2 focus-visible:ring-emerald-500/30"
+                              />
+                              <div className="flex items-center gap-2 flex-wrap">
+                                {[
+                                  { label: '+3 Days', days: 3 },
+                                  { label: '+7 Days', days: 7 },
+                                  { label: '+14 Days', days: 14 },
+                                ].map((opt) => (
+                                  <button
+                                    key={opt.label}
+                                    type="button"
+                                    onClick={() => {
+                                      const d = new Date();
+                                      d.setDate(d.getDate() + opt.days);
+                                      setDeadline(d.toISOString().split('T')[0]);
+                                      triggerHaptic(HapticPatterns.light);
+                                    }}
+                                    className="px-3.5 py-2 rounded-xl bg-white border border-slate-200 text-[11px] font-black uppercase tracking-wider text-slate-600 hover:border-emerald-300 hover:text-emerald-700 transition-all active:scale-95 shadow-sm"
+                                  >
+                                    {opt.label}
+                                  </button>
+                                ))}
+                              </div>
+                            </div>
+                          </div>
                         </div>
 
                         <div className="rounded-2xl border border-emerald-200 bg-emerald-50/70 px-4 py-3">
                           <div className="flex items-start gap-2">
                             <CheckCircle2 className="mt-0.5 h-4 w-4 text-emerald-600" />
-                            <p className="text-[12px] font-semibold text-emerald-800">
-                              Creator reviews your offer, then accepts, counters, or declines.
+                            <p className="text-[12px] font-semibold text-emerald-800 leading-snug">
+                              Smart Suggestion: Creators typically respond 40% faster to offers with product images and verified logos.
                             </p>
                           </div>
                         </div>
@@ -3827,7 +3170,7 @@ const CollabLinkLanding = () => {
                     )}
 
                   {/* Mobile sticky bottom CTA for the form */}
-                  <div className="fixed bottom-0 left-0 right-0 z-50 p-3 bg-gradient-to-t from-white via-white/95 to-transparent md:hidden">
+                  <div className="fixed bottom-0 left-0 right-0 z-50 p-4 bg-gradient-to-t from-white via-white/95 to-transparent md:hidden border-t border-slate-100/50 backdrop-blur-sm">
                     <div className="max-w-lg mx-auto">
                     {currentStep < 2 ? (
                         <Button
@@ -3843,13 +3186,13 @@ const CollabLinkLanding = () => {
                               toast.error(`Please select collaboration type first`);
                             }
                           }}
-                          className="h-14 w-full rounded-2xl bg-[#0FA47F] border-2 border-[#0FA47F] text-white hover:bg-emerald-600 hover:border-emerald-600 font-black text-base shadow-lg active:scale-[0.98] transition-all"
+                          className="h-14 w-full rounded-2xl bg-slate-900 border-2 border-slate-900 text-white hover:bg-slate-800 hover:border-slate-800 font-black text-base shadow-xl active:scale-[0.98] transition-all"
                         >
-                          Continue
+                          Continue to Details
                           <ArrowRight className="ml-2 h-5 w-5" />
                         </Button>
                     ) : (
-                        <div className="flex flex-col gap-2">
+                        <div className="flex flex-col gap-2.5">
                         {!(selectedTemplate && currentStep === 2) && (
                           <Button
                             onClick={() => {
@@ -3861,7 +3204,7 @@ const CollabLinkLanding = () => {
                               triggerHaptic(HapticPatterns.light);
                             }}
                             variant="outline"
-                            className="h-12 w-full rounded-2xl border-slate-200 text-slate-500 font-black text-base"
+                            className="h-12 w-full rounded-2xl border-slate-200 text-slate-500 font-black text-base hover:bg-slate-50"
                           >
                             Back
                           </Button>
@@ -3870,7 +3213,7 @@ const CollabLinkLanding = () => {
                             onClick={handleSubmit}
                             disabled={submitting}
                             className={cn(
-                              "h-14 w-full rounded-2xl font-black text-base shadow-lg active:scale-[0.98] transition-all border-2",
+                              "h-14 w-full rounded-2xl font-black text-base shadow-xl active:scale-[0.98] transition-all border-2",
                               isStep2Ready 
                                 ? "bg-[#0FA47F] border-[#0FA47F] text-white hover:bg-emerald-600 hover:border-emerald-600" 
                                 : "bg-slate-200 border-slate-200 text-slate-500 hover:bg-slate-300 hover:border-slate-300"
@@ -3885,7 +3228,7 @@ const CollabLinkLanding = () => {
                               ) : (
                                 <>
                                   <Send className="h-5 w-5" />
-                                  {isStep2Ready ? 'Send Offer' : 'Add product image to continue'}
+                                  {isStep2Ready ? 'Send Offer Now' : 'Complete details to send'}
                                 </>
                               )}
                             </span>
