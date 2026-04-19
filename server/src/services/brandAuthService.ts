@@ -19,19 +19,33 @@ export interface BrandUserResult {
 export async function findOrCreateBrandUser(email: string, brandName: string): Promise<BrandUserResult> {
     const normalizedEmail = email.trim().toLowerCase();
 
-    // 1. Check if user already exists in auth (standard way for admin lookup by email)
-    const { data: { users }, error: listError } = await supabase.auth.admin.listUsers();
-    if (listError) {
-        console.error('[BrandAuth] Error listing users:', listError);
-        throw listError;
-    }
-
-    let authUser = users.find(u => u.email?.toLowerCase() === normalizedEmail);
-    let userId: string | undefined = authUser?.id;
+    // 1. Fast path: look up existing user by email via the profiles table (indexed).
+    //    This avoids the catastrophically slow listUsers() full-table scan.
+    let userId: string | undefined;
     let isNew = false;
 
+    const { data: existingProfile } = await supabase
+        .from('profiles')
+        .select('id, role, business_name')
+        .eq('email', normalizedEmail)
+        .maybeSingle();
+
+    if (existingProfile?.id) {
+        userId = existingProfile.id;
+    } else {
+        // 2. profiles table may not have an email column on older schemas.
+        //    Try a single-page auth admin lookup as fallback (page=1 only, fast).
+        try {
+            const { data: pageData } = await supabase.auth.admin.listUsers({ page: 1, perPage: 1000 });
+            const found = (pageData?.users || []).find((u: any) => u.email?.toLowerCase() === normalizedEmail);
+            if (found) userId = found.id;
+        } catch {
+            // Silently swallow; we'll attempt createUser below which is idempotent on duplicate email
+        }
+    }
+
     if (!userId) {
-        // 2. Create new user if not found
+        // 3. Create new brand user account (frictionless registration)
         const { data: { user: newUser }, error: createError } = await supabase.auth.admin.createUser({
             email: normalizedEmail,
             email_confirm: true,
@@ -43,25 +57,36 @@ export async function findOrCreateBrandUser(email: string, brandName: string): P
         });
 
         if (createError) {
-            console.error('[BrandAuth] Error creating brand user:', createError);
-            throw createError;
+            // If the user already exists (race condition), re-try the profile lookup
+            if (createError.message?.toLowerCase().includes('already been registered') ||
+                createError.message?.toLowerCase().includes('already exists')) {
+                const { data: retryPage } = await supabase.auth.admin.listUsers({ page: 1, perPage: 1000 });
+                const found = (retryPage?.users || []).find((u: any) => u.email?.toLowerCase() === normalizedEmail);
+                if (found) {
+                    userId = found.id;
+                } else {
+                    console.error('[BrandAuth] Error creating brand user:', createError);
+                    throw createError;
+                }
+            } else {
+                console.error('[BrandAuth] Error creating brand user:', createError);
+                throw createError;
+            }
+        } else {
+            if (!newUser) throw new Error('Failed to create brand user');
+            userId = newUser.id;
+            isNew = true;
         }
-
-        if (!newUser) throw new Error('Failed to create brand user');
-
-        userId = newUser.id;
-        isNew = true;
     }
 
-    // 3. Ensure profile has 'brand' role and business_name
+    // 4. Ensure profile has 'brand' role and business_name
     const { data: profile } = await supabase
         .from('profiles')
         .select('id, role, business_name')
         .eq('id', userId)
-        .single();
+        .maybeSingle();
 
     if (profile && profile.role !== 'brand') {
-        // If it was a lead or something else, update it to brand
         await supabase
             .from('profiles')
             .update({
@@ -73,7 +98,7 @@ export async function findOrCreateBrandUser(email: string, brandName: string): P
     }
 
     return {
-        userId,
+        userId: userId!,
         isNew,
         profileCreated: !!profile
     };

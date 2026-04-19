@@ -45,7 +45,7 @@ async function fetchBrandCollabRequests(): Promise<BrandCollabRequest[]> {
     throw new Error('Not authenticated');
   }
 
-  const response = await fetch(`${getApiBaseUrl()}/api/brand/collab-requests`, {
+  const response = await fetch(`${getApiBaseUrl()}/api/brand-dashboard/requests`, {
     headers: {
       Authorization: `Bearer ${sessionData.session.access_token}`,
       'Content-Type': 'application/json',
