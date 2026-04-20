@@ -5386,9 +5386,9 @@ const MobileDashboardDemo = ({
                                     {isDark ? (
                                         <div className="absolute inset-0 overflow-hidden pointer-events-none z-[1]">
                                             <div className="absolute inset-0 bg-gradient-to-b from-emerald-500/15 via-sky-500/10 to-transparent" />
-<div className="absolute top-[-12%] left-[-14%] w-[45%] h-[45%] bg-primary/8 rounded-full blur-[140px]" />
-                                                        <div className="absolute top-[8%] right-[-18%] w-[48%] h-[48%] bg-info/8 rounded-full blur-[160px]" />
-                                                        <div className="absolute bottom-[-14%] left-[20%] w-[52%] h-[52%] bg-primary/6 rounded-full blur-[170px]" />
+                                            <div className="absolute top-[-12%] left-[-14%] w-[45%] h-[45%] bg-primary/8 rounded-full blur-[140px]" />
+                                            <div className="absolute top-[8%] right-[-18%] w-[48%] h-[48%] bg-info/8 rounded-full blur-[160px]" />
+                                            <div className="absolute bottom-[-14%] left-[20%] w-[52%] h-[52%] bg-primary/6 rounded-full blur-[170px]" />
                                         </div>
                                     ) : (
                                         <div className="absolute inset-0 overflow-hidden pointer-events-none z-[1]">

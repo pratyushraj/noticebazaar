@@ -18,7 +18,7 @@ import { dealPrimaryCtaButtonClass, getDealPrimaryCta } from '@/lib/deals/primar
 import { CREATOR_ASSETS_BUCKET } from '@/lib/constants/storage';
 import { BrandSettingsPanel } from '@/pages/BrandSettings';
 import { toast } from 'sonner';
-import { DiscoveryStack } from '../components/brand-dashboard/DiscoveryStack';
+import { DiscoveryStack } from '@/components/brand-dashboard/DiscoveryStack';
 
 type BrandTab = 'dashboard' | 'collabs' | 'creators' | 'profile' | 'payments';
 type BrandCollabTab = 'action_required' | 'active' | 'completed';

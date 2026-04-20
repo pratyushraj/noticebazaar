@@ -32,7 +32,7 @@ export const QuickOfferSheet: React.FC<QuickOfferSheetProps> = ({
     creator,
     isDark
 }) => {
-    const { profile } = useSession();
+    const { profile, session } = useSession();
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isSuccess, setIsSuccess] = useState(false);
     
@@ -72,8 +72,9 @@ export const QuickOfferSheet: React.FC<QuickOfferSheetProps> = ({
 
         try {
             const apiBaseUrl = getApiBaseUrl();
-            const brandName = profile?.business_name || profile?.first_name || 'Brand';
-            const brandEmail = profile?.email || '';
+            const brandName = profile?.business_name || profile?.first_name || profile?.full_name || 'Brand';
+            const brandEmail = profile?.email || session?.user?.email || '';
+            const descriptionValue = description || `Marketing collaboration for ${brandName}`;
 
             const payload = {
                 brand_name: brandName,
@@ -82,7 +83,7 @@ export const QuickOfferSheet: React.FC<QuickOfferSheetProps> = ({
                 brand_logo_url: profile?.avatar_url || null,
                 collab_type: 'paid',
                 exact_budget: parseFloat(budget),
-                campaign_description: description || `Collaboration with ${creator.first_name}`,
+                campaign_description: descriptionValue,
                 deliverables: deliverables,
                 deadline: deadline,
                 // These are required by the backend API 
