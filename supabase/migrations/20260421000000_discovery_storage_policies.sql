@@ -1,4 +1,9 @@
 -- Storage policies for creator-discovery bucket
+-- Drop existing policies first to avoid conflicts
+DROP POLICY IF EXISTS "Allow authenticated uploads to own folder" ON storage.objects;
+DROP POLICY IF EXISTS "Allow authenticated updates to own folder" ON storage.objects;
+DROP POLICY IF EXISTS "Allow public read access" ON storage.objects;
+DROP POLICY IF EXISTS "Allow authenticated delete to own folder" ON storage.objects;
 
 -- Allow authenticated users to upload their own discovery media
 CREATE POLICY "Allow authenticated uploads to own folder"
@@ -7,7 +12,7 @@ FOR INSERT
 TO authenticated
 WITH CHECK (
   bucket_id = 'creator-discovery' 
-  AND auth.uid()::text = (/storage.foldername(name))[1]
+  AND auth.uid()::text = (storage.foldername(name))[1]
 );
 
 -- Allow users to update their own discovery media  
