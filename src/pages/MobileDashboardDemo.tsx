@@ -829,6 +829,7 @@ const MobileDashboardDemo = ({
     }, []);
     const [activeSettingsPage, setActiveSettingsPage] = useState<string | null>(null);
     const [activeSettingsAnchor, setActiveSettingsAnchor] = useState<string | null>(null);
+    const [expandedSection, setExpandedSection] = useState<string>('identity');
     const [showPushInstallGuide, setShowPushInstallGuide] = useState(false);
     const [showShareSheet, setShowShareSheet] = useState(false);
     const [processingDeal, setProcessingDeal] = React.useState<string | null>(null);
@@ -1583,6 +1584,22 @@ const MobileDashboardDemo = ({
     const [isSavingProfile, setIsSavingProfile] = useState(false);
     const [uploadingPortfolioSlot, setUploadingPortfolioSlot] = useState<number | null>(null);
     const [profileFormData, setProfileFormData] = useState<any>(buildProfileFormData(profile, user?.email || null));
+    const profileCompleteness = useMemo(() => {
+        const fields = [
+            !!profileFormData.full_name?.trim(),
+            !!profileFormData.bio?.trim(),
+            !!profileFormData.instagram_handle?.trim(),
+            !!profileFormData.avg_rate_reel,
+            !!profileFormData.pricing_min || !!profileFormData.pricing_avg || !!profileFormData.pricing_max,
+            profileFormData.content_niches?.length > 0,
+            !!profileFormData.avg_reel_views_manual?.trim(),
+            !!profileFormData.collab_region_label?.trim(),
+            !!profileFormData.collab_brands_count_override?.trim(),
+            !!profileFormData.media_kit_url?.trim(),
+        ];
+        const filled = fields.filter(Boolean).length;
+        return Math.round((filled / fields.length) * 100);
+    }, [profileFormData]);
 
     useEffect(() => {
         if (profile) {
@@ -2154,7 +2171,7 @@ const MobileDashboardDemo = ({
                         initial={{ opacity: 0, x: 20 }}
                         animate={{ opacity: 1, x: 0 }}
                         exit={{ opacity: 0, x: 20 }}
-                        className="pb-32 touch-pan-y"
+                        className="pb-36 touch-pan-y"
                     >
                         <div className="px-6 pt-16 pb-8 flex items-center justify-between">
                             <div className="flex items-center gap-4">
@@ -2199,9 +2216,24 @@ const MobileDashboardDemo = ({
                         </div>
 
 
-                        <div className="px-5 space-y-6">
+                        <div className="px-5 space-y-4">
+                            {/* PROGRESS BAR */}
+                            {profileCompleteness < 100 && (
+                                <div className={cn("rounded-xl border p-3", isDark ? "bg-[#0B1324] border-white/10" : "bg-white border-slate-200")}>
+                                    <div className="flex items-center justify-between mb-2">
+                                        <span className={cn("text-sm font-semibold", isDark ? "text-white" : "text-slate-900")}>Profile {profileCompleteness}% complete</span>
+                                        <span className={cn("text-xs", isDark ? "text-slate-400" : "text-slate-500")}>+20% more deals</span>
+                                    </div>
+                                    <div className={cn("h-2 rounded-full overflow-hidden", isDark ? "bg-slate-800" : "bg-slate-100")}>
+                                        <div 
+                                            className="h-full bg-gradient-to-r from-blue-500 to-blue-600 transition-all duration-500"
+                                            style={{ width: `${profileCompleteness}%` }}
+                                        />
+                                    </div>
+                                </div>
+                            )}
+
                             {/* BASIC INFO */}
-                            <div>
                                 <p className={cn("text-[10px] font-black uppercase tracking-[0.18em] px-1 mb-3", isDark ? "text-slate-400" : "text-slate-400")}>Basic Information</p>
                                 <div className={cn("rounded-[1.75rem] border overflow-hidden", isDark ? "bg-[#0B1324] border-white/5" : "bg-white border-slate-200 shadow-sm")}>
                                     {/* Full Name */}
@@ -2997,6 +3029,45 @@ const MobileDashboardDemo = ({
                                 </p>
                             </div>
                         </div>
+
+                        {/* STICKY BOTTOM CTA */}
+                        <div className={cn(
+                            "fixed bottom-0 left-0 right-0 p-4 z-50 flex items-center gap-3",
+                            isDark ? "bg-[#0B1324]/95 border-t border-white/10" : "bg-white/95 border-t border-slate-200 shadow-lg"
+                        )} style={{ backdropFilter: 'blur(20px)' }}>
+                            <button 
+                                onClick={async () => {
+                                    triggerHaptic();
+                                    if (isEditMode) {
+                                        await handleSaveProfile();
+                                        setIsEditMode(false);
+                                    } else {
+                                        setIsEditMode(true);
+                                    }
+                                }}
+                                disabled={isSavingProfile}
+                                className={cn(
+                                    "flex-1 py-3.5 rounded-xl font-bold text-sm transition-all active:scale-[0.98]",
+                                    isEditMode 
+                                        ? (isDark ? "bg-primary text-white" : "bg-primary text-white")
+                                        : (isDark ? "bg-white/10 text-white border border-white/20" : "bg-slate-100 text-slate-900 border border-slate-200")
+                                )}
+                            >
+                                {isSavingProfile ? 'Saving...' : 'Save Changes'}
+                            </button>
+                            <button 
+                                onClick={() => {
+                                    triggerHaptic();
+                                    window.open(`/${profileFormData.instagram_handle || username}`, '_blank');
+                                }}
+                                className={cn(
+                                    "py-3.5 px-5 rounded-xl text-sm font-bold transition-all active:scale-[0.98]",
+                                    isDark ? "bg-white/10 text-white border border-white/20" : "bg-slate-100 text-slate-900 border border-slate-200"
+                                )}
+                            >
+                                Preview
+                            </button>
+                        </div>
                     </motion.div>
                 );
             case 'logout':
@@ -3061,8 +3132,8 @@ const MobileDashboardDemo = ({
             {isDark ? (
                 <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
                     <div className="absolute inset-0 bg-gradient-to-b from-emerald-500/10 via-transparent to-transparent" />
-                    <div className="absolute top-[-8%] right-[-10%] w-[35%] h-[35%] bg-primary/10 rounded-full blur-[100px]" />
-                    <div className="absolute bottom-[-10%] left-[10%] w-[40%] h-[40%] bg-primary/8 rounded-full blur-[120px]" />
+                    <div className="absolute top-[-8%] right-[-10%] w-[35%] h-[35%] bg-primary/5 rounded-full blur-[100px]" />
+                    <div className="absolute bottom-[-10%] left-[10%] w-[40%] h-[40%] bg-primary/4 rounded-full blur-[120px]" />
                 </div>
             ) : (
                 <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
@@ -3404,7 +3475,7 @@ const MobileDashboardDemo = ({
                             {shouldShowPushPrompt && (
                                 <div className="px-5 mb-6">
                                     <div className={cn("p-5 rounded-[2rem] border relative overflow-hidden", isDark ? "bg-card border-[#2C2C2E]" : "bg-card border-border shadow-sm")}>
-                                        <div className="absolute -top-10 -right-10 w-28 h-28 bg-primary/10 rounded-full blur-3xl pointer-events-none" />
+                                        <div className="absolute -top-10 -right-10 w-28 h-28 bg-primary/5 rounded-full blur-3xl pointer-events-none" />
                                         <div className="flex items-start gap-3">
                                             <div className={cn("w-10 h-10 rounded-2xl flex items-center justify-center shrink-0", isDark ? "bg-primary/15" : "bg-primary/15")}>
                                                 <Bell className="w-5 h-5 text-primary" />
@@ -5315,9 +5386,9 @@ const MobileDashboardDemo = ({
                                     {isDark ? (
                                         <div className="absolute inset-0 overflow-hidden pointer-events-none z-[1]">
                                             <div className="absolute inset-0 bg-gradient-to-b from-emerald-500/15 via-sky-500/10 to-transparent" />
-                                            <div className="absolute top-[-12%] left-[-14%] w-[45%] h-[45%] bg-primary/20 rounded-full blur-[140px]" />
-                                            <div className="absolute top-[8%] right-[-18%] w-[48%] h-[48%] bg-info/18 rounded-full blur-[160px]" />
-                                            <div className="absolute bottom-[-14%] left-[20%] w-[52%] h-[52%] bg-primary/12 rounded-full blur-[170px]" />
+<div className="absolute top-[-12%] left-[-14%] w-[45%] h-[45%] bg-primary/8 rounded-full blur-[140px]" />
+                                                        <div className="absolute top-[8%] right-[-18%] w-[48%] h-[48%] bg-info/8 rounded-full blur-[160px]" />
+                                                        <div className="absolute bottom-[-14%] left-[20%] w-[52%] h-[52%] bg-primary/6 rounded-full blur-[170px]" />
                                         </div>
                                     ) : (
                                         <div className="absolute inset-0 overflow-hidden pointer-events-none z-[1]">
