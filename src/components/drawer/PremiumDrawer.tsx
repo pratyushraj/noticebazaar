@@ -240,8 +240,8 @@ export default function PremiumDrawer({
       { id: 'my-complaints', label: 'My Complaints', icon: FileText, path: '/dashboard/consumer-complaints', variant: 'default' },
     ],
     settings: [
-      { id: 'profile', label: 'Account', icon: Settings, path: '/creator-dashboard?tab=profile' },
-      { id: 'notification-settings', label: 'Notifications', icon: Bell, path: '/creator-dashboard?tab=profile' },
+      { id: 'profile', label: 'Account', icon: Settings, path: '/creator-profile?section=account' },
+      { id: 'notification-settings', label: 'Notifications', icon: Bell, path: '/creator-profile?section=notifications' },
       { id: 'help', label: 'Help & Support', icon: HelpCircle },
       { id: 'analytics', label: 'Analytics', icon: BarChart3, path: '/creator-analytics' },
     ],
@@ -285,7 +285,7 @@ export default function PremiumDrawer({
   };
 
   const handleProfileClick = () => {
-    navigate('/creator-dashboard?tab=profile');
+    navigate('/creator-profile?section=account');
     onClose();
   };
 
