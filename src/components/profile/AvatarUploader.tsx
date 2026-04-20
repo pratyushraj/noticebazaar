@@ -144,11 +144,7 @@ const AvatarUploader: React.FC<AvatarUploaderProps> = ({
         <div className="relative">
           <Avatar className="h-24 w-24 border-4 border-border">
             <AvatarImage 
-              src={
-                preview 
-                  ? (preview.startsWith('data:') ? preview : `${preview}${preview.includes('?') ? '&' : '?'}t=${Date.now()}`)
-                  : (currentAvatarUrl ? `${currentAvatarUrl}${currentAvatarUrl.includes('?') ? '&' : '?'}t=${Date.now()}` : undefined)
-              }
+              src={preview || currentAvatarUrl || undefined}
               onError={(e) => {
                 console.error('Avatar image failed to load:', e);
                 // Fallback to initials if image fails to load
@@ -188,7 +184,7 @@ const AvatarUploader: React.FC<AvatarUploaderProps> = ({
             {preview && (
               <Avatar className="h-32 w-32 border-4 border-border">
                 <AvatarImage 
-                  src={preview.startsWith('data:') ? preview : `${preview}${preview.includes('?') ? '&' : '?'}t=${Date.now()}`} 
+                  src={preview} 
                   alt="Preview"
                   key={`preview-${preview}`}
                 />

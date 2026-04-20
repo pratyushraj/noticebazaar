@@ -1191,10 +1191,16 @@ const MobileDashboardDemo = ({
     const resolveAvatarUrl = (candidate: any) => {
         const raw = String(candidate || '').trim();
         if (!raw) return '';
-        if (/^(https?:)?\/\//i.test(raw)) return raw.startsWith('//') ? `https:${raw}` : raw;
+        let url = '';
+        if (/^(https?:)?\/\//i.test(raw)) url = raw.startsWith('//') ? `https:${raw}` : raw;
         if (/^(data:|blob:)/i.test(raw)) return raw;
-        // Avoid relative/non-URL values which commonly break on iOS (renders as a "?" placeholder).
-        return '';
+        
+        // Proxy through wsrv.nl for ultra-fast CDN caching and compression (skips blob/data URIs)
+        if (url && (url.includes('supabase.co') || url.includes('instagram.com') || url.includes('fbcdn.net'))) {
+             return `https://wsrv.nl/?url=${encodeURIComponent(url)}&w=256&h=256&fit=cover`;
+        }
+        
+        return url;
     };
     const avatarUrl =
         resolveAvatarUrl(liveCollabProfile?.profile_photo) ||
