@@ -92,7 +92,8 @@ export const QuickOfferSheet: React.FC<QuickOfferSheetProps> = ({
                 requires_shipping: false
             };
 
-            const response = await fetch(`${apiBaseUrl}/api/collab/${creator.username}/submit`, {
+            const submitHandle = creator.instagram_handle || creator.username;
+            const response = await fetch(`${apiBaseUrl}/api/collab/${submitHandle}/submit`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload),
