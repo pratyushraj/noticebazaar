@@ -1,0 +1,7 @@
+{
+  "env": {
+    "ANTHROPIC_BASE_URL": "https://integrate.api.nvidia.com/v1",
+    "ANTHROPIC_API_KEY": "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",
+    "ANTHROPIC_CUSTOM_MODEL_OPTION": "meta/llama-3.1-405b-instruct"
+  }
+}

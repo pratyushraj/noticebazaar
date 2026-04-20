@@ -887,6 +887,9 @@ export type Database = {
           payout_upi: string | null
           intro_line: string | null
           media_kit_url: string | null
+          discovery_video_url: string | null
+          portfolio_videos: string[] | null
+          discovery_card_image: string | null
         }
         Insert: {
           address?: string | null
@@ -927,6 +930,9 @@ export type Database = {
           payout_upi?: string | null
           intro_line?: string | null
           media_kit_url?: string | null
+          discovery_video_url?: string | null
+          portfolio_videos?: string[] | null
+          discovery_card_image?: string | null
         }
         Update: {
           address?: string | null
@@ -967,6 +973,9 @@ export type Database = {
           payout_upi?: string | null
           intro_line?: string | null
           media_kit_url?: string | null
+          discovery_video_url?: string | null
+          portfolio_videos?: string[] | null
+          discovery_card_image?: string | null
         }
         Relationships: [
           {

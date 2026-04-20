@@ -245,6 +245,8 @@ export const buildProfileFormData = (profile: any, userEmail?: string | null) =>
         collab_cta_trust_note: profile?.collab_cta_trust_note || '',
         collab_cta_dm_note: profile?.collab_cta_dm_note || '',
         collab_cta_platform_note: profile?.collab_cta_platform_note || '',
+        discovery_video_url: profile?.discovery_video_url || null,
+        portfolio_videos: Array.isArray(profile?.portfolio_videos) ? profile.portfolio_videos : [],
     };
 };
 

@@ -183,6 +183,33 @@ serve(async (req) => {
       const data = await response.json();
       generatedText = data.choices[0]?.message?.content || '';
       
+    } else if (provider === 'nvidia') {
+      if (!apiKey) {
+        throw new Error('NVIDIA API key required');
+      }
+      
+      response = await fetch('https://integrate.api.nvidia.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${apiKey}`,
+        },
+        body: JSON.stringify({
+          model: model || 'nvidia/llama-3.1-70b-instruct',
+          messages: [{ role: 'user', content: prompt }],
+          temperature,
+          max_tokens: maxTokens,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(`NVIDIA API error: ${response.status} - ${errorData.error?.message || 'Unknown error'}`);
+      }
+
+      const data = await response.json();
+      generatedText = data.choices[0]?.message?.content || '';
+      
     } else {
       throw new Error(`Unsupported provider: ${provider}`);
     }

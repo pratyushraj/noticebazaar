@@ -495,126 +495,126 @@ const CollabRequestBriefPage = () => {
         </div>
       )}
       <CreatorNavigationWrapper
-        title="Offer details"
-        subtitle={subtitle}
+        title={`Offer from ${request.brand_name || 'Brand'}`}
+        subtitle=""
         compactHeader
         showBackButton
         backTo="/creator-dashboard?tab=deals&subtab=pending"
         backIconOnly
       >
-        {/* ─── STICKY CTA CARD ─── */}
-        <div className="sticky top-0 z-40 bg-[#0B0F14]/95 backdrop-blur-xl border-b border-border/60">
-          <div className="flex items-center justify-between px-4 pt-3 pb-2">
-            <div className="flex items-center gap-2 min-w-0">
-              <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center shrink-0">
-                <span className="text-xs font-black text-primary">
-                  {(request.brand_name ?? 'B').charAt(0).toUpperCase()}
-                </span>
+        <div className="pb-36">
+          {/* ─── URGENCY BANNER ─── */}
+          {timeLeft && (
+            <div className={cn(
+              "mx-4 mt-3 px-4 py-3 rounded-2xl border flex items-center justify-between",
+              timeLeft.tone === 'danger'
+                ? "bg-red-500/10 border-red-500/20"
+                : timeLeft.tone === 'warn'
+                  ? "bg-amber-500/10 border-amber-500/20"
+                  : "bg-emerald-500/8 border-emerald-500/15"
+            )}>
+              <div className="flex items-center gap-2">
+                <span className="text-lg">⚡</span>
+                <div>
+                  <p className={cn(
+                    "text-[13px] font-bold",
+                    timeLeft.tone === 'danger' ? "text-red-400" : timeLeft.tone === 'warn' ? "text-amber-400" : "text-emerald-400"
+                  )}>Action Required</p>
+                  <p className="text-[11px] text-foreground/40 font-medium">
+                    {deadlineDate ? `Expires ${deadlineDate.toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })} at ${deadlineDate.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}` : 'Respond soon'}
+                  </p>
+                </div>
               </div>
-              <div className="min-w-0">
-                <p className="text-sm font-bold text-foreground truncate">{request.brand_name ?? 'Brand'}</p>
-                <p className="text-[11px] text-foreground/50 font-medium">
-                  {collabTypeLabel(request.collab_type)} • Creator Armour protected
-                </p>
-              </div>
-            </div>
-            {timeLeft && (
               <div className={cn(
-                "shrink-0 inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold border",
-                timeLeft.tone === 'danger'
-                  ? "bg-red-500/10 text-red-400 border-red-500/20"
-                  : timeLeft.tone === 'warn'
-                    ? "bg-amber-500/10 text-amber-400 border-amber-500/20"
-                    : "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
+                "px-3 py-1.5 rounded-xl text-[13px] font-black animate-pulse",
+                timeLeft.tone === 'danger' ? "bg-red-500/15 text-red-400" : timeLeft.tone === 'warn' ? "bg-amber-500/15 text-amber-400" : "bg-emerald-500/15 text-emerald-400"
               )}>
-                <Clock className="h-3 w-3" />
-                {timeLeft.label}
-              </div>
-            )}
-          </div>
-
-          <div className="px-4 pb-3 space-y-2.5">
-            <div className="flex items-end justify-between">
-              <div>
-                <p className="text-[11px] text-foreground/40 font-semibold uppercase tracking-wider">
-                  {isBarterLike(request.collab_type) ? "You'll receive" : "You'll earn"}
-                </p>
-                <p className="text-3xl font-black text-foreground tracking-tight leading-none">
-                  {budgetLabel}
-                </p>
-              </div>
-              <div className="text-right pb-0.5">
-                <p className="text-[10px] text-foreground/30">+₹0 platform fee</p>
-                <p className="text-[10px] text-emerald-400/60 font-medium">100% to you</p>
+                ⏳ {timeLeft.label}
               </div>
             </div>
+          )}
 
-            <button
-              type="button"
-              onClick={() => handleAccept()}
-              disabled={isAccepting || isDeclining}
-              className={cn(
-                "w-full h-12 rounded-xl font-black text-[15px] text-[#0B0F14] transition-all",
-                "bg-emerald-500 hover:bg-emerald-400 active:scale-[0.98]",
-                "focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-offset-2 focus:ring-offset-[#0B0F14]",
-                isAccepting ? "opacity-60" : ""
-              )}>
-              {isAccepting ? (
-                <span className="flex items-center justify-center gap-2">
-                  <Loader2 className="h-4 w-4 animate-spin" /> Accepting...
-                </span>
-              ) : (
-                "Accept deal"
-              )}
-            </button>
-
-            <div className="flex gap-2">
-              <button
-                type="button"
-                className="flex-1 h-10 rounded-xl border border-border bg-card hover:bg-card/80 text-[13px] font-semibold text-foreground/80 transition-colors"
-                onClick={() => toast.info('Send your question to the brand')}>
-                Ask a question
-              </button>
-              <button
-                type="button"
-                onClick={() => { setCounterPrice(request.exact_budget ? String(request.exact_budget) : ''); setCounterNotes(''); setShowCounterDialog(true); }}
-                disabled={isAccepting || isDeclining}
-                className="h-10 px-3 rounded-xl border border-border bg-card hover:bg-card/80 text-[13px] font-semibold text-foreground/80 transition-colors">
-                Counter
-              </button>
-              <button
-                type="button"
-                onClick={handleDecline}
-                disabled={isAccepting || isDeclining}
-                className={cn(
-                  "h-10 px-3 rounded-xl border text-[13px] font-semibold transition-colors",
-                  "border-red-500/20 text-red-400/70 hover:text-red-400 hover:border-red-500/40 hover:bg-red-500/5",
-                  isDeclining ? "opacity-60" : ""
-                )}>
-                {isDeclining ? <Loader2 className="h-4 w-4 animate-spin mx-auto" /> : "Decline"}
-              </button>
+          {/* ─── BRAND HEADER ─── */}
+          <div className="px-4 pt-4 pb-3 flex items-center gap-3">
+            <div className="w-11 h-11 rounded-full bg-gradient-to-br from-emerald-500/20 to-emerald-600/10 border border-emerald-500/20 flex items-center justify-center shrink-0">
+              <span className="text-base font-black text-emerald-400">
+                {(request.brand_name ?? 'B').charAt(0).toUpperCase()}
+              </span>
             </div>
-
-            <div className="flex items-center justify-center gap-1.5 pt-0.5">
-              <ShieldCheck className="h-3 w-3 text-emerald-500/50" />
-              <p className="text-[10px] text-foreground/30 font-medium">
-                Creator Armour protects your payment — deal moves to your dashboard
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-1.5">
+                <p className="text-[16px] font-bold text-foreground truncate">{request.brand_name ?? 'Brand'}</p>
+                <ShieldCheck className="h-4 w-4 text-emerald-400 shrink-0" />
+                <span className="text-[9px] font-bold text-emerald-400/70 uppercase tracking-wider">Verified</span>
+              </div>
+              <p className="text-[11px] text-foreground/40 font-medium">
+                {collabTypeLabel(request.collab_type)} collaboration
               </p>
             </div>
           </div>
-        </div>
 
-        <div className="px-4 pt-4 pb-8 space-y-4">
+          {/* ─── OFFER CARD ─── */}
+          <div className="mx-4 rounded-2xl border border-border/60 bg-card/40 overflow-hidden backdrop-blur-md">
+            <div className="flex items-center h-32">
+              {/* LEFT: Product Image */}
+              <div className="w-1/3 h-full relative bg-secondary/10 shrink-0 border-r border-border/20">
+                {request.barter_product_image_url ? (
+                  <img
+                    src={request.barter_product_image_url}
+                    alt="Product"
+                    className="absolute inset-0 w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="absolute inset-0 flex items-center justify-center p-3 opacity-20 group">
+                    <div className="w-full h-full rounded-lg bg-current/10 flex items-center justify-center">
+                       <span className="text-xl font-bold">{(request.brand_name || 'B')[0]}</span>
+                    </div>
+                  </div>
+                )}
+                {/* 10% Badge logic — if applicable */}
+                {(request.exact_budget && request.exact_budget >= 15000) && (
+                  <div className="absolute top-2 left-2 right-2">
+                    <div className="bg-amber-500 text-[8px] font-black uppercase text-white px-1.5 py-0.5 rounded shadow-lg text-center animate-pulse">
+                      Top 10% Deal
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* RIGHT: High Impact Price */}
+              <div className="flex-1 p-4 flex flex-col justify-center min-w-0 h-full">
+                <p className="text-[10px] text-foreground/35 font-bold uppercase tracking-wider mb-1">
+                  {isBarterLike(request.collab_type) ? "Total Value" : "You'll Earn"}
+                </p>
+                
+                <div className="flex items-baseline gap-1.5">
+                  <p className="text-3xl font-black text-white tracking-tighter leading-none shrink-0">
+                    {budgetLabel}
+                  </p>
+                  <p className="text-[12px] font-bold text-white/30 italic truncate">
+                    {isPaidLike(request.collab_type) ? "per Reel" : "products"}
+                  </p>
+                </div>
+
+                <div className="mt-2.5 flex items-center gap-1.5 py-1 px-2 rounded-lg bg-emerald-500/10 border border-emerald-500/10 w-fit">
+                  <CheckCircle2 className="h-3 w-3 text-emerald-400" />
+                  <span className="text-[10px] font-bold text-emerald-400/90 whitespace-nowrap">✔ Payment secured</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* ─── DELIVERABLES ─── */}
           {deliverablesList.length > 0 && (
-            <div className="space-y-2">
-              <p className="text-[11px] font-semibold text-foreground/40 uppercase tracking-wider">Deliverables</p>
+            <div className="px-4 pt-4 space-y-2">
+              <p className="text-[11px] font-semibold text-foreground/40 uppercase tracking-wider">What you'll create</p>
               <div className="flex flex-wrap gap-2">
                 {deliverablesList.slice(0, 6).map((d, idx) => {
                   const chip = formatDeliverableChip(d);
                   return (
                     <span
                       key={idx}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[13px] font-semibold border border-border bg-card text-foreground/80"
+                      className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-[13px] font-semibold border border-border bg-card text-foreground/80"
                     >
                       <span className="text-foreground/50">{chip.emoji}</span>
                       {chip.label}
@@ -626,77 +626,136 @@ const CollabRequestBriefPage = () => {
             </div>
           )}
 
+          {/* ─── CAMPAIGN BRIEF ─── */}
           {request.campaign_description && (
-            <div className="space-y-2">
+            <div className="px-4 pt-4 space-y-2">
               <p className="text-[11px] font-semibold text-foreground/40 uppercase tracking-wider">Campaign brief</p>
-              <p className="text-[13px] text-foreground/70 leading-relaxed whitespace-pre-wrap">
+              <p className="text-[13px] text-foreground/65 leading-relaxed whitespace-pre-wrap">
                 {request.campaign_description}
               </p>
             </div>
           )}
 
-          <details className="group rounded-xl border border-border/60 bg-card/40">
-            <summary className="flex items-center justify-between px-4 py-3 cursor-pointer list-none select-none">
-              <span className="text-[13px] font-semibold text-foreground/70">Deal details</span>
-              <svg className="h-4 w-4 text-foreground/30 group-open:rotate-180 transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M6 9l6 6 6-6"/></svg>
-            </summary>
-            <div className="px-4 pb-4 space-y-3 text-[13px]">
-              {request.usage_rights && (
+          {/* ─── DEAL DETAILS (Collapsible) ─── */}
+          <div className="px-4 pt-4">
+            <details className="group rounded-2xl border border-border/40 bg-card/30">
+              <summary className="flex items-center justify-between px-4 py-3 cursor-pointer list-none select-none">
+                <span className="text-[13px] font-semibold text-foreground/60">Deal details & timeline</span>
+                <svg className="h-4 w-4 text-foreground/25 group-open:rotate-180 transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M6 9l6 6 6-6"/></svg>
+              </summary>
+              <div className="px-4 pb-4 space-y-3 text-[13px]">
+                {request.usage_rights && (
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 className="h-4 w-4 text-emerald-400/70 shrink-0" />
+                    <span className="text-foreground/60">Usage rights included</span>
+                  </div>
+                )}
+                {isBarterLike(request.collab_type) && request.barter_description && (
+                  <div className="space-y-1">
+                    <p className="text-foreground/40 text-[11px] font-medium uppercase tracking-wider">Product details</p>
+                    <p className="text-foreground/70">{request.barter_description}</p>
+                  </div>
+                )}
+                {deadlineDate && !Number.isNaN(deadlineDate.getTime()) && (
+                  <div className="flex items-center gap-2">
+                    <span className="text-foreground/40">📅</span>
+                    <span className="text-foreground/60">
+                      Deadline: {deadlineDate.toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' })}
+                    </span>
+                  </div>
+                )}
                 <div className="flex items-center gap-2">
-                  <CheckCircle2 className="h-4 w-4 text-emerald-400/70 shrink-0" />
-                  <span className="text-foreground/60">Usage rights included</span>
+                  <span className="text-foreground/30">✉️</span>
+                  <span className="text-foreground/50 truncate">{request.brand_email ?? 'Contact via Creator Armour'}</span>
                 </div>
-              )}
-              {isBarterLike(request.collab_type) && request.barter_description && (
-                <div className="space-y-1">
-                  <p className="text-foreground/40 text-[11px] font-medium uppercase tracking-wider">Product details</p>
-                  <p className="text-foreground/70">{request.barter_description}</p>
-                </div>
-              )}
-              {deadlineDate && !Number.isNaN(deadlineDate.getTime()) && (
-                <div className="flex items-center gap-2">
-                  <span className="text-foreground/40">📅</span>
-                  <span className="text-foreground/60">
-                    Deadline: {deadlineDate.toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' })}
-                  </span>
-                </div>
-              )}
-              <div className="flex items-center gap-2">
-                <span className="text-foreground/30">✉️</span>
-                <span className="text-foreground/50 truncate">{request.brand_email ?? 'Contact via Creator Armour'}</span>
+                {brandInstagramHandle && (
+                  <div className="flex items-center gap-2">
+                    <Instagram className="h-4 w-4 text-foreground/30 shrink-0" />
+                    <a
+                      href={`https://instagram.com/${brandInstagramHandle}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-info/80 hover:text-info text-[13px] transition-colors"
+                    >
+                      @{brandInstagramHandle}
+                    </a>
+                  </div>
+                )}
               </div>
-              {brandInstagramHandle && (
-                <div className="flex items-center gap-2">
-                  <Instagram className="h-4 w-4 text-foreground/30 shrink-0" />
-                  <a
-                    href={`https://instagram.com/${brandInstagramHandle}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-info/80 hover:text-info text-[13px] transition-colors"
-                  >
-                    @{brandInstagramHandle}
-                  </a>
-                </div>
-              )}
-            </div>
-          </details>
+            </details>
+          </div>
 
-          <div className="rounded-xl border border-emerald-500/10 bg-emerald-500/5 p-4 space-y-2">
-            <p className="text-[11px] font-bold text-emerald-400/80 uppercase tracking-wider">Why accept</p>
-            <div className="space-y-1.5">
-              <div className="flex items-start gap-2">
-                <CheckCircle2 className="h-4 w-4 text-emerald-400/60 mt-0.5 shrink-0" />
-                <p className="text-[13px] text-foreground/60">Payment tracked and protected by Creator Armour</p>
+          {/* ─── TRUST BLOCK ─── */}
+          <div className="px-4 pt-4">
+            <div className="grid grid-cols-3 gap-2">
+              <div className="flex flex-col items-center gap-1.5 py-3 px-2 rounded-xl border border-emerald-500/10 bg-emerald-500/5">
+                <ShieldCheck className="h-4 w-4 text-emerald-400/70" />
+                <span className="text-[10px] font-bold text-emerald-400/70 text-center leading-tight">Verified Brand</span>
               </div>
-              <div className="flex items-start gap-2">
-                <CheckCircle2 className="h-4 w-4 text-emerald-400/60 mt-0.5 shrink-0" />
-                <p className="text-[13px] text-foreground/60">Add your price and delivery details in one place</p>
+              <div className="flex flex-col items-center gap-1.5 py-3 px-2 rounded-xl border border-emerald-500/10 bg-emerald-500/5">
+                <Lock className="h-4 w-4 text-emerald-400/70" />
+                <span className="text-[10px] font-bold text-emerald-400/70 text-center leading-tight">Secure Payment</span>
               </div>
-              <div className="flex items-start gap-2">
-                <CheckCircle2 className="h-4 w-4 text-emerald-400/60 mt-0.5 shrink-0" />
-                <p className="text-[13px] text-foreground/60">Track content review, payment, and updates in your dashboard</p>
+              <div className="flex flex-col items-center gap-1.5 py-3 px-2 rounded-xl border border-emerald-500/10 bg-emerald-500/5">
+                <CheckCircle2 className="h-4 w-4 text-emerald-400/70" />
+                <span className="text-[10px] font-bold text-emerald-400/70 text-center leading-tight">No Hidden Terms</span>
               </div>
             </div>
+          </div>
+        </div>
+
+        {/* ═══ STICKY BOTTOM CTA ═══ */}
+        <div className="fixed bottom-0 left-0 right-0 z-50 bg-[#0B0F14]/95 backdrop-blur-xl border-t border-border/40 px-4 pt-3 pb-[max(env(safe-area-inset-bottom),12px)] safe-area-bottom">
+          {/* Primary CTA — dominant */}
+          <button
+            type="button"
+            onClick={() => handleAccept()}
+            disabled={isAccepting || isDeclining}
+            className={cn(
+              "w-full h-14 rounded-2xl font-black text-[15px] text-[#0B0F14] transition-all",
+              "bg-gradient-to-r from-emerald-500 to-emerald-400 hover:from-emerald-400 hover:to-emerald-300",
+              "active:scale-[0.97] shadow-[0_8px_32px_rgba(16,185,129,0.3)]",
+              "focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-offset-2 focus:ring-offset-[#0B0F14]",
+              isAccepting ? "opacity-70" : ""
+            )}>
+            {isAccepting ? (
+              <span className="flex items-center justify-center gap-2">
+                <Loader2 className="h-5 w-5 animate-spin" /> Accepting...
+              </span>
+            ) : (
+              <span className="flex items-center justify-center gap-2">
+                🚀 Accept & Start Earning {budgetLabel}
+              </span>
+            )}
+          </button>
+          <p className="text-[10px] text-foreground/30 text-center mt-1.5 font-medium">Contract generated instantly • 100% goes to you</p>
+
+          {/* Secondary actions — smaller, de-emphasized */}
+          <div className="flex gap-2 mt-2.5">
+            <button
+              type="button"
+              className="flex-1 h-9 rounded-xl border border-border/50 bg-transparent text-[12px] font-semibold text-foreground/50 transition-colors hover:text-foreground/70 hover:border-border"
+              onClick={() => toast.info('Send your question to the brand')}>
+              Ask Question
+            </button>
+            <button
+              type="button"
+              onClick={() => { setCounterPrice(request.exact_budget ? String(request.exact_budget) : ''); setCounterNotes(''); setShowCounterDialog(true); }}
+              disabled={isAccepting || isDeclining}
+              className="flex-1 h-9 rounded-xl border border-border/50 bg-transparent text-[12px] font-semibold text-foreground/50 transition-colors hover:text-foreground/70 hover:border-border">
+              Counter Offer
+            </button>
+            <button
+              type="button"
+              onClick={handleDecline}
+              disabled={isAccepting || isDeclining}
+              className={cn(
+                "h-9 px-4 rounded-xl border text-[12px] font-semibold transition-colors",
+                "border-border/30 text-foreground/30 hover:text-red-400/60 hover:border-red-500/20",
+                isDeclining ? "opacity-60" : ""
+              )}>
+              {isDeclining ? <Loader2 className="h-3.5 w-3.5 animate-spin mx-auto" /> : "Decline"}
+            </button>
           </div>
         </div>
 

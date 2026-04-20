@@ -99,6 +99,17 @@ export const BrandSettingsPanel = ({
   const [dragging, setDragging] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
+  /* ── Theme Detection ── */
+  const [isDark, setIsDark] = useState(() => document.documentElement.classList.contains('dark'));
+
+  useEffect(() => {
+    const observer = new MutationObserver(() => {
+      setIsDark(document.documentElement.classList.contains('dark'));
+    });
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+    return () => observer.disconnect();
+  }, []);
+
   /* ─── Dirty tracking — seeded AFTER profile loads ── */
   const seededRef = useRef(false);
   const baselineRef = useRef({ name: '', website: '', industry: '', description: '', logo: '' });
@@ -215,10 +226,24 @@ export const BrandSettingsPanel = ({
   const justSaved = savedAt !== null && Date.now() - savedAt < 4000;
 
   /* ─── CSS primitives matching existing dashboard ── */
-  // The brand dashboard uses bg-[#061318] dark mode with border-border / border-white/10 cards
-  const card = 'rounded-[22px] border border-white/[0.08] bg-white/[0.03] backdrop-blur-xl';
-  const inputBase = 'w-full h-12 px-4 rounded-xl border border-white/8 bg-white/[0.05] text-[14px] font-medium text-white placeholder:text-white/25 outline-none transition-all focus:border-emerald-500/40 focus:bg-white/[0.07] focus:ring-2 focus:ring-emerald-500/10';
-  const sectionLabel = 'text-[10px] font-black uppercase tracking-[0.18em] text-white/30 mb-3';
+  const card = cn(
+    'rounded-[22px] border backdrop-blur-xl',
+    isDark ? 'border-white/[0.08] bg-white/[0.03]' : 'border-slate-200 bg-white shadow-[0_2px_12px_rgba(0,0,0,0.03)]'
+  );
+  const inputBase = cn(
+    'w-full h-12 px-4 rounded-xl border text-[14px] font-medium outline-none transition-all',
+    isDark
+      ? 'border-white/8 bg-white/[0.05] text-white placeholder:text-white/25 focus:border-emerald-500/40 focus:bg-white/[0.07] focus:ring-2 focus:ring-emerald-500/10'
+      : 'border-slate-200 bg-slate-50 text-slate-800 placeholder:text-slate-400 focus:border-emerald-500/40 focus:bg-white focus:ring-4 focus:ring-emerald-500/5'
+  );
+  const sectionLabel = cn(
+    'text-[10px] font-black uppercase tracking-[0.18em] mb-3',
+    isDark ? 'text-white/30' : 'text-slate-400'
+  );
+  const labelSub = cn(
+    'text-[11px] font-semibold uppercase tracking-widest',
+    isDark ? 'text-white/35' : 'text-slate-500'
+  );
 
   /* ─── Render ─────────────────────────────────────────────────────────────── */
   return (
@@ -240,17 +265,17 @@ export const BrandSettingsPanel = ({
           {logoPreview ? (
             /* Has logo — show preview strip */
             <div className="flex items-center gap-4">
-              <div className="relative w-[60px] h-[60px] shrink-0 rounded-2xl border border-white/10 bg-black/20 overflow-hidden">
+              <div className="relative w-[60px] h-[60px] shrink-0 rounded-2xl border border-white/10 bg-black/5 overflow-hidden flex items-center justify-center">
                 <img src={logoPreview} alt="Logo" className="w-full h-full object-contain" />
                 {logoUploading && (
-                  <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
+                  <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
                     <Loader2 className="w-4 h-4 animate-spin text-emerald-400" />
                   </div>
                 )}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-[13px] font-semibold text-white/80 truncate">{logoFile?.name || 'Current logo'}</p>
-                <p className="text-[11px] text-white/30 mt-0.5">Visible on all offers you send</p>
+                <p className={cn("text-[13px] font-semibold truncate", isDark ? "text-white/80" : "text-slate-700")}>{logoFile?.name || 'Current logo'}</p>
+                <p className={cn("text-[11px] mt-0.5", isDark ? "text-white/30" : "text-slate-400")}>Visible on all offers you send</p>
               </div>
               <div className="flex gap-2 shrink-0">
                 <button
@@ -282,11 +307,11 @@ export const BrandSettingsPanel = ({
                   : 'border-white/10 bg-white/[0.02] hover:border-white/20 hover:bg-white/[0.04]'
               )}
             >
-              <Upload className="w-5 h-5 text-white/25" />
-              <p className="text-[12px] font-medium text-white/35">
+              <Upload className={cn("w-5 h-5", isDark ? "text-white/25" : "text-slate-300")} />
+              <p className={cn("text-[12px] font-medium", isDark ? "text-white/35" : "text-slate-400")}>
                 {dragging ? 'Drop here' : 'Drag & drop or tap to upload'}
               </p>
-              <p className="text-[10px] text-white/20">JPEG · PNG · WebP · SVG · Max 2 MB</p>
+              <p className={cn("text-[10px]", isDark ? "text-white/20" : "text-slate-300")}>JPEG · PNG · WebP · SVG · Max 2 MB</p>
             </div>
           )}
           <input ref={fileRef} type="file" accept="image/*" className="hidden"
@@ -298,7 +323,7 @@ export const BrandSettingsPanel = ({
           <p className={sectionLabel}>Basic Info</p>
 
           <div className="space-y-1.5">
-            <label className="text-[11px] font-semibold text-white/35 uppercase tracking-widest">Brand Name</label>
+            <label className={labelSub}>Brand Name</label>
             <input
               className={cn(inputBase, errors.name && 'border-rose-500/40 focus:border-rose-500/60')}
               value={name}
@@ -309,7 +334,7 @@ export const BrandSettingsPanel = ({
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-[11px] font-semibold text-white/35 uppercase tracking-widest">Website</label>
+            <label className={labelSub}>Website</label>
             <input
               className={cn(inputBase, errors.website && 'border-rose-500/40')}
               value={website}
@@ -322,12 +347,12 @@ export const BrandSettingsPanel = ({
             {errors.website ? (
               <p className="text-[11px] text-rose-400">{errors.website}</p>
             ) : (
-              <p className="text-[11px] text-white/20">Optional · auto-adds https://</p>
+              <p className={cn("text-[11px]", isDark ? "text-white/20" : "text-slate-400")}>Optional · auto-adds https://</p>
             )}
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-[11px] font-semibold text-white/35 uppercase tracking-widest">Industry</label>
+            <label className={labelSub}>Industry</label>
             <div className="relative">
               <select
                 value={industry}
@@ -336,10 +361,10 @@ export const BrandSettingsPanel = ({
               >
                 <option value="" className="bg-[#0a1a12] text-white/50">Select industry…</option>
                 {INDUSTRIES.map(i => (
-                  <option key={i} value={i} className="bg-[#0a1a12] text-white">{i}</option>
+                  <option key={i} value={i} className={isDark ? "bg-[#0a1a12] text-white" : "bg-white text-slate-800"}>{i}</option>
                 ))}
               </select>
-              <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/25 pointer-events-none" />
+              <ChevronDown className={cn("absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none", isDark ? "text-white/25" : "text-slate-400")} />
             </div>
           </div>
         </div>
@@ -348,7 +373,7 @@ export const BrandSettingsPanel = ({
         <div className={cn(card, 'p-4 space-y-3')}>
           <p className={sectionLabel}>About</p>
           <div className="space-y-1.5">
-            <label className="text-[11px] font-semibold text-white/35 uppercase tracking-widest">Description</label>
+            <label className={labelSub}>Description</label>
             <div className="relative">
               <textarea
                 value={description}
@@ -356,14 +381,16 @@ export const BrandSettingsPanel = ({
                 placeholder="What does your brand sell? Give creators context."
                 rows={4}
                 className={cn(
-                  'w-full px-4 py-3 rounded-xl border border-white/8 bg-white/[0.05] text-[14px] font-medium text-white placeholder:text-white/25 outline-none resize-none transition-all',
-                  'focus:border-emerald-500/40 focus:ring-2 focus:ring-emerald-500/10 focus:bg-white/[0.07]',
+                  'w-full px-4 py-3 rounded-xl border text-[14px] font-medium outline-none resize-none transition-all',
+                  isDark
+                    ? 'border-white/8 bg-white/[0.05] text-white placeholder:text-white/25 focus:border-emerald-500/40 focus:ring-2 focus:ring-emerald-500/10 focus:bg-white/[0.07]'
+                    : 'border-slate-200 bg-slate-50 text-slate-800 placeholder:text-slate-400 focus:border-emerald-500/40 focus:ring-4 focus:ring-emerald-500/5 focus:bg-white',
                   errors.description && 'border-rose-500/40'
                 )}
               />
               <span className={cn(
                 'absolute bottom-3 right-3 text-[11px] font-mono tabular-nums',
-                description.length > DESC_MAX ? 'text-rose-400' : 'text-white/20'
+                description.length > DESC_MAX ? 'text-rose-400' : (isDark ? 'text-white/20' : 'text-slate-400')
               )}>
                 {description.length}/{DESC_MAX}
               </span>
@@ -378,14 +405,17 @@ export const BrandSettingsPanel = ({
           <button
             type="button"
             onClick={() => setShowLogoutModal(true)}
-            className="w-full flex items-center gap-3 p-3 rounded-2xl border border-rose-500/15 bg-rose-500/[0.05] hover:bg-rose-500/10 transition active:scale-[0.99]"
+            className={cn(
+              "w-full flex items-center gap-3 p-3 rounded-2xl border transition active:scale-[0.99]",
+              isDark ? "border-rose-500/15 bg-rose-500/[0.05] hover:bg-rose-500/10" : "border-rose-200 bg-rose-50/50 hover:bg-rose-50"
+            )}
           >
             <div className="w-9 h-9 rounded-xl bg-rose-500/10 flex items-center justify-center shrink-0">
               <LogOut className="w-4 h-4 text-rose-400" />
             </div>
             <div className="text-left min-w-0">
-              <p className="text-[13px] font-semibold text-rose-300">Log out of account</p>
-              <p className="text-[11px] text-white/25 truncate">{profile?.email || session?.user?.email || ''}</p>
+              <p className={cn("text-[13px] font-semibold", isDark ? "text-rose-300" : "text-rose-600")}>Log out of account</p>
+              <p className={cn("text-[11px] truncate", isDark ? "text-white/25" : "text-slate-400")}>{profile?.email || session?.user?.email || ''}</p>
             </div>
           </button>
         </div>
@@ -395,7 +425,12 @@ export const BrandSettingsPanel = ({
       {/* ── Sticky Save ────────────────────────────────────────────────── */}
       <div
         className="fixed bottom-0 inset-x-0 z-40 px-4 pt-5"
-        style={{ paddingBottom: 'max(env(safe-area-inset-bottom), 84px)', background: 'linear-gradient(to top, #061318 65%, rgba(6,19,24,0.9) 85%, transparent 100%)' }}
+        style={{
+          paddingBottom: 'max(env(safe-area-inset-bottom), 110px)',
+          background: isDark
+            ? 'linear-gradient(to top, #061318 65%, rgba(6,19,24,0.9) 85%, transparent 100%)'
+            : 'linear-gradient(to top, #f8fafc 65%, rgba(248,250,252,0.92) 85%, transparent 100%)'
+        }}
       >
         <div className="max-w-md mx-auto">
           {isDirty && !isSaving && (
@@ -414,7 +449,9 @@ export const BrandSettingsPanel = ({
                 ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-[0_6px_28px_rgba(16,185,129,0.28)] active:scale-[0.98]'
                 : justSaved
                   ? 'bg-emerald-500/10 border border-emerald-500/20 text-emerald-400'
-                  : 'bg-white/[0.08] border border-white/[0.14] text-white/30 cursor-not-allowed'
+                  : isDark
+                    ? 'bg-white/[0.08] border border-white/[0.14] text-white/30 cursor-not-allowed'
+                    : 'bg-slate-200 border border-slate-300 text-slate-400 cursor-not-allowed'
             )}
           >
             {isSaving || logoUploading ? (

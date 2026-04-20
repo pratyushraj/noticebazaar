@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { MutableRefObject, ReactNode } from 'react';
 import { createPortal } from 'react-dom';
-import { AlertTriangle, Bell, Briefcase, Camera, Check, Clock, ChevronRight, CreditCard, FileText, Handshake, Landmark, LayoutDashboard, Loader2, Lock, Mail, Menu, Moon, MoreHorizontal, Plus, RefreshCw, Search, Send, Settings, Shield, ShieldCheck, Sparkles, Sun, User } from 'lucide-react';
+import { AlertTriangle, Bell, Briefcase, Camera, Check, Clock, ChevronRight, CreditCard, FileText, Handshake, Landmark, LayoutDashboard, Loader2, Lock, Mail, Menu, Moon, MoreHorizontal, Plus, RefreshCw, Search, Send, Settings, Shield, ShieldCheck, Sparkles, Sun, User, Zap } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import CountUp from 'react-countup';
@@ -18,6 +18,7 @@ import { dealPrimaryCtaButtonClass, getDealPrimaryCta } from '@/lib/deals/primar
 import { CREATOR_ASSETS_BUCKET } from '@/lib/constants/storage';
 import { BrandSettingsPanel } from '@/pages/BrandSettings';
 import { toast } from 'sonner';
+import { DiscoveryStack } from '../components/brand-dashboard/DiscoveryStack';
 
 type BrandTab = 'dashboard' | 'collabs' | 'creators' | 'profile' | 'payments';
 type BrandCollabTab = 'action_required' | 'active' | 'completed';
@@ -473,14 +474,16 @@ const BrandMobileDashboard = ({
   requests = [],
   deals = [],
   stats,
-  initialTab = 'dashboard',
-  isLoading = false,
+  initialTab,
+  isLoading,
+  isDemoBrand,
   onRefresh,
   onLogout,
-  isDemoBrand = false,
-	}: BrandMobileDashboardProps) => {
-	  const navigate = useNavigate();
-	  const [searchParams, setSearchParams] = useSearchParams();
+}: BrandMobileDashboardProps) => {
+  const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [featuredCreators, setFeaturedCreators] = useState<any[]>([]);
+  const [isLoadingFeatured, setIsLoadingFeatured] = useState(false);
   const tabParam = searchParams.get('tab');
   const subtabParam = searchParams.get('subtab');
   const highlightedDealId = searchParams.get('dealId');
@@ -529,6 +532,31 @@ const BrandMobileDashboard = ({
     }
     return 'dark';
   });
+
+  useEffect(() => {
+    if (activeTab === 'creators') {
+      fetchFeaturedCreators();
+    }
+  }, [activeTab]);
+
+  const fetchFeaturedCreators = async () => {
+    setIsLoadingFeatured(true);
+    try {
+      const eliteUsernames = ['aria_tech', 'kaelan_fitness', 'maya_travels', 'marcus_style', 'elara_beauty'];
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .in('username', eliteUsernames)
+        .eq('role', 'creator');
+      
+      if (error) throw error;
+      setFeaturedCreators(data || []);
+    } catch (err) {
+      console.error('[BrandMobileDashboard] Failed to fetch featured creators:', err);
+    } finally {
+      setIsLoadingFeatured(false);
+    }
+  };
 
   useEffect(() => {
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
@@ -4168,7 +4196,7 @@ const BrandMobileDashboard = ({
 
                                         {resolveDealProductImageUrl(item) && (
                                           <div className="mb-3 overflow-hidden rounded-2xl border border-border bg-background">
-                                            <div className="relative aspect-[4/3] w-full">
+                                            <div className="relative aspect-[16/9] w-full">
                                               <img
                                                 src={safeImageSrc(resolveDealProductImageUrl(item))}
                                                 alt={`${creatorName} product preview`}
@@ -4210,11 +4238,12 @@ const BrandMobileDashboard = ({
 		                                      key={item.id}
 		                                      whileTap={{ scale: 0.985 }}
 		                                      className={cn(
-		                                        'w-full p-4 rounded-3xl border transition-all duration-300 group active:scale-[0.99] relative text-left backdrop-blur-xl',
+		                                        'w-full rounded-3xl border transition-all duration-300 group active:scale-[0.99] relative text-left backdrop-blur-xl overflow-hidden',
 		                                        borderColor,
 		                                        isDark ? 'bg-secondary/[0.04]' : 'bg-secondary/85 shadow-[0_10px_35px_rgba(2,6,23,0.06)]'
 		                                      )}
 		                                    >
+		                                      <div className="p-4">
 		                                      <div className="flex items-start justify-between gap-3 mb-3.5">
 		                                        <div className="flex items-center gap-3 min-w-0">
 		                                          <Avatar className={cn('w-11 h-11 border shadow-sm shrink-0', isDark ? 'border-border' : 'border-border')}>
@@ -4279,23 +4308,7 @@ const BrandMobileDashboard = ({
 			                                </div>
 			                              )}
 
-		                                      <div className="flex items-center justify-between">
-		                                        <div className="flex items-center gap-1.5">
-		                                          {Array.from({ length: 5 }).map((_, i) => (
-		                                            <span
-		                                              key={i}
-		                                              className={cn(
-		                                                'h-1.5 w-6 rounded-full',
-		                                                i < ui.step
-		                                                  ? (isDark ? 'bg-primary/80' : 'bg-primary')
-		                                                  : (isDark ? 'bg-secondary/50' : 'bg-background')
-		                                              )}
-		                                            />
-		                                          ))}
-		                                        </div>
-		                                      </div>
-
-					                              <button
+		                                      <button
 					                                type="button"
 					                                onClick={() => {
 					                                  triggerHaptic(HapticPatterns.light);
@@ -4311,6 +4324,15 @@ const BrandMobileDashboard = ({
 				                              >
 				                                {ui.primaryActionLabel}
 				                              </button>
+		                                      </div>
+
+		                                      {/* Progress bar as bottom card edge */}
+		                                      <div className={cn('h-1 w-full', isDark ? 'bg-white/5' : 'bg-black/5')}>
+		                                        <div 
+		                                          className={cn('h-full rounded-r-full transition-all duration-500', isDark ? 'bg-emerald-400/60' : 'bg-emerald-500/70')}
+		                                          style={{ width: `${(ui.step / 5) * 100}%` }}
+		                                        />
+		                                      </div>
 		                                    </motion.div>
 		                                  );
 			                                })}
@@ -4869,200 +4891,17 @@ const BrandMobileDashboard = ({
 
               {activeTab === 'creators' && (
                 <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
-                  <div className="flex items-center justify-between mb-4">
-                    <h2 className={cn('text-[16px] font-bold tracking-tight', textColor)}>Creators</h2>
-                    <button type="button" onClick={() => { triggerHaptic(HapticPatterns.light); navigate('/creators'); }} className={cn('text-[12px] font-bold', isDark ? 'text-info' : 'text-info')}>
-                      Browse
-                    </button>
-                  </div>
 
-                  <div className={cn('mb-5 rounded-[22px] border px-4 py-3', borderColor, isDark ? 'bg-secondary/[0.04]' : 'bg-card')}>
-                    <div className="flex items-center gap-3">
-                      <div className={cn('h-9 w-9 rounded-xl flex items-center justify-center', isDark ? 'bg-card' : 'bg-background')}>
-                        <Search className={cn('h-4 w-4', isDark ? 'text-foreground/70' : 'text-muted-foreground')} />
-                      </div>
-                      <input
-                        value={creatorSearch}
-                        onChange={(e) => setCreatorSearch(e.target.value)}
-                        onKeyDown={(e) => {
-                          if (e.key !== 'Enter') return;
-                          const handle = String(creatorSearch || '').trim().replace(/^@+/, '').trim();
-                          if (!handle) return;
-                          triggerHaptic(HapticPatterns.light);
-                          navigate(`/${handle}`);
-                        }}
-                        placeholder="Search by @username"
-                        className={cn(
-                          'flex-1 bg-transparent outline-none text-[13px] font-semibold placeholder:font-medium',
-                          isDark ? 'text-foreground placeholder:text-foreground/35' : 'text-muted-foreground placeholder:text-muted-foreground'
-                        )}
-                        inputMode="text"
-                        autoCapitalize="none"
-                        autoCorrect="off"
-                        spellCheck={false}
-                      />
-                      {isSearchingCreators && <Loader2 className={cn('h-4 w-4 animate-spin', isDark ? 'text-foreground/60' : 'text-muted-foreground')} />}
-                    </div>
-                    {creatorSearchResults.length > 0 && (
-                      <div className="mt-3 grid gap-2">
-                        {creatorSearchResults.slice(0, 4).map((c: any) => (
-	                          <button
-	                            type="button"
-	                            key={c.id}
-	                            onClick={() => {
-	                              const handle = String(c.username || '').trim().replace(/^@+/, '');
-	                              if (!handle) return;
-                              triggerHaptic(HapticPatterns.light);
-                              navigate(`/${handle}`);
-                            }}
-                            className={cn(
-                              'w-full text-left flex items-center gap-3 rounded-2xl px-3 py-2 border transition active:scale-[0.99]',
-                              isDark ? 'border-border bg-secondary/[0.03] hover:bg-secondary/[0.06]' : 'border-border bg-background hover:bg-background'
-                            )}
-                          >
-                            <Avatar className="w-9 h-9">
-                              <AvatarImage src={safeImageSrc(c.profile_photo || c.avatar)} alt={c.name} />
-                              <AvatarFallback>{String(c.name || 'C').slice(0, 1).toUpperCase()}</AvatarFallback>
-                            </Avatar>
-                            <div className="min-w-0 flex-1">
-                              <p className={cn('text-[13px] font-black truncate', textColor)}>{c.name}</p>
-                              <p className={cn('text-[12px] truncate', secondaryTextColor)}>@{String(c.username || '').replace(/^@+/, '')}</p>
-                            </div>
-                            <ChevronRight className={cn('h-4 w-4', isDark ? 'text-foreground/40' : 'text-muted-foreground')} />
-                          </button>
-                        ))}
-                      </div>
-                    )}
-                  </div>
 
-                  {/* Discovery cards (makes the platform feel real immediately) */}
-                  <div className="mb-5">
-                    <div className="flex items-end justify-between mb-3">
-                      <div>
-                        <p className={cn('text-[11px] font-black uppercase tracking-[0.2em] opacity-50', textColor)}>Suggested</p>
-                        <p className={cn('text-[12px] mt-1', secondaryTextColor)}>Shortlist reliable creators with clear pricing.</p>
-                      </div>
-                    </div>
-                    <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
-                      {(isLoadingSuggestedCreators ? Array.from({ length: 3 }).map((_, i) => ({ id: `sk-${i}`, name: 'Creator' })) : suggestedCreators.slice(0, 10)).map((c: any) => (
-                        <div key={c.id} className={cn('min-w-[292px] p-4 rounded-[28px] border', isDark ? 'bg-card border-border' : 'bg-secondary/90 border-primary shadow-[0_14px_40px_rgba(15,23,42,0.08)]')}>
-                          <div className="flex items-start gap-3 mb-4">
-                            <Avatar className="w-12 h-12">
-                              <AvatarImage src={safeImageSrc(c.profile_photo || c.avatar)} alt={c.name} />
-                              <AvatarFallback>{String(c.name || 'C').slice(0, 1).toUpperCase()}</AvatarFallback>
-                            </Avatar>
-                            <div className="min-w-0 flex-1">
-                              <p className={cn('text-[14px] font-black truncate', textColor)}>{c.name}</p>
-                              <p className={cn('text-[12px] mt-1 opacity-60 truncate', textColor)}>
-                                {(c.category || c.niche || 'Creator')}{c.followers ? ` • ${formatFollowers(c.followers)}` : ''}
-                              </p>
-                            </div>
-                            <div className="text-right shrink-0">
-                              <p className={cn('text-[10px] font-black uppercase tracking-widest opacity-45', textColor)}>From</p>
-                              <p className={cn('text-[13px] font-black mt-1', textColor)}>{formatCompactINR(c?.pricing?.avg ?? c?.pricing?.reel ?? c.rate ?? 0)}</p>
-                              <p className={cn('text-[10px] mt-0.5', secondaryTextColor)}>/ reel</p>
-                            </div>
-                          </div>
-
-                          <div className={cn('rounded-2xl border px-3 py-3 space-y-1.5', isDark ? 'border-border bg-secondary/[0.04]' : 'border-border bg-background/90')}>
-                            {getReliabilityLines(c).map((line) => (
-                              <p key={line} className={cn('text-[12px] font-medium', textColor)}>{line}</p>
-                            ))}
-                          </div>
-
-                          <div className="flex flex-wrap gap-2 mt-3">
-                            {getSmartTags(c).map((t) => (
-                              <span key={t} className={cn('text-[10px] font-black uppercase tracking-widest px-2.5 py-1.5 rounded-full border', isDark ? 'border-border text-foreground/60 bg-card' : 'border-border text-muted-foreground bg-card')}>
-                                {t}
-                              </span>
-                            ))}
-                            {getSmartTags(c).length === 0 && (
-                              <span className={cn('text-[10px] font-black uppercase tracking-widest px-2.5 py-1.5 rounded-full border', isDark ? 'border-border text-foreground/60 bg-card' : 'border-border text-muted-foreground bg-card')}>
-                                ✔ Verified profile
-                              </span>
-                            )}
-                          </div>
-                          <div className="flex gap-2 mt-4">
-                            <button type="button"
-                              onClick={() => {
-                                const handle = String(c?.username || c?.handle || '').trim().replace(/^@+/, '');
-                                if (!handle) {
-                                  triggerHaptic(HapticPatterns.light);
-                                  setActiveTab('creators');
-                                  return;
-                                }
-                                triggerHaptic(HapticPatterns.light);
-                                navigate(`/${handle}`);
-                              }}
-                              className={cn('flex-1 py-3 rounded-2xl border text-[12px] font-bold transition-all active:scale-[0.98]', isDark ? 'border-border bg-card hover:bg-secondary/50 text-foreground' : 'border-border bg-card hover:bg-background text-muted-foreground')}
-                            >
-                              View profile
-                            </button>
-                            <button type="button"
-                              onClick={() => {
-                                const handle = String(c?.username || c?.handle || '').trim().replace(/^@+/, '');
-                                if (!handle) {
-                                  triggerHaptic(HapticPatterns.light);
-                                  toast.error('Creator username missing', { description: 'Please try another creator.' });
-                                  return;
-                                }
-                                triggerHaptic(HapticPatterns.success);
-                                // Go straight to the creator link page and open the offer flow.
-                                navigate(`/${handle}?offer=true`);
-                              }}
-	                              className={cn('flex-1 py-3 rounded-2xl text-[12px] font-black uppercase tracking-widest transition-all active:scale-[0.98]', isDark ? 'bg-gradient-to-br from-blue-500 to-sky-500 hover:from-blue-400 hover:to-sky-400 text-foreground' : 'bg-gradient-to-br from-blue-600 to-sky-600 hover:from-blue-500 hover:to-sky-500 text-foreground')}
-                            >
-                              Send offer
-                            </button>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-	                  <div className={cn('rounded-[28px] border overflow-hidden backdrop-blur-xl shadow-[0_18px_45px_rgba(15,23,42,0.12)]', borderColor, isDark ? 'bg-secondary/[0.04] shadow-black/20' : 'bg-card shadow-sm')}>
-                    {creatorFeed.length === 0 ? (
-                      <div className="p-8 text-center">
-                        <p className={cn('text-[13px] font-bold', textColor)}>Find creators to collaborate with.</p>
-                        <p className={cn('text-[12px] opacity-60 mt-2', textColor)}>Browse our creator database and send your first offer.</p>
-                        <div className="flex flex-col gap-2 mt-5">
-                          <Button type="button" onClick={() => navigate('/creators')} className={cn('rounded-2xl', isDark ? 'bg-primary hover:bg-primary text-foreground' : 'bg-primary hover:bg-primary text-foreground')}>
-                            <User className="w-4 h-4 mr-2" /> Browse creators
-                          </Button>
-                          <Button
-                            type="button"
-                            variant="outline"
-                            onClick={() => toast.message('Import creator link', { description: 'Coming soon.' })}
-                            className={cn('rounded-2xl', isDark ? 'border-border bg-card text-foreground hover:bg-secondary/50' : 'border-border bg-card text-muted-foreground hover:bg-background')}
-                          >
-                            Import creator link
-                          </Button>
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="divide-y" style={{ borderColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(15,23,42,0.08)' }}>
-                        {creatorFeed.map((c) => (
-                          <button type="button" key={c.id} onClick={() => c.href && navigate(c.href)} className={cn('w-full flex items-center gap-3 p-4 transition-all active:scale-[0.99] backdrop-blur-md', isDark ? 'hover:bg-secondary/[0.05]' : 'hover:bg-secondary/60')}>
-                            <Avatar className="w-10 h-10">
-                              <AvatarImage src={safeImageSrc(c.avatar_url)} alt={c.name} />
-                              <AvatarFallback>{String(c.name || 'C').slice(0, 1).toUpperCase()}</AvatarFallback>
-                            </Avatar>
-                            <div className="flex-1 min-w-0 text-left">
-                              <p className={cn('text-[13px] font-bold truncate', textColor)}>{c.name}</p>
-                              <p className={cn('text-[12px] opacity-50 truncate', textColor)}>{c.username ? `@${c.username}` : 'Creator'}</p>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              {c.status && (
-                                <span className={cn('text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded-lg border', isDark ? 'border-border text-foreground/60 bg-card' : 'border-border text-muted-foreground bg-card')}>
-                                  {c.status}
-                                </span>
-                              )}
-                              <ChevronRight className={cn('w-4 h-4 opacity-30', textColor)} />
-                            </div>
-                          </button>
-                        ))}
-                      </div>
-                    )}
+                  {/* Discovery Lab (The Swiping Interface) */}
+                  <div className="mb-10">
+                    <DiscoveryStack 
+                      isDark={isDark}
+                      triggerHaptic={(pattern) => {
+                        if (pattern === 'medium') triggerHaptic(HapticPatterns.medium);
+                        else triggerHaptic(HapticPatterns.light);
+                      }}
+                    />
                   </div>
                 </motion.div>
               )}
@@ -5086,10 +4925,10 @@ const BrandMobileDashboard = ({
                         <p className={cn('text-[18px] font-black tracking-tight truncate', textColor)}>{brandName}</p>
                         <p className={cn('text-[12px] mt-1 opacity-60 truncate', textColor)}>Brand account</p>
                         <div className="flex flex-wrap gap-2 mt-3">
-                          <span className={cn('inline-flex items-center px-3 py-1.5 rounded-full border text-[10px] font-black uppercase tracking-widest', isDark ? 'border-border bg-card text-foreground/70' : 'border-border bg-card text-slate-700')}>
+                          <span className={cn('inline-flex items-center px-3 py-1.5 rounded-full border text-[10px] font-black uppercase tracking-widest', isDark ? 'border-border bg-card text-foreground/70' : 'border-slate-200 bg-white text-slate-600')}>
                             Verified Business
                           </span>
-                          <span className={cn('inline-flex items-center px-3 py-1.5 rounded-full border text-[10px] font-black uppercase tracking-widest', isDark ? 'border-primary/20 bg-primary/10 text-primary' : 'border-primary bg-primary text-primary')}>
+                          <span className={cn('inline-flex items-center px-3 py-1.5 rounded-full border text-[10px] font-black uppercase tracking-widest transition-colors', isDark ? 'border-primary/20 bg-primary/10 text-primary' : 'border-primary bg-primary text-white')}>
                             Protected by Creator Armour
                           </span>
                           {!hasUploadedBrandLogo && (

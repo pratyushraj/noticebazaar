@@ -2,12 +2,12 @@ import { useState } from 'react';
 import { logger } from '@/lib/utils/logger';
 
 // Free Online LLM Providers
-type LLMProvider = 'ollama' | 'huggingface' | 'groq' | 'together' | 'openai';
+type LLMProvider = 'ollama' | 'huggingface' | 'groq' | 'together' | 'openai' | 'nvidia';
 
 // Configuration - defaults to Groq (free, fast, requires free API key)
 // Hugging Face now requires API key, so Groq is the better free default
-const DEFAULT_PROVIDER: LLMProvider = (import.meta.env.VITE_LLM_PROVIDER as LLMProvider) || 'groq';
-const DEFAULT_MODEL = import.meta.env.VITE_LLM_MODEL || 'llama-3.1-8b-instant';
+const DEFAULT_PROVIDER: LLMProvider = (import.meta.env.VITE_LLM_PROVIDER as LLMProvider) || 'nvidia';
+const DEFAULT_MODEL = import.meta.env.VITE_LLM_MODEL || 'nvidia/llama-3.1-70b-instruct';
 
 // Provider endpoints
 const PROVIDER_ENDPOINTS: Record<LLMProvider, string> = {
@@ -16,6 +16,7 @@ const PROVIDER_ENDPOINTS: Record<LLMProvider, string> = {
   groq: 'https://api.groq.com/openai/v1/chat/completions',
   together: 'https://api.together.xyz/v1/chat/completions',
   openai: 'https://api.openai.com/v1/chat/completions',
+  nvidia: 'https://integrate.api.nvidia.com/v1/chat/completions',
 };
 
 interface LLMOptions {
@@ -40,7 +41,7 @@ export const useLocalLLM = (options: LLMOptions = {}) => {
 
   const provider = options.provider || DEFAULT_PROVIDER;
   const model = options.model || DEFAULT_MODEL;
-  const apiKey = options.apiKey || import.meta.env.VITE_LLM_API_KEY;
+  const apiKey = options.apiKey || (provider === 'nvidia' ? import.meta.env.VITE_NVIDIA_API_KEY : import.meta.env.VITE_LLM_API_KEY);
   const temperature = options.temperature ?? 0.7;
   const maxTokens = options.maxTokens ?? 500;
 
@@ -64,6 +65,9 @@ export const useLocalLLM = (options: LLMOptions = {}) => {
           break;
         case 'openai':
           generatedText = await generateWithOpenAI(model, prompt, apiKey, temperature, maxTokens);
+          break;
+        case 'nvidia':
+          generatedText = await generateWithNvidia(model, prompt, apiKey, temperature, maxTokens);
           break;
         case 'ollama':
         default:
@@ -104,7 +108,7 @@ export const useLocalLLM = (options: LLMOptions = {}) => {
 
 // Helper function to call Supabase Edge Function (avoids CORS)
 async function generateViaEdgeFunction(
-  provider: 'huggingface' | 'groq' | 'together' | 'openai',
+  provider: 'huggingface' | 'groq' | 'together' | 'openai' | 'nvidia',
   model: string,
   prompt: string,
   apiKey?: string,
@@ -174,6 +178,14 @@ async function generateWithOpenAI(model: string, prompt: string, apiKey: string,
     throw new Error('OpenAI API key required');
   }
   return generateViaEdgeFunction('openai', model, prompt, apiKey, temperature, maxTokens);
+}
+
+// NVIDIA (OpenAI compatible)
+async function generateWithNvidia(model: string, prompt: string, apiKey: string, temperature: number, maxTokens: number): Promise<string> {
+  if (!apiKey) {
+    throw new Error('NVIDIA API key required');
+  }
+  return generateViaEdgeFunction('nvidia', model, prompt, apiKey, temperature, maxTokens);
 }
 
 // Ollama (Local)

@@ -66,6 +66,7 @@ import onboardingEmailsRouter from './routes/onboardingEmails.js';
 import brandDashboardRouter from './routes/brandDashboard.js';
 import { sendCollabRequestAcceptedEmail, sendCollabRequestCreatorNotificationEmail } from './services/collabRequestEmailService.js';
 import { createContractReadyToken } from './services/contractReadyTokenService.js';
+import swipeRouter from './routes/swipe.js';
 // Log router import for debugging
 console.log('[Server] Influencers router imported:', typeof influencersRouter, influencersRouter ? '✓' : '✗');
 import { authMiddleware } from './middleware/auth.js';
@@ -652,6 +653,7 @@ app.use('/api/brand-dashboard', authMiddleware, rateLimitMiddleware, brandDashbo
 // OTP routes - protected routes require auth
 app.use('/api/otp', authMiddleware, rateLimitMiddleware, otpRouter);
 app.use('/api/onboarding-emails', authMiddleware, rateLimitMiddleware, onboardingEmailsRouter);
+app.use('/api/swipe', swipeRouter);
 
 // 404 handler for API routes (must be before error handler)
 app.use('/api/*', (req: express.Request, res: express.Response) => {

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import {
     User,
@@ -14,6 +14,9 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ios, typography } from '@/lib/design-system';
+import AvatarUploader from '@/components/profile/AvatarUploader';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 interface ProfileSettingsTabProps {
     profile: any;
@@ -56,7 +59,26 @@ const SettingsRow = ({
     </div>
 );
 
-const ProfileSettingsTab = ({ profile, onLogout }: ProfileSettingsTabProps) => {
+const ProfileSettingsTab = ({ profile: initialProfile, onLogout }: ProfileSettingsTabProps) => {
+    const [profile, setProfile] = useState(initialProfile);
+
+    const handleAvatarUpload = async (url: string) => {
+        try {
+            const { error: updateError } = await supabase
+                .from('profiles')
+                .update({ avatar_url: url })
+                .eq('id', profile?.id);
+
+            if (updateError) throw updateError;
+            
+            setProfile({ ...profile, avatar_url: url });
+            toast.success('Profile picture updated successfully!');
+        } catch (error: any) {
+            console.error('Error updating profile picture:', error);
+            toast.error('Failed to update profile picture in database');
+        }
+    };
+
     return (
         <motion.div
             initial={{ opacity: 0, scale: 0.98 }}
@@ -65,18 +87,14 @@ const ProfileSettingsTab = ({ profile, onLogout }: ProfileSettingsTabProps) => {
         >
             {/* Profile Header */}
             <div className="flex flex-col items-center py-8">
-                <div className="w-24 h-24 rounded-full border-2 border-blue-500/30 p-1 mb-4">
-                    {profile?.avatar_url ? (
-                        <img
-                            src={profile.avatar_url}
-                            alt="Profile"
-                            className="w-full h-full rounded-full object-cover"
-                        />
-                    ) : (
-                        <div className="w-full h-full rounded-full bg-emerald-500/20 flex items-center justify-center text-emerald-300 text-3xl font-bold select-none">
-                            {(profile?.first_name || 'C').slice(0, 1).toUpperCase()}
-                        </div>
-                    )}
+                <div className="mb-4">
+                    <AvatarUploader
+                        userId={profile?.id}
+                        currentAvatarUrl={profile?.avatar_url}
+                        firstName={profile?.first_name || ''}
+                        lastName={profile?.last_name || ''}
+                        onUploadSuccess={handleAvatarUpload}
+                    />
                 </div>
                 <h2 className={typography.h2}>{profile?.first_name} {profile?.last_name}</h2>
                 <p className="text-white/40 text-sm mt-1">{profile?.instagram_handle || 'Content Creator'}</p>

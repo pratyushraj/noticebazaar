@@ -1447,8 +1447,9 @@ const CollabLinkLanding = () => {
                 }
               }
 
-              // Fallback: try by ID
-              if (!portfolioRow && data.creator.id) {
+              // Fallback: try by ID — only if it looks like a UUID (not instagram:handle)
+              const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(data.creator.id || '');
+              if (!portfolioRow && isUuid) {
                 const { data: rowById, error: errById } = await (supabase as any)
                   .from('profiles')
                   .select('portfolio_links, media_kit_url')
