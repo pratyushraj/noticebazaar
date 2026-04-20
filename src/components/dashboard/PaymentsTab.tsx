@@ -52,6 +52,30 @@ export const PaymentsTab: React.FC<PaymentsTabProps> = ({
         return Object.entries(groups);
     }, [brandDeals]);
 
+    // Calculate dynamic totals from brandDeals
+    const totals = React.useMemo(() => {
+        let total = 0;
+        let processing = 0;
+        let paid = 0;
+
+        brandDeals.forEach(deal => {
+            const status = String(deal.status || '').toLowerCase();
+            const amount = Number(deal.deal_amount || deal.exact_budget || 0);
+
+            if (status.includes('paid') || status.includes('released') || status.includes('completed')) {
+                paid += amount;
+                total += amount;
+            } else if (status.includes('approved') || status.includes('delivered') || status.includes('revision')) {
+                processing += amount;
+                total += amount;
+            }
+        });
+
+        return { total, processing, paid };
+    }, [brandDeals]);
+
+    const hasUpi = Boolean(profileFormData.bank_upi);
+
     return (
         <div className="px-5 pt-8 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-32">
             {/* Header */}
@@ -75,7 +99,7 @@ export const PaymentsTab: React.FC<PaymentsTabProps> = ({
                     <div>
                         <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Total Revenue</p>
                         <h3 className={cn("text-4xl font-bold tracking-tight mb-2", isDark ? "text-white" : "text-slate-900")}>
-                            ₹48,750
+                            ₹{totals.total.toLocaleString()}
                         </h3>
                         <div className="flex items-center gap-2">
                             <span className="text-green-600 text-[13px] font-bold flex items-center gap-0.5">
@@ -95,14 +119,14 @@ export const PaymentsTab: React.FC<PaymentsTabProps> = ({
                             <div className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse" />
                             <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Processing</p>
                         </div>
-                        <p className={cn("text-xl font-bold", isDark ? "text-slate-200" : "text-slate-900")}>₹22,500</p>
+                        <p className={cn("text-xl font-bold", isDark ? "text-slate-200" : "text-slate-900")}>₹{totals.processing.toLocaleString()}</p>
                     </div>
                     <div className={cn("p-4 rounded-2xl border", isDark ? "bg-slate-800/40 border-slate-700" : "bg-green-50/30 border-green-100/50")}>
                         <div className="flex items-center gap-2 mb-2">
                             <div className="w-1.5 h-1.5 rounded-full bg-green-500" />
                             <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Paid Out</p>
                         </div>
-                        <p className={cn("text-xl font-bold", isDark ? "text-slate-200" : "text-slate-900")}>₹26,250</p>
+                        <p className={cn("text-xl font-bold", isDark ? "text-slate-200" : "text-slate-900")}>₹{totals.paid.toLocaleString()}</p>
                     </div>
                 </div>
             </motion.div>
@@ -121,9 +145,9 @@ export const PaymentsTab: React.FC<PaymentsTabProps> = ({
                         <div>
                             <div className="flex items-center gap-2 mb-0.5">
                                 <p className={cn("text-[15px] font-bold", isDark ? "text-white" : "text-slate-900")}>UPI Transfer</p>
-                                <span className={cn("px-1.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-green-50 text-green-600 border border-green-100")}>Verified</span>
+                                {hasUpi && <span className={cn("px-1.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-green-50 text-green-600 border border-green-100")}>Verified</span>}
                             </div>
-                            <p className="text-xs font-medium text-slate-400 font-mono tracking-tight">{profileFormData.bank_upi ? `${profileFormData.bank_upi.split('@')[0].slice(0,3)}*****@${profileFormData.bank_upi.split('@')[1]}` : 'Not set'}</p>
+                            <p className="text-xs font-medium text-slate-400 font-mono tracking-tight">{hasUpi ? `${profileFormData.bank_upi.split('@')[0].slice(0,3)}*****@${profileFormData.bank_upi.split('@')[1]}` : 'Not set'}</p>
                         </div>
                     </div>
                     <ChevronRight className="w-5 h-5 text-slate-300" />
@@ -154,7 +178,7 @@ export const PaymentsTab: React.FC<PaymentsTabProps> = ({
                                     >
                                         <div className="flex items-center gap-4 min-w-0">
                                             <div className="w-11 h-11 rounded-xl bg-slate-50 border border-slate-100 p-1.5 overflow-hidden shrink-0">
-                                                {getBrandIcon(deal.brand_logo_url || deal.logo_url, deal.category, deal.brand_name)}
+                                                {getBrandIcon(deal.brand_logo || deal.brand_logo_url || deal.logo_url || deal.raw?.brand_logo || deal.raw?.brand_logo_url || deal.brand?.logo_url, deal.category, deal.brand_name)}
                                             </div>
                                             <div className="min-w-0">
                                                 <p className={cn("text-[15px] font-bold truncate", isDark ? "text-white" : "text-slate-900")}>{deal.brand_name || 'Brand Partner'}</p>

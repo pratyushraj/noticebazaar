@@ -5,7 +5,7 @@ import { trackEvent } from '@/lib/utils/analytics';
 import { DashboardEmptyState } from '../components/dashboard/EmptyState';
 import { PaymentsTab } from '../components/dashboard/PaymentsTab';
 import { AccountTab } from '../components/dashboard/AccountTab';
-import { User, Search, ShieldCheck, Handshake, Camera, Plus, LayoutDashboard, CreditCard, Briefcase, Menu, Instagram, Target, Dumbbell, Shirt, Sun, Moon, RefreshCw, Loader2, Bell, ChevronRight, Zap, Rocket, Link2, CheckCircle2, Download, Clock, Info, Globe, Star, LogOut, Copy, Share2, QrCode, Eye, MoreHorizontal, Landmark, FileText, Smartphone, TrendingUp, BarChart3, Mail, MessageCircle, MessageSquare, Edit3, Send, X, XCircle, ExternalLink, AlertCircle, AlertTriangle, ArrowRight, Package, Flag, MapPin, Languages, Lock as LockIcon, ArrowUpRight, Wallet, HelpCircle, Sparkles, Youtube, Twitter, Heart, Trash2, Smartphone as SmartphoneIcon, Users, Calendar, ShoppingBag, Video, BookOpen, GraduationCap, Laugh, Coffee, Layers, Flame, Clapperboard, BadgeCheck } from 'lucide-react';
+import { User, Search, ShieldCheck, Handshake, Camera, Plus, LayoutDashboard, CreditCard, Briefcase, Menu, Instagram, Target, Dumbbell, Shirt, Sun, Moon, RefreshCw, Loader2, Bell, ChevronRight, Zap, Rocket, Link2, CheckCircle2, Download, Clock, Info, Globe, Star, LogOut, Copy, Share2, QrCode, Eye, MoreHorizontal, Landmark, FileText, Smartphone, TrendingUp, BarChart3, Mail, Phone, MessageCircle, MessageSquare, Edit3, Send, X, XCircle, ExternalLink, AlertCircle, AlertTriangle, ArrowRight, Package, Flag, MapPin, Languages, Lock as LockIcon, ArrowUpRight, Wallet, HelpCircle, Sparkles, Youtube, Twitter, Heart, Trash2, Smartphone as SmartphoneIcon, Users, Calendar, ShoppingBag, Video, BookOpen, GraduationCap, Laugh, Coffee, Layers, Flame, Clapperboard, BadgeCheck } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useSignOut } from '@/lib/hooks/useAuth';
@@ -44,6 +44,7 @@ import { ShimmerSkeleton } from '@/components/ui/ShimmerSkeleton';
 import confetti from 'canvas-confetti';
 import { uploadFile } from '@/lib/services/fileService';
 import type { PortfolioItem } from '@/types';
+import { DiscoveryVideoUpload } from '@/components/dashboard/DiscoveryVideoUpload';
 
 interface MobileDashboardProps {
     profile?: any;
@@ -606,6 +607,9 @@ const buildProfileFormData = (profile: any, userEmail?: string | null) => {
         collab_cta_trust_note: profile?.collab_cta_trust_note || '',
         collab_cta_dm_note: profile?.collab_cta_dm_note || '',
         collab_cta_platform_note: profile?.collab_cta_platform_note || '',
+        // NEW: Discovery Media
+        discovery_video_url: profile?.discovery_video_url || null,
+        portfolio_videos: Array.isArray(profile?.portfolio_videos) ? profile.portfolio_videos : [],
     };
 };
 
@@ -652,7 +656,7 @@ const MobileDashboardDemo = ({
     // - 'account' -> 'profile'
     // - 'collabs' -> 'deals' (older deep-links used /creator-dashboard?tab=collabs)
     const tabMap: Record<string, string> = { dashboard: 'dashboard', deals: 'deals', collabs: 'deals', payments: 'payments', profile: 'profile', account: 'profile' };
-    const activeTab = (tabMap[rawTab || ''] || 'dashboard') as 'dashboard' | 'deals' | 'payments' | 'profile';
+    const activeTab = (tabMap[rawTab || ''] || 'dashboard') as 'dashboard' | 'deals' | 'discovery' | 'payments' | 'profile';
     const setActiveTab = (tab: string) => {
         const next = new URLSearchParams(searchParams);
         next.set('tab', tab);
@@ -1564,6 +1568,7 @@ const MobileDashboardDemo = ({
     }, []);
 
     const { session, user, refetchProfile } = useSession();
+    const userId = user?.id || session?.user?.id || '';
 
     const triggerHaptic = (pattern: any = HapticPatterns.light) => {
         globalTriggerHaptic(pattern);
@@ -1621,6 +1626,8 @@ const MobileDashboardDemo = ({
                 deal_templates: profileFormData.deal_templates || [],
                 bank_account_name: profileFormData.bank_account_name?.trim() || null,
                 bank_upi: profileFormData.bank_upi?.trim() || null,
+                discovery_video_url: profileFormData.discovery_video_url || null,
+                portfolio_videos: profileFormData.portfolio_videos || [],
                 updated_at: new Date().toISOString(),
             };
 
@@ -2185,98 +2192,115 @@ const MobileDashboardDemo = ({
                             </button>
                         </div>
 
-                        <div className="px-6 space-y-10">
+
+                        <div className="px-5 space-y-6">
                             {/* BASIC INFO */}
-                            <div className="space-y-6">
-                                <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] px-1">Basic Information</h4>
-                                <div className="space-y-8">
-                                    <div className="space-y-2 relative group">
-                                        <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wide">Full Name</p>
-                                        {isEditMode ? (
-                                            <input 
-                                                className={cn("w-full bg-transparent border-b py-2 outline-none font-bold text-lg transition-all focus:border-blue-500", isDark ? "border-slate-800 text-white" : "border-slate-100 text-slate-900")} 
-                                                value={profileFormData.full_name || ''} 
-                                                onChange={e => setProfileFormData(p => ({ ...p, full_name: e.target.value }))} 
-                                            />
-                                        ) : (
-                                            <p className={cn("text-lg font-bold py-2 border-b border-transparent", isDark ? "text-white" : "text-slate-900")}>
-                                                {profileFormData.full_name || '—'}
-                                            </p>
-                                        )}
-                                    </div>
-                                    <div className="space-y-2">
-                                        <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wide">Email Address</p>
-                                        <div className="flex items-center justify-between gap-4 border-b border-transparent py-2">
-                                            <p className={cn("text-lg font-bold opacity-60", isDark ? "text-white" : "text-slate-900")}>
-                                                {profileFormData.email || '—'}
-                                            </p>
-                                            <span className="text-[10px] font-bold text-slate-400 bg-slate-50 px-2 py-1 rounded-md">Locked</span>
+                            <div>
+                                <p className={cn("text-[10px] font-black uppercase tracking-[0.18em] px-1 mb-3", isDark ? "text-slate-400" : "text-slate-400")}>Basic Information</p>
+                                <div className={cn("rounded-[1.75rem] border overflow-hidden", isDark ? "bg-[#0B1324] border-white/5" : "bg-white border-slate-200 shadow-sm")}>
+                                    {/* Full Name */}
+                                    <div className={cn("flex items-center gap-4 px-5 py-4", isDark ? "border-b border-white/5" : "border-b border-slate-100")}>
+                                        <div className={cn("w-9 h-9 rounded-2xl flex items-center justify-center shrink-0", isDark ? "bg-violet-500/15" : "bg-violet-50")}>
+                                            <User className="w-4 h-4 text-violet-500" />
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <p className={cn("text-[10px] font-black uppercase tracking-widest mb-0.5", isDark ? "text-slate-500" : "text-slate-400")}>Full Name</p>
+                                            {isEditMode ? (
+                                                <input
+                                                    className={cn("w-full bg-transparent outline-none font-semibold text-[15px]", isDark ? "text-white placeholder-slate-600" : "text-slate-900 placeholder-slate-300")}
+                                                    value={profileFormData.full_name || ''}
+                                                    placeholder="Your full name"
+                                                    onChange={e => setProfileFormData((p: any) => ({ ...p, full_name: e.target.value }))}
+                                                />
+                                            ) : (
+                                                <p className={cn("font-semibold text-[15px] truncate", isDark ? "text-white" : "text-slate-900")}>{profileFormData.full_name || <span className="opacity-30">Not set</span>}</p>
+                                            )}
                                         </div>
                                     </div>
-                                    <div className="space-y-2">
-                                        <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wide">Phone Number</p>
-                                        {isEditMode ? (
-                                            <input 
-                                                inputMode="tel"
-                                                className={cn("w-full bg-transparent border-b py-2 outline-none font-bold text-lg transition-all focus:border-blue-500", isDark ? "border-slate-800 text-white" : "border-slate-100 text-slate-900")} 
-                                                value={profileFormData.phone || ''} 
-                                                onChange={e => setProfileFormData(p => ({ ...p, phone: e.target.value }))} 
-                                            />
-                                        ) : (
-                                            <p className={cn("text-lg font-bold py-2 border-b border-transparent", isDark ? "text-white" : "text-slate-900")}>
-                                                {profileFormData.phone || '—'}
-                                            </p>
-                                        )}
+                                    {/* Email */}
+                                    <div className={cn("flex items-center gap-4 px-5 py-4", isDark ? "border-b border-white/5" : "border-b border-slate-100")}>
+                                        <div className={cn("w-9 h-9 rounded-2xl flex items-center justify-center shrink-0", isDark ? "bg-blue-500/15" : "bg-blue-50")}>
+                                            <Mail className="w-4 h-4 text-blue-500" />
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <p className={cn("text-[10px] font-black uppercase tracking-widest mb-0.5", isDark ? "text-slate-500" : "text-slate-400")}>Email</p>
+                                            <p className={cn("font-semibold text-[15px] truncate opacity-60", isDark ? "text-white" : "text-slate-900")}>{profileFormData.email || '—'}</p>
+                                        </div>
+                                        <span className={cn("text-[10px] font-bold px-2.5 py-1 rounded-lg shrink-0", isDark ? "bg-white/5 text-slate-400" : "bg-slate-100 text-slate-500")}>Locked</span>
+                                    </div>
+                                    {/* Phone */}
+                                    <div className="flex items-center gap-4 px-5 py-4">
+                                        <div className={cn("w-9 h-9 rounded-2xl flex items-center justify-center shrink-0", isDark ? "bg-emerald-500/15" : "bg-emerald-50")}>
+                                            <Phone className="w-4 h-4 text-emerald-500" />
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <p className={cn("text-[10px] font-black uppercase tracking-widest mb-0.5", isDark ? "text-slate-500" : "text-slate-400")}>Phone</p>
+                                            {isEditMode ? (
+                                                <input
+                                                    inputMode="tel"
+                                                    className={cn("w-full bg-transparent outline-none font-semibold text-[15px]", isDark ? "text-white placeholder-slate-600" : "text-slate-900 placeholder-slate-300")}
+                                                    value={profileFormData.phone || ''}
+                                                    placeholder="+91 XXXXX XXXXX"
+                                                    onChange={e => setProfileFormData((p: any) => ({ ...p, phone: e.target.value }))}
+                                                />
+                                            ) : (
+                                                <p className={cn("font-semibold text-[15px]", isDark ? "text-white" : "text-slate-900")}>{profileFormData.phone || <span className="opacity-30">Not set</span>}</p>
+                                            )}
+                                        </div>
                                     </div>
                                 </div>
                             </div>
 
-                            {/* ADDRESS */}
-                            <div className="space-y-6">
-                                <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] px-1">Location Details</h4>
-                                <div className="space-y-8">
-                                    <div className="space-y-2">
-                                        <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wide">Street Address</p>
-                                        {isEditMode ? (
-                                            <input 
-                                                className={cn("w-full bg-transparent border-b py-2 outline-none font-bold text-lg transition-all focus:border-blue-500", isDark ? "border-slate-800 text-white" : "border-slate-100 text-slate-900")} 
-                                                value={profileFormData.address || ''} 
-                                                onChange={e => setProfileFormData(p => ({ ...p, address: e.target.value }))} 
-                                            />
-                                        ) : (
-                                            <p className={cn("text-lg font-bold py-2 border-b border-transparent", isDark ? "text-white" : "text-slate-900")}>
-                                                {profileFormData.address || '—'}
-                                            </p>
-                                        )}
-                                    </div>
-                                    <div className="grid grid-cols-2 gap-8">
-                                        <div className="space-y-2">
-                                            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wide">City</p>
+                            {/* LOCATION */}
+                            <div>
+                                <p className={cn("text-[10px] font-black uppercase tracking-[0.18em] px-1 mb-3", isDark ? "text-slate-400" : "text-slate-400")}>Location Details</p>
+                                <div className={cn("rounded-[1.75rem] border overflow-hidden", isDark ? "bg-[#0B1324] border-white/5" : "bg-white border-slate-200 shadow-sm")}>
+                                    {/* Street */}
+                                    <div className={cn("flex items-center gap-4 px-5 py-4", isDark ? "border-b border-white/5" : "border-b border-slate-100")}>
+                                        <div className={cn("w-9 h-9 rounded-2xl flex items-center justify-center shrink-0", isDark ? "bg-orange-500/15" : "bg-orange-50")}>
+                                            <MapPin className="w-4 h-4 text-orange-500" />
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <p className={cn("text-[10px] font-black uppercase tracking-widest mb-0.5", isDark ? "text-slate-500" : "text-slate-400")}>Street Address</p>
                                             {isEditMode ? (
-                                                <input 
-                                                    className={cn("w-full bg-transparent border-b py-2 outline-none font-bold text-lg transition-all focus:border-blue-500", isDark ? "border-slate-800 text-white" : "border-slate-100 text-slate-900")} 
-                                                    value={profileFormData.city || ''} 
-                                                    onChange={e => setProfileFormData(p => ({ ...p, city: e.target.value }))} 
+                                                <input
+                                                    className={cn("w-full bg-transparent outline-none font-semibold text-[15px]", isDark ? "text-white placeholder-slate-600" : "text-slate-900 placeholder-slate-300")}
+                                                    value={profileFormData.address || ''}
+                                                    placeholder="123 Main St"
+                                                    onChange={e => setProfileFormData((p: any) => ({ ...p, address: e.target.value }))}
                                                 />
                                             ) : (
-                                                <p className={cn("text-lg font-bold py-2 border-b border-transparent", isDark ? "text-white" : "text-slate-900")}>
-                                                    {profileFormData.city || '—'}
-                                                </p>
+                                                <p className={cn("font-semibold text-[15px]", isDark ? "text-white" : "text-slate-900")}>{profileFormData.address || <span className="opacity-30">Not set</span>}</p>
                                             )}
                                         </div>
-                                        <div className="space-y-2">
-                                            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wide">Pincode</p>
+                                    </div>
+                                    {/* City + Pincode side by side */}
+                                    <div className="flex">
+                                        <div className={cn("flex-1 px-5 py-4", isDark ? "border-r border-white/5" : "border-r border-slate-100")}>
+                                            <p className={cn("text-[10px] font-black uppercase tracking-widest mb-1", isDark ? "text-slate-500" : "text-slate-400")}>City</p>
                                             {isEditMode ? (
-                                                <input 
-                                                    inputMode="numeric"
-                                                    className={cn("w-full bg-transparent border-b py-2 outline-none font-bold text-lg transition-all focus:border-blue-500", isDark ? "border-slate-800 text-white" : "border-slate-100 text-slate-900")} 
-                                                    value={profileFormData.pincode || ''} 
-                                                    onChange={e => setProfileFormData(p => ({ ...p, pincode: e.target.value }))} 
+                                                <input
+                                                    className={cn("w-full bg-transparent outline-none font-semibold text-[15px]", isDark ? "text-white placeholder-slate-600" : "text-slate-900 placeholder-slate-300")}
+                                                    value={profileFormData.city || ''}
+                                                    placeholder="Mumbai"
+                                                    onChange={e => setProfileFormData((p: any) => ({ ...p, city: e.target.value }))}
                                                 />
                                             ) : (
-                                                <p className={cn("text-lg font-bold py-2 border-b border-transparent", isDark ? "text-white" : "text-slate-900")}>
-                                                    {profileFormData.pincode || '—'}
-                                                </p>
+                                                <p className={cn("font-semibold text-[15px]", isDark ? "text-white" : "text-slate-900")}>{profileFormData.city || <span className="opacity-30">—</span>}</p>
+                                            )}
+                                        </div>
+                                        <div className="flex-1 px-5 py-4">
+                                            <p className={cn("text-[10px] font-black uppercase tracking-widest mb-1", isDark ? "text-slate-500" : "text-slate-400")}>Pincode</p>
+                                            {isEditMode ? (
+                                                <input
+                                                    inputMode="numeric"
+                                                    className={cn("w-full bg-transparent outline-none font-semibold text-[15px]", isDark ? "text-white placeholder-slate-600" : "text-slate-900 placeholder-slate-300")}
+                                                    value={profileFormData.pincode || ''}
+                                                    placeholder="400001"
+                                                    onChange={e => setProfileFormData((p: any) => ({ ...p, pincode: e.target.value }))}
+                                                />
+                                            ) : (
+                                                <p className={cn("font-semibold text-[15px]", isDark ? "text-white" : "text-slate-900")}>{profileFormData.pincode || <span className="opacity-30">—</span>}</p>
                                             )}
                                         </div>
                                     </div>
@@ -2284,70 +2308,92 @@ const MobileDashboardDemo = ({
                             </div>
 
                             {/* CREATOR PROFILE */}
-                            <div className="space-y-6">
-                                <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] px-1">Creator Profile</h4>
-                                <div className="space-y-8">
-                                    <div className="space-y-2">
-                                        <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wide">Bio / Headline</p>
-                                        {isEditMode ? (
-                                            <textarea 
-                                                className={cn("w-full bg-transparent border-b py-2 outline-none font-bold text-lg transition-all focus:border-blue-500 resize-none h-24", isDark ? "border-slate-800 text-white" : "border-slate-100 text-slate-900")} 
-                                                value={profileFormData.bio || ''} 
-                                                onChange={e => setProfileFormData(p => ({ ...p, bio: e.target.value }))} 
-                                            />
-                                        ) : (
-                                            <p className={cn("text-lg font-bold py-2 border-b border-transparent leading-relaxed", isDark ? "text-white" : "text-slate-900")}>
-                                                {profileFormData.bio || '—'}
-                                            </p>
-                                        )}
+                            <div>
+                                <p className={cn("text-[10px] font-black uppercase tracking-[0.18em] px-1 mb-3", isDark ? "text-slate-400" : "text-slate-400")}>Creator Profile</p>
+                                <div className={cn("rounded-[1.75rem] border overflow-hidden", isDark ? "bg-[#0B1324] border-white/5" : "bg-white border-slate-200 shadow-sm")}>
+                                    {/* Bio */}
+                                    <div className={cn("flex items-start gap-4 px-5 py-4", isDark ? "border-b border-white/5" : "border-b border-slate-100")}>
+                                        <div className={cn("w-9 h-9 rounded-2xl flex items-center justify-center shrink-0 mt-0.5", isDark ? "bg-pink-500/15" : "bg-pink-50")}>
+                                            <Edit3 className="w-4 h-4 text-pink-500" />
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <p className={cn("text-[10px] font-black uppercase tracking-widest mb-1", isDark ? "text-slate-500" : "text-slate-400")}>Bio / Headline</p>
+                                            {isEditMode ? (
+                                                <textarea
+                                                    className={cn("w-full bg-transparent outline-none font-semibold text-[15px] resize-none leading-relaxed", isDark ? "text-white placeholder-slate-600" : "text-slate-900 placeholder-slate-300")}
+                                                    rows={3}
+                                                    value={profileFormData.bio || ''}
+                                                    placeholder="Describe your content style..."
+                                                    onChange={e => setProfileFormData((p: any) => ({ ...p, bio: e.target.value }))}
+                                                />
+                                            ) : (
+                                                <p className={cn("font-semibold text-[15px] leading-relaxed", isDark ? "text-white" : "text-slate-900")}>{profileFormData.bio || <span className="opacity-30">Not set</span>}</p>
+                                            )}
+                                        </div>
+                                    </div>
+                                    {/* Instagram */}
+                                    <div className={cn("flex items-center gap-4 px-5 py-4", isDark ? "border-b border-white/5" : "border-b border-slate-100")}>
+                                        <div className={cn("w-9 h-9 rounded-2xl flex items-center justify-center shrink-0", isDark ? "bg-pink-500/15" : "bg-gradient-to-br from-pink-50 to-orange-50")}>
+                                            <Instagram className="w-4 h-4 text-pink-500" />
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <p className={cn("text-[10px] font-black uppercase tracking-widest mb-0.5", isDark ? "text-slate-500" : "text-slate-400")}>Instagram</p>
+                                            {isEditMode ? (
+                                                <div className="flex items-center gap-1">
+                                                    <span className={cn("font-bold text-[15px]", isDark ? "text-slate-400" : "text-slate-400")}>@</span>
+                                                    <input
+                                                        className={cn("flex-1 bg-transparent outline-none font-semibold text-[15px]", isDark ? "text-white placeholder-slate-600" : "text-slate-900 placeholder-slate-300")}
+                                                        value={profileFormData.instagram_handle?.replace('@', '') || ''}
+                                                        placeholder="your.handle"
+                                                        onChange={e => setProfileFormData((p: any) => ({ ...p, instagram_handle: e.target.value }))}
+                                                    />
+                                                </div>
+                                            ) : (
+                                                <p className={cn("font-semibold text-[15px]", isDark ? "text-white" : "text-slate-900")}>
+                                                    {profileFormData.instagram_handle ? `@${profileFormData.instagram_handle.replace('@', '')}` : <span className="opacity-30">Not linked</span>}
+                                                </p>
+                                            )}
+                                        </div>
+                                    </div>
+                                    {/* Media Kit */}
+                                    <div className="flex items-center gap-4 px-5 py-4">
+                                        <div className={cn("w-9 h-9 rounded-2xl flex items-center justify-center shrink-0", isDark ? "bg-blue-500/15" : "bg-blue-50")}>
+                                            <Globe className="w-4 h-4 text-blue-500" />
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <p className={cn("text-[10px] font-black uppercase tracking-widest mb-0.5", isDark ? "text-slate-500" : "text-slate-400")}>Media Kit URL</p>
+                                            {isEditMode ? (
+                                                <input
+                                                    placeholder="https://..."
+                                                    className={cn("w-full bg-transparent outline-none font-semibold text-[15px]", isDark ? "text-white placeholder-slate-600" : "text-slate-900 placeholder-slate-300")}
+                                                    value={profileFormData.media_kit_url || ''}
+                                                    onChange={e => setProfileFormData((p: any) => ({ ...p, media_kit_url: e.target.value }))}
+                                                />
+                                            ) : (
+                                                <p className={cn("font-semibold text-[15px] truncate", isDark ? "text-white" : "text-slate-900")}>{profileFormData.media_kit_url || <span className="opacity-30">Not set</span>}</p>
+                                            )}
+                                        </div>
                                     </div>
                                 </div>
                             </div>
 
-                            {/* ACCOUNT IDENTITY */}
-                            <div className="space-y-6">
-                                <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] px-1">Social Identities</h4>
-                                <div className="space-y-8">
-                                    <div className="space-y-2">
-                                        <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wide">Instagram</p>
-                                        <div className="flex items-center gap-2 border-b py-2" style={{ borderColor: isEditMode ? (isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)') : 'transparent' }}>
-                                            <Instagram className="w-5 h-5 text-pink-500 shrink-0" />
-                                            {isEditMode ? (
-                                                <div className="flex items-center flex-1">
-                                                    <span className="text-lg font-bold text-slate-400">@</span>
-                                                    <input 
-                                                        className="bg-transparent outline-none font-bold text-lg flex-1"
-                                                        value={profileFormData.instagram_handle?.replace('@', '') || ''} 
-                                                        onChange={e => setProfileFormData(p => ({ ...p, instagram_handle: e.target.value }))} 
-                                                    />
-                                                </div>
-                                            ) : (
-                                                <p className={cn("text-lg font-bold flex-1", isDark ? "text-white" : "text-slate-900")}>
-                                                    @{profileFormData.instagram_handle?.replace('@', '') || 'Link Account'}
-                                                </p>
-                                            )}
-                                        </div>
-                                    </div>
-                                    <div className="space-y-2">
-                                        <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wide">Media Kit URL</p>
-                                        <div className="flex items-center gap-2 border-b py-2" style={{ borderColor: isEditMode ? (isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)') : 'transparent' }}>
-                                            <Globe className="w-5 h-5 text-blue-500 shrink-0" />
-                                            {isEditMode ? (
-                                                <input 
-                                                    placeholder="https://..."
-                                                    className="bg-transparent outline-none font-bold text-lg flex-1"
-                                                    value={profileFormData.media_kit_url || ''} 
-                                                    onChange={e => setProfileFormData(p => ({ ...p, media_kit_url: e.target.value }))} 
-                                                />
-                                            ) : (
-                                                <p className={cn("text-lg font-bold flex-1 truncate", isDark ? "text-white" : "text-slate-900")}>
-                                                    {profileFormData.media_kit_url || '—'}
-                                                </p>
-                                            )}
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+                            {/* Save button (edit mode) */}
+                            {isEditMode && (
+                                <motion.button
+                                    initial={{ opacity: 0, y: 8 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    type="button"
+                                    onClick={async () => { await handleSaveProfile(); setIsEditMode(false); }}
+                                    disabled={isSavingProfile}
+                                    className={cn(
+                                        "w-full py-4 rounded-[1.5rem] font-black text-[14px] tracking-wider flex items-center justify-center gap-2 active:scale-[0.98] transition-all shadow-lg",
+                                        isDark ? "bg-primary text-white shadow-primary/20" : "bg-emerald-600 text-white shadow-emerald-500/25"
+                                    )}
+                                >
+                                    {isSavingProfile ? <Loader2 className="w-4 h-4 animate-spin" /> : <ShieldCheck className="w-4 h-4" />}
+                                    {isSavingProfile ? 'Saving...' : 'Save Changes'}
+                                </motion.button>
+                            )}
                         </div>
                     </motion.div>
                 );
@@ -2655,6 +2701,19 @@ const MobileDashboardDemo = ({
                             </div>
 
                             <div>
+                                <p className={cn("text-[11px] font-black uppercase tracking-widest opacity-60 mb-3 px-1", textColor)}>3. Discovery Media</p>
+                                <div className={cn("rounded-[28px] border p-5", isDark ? "bg-card border-border shadow-2xl shadow-black/20" : "bg-white border-[#E5E7EB] shadow-sm")}>
+                                    <DiscoveryVideoUpload 
+                                        userId={userId}
+                                        isDark={isDark}
+                                        discoveryVideoUrl={profileFormData.discovery_video_url}
+                                        portfolioVideos={profileFormData.portfolio_videos}
+                                        onUpdate={(data) => setProfileFormData({ ...profileFormData, ...data })}
+                                    />
+                                </div>
+                            </div>
+
+                            <div>
                                 <p className={cn("text-[11px] font-black uppercase tracking-widest opacity-60 mb-3 px-1", textColor)}>3. Content & Vibe</p>
                                 <div className={cn("rounded-[28px] border p-5 space-y-7", isDark ? "bg-card border-border shadow-2xl shadow-black/20" : "bg-white border-[#E5E7EB] shadow-sm")}>
                                     <div className="space-y-3 px-1">
@@ -2765,161 +2824,6 @@ const MobileDashboardDemo = ({
                             <div>
                                 <p className={cn("text-[11px] font-black uppercase tracking-widest opacity-60 mb-3 px-1", textColor)}>5. Past Partnerships</p>
                                 <div className={cn("rounded-[28px] border p-5 space-y-7", isDark ? "bg-card border-border shadow-2xl shadow-black/20" : "bg-white border-[#E5E7EB] shadow-sm")}>
-                                    {/* Portfolio Links — 4 fixed slots */}
-                                    <div className="space-y-3">
-                                        <div className="flex items-center justify-between px-1">
-                                            <p className={cn("text-[10px] font-black uppercase tracking-wider opacity-50", textColor)}>Work Highlights (Up to 4 Reels/Videos)</p>
-                                            <Clapperboard className="w-3.5 h-3.5 text-primary opacity-60" />
-                                        </div>
-                                        {[0, 1, 2, 3].map((slotIdx) => {
-                                            const portfolioItems: PortfolioItem[] = buildPortfolioSlots(profileFormData.portfolio_items, profileFormData.portfolio_links);
-                                            const item = portfolioItems[slotIdx] || {
-                                                id: `portfolio-item-${slotIdx + 1}`,
-                                                sourceUrl: '',
-                                                posterUrl: null,
-                                                title: '',
-                                                mediaType: 'link',
-                                                platform: 'external',
-                                            };
-                                            const val = item.sourceUrl || '';
-                                            const isVideo = item.mediaType === 'video' || isPortfolioVideoUrl(val);
-                                            const updatePortfolioItem = (patch: Partial<PortfolioItem>) => {
-                                                const updated = buildPortfolioSlots(profileFormData.portfolio_items, profileFormData.portfolio_links);
-                                                while (updated.length <= slotIdx) {
-                                                    updated.push({
-                                                        id: `portfolio-item-${updated.length + 1}`,
-                                                        sourceUrl: '',
-                                                        posterUrl: null,
-                                                        title: '',
-                                                        mediaType: 'link',
-                                                        platform: 'external',
-                                                    });
-                                                }
-                                                updated[slotIdx] = {
-                                                    ...updated[slotIdx],
-                                                    id: String(updated[slotIdx]?.id || `portfolio-item-${slotIdx + 1}`),
-                                                    ...patch,
-                                                };
-                                                setProfileFormData((p: any) => ({
-                                                    ...p,
-                                                    portfolio_items: updated,
-                                                    portfolio_links: updated.map((entry) => entry.sourceUrl || '').filter(Boolean),
-                                                }));
-                                            };
-                                            return (
-                                                <div key={slotIdx} className={cn("space-y-3 rounded-[22px] border p-3.5", isDark ? "border-border bg-[#0B0F14]" : "border-[#E5E7EB] bg-slate-50/60")}>
-                                                    <div className="flex items-center justify-between gap-3">
-                                                        <div className="flex items-center gap-2">
-                                                            <div className={cn(
-                                                                "w-7 h-7 rounded-xl flex items-center justify-center text-[10px] font-black",
-                                                                val ? "bg-primary/15 text-primary" : (isDark ? "bg-white/5 text-white/30" : "bg-white text-slate-400 border border-slate-200")
-                                                            )}>{slotIdx + 1}</div>
-                                                            <div>
-                                                                <p className={cn("text-[11px] font-black uppercase tracking-wider", textColor)}>
-                                                                    {isVideo ? 'Uploaded video' : 'Link highlight'}
-                                                                </p>
-                                                                <p className={cn("text-[10px] opacity-50", textColor)}>
-                                                                    {val ? inferPortfolioPlatform(val) : 'Add a video or paste a public link'}
-                                                                </p>
-                                                            </div>
-                                                        </div>
-                                                        {val && (
-                                                            <button
-                                                                type="button"
-                                                                onClick={() => updatePortfolioItem({ sourceUrl: '', posterUrl: null, title: '', mediaType: 'link', platform: 'external' })}
-                                                                className="rounded-full p-1"
-                                                            >
-                                                                <X className="w-3.5 h-3.5 text-slate-400" />
-                                                            </button>
-                                                        )}
-                                                    </div>
-
-                                                    {(item.posterUrl || (val && isVideo)) && (
-                                                        <div className={cn("overflow-hidden rounded-2xl border", isDark ? "border-border bg-[#0B0F14]" : "border-[#E5E7EB] bg-slate-50")}>
-                                                            {item.posterUrl ? (
-                                                                <img
-                                                                    src={item.posterUrl}
-                                                                    alt={item.title || `Portfolio item ${slotIdx + 1}`}
-                                                                    className="w-full h-40 object-cover"
-                                                                />
-                                                            ) : (
-                                                                <video
-                                                                    src={val}
-                                                                    className="w-full h-40 object-cover"
-                                                                    muted
-                                                                    playsInline
-                                                                    loop
-                                                                    autoPlay
-                                                                />
-                                                            )}
-                                                        </div>
-                                                    )}
-                                                    <input
-                                                        type="text"
-                                                        value={item.title || ''}
-                                                        placeholder={`Title for highlight #${slotIdx + 1}`}
-                                                        onChange={(e) => updatePortfolioItem({ title: e.target.value })}
-                                                        className={cn(
-                                                            "w-full px-4 py-3 rounded-2xl border text-[13px] font-semibold outline-none transition-all",
-                                                            isDark ? "bg-card border-border text-foreground focus:border-primary/50" : "bg-white border-[#E5E7EB] text-black focus:border-emerald-400"
-                                                        )}
-                                                    />
-                                                    <div className="relative">
-                                                        <input
-                                                            type="url"
-                                                            value={val}
-                                                            placeholder={`Reel/Short link or uploaded video URL #${slotIdx + 1}`}
-                                                            onChange={(e) => {
-                                                                const nextValue = e.target.value;
-                                                                updatePortfolioItem({
-                                                                    sourceUrl: nextValue,
-                                                                    mediaType: isPortfolioVideoUrl(nextValue) ? 'video' : 'link',
-                                                                    platform: inferPortfolioPlatform(nextValue),
-                                                                });
-                                                            }}
-                                                            className={cn(
-                                                                "w-full px-4 pr-12 py-3 rounded-2xl border text-[13px] font-semibold outline-none transition-all",
-                                                                val ? (isDark ? "border-primary/40 bg-primary/5 text-foreground" : "border-emerald-300 bg-emerald-50/50 text-black") : (isDark ? "bg-[#0B0F14] border-border text-foreground focus:border-primary/40" : "bg-[#F9FAFB] border-[#E5E7EB] text-black focus:border-emerald-400 focus:bg-white")
-                                                            )}
-                                                        />
-                                                        {val && !isVideo && (
-                                                            <button
-                                                                type="button"
-                                                                onClick={() => window.open(val.startsWith('http') ? val : `https://${val}`, '_blank', 'noopener,noreferrer')}
-                                                                className="absolute right-3.5 top-1/2 -translate-y-1/2"
-                                                            >
-                                                                <ExternalLink className="w-3.5 h-3.5 text-slate-400" />
-                                                            </button>
-                                                        )}
-                                                    </div>
-                                                    <div className="flex flex-wrap items-center gap-2 px-1">
-                                                        <label className={cn(
-                                                            "inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-[10px] font-black uppercase tracking-wider cursor-pointer transition-all",
-                                                            isDark ? "border-border bg-card text-foreground hover:border-primary/40" : "border-[#E5E7EB] bg-white text-slate-700 hover:border-emerald-300"
-                                                        )}>
-                                                            {uploadingPortfolioSlot === slotIdx ? 'Uploading…' : (isVideo ? 'Replace video' : 'Upload video')}
-                                                            <input
-                                                                type="file"
-                                                                accept="video/mp4,video/quicktime,video/webm,video/x-m4v"
-                                                                className="hidden"
-                                                                disabled={uploadingPortfolioSlot !== null}
-                                                                onChange={(e) => {
-                                                                    const file = e.target.files?.[0];
-                                                                    if (file) void handlePortfolioVideoUpload(slotIdx, file);
-                                                                    e.currentTarget.value = '';
-                                                                }}
-                                                            />
-                                                        </label>
-                                                        <span className={cn("text-[10px] opacity-50", textColor)}>
-                                                            Upload is preferred. Links still work as fallback.
-                                                        </span>
-                                                    </div>
-                                                </div>
-                                            );
-                                        })}
-                                        <p className={cn("text-[10px] opacity-40 px-1", textColor)}>Videos store a poster image automatically. Changes publish when you tap "Save All Changes".</p>
-                                    </div>
-
                                     {/* Media Kit (Option 3) */}
                                     <div className="space-y-3 px-1">
                                         <div className="flex items-center justify-between">
@@ -3203,7 +3107,7 @@ const MobileDashboardDemo = ({
                     {/* ─── DASHBOARD TAB ─── */}
                     {activeTab === 'dashboard' && (
                         <>
-                            {/* Complete Your Collab Link Banner */}
+                            {/* Go Live Checklist (Vibe Readiness) */}
                             {!completionDismissed && profile && (() => {
                                 const hasMonetizableActivity = Array.isArray(brandDeals) && brandDeals.some((d: any) =>
                                     ['Payment Pending', 'Completed', 'Approved', 'Active', 'confirmed'].includes(String(d?.status || ''))
@@ -3218,8 +3122,9 @@ const MobileDashboardDemo = ({
 
                                 const tasks = [
                                     { done: !!profile.instagram_handle, label: 'Add Instagram', focus: 'instagram' },
-                                    { done: !!profile.bio, label: 'Add intro line', focus: 'bio' },
-                                    { done: hasSetRates, label: 'Set rates', focus: 'rates' },
+                                    { done: !!profile.bio, label: 'Add intro headline', focus: 'bio' },
+                                    { done: hasSetRates, label: 'Set collab rates', focus: 'rates' },
+                                    { done: !!profile.discovery_video_url, label: 'Add Vibe Video', focus: 'discovery_video' },
                                     // Only ask for payout when it's actually needed (reduces day-0 drop-off)
                                     ...(hasMonetizableActivity
                                         ? [{
@@ -3236,49 +3141,59 @@ const MobileDashboardDemo = ({
                                 const remaining = tasks.filter(t => !t.done);
                                 const pct = Math.round((completed / tasks.length) * 100);
                                 return (
-                                    <div className="mx-5 mb-4 p-4 rounded-2xl bg-gradient-to-r from-emerald-50 to-teal-50 border border-primary">
-                                        <div className="flex items-center justify-between mb-3">
+                                    <div className="mx-5 mb-6 p-5 rounded-[24px] bg-gradient-to-br from-indigo-500/10 via-purple-500/5 to-transparent border border-indigo-500/20 shadow-sm relative overflow-hidden group">
+                                        {/* Background Glow */}
+                                        <div className="absolute -right-4 -top-4 w-24 h-24 bg-indigo-500/10 blur-3xl rounded-full group-hover:bg-indigo-500/20 transition-all duration-700" />
+                                        
+                                        <div className="flex items-center justify-between mb-4">
                                             <div className="flex items-center gap-3">
-                                                <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center">
-                                                    <ShieldCheck className="w-5 h-5 text-foreground" />
+                                                <div className="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center shadow-lg shadow-indigo-500/20">
+                                                    <Rocket className="w-5 h-5 text-white" />
                                                 </div>
                                                 <div>
-                                                    <p className="text-[14px] font-bold text-muted-foreground">Finish setup to start receiving brand deals</p>
-                                                    <p className="text-[12px] text-muted-foreground">{completed}/{tasks.length} done • {pct}%</p>
+                                                    <p className={cn("text-[16px] font-black tracking-tight", isDark ? "text-white" : "text-slate-900")}>Go Live Checklist</p>
+                                                    <p className={cn("text-[12px] font-bold opacity-50", isDark ? "text-white" : "text-slate-900")}>{completed}/{tasks.length} tasks ready for brands</p>
                                                 </div>
                                             </div>
-                                            <button onClick={() => setCompletionDismissed(true)} className="p-1 rounded-full hover:bg-primary active:scale-95">
-                                                <X className="w-4 h-4 text-muted-foreground" />
+                                            <button onClick={() => setCompletionDismissed(true)} className="p-1 rounded-full hover:bg-slate-200/50 active:scale-95 transition-colors">
+                                                <X className="w-4 h-4 opacity-40" />
                                             </button>
                                         </div>
+
                                         {/* Progress bar */}
-                                        <div className="w-full h-1.5 bg-primary rounded-full mb-3 overflow-hidden">
-                                            <div className="h-full bg-primary rounded-full transition-all duration-500" style={{ width: `${pct}%` }} />
+                                        <div className="w-full h-2 bg-slate-200/20 dark:bg-slate-800/50 rounded-full mb-4 overflow-hidden">
+                                            <motion.div 
+                                                initial={{ width: 0 }}
+                                                animate={{ width: `${pct}%` }}
+                                                className="h-full bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full" 
+                                            />
                                         </div>
+
                                         <div className="flex flex-wrap gap-2">
-                                            <button
-                                                onClick={() => {
-                                                    triggerHaptic();
-                                                    setActiveTab('profile');
-                                                    setActiveSettingsPage('collab-link');
-                                                    setActiveSettingsAnchor('pricing');
-                                                }}
-                                                className="text-[11px] font-bold px-3 py-1.5 rounded-full bg-card border border-primary text-primary active:scale-95"
-                                            >
-                                                Set rates
-                                            </button>
-                                            {remaining.some((t) => t.focus === 'payout') && (
+                                            {tasks.map((task, i) => (
                                                 <button
+                                                    key={i}
                                                     onClick={() => {
                                                         triggerHaptic();
                                                         setActiveTab('profile');
-                                                        setActiveSettingsPage('payouts');
+                                                        if (task.focus === 'discovery_video') setActiveSettingsPage('portfolio');
+                                                        else if (task.focus === 'payout') setActiveSettingsPage('payouts');
+                                                        else {
+                                                            setActiveSettingsPage('personal');
+                                                            setIsEditMode(true);
+                                                        }
                                                     }}
-                                                    className="text-[11px] font-bold px-3 py-1.5 rounded-full bg-card border border-primary text-primary active:scale-95"
+                                                    className={cn(
+                                                        "text-[11px] font-black px-4 py-2 rounded-full border transition-all active:scale-95 flex items-center gap-1.5",
+                                                        task.done 
+                                                            ? (isDark ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400" : "bg-emerald-50 border-emerald-100 text-emerald-700")
+                                                            : (isDark ? "bg-slate-800/50 border-slate-700 text-slate-300" : "bg-white border-slate-200 text-slate-600 shadow-sm")
+                                                    )}
                                                 >
-                                                    Add payout method
+                                                    {task.done ? <CheckCircle2 className="w-3 h-3" /> : <div className="w-2 h-2 rounded-full bg-current opacity-30" />}
+                                                    {task.label}
                                                 </button>
-                                            )}
+                                            ))}
                                         </div>
                                     </div>
                                 );
@@ -4334,11 +4249,25 @@ const MobileDashboardDemo = ({
                             <div className="px-5 mb-8">
                                 <SmartNotificationsCenter isDark={isDark} />
                             </div>
-
-                            <div className="px-5 mb-8">
-                                <DealComparison isDark={isDark} />
-                            </div>
                         </>
+                    )}
+
+                    {/* ─── DISCOVERY TAB ─── */}
+                    {activeTab === 'discovery' && (
+                        <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 px-5 pt-8 pb-32">
+                            <div className="mb-8">
+                                <h1 className={cn("text-4xl font-black italic uppercase tracking-tighter", isDark ? "text-white" : "text-black")}>
+                                    Discovery Lab
+                                </h1>
+                                <div className="flex items-center gap-2 mt-1">
+                                    <div className="h-1 w-12 bg-rose-500 rounded-full" />
+                                    <p className={cn("text-[10px] font-black uppercase tracking-widest opacity-40 italic")}>
+                                        Premium Opportunities
+                                    </p>
+                                </div>
+                            </div>
+                            <CreatorDiscoveryStack isDark={isDark} />
+                        </div>
                     )}
 
                     {/* ─── COLLABS TAB ─── */}
@@ -5119,6 +5048,11 @@ const MobileDashboardDemo = ({
                         <motion.button whileTap={{ scale: 0.94 }} onClick={() => { if (scrollRef.current) scrollPositionsRef.current[activeTab] = scrollRef.current.scrollTop; triggerHaptic(); setActiveTab('deals'); }} className={cn("flex flex-col items-center justify-center gap-1 min-w-[64px] h-[54px] px-2 rounded-2xl transition-all", activeTab === 'deals' ? (isDark ? 'bg-white/5' : 'bg-white shadow-sm border border-[#E5E7EB]') : 'bg-transparent')}>
                             <Briefcase className={cn('w-[22px] h-[22px]', activeTab === 'deals' ? (isDark ? 'text-white' : 'text-[#111827]') : (isDark ? 'text-slate-500' : secondaryTextColor))} />
                             <span className={cn('text-[10px] tracking-tight', activeTab === 'deals' ? (isDark ? 'text-white font-bold' : 'text-[#111827] font-bold') : cn('font-medium', isDark ? 'text-slate-500' : secondaryTextColor))}>Deals</span>
+                        </motion.button>
+
+                        <motion.button whileTap={{ scale: 0.94 }} onClick={() => { if (scrollRef.current) scrollPositionsRef.current[activeTab] = scrollRef.current.scrollTop; triggerHaptic(); setActiveTab('discovery'); }} className={cn("flex flex-col items-center justify-center gap-1 min-w-[64px] h-[54px] px-2 rounded-2xl transition-all", activeTab === 'discovery' ? (isDark ? 'bg-white/5' : 'bg-white shadow-sm border border-[#E5E7EB]') : 'bg-transparent')}>
+                            <Heart className={cn('w-[22px] h-[22px]', activeTab === 'discovery' ? (isDark ? 'text-rose-500' : 'text-rose-600') : (isDark ? 'text-slate-500' : secondaryTextColor))} />
+                            <span className={cn('text-[10px] tracking-tight', activeTab === 'discovery' ? (isDark ? 'text-rose-500 font-bold' : 'text-rose-600 font-bold') : cn('font-medium', isDark ? 'text-slate-500' : secondaryTextColor))}>Discovery</span>
                         </motion.button>
 
                         <motion.button whileTap={{ scale: 0.94 }} onClick={() => { if (scrollRef.current) scrollPositionsRef.current[activeTab] = scrollRef.current.scrollTop; triggerHaptic(); setActiveTab('payments'); }} className={cn("flex flex-col items-center justify-center gap-1 min-w-[64px] h-[54px] px-2 rounded-2xl transition-all", activeTab === 'payments' ? (isDark ? 'bg-white/5' : 'bg-white shadow-sm border border-[#E5E7EB]') : 'bg-transparent')}>
