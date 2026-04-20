@@ -5398,30 +5398,39 @@ const MobileDashboardDemo = ({
 
                                     {/* Fixed Header */}
                                     <div className={cn(
-                                        "px-5 py-3.5 flex items-center justify-between border-b sticky top-0 z-20",
-                                        isDark ? "bg-[#061318]/70 backdrop-blur-xl border-border" : "bg-secondary/95 backdrop-blur-md border-border"
+                                        "px-5 py-4 flex items-center justify-between border-b sticky top-0 z-20",
+                                        isDark ? "bg-[#061318]/80 backdrop-blur-2xl border-white/5" : "bg-white/95 backdrop-blur-md border-slate-200"
                                     )}>
-                                        <div className="flex items-center gap-3">
+                                        <div className="flex items-center gap-4">
                                             <button type="button"
                                                 onClick={closeItemDetail}
-                                                className={cn("w-9 h-9 rounded-full flex items-center justify-center border transition-all active:scale-90", borderColor, isDark ? "bg-card hover:bg-secondary/50" : "bg-card hover:bg-background")}
+                                                className={cn(
+                                                    "w-10 h-10 rounded-full flex items-center justify-center border transition-all active:scale-95 shadow-sm",
+                                                    isDark ? "bg-[#151922] border-white/10 hover:bg-white/5" : "bg-white border-slate-200 hover:bg-slate-50"
+                                                )}
                                             >
-                                                <ChevronRight className="w-4 h-4 rotate-180" />
+                                                <ChevronRight className="w-5 h-5 rotate-180" />
                                             </button>
                                             <div>
-                                                <h2 className={cn("text-[16px] font-bold tracking-tight leading-tight", textColor)}>
-                                                    {selectedType === 'deal' ? 'Deal Detail' : 'Offer Brief'}
+                                                <h2 className={cn("text-[17px] font-black tracking-tight leading-none mb-1", textColor)}>
+                                                    {selectedType === 'deal' ? 'Collaboration' : 'Offer Brief'}
                                                 </h2>
-                                                <p className={cn("text-[10px] font-bold uppercase tracking-widest opacity-40 leading-tight", textColor)}>
-                                                    {selectedItem.brand_name || selectedItem.raw?.brand_name || 'Brand Partner'}
-                                                </p>
+                                                <div className="flex items-center gap-1.5 opacity-50">
+                                                    <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+                                                    <p className={cn("text-[11px] font-bold uppercase tracking-widest leading-none", textColor)}>
+                                                        {selectedItem.brand_name || selectedItem.raw?.brand_name || 'Brand Partner'}
+                                                    </p>
+                                                </div>
                                             </div>
                                         </div>
                                         <button type="button"
                                             onClick={() => { triggerHaptic(); setShowItemMenu(true); }}
-                                            className={cn("w-9 h-9 rounded-full flex items-center justify-center border transition-all active:scale-90", borderColor, isDark ? "bg-card" : "bg-card")}
+                                            className={cn(
+                                                "w-10 h-10 rounded-full flex items-center justify-center border transition-all active:scale-95 shadow-sm",
+                                                isDark ? "bg-[#151922] border-white/10" : "bg-white border-slate-200"
+                                            )}
                                         >
-                                            <MoreHorizontal className="w-4 h-4 opacity-40" />
+                                            <MoreHorizontal className="w-5 h-5 opacity-50" />
                                         </button>
                                     </div>
 
@@ -5446,74 +5455,97 @@ const MobileDashboardDemo = ({
                                                     </div>
                                                 </div>
 
-                                                <div className={cn("mt-6 rounded-[24px] border p-0 overflow-hidden", isDark ? "bg-[#0C1320]/70 border-border" : "bg-white border-[#E5E7EB] shadow-[0_1px_0_rgba(15,23,42,0.03)]")}>
-                                                    <div className="p-0">
-                                                        <div className="flex gap-4 p-4">
-                                                            <div className={cn("w-[170px] h-[224px] rounded-[18px] overflow-hidden shrink-0", isDark ? "bg-card" : "bg-[#F3F4F6]")}>
-                                                                {(() => {
-                                                                    const src = resolveCreatorDealProductImage(selectedItem) || 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&q=80&w=500';
-                                                                    return <img src={src} alt="" className="w-full h-full object-cover" loading="lazy" />;
-                                                                })()}
-                                                            </div>
-                                                            <div className="flex-1 min-w-0 pt-2 pr-1">
-                                                                <div className="flex items-start justify-between gap-3">
-                                                                    <div className="pt-10">
-                                                                        <p className={cn("text-[41px] leading-[0.92] font-black tracking-tight", textColor)}>
-                                                                            {renderBudgetValue(selectedItem)}
-                                                                        </p>
-                                                                        <p className={cn("text-[15px] font-bold mt-2", textColor)}>
-                                                                            {(() => {
-                                                                                const raw = selectedItem?.deliverables || selectedItem?.raw?.deliverables;
-                                                                                try {
-                                                                                    const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;
-                                                                                    if (Array.isArray(parsed) && parsed.length > 0) {
-                                                                                        const first = parsed[0];
-                                                                                        if (typeof first === 'string') return first.includes('Reel') ? 'Reel' : first;
-                                                                                        const ct = String(first?.contentType || first?.type || '').toLowerCase();
-                                                                                        if (ct.includes('reel')) return 'Reel';
-                                                                                        if (ct.includes('story')) return 'Story';
-                                                                                        if (ct.includes('post')) return 'Post';
-                                                                                    }
-                                                                                } catch {}
-                                                                                return 'Reel';
-                                                                            })()}
-                                                                        </p>
-                                                                    </div>
+                                                <div className={cn(
+                                                    "mt-6 rounded-[32px] border p-0 overflow-hidden relative overflow-hidden transition-all duration-500",
+                                                    isDark 
+                                                        ? "bg-[#0C1320]/80 backdrop-blur-3xl border-white/5 shadow-[0_32px_64px_-16px_rgba(0,0,0,0.4)]" 
+                                                        : "bg-white border-[#E5E7EB] shadow-[0_20px_40px_-12px_rgba(0,0,0,0.06)]"
+                                                )}>
+                                                    {isDark && <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-[1px] bg-gradient-to-r from-transparent via-white/10 to-transparent" />}
+                                                    
+                                                    <div className="flex flex-col sm:flex-row gap-5 p-5">
+                                                        <div className={cn(
+                                                            "w-full sm:w-[180px] h-[240px] rounded-[24px] overflow-hidden shrink-0 relative group",
+                                                            isDark ? "bg-card" : "bg-[#F3F4F6]"
+                                                        )}>
+                                                            {(() => {
+                                                                const src = resolveCreatorDealProductImage(selectedItem) || 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&q=80&w=500';
+                                                                return (
+                                                                    <>
+                                                                        <img src={src} alt="" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" loading="lazy" />
+                                                                        <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-60" />
+                                                                    </>
+                                                                );
+                                                            })()}
+                                                        </div>
+                                                        
+                                                        <div className="flex-1 min-w-0 flex flex-col justify-between">
+                                                            <div>
+                                                                <div className="flex items-center gap-2 mb-2 opacity-50">
+                                                                    <Tag className="w-3 h-3" />
+                                                                    <p className="text-[11px] font-black uppercase tracking-[0.1em]">Brand Briefing</p>
                                                                 </div>
+                                                                <p className={cn("text-[48px] leading-[0.85] font-black tracking-tight", textColor)}>
+                                                                    {renderBudgetValue(selectedItem)}
+                                                                </p>
+                                                                <p className={cn("text-[17px] font-bold mt-3 inline-flex items-center gap-2", textColor)}>
+                                                                    <div className="w-1.5 h-1.5 rounded-full bg-primary" />
+                                                                    {(() => {
+                                                                        const raw = selectedItem?.deliverables || selectedItem?.raw?.deliverables;
+                                                                        try {
+                                                                            const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;
+                                                                            if (Array.isArray(parsed) && parsed.length > 0) {
+                                                                                const first = parsed[0];
+                                                                                if (typeof first === 'string') return first.includes('Reel') ? 'Reel' : first;
+                                                                                const ct = String(first?.contentType || first?.type || '').toLowerCase();
+                                                                                if (ct.includes('reel')) return 'Instagram Reel';
+                                                                                if (ct.includes('story')) return 'Instagram Story';
+                                                                                if (ct.includes('post')) return 'Grid Post';
+                                                                            }
+                                                                        } catch {}
+                                                                        return 'Premium Deliverable';
+                                                                    })()}
+                                                                </p>
+                                                            </div>
 
-                                                                <div className="mt-6 flex items-center gap-2">
-                                                                    <ShieldCheck className={cn("w-4 h-4", isDark ? "text-emerald-300" : "text-emerald-600")} />
-                                                                    <p className={cn("text-[13px] font-bold", isDark ? "text-emerald-300" : "text-emerald-700")}>
-                                                                        Payment secured after approval
+                                                            <div className="space-y-4 mt-6">
+                                                                <div className="flex items-center gap-2.5">
+                                                                    <div className={cn("w-6 h-6 rounded-full flex items-center justify-center", isDark ? "bg-emerald-500/20" : "bg-emerald-100")}>
+                                                                        <ShieldCheck className={cn("w-3.5 h-3.5", isDark ? "text-emerald-300" : "text-emerald-600")} />
+                                                                    </div>
+                                                                    <p className={cn("text-[13px] font-bold tracking-tight", isDark ? "text-emerald-300/90" : "text-emerald-700")}>
+                                                                        Payment secured escrow
                                                                     </p>
                                                                 </div>
 
-                                                                <div className={cn(
-                                                                    "mt-7 rounded-[16px] border px-4 py-4",
-                                                                    isDark ? "bg-rose-500/10 border-rose-500/15" : "bg-rose-50 border-rose-100"
-                                                                )}>
-                                                                    {(() => {
-                                                                        const deadlineRaw = selectedItem?.deadline || selectedItem?.due_date || selectedItem?.raw?.deadline || selectedItem?.raw?.due_date || null;
-                                                                        const deadlineDt = deadlineRaw ? new Date(deadlineRaw) : null;
-                                                                        const valid = deadlineDt && !Number.isNaN(deadlineDt.getTime());
-                                                                        const now = new Date();
-                                                                        const daysLeft = valid ? Math.max(0, Math.ceil((deadlineDt!.getTime() - now.getTime()) / 86400000)) : null;
-                                                                        const dayLabel = daysLeft === null ? '—' : `${daysLeft} days left`;
-                                                                        return (
-                                                                            <div>
-                                                                                <div className={cn("flex items-center justify-center gap-2 text-[12px] font-black", isDark ? "text-rose-300" : "text-rose-600")}>
-                                                                                    <Clock className="w-4 h-4" />
-                                                                                    {dayLabel}
-                                                                                </div>
-                                                                                {valid && (
-                                                                                    <p className={cn("mt-1 text-center text-[11px] font-semibold", isDark ? "text-foreground/60" : "text-slate-600")}>
-                                                                                        Deadline: {deadlineDt!.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })} (11:59 PM)
-                                                                                    </p>
-                                                                                )}
+                                                                {(() => {
+                                                                    const deadlineRaw = selectedItem?.deadline || selectedItem?.due_date || selectedItem?.raw?.deadline || selectedItem?.raw?.due_date || null;
+                                                                    const deadlineDt = deadlineRaw ? new Date(deadlineRaw) : null;
+                                                                    const valid = deadlineDt && !Number.isNaN(deadlineDt.getTime());
+                                                                    const now = new Date();
+                                                                    const daysLeft = valid ? Math.max(0, Math.ceil((deadlineDt!.getTime() - now.getTime()) / 86400000)) : null;
+                                                                    
+                                                                    return (
+                                                                        <div className={cn(
+                                                                            "rounded-[18px] border-l-4 px-4 py-3.5 flex items-center justify-between gap-4",
+                                                                            isDark ? "bg-white/5 border-rose-500/40" : "bg-slate-50 border-rose-500/20"
+                                                                        )}>
+                                                                            <div className="min-w-0">
+                                                                                <p className={cn("text-[11px] font-black uppercase opacity-40 mb-0.5", textColor)}>Submit By</p>
+                                                                                <p className={cn("text-[13px] font-bold", textColor)}>
+                                                                                    {valid ? deadlineDt!.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : 'Flexible'}
+                                                                                </p>
                                                                             </div>
-                                                                        );
-                                                                    })()}
-                                                                </div>
+                                                                            <div className={cn(
+                                                                                "px-3 py-1.5 rounded-full text-[11px] font-black flex items-center gap-1.5",
+                                                                                isDark ? "bg-rose-500/20 text-rose-300" : "bg-rose-100 text-rose-700"
+                                                                            )}>
+                                                                                <Clock className="w-3 h-3" />
+                                                                                {daysLeft !== null ? `${daysLeft}D Left` : 'Active'}
+                                                                            </div>
+                                                                        </div>
+                                                                    );
+                                                                })()}
                                                             </div>
                                                         </div>
                                                     </div>
@@ -5532,69 +5564,88 @@ const MobileDashboardDemo = ({
                                                             }
                                                             handleAccept(selectedItem);
                                                         }}
-                                                        className="w-full h-[82px] rounded-[18px] px-5 flex items-center justify-between bg-[#2563EB] text-white border border-[#2563EB] shadow-[0_14px_32px_rgba(37,99,235,0.28)] active:scale-[0.99] transition-all"
-                                                    >
-                                                        <div className="text-center flex-1">
-                                                            <p className="text-[18px] font-black leading-none">Accept Deal {renderBudgetValue(selectedItem)}</p>
-                                                            <p className="text-[13px] font-semibold opacity-90 mt-1">Contract generated instantly</p>
-                                                        </div>
-                                                        <ChevronRight className="w-6 h-6 opacity-95 shrink-0" />
-                                                    </button>
-
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => {
-                                                            triggerHaptic();
-                                                            toast.message('Ask Brand Question', { description: 'Open messages or contact the brand from the offer thread.' });
-                                                        }}
                                                         className={cn(
-                                                            "w-full h-14 rounded-[14px] px-5 flex items-center justify-between border active:scale-[0.99] transition-all",
-                                                            isDark ? "bg-card border-border text-foreground" : "bg-white border-[#E5E7EB] text-slate-900"
+                                                            "w-full h-[88px] rounded-[24px] px-6 flex items-center justify-between relative overflow-hidden group active:scale-[0.98] transition-all duration-300",
+                                                            isDark 
+                                                                ? "bg-gradient-to-r from-blue-600 to-blue-500 text-white shadow-[0_20px_40px_-10px_rgba(37,99,235,0.4)]" 
+                                                                : "bg-gradient-to-r from-blue-600 to-blue-500 text-white shadow-[0_15px_30px_-8px_rgba(37,99,235,0.3)]"
                                                         )}
                                                     >
-                                                        <span className="flex items-center gap-3">
-                                                            <MessageCircle className={cn("w-5 h-5", isDark ? "text-foreground/80" : "text-slate-700")} />
-                                                            <span className="font-black text-[14px]">Ask Brand Question</span>
-                                                        </span>
-                                                        <ChevronRight className={cn("w-5 h-5", isDark ? "text-foreground/60" : "text-slate-500")} />
+                                                        <div className="absolute inset-0 bg-blue-400 opacity-0 group-hover:opacity-10 transition-opacity" />
+                                                        <div className="absolute top-0 right-0 p-3 opacity-10 rotate-12 group-hover:rotate-45 transition-transform">
+                                                            <Zap className="w-16 h-16 text-white" />
+                                                        </div>
+                                                        
+                                                        <div className="text-left relative z-10">
+                                                            <p className="text-[20px] font-black leading-tight tracking-tight">Accept Deal {renderBudgetValue(selectedItem)}</p>
+                                                            <p className="text-[13px] font-bold opacity-80 mt-1 flex items-center gap-1.5">
+                                                                <FileText className="w-3.5 h-3.5" />
+                                                                Contract generated instantly
+                                                            </p>
+                                                        </div>
+                                                        <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center backdrop-blur-md relative z-10">
+                                                            <ChevronRight className="w-6 h-6 text-white" />
+                                                        </div>
                                                     </button>
 
-                                                    <div className="grid grid-cols-2 gap-3">
+                                                    <div className="grid grid-cols-1 gap-3">
                                                         <button
                                                             type="button"
                                                             onClick={() => {
                                                                 triggerHaptic();
-                                                                toast.message('Counter Offer', { description: 'Open offer details to counter.' });
+                                                                toast.message('Ask Brand Question', { description: 'Open messages or contact the brand from the offer thread.' });
                                                             }}
                                                             className={cn(
-                                                                "h-14 rounded-[14px] border font-black text-[14px] active:scale-[0.99] transition-all flex items-center justify-center gap-2",
-                                                                isDark ? "bg-card border-[#1E3A8A]/40 text-info" : "bg-white border-[#93C5FD] text-info"
+                                                                "w-full h-15 rounded-[20px] px-5 flex items-center justify-between border active:scale-[0.99] transition-all",
+                                                                isDark ? "bg-[#151922] border-white/5 text-foreground hover:bg-white/5" : "bg-slate-50 border-slate-200 text-slate-900"
                                                             )}
                                                         >
-                                                            <Edit3 className="w-4 h-4" />
-                                                            Counter Offer
+                                                            <span className="flex items-center gap-3">
+                                                                <div className={cn("w-9 h-9 rounded-full flex items-center justify-center", isDark ? "bg-white/5" : "bg-white")}>
+                                                                    <MessageSquare className="w-4.5 h-4.5" />
+                                                                </div>
+                                                                <span className="font-black text-[14px]">Ask Question</span>
+                                                            </span>
+                                                            <p className="text-[11px] font-black uppercase tracking-widest opacity-40">Messages</p>
                                                         </button>
-                                                        <button
-                                                            type="button"
-                                                            onClick={async () => {
-                                                                triggerHaptic(HapticPatterns.warning);
-                                                                if (selectedItem?.isDemo) {
-                                                                    toast.message('This is a demo offer', { description: 'Decline is disabled for demo.' });
-                                                                    return;
-                                                                }
-                                                                if (onDeclineRequest) {
-                                                                    try { await onDeclineRequest(selectedItem); } catch { }
-                                                                }
-                                                                closeItemDetail();
-                                                            }}
-                                                            className={cn(
-                                                                "h-14 rounded-[14px] border font-black text-[14px] active:scale-[0.99] transition-all flex items-center justify-center gap-2",
-                                                                isDark ? "bg-card border-destructive/35 text-destructive" : "bg-white border-destructive/25 text-destructive"
-                                                            )}
-                                                        >
-                                                            <XCircle className="w-4 h-4" />
-                                                            Decline Offer
-                                                        </button>
+
+                                                        <div className="grid grid-cols-2 gap-3">
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => {
+                                                                    triggerHaptic();
+                                                                    toast.message('Counter Offer', { description: 'Open offer details to counter.' });
+                                                                }}
+                                                                className={cn(
+                                                                    "h-15 rounded-[20px] border font-black text-[14px] active:scale-[0.99] transition-all flex items-center justify-center gap-2",
+                                                                    isDark ? "bg-[#151922] border-blue-500/20 text-blue-400 hover:bg-blue-500/5" : "bg-white border-blue-200 text-blue-600"
+                                                                )}
+                                                            >
+                                                                <Edit3 className="w-4 h-4" />
+                                                                Counter
+                                                            </button>
+                                                            <button
+                                                                type="button"
+                                                                onClick={async () => {
+                                                                    triggerHaptic(HapticPatterns.warning);
+                                                                    if (selectedItem?.isDemo) {
+                                                                        toast.message('This is a demo offer', { description: 'Decline is disabled for demo.' });
+                                                                        return;
+                                                                    }
+                                                                    if (onDeclineRequest) {
+                                                                        try { await onDeclineRequest(selectedItem); } catch { }
+                                                                    }
+                                                                    closeItemDetail();
+                                                                }}
+                                                                className={cn(
+                                                                    "h-15 rounded-[20px] border font-black text-[14px] active:scale-[0.99] transition-all flex items-center justify-center gap-2",
+                                                                    isDark ? "bg-[#151922] border-rose-500/20 text-rose-400 hover:bg-rose-500/5" : "bg-white border-rose-200 text-rose-600"
+                                                                )}
+                                                            >
+                                                                <XCircle className="w-4 h-4" />
+                                                                Decline
+                                                            </button>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
