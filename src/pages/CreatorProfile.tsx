@@ -421,6 +421,24 @@ const ProfileSettings = () => {
   // Load user data from session (only on initial load)
   const [hasInitialized, setHasInitialized] = useState(false);
 
+  // Profile completeness calculation
+  const profileCompleteness = useMemo(() => {
+    const fields = [
+      !!formData.name.trim(),
+      !!formData.bio.trim(),
+      !!formData.instagramHandle.trim(),
+      !!formData.avgRateReel.trim(),
+      !!formData.pricingMin.trim() || !!formData.pricingAvg.trim() || !!formData.pricingMax.trim(),
+      !!formData.contentNiches.length,
+      !!formData.avgReelViewsManual.trim(),
+      !!formData.collabRegionLabel.trim(),
+      !!formData.collabBrandsCountOverride.trim(),
+      !!formData.mediaKitUrl.trim(),
+    ];
+    const filled = fields.filter(Boolean).length;
+    return Math.round((filled / fields.length) * 100);
+  }, [formData]);
+
   useEffect(() => {
     if (profile && user && !hasInitialized) {
       // Ensure phone starts with +91
@@ -2037,6 +2055,22 @@ const ProfileSettings = () => {
           )}
         </div>
 
+        {/* Progress Bar - Show only in collab section */}
+        {activeSection === 'collab' && profileCompleteness < 100 && (
+          <div className="mb-4 p-3 rounded-xl border border-border bg-card">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm font-medium">Profile {profileCompleteness}% complete</span>
+              <span className="text-xs text-muted-foreground">Complete to get +20% more deals</span>
+            </div>
+            <div className="h-2 bg-muted rounded-full overflow-hidden">
+              <div 
+                className="h-full bg-gradient-to-r from-info to-primary transition-all duration-500"
+                style={{ width: `${profileCompleteness}%` }}
+              />
+            </div>
+          </div>
+        )}
+
         {/* Profile Section */}
         {activeSection === 'profile' && (
           <div className="space-y-3">
@@ -2640,21 +2674,16 @@ const ProfileSettings = () => {
               <h2 className="font-semibold text-base mb-2">Your Deal Terms</h2>
               <p className="text-xs text-muted-foreground mb-3">This is what brands see before sending an offer.</p>
 
-              {/* 🚀 AI Optimization Wizard */}
-              <div className="bg-gradient-to-br from-indigo-500/10 to-purple-500/10 rounded-xl p-4 border border-indigo-500/20 mb-4">
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="bg-indigo-500/20 p-2 rounded-lg">
-                    <Sparkles className="w-5 h-5 text-indigo-400" />
-                  </div>
-                  <div>
-                    <h3 className="font-bold text-muted-foreground italic">Optimization Wizard</h3>
-                    <p className="text-[11px] text-muted-foreground">Powered by Creator Armour AI</p>
-                  </div>
+              {/* Quick Actions */}
+              <div className="rounded-xl border border-border mb-4">
+                <div className="flex items-center gap-2 px-3 py-2 border-b border-border">
+                  <Sparkles className="w-4 h-4 text-muted-foreground" />
+                  <span className="text-sm font-medium">Quick Actions</span>
                 </div>
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-2 gap-2 p-2">
                   <Button 
                     variant="outline" 
-                    className="h-auto py-3 px-4 flex flex-col items-center gap-1.5 bg-card border-border hover:bg-secondary/50"
+                    className="h-auto py-2 px-3 flex items-center gap-2 bg-card border-border hover:bg-secondary/50"
                     onClick={() => {
                       toast.info("AI is analyzing your content...", {
                         description: "Fetching latest metrics and optimizing your bio."
@@ -2667,11 +2696,11 @@ const ProfileSettings = () => {
                     }}
                   >
                     <Sparkles className="w-4 h-4 text-secondary" />
-                    <span className="text-xs font-bold">Enhance Bio</span>
+                    <span className="text-xs font-medium">Enhance Bio</span>
                   </Button>
                   <Button 
                     variant="outline" 
-                    className="h-auto py-3 px-4 flex flex-col items-center gap-1.5 bg-card border-border hover:bg-secondary/50"
+                    className="h-auto py-2 px-3 flex items-center gap-2 bg-card border-border hover:bg-secondary/50"
                     onClick={() => {
                       toast.info("Scanning market rates...", {
                         description: "Calculating your optimal rate card."
@@ -2680,7 +2709,7 @@ const ProfileSettings = () => {
                     }}
                   >
                     <Zap className="w-4 h-4 text-warning" />
-                    <span className="text-xs font-bold">Smart Rates</span>
+                    <span className="text-xs font-medium">Smart Rates</span>
                   </Button>
                 </div>
               </div>

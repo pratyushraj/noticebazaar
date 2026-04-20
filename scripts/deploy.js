@@ -14,17 +14,18 @@ import { fileURLToPath } from 'url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-interface DeploymentConfig {
-  environment: 'development' | 'staging' | 'production';
-  buildCommand: string;
-  deployCommand: string;
-  domain: string;
-  cdn?: string;
-  monitoring?: boolean;
-  analytics?: boolean;
-}
+/** @type {object} */
+const DeploymentConfig = {
+  environment: '',
+  buildCommand: '',
+  deployCommand: '',
+  domain: '',
+  cdn: '',
+  monitoring: false,
+  analytics: false,
+};
 
-const deploymentConfigs: Record<string, DeploymentConfig> = {
+const deploymentConfigs = {
   development: {
     environment: 'development',
     buildCommand: 'npm run build',
@@ -55,7 +56,7 @@ const deploymentConfigs: Record<string, DeploymentConfig> = {
 
 class Deployer {
   private environment: string;
-  private config: DeploymentConfig;
+  private config: object;
 
   constructor(environment: string) {
     if (!deploymentConfigs[environment]) {
