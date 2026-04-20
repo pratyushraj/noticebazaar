@@ -2432,8 +2432,7 @@ const MobileDashboardDemo = ({
                                     {isSavingProfile ? 'Saving...' : 'Save Changes'}
                                 </motion.button>
                             )}
-                        </div>
-                    </motion.div>
+                        </motion.div>
                 );
             case 'portfolio':
                 return (
