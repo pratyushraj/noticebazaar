@@ -1,8 +1,8 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "buildCommand": "pnpm build",
+  "buildCommand": "NODE_ENV=development npm run build --include=dev",
   "outputDirectory": "dist",
-  "installCommand": "pnpm install",
+  "installCommand": "npm install --legacy-peer-deps --include=dev",
   "framework": "vite",
   "rewrites": [
     {
