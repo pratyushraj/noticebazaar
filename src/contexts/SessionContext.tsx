@@ -223,11 +223,13 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
         const handleData = await fetchOptionalProfileFields([
           'username',
           'instagram_handle',
+          'instagram_profile_photo',
         ]);
 
         if (Object.keys(handleData).length > 0) {
           usernameValue = (handleData as any)?.username || null;
           instagramHandleValue = (handleData as any)?.instagram_handle || null;
+          optionalFields.instagram_profile_photo = (handleData as any)?.instagram_profile_photo || null;
         }
       } catch (_error) {
         // Optional fields may not exist in older schemas.

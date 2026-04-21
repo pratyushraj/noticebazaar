@@ -610,6 +610,7 @@ const buildProfileFormData = (profile: any, userEmail?: string | null) => {
         // NEW: Discovery Media
         discovery_video_url: profile?.discovery_video_url || null,
         portfolio_videos: Array.isArray(profile?.portfolio_videos) ? profile.portfolio_videos : [],
+        instagram_profile_photo: profile?.instagram_profile_photo || profile?.avatar_url || null,
     };
 };
 
@@ -1651,6 +1652,7 @@ const MobileDashboardDemo = ({
                 bank_upi: profileFormData.bank_upi?.trim() || null,
                 discovery_video_url: profileFormData.discovery_video_url || null,
                 portfolio_videos: profileFormData.portfolio_videos || [],
+                instagram_profile_photo: profileFormData.instagram_profile_photo || null,
                 updated_at: new Date().toISOString(),
             };
 
@@ -2212,227 +2214,328 @@ const MobileDashboardDemo = ({
                                 ) : (
                                     <>Edit Profile</>
                                 )}
-                            </button>
-                        </div>
-
-
-                        <div className="px-5 space-y-4">
-                            {/* PROGRESS BAR */}
-                            {profileCompleteness < 100 && (
-                                <div className={cn("rounded-xl border p-3", isDark ? "bg-[#0B1324] border-white/10" : "bg-white border-slate-200")}>
-                                    <div className="flex items-center justify-between mb-2">
-                                        <span className={cn("text-sm font-semibold", isDark ? "text-white" : "text-slate-900")}>Profile {profileCompleteness}% complete</span>
-                                        <span className={cn("text-xs", isDark ? "text-slate-400" : "text-slate-500")}>+20% more deals</span>
+                                       <div className="px-5 space-y-7">
+                            {/* ── AVATAR UPLOAD ── */}
+                            <div className="flex flex-col items-center pt-2">
+                                <div className="relative group">
+                                    <div className={cn(
+                                        "w-32 h-32 rounded-[2.5rem] border-4 p-1 transition-all duration-500 overflow-hidden",
+                                        isDark ? "border-white/5 bg-slate-900 shadow-2xl shadow-black" : "border-white bg-white shadow-xl shadow-slate-200"
+                                    )}>
+                                        {profileFormData.instagram_profile_photo ? (
+                                            <img 
+                                                src={profileFormData.instagram_profile_photo} 
+                                                alt="Profile" 
+                                                className="w-full h-full object-cover rounded-[2rem]"
+                                            />
+                                        ) : (
+                                            <div className="w-full h-full rounded-[2rem] bg-gradient-to-br from-primary/10 to-primary/5 flex items-center justify-center">
+                                                <User className="w-12 h-12 text-primary opacity-40" />
+                                            </div>
+                                        )}
+                                        
+                                        {isEditMode && (
+                                            <button 
+                                                onClick={() => document.getElementById('avatar-input')?.click()}
+                                                className="absolute inset-0 bg-black/40 backdrop-blur-[2px] opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded-[2rem]"
+                                            >
+                                                <Camera className="w-8 h-8 text-white" />
+                                            </button>
+                                        )}
                                     </div>
-                                    <div className={cn("h-2 rounded-full overflow-hidden", isDark ? "bg-slate-800" : "bg-slate-100")}>
-                                        <div 
-                                            className="h-full bg-gradient-to-r from-blue-500 to-blue-600 transition-all duration-500"
-                                            style={{ width: `${profileCompleteness}%` }}
-                                        />
-                                    </div>
+                                    
+                                    {isEditMode && (
+                                        <motion.div 
+                                            initial={{ scale: 0 }}
+                                            animate={{ scale: 1 }}
+                                            className="absolute -right-2 -bottom-2 w-10 h-10 bg-primary text-white rounded-2xl flex items-center justify-center shadow-lg shadow-primary/30 border-2 border-white cursor-pointer active:scale-90 transition-transform"
+                                            onClick={() => document.getElementById('avatar-input')?.click()}
+                                        >
+                                            <Plus className="w-5 h-5" />
+                                        </motion.div>
+                                    )}
                                 </div>
-                            )}
+                                <input 
+                                    id="avatar-input"
+                                    type="file" 
+                                    accept="image/*"
+                                    className="hidden"
+                                    onChange={async (e) => {
+                                        const file = e.target.files?.[0];
+                                        if (!file) return;
+                                        try {
+                                            toast.loading('Uploading photo...');
+                                            const { publicUrl } = await uploadFile(file, userId, 'avatars');
+                                            setProfileFormData(p => ({ ...p, instagram_profile_photo: publicUrl }));
+                                            toast.dismiss();
+                                            toast.success('Photo uploaded!');
+                                            triggerHaptic();
+                                        } catch (err: any) {
+                                            toast.dismiss();
+                                            toast.error('Upload failed: ' + err.message);
+                                        }
+                                    }}
+                                />
+                                <div className="mt-4 text-center">
+                                    <h3 className={cn("text-xl font-black tracking-tight", textColor)}>{profileFormData.full_name || 'Anonymous User'}</h3>
+                                    <p className={cn("text-[11px] font-black uppercase tracking-[0.2em] opacity-40 mt-1", textColor)}>Verified Profile</p>
+                                </div>
+                            </div>
 
-                            {/* BASIC INFO */}
-                                <p className={cn("text-[10px] font-black uppercase tracking-[0.18em] px-1 mb-3", isDark ? "text-slate-400" : "text-slate-400")}>Basic Information</p>
-                                <div className={cn("rounded-[1.75rem] border overflow-hidden", isDark ? "bg-[#0B1324] border-white/5" : "bg-white border-slate-200 shadow-sm")}>
+                            {/* ── PROGRESS STATUS ── */}
+                            <div className={cn(
+                                "p-5 rounded-[2rem] border relative overflow-hidden transition-all duration-500",
+                                isDark ? "bg-[#0B1324] border-white/5 shadow-2xl shadow-black/20" : "bg-white border-slate-200/60 shadow-xl shadow-slate-100/50"
+                            )}>
+                                <div className="flex items-center justify-between mb-3">
+                                    <div className="flex items-center gap-2">
+                                        <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+                                        <p className={cn("text-[13px] font-black", textColor)}>Profile {profileCompleteness}% complete</p>
+                                    </div>
+                                    <p className={cn("text-[11px] font-black text-primary uppercase tracking-widest")}>+20% DEALS</p>
+                                </div>
+                                <div className={cn("h-3 rounded-full overflow-hidden p-0.5", isDark ? "bg-white/5" : "bg-slate-100")}>
+                                    <motion.div 
+                                        initial={{ width: 0 }}
+                                        animate={{ width: `${profileCompleteness}%` }}
+                                        className="h-full bg-gradient-to-r from-primary via-blue-400 to-primary rounded-full shadow-[0_0_15px_rgba(59,130,246,0.5)]"
+                                    />
+                                </div>
+                                
+                                <Sparkles className="absolute -right-6 -bottom-6 w-24 h-24 text-primary/5 rotate-12" />
+                            </div>
+
+                            {/* ── BASIC INFO ── */}
+                            <div>
+                                <p className={cn("text-[11px] font-black uppercase tracking-[0.2em] px-2 mb-4 opacity-40", textColor)}>1. Global Identity</p>
+                                <div className={cn(
+                                    "rounded-[2.25rem] border overflow-hidden p-2 space-y-1.5",
+                                    isDark ? "bg-[#0B1324] border-white/5 shadow-2xl shadow-black/20" : "bg-white border-slate-200/60 shadow-xl shadow-slate-100/50"
+                                )}>
                                     {/* Full Name */}
-                                    <div className={cn("flex items-center gap-4 px-5 py-4", isDark ? "border-b border-white/5" : "border-b border-slate-100")}>
-                                        <div className={cn("w-9 h-9 rounded-2xl flex items-center justify-center shrink-0", isDark ? "bg-violet-500/15" : "bg-violet-50")}>
-                                            <User className="w-4 h-4 text-violet-500" />
+                                    <div className={cn("flex items-center gap-4 px-4 py-4 rounded-[1.75rem] transition-colors", isDark ? "hover:bg-white/5" : "hover:bg-slate-50")}>
+                                        <div className={cn("w-10 h-10 rounded-2xl flex items-center justify-center shrink-0", isDark ? "bg-violet-500/15" : "bg-violet-50")}>
+                                            <User className="w-5 h-5 text-violet-500" />
                                         </div>
                                         <div className="flex-1 min-w-0">
-                                            <p className={cn("text-[10px] font-black uppercase tracking-widest mb-0.5", isDark ? "text-slate-500" : "text-slate-400")}>Full Name</p>
+                                            <p className={cn("text-[10px] font-black uppercase tracking-widest mb-1 opacity-50", textColor)}>Full Name</p>
                                             {isEditMode ? (
                                                 <input
-                                                    className={cn("w-full bg-transparent outline-none font-semibold text-[15px]", isDark ? "text-white placeholder-slate-600" : "text-slate-900 placeholder-slate-300")}
+                                                    className={cn("w-full bg-transparent outline-none font-black text-[15px] p-0 border-none focus:ring-0", textColor)}
                                                     value={profileFormData.full_name || ''}
                                                     placeholder="Your full name"
                                                     onChange={e => setProfileFormData((p: any) => ({ ...p, full_name: e.target.value }))}
                                                 />
                                             ) : (
-                                                <p className={cn("font-semibold text-[15px] truncate", isDark ? "text-white" : "text-slate-900")}>{profileFormData.full_name || <span className="opacity-30">Not set</span>}</p>
+                                                <p className={cn("font-black text-[15px] truncate", textColor)}>{profileFormData.full_name || <span className="opacity-20 font-bold italic">Not set</span>}</p>
                                             )}
                                         </div>
                                     </div>
+                                    
                                     {/* Email */}
-                                    <div className={cn("flex items-center gap-4 px-5 py-4", isDark ? "border-b border-white/5" : "border-b border-slate-100")}>
-                                        <div className={cn("w-9 h-9 rounded-2xl flex items-center justify-center shrink-0", isDark ? "bg-blue-500/15" : "bg-blue-50")}>
-                                            <Mail className="w-4 h-4 text-blue-500" />
+                                    <div className={cn("flex items-center gap-4 px-4 py-4 rounded-[1.75rem] transition-colors", isDark ? "hover:bg-white/5" : "hover:bg-slate-50")}>
+                                        <div className={cn("w-10 h-10 rounded-2xl flex items-center justify-center shrink-0", isDark ? "bg-blue-500/15" : "bg-blue-50")}>
+                                            <Mail className="w-5 h-5 text-blue-500" />
                                         </div>
                                         <div className="flex-1 min-w-0">
-                                            <p className={cn("text-[10px] font-black uppercase tracking-widest mb-0.5", isDark ? "text-slate-500" : "text-slate-400")}>Email</p>
-                                            <p className={cn("font-semibold text-[15px] truncate opacity-60", isDark ? "text-white" : "text-slate-900")}>{profileFormData.email || '—'}</p>
+                                            <p className={cn("text-[10px] font-black uppercase tracking-widest mb-1 opacity-50", textColor)}>Business Email</p>
+                                            <p className={cn("font-black text-[15px] truncate opacity-50", textColor)}>{profileFormData.email || '—'}</p>
                                         </div>
-                                        <span className={cn("text-[10px] font-bold px-2.5 py-1 rounded-lg shrink-0", isDark ? "bg-white/5 text-slate-400" : "bg-slate-100 text-slate-500")}>Locked</span>
+                                        <div className={cn("px-3 py-1.5 rounded-xl border flex items-center gap-2", isDark ? "bg-white/5 border-white/5" : "bg-slate-100 border-slate-200/50")}>
+                                            <LockIcon className="w-3 h-3 opacity-40" />
+                                            <span className={cn("text-[9px] font-black uppercase tracking-widest opacity-60", textColor)}>Secure</span>
+                                        </div>
                                     </div>
+
                                     {/* Phone */}
-                                    <div className="flex items-center gap-4 px-5 py-4">
-                                        <div className={cn("w-9 h-9 rounded-2xl flex items-center justify-center shrink-0", isDark ? "bg-emerald-500/15" : "bg-emerald-50")}>
-                                            <Phone className="w-4 h-4 text-emerald-500" />
+                                    <div className={cn("flex items-center gap-4 px-4 py-4 rounded-[1.75rem] transition-colors", isDark ? "hover:bg-white/5" : "hover:bg-slate-50")}>
+                                        <div className={cn("w-10 h-10 rounded-2xl flex items-center justify-center shrink-0", isDark ? "bg-emerald-500/15" : "bg-emerald-50")}>
+                                            <Phone className="w-5 h-5 text-emerald-500" />
                                         </div>
                                         <div className="flex-1 min-w-0">
-                                            <p className={cn("text-[10px] font-black uppercase tracking-widest mb-0.5", isDark ? "text-slate-500" : "text-slate-400")}>Phone</p>
+                                            <p className={cn("text-[10px] font-black uppercase tracking-widest mb-1 opacity-50", textColor)}>Phone Number</p>
                                             {isEditMode ? (
                                                 <input
                                                     inputMode="tel"
-                                                    className={cn("w-full bg-transparent outline-none font-semibold text-[15px]", isDark ? "text-white placeholder-slate-600" : "text-slate-900 placeholder-slate-300")}
+                                                    className={cn("w-full bg-transparent outline-none font-black text-[15px] p-0 border-none focus:ring-0", textColor)}
                                                     value={profileFormData.phone || ''}
                                                     placeholder="+91 XXXXX XXXXX"
                                                     onChange={e => setProfileFormData((p: any) => ({ ...p, phone: e.target.value }))}
                                                 />
                                             ) : (
-                                                <p className={cn("font-semibold text-[15px]", isDark ? "text-white" : "text-slate-900")}>{profileFormData.phone || <span className="opacity-30">Not set</span>}</p>
+                                                <p className={cn("font-black text-[15px]", textColor)}>{profileFormData.phone || <span className="opacity-20 font-bold italic">Not set</span>}</p>
                                             )}
                                         </div>
                                     </div>
                                 </div>
                             </div>
 
-                            {/* LOCATION */}
+                            {/* ── LOCATION ── */}
                             <div>
-                                <p className={cn("text-[10px] font-black uppercase tracking-[0.18em] px-1 mb-3", isDark ? "text-slate-400" : "text-slate-400")}>Location Details</p>
-                                <div className={cn("rounded-[1.75rem] border overflow-hidden", isDark ? "bg-[#0B1324] border-white/5" : "bg-white border-slate-200 shadow-sm")}>
-                                    {/* Street */}
-                                    <div className={cn("flex items-center gap-4 px-5 py-4", isDark ? "border-b border-white/5" : "border-b border-slate-100")}>
-                                        <div className={cn("w-9 h-9 rounded-2xl flex items-center justify-center shrink-0", isDark ? "bg-orange-500/15" : "bg-orange-50")}>
-                                            <MapPin className="w-4 h-4 text-orange-500" />
+                                <p className={cn("text-[11px] font-black uppercase tracking-[0.2em] px-2 mb-4 opacity-40", textColor)}>2. Shipping & Base</p>
+                                <div className={cn(
+                                    "rounded-[2.25rem] border overflow-hidden p-2 space-y-1.5",
+                                    isDark ? "bg-[#0B1324] border-white/5 shadow-2xl shadow-black/20" : "bg-white border-slate-200/60 shadow-xl shadow-slate-100/50"
+                                )}>
+                                    <div className={cn("flex items-center gap-4 px-4 py-4 rounded-[1.75rem] transition-colors", isDark ? "hover:bg-white/5" : "hover:bg-slate-50")}>
+                                        <div className={cn("w-10 h-10 rounded-2xl flex items-center justify-center shrink-0", isDark ? "bg-orange-500/15" : "bg-orange-50")}>
+                                            <MapPin className="w-5 h-5 text-orange-500" />
                                         </div>
                                         <div className="flex-1 min-w-0">
-                                            <p className={cn("text-[10px] font-black uppercase tracking-widest mb-0.5", isDark ? "text-slate-500" : "text-slate-400")}>Street Address</p>
+                                            <p className={cn("text-[10px] font-black uppercase tracking-widest mb-1 opacity-50", textColor)}>Full Address</p>
                                             {isEditMode ? (
                                                 <input
-                                                    className={cn("w-full bg-transparent outline-none font-semibold text-[15px]", isDark ? "text-white placeholder-slate-600" : "text-slate-900 placeholder-slate-300")}
+                                                    className={cn("w-full bg-transparent outline-none font-black text-[15px] p-0 border-none focus:ring-0", textColor)}
                                                     value={profileFormData.address || ''}
-                                                    placeholder="123 Main St"
+                                                    placeholder="123 Creator Lane, Studio B"
                                                     onChange={e => setProfileFormData((p: any) => ({ ...p, address: e.target.value }))}
                                                 />
                                             ) : (
-                                                <p className={cn("font-semibold text-[15px]", isDark ? "text-white" : "text-slate-900")}>{profileFormData.address || <span className="opacity-30">Not set</span>}</p>
+                                                <p className={cn("font-black text-[15px] truncate", textColor)}>{profileFormData.address || <span className="opacity-20 font-bold italic">Not set</span>}</p>
                                             )}
                                         </div>
                                     </div>
-                                    {/* City + Pincode side by side */}
-                                    <div className="flex">
-                                        <div className={cn("flex-1 px-5 py-4", isDark ? "border-r border-white/5" : "border-r border-slate-100")}>
-                                            <p className={cn("text-[10px] font-black uppercase tracking-widest mb-1", isDark ? "text-slate-500" : "text-slate-400")}>City</p>
+
+                                    <div className="flex gap-2">
+                                        <div className={cn("flex-1 px-4 py-4 rounded-[1.75rem] transition-colors animate-in slide-in-from-left-2 duration-300", isDark ? "bg-white/5" : "bg-slate-50")}>
+                                            <p className={cn("text-[10px] font-black uppercase tracking-widest mb-1 opacity-50", textColor)}>City</p>
                                             {isEditMode ? (
                                                 <input
-                                                    className={cn("w-full bg-transparent outline-none font-semibold text-[15px]", isDark ? "text-white placeholder-slate-600" : "text-slate-900 placeholder-slate-300")}
+                                                    className={cn("w-full bg-transparent outline-none font-black text-[15px] p-0 border-none focus:ring-0", textColor)}
                                                     value={profileFormData.city || ''}
                                                     placeholder="Mumbai"
                                                     onChange={e => setProfileFormData((p: any) => ({ ...p, city: e.target.value }))}
                                                 />
                                             ) : (
-                                                <p className={cn("font-semibold text-[15px]", isDark ? "text-white" : "text-slate-900")}>{profileFormData.city || <span className="opacity-30">—</span>}</p>
+                                                <p className={cn("font-black text-[15px] truncate", textColor)}>{profileFormData.city || '—'}</p>
                                             )}
                                         </div>
-                                        <div className="flex-1 px-5 py-4">
-                                            <p className={cn("text-[10px] font-black uppercase tracking-widest mb-1", isDark ? "text-slate-500" : "text-slate-400")}>Pincode</p>
+                                        <div className={cn("flex-1 px-4 py-4 rounded-[1.75rem] transition-colors animate-in slide-in-from-right-2 duration-300", isDark ? "bg-white/5" : "bg-slate-50")}>
+                                            <p className={cn("text-[10px] font-black uppercase tracking-widest mb-1 opacity-50", textColor)}>Pincode</p>
                                             {isEditMode ? (
                                                 <input
                                                     inputMode="numeric"
-                                                    className={cn("w-full bg-transparent outline-none font-semibold text-[15px]", isDark ? "text-white placeholder-slate-600" : "text-slate-900 placeholder-slate-300")}
+                                                    className={cn("w-full bg-transparent outline-none font-black text-[15px] p-0 border-none focus:ring-0", textColor)}
                                                     value={profileFormData.pincode || ''}
                                                     placeholder="400001"
                                                     onChange={e => setProfileFormData((p: any) => ({ ...p, pincode: e.target.value }))}
                                                 />
                                             ) : (
-                                                <p className={cn("font-semibold text-[15px]", isDark ? "text-white" : "text-slate-900")}>{profileFormData.pincode || <span className="opacity-30">—</span>}</p>
+                                                <p className={cn("font-black text-[15px] truncate", textColor)}>{profileFormData.pincode || '—'}</p>
                                             )}
                                         </div>
                                     </div>
                                 </div>
                             </div>
 
-                            {/* CREATOR PROFILE */}
+                            {/* ── CREATOR PROFILE ── */}
                             <div>
-                                <p className={cn("text-[10px] font-black uppercase tracking-[0.18em] px-1 mb-3", isDark ? "text-slate-400" : "text-slate-400")}>Creator Profile</p>
-                                <div className={cn("rounded-[1.75rem] border overflow-hidden", isDark ? "bg-[#0B1324] border-white/5" : "bg-white border-slate-200 shadow-sm")}>
+                                <p className={cn("text-[11px] font-black uppercase tracking-[0.2em] px-2 mb-4 opacity-40", textColor)}>3. Public Display</p>
+                                <div className={cn(
+                                    "rounded-[2.25rem] border overflow-hidden p-2 space-y-1.5 transition-all duration-500",
+                                    isDark ? "bg-[#0B1324] border-white/5 shadow-2xl shadow-black/20" : "bg-white border-slate-200/60 shadow-xl shadow-slate-100/50"
+                                )}>
                                     {/* Bio */}
-                                    <div className={cn("flex items-start gap-4 px-5 py-4", isDark ? "border-b border-white/5" : "border-b border-slate-100")}>
-                                        <div className={cn("w-9 h-9 rounded-2xl flex items-center justify-center shrink-0 mt-0.5", isDark ? "bg-pink-500/15" : "bg-pink-50")}>
-                                            <Edit3 className="w-4 h-4 text-pink-500" />
+                                    <div className={cn("flex items-start gap-4 px-4 py-4 rounded-[1.75rem] transition-all", isDark ? "hover:bg-white/5" : "hover:bg-slate-50")}>
+                                        <div className={cn("w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 mt-0.5", isDark ? "bg-pink-500/15" : "bg-pink-50")}>
+                                            <Edit3 className="w-5 h-5 text-pink-500" />
                                         </div>
                                         <div className="flex-1 min-w-0">
-                                            <p className={cn("text-[10px] font-black uppercase tracking-widest mb-1", isDark ? "text-slate-500" : "text-slate-400")}>Bio / Headline</p>
+                                            <p className={cn("text-[10px] font-black uppercase tracking-widest mb-1 opacity-50", textColor)}>Bio / Headline</p>
                                             {isEditMode ? (
                                                 <textarea
-                                                    className={cn("w-full bg-transparent outline-none font-semibold text-[15px] resize-none leading-relaxed", isDark ? "text-white placeholder-slate-600" : "text-slate-900 placeholder-slate-300")}
+                                                    className={cn("w-full bg-transparent outline-none font-black text-[15px] p-0 border-none focus:ring-0 resize-none leading-relaxed", textColor)}
                                                     rows={3}
                                                     value={profileFormData.bio || ''}
                                                     placeholder="Describe your content style..."
                                                     onChange={e => setProfileFormData((p: any) => ({ ...p, bio: e.target.value }))}
                                                 />
                                             ) : (
-                                                <p className={cn("font-semibold text-[15px] leading-relaxed", isDark ? "text-white" : "text-slate-900")}>{profileFormData.bio || <span className="opacity-30">Not set</span>}</p>
+                                                <p className={cn("font-black text-[15px] leading-relaxed", textColor)}>{profileFormData.bio || <span className="opacity-20 font-bold italic">Not set</span>}</p>
                                             )}
                                         </div>
                                     </div>
+
                                     {/* Instagram */}
-                                    <div className={cn("flex items-center gap-4 px-5 py-4", isDark ? "border-b border-white/5" : "border-b border-slate-100")}>
-                                        <div className={cn("w-9 h-9 rounded-2xl flex items-center justify-center shrink-0", isDark ? "bg-pink-500/15" : "bg-gradient-to-br from-pink-50 to-orange-50")}>
-                                            <Instagram className="w-4 h-4 text-pink-500" />
+                                    <div className={cn("flex items-center gap-4 px-4 py-4 rounded-[1.75rem] transition-all", isDark ? "hover:bg-white/5" : "hover:bg-slate-50")}>
+                                        <div className={cn("w-10 h-10 rounded-2xl flex items-center justify-center shrink-0", isDark ? "bg-pink-500/15" : "bg-gradient-to-br from-pink-50 via-pink-100 to-orange-50")}>
+                                            <Instagram className="w-5 h-5 text-pink-500" />
                                         </div>
                                         <div className="flex-1 min-w-0">
-                                            <p className={cn("text-[10px] font-black uppercase tracking-widest mb-0.5", isDark ? "text-slate-500" : "text-slate-400")}>Instagram</p>
+                                            <p className={cn("text-[10px] font-black uppercase tracking-widest mb-1 opacity-50", textColor)}>Instagram Handle</p>
                                             {isEditMode ? (
                                                 <div className="flex items-center gap-1">
-                                                    <span className={cn("font-bold text-[15px]", isDark ? "text-slate-400" : "text-slate-400")}>@</span>
+                                                    <span className="font-black text-[15px] opacity-20">@</span>
                                                     <input
-                                                        className={cn("flex-1 bg-transparent outline-none font-semibold text-[15px]", isDark ? "text-white placeholder-slate-600" : "text-slate-900 placeholder-slate-300")}
+                                                        className={cn("flex-1 bg-transparent outline-none font-black text-[15px] p-0 border-none focus:ring-0 text-pink-500", !isDark && "text-pink-600")}
                                                         value={profileFormData.instagram_handle?.replace('@', '') || ''}
                                                         placeholder="your.handle"
                                                         onChange={e => setProfileFormData((p: any) => ({ ...p, instagram_handle: e.target.value }))}
                                                     />
                                                 </div>
                                             ) : (
-                                                <p className={cn("font-semibold text-[15px]", isDark ? "text-white" : "text-slate-900")}>
-                                                    {profileFormData.instagram_handle ? `@${profileFormData.instagram_handle.replace('@', '')}` : <span className="opacity-30">Not linked</span>}
+                                                <p className={cn("font-black text-[15px] text-pink-500", !isDark && "text-pink-600")}>
+                                                    {profileFormData.instagram_handle ? `@${profileFormData.instagram_handle.replace('@', '')}` : <span className="opacity-20 font-bold italic">Not linked</span>}
                                                 </p>
                                             )}
                                         </div>
                                     </div>
+
                                     {/* Media Kit */}
-                                    <div className="flex items-center gap-4 px-5 py-4">
-                                        <div className={cn("w-9 h-9 rounded-2xl flex items-center justify-center shrink-0", isDark ? "bg-blue-500/15" : "bg-blue-50")}>
-                                            <Globe className="w-4 h-4 text-blue-500" />
+                                    <div className={cn("flex items-center gap-4 px-4 py-4 rounded-[1.75rem] transition-all", isDark ? "hover:bg-white/5" : "hover:bg-slate-50")}>
+                                        <div className={cn("w-10 h-10 rounded-2xl flex items-center justify-center shrink-0", isDark ? "bg-blue-500/15" : "bg-blue-50")}>
+                                            <Globe className="w-5 h-5 text-blue-500" />
                                         </div>
                                         <div className="flex-1 min-w-0">
-                                            <p className={cn("text-[10px] font-black uppercase tracking-widest mb-0.5", isDark ? "text-slate-500" : "text-slate-400")}>Media Kit URL</p>
+                                            <p className={cn("text-[10px] font-black uppercase tracking-widest mb-1 opacity-50", textColor)}>Media Kit / URL</p>
                                             {isEditMode ? (
                                                 <input
-                                                    placeholder="https://..."
-                                                    className={cn("w-full bg-transparent outline-none font-semibold text-[15px]", isDark ? "text-white placeholder-slate-600" : "text-slate-900 placeholder-slate-300")}
+                                                    className={cn("w-full bg-transparent outline-none font-black text-[15px] p-0 border-none focus:ring-0 text-blue-500", !isDark && "text-blue-600")}
                                                     value={profileFormData.media_kit_url || ''}
+                                                    placeholder="https://..."
                                                     onChange={e => setProfileFormData((p: any) => ({ ...p, media_kit_url: e.target.value }))}
                                                 />
                                             ) : (
-                                                <p className={cn("font-semibold text-[15px] truncate", isDark ? "text-white" : "text-slate-900")}>{profileFormData.media_kit_url || <span className="opacity-30">Not set</span>}</p>
+                                                <p className={cn("font-black text-[15px] truncate text-blue-500 underline underline-offset-4 decoration-current/30", !isDark && "text-blue-600")}>
+                                                    {profileFormData.media_kit_url || <span className="opacity-20 font-bold italic">Not set</span>}
+                                                </p>
                                             )}
                                         </div>
                                     </div>
                                 </div>
                             </div>
 
-                            {/* Save button (edit mode) */}
+                            {/* ── ACTION BUTTON ── */}
                             {isEditMode && (
-                                <motion.button
-                                    initial={{ opacity: 0, y: 8 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    type="button"
-                                    onClick={async () => { await handleSaveProfile(); setIsEditMode(false); }}
-                                    disabled={isSavingProfile}
-                                    className={cn(
-                                        "w-full py-4 rounded-[1.5rem] font-black text-[14px] tracking-wider flex items-center justify-center gap-2 active:scale-[0.98] transition-all shadow-lg",
-                                        isDark ? "bg-primary text-white shadow-primary/20" : "bg-emerald-600 text-white shadow-emerald-500/25"
-                                    )}
-                                >
-                                    {isSavingProfile ? <Loader2 className="w-4 h-4 animate-spin" /> : <ShieldCheck className="w-4 h-4" />}
-                                    {isSavingProfile ? 'Saving...' : 'Save Changes'}
-                                </motion.button>
+                                <div className="pt-4 pb-12">
+                                    <motion.button
+                                        initial={{ opacity: 0, y: 20 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        type="button"
+                                        onClick={async () => { await handleSaveProfile(); setIsEditMode(false); }}
+                                        disabled={isSavingProfile}
+                                        className={cn(
+                                            "w-full py-5 rounded-[22px] font-black text-[12px] tracking-[0.2em] uppercase flex items-center justify-center gap-3 transition-all duration-300 shadow-2xl group relative overflow-hidden",
+                                            isDark ? "bg-primary text-white shadow-primary/20" : "bg-gradient-to-br from-emerald-400 to-emerald-600 text-white shadow-emerald-500/30"
+                                        )}
+                                    >
+                                        <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                        {isSavingProfile ? (
+                                            <>
+                                                <Loader2 className="w-4 h-4 animate-spin text-white" />
+                                                <span>Finalizing...</span>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <ShieldCheck className="w-5 h-5 text-white" />
+                                                <span>Save All Changes</span>
+                                            </>
+                                        )}
+                                    </motion.button>
+                                </div>
                             )}
-                        </motion.div>
+                        </div>
+                    </motion.div>
                 );
             case 'portfolio':
                 return (
