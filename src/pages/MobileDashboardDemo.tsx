@@ -5531,7 +5531,7 @@ const MobileDashboardDemo = ({
                                                                     {renderBudgetValue(selectedItem)}
                                                                 </p>
                                                                 <p className={cn("text-[17px] font-bold mt-3 inline-flex items-center gap-2", textColor)}>
-                                                                    <div className="w-1.5 h-1.5 rounded-full bg-primary" />
+                                                                    <span className="w-1.5 h-1.5 rounded-full bg-primary inline-block" />
                                                                     {(() => {
                                                                         const raw = selectedItem?.deliverables || selectedItem?.raw?.deliverables;
                                                                         try {

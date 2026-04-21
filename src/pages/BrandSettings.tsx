@@ -196,38 +196,58 @@ export const BrandSettingsPanel = ({
     return Math.round((filled / total) * 100);
   }, [completionItems]);
 
-  /* ─── Seed form from profile once ── */
+  /* ─── Fetch and seed form from profile ── */
   useEffect(() => {
-    if (seededRef.current) return;
-    const seededName =
-      String(brandProfile?.business_name || '').trim() ||
-      [profile?.first_name, profile?.last_name].filter(Boolean).join(' ').trim();
-    if (seededName || brandProfile?.logo_url) {
-      setName(seededName);
-      setWebsite(brandProfile?.website_url || '');
-      setIndustry(brandProfile?.industry || '');
-      setDescription(brandProfile?.description || '');
-      setSocialLinks({
-        instagram: brandProfile?.instagram_handle || '',
-        whatsapp: brandProfile?.whatsapp_handle || '',
-      });
-      setTags(brandProfile?.content_niches || []);
-      setCurrentLogoUrl(brandProfile?.logo_url || null);
-      setLogoPreview(brandProfile?.logo_url || null);
-      baselineRef.current = { 
-        name: seededName, 
-        website: brandProfile?.website_url || '', 
-        industry: brandProfile?.industry || '', 
-        description: brandProfile?.description || '', 
-        logo: brandProfile?.logo_url || '',
-        instagram: brandProfile?.instagram_handle || '',
-        whatsapp: brandProfile?.whatsapp_handle || '',
-        tags: brandProfile?.content_niches || []
-      };
-      seededRef.current = true;
-    }
+    if (seededRef.current || !session?.access_token) return;
+
+    const fetchBrandProfile = async () => {
+      try {
+        const res = await fetch(`${apiBase}/api/brand-dashboard/profile`, {
+          headers: { Authorization: `Bearer ${session.access_token}` },
+        });
+        const json = await res.json().catch(() => ({}));
+        
+        if (res.ok && json?.success && json?.brand) {
+          const b = json.brand;
+          const seededName = b.name || String(brandProfile?.business_name || '').trim() || [profile?.first_name, profile?.last_name].filter(Boolean).join(' ').trim();
+          
+          setName(seededName);
+          setWebsite(b.website_url || '');
+          setIndustry(b.industry || '');
+          setDescription(b.description || '');
+          setSocialLinks({ instagram: b.instagram_handle || '', whatsapp: b.whatsapp_handle || '' });
+          setTags(b.content_niches || []);
+          setCurrentLogoUrl(b.logo_url || null);
+          setLogoPreview(b.logo_url || null);
+          
+          baselineRef.current = { 
+            name: seededName, 
+            website: b.website_url || '', 
+            industry: b.industry || '', 
+            description: b.description || '', 
+            logo: b.logo_url || '',
+            instagram: b.instagram_handle || '',
+            whatsapp: b.whatsapp_handle || '',
+            tags: b.content_niches || []
+          };
+          seededRef.current = true;
+        } else {
+          // Fallback if no brand data
+          const fallbackName = String(brandProfile?.business_name || '').trim() || [profile?.first_name, profile?.last_name].filter(Boolean).join(' ').trim();
+          if (fallbackName) {
+            setName(fallbackName);
+            baselineRef.current.name = fallbackName;
+            seededRef.current = true;
+          }
+        }
+      } catch (err) {
+        console.error('Failed to fetch brand profile:', err);
+      }
+    };
+
+    fetchBrandProfile();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [brandProfile?.id, brandProfile?.business_name]);
+  }, [session?.access_token, brandProfile?.id, brandProfile?.business_name]);
 
   /* ─── Dirty check ── */
   useEffect(() => {
