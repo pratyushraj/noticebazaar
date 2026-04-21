@@ -1602,10 +1602,10 @@ const MobileDashboardDemo = ({
     }, [profileFormData]);
 
     useEffect(() => {
-        if (profile) {
+        if (profile && !isSavingProfile) {
             setProfileFormData((prev: any) => ({ ...prev, ...buildProfileFormData(profile, user?.email || null) }));
         }
-    }, [profile, user?.email]);
+    }, [profile, user?.email, isSavingProfile]);
 
     const handleSaveProfile = async () => {
         if (!session?.user?.id) return;
