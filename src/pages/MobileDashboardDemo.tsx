@@ -2215,7 +2215,9 @@ const MobileDashboardDemo = ({
                                 ) : (
                                     <>Edit Profile</>
                                 )}
-                                       <div className="px-5 space-y-7">
+                            </button>
+
+                            <div className="px-5 space-y-7">
                             {/* ── AVATAR UPLOAD ── */}
                             <div className="flex flex-col items-center pt-2">
                                 <div className="relative group">
@@ -4085,7 +4087,7 @@ const MobileDashboardDemo = ({
                                                                         type="button"
                                                                         onClick={async (e) => {
                                                                             e.stopPropagation();
-                                                                            triggerHaptic(HapticPatterns.warning);
+                                                                            triggerHaptic(HapticPatterns.error);
                                                                             if (req?.isDemo) return;
                                                                             if (onDeclineRequest) { try { await onDeclineRequest(req); } catch { } }
                                                                         }}
@@ -5754,7 +5756,7 @@ const MobileDashboardDemo = ({
                                                             <button
                                                                 type="button"
                                                                 onClick={async () => {
-                                                                    triggerHaptic(HapticPatterns.warning);
+                                                                    triggerHaptic(HapticPatterns.error);
                                                                     if (selectedItem?.isDemo) {
                                                                         toast.message('This is a demo offer', { description: 'Decline is disabled for demo.' });
                                                                         return;
