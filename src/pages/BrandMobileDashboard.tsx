@@ -491,7 +491,10 @@ const BrandMobileDashboard = ({
   const activeTab: BrandTab =
     tabParam === 'dashboard' || tabParam === 'collabs' || tabParam === 'creators' || tabParam === 'profile' || tabParam === 'payments'
       ? (tabParam as BrandTab)
-      : initialTab;
+      : (initialTab === 'dashboard' || initialTab === 'collabs' || initialTab === 'creators' || initialTab === 'profile' || initialTab === 'payments'
+        ? (initialTab as BrandTab)
+        : 'dashboard');
+
 	  const activeCollabTab: BrandCollabTab = (() => {
 	    const raw = String(subtabParam || '').trim().toLowerCase();
 	    if (raw === 'pending' || raw === 'action_required' || raw === 'action-required' || raw === 'action') return 'action_required';
@@ -506,10 +509,11 @@ const BrandMobileDashboard = ({
 	    return params.get('debugSig') === '1';
 	  }, []);
 
-	  const setActiveTab = (tab: BrandTab, subtab?: BrandCollabTab) => {
+	  const setActiveTab = (tab: BrandTab | string, subtab?: BrandCollabTab) => {
 	    const next = new URLSearchParams(searchParams);
-	    next.set('tab', tab);
-	    if (tab === 'collabs') {
+      const safeTab = tab || 'dashboard';
+	    next.set('tab', safeTab);
+	    if (safeTab === 'collabs') {
       next.set('subtab', subtab || activeCollabTab || 'action_required');
     } else {
       next.delete('subtab');
@@ -598,9 +602,12 @@ const BrandMobileDashboard = ({
   useEffect(() => {
     // Sync activeTab with URL param on mount and whenever URL tab changes
     if (tabParam) {
-      setActiveTab(tabParam as BrandTab, tabParam === 'collabs' ? activeCollabTab : undefined);
+      // Avoid infinite loop if tabParam is already valid, but fix if it's "undefined" string
+      if (tabParam === 'undefined' || !['dashboard', 'collabs', 'creators', 'profile', 'payments'].includes(tabParam)) {
+        setActiveTab('dashboard');
+      }
     } else {
-      setActiveTab(initialTab, initialTab === 'collabs' ? activeCollabTab : undefined);
+      setActiveTab(activeTab); // Use the computed activeTab (which now has a fallback)
     }
   }, [tabParam]);
 
@@ -2344,7 +2351,7 @@ const BrandMobileDashboard = ({
                   <span className={cn('inline-flex items-center px-3 py-1.5 rounded-full border text-[11px] font-black uppercase tracking-widest', dealUi.tone)}>
                     {dealUi.label}
                   </span>
-                  <span className={cn('inline-flex px-3 py-1.5 rounded-full border text-[11px] font-black uppercase tracking-widest', offer?.collab_type === 'barter' ? (isDark ? 'bg-warning/10 text-warning border-warning/20' : 'bg-warning text-warning border-warning') : (isDark ? 'bg-primary/10 text-primary border-primary/20' : 'bg-primary text-primary border-primary'))}>
+                  <span className={cn('inline-flex px-3 py-1.5 rounded-full border text-[11px] font-black uppercase tracking-widest', offer?.collab_type === 'barter' ? (isDark ? 'bg-warning/10 text-warning border-warning/20' : 'bg-warning text-warning border-warning') : (isDark ? 'bg-primary/10 text-primary border-primary/20' : 'bg-primary/10 text-primary border-primary/20'))}>
                     {offer?.collab_type === 'barter' ? 'BARTER' : 'PAID CAMPAIGN'}
                   </span>
                 </div>
@@ -2512,7 +2519,7 @@ const BrandMobileDashboard = ({
 	                        ? 'READY'
 	                        : 'PENDING';
 	                  const badgeTone = isSignedStage
-	                    ? (isDark ? 'bg-primary/10 text-primary border-primary/20' : 'bg-primary text-primary border-primary')
+	                    ? (isDark ? 'bg-primary/10 text-primary border-primary/20' : 'bg-primary/10 text-primary border-primary/20')
 	                    : contractUrl
 	                      ? (isDark ? 'bg-info/10 text-info border-sky-500/20' : 'bg-info text-info border-sky-200')
 	                      : (isDark ? 'bg-warning/10 text-warning border-warning/20' : 'bg-warning text-warning border-warning');
@@ -2604,7 +2611,7 @@ const BrandMobileDashboard = ({
                     <span className={cn(
                       'px-3 py-1.5 rounded-full text-[11px] font-black uppercase tracking-wider border',
                       shippingDelivered
-                        ? (isDark ? 'bg-primary/10 text-primary border-primary/20' : 'bg-primary text-primary border-primary')
+                        ? (isDark ? 'bg-primary/10 text-primary border-primary/20' : 'bg-primary/10 text-primary border-primary/20')
                         : shippingStatus === 'shipped'
                           ? (isDark ? 'bg-info/10 text-info border-sky-500/20' : 'bg-info text-info border-sky-200')
                           : (isDark ? 'bg-warning/10 text-warning border-warning/20' : 'bg-warning text-warning border-warning')
@@ -2797,7 +2804,7 @@ const BrandMobileDashboard = ({
                               canReview
                                 ? (isDark ? 'bg-warning/10 text-warning border-warning/20' : 'bg-warning text-warning border-warning')
                                 : isCompleted
-                                  ? (isDark ? 'bg-primary/10 text-primary border-primary/20' : 'bg-primary text-primary border-primary')
+                                  ? (isDark ? 'bg-primary/10 text-primary border-primary/20' : 'bg-primary/10 text-primary border-primary/20')
                                   : isDisputed
                                     ? (isDark ? 'bg-rose-500/10 text-rose-200 border-rose-500/20' : 'bg-rose-50 text-rose-700 border-rose-200')
                                     : waitingRevision
@@ -2878,7 +2885,7 @@ const BrandMobileDashboard = ({
                               <span className={cn(
                                 'px-3 py-1.5 rounded-full text-[11px] font-black uppercase tracking-wider border',
                                 normalizedDealStatus === 'PAYMENT_RELEASED' || normalizedDealStatus === 'COMPLETED'
-                                  ? (isDark ? 'bg-primary/10 text-primary border-primary/20' : 'bg-primary text-primary border-primary')
+                                  ? (isDark ? 'bg-primary/10 text-primary border-primary/20' : 'bg-primary/10 text-primary border-primary/20')
                                   : (isDark ? 'bg-warning/10 text-warning border-warning/20' : 'bg-warning text-warning border-warning')
                               )}>
                                 {normalizedDealStatus === 'PAYMENT_RELEASED' || normalizedDealStatus === 'COMPLETED' ? 'RECORDED' : 'REQUIRED'}
@@ -4213,7 +4220,7 @@ const BrandMobileDashboard = ({
                                           {String(formatDeliverables(item) || item?.collab_type || 'Deliverables').replaceAll(',', ' • ')}
                                         </p>
 
-	                                        <div className={cn('rounded-2xl border px-3.5 py-2.5 mb-3 text-[11px] font-semibold', isDark ? 'bg-primary/10 text-primary border-primary/20' : 'bg-primary text-primary border-primary')}>
+	                                        <div className={cn('rounded-2xl border px-3.5 py-2.5 mb-3 text-[11px] font-semibold', isDark ? 'bg-primary/10 text-primary border-primary/20' : 'bg-primary/10 text-primary border-primary/20')}>
 	                                          <Landmark className="w-4 h-4 inline-block mr-2 -mt-0.5" />
 	                                          Payment released after content approval
 	                                        </div>
@@ -4742,7 +4749,7 @@ const BrandMobileDashboard = ({
 	                                  </div>
 	                                </div>
 
-	                                <div className={cn('rounded-2xl border px-3.5 py-2.5 mb-3 text-[11px] font-semibold', isDark ? 'bg-primary/10 text-primary border-primary/20' : 'bg-primary text-primary border-primary')}>
+	                                <div className={cn('rounded-2xl border px-3.5 py-2.5 mb-3 text-[11px] font-semibold', isDark ? 'bg-primary/10 text-primary border-primary/20' : 'bg-primary/10 text-primary border-primary/20')}>
 	                                  <Landmark className="w-4 h-4 inline-block mr-2 -mt-0.5" />
 	                                  Payment released after content approval
 	                                </div>
@@ -4908,84 +4915,25 @@ const BrandMobileDashboard = ({
 
               {activeTab === 'profile' && (
                 <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="pb-32">
-                  <div
-                    className={cn(
-                      'mb-5 p-5 rounded-[28px] border overflow-hidden relative',
-                      borderColor,
-                      isDark ? 'bg-secondary/[0.04]' : 'bg-secondary/80 backdrop-blur-xl shadow-[0_18px_45px_rgba(15,23,42,0.08)]'
-                    )}
-                  >
-                    <div className="absolute inset-0 pointer-events-none bg-background" />
-                    <div className="relative flex items-center gap-4">
-                      <Avatar className={cn('w-14 h-14 border shadow-sm', isDark ? 'border-border' : 'border-border')}>
-                        <AvatarImage src={brandLogo} alt={brandName} />
-                        <AvatarFallback>{brandName.slice(0, 1).toUpperCase()}</AvatarFallback>
-                      </Avatar>
-                      <div className="flex-1 min-w-0">
-                        <p className={cn('text-[18px] font-black tracking-tight truncate', textColor)}>{brandName}</p>
-                        <p className={cn('text-[12px] mt-1 opacity-60 truncate', textColor)}>Brand account</p>
-                        <div className="flex flex-wrap gap-2 mt-3">
-                          <span className={cn('inline-flex items-center px-3 py-1.5 rounded-full border text-[10px] font-black uppercase tracking-widest', isDark ? 'border-border bg-card text-foreground/70' : 'border-slate-200 bg-white text-slate-600')}>
-                            Verified Business
-                          </span>
-                          <span className={cn('inline-flex items-center px-3 py-1.5 rounded-full border text-[10px] font-black uppercase tracking-widest transition-colors', isDark ? 'border-primary/20 bg-primary/10 text-primary' : 'border-primary bg-primary text-white')}>
-                            Protected by Creator Armour
-                          </span>
-                          {!hasUploadedBrandLogo && (
-                            <span className={cn('inline-flex items-center px-3 py-1.5 rounded-full border text-[10px] font-black uppercase tracking-widest', isDark ? 'border-warning/30 bg-warning/15 text-warning' : 'bg-amber-50 border-amber-200 text-amber-700')}>
-                              ⚠️ Logo required
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-
-                    {!hasUploadedBrandLogo && (
-                      <div className={cn('relative mt-4 p-3 rounded-2xl border flex items-center justify-between gap-3', isDark ? 'bg-warning/10 border-warning/20' : 'bg-amber-50 border-amber-200')}>
-                        <div className="min-w-0">
-                          <p className={cn('text-[12px] font-bold', textColor)}>Upload your logo to send offers</p>
-                          <p className={cn('text-[11px] mt-0.5 opacity-70', textColor)}>Creators respond faster when they recognize you.</p>
-                        </div>
-	                        <button
-	                          type="button"
-	                          onClick={() => navigate('/brand-settings')}
-	                          className={cn('px-4 py-2 rounded-2xl text-[11px] font-black uppercase tracking-widest whitespace-nowrap', isDark ? 'bg-secondary/50 text-foreground hover:bg-secondary/15' : 'bg-card text-muted-foreground border border-warning')}
-	                        >
-                          Upload logo
-                        </button>
-                      </div>
-                    )}
-                  </div>
-
                   {(() => {
-                    const pendingNeedsAction = pendingOffersList.filter((r: any) => normalizeStatus(r?.status) === 'countered').length;
-                    const activeNeedsAction = activeDealsList.filter((d: any) => brandDealCardUi(d).needsAction).length;
+                    const pendingNeedsAction = (pendingOffersList || []).filter((r: any) => normalizeStatus(r?.status) === 'countered').length;
+                    const activeNeedsAction = (activeDealsList || []).filter((d: any) => brandDealCardUi(d).needsAction).length;
                     const needsActionTotal = pendingNeedsAction + activeNeedsAction;
-	                    const contentPendingReview = activeDealsList.filter((d: any) => {
-                        const s = effectiveDealStatus(d);
-                        return s === 'CONTENT_DELIVERED' || s === 'REVISION_DONE';
-                      }).length;
+                    const contentPendingReview = (activeDealsList || []).filter((d: any) => {
+                      const s = effectiveDealStatus(d);
+                      return s === 'CONTENT_DELIVERED' || s === 'REVISION_DONE';
+                    }).length;
+
                     return (
-                      <div className="grid grid-cols-3 gap-2 mb-6">
-                        {[
-                          { label: 'Active', value: activeDealsList.length, tone: 'neutral' },
-                          { label: 'Need action', value: needsActionTotal, tone: needsActionTotal > 0 ? 'warn' : 'neutral' },
-                          { label: 'Review', value: contentPendingReview, tone: contentPendingReview > 0 ? 'warn' : 'neutral' },
-                        ].map((item) => (
-                          <div key={item.label} className={cn('p-3 rounded-[20px] border', cardBgColor, borderColor)}>
-                            <p className={cn('text-[10px] font-black uppercase tracking-[0.16em] opacity-45', textColor)}>{item.label}</p>
-                            <p className={cn('text-[18px] font-black tracking-tight mt-2', item.tone === 'warn' ? (isDark ? 'text-warning' : 'text-warning') : textColor)}>
-                              {item.value}
-                            </p>
-                          </div>
-                        ))}
-                      </div>
+                      <BrandSettingsPanel 
+                        embedded 
+                        onLogout={() => { void onLogout?.(); }} 
+                        activeCount={activeDealsList?.length || 0}
+                        neededActionCount={needsActionTotal}
+                        reviewCount={contentPendingReview}
+                      />
                     );
                   })()}
-
-                    <motion.div key="settings-panel" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
-                      <BrandSettingsPanel embedded onLogout={() => { void onLogout?.(); }} />
-                    </motion.div>
                 </motion.div>
               )}
 

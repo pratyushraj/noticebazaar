@@ -23,6 +23,8 @@ interface AccountTabProps {
 
 export const AccountTab: React.FC<AccountTabProps> = ({
     isDark,
+    textColor,
+    secondaryTextColor,
     profile,
     username,
     avatarUrl,
@@ -50,8 +52,8 @@ export const AccountTab: React.FC<AccountTabProps> = ({
 
             {/* Header */}
             <div className="mb-8 relative z-10">
-                <h1 className={cn("text-3xl font-black tracking-tight", isDark ? "text-white" : "text-slate-900")}>Account</h1>
-                <p className={cn("text-sm font-medium", isDark ? "text-slate-400" : "text-slate-500")}>Manage your professional identity</p>
+                <h1 className={cn("text-4xl font-black italic uppercase tracking-tighter", isDark ? "text-white" : "text-slate-900")}>Account</h1>
+                <p className={cn("text-[11px] font-black uppercase tracking-[0.2em] mt-1.5 opacity-40 leading-tight", textColor)}>Manage your professional identity</p>
             </div>
 
             {/* Profile Hero Card */}
@@ -79,7 +81,7 @@ export const AccountTab: React.FC<AccountTabProps> = ({
                     </div>
                     <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-0.5">
-                            <h2 className={cn("text-lg font-bold tracking-tight", isDark ? "text-white" : "text-slate-900")}>
+                            <h2 className={cn("text-[20px] font-black tracking-tight", isDark ? "text-white" : "text-slate-900")}>
                                 {profile?.first_name || username || 'Creator'}
                             </h2>
                             <span className={cn(
@@ -96,13 +98,13 @@ export const AccountTab: React.FC<AccountTabProps> = ({
 
                 <div className="flex items-center justify-between px-2">
                     <div className="text-center">
-                        <p className={cn("text-xl font-bold", isDark ? "text-white" : "text-slate-900")}>307M</p>
-                        <p className={cn("text-[10px] font-bold uppercase tracking-widest", isDark ? "text-slate-400" : "text-slate-500")}>Followers</p>
+                        <p className={cn("text-2xl font-black tracking-tighter", isDark ? "text-white" : "text-slate-900")}>307M</p>
+                        <p className={cn("text-[10px] font-black uppercase tracking-widest opacity-40", isDark ? "text-slate-400" : "text-slate-500")}>Followers</p>
                     </div>
                     <div className={cn("w-[1px] h-8", isDark ? "bg-white/10" : "bg-slate-100")} />
                     <div className="text-center">
-                        <p className={cn("text-xl font-bold", isDark ? "text-white" : "text-slate-900")}>3h</p>
-                        <p className={cn("text-[10px] font-bold uppercase tracking-widest", isDark ? "text-slate-400" : "text-slate-500")}>Response</p>
+                        <p className={cn("text-2xl font-black tracking-tighter", isDark ? "text-white" : "text-slate-900")}>3h</p>
+                        <p className={cn("text-[10px] font-black uppercase tracking-widest opacity-40", isDark ? "text-slate-400" : "text-slate-500")}>Response</p>
                     </div>
                 </div>
             </motion.div>

@@ -3,7 +3,7 @@
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { motion } from 'framer-motion';
-import { Briefcase, CreditCard, Clock, ArrowUpRight } from 'lucide-react';
+import { Briefcase, CreditCard, Clock, ArrowUpRight, TrendingUp } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface DashboardMetricsCardsProps {
@@ -12,6 +12,7 @@ interface DashboardMetricsCardsProps {
   outstandingPayments?: number;
   avgDealDuration?: number;
   isDark?: boolean;
+  textColor?: string;
 }
 
 const DashboardMetricsCards: React.FC<DashboardMetricsCardsProps> = ({
@@ -20,117 +21,113 @@ const DashboardMetricsCards: React.FC<DashboardMetricsCardsProps> = ({
   outstandingPayments = 0,
   avgDealDuration = 0,
   isDark = true,
+  textColor = '',
 }) => {
   const metrics = [
     {
       id: 'revenue',
-      label: 'Total Deal Value',
-      value: `₹${(totalDealValue / 100000).toFixed(1)}L`,
+      label: 'Total Revenue',
+      value: `₹${(totalDealValue / 1000).toFixed(1)}K`,
       icon: CreditCard,
-      gradient: 'from-emerald-600 to-teal-600',
-      bgGradient: 'from-emerald-500/10 to-teal-500/10',
-      borderColor: 'border-primary/20',
+      gradient: 'from-blue-600 to-indigo-600',
+      bgGradient: 'from-blue-500/5 to-indigo-500/5',
+      borderColor: 'border-blue-500/20',
       trend: '+12%',
-      trendColor: 'text-primary',
     },
     {
       id: 'active',
       label: 'Active Deals',
       value: `${activeDealCount}`,
       icon: Briefcase,
-      gradient: 'from-blue-600 to-cyan-600',
-      bgGradient: 'from-blue-500/10 to-cyan-500/10',
-      borderColor: 'border-info/20',
+      gradient: 'from-emerald-600 to-teal-600',
+      bgGradient: 'from-emerald-500/5 to-teal-500/5',
+      borderColor: 'border-emerald-500/20',
       trend: '+3',
-      trendColor: 'text-info',
     },
     {
       id: 'pending',
-      label: 'Outstanding Payments',
-      value: `₹${(outstandingPayments / 100000).toFixed(1)}L`,
-      icon: CreditCard,
-      gradient: 'from-amber-600 to-orange-600',
-      bgGradient: 'from-amber-500/10 to-orange-500/10',
-      borderColor: 'border-warning/20',
-      trend: '−5%',
-      trendColor: 'text-warning',
+      label: 'Outstanding',
+      value: `₹${(outstandingPayments / 1000).toFixed(1)}K`,
+      icon: TrendingUp,
+      gradient: 'from-orange-600 to-rose-600',
+      bgGradient: 'from-orange-500/5 to-rose-500/5',
+      borderColor: 'border-orange-500/20',
+      trend: '−₹2K',
     },
     {
       id: 'duration',
-      label: 'Avg Deal Duration',
+      label: 'Avg Duration',
       value: `${avgDealDuration}d`,
       icon: Clock,
       gradient: 'from-purple-600 to-pink-600',
-      bgGradient: 'from-purple-500/10 to-pink-500/10',
+      bgGradient: 'from-purple-500/5 to-pink-500/5',
       borderColor: 'border-purple-500/20',
       trend: '−2d',
-      trendColor: 'text-secondary',
     },
   ];
 
   return (
-    <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+    <div className="grid grid-cols-2 gap-3.5 sm:grid-cols-4">
       {metrics.map((metric, idx) => {
         const Icon = metric.icon;
         return (
           <motion.div
             key={metric.id}
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: idx * 0.08, duration: 0.4 }}
-            whileHover={{ y: -4 }}
+            transition={{ delay: idx * 0.05, duration: 0.5 }}
           >
             <Card
               className={cn(
-                'relative overflow-hidden border transition-all duration-300 h-full',
+                'relative overflow-hidden border-0 transition-all duration-500 h-[110px] group active:scale-[0.98]',
                 isDark
-                  ? `bg-gradient-to-br ${metric.bgGradient} ${metric.borderColor} backdrop-blur-sm`
-                  : 'bg-card border-border shadow-sm'
+                  ? `bg-[#0B1220] border-[#223046] shadow-[0_10px_30px_rgb(0,0,0,0.2)]`
+                  : 'bg-white border-slate-200/60 shadow-[0_8px_30px_rgb(0,0,0,0.04)]'
               )}
             >
-              {/* Animated background accent */}
+              {/* Subtle top-left gradient glow */}
               <div className={cn(
-                'absolute top-0 right-0 w-20 h-20 opacity-10 group-hover:opacity-20 transition-opacity',
+                'absolute -top-4 -left-4 w-12 h-12 blur-2xl opacity-20',
                 `bg-gradient-to-br ${metric.gradient}`
               )} />
 
-              <CardContent className="p-4 relative z-10">
-                <div className="flex items-start justify-between mb-3">
+              <CardContent className="p-4 h-full flex flex-col justify-between relative z-10">
+                <div className="flex items-start justify-between">
                   <div className={cn(
-                    'p-2.5 rounded-lg backdrop-blur-sm',
-                    isDark ? `bg-${metric.gradient.split('-')[0]}-500/20` : 'bg-background'
+                    'w-8 h-8 rounded-xl flex items-center justify-center transition-transform duration-500 group-hover:scale-110 shadow-sm',
+                    isDark ? `bg-gradient-to-br ${metric.gradient} text-white` : 'bg-slate-50 text-slate-600 border border-slate-100'
                   )}>
-                    <Icon className={cn('w-4 h-4', isDark ? 'text-foreground' : 'text-muted-foreground')} />
+                    <Icon className="w-4 h-4" strokeWidth={2.5} />
                   </div>
-                  <span className={cn(
-                    'text-xs font-bold flex items-center gap-1',
-                    metric.trendColor
+                  <div className={cn(
+                    "px-1.5 py-0.5 rounded-lg text-[9px] font-black flex items-center gap-0.5",
+                    idx === 2 || idx === 3 ? (isDark ? "bg-rose-500/10 text-rose-400" : "bg-rose-50 text-rose-600") : (isDark ? "bg-emerald-500/10 text-emerald-400" : "bg-emerald-50 text-emerald-600")
                   )}>
-                    <ArrowUpRight className="w-3 h-3" />
+                    <ArrowUpRight className={cn("w-2.5 h-2.5", idx >= 2 ? "rotate-90" : "")} />
                     {metric.trend}
-                  </span>
+                  </div>
                 </div>
 
-                <div className="space-y-1">
+                <div className="mt-2">
                   <p className={cn(
-                    'text-xs font-medium opacity-60',
-                    isDark ? 'text-foreground' : 'text-muted-foreground'
+                    'text-[10px] font-black uppercase tracking-[0.12em] opacity-40 mb-0.5',
+                    textColor
                   )}>
                     {metric.label}
                   </p>
                   <h3 className={cn(
-                    'text-lg sm:text-xl font-bold tracking-tight',
-                    isDark ? 'text-foreground' : 'text-muted-foreground'
+                    'text-xl font-black tracking-tight leading-none',
+                    isDark ? 'text-white' : 'text-slate-900'
                   )}>
                     {metric.value}
                   </h3>
                 </div>
 
-                {/* Progress indicator bar */}
+                {/* Animated progress accent bottom line */}
                 <div className={cn(
-                  'absolute bottom-0 left-0 h-1 bg-gradient-to-r',
+                  'absolute bottom-0 left-0 h-0.5 bg-gradient-to-r opacity-30',
                   metric.gradient
-                )} style={{ width: '45%' }} />
+                )} style={{ width: '100%' }} />
               </CardContent>
             </Card>
           </motion.div>

@@ -5,7 +5,7 @@ import { trackEvent } from '@/lib/utils/analytics';
 import { DashboardEmptyState } from '../components/dashboard/EmptyState';
 import { PaymentsTab } from '../components/dashboard/PaymentsTab';
 import { AccountTab } from '../components/dashboard/AccountTab';
-import { User, Search, ShieldCheck, Handshake, Camera, Plus, LayoutDashboard, CreditCard, Briefcase, Menu, Instagram, Target, Dumbbell, Shirt, Sun, Moon, RefreshCw, Loader2, Bell, ChevronRight, Zap, Rocket, Link2, CheckCircle2, Download, Clock, Info, Globe, Star, LogOut, Copy, Share2, QrCode, Eye, MoreHorizontal, Landmark, FileText, Smartphone, TrendingUp, BarChart3, Mail, Phone, MessageCircle, MessageSquare, Edit3, Send, X, XCircle, ExternalLink, AlertCircle, AlertTriangle, ArrowRight, Package, Flag, MapPin, Languages, Lock as LockIcon, ArrowUpRight, Wallet, HelpCircle, Sparkles, Youtube, Twitter, Heart, Trash2, Smartphone as SmartphoneIcon, Users, Calendar, ShoppingBag, Video, BookOpen, GraduationCap, Laugh, Coffee, Layers, Flame, Clapperboard, BadgeCheck } from 'lucide-react';
+import { Tag, User, Search, ShieldCheck, Handshake, Camera, Plus, LayoutDashboard, CreditCard, Briefcase, Menu, Instagram, Target, Dumbbell, Shirt, Sun, Moon, RefreshCw, Loader2, Bell, ChevronRight, Zap, Rocket, Link2, CheckCircle2, Download, Clock, Info, Globe, Star, LogOut, Copy, Share2, QrCode, Eye, MoreHorizontal, Landmark, FileText, Smartphone, TrendingUp, BarChart3, Mail, Phone, MessageCircle, MessageSquare, Edit3, Send, X, XCircle, ExternalLink, AlertCircle, AlertTriangle, ArrowRight, Package, Flag, MapPin, Languages, Lock as LockIcon, ArrowUpRight, Wallet, HelpCircle, Sparkles, Youtube, Twitter, Heart, Trash2, Smartphone as SmartphoneIcon, Users, Calendar, ShoppingBag, Video, BookOpen, GraduationCap, Laugh, Coffee, Layers, Flame, Clapperboard, BadgeCheck } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useSignOut } from '@/lib/hooks/useAuth';
@@ -485,27 +485,28 @@ const SettingsRow = ({ icon, label, subtext, iconColorClass, hasChevron, isDark,
     <div
         onClick={onClick}
         className={cn(
-            "flex items-center gap-4 py-4 px-4 active:opacity-60 transition-all cursor-pointer group",
+            "flex items-center gap-4 py-4 px-5 active:opacity-60 transition-all cursor-pointer group",
             isDark ? "hover:bg-white/5 active:bg-white/10" : "hover:bg-slate-50 active:bg-slate-100"
         )}
     >
         <div className={cn("w-6 h-6 flex items-center justify-center shrink-0", iconColorClass)}>
-            {React.cloneElement(icon, { size: 20, strokeWidth: 1.5 })}
+            {icon && React.cloneElement(icon, { size: 20, strokeWidth: 1.5 })}
         </div>
         <div className="flex-1 min-w-0">
             <p className={cn("text-[15px] font-bold leading-tight", isDark ? "text-white" : "text-[#111827]", labelClassName)}>{label}</p>
-            {subtext && <p className={cn("text-[12.5px] font-medium leading-tight mt-1 opacity-70", isDark ? "text-white/80" : "text-[#6B7280]")}>{subtext}</p>}
+            {subtext && <p className={cn("text-[12px] font-medium leading-tight mt-1 opacity-70", isDark ? "text-white/80" : "text-[#6B7280]")}>{subtext}</p>}
         </div>
         {rightElement}
-        {hasChevron && !rightElement && <ChevronRight className={cn("w-5 h-5", isDark ? "text-[#5C5E64]" : "text-slate-400")} />}
+        {hasChevron && !rightElement && <ChevronRight className={cn("w-5 h-5 opacity-30", isDark ? "text-white" : "text-slate-400")} />}
     </div>
 );
 
-const SettingsGroup = ({ children, isDark }: any) => (
+const SettingsGroup = ({ children, isDark, className }: any) => (
     <div className={cn(
-        "mx-5 overflow-hidden rounded-xl border mb-6",
-        isDark ? "bg-[#1B1D23] border-[#2B2D33] divide-[#2B2D33]" : "bg-white border-[#E5E7EB] divide-[#E5E7EB] shadow-[0_1px_2px_rgba(0,0,0,0.02)]",
-        "divide-y"
+        "mx-5 overflow-hidden rounded-[2.5rem] border mb-6",
+        isDark ? "bg-[#0b1324]/40 border-white/10 divide-white/5 shadow-2xl shadow-black/20" : "bg-white border-slate-100 divide-slate-50 shadow-xl shadow-slate-200/40",
+        "divide-y backdrop-blur-xl",
+        className
     )}>
         {children}
     </div>
@@ -513,8 +514,8 @@ const SettingsGroup = ({ children, isDark }: any) => (
 
 const SectionHeader = ({ title, isDark }: any) => (
     <p className={cn(
-        "px-6 mb-2 mt-4 text-[11px] font-black uppercase tracking-[0.08em] opacity-80",
-        isDark ? "text-white/60" : "text-[#6B7280]"
+        "px-6 mb-3 mt-8 text-[11px] font-black uppercase tracking-[0.25em] opacity-80",
+        isDark ? "text-white/30" : "text-slate-400"
     )}>
         {title}
     </p>
@@ -524,13 +525,13 @@ const ToggleSwitch = ({ active, onToggle, isDark }: any) => (
     <button type="button"
         onClick={(e) => { e.stopPropagation(); onToggle(); }}
         className={cn(
-            "w-[42px] h-[24px] rounded-full relative transition-colors duration-200 ease-in-out px-0.5",
-            active ? "bg-[#10B981]" : (isDark ? "bg-[#39393D]" : "bg-[#E5E7EB]")
+            "w-[44px] h-[26px] rounded-full relative transition-all duration-300 ease-in-out px-1 flex items-center shadow-inner",
+            active ? (isDark ? "bg-primary" : "bg-primary") : (isDark ? "bg-white/10" : "bg-slate-200")
         )}
     >
         <motion.div
-            animate={{ x: active ? 18 : 0 }}
-            className="w-5 h-5 bg-white rounded-full shadow-sm"
+            animate={{ x: active ? 18 : 0, scale: active ? 1.05 : 1 }}
+            className="w-5 h-5 bg-white rounded-full shadow-[0_2px_4px_rgba(0,0,0,0.2)]"
         />
     </button>
 );
@@ -637,6 +638,9 @@ const MobileDashboardDemo = ({
     const queryClient = useQueryClient();
     const signOutMutation = useSignOut();
     const updateDealProgress = useUpdateDealProgress();
+    const { session, user, refetchProfile } = useSession();
+    const userId = user?.id || session?.user?.id || '';
+    
     const {
         isSupported: isPushSupported,
         permission: pushPermission,
@@ -1576,8 +1580,6 @@ const MobileDashboardDemo = ({
         // Keep node for the app lifetime to avoid iOS unmount race conditions.
     }, []);
 
-    const { session, user, refetchProfile } = useSession();
-    const userId = user?.id || session?.user?.id || '';
 
     const triggerHaptic = (pattern: any = HapticPatterns.light) => {
         globalTriggerHaptic(pattern);
@@ -2088,6 +2090,9 @@ const MobileDashboardDemo = ({
                 else if (nameLower.includes('lenskart')) color = 'bg-gradient-to-br from-emerald-600 to-teal-700';
                 else if (nameLower.includes('nykaa')) color = 'bg-gradient-to-br from-pink-600 to-rose-700';
                 else if (nameLower.includes('mamaearth')) color = 'bg-gradient-to-br from-teal-600 to-cyan-700';
+                else if (nameLower.includes('mellow')) color = 'bg-gradient-to-br from-orange-400 to-amber-600';
+                else if (nameLower.includes('zomato')) color = 'bg-gradient-to-br from-rose-500 to-red-600';
+                else if (nameLower.includes('swiggy')) color = 'bg-gradient-to-br from-orange-500 to-orange-600';
                 else if (char >= 'A' && char <= 'E') color = 'bg-gradient-to-br from-violet-500 to-purple-600';
                 else if (char >= 'F' && char <= 'J') color = 'bg-gradient-to-br from-blue-500 to-blue-600';
                 else if (char >= 'K' && char <= 'O') color = 'bg-gradient-to-br from-emerald-500 to-teal-600';
@@ -2126,19 +2131,24 @@ const MobileDashboardDemo = ({
         if (safeLogo) {
             const isSvg = /\.svg(\?|#|$)/i.test(safeLogo);
             return (
-                <div className="relative w-full h-full flex items-center justify-center">
-                    {isSvg && (
-                        <div className={cn("absolute inset-0 z-0", isDark ? "bg-secondary/90" : "bg-card")} />
-                    )}
-                    <img alt=""
+                <div className="relative w-full h-full flex items-center justify-center overflow-hidden rounded-inherit">
+                    <img 
+                        alt=""
                         src={proxiedLogo}
-                        className="w-full h-full object-contain absolute inset-0 z-10 p-1"
+                        className="w-full h-full object-contain absolute inset-0 z-10 p-1.5 transition-opacity duration-300"
                         loading="lazy"
                         decoding="async"
                         referrerPolicy="no-referrer"
-                        onError={(e) => { (e.currentTarget as HTMLElement).style.display = 'none'; }}
+                        onError={(e) => { 
+                            const target = e.currentTarget as HTMLElement;
+                            target.style.opacity = '0';
+                            // Wait a moment before completely hiding to avoid flicker
+                            setTimeout(() => { target.style.display = 'none'; }, 100);
+                        }}
                     />
-                    {fallback(category || '', name)}
+                    <div className="absolute inset-0 z-0">
+                        {fallback(category || '', name)}
+                    </div>
                 </div>
             );
         }
@@ -2171,12 +2181,12 @@ const MobileDashboardDemo = ({
             case 'personal':
                 return (
                     <motion.div
-                        initial={{ opacity: 0, x: 20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        exit={{ opacity: 0, x: 20 }}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
                         className="pb-36 touch-pan-y"
                     >
-                        <div className="px-6 pt-16 pb-8 flex items-center justify-between">
+                        <div className="px-6 pt-16 pb-2 flex items-center justify-between">
                             <div className="flex items-center gap-4">
                                 <motion.button
                                     whileTap={{ scale: 0.9 }}
@@ -2219,72 +2229,90 @@ const MobileDashboardDemo = ({
                         </div>
 
                         <div className="px-5 space-y-7">
-                            {/* ── AVATAR UPLOAD ── */}
-                            <div className="flex flex-col items-center pt-2">
+                        <div className="relative mb-8 pt-4">
+                            <div className={cn(
+                                "relative h-36 rounded-[3rem] overflow-hidden mb-[-50px] z-0 px-8 py-6 flex flex-col justify-end",
+                                isDark ? "bg-[#0b1324]/60 border border-white/5" : "bg-gradient-to-br from-primary/10 to-blue-500/5 border border-slate-200"
+                            )}>
+                                <div className="absolute inset-0 opacity-20 filter blur-3xl mix-blend-overlay animate-pulse bg-primary" />
+                                <p className={cn("relative z-10 text-[10px] font-black uppercase tracking-[0.3em] mb-1 opacity-40", textColor)}>
+                                    Profile Identity
+                                </p>
+                            </div>
+
+                            <div className="relative px-8 flex items-end gap-6 z-10">
                                 <div className="relative group">
                                     <div className={cn(
-                                        "w-32 h-32 rounded-[2.5rem] border-4 p-1 transition-all duration-500 overflow-hidden",
-                                        isDark ? "border-white/5 bg-slate-900 shadow-2xl shadow-black" : "border-white bg-white shadow-xl shadow-slate-200"
+                                        "w-28 h-28 rounded-[2.5rem] p-1 shadow-[0_20px_50px_rgba(0,0,0,0.3)] transition-all duration-700",
+                                        isDark ? "bg-[#061318] ring-4 ring-[#061318]" : "bg-white ring-4 ring-[#F9FAFB]"
                                     )}>
-                                        {profileFormData.instagram_profile_photo ? (
-                                            <img 
-                                                src={profileFormData.instagram_profile_photo} 
-                                                alt="Profile" 
-                                                className="w-full h-full object-cover rounded-[2rem]"
-                                            />
-                                        ) : (
-                                            <div className="w-full h-full rounded-[2rem] bg-gradient-to-br from-primary/10 to-primary/5 flex items-center justify-center">
-                                                <User className="w-12 h-12 text-primary opacity-40" />
-                                            </div>
-                                        )}
-                                        
-                                        {isEditMode && (
-                                            <button 
-                                                onClick={() => document.getElementById('avatar-input')?.click()}
-                                                className="absolute inset-0 bg-black/40 backdrop-blur-[2px] opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded-[2rem]"
-                                            >
-                                                <Camera className="w-8 h-8 text-white" />
-                                            </button>
-                                        )}
+                                        <div className={cn(
+                                            "w-full h-full rounded-[2.1rem] overflow-hidden border flex items-center justify-center relative",
+                                            isDark ? "bg-white/5 border-white/10" : "bg-slate-50 border-slate-200"
+                                        )}>
+                                            {profileFormData.instagram_profile_photo ? (
+                                                <img 
+                                                    src={profileFormData.instagram_profile_photo} 
+                                                    alt="Profile" 
+                                                    className="w-full h-full object-cover"
+                                                />
+                                            ) : (
+                                                <User className={cn("w-10 h-10", isDark ? "text-white/20" : "text-slate-300")} />
+                                            )}
+                                        </div>
                                     </div>
                                     
                                     {isEditMode && (
-                                        <motion.div 
-                                            initial={{ scale: 0 }}
-                                            animate={{ scale: 1 }}
-                                            className="absolute -right-2 -bottom-2 w-10 h-10 bg-primary text-white rounded-2xl flex items-center justify-center shadow-lg shadow-primary/30 border-2 border-white cursor-pointer active:scale-90 transition-transform"
+                                        <button 
                                             onClick={() => document.getElementById('avatar-input')?.click()}
+                                            className={cn(
+                                                "absolute -bottom-1 -right-1 w-10 h-10 rounded-2xl shadow-xl flex items-center justify-center transition-all active:scale-90 z-20",
+                                                isDark ? "bg-primary text-white hover:bg-primary/90" : "bg-primary text-white hover:bg-primary/90"
+                                            )}
                                         >
-                                            <Plus className="w-5 h-5" />
-                                        </motion.div>
+                                            <Camera className="w-5 h-5" />
+                                        </button>
                                     )}
                                 </div>
-                                <input 
-                                    id="avatar-input"
-                                    type="file" 
-                                    accept="image/*"
-                                    className="hidden"
-                                    onChange={async (e) => {
-                                        const file = e.target.files?.[0];
-                                        if (!file) return;
-                                        try {
-                                            toast.loading('Uploading photo...');
-                                            const { publicUrl } = await uploadFile(file, userId, 'avatars');
-                                            setProfileFormData(p => ({ ...p, instagram_profile_photo: publicUrl }));
-                                            toast.dismiss();
-                                            toast.success('Photo uploaded!');
-                                            triggerHaptic();
-                                        } catch (err: any) {
-                                            toast.dismiss();
-                                            toast.error('Upload failed: ' + err.message);
-                                        }
-                                    }}
-                                />
-                                <div className="mt-4 text-center">
-                                    <h3 className={cn("text-xl font-black tracking-tight", textColor)}>{profileFormData.full_name || 'Anonymous User'}</h3>
-                                    <p className={cn("text-[11px] font-black uppercase tracking-[0.2em] opacity-40 mt-1", textColor)}>Verified Profile</p>
+
+                                <div className="pb-3 flex-1 min-w-0">
+                                    <h2 className={cn("text-[24px] font-bold truncate tracking-tight mb-0.5", textColor)}>
+                                        {profileFormData.full_name || 'Anonymous User'}
+                                    </h2>
+                                    <div className="flex items-center gap-2">
+                                        <div className={cn("w-2 h-2 rounded-full bg-primary")} />
+                                        <p className={cn("text-[14px] font-bold opacity-40 uppercase tracking-widest", textColor)}>
+                                            Verified Profile
+                                        </p>
+                                    </div>
                                 </div>
                             </div>
+                            <input 
+                                id="avatar-input"
+                                type="file" 
+                                accept="image/*"
+                                className="hidden"
+                                onChange={async (e) => {
+                                    const file = e.target.files?.[0];
+                                    if (!file) return;
+                                    try {
+                                        toast.loading('Uploading photo...');
+                                        const { url } = await uploadFile(file, { 
+                                            category: 'document', 
+                                            userId, 
+                                            folder: 'avatars' 
+                                        });
+                                        setProfileFormData((p: any) => ({ ...p, instagram_profile_photo: url }));
+                                        toast.dismiss();
+                                        toast.success('Photo uploaded!');
+                                        triggerHaptic();
+                                    } catch (err: any) {
+                                        toast.dismiss();
+                                        toast.error('Upload failed: ' + err.message);
+                                    }
+                                }}
+                            />
+                        </div>
 
                             {/* ── PROGRESS STATUS ── */}
                             <div className={cn(
@@ -4057,44 +4085,50 @@ const MobileDashboardDemo = ({
                                                             tabIndex={0}
                                                             onClick={() => { triggerHaptic(); setSelectedItem(req); setSelectedType('offer'); }}
                                                             className={cn(
-                                                                "p-4 rounded-2xl border flex items-center gap-3 active:scale-[0.99] transition-all",
-                                                                isDark ? "bg-background/30 border-border" : "bg-[#F8FAFC] border-[#E5E7EB]"
+                                                                "p-5 rounded-3xl border flex items-center gap-4 transition-all duration-300 active:scale-[0.98]",
+                                                                isDark 
+                                                                    ? "bg-white/5 border-white/10 hover:bg-white/10 shadow-lg shadow-black/20" 
+                                                                    : "bg-white border-slate-200/60 shadow-sm hover:shadow-md"
                                                             )}
                                                         >
-                                                            <div className="w-12 h-12 rounded-2xl overflow-hidden border border-border shrink-0">
+                                                            <div className={cn(
+                                                                "w-14 h-14 rounded-2xl overflow-hidden border shrink-0 relative",
+                                                                isDark ? "border-white/10 bg-black/20 shadow-inner" : "border-slate-200 bg-slate-50"
+                                                            )}>
                                                                 {productImage ? (
-                                                                    <img src={productImage} alt="" className="w-full h-full object-cover" loading="lazy" />
+                                                                    <img src={productImage} alt="" className="w-full h-full object-cover transition-transform duration-500 hover:scale-110" loading="lazy" />
                                                                 ) : (
-                                                                    getBrandIcon(req?.brand_logo || req?.brand_logo_url || req?.logo_url, req?.category, req?.brand_name)
+                                                                    <div className="w-full h-full flex items-center justify-center scale-90">
+                                                                        {getBrandIcon(req?.brand_logo_url || req?.brand_logo || req?.logo_url || req?.raw?.brand_logo_url || req?.raw?.brand_logo, req?.category, req?.brand_name)}
+                                                                    </div>
                                                                 )}
                                                             </div>
                                                             <div className="min-w-0 flex-1">
-                                                                <p className={cn("text-[14px] font-semibold truncate capitalize", isDark ? "text-foreground" : "text-slate-900")}>{String(req?.brand_name || 'Brand')}</p>
-                                                                <p className={cn("text-[12px] font-medium truncate", isDark ? "text-foreground/60" : "text-slate-600")}>{deliverables}</p>
+                                                                <p className={cn("text-[16px] font-black tracking-tight leading-tight truncate capitalize", isDark ? "text-white" : "text-slate-900")}>
+                                                                    {String(req?.brand_name || 'Brand')}
+                                                                </p>
+                                                                <div className="flex items-center gap-1.5 mt-1">
+                                                                    {req?.collab_type?.toLowerCase().includes('barter') && <span className="text-[10px] scale-90">🎁</span>}
+                                                                    <p className={cn("text-[11px] font-black uppercase tracking-widest opacity-40", textColor)}>
+                                                                        {deliverables}
+                                                                    </p>
+                                                                </div>
                                                             </div>
                                                             <div className="text-right shrink-0">
-                                                                <p className={cn("text-[14px] font-bold tabular-nums", isDark ? "text-foreground" : "text-slate-900")}>
-                                                                    ₹{Number.isFinite(amount) ? amount.toLocaleString() : '—'}
+                                                                <p className={cn("text-[15px] font-black tracking-tight tabular-nums", isDark ? "text-white" : "text-slate-900")}>
+                                                                    ₹{amount > 0 ? amount.toLocaleString() : '—'}
                                                                 </p>
-                                                                <div className="mt-2 flex items-center gap-2 justify-end">
+                                                                <div className="mt-2 flex items-center gap-1.5 justify-end">
                                                                     <button
                                                                         type="button"
-                                                                        onClick={async (e) => { e.stopPropagation(); if (!req?.isDemo) await handleAccept(req); }}
-                                                                        className={cn("h-8 px-3 rounded-xl text-[11px] font-black active:scale-95", isDark ? "bg-emerald-600 text-white" : "bg-emerald-600 text-white")}
+                                                                        onClick={async (e) => { 
+                                                                            e.stopPropagation(); 
+                                                                            triggerHaptic();
+                                                                            if (!req?.isDemo) await handleAccept(req); 
+                                                                        }}
+                                                                        className="h-8 px-3 rounded-xl text-[11px] font-black bg-blue-600 text-white shadow-lg shadow-blue-500/20 active:scale-90 transition-all"
                                                                     >
                                                                         Accept
-                                                                    </button>
-                                                                    <button
-                                                                        type="button"
-                                                                        onClick={async (e) => {
-                                                                            e.stopPropagation();
-                                                                            triggerHaptic(HapticPatterns.error);
-                                                                            if (req?.isDemo) return;
-                                                                            if (onDeclineRequest) { try { await onDeclineRequest(req); } catch { } }
-                                                                        }}
-                                                                        className={cn("h-8 px-3 rounded-xl text-[11px] font-black border active:scale-95", isDark ? "border-destructive/50 text-destructive" : "border-destructive/40 text-destructive")}
-                                                                    >
-                                                                        Decline
                                                                     </button>
                                                                 </div>
                                                             </div>
@@ -4213,6 +4247,135 @@ const MobileDashboardDemo = ({
                                                         return 'Past Due';
                                                     })();
                                                     const isPastDue = deadlineText === 'Past Due' || deadlineText === 'Today';
+                                                    if (req.isConfirmedDeal) {
+                                                        const ux = getCreatorDealCardUX(req);
+                                                        const budget = Number(req?.deal_amount || req?.exact_budget || 0);
+                                                        const dueText = ux.daysUntilDue === null
+                                                            ? null
+                                                            : ux.daysUntilDue < 0
+                                                                ? `OVERDUE ${Math.abs(ux.daysUntilDue)}D`
+                                                                : `${ux.daysUntilDue} DAYS LEFT`;
+                                                        const productImage = resolveCreatorDealProductImage(req);
+                                                        const deliverablesContent = (() => {
+                                                            const raw = req?.deliverables || req?.raw?.deliverables;
+                                                            try {
+                                                                const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;
+                                                                if (Array.isArray(parsed) && parsed.length > 0) {
+                                                                    const types = parsed.map((d: any) => {
+                                                                        if (typeof d === 'string') return d.includes('Reel') ? 'Reel' : d;
+                                                                        const ct = String(d?.contentType || d?.type || '').toLowerCase();
+                                                                        const count = Number(d?.count || d?.quantity || 1) || 1;
+                                                                        const label = ct.includes('reel') ? 'Reel' : ct.includes('story') ? 'Story' : 'Post';
+                                                                        return count > 1 ? `${label} (x${count})` : label;
+                                                                    });
+                                                                    return types.join(' + ');
+                                                                }
+                                                            } catch {}
+                                                            return 'Reel';
+                                                        })();
+
+                                                        return (
+                                                            <motion.div
+                                                                key={req.id || idx}
+                                                                whileTap={{ scale: 0.98 }}
+                                                                onTap={() => {
+                                                                    triggerHaptic();
+                                                                    setSelectedItem(req);
+                                                                    setSelectedType('deal');
+                                                                }}
+                                                                className={cn(
+                                                                    "relative w-full aspect-[4/5] rounded-[40px] overflow-hidden transition-all duration-500 group cursor-pointer border-0 shadow-2xl shadow-black/20",
+                                                                    isDark ? "bg-[#0B1220]" : "bg-slate-100"
+                                                                )}
+                                                            >
+                                                                {/* Background Image/Fallback */}
+                                                                <div className="absolute inset-0">
+                                                                    {productImage ? (
+                                                                        <img 
+                                                                            src={productImage} 
+                                                                            alt="" 
+                                                                            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
+                                                                            loading="lazy" 
+                                                                        />
+                                                                    ) : (
+                                                                        <div className={cn(
+                                                                            "w-full h-full flex flex-col items-center justify-center gap-4",
+                                                                            isDark ? "bg-gradient-to-br from-[#1A1D25] to-[#12141A]" : "bg-gradient-to-br from-slate-100 to-slate-200"
+                                                                        )}>
+                                                                            <div className="w-24 h-24 rounded-3xl bg-white/10 backdrop-blur-md border border-white/10 flex items-center justify-center p-4">
+                                                                                {getBrandIcon(req.brand_logo_url || req.brand_logo || req.logo_url, req.category, req.brand_name)}
+                                                                            </div>
+                                                                        </div>
+                                                                    )}
+                                                                    {/* Premium Overlays */}
+                                                                    <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/30 to-black/5" />
+                                                                </div>
+
+                                                                {/* Content Wrapper */}
+                                                                <div className="absolute inset-0 flex flex-col justify-between z-10">
+                                                                    {/* Top Section: Progress Rail + Status */}
+                                                                    <div>
+                                                                        {/* Top Edge Progress Bar */}
+                                                                        <div className="h-1.5 w-full bg-white/10 flex items-center overflow-hidden">
+                                                                            <motion.div 
+                                                                                initial={{ width: 0 }}
+                                                                                animate={{ width: `${(Math.max(1, ux.progressStep) / 5) * 100}%` }}
+                                                                                className="h-full bg-gradient-to-r from-emerald-400 to-teal-400 relative"
+                                                                            >
+                                                                                {/* Glow dot at the end of progress */}
+                                                                                <div className="absolute right-0 top-1/2 -translate-y-1/2 w-4 h-4 bg-emerald-400/30 blur-md rounded-full" />
+                                                                            </motion.div>
+                                                                        </div>
+
+                                                                        <div className="p-6 flex items-center justify-between">
+                                                                            <div className="flex items-center gap-2">
+                                                                                <div className="px-4 py-2 rounded-full bg-white/10 backdrop-blur-md border border-white/10 flex items-center gap-2">
+                                                                                    <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                                                                                    <span className="text-[11px] font-black uppercase tracking-widest text-white">{ux.stagePill || "Active Deal"}</span>
+                                                                                </div>
+                                                                                {dueText && (
+                                                                                    <div className="px-4 py-2 rounded-full bg-rose-500/20 backdrop-blur-md border border-rose-500/20 flex items-center gap-2">
+                                                                                        <Clock className="w-3.5 h-3.5 text-rose-300" />
+                                                                                        <span className="text-[11px] font-black uppercase tracking-widest text-rose-100">{dueText}</span>
+                                                                                    </div>
+                                                                                )}
+                                                                            </div>
+                                                                            <div className="text-right">
+                                                                                <p className="text-[14px] font-black text-white tracking-tight drop-shadow-md">
+                                                                                    {budget > 0 ? `₹${budget.toLocaleString()}` : '—'}
+                                                                                </p>
+                                                                                <p className="text-[9px] font-black text-emerald-400 uppercase tracking-widest mt-0.5">
+                                                                                    {Math.round((Math.max(1, ux.progressStep) / 5) * 100)}% DONE
+                                                                                </p>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+
+                                                                    {/* Bottom Section */}
+                                                                    <div className="p-6 pt-0">
+                                                                        <h2 className="text-2xl font-black text-white tracking-tighter mb-1 italic uppercase drop-shadow-2xl">
+                                                                            {req.brand_name?.replace(/\s*\([^)]*\)\s*/g, '')}
+                                                                        </h2>
+                                                                        <p className="text-white/70 text-[12px] font-bold mb-6 line-clamp-2 leading-relaxed tracking-tight">
+                                                                            {deliverablesContent} • Campaign Active
+                                                                        </p>
+
+                                                                        {/* Hero CTA - Reduced size and centered */}
+                                                                        <div className="flex justify-center">
+                                                                            <button 
+                                                                                type="button"
+                                                                                className="h-10 px-8 rounded-full bg-white text-black font-black uppercase tracking-[0.15em] text-[11px] flex items-center justify-center gap-2 shadow-2xl active:scale-95 transition-all duration-300 ring-4 ring-black/20"
+                                                                            >
+                                                                                Manage Campaign
+                                                                                <ChevronRight className="w-4 h-4" strokeWidth={3} />
+                                                                            </button>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </motion.div>
+                                                        );
+                                                    }
+
                                                     return (
                                                         <motion.div
                                                             key={req.id || idx}
@@ -4224,101 +4387,78 @@ const MobileDashboardDemo = ({
                                                                 setSelectedType(req.isConfirmedDeal ? 'deal' : 'offer');
                                                             }}
                                                             className={cn(
-                                                                'rounded-2xl overflow-hidden transition-all duration-200 active:scale-[0.99] relative',
+                                                                'rounded-[32px] overflow-hidden transition-all duration-200 active:scale-[0.99] relative',
                                                                 isDark
                                                                     ? 'bg-background/80 backdrop-blur-sm border border-border/50 hover:border-border'
                                                                     : 'bg-card border-border shadow-lg hover:shadow-xl hover:border-border'
                                                             )}
                                                         >
                                                             <div className={cn("h-[4px] w-full", req.collab_type === 'barter' ? 'bg-gradient-to-r from-amber-400 via-orange-400 to-amber-500' : 'bg-gradient-to-r from-blue-500 via-violet-500 to-indigo-600')} />
-                                                            {req.isDemo && (
-                                                                <div className="bg-info/10 border-b border-info/20 px-4 py-2.5 flex flex-col items-center justify-center gap-1">
-                                                                    <span className="text-[10.5px] font-black uppercase tracking-[0.2em] text-info flex items-center gap-1.5"><Zap className="w-3 h-3 fill-blue-500" /> Interactive Demo Offer</span>
-                                                                    <span className="text-[10px] text-info/70 dark:text-info/70 font-medium text-center">This is a sample deal so you can understand how Creator Armour works.</span>
-                                                                </div>
-                                                            )}
                                                             <div className="px-5 py-4">
-                                                                <div className="flex items-start gap-3 mb-3">
+                                                                <div className="flex items-start gap-4 mb-4">
                                                                     {(() => {
                                                                         const productImage = resolveCreatorDealProductImage(req);
                                                                         return (
                                                                     <div className={cn(
-                                                                        "w-12 h-12 rounded-xl border overflow-hidden flex items-center justify-center shrink-0 transition-all duration-300 hover:scale-105",
+                                                                        "w-16 h-16 rounded-2xl border overflow-hidden flex items-center justify-center shrink-0 transition-all duration-300 shadow-sm",
                                                                         req.collab_type === 'barter'
-                                                                            ? (isDark ? "bg-gradient-to-br from-amber-500/10 to-orange-500/10 border-warning/30" : "bg-gradient-to-br from-amber-50 to-orange-50 border-warning")
-                                                                            : (isDark ? "bg-gradient-to-br from-blue-500/10 to-violet-500/10 border-violet-500/30" : "bg-gradient-to-br from-blue-50 to-violet-50 border-violet-200")
+                                                                            ? (isDark ? "bg-[#1A1610] border-warning/30" : "bg-warning/5 border-warning/20")
+                                                                            : (isDark ? "bg-[#101420] border-blue-500/30" : "bg-blue-50/50 border-blue-200")
                                                                     )}>
                                                                         {productImage ? (
                                                                             <img src={productImage} alt="" className="w-full h-full object-cover" loading="lazy" />
                                                                         ) : (
-                                                                            getBrandIcon(req.brand_logo || req.brand_logo_url || req.logo_url || req.raw?.brand_logo || req.raw?.brand_logo_url || req.raw?.logo_url, req.category, req.brand_name)
+                                                                            <div className="p-3">
+                                                                                {getBrandIcon(req.brand_logo_url || req.brand_logo || req.logo_url, req.category, req.brand_name)}
+                                                                            </div>
                                                                         )}
                                                                     </div>
                                                                         );
                                                                     })()}
                                                                     <div className="flex-1 min-w-0">
-                                                                        <div className="flex items-center gap-2 mb-1">
-                                                                            <p className={cn("text-[15px] font-bold leading-tight truncate", isDark ? "text-foreground" : "text-muted-foreground")}>
-                                                                                {(req.brand_name || 'Brand').replace(/\s*\(Free products Demo\)\s*/i, '').replace(/\s*\(Demo\)\s*/i, '')}
+                                                                        <div className="flex items-center gap-2 mb-1.5 flex-wrap">
+                                                                            <p className={cn("text-[17px] font-black tracking-tight truncate leading-tight", isDark ? "text-white" : "text-slate-900")}>
+                                                                                {(req.brand_name || 'Brand').replace(/\s*\([^)]*\)\s*/g, '')}
                                                                             </p>
-                                                                            {req.isConfirmedDeal ? (
-                                                                                <span className="shrink-0 px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-primary/10 text-primary border border-primary/15">🔥 Active</span>
-                                                                            ) : req.collab_type === 'barter' ? (
-                                                                                <span className="shrink-0 px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-gradient-to-r from-amber-500/15 to-orange-500/15 text-warning border border-warning/20">🎁 Free products</span>
-                                                                            ) : req.collab_type === 'hybrid' ? (
-                                                                                <span className="shrink-0 px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-gradient-to-r from-violet-500/10 to-purple-500/10 text-violet-500 border border-violet-500/15">🤝 Hybrid</span>
-                                                                            ) : req.collab_type === 'affiliate' ? (
-                                                                                <span className="shrink-0 px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-gradient-to-r from-emerald-500/10 to-teal-500/10 text-primary border border-primary/15">📈 Affiliate</span>
+                                                                            {req.collab_type === 'barter' ? (
+                                                                                <span className="shrink-0 px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-amber-500/10 text-amber-500 border border-amber-500/20">🎁 Free products</span>
                                                                             ) : (
-                                                                                <span className="shrink-0 px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-gradient-to-r from-blue-500/10 to-violet-500/10 text-info border border-info/15">💳 Paid</span>
+                                                                                <span className="shrink-0 px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-blue-500/10 text-blue-500 border border-blue-500/20">💳 Paid</span>
                                                                             )}
                                                                         </div>
-                                                                        <div className="flex items-center gap-0.5">
-                                                                            <ShieldCheck className="w-3 h-3 text-info" strokeWidth={2.5} />
-                                                                            <span className={cn("text-[11px] font-semibold text-info", isDark ? "text-info" : "text-info")}>Verified</span>
+                                                                        <div className="flex items-center gap-1.5">
+                                                                            <div className="flex items-center gap-1 opacity-70">
+                                                                                <ShieldCheck className="w-3.5 h-3.5 text-blue-500" strokeWidth={3} />
+                                                                                <span className={cn("text-[11px] font-black uppercase tracking-widest", isDark ? "text-slate-400" : "text-slate-500")}>Verified Deal</span>
+                                                                            </div>
                                                                         </div>
                                                                     </div>
                                                                     <div className="shrink-0 text-right">
-                                                                        <p className={cn("text-[20px] font-black tracking-tight leading-none", isDark ? "text-foreground" : "text-muted-foreground")}>
+                                                                        <p className={cn("text-[22px] font-black tracking-tighter leading-none", isDark ? "text-white" : "text-slate-900")}>
                                                                             {req.exact_budget || req.deal_amount ? `₹${(req.exact_budget || req.deal_amount).toLocaleString()}` : req.barter_value ? `₹${(req.barter_value / 1000).toFixed(0)}K` : (req.budget_range || '₹75K')}
                                                                         </p>
-                                                                        <p className={cn("text-[9px] font-bold uppercase tracking-widest", req.collab_type === 'barter' ? "text-warning" : (isDark ? "text-muted-foreground" : "text-muted-foreground"))}>
-                                                                            {req.collab_type === 'barter' ? 'Product Val.' : 'Cash'}
+                                                                        <p className={cn("text-[9px] font-black uppercase tracking-[0.2em] mt-1 opacity-40", textColor)}>
+                                                                            {req.collab_type === 'barter' ? 'Value' : 'Cash'}
                                                                         </p>
                                                                     </div>
                                                                 </div>
-                                                                <div className="flex items-center gap-2 mb-4 flex-wrap">
+                                                                <div className="flex items-center gap-2 mb-5 flex-wrap">
                                                                     {deliverablesArr.slice(0, 2).map((d, i) => (
-                                                                        <span key={i} className={cn("px-2.5 py-1 rounded-lg text-[10px] font-bold border", isDark ? "bg-background/50 border-border/50 text-muted-foreground" : "bg-background border-border text-muted-foreground")}>{d}</span>
+                                                                        <span key={i} className={cn("px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest border", isDark ? "bg-white/5 border-white/5 text-slate-400" : "bg-slate-50 border-slate-100 text-slate-500")}>{d}</span>
                                                                     ))}
-                                                                    {deliverablesArr.length > 2 && (
-                                                                        <span className={cn("px-2.5 py-1 rounded-lg text-[10px] font-bold border", isDark ? "bg-background/50 border-border/50 text-muted-foreground" : "bg-background border-border text-muted-foreground")}>+{deliverablesArr.length - 2} more</span>
-                                                                    )}
-                                                                    <span className={cn("px-2.5 py-1 rounded-lg text-[10px] font-semibold border", isDark ? "bg-background/50 border-border/50 text-muted-foreground" : "bg-background border-border text-muted-foreground")}>
+                                                                    <span className={cn("px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest border", isDark ? "bg-blue-500/10 border-blue-500/20 text-blue-400" : "bg-blue-50 border-blue-100 text-blue-600")}>
                                                                         📅 {(req.deadline || req.due_date) ? new Date(req.deadline || req.due_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) : '21 Mar'}
                                                                     </span>
-                                                                    {deadlineText && (
-                                                                        <span className={cn("px-2.5 py-1 rounded-lg text-[10px] font-black border", isPastDue ? (isDark ? "bg-gradient-to-r from-red-500/15 to-rose-500/15 border-red-500/40 text-red-400" : "bg-gradient-to-r from-red-50 to-rose-50 border-red-200 text-red-600") : (isDark ? "bg-gradient-to-r from-amber-500/10 to-orange-500/10 border-warning/30 text-warning" : "bg-gradient-to-r from-amber-50 to-orange-50 border-warning text-warning"))}>
-                                                                            {isPastDue ? '🚨 ' : '⚡'}{deadlineText}
-                                                                        </span>
-                                                                    )}
                                                                 </div>
                                                                 <div className="flex gap-2">
                                                                     <button type="button"
-                                                                        onClick={(e) => { e.stopPropagation(); triggerHaptic(); setSelectedItem(req); setSelectedType(req.isConfirmedDeal ? 'deal' : 'offer'); }}
-                                                                        className={cn("flex-1 h-11 rounded-xl font-semibold text-[12px] border transition-all active:scale-[0.96]", isDark ? "border-border/50 text-muted-foreground hover:bg-card hover:border-border bg-background/30" : "border-border text-muted-foreground hover:bg-background bg-card")}>
-                                                                        Details
+                                                                        className={cn("flex-1 h-12 rounded-2xl font-black uppercase tracking-[0.15em] text-[11px] border transition-all active:scale-[0.96]", isDark ? "border-white/10 text-white hover:bg-white/5 bg-white/5" : "border-slate-200 text-slate-900 hover:bg-slate-50 bg-white shadow-sm")}>
+                                                                        View Details
                                                                     </button>
                                                                     {!req.isConfirmedDeal && (
                                                                         <button type="button"
-                                                                            onClick={(e) => {
-                                                                                e.stopPropagation();
-                                                                                if (req.isDemo) { toast.success("This is a demo offer! Complete your profile to get real brand deals."); triggerHaptic(HapticPatterns.success); return; }
-                                                                                handleAccept(req);
-                                                                            }}
-                                                                            disabled={processingDeal === req.id}
-                                                                            className={cn("flex-1 h-11 rounded-xl font-bold text-[12px] text-foreground transition-all flex items-center justify-center gap-1.5 active:scale-[0.96] disabled:opacity-50 shadow-lg", req.collab_type === 'barter' ? "bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 shadow-amber-500/25" : "bg-gradient-to-r from-blue-600 to-violet-600 hover:from-blue-700 hover:to-violet-700 shadow-blue-500/25")}>
-                                                                            {processingDeal === req.id ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Accept Deal'}
+                                                                            className={cn("flex-1 h-12 rounded-2xl font-black uppercase tracking-[0.15em] text-[11px] text-white transition-all flex items-center justify-center gap-2 active:scale-[0.96] disabled:opacity-50 shadow-xl", req.collab_type === 'barter' ? "bg-gradient-to-r from-amber-500 to-orange-500 shadow-orange-500/20" : "bg-gradient-to-r from-blue-600 to-violet-600 shadow-blue-500/20")}>
+                                                                            Accept Deal
                                                                         </button>
                                                                     )}
                                                                 </div>
@@ -4485,7 +4625,7 @@ const MobileDashboardDemo = ({
                                 "sticky top-0 z-20 -mx-5 px-5 pt-2 pb-3 mb-4",
                                 isDark ? "bg-[#061318]/70 backdrop-blur-xl border-b border-border" : "bg-secondary/80 backdrop-blur-xl border-b border-border"
                             )}>
-                                <div className={cn("flex p-1.5 rounded-2xl", isDark ? "bg-card" : "bg-slate-200/50")}>
+                                <div className={cn("flex p-1.5 rounded-2xl", isDark ? "bg-card/50" : "bg-slate-200/50")}>
                                     <button type="button"
                                         onClick={() => {
                                             triggerHaptic();
@@ -4497,10 +4637,10 @@ const MobileDashboardDemo = ({
                                             setSearchParams(next, { replace: true });
                                         }}
                                         className={cn(
-                                            "flex-1 py-3 rounded-xl text-xs font-bold uppercase tracking-widest transition-all duration-300",
+                                            "flex-1 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all duration-500",
                                             collabSubTab === 'pending'
-                                                ? "bg-blue-600 text-white shadow-lg shadow-blue-500/20"
-                                                : cn(isDark ? "opacity-70 text-foreground" : "text-slate-500")
+                                                ? "bg-blue-600 text-white shadow-[0_8px_20px_rgba(37,99,235,0.25)] scale-[1.02]"
+                                                : cn(isDark ? "opacity-40 text-foreground" : "text-slate-500 hover:opacity-100")
                                         )}
                                     >
                                         New Offers
@@ -4516,10 +4656,10 @@ const MobileDashboardDemo = ({
                                             setSearchParams(next, { replace: true });
                                         }}
                                         className={cn(
-                                            "flex-1 py-3 rounded-xl text-xs font-bold uppercase tracking-widest transition-all duration-300",
+                                            "flex-1 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all duration-500",
                                             collabSubTab === 'active'
-                                                ? "bg-blue-600 text-white shadow-lg shadow-blue-500/20"
-                                                : cn(isDark ? "opacity-70 text-foreground" : "text-slate-500")
+                                                ? "bg-blue-600 text-white shadow-[0_8px_20px_rgba(37,99,235,0.25)] scale-[1.02]"
+                                                : cn(isDark ? "opacity-40 text-foreground" : "text-slate-500 hover:opacity-100")
                                         )}
                                     >
                                         Active Deals
@@ -4535,10 +4675,10 @@ const MobileDashboardDemo = ({
                                             setSearchParams(next, { replace: true });
                                         }}
                                         className={cn(
-                                            "flex-1 py-3 rounded-xl text-xs font-bold uppercase tracking-widest transition-all duration-300",
+                                            "flex-1 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all duration-500",
                                             collabSubTab === 'completed'
-                                                ? "bg-blue-600 text-white shadow-lg shadow-blue-500/20"
-                                                : cn(isDark ? "opacity-70 text-foreground" : "text-slate-500")
+                                                ? "bg-blue-600 text-white shadow-[0_8px_20px_rgba(37,99,235,0.25)] scale-[1.02]"
+                                                : cn(isDark ? "opacity-40 text-foreground" : "text-slate-500 hover:opacity-100")
                                         )}
                                     >
                                         Completed
@@ -4625,103 +4765,87 @@ const MobileDashboardDemo = ({
                                                                 setSelectedType('deal');
                                                             }}
                                                             className={cn(
-                                                                "p-5 rounded-2xl border transition-all duration-300 group active:scale-[0.99] relative cursor-pointer shadow-sm",
-                                                                isDark ? "bg-[#101217] border-[#292B33]" : "bg-white border-slate-200"
+                                                                "relative w-full aspect-[4/5] rounded-[40px] overflow-hidden transition-all duration-500 group cursor-pointer border-0 shadow-2xl shadow-black/20",
+                                                                isDark ? "bg-[#0B1220]" : "bg-slate-100"
                                                             )}
                                                         >
-                                                            {/* Row 1: Brand + Amount (Top Focus) */}
-                                                            <div className="flex items-start justify-between mb-4">
-                                                                <div className="flex gap-3 min-w-0">
-                                                                    <div className={cn("w-14 h-14 rounded-xl overflow-hidden border shrink-0 shadow-sm p-1.5", isDark ? "border-[#2C2C2E] bg-secondary/30" : "border-slate-100 bg-white")}>
-                                                                        {productImage ? (
-                                                                            <img src={productImage} alt="" className="w-full h-full object-cover rounded-lg" loading="lazy" />
-                                                                        ) : (
-                                                                            <div className={cn("w-full h-full flex items-center justify-center rounded-lg", isDark ? "bg-slate-800" : "bg-slate-50")}>
-                                                                                {getBrandIcon(deal.brand_logo || deal.brand_logo_url || deal.logo_url || deal.raw?.brand_logo || deal.raw?.brand_logo_url || (deal as any).brand?.logo_url, deal.category, deal.brand_name)}
-                                                                            </div>
-                                                                        )}
-                                                                    </div>
-                                                                    <div className="min-w-0 py-0.5">
-                                                                        <h4 className={cn("text-[17px] font-bold tracking-tight leading-tight truncate capitalize", isDark ? "text-foreground" : "text-slate-900")}>{deal.brand_name}</h4>
-                                                                        <p className={cn("text-[13px] font-medium mt-0.5 text-slate-500 truncate")}>{deliverablesContent}</p>
-                                                                        <div className="mt-1 flex">
-                                                                            <span className={cn("px-2 py-[2px] rounded-full text-[10px] font-bold uppercase tracking-wide", isDark ? "bg-emerald-500/10 text-emerald-400" : "bg-green-50 text-green-600")}>
-                                                                                Full Payment
-                                                                            </span>
+                                                            {/* Background Image/Fallback */}
+                                                            <div className="absolute inset-0">
+                                                                {productImage ? (
+                                                                    <img 
+                                                                        src={productImage} 
+                                                                        alt="" 
+                                                                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
+                                                                        loading="lazy" 
+                                                                    />
+                                                                ) : (
+                                                                    <div className={cn(
+                                                                        "w-full h-full flex flex-col items-center justify-center gap-4",
+                                                                        isDark ? "bg-gradient-to-br from-[#1A1D25] to-[#12141A]" : "bg-gradient-to-br from-slate-100 to-slate-200"
+                                                                    )}>
+                                                                        <div className="w-24 h-24 rounded-3xl bg-white/10 backdrop-blur-md border border-white/10 flex items-center justify-center p-4">
+                                                                            {getBrandIcon(deal.brand_logo_url || deal.brand_logo || deal.logo_url, deal.category, deal.brand_name)}
                                                                         </div>
                                                                     </div>
-                                                                </div>
-                                                                <div className="text-right shrink-0 py-0.5">
-                                                                    <p className={cn("text-2xl font-bold tracking-tight leading-none mb-1", isDark ? "text-foreground" : "text-slate-900")}>
-                                                                        {budget > 0 ? `₹${budget.toLocaleString()}` : '—'}
-                                                                    </p>
-                                                                    <p className={cn("text-xs font-medium text-slate-400")}>You'll earn</p>
-                                                                </div>
+                                                                )}
+                                                                {/* Premium Overlays */}
+                                                                <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/30 to-black/5" />
+                                                                <div className="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                                                             </div>
 
-                                                            {/* Row 2: Progress (Hero Element) */}
-                                                            <div className="mb-4 bg-slate-50/50 dark:bg-white/5 p-4 rounded-xl border border-slate-100 dark:border-white/5">
-                                                                <div className="flex items-center justify-between mb-2">
-                                                                    <span className={cn("text-sm font-semibold", isDark ? "text-slate-300" : "text-slate-600")}>Progress</span>
-                                                                    <span className={cn("text-xs font-bold", isDark ? "text-emerald-400" : "text-green-600")}>{Math.round((Math.max(1, ux.progressStep) / 5) * 100)}%</span>
-                                                                </div>
-                                                                <div className="h-2.5 rounded-full overflow-hidden bg-slate-200 dark:bg-slate-800 mb-3">
-                                                                    <div 
-                                                                        className="h-full bg-green-500 rounded-full transition-all duration-700 ease-out shadow-[0_0_8px_rgba(34,197,94,0.3)]" 
-                                                                        style={{ width: `${(Math.max(1, ux.progressStep) / 5) * 100}%` }} 
-                                                                    />
-                                                                </div>
-                                                                <p className={cn("text-[13px] font-medium leading-snug", isDark ? "text-slate-400" : "text-slate-500")}>
-                                                                    {ux.progressStep <= 1 
-                                                                        ? "Get started on your content to unlock payment" 
-                                                                        : `You're ${Math.round((Math.max(1, ux.progressStep) / 5) * 100)}% done — keep going to finish!`}
-                                                                </p>
-                                                            </div>
-
-                                                            {/* Row 3: Deadline + Status */}
-                                                            <div className="flex items-center justify-between mb-5">
-                                                                {dueText ? (
-                                                                    <div className={cn("inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold border", 
-                                                                        isDark ? "bg-red-500/10 text-red-400 border-red-500/20" : "bg-red-50 text-red-600 border-red-100"
-                                                                    )}>
-                                                                        <Clock className="w-3.5 h-3.5" />
-                                                                        {dueText}
+                                                            {/* Content Wrapper */}
+                                                            <div className="absolute inset-0 p-8 flex flex-col justify-between z-10">
+                                                                {/* Top Row: Status Pills */}
+                                                                <div className="flex items-center gap-2">
+                                                                    <div className="px-4 py-2 rounded-full bg-white/10 backdrop-blur-md border border-white/10 flex items-center gap-2">
+                                                                        <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                                                                        <span className="text-[11px] font-black uppercase tracking-widest text-white">{ux.stagePill || "Active Deal"}</span>
                                                                     </div>
-                                                                ) : <div></div>}
-                                                                <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
-                                                                    {ux.stagePill || "In Progress"}
+                                                                    {dueText && (
+                                                                        <div className="px-4 py-2 rounded-full bg-rose-500/20 backdrop-blur-md border border-rose-500/20 flex items-center gap-2">
+                                                                            <Clock className="w-3.5 h-3.5 text-rose-300" />
+                                                                            <span className="text-[11px] font-black uppercase tracking-widest text-rose-100">{dueText}</span>
+                                                                        </div>
+                                                                    )}
                                                                 </div>
-                                                            </div>
 
-                                                            {/* Row 4: Actions (Primary/Secondary) */}
-                                                            <div className="flex items-center gap-2">
-                                                                <button 
-                                                                    type="button" 
-                                                                    onClick={(e) => { e.stopPropagation(); triggerHaptic(); setSelectedItem(deal); setSelectedType('deal'); }}
-                                                                    className={cn("flex-1 h-12 rounded-xl flex items-center justify-center gap-2 text-[14px] font-bold transition-all active:scale-[0.98] shadow-sm", 
-                                                                        isDark ? "bg-blue-600 text-white" : "bg-blue-600 text-white hover:bg-blue-700")
-                                                                    }
-                                                                >
-                                                                    {ux.progressStep <= 2 ? "Upload Content" : "Continue Work"}
-                                                                </button>
-                                                                <button 
-                                                                    type="button" 
-                                                                    onClick={(e) => { e.stopPropagation(); triggerHaptic(); toast.message('Message Brand'); }}
-                                                                    className={cn("w-12 h-12 rounded-xl flex items-center justify-center border transition-all active:scale-[0.98]", 
-                                                                        isDark ? "border-slate-800 text-slate-400" : "border-slate-200 text-slate-600 hover:bg-slate-50")
-                                                                    }
-                                                                >
-                                                                    <MessageCircle className="w-5 h-5" />
-                                                                </button>
-                                                                <button 
-                                                                    type="button" 
-                                                                    onClick={(e) => { e.stopPropagation(); triggerHaptic(); setSelectedItem(deal); setSelectedType('deal'); }}
-                                                                    className={cn("w-12 h-12 rounded-xl flex items-center justify-center border transition-all active:scale-[0.98]", 
-                                                                        isDark ? "border-slate-800 text-slate-400" : "border-slate-200 text-slate-600 hover:bg-slate-50")
-                                                                    }
-                                                                >
-                                                                    <FileText className="w-5 h-5" />
-                                                                </button>
+                                                                {/* Bottom Section */}
+                                                                <div>
+                                                                    {/* Progress Pill */}
+                                                                    <div className="mb-4 flex items-center justify-between">
+                                                                       <div className="flex items-center gap-2">
+                                                                            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white/50">Campaign Progress</span>
+                                                                            <span className="text-[11px] font-black text-emerald-400">{Math.round((Math.max(1, ux.progressStep) / 5) * 100)}%</span>
+                                                                       </div>
+                                                                       <p className="text-[18px] font-black text-white tracking-tight">
+                                                                           {budget > 0 ? `₹${budget.toLocaleString()}` : '—'}
+                                                                       </p>
+                                                                    </div>
+                                                                    
+                                                                    <div className="h-1.5 w-full bg-white/10 rounded-full mb-6 overflow-hidden">
+                                                                        <motion.div 
+                                                                            initial={{ width: 0 }}
+                                                                            animate={{ width: `${(Math.max(1, ux.progressStep) / 5) * 100}%` }}
+                                                                            className="h-full bg-gradient-to-r from-emerald-400 to-teal-400 shadow-[0_0_15px_rgba(52,211,153,0.5)]"
+                                                                        />
+                                                                    </div>
+
+                                                                    <h2 className="text-3xl font-black text-white tracking-tighter mb-2 drop-shadow-lg uppercase italic">
+                                                                        {deal.brand_name}
+                                                                    </h2>
+                                                                    <p className="text-white/70 text-sm font-semibold mb-8 line-clamp-2 leading-relaxed">
+                                                                        {deliverablesContent} • Professional Campaign Active
+                                                                    </p>
+
+                                                                    {/* Hero CTA */}
+                                                                    <button 
+                                                                        type="button"
+                                                                        className="w-full h-14 rounded-2xl bg-white text-black font-black uppercase tracking-[0.15em] text-[13px] flex items-center justify-center gap-2 shadow-2xl active:scale-95 transition-all duration-300"
+                                                                    >
+                                                                        {ux.progressStep <= 2 ? "Upload Deliverables" : "Manage Campaign"}
+                                                                        <ChevronRight className="w-5 h-5" strokeWidth={3} />
+                                                                    </button>
+                                                                </div>
                                                             </div>
                                                         </motion.div>
                                                     );
@@ -4781,53 +4905,56 @@ const MobileDashboardDemo = ({
                                                             return (
                                                         <motion.div
                                                             key={idx}
-                                                            whileTap={{ scale: 0.98 }}
+                                                            whileTap={{ scale: 0.985 }}
                                                             onTap={() => {
                                                                 triggerHaptic();
                                                                 setSelectedItem(deal);
                                                                 setSelectedType('deal');
                                                             }}
                                                             className={cn(
-                                                                "p-4 rounded-2xl border transition-all duration-200 group active:scale-[0.99] relative cursor-pointer",
-                                                                borderColor,
-                                                                isDark ? "bg-card active:bg-secondary/50" : "bg-card shadow-sm active:bg-background"
+                                                                "p-6 rounded-[24px] border transition-all duration-300 group active:scale-[0.99] relative cursor-pointer",
+                                                                isDark 
+                                                                    ? "bg-gradient-to-br from-[#1A1D25] to-[#12141A] border-[#2E323D]/50 shadow-[0_8px_30px_rgb(0,0,0,0.12)]" 
+                                                                    : "bg-white border-slate-200/60 shadow-[0_8px_30px_rgb(0,0,0,0.04)]"
                                                             )}
                                                         >
-                                                            <div className="flex gap-4">
+                                                            <div className="flex gap-5">
                                                                 {/* Left: Campaign Preview Image */}
                                                                 <div className={cn(
-                                                                    "w-[108px] h-[92px] rounded-2xl overflow-hidden border shrink-0 shadow-lg relative group",
+                                                                    "w-24 h-24 rounded-2xl overflow-hidden border shrink-0 shadow-sm relative group",
                                                                     isDark ? "border-border/30 bg-secondary/30" : "border-border bg-muted/20"
                                                                 )}>
                                                                     {productImage ? (
                                                                         <img src={productImage} alt="" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" loading="lazy" />
                                                                     ) : (
                                                                         <div className={cn("w-full h-full flex items-center justify-center", isDark ? "bg-gradient-to-br from-emerald-500/10 to-teal-500/10" : "bg-gradient-to-br from-emerald-50 to-teal-50")}>
-                                                                            {getBrandIcon(deal.brand_logo || deal.brand_logo_url || deal.logo_url || deal.raw?.brand_logo || deal.raw?.brand_logo_url || (deal as any).brand?.logo_url, deal.category, deal.brand_name)}
+                                                                            {getBrandIcon(deal.brand_logo_url || deal.brand_logo || deal.logo_url || deal.raw?.brand_logo_url || deal.raw?.brand_logo || (deal as any).brand?.logo_url, deal.category, deal.brand_name)}
                                                                         </div>
                                                                     )}
                                                                 </div>
 
                                                                 {/* Right: Completion Details */}
-                                                                <div className="flex-1 min-w-0 flex flex-col justify-between py-0.5">
+                                                                <div className="flex-1 min-w-0 flex flex-col justify-between py-1">
                                                                     <div className="flex items-start justify-between gap-2">
                                                                         <div className="min-w-0">
-                                                                            <h4 className={cn("text-[17px] font-semibold tracking-tight leading-tight truncate capitalize", isDark ? "text-foreground" : "text-slate-900")}>{deal.brand_name}</h4>
-                                                                            <p className={cn("text-[11px] font-medium mt-1 uppercase tracking-wide", isDark ? "text-foreground/40" : "text-slate-400")}>
-                                                                                {deal.category || 'Brand'}
+                                                                            <h4 className={cn("text-[18px] font-black tracking-tight leading-tight truncate capitalize", isDark ? "text-foreground" : "text-slate-900")}>
+                                                                                {deal.brand_name}
+                                                                            </h4>
+                                                                            <p className={cn("text-[11px] font-black mt-1 uppercase tracking-widest", isDark ? "text-foreground/40" : "text-slate-400")}>
+                                                                                {deal.category || 'Brand Partner'}
                                                                             </p>
                                                                         </div>
                                                                         <div className="text-right shrink-0">
-                                                                            <p className={cn("text-[18px] font-bold tracking-tight leading-none", isDark ? "text-foreground" : "text-slate-900")}>
+                                                                            <p className={cn("text-[20px] font-black tracking-tight leading-none", isDark ? "text-foreground" : "text-slate-900")}>
                                                                                 ₹{(deal.deal_amount || deal.exact_budget || 0).toLocaleString()}
                                                                             </p>
                                                                         </div>
                                                                     </div>
 
                                                                     <div className="mt-auto">
-                                                                        <div className={cn("inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-[11px] font-black uppercase tracking-widest", isDark ? "bg-emerald-500/10 text-emerald-300" : "bg-emerald-50 text-emerald-700")}>
+                                                                        <div className={cn("inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest", isDark ? "bg-emerald-500/10 text-emerald-300" : "bg-emerald-50 text-emerald-700")}>
                                                                             <CheckCircle2 className="w-3.5 h-3.5" />
-                                                                            Completed
+                                                                            Closed & Payout Ready
                                                                         </div>
                                                                     </div>
                                                                 </div>
@@ -4842,8 +4969,8 @@ const MobileDashboardDemo = ({
                                                                     setSelectedType('deal');
                                                                 }}
                                                                 className={cn(
-                                                                    "mt-5 w-full h-12 rounded-2xl text-[13px] font-black tracking-tight transition-all active:scale-[0.98] border border-border/50 flex items-center justify-center gap-2",
-                                                                    isDark ? "bg-secondary/40 hover:bg-secondary/60 text-foreground" : "bg-[#F8FAFC] text-[#334155] hover:bg-[#F1F5F9]"
+                                                                    "mt-6 w-full h-12 rounded-[14px] text-[13px] font-black uppercase tracking-widest transition-all active:scale-[0.98] border border-border/50 flex items-center justify-center gap-2",
+                                                                    isDark ? "bg-secondary/40 hover:bg-secondary/60 text-foreground" : "bg-slate-50 text-[#334155] hover:bg-slate-100"
                                                                 )}
                                                             >
                                                                 {ux.cta || 'View Summary'}
@@ -5011,7 +5138,7 @@ const MobileDashboardDemo = ({
                                                             const brandName = String(req?.brand_name || 'Brand').trim();
 
                                                             return (
-                                                                <motion.div
+                                                                 <motion.div
                                                                     key={String(req?.id || idx)}
                                                                     whileTap={{ scale: 0.985 }}
                                                                     onTap={() => {
@@ -5020,91 +5147,76 @@ const MobileDashboardDemo = ({
                                                                         setSelectedType('offer');
                                                                     }}
                                                                     className={cn(
-                                                                        "p-4 rounded-[24px] border transition-all duration-300 relative overflow-hidden shadow-sm",
-                                                                        isDark ? "bg-[#0B1220] border-[#223046]" : "bg-white border-slate-200"
+                                                                        "p-6 rounded-[28px] border transition-all duration-500 group relative cursor-pointer overflow-hidden",
+                                                                        isDark 
+                                                                            ? "bg-gradient-to-br from-[#0B1220] to-[#070B14] border-[#223046] shadow-[0_20px_50px_rgba(0,0,0,0.3)]" 
+                                                                            : "bg-white border-slate-200/60 shadow-[0_15px_35px_rgba(0,0,0,0.05)] hover:shadow-[0_20px_45px_rgba(0,0,0,0.08)]"
                                                                     )}
                                                                 >
-                                                                    <div className="flex items-center justify-between gap-2 mb-3">
+                                                                    {isDark && <div className="absolute top-0 left-0 w-full h-[1px] bg-white/5" />}
+                                                                    
+                                                                    <div className="flex items-center justify-between gap-2 mb-6">
+                                                                        <div className="flex gap-2">
+                                                                            <span className={cn(
+                                                                                "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-wider border",
+                                                                                isHighPaying
+                                                                                    ? (isDark ? "bg-amber-500/10 text-amber-300 border-amber-400/20 shadow-[0_0_15px_rgba(245,158,11,0.1)]" : "bg-amber-50 text-amber-700 border-amber-100")
+                                                                                    : (isDark ? "bg-blue-500/10 text-blue-300 border-blue-500/20" : "bg-blue-50 text-blue-700 border-blue-100")
+                                                                            )}>
+                                                                                <Zap className="w-3 h-3 fill-current" />
+                                                                                {isHighPaying ? 'High Paying' : 'Standard'} Deal
+                                                                            </span>
+                                                                        </div>
                                                                         <span className={cn(
-                                                                            "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wide border",
-                                                                            isHighPaying
-                                                                                ? (isDark ? "bg-amber-500/10 text-amber-300 border-amber-400/20" : "bg-blue-50 text-blue-600 border-blue-100")
-                                                                                : (isDark ? "bg-slate-500/10 text-slate-400 border-slate-500/20" : "bg-blue-50 text-blue-600 border-blue-100")
+                                                                            "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-wider border",
+                                                                            isDark ? "bg-rose-500/10 text-rose-300 border-rose-500/20" : "bg-rose-50 text-rose-600 border-rose-100"
                                                                         )}>
-                                                                            {isHighPaying ? 'HIGH PAYING DEAL' : 'NEW OFFER'}
-                                                                        </span>
-                                                                        <span className={cn(
-                                                                            "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wide border",
-                                                                            isDark ? "bg-red-500/10 text-red-400/90 border-red-500/20" : "bg-red-50 text-red-600 border-red-100"
-                                                                        )}>
-                                                                            <Clock className="w-3.5 h-3.5" />
+                                                                            <Clock className="w-3 h-3" />
                                                                             {expBadge}
                                                                         </span>
                                                                     </div>
 
-                                                                    <div className="flex gap-4">
-                                                                        <div className={cn("w-[108px] h-[92px] rounded-2xl overflow-hidden border shrink-0 p-2 shadow-sm", isDark ? "border-border bg-card" : "border-slate-100 bg-white")}>
+                                                                    <div className="flex gap-5 mb-8">
+                                                                        <div className={cn(
+                                                                            "w-24 h-24 rounded-[22px] overflow-hidden border shrink-0 p-1.5 shadow-md transition-all duration-500 group-hover:scale-[1.05] relative", 
+                                                                            isDark ? "border-white/5 bg-white/5" : "border-slate-100 bg-slate-50/50"
+                                                                        )}>
                                                                             {offerImage ? (
-                                                                                <img src={offerImage} alt="" className="w-full h-full object-cover rounded-lg" loading="lazy" />
+                                                                                <img src={offerImage} alt="" className="w-full h-full object-cover rounded-[14px]" loading="lazy" />
                                                                             ) : (
-                                                                                <div className={cn("w-full h-full rounded-lg", isDark ? "bg-gradient-to-br from-emerald-500/15 via-cyan-500/10 to-blue-500/10" : "bg-slate-50")} />
+                                                                                <div className={cn("w-full h-full rounded-[14px] flex items-center justify-center", isDark ? "bg-slate-800" : "bg-white")}>
+                                                                                    {getBrandIcon(req.brand_logo_url || req.brand_logo || req.logo_url || req.raw?.brand_logo_url || req.raw?.brand_logo || (req as any).brand?.logo_url, req.category, brandName)}
+                                                                                </div>
                                                                             )}
                                                                         </div>
 
-                                                                        <div className="min-w-0 flex-1">
-                                                                            <div className="flex items-start justify-between gap-3">
-                                                                                <div className="min-w-0">
-                                                                                    <p className={cn("text-[16px] font-semibold tracking-tight truncate capitalize", isDark ? "text-foreground" : "text-slate-900")}>{brandName}</p>
-                                                                                    <p className={cn("text-[12px] font-medium mt-1 truncate", isDark ? "text-foreground/70" : "text-slate-600")}>
-                                                                                        {deliverables}
-                                                                                    </p>
-                                                                                    {!!category && (
-                                                                                        <p className={cn("text-[12px] font-medium mt-1 truncate", isDark ? "text-foreground/40" : "text-slate-400")}>
-                                                                                            {category}
-                                                                                        </p>
-                                                                                    )}
-                                                                                </div>
-                                                                                <div className="text-right shrink-0">
-                                                                                    <p className={cn("text-2xl font-bold tracking-tight tabular-nums", isDark ? "text-foreground" : "text-slate-900")}>
+                                                                        <div className="min-w-0 flex-1 py-1 flex flex-col justify-between">
+                                                                            <div className="min-w-0">
+                                                                                <h4 className={cn("text-[20px] font-black tracking-tight leading-tight truncate capitalize", isDark ? "text-white" : "text-slate-900")}>
+                                                                                    {brandName}
+                                                                                </h4>
+                                                                                <p className={cn("text-[13px] font-bold mt-1.5 opacity-60 truncate", textColor)}>
+                                                                                    {deliverables}
+                                                                                </p>
+                                                                            </div>
+
+                                                                            <div className="pt-2">
+                                                                                <div className="flex items-baseline gap-1.5">
+                                                                                    <p className={cn("text-[26px] font-black tracking-tighter tabular-nums leading-none", isDark ? "text-white" : "text-slate-900")}>
                                                                                         ₹{Number.isFinite(amount) ? amount.toLocaleString() : '—'}
                                                                                     </p>
-                                                                                    <p className={cn("text-xs font-medium", isDark ? "text-foreground/40" : "text-slate-400")}>You'll earn</p>
+                                                                                    <p className={cn("text-[10px] font-black uppercase tracking-widest opacity-40")}>Earnings</p>
                                                                                 </div>
-                                                                            </div>
-
-                                                                            <div className="mt-3 flex flex-wrap items-center gap-2">
-                                                                                <span className={cn(
-                                                                                    "px-3 py-1.5 rounded-full text-[11px] font-bold uppercase tracking-wide border",
-                                                                                    isDark ? "bg-emerald-500/10 text-emerald-300 border border-emerald-400/15" : "bg-green-50 text-green-600 border-green-100"
-                                                                                )}>
-                                                                                    Full Payment
-                                                                                </span>
-                                                                            </div>
-
-                                                                            <div className="mt-3 flex items-center gap-4">
-                                                                                <span className={cn(
-                                                                                    "inline-flex items-center gap-1.5 text-[12px] font-medium",
-                                                                                    isDark ? "text-foreground/60" : "text-slate-500"
-                                                                                )}>
-                                                                                    <Clock className="w-4 h-4 opacity-70" />
-                                                                                    {posted ? `Posted ${posted}` : 'Recently added'}
-                                                                                </span>
-                                                                                <span className={cn(
-                                                                                    "inline-flex items-center gap-1.5 text-[12px] font-medium",
-                                                                                    isDark ? "text-foreground/60" : "text-slate-500"
-                                                                                )}>
-                                                                                    <Clock className="w-4 h-4 opacity-70" />
-                                                                                    {expText}
-                                                                                </span>
                                                                             </div>
                                                                         </div>
                                                                     </div>
 
-                                                                    <div className="mt-4 grid grid-cols-2 gap-3">
+                                                                    <div className="grid grid-cols-2 gap-3 mb-5">
                                                                         <button
                                                                             type="button"
                                                                             onClick={async (e) => {
                                                                                 e.stopPropagation();
+                                                                                triggerHaptic();
                                                                                 if (req?.isDemo) {
                                                                                     toast.message('This is a demo offer', { description: 'Accept is disabled for demo.' });
                                                                                     return;
@@ -5112,12 +5224,12 @@ const MobileDashboardDemo = ({
                                                                                 await handleAccept(req);
                                                                             }}
                                                                             className={cn(
-                                                                                "h-12 rounded-xl font-bold text-[13px] flex items-center justify-center gap-2 active:scale-95 transition-all shadow-sm",
-                                                                                isDark ? "bg-emerald-600 text-white" : "bg-green-600 text-white hover:bg-green-700"
+                                                                                "h-[52px] rounded-[18px] font-black uppercase tracking-widest text-[12px] flex items-center justify-center gap-2 active:scale-95 transition-all shadow-xl shadow-blue-600/20",
+                                                                                isDark ? "bg-blue-600 text-white" : "bg-blue-600 text-white hover:bg-blue-700"
                                                                             )}
                                                                         >
                                                                             <CheckCircle2 className="w-4 h-4" />
-                                                                            Accept Deal
+                                                                            Accept
                                                                         </button>
                                                                         <button
                                                                             type="button"
@@ -5133,8 +5245,8 @@ const MobileDashboardDemo = ({
                                                                                 }
                                                                             }}
                                                                             className={cn(
-                                                                                "h-12 rounded-xl font-bold text-[13px] flex items-center justify-center gap-2 active:scale-95 transition-all border",
-                                                                                isDark ? "bg-transparent border-destructive/50 text-destructive" : "bg-transparent border-red-300 text-red-500"
+                                                                                "h-[52px] rounded-[18px] font-black uppercase tracking-widest text-[12px] flex items-center justify-center gap-2 active:scale-95 transition-all border",
+                                                                                isDark ? "bg-white/5 border-white/10 text-white hover:bg-white/10" : "bg-white border-slate-200 text-slate-600 hover:bg-slate-50"
                                                                             )}
                                                                         >
                                                                             <XCircle className="w-4 h-4" />
@@ -5151,9 +5263,9 @@ const MobileDashboardDemo = ({
                                                                             setSelectedType('offer');
                                                                             toast.message('Counter Offer', { description: 'Open offer details to counter.' });
                                                                         }}
-                                                                        className={cn("mt-3 w-full text-center text-[13px] font-bold", isDark ? "text-emerald-300" : "text-green-600")}
+                                                                        className={cn("w-full py-2 text-center text-[11px] font-black uppercase tracking-[0.2em] opacity-40 hover:opacity-100 transition-opacity", textColor)}
                                                                     >
-                                                                        Counter Offer
+                                                                        Send Counter Offer
                                                                     </button>
                                                                 </motion.div>
                                                             );
@@ -6982,152 +7094,212 @@ const MobileDashboardDemo = ({
                             )}
                         >
                             {/* Header */}
-                            <div className={cn(
-                                "px-5 py-3.5 flex items-center justify-between border-b",
-                                isDark ? "bg-[#0B0F14] border-border" : "bg-card border-border"
-                            )}>
-                                <div className="flex items-center gap-3">
-                                    <button type="button"
-                                        onClick={() => { triggerHaptic(); setSelectedPayment(null); }}
-                                        className={cn("w-9 h-9 rounded-full flex items-center justify-center border transition-all active:scale-90", borderColor, isDark ? "bg-card hover:bg-secondary/50" : "bg-card hover:bg-background")}
-                                    >
-                                        <ChevronRight className="w-4 h-4 rotate-180" />
-                                    </button>
-                                    <div>
-                                        <h2 className={cn("text-[16px] font-bold tracking-tight leading-tight", textColor)}>Payment Details</h2>
-                                        <p className={cn("text-[10px] font-bold uppercase tracking-widest opacity-40 leading-tight", textColor)}>{pay.brand_name || 'Brand'}</p>
+                            <div 
+                                className="sticky top-0 z-[110] px-5 border-b border-white/[0.03]"
+                                style={{ background: isDark ? 'rgba(11,15,20,0.85)' : 'rgba(255,255,255,0.85)', backdropFilter: 'blur(30px)', paddingTop: 'max(env(safe-area-inset-top), 20px)' }}
+                            >
+                                <div className="max-w-md mx-auto flex items-center justify-between py-4">
+                                    <div className="flex items-center gap-4">
+                                        <button type="button"
+                                            onClick={() => { triggerHaptic(); setSelectedPayment(null); }}
+                                            className={cn("w-10 h-10 rounded-2xl border flex items-center justify-center transition-all active:scale-90", isDark ? "bg-white/5 border-white/10" : "bg-white border-slate-200 shadow-sm")}
+                                        >
+                                            <ChevronRight className={cn("w-5 h-5 rotate-180", isDark ? "text-white/60" : "text-slate-600")} />
+                                        </button>
+                                        <div>
+                                            <p className={cn("text-[10px] font-black uppercase tracking-[0.3em] mb-0.5 opacity-30", textColor)}>Earnings</p>
+                                            <h2 className={cn("text-[17px] font-bold tracking-tight", textColor)}>Payment Detail</h2>
+                                        </div>
+                                    </div>
+                                    <div className={cn(
+                                        "px-4 py-1.5 rounded-2xl border text-[11px] font-black uppercase tracking-wider",
+                                        isPaid
+                                            ? (isDark ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400" : "bg-emerald-50 text-emerald-600 border-emerald-100")
+                                            : (isDark ? "bg-rose-500/10 border-rose-500/20 text-rose-400" : "bg-rose-50 text-rose-600 border-rose-100")
+                                    )}>
+                                        {isPaid ? 'Completed' : 'Pending'}
                                     </div>
                                 </div>
-                                <span className={cn(
-                                    "text-[11px] font-black uppercase tracking-wider px-3 py-1.5 rounded-full border",
-                                    isPaid
-                                        ? (isDark ? "bg-primary/10 border-primary/20 text-primary" : "bg-primary/10 border-primary/20 text-primary")
-                                        : (isDark ? "bg-destructive/10 border-destructive/20 text-destructive" : "bg-destructive/10 border-destructive/20 text-destructive")
-                                )}>
-                                    {isPaid ? 'Paid' : 'Overdue'}
-                                </span>
                             </div>
 
                             {/* Scrollable body */}
-                            <div className="flex-1 overflow-y-auto px-5 pt-5 pb-40 space-y-4">
+                            <div className="flex-1 overflow-y-auto px-5 pt-4 pb-40 space-y-6">
 
-                                {/* ── BRAND HEADER ── */}
-                                <div className={cn("rounded-2xl border p-4 flex items-start gap-4", cardBgColor, borderColor)}>
-                                    <div className={cn("w-14 h-14 rounded-2xl border overflow-hidden flex items-center justify-center shrink-0",
-                                        isDark ? "bg-card border-border" : "bg-background border-border"
+                                {/* ── BRAND IDENTITY BANNER ── */}
+                                <div className="relative mb-4">
+                                    <div className={cn(
+                                        "relative h-32 rounded-[2.5rem] overflow-hidden mb-[-40px] z-0 px-8 py-5 flex flex-col justify-end",
+                                        isDark ? "bg-white/[0.03] border border-white/5" : "bg-gradient-to-br from-slate-100 to-slate-50 border border-slate-200"
                                     )}>
-                                        {getBrandIcon(pay.brand_logo_url || pay.logo_url, pay.category, pay.brand_name)}
-                                    </div>
-                                    <div className="flex-1">
-                                        <p className={cn("text-[20px] font-black tracking-tight leading-tight", textColor)}>{pay.brand_name || 'Brand'}</p>
-                                        <div className="flex items-center gap-1.5 mt-1 mb-2">
-                                            <ShieldCheck className="w-3.5 h-3.5 text-info" strokeWidth={2.5} />
-                                            <span className="text-[12px] font-bold text-info">Verified Brand</span>
-                                        </div>
-                                        <p className={cn("text-[12px] font-semibold", secondaryTextColor)}>
-                                            {pay.campaign_name || pay.title || 'Instagram Reel Campaign'}
+                                        <div className={cn("absolute inset-0 opacity-10 filter blur-3xl mix-blend-overlay", isPaid ? "bg-emerald-400" : "bg-blue-400")} />
+                                        <p className={cn("relative z-10 text-[9px] font-black uppercase tracking-[0.3em] mb-1 opacity-30", textColor)}>
+                                            Collaborator
                                         </p>
+                                    </div>
+
+                                    <div className="relative px-6 flex items-end gap-5 z-10">
+                                        <div className={cn(
+                                            "w-24 h-24 rounded-[2rem] p-1 shadow-2xl",
+                                            isDark ? "bg-[#0B0F14] ring-4 ring-[#0B0F14]" : "bg-white ring-4 ring-[#F9FAFB]"
+                                        )}>
+                                            <div className={cn(
+                                                "w-full h-full rounded-[1.75rem] overflow-hidden border flex items-center justify-center",
+                                                isDark ? "bg-white/5 border-white/10" : "bg-white border-slate-200 shadow-sm"
+                                            )}>
+                                                {getBrandIcon(pay.brand_logo_url || pay.brand_logo || pay.logo_url || pay.raw?.brand_logo_url || pay.raw?.brand_logo, pay.category, pay.brand_name)}
+                                            </div>
+                                        </div>
+                                        <div className="pb-2 flex-1 min-w-0">
+                                            <h2 className={cn("text-[20px] font-bold truncate tracking-tight mb-0.5", textColor)}>
+                                                {pay.brand_name || 'Brand'}
+                                            </h2>
+                                            <div className="flex items-center gap-1.5">
+                                                <ShieldCheck className={cn("w-3.5 h-3.5", isPaid ? "text-emerald-500" : "text-blue-500")} strokeWidth={2.5} />
+                                                <span className={cn("text-[12px] font-black uppercase tracking-widest opacity-40", textColor)}>Verified Partner</span>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
 
                                 {/* ── PAYMENT STATUS CARD ── */}
                                 <div className={cn(
-                                    "rounded-2xl border p-5 relative overflow-hidden",
+                                    "rounded-[2.5rem] border p-6 relative overflow-hidden transition-all duration-500",
                                     isPaid
-                                        ? (isDark ? "bg-primary/5 border-primary/25" : "bg-primary/5 border-primary/20")
-                                        : (isDark ? "bg-destructive/5 border-destructive/25" : "bg-destructive/5 border-destructive/20 shadow-sm")
+                                        ? (isDark ? "bg-emerald-500/[0.03] border-emerald-500/10" : "bg-emerald-50/50 border-emerald-100 shadow-sm")
+                                        : (isDark ? "bg-blue-500/[0.03] border-blue-500/10" : "bg-blue-50/50 border-blue-100 shadow-sm")
                                 )}>
-                                    <div className="absolute inset-y-0 left-0 w-1 rounded-r-full" style={{ background: isPaid ? '#10b981' : '#ef4444' }} />
-                                    <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent pointer-events-none" />
+                                    <div className="absolute top-0 right-0 p-6 opacity-10">
+                                        {isPaid ? <Check className="w-16 h-16" /> : <Clock className="w-16 h-16" />}
+                                    </div>
+                                    
                                     <div className="relative">
-                                        <p className={cn("text-[10px] font-black uppercase tracking-widest mb-1", isPaid ? (isDark ? "text-primary/70" : "text-primary/70") : (isDark ? "text-destructive/70" : "text-destructive/70"))}>
-                                            Payment Status
+                                        <div className="flex items-center gap-2 mb-4">
+                                            <div className={cn(
+                                                "w-8 h-8 rounded-xl flex items-center justify-center",
+                                                isPaid ? "bg-emerald-500/10 text-emerald-500" : "bg-blue-500/10 text-blue-500"
+                                            )}>
+                                                {isPaid ? <Landmark className="w-4 h-4" /> : <Clock className="w-4 h-4" />}
+                                            </div>
+                                            <p className={cn("text-[10px] font-black uppercase tracking-[0.2em] opacity-40", textColor)}>
+                                                {isPaid ? 'Payment Received' : 'Schedule Expected'}
+                                            </p>
+                                        </div>
+
+                                        <p className={cn("text-4xl font-black tracking-tighter mb-1", textColor)}>
+                                            {renderBudgetValue(pay)}
                                         </p>
-                                        <p className={cn("text-[22px] font-black leading-tight mb-0.5", isPaid ? (isDark ? "text-primary" : "text-primary") : (isDark ? "text-destructive" : "text-destructive"))}>
-                                            {isPaid ? 'RECEIVED' : (daysPast > 0 ? 'OVERDUE' : 'PENDING')}
-                                        </p>
-                                        <p className={cn("text-3xl font-black font-outfit mb-3", textColor)}>{renderBudgetValue(pay)}</p>
+                                        
                                         {isPaid ? (
-                                            <p className={cn("text-[12px] font-semibold", secondaryTextColor)}>Paid on {dueDateStr}</p>
+                                            <div className="flex items-center gap-2">
+                                                <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                                                <p className={cn("text-[13px] font-bold opacity-60", textColor)}>Settled on {dueDateStr}</p>
+                                            </div>
                                         ) : (
-                                            <div className="space-y-1">
-                                                <p className={cn("text-[12px] font-semibold", secondaryTextColor)}>Due on: {dueDateStr}</p>
-                                                {daysPast > 0 && <p className="text-[11px] font-black text-destructive">{daysPast} day{daysPast > 1 ? 's' : ''} past due</p>}
+                                            <div className="space-y-2">
+                                                <div className="flex items-center gap-2">
+                                                    <div className={cn("w-1.5 h-1.5 rounded-full", daysPast > 0 ? "bg-rose-500 animate-pulse" : "bg-blue-500")} />
+                                                    <p className={cn("text-[13px] font-bold opacity-60", textColor)}>Due by {dueDateStr}</p>
+                                                </div>
+                                                {daysPast > 0 && (
+                                                    <span className="inline-block px-3 py-1 rounded-lg bg-rose-500/10 text-rose-500 text-[10px] font-black uppercase tracking-wider border border-rose-500/20">
+                                                        {daysPast} Day{daysPast > 1 ? 's' : ''} Overdue
+                                                    </span>
+                                                )}
                                             </div>
                                         )}
                                     </div>
                                 </div>
 
                                 {/* ── DEAL BREAKDOWN ── */}
-                                <div className={cn("rounded-2xl border overflow-hidden", cardBgColor, borderColor)}>
-                                    <p className={cn("text-[10px] font-black uppercase tracking-widest px-4 pt-4 pb-2 opacity-40", textColor)}>Deal Breakdown</p>
-                                    {[
-                                        { label: 'Deliverables', value: pay.deliverables_summary || '1 Instagram Reel' },
-                                        { label: 'Deal Value', value: renderBudgetValue(pay) },
-                                        { label: 'Deal Type', value: pay.collab_type === 'barter' ? '🎁 Free products' : '💰 Paid Campaign' },
-                                        { label: 'Payment Terms', value: pay.payment_terms || 'Direct Bank Transfer' },
-                                    ].map((row, i) => (
-                                        <div key={i} className={cn("flex items-center justify-between px-4 py-3", i > 0 ? (isDark ? "border-t border-border/5" : "border-t border-border") : "")}>
-                                            <span className={cn("text-[13px] font-semibold opacity-60", textColor)}>{row.label}</span>
-                                            <span className={cn("text-[13px] font-black", textColor)}>{row.value}</span>
-                                        </div>
-                                    ))}
-                                </div>
-
-                                {/* ── TIMELINE ── */}
-                                <div className={cn("rounded-2xl border p-4", cardBgColor, borderColor)}>
-                                    <p className={cn("text-[10px] font-black uppercase tracking-widest mb-4 opacity-40", textColor)}>Deal Timeline</p>
-                                    <div className="space-y-0">
-                                        {timelineSteps.map((step, i) => (
-                                            <div key={i} className="flex items-start gap-3">
-                                                <div className="flex flex-col items-center">
-                                                    <div className={cn(
-                                                        "w-6 h-6 rounded-full flex items-center justify-center shrink-0 text-[12px] font-black border-2",
-                                                        step.done
-                                                            ? "bg-primary border-primary text-foreground"
-                                                            : step.warn
-                                                                ? "bg-destructive/10 border-destructive text-destructive"
-                                                                : step.active
-                                                                    ? (isDark ? "bg-warning/10 border-warning text-warning" : "bg-warning border-warning text-warning")
-                                                                    : (isDark ? "bg-card border-border text-foreground/20" : "bg-background border-border text-muted-foreground")
-                                                    )}>
-                                                        {step.done ? '✓' : step.warn ? '⚠' : step.active ? '⏳' : '·'}
-                                                    </div>
-                                                    {i < timelineSteps.length - 1 && (
-                                                        <div className={cn("w-0.5 h-6 mt-1", step.done ? "bg-primary/40" : (isDark ? "bg-secondary/50" : "bg-background"))} />
-                                                    )}
+                                <div className="space-y-3">
+                                    <p className={cn("text-[11px] font-black uppercase tracking-[0.2em] px-4 opacity-30", textColor)}>Campaign Intel</p>
+                                    <div className={cn(
+                                        "rounded-[2.5rem] border overflow-hidden p-2 divide-y",
+                                        isDark ? "bg-white/[0.02] border-white/5 divide-white/5 shadow-2xl" : "bg-white border-slate-100 divide-slate-50 shadow-xl shadow-slate-200/40"
+                                    )}>
+                                        {[
+                                            { label: 'Deliverables', value: pay.deliverables_summary || '1 Instagram Reel', icon: <FileText /> },
+                                            { label: 'Agreement Type', value: pay.collab_type === 'barter' ? '🎁 Product Exchange' : '💰 Paid Partnership', icon: <Handshake /> },
+                                            { label: 'Payment Method', value: pay.payment_terms || 'Direct Bank/UPI', icon: <CreditCard /> },
+                                            { label: 'Invoice Reference', value: invoiceId, icon: <LayoutDashboard /> },
+                                        ].map((row, i) => (
+                                            <div key={i} className={cn("flex items-center gap-4 px-4 py-4 rounded-[2rem] transition-colors", isDark ? "hover:bg-white/5" : "hover:bg-slate-50/50")}>
+                                                <div className={cn("w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 shadow-sm border", isDark ? "bg-white/5 border-white/5 text-white/40" : "bg-slate-50 border-slate-100 text-slate-400")}>
+                                                    {React.cloneElement(row.icon as React.ReactElement, { size: 18, strokeWidth: 1.5 })}
                                                 </div>
-                                                <p className={cn(
-                                                    "text-[13px] font-semibold pt-0.5 pb-5",
-                                                    step.done
-                                                        ? (isDark ? "text-primary" : "text-primary")
-                                                        : step.warn
-                                                            ? "text-destructive"
-                                                            : step.active
-                                                                ? (isDark ? "text-warning" : "text-warning")
-                                                                : (isDark ? "text-foreground/30" : "text-muted-foreground")
-                                                )}>{step.label}</p>
+                                                <div className="flex-1 min-w-0">
+                                                    <p className={cn("text-[10px] font-black uppercase tracking-widest mb-0.5 opacity-30", textColor)}>{row.label}</p>
+                                                    <p className={cn("text-[14px] font-black truncate", textColor)}>{row.value}</p>
+                                                </div>
                                             </div>
                                         ))}
                                     </div>
                                 </div>
 
+                                {/* ── TIMELINE ── */}
+                                <div className="space-y-4">
+                                    <p className={cn("text-[11px] font-black uppercase tracking-[0.2em] px-4 opacity-30", textColor)}>Lifecycle</p>
+                                    <div className={cn(
+                                        "rounded-[2.5rem] border p-6",
+                                        isDark ? "bg-white/[0.02] border-white/5 shadow-2xl" : "bg-white border-slate-100 shadow-xl shadow-slate-200/40"
+                                    )}>
+                                        <div className="space-y-0">
+                                            {timelineSteps.map((step, i) => (
+                                                <div key={i} className="flex items-start gap-5">
+                                                    <div className="flex flex-col items-center">
+                                                        <div className={cn(
+                                                            "w-7 h-7 rounded-[0.8rem] flex items-center justify-center shrink-0 text-[11px] font-black border transition-all duration-500",
+                                                            step.done
+                                                                ? "bg-emerald-500 border-emerald-500 text-white shadow-[0_0_15px_rgba(16,185,129,0.3)]"
+                                                                : step.warn
+                                                                    ? "bg-rose-500/10 border-rose-500 text-rose-500 shadow-[0_0_15px_rgba(244,63,94,0.1)]"
+                                                                    : step.active
+                                                                        ? "bg-blue-500 border-blue-500 text-white shadow-[0_0_15px_rgba(59,130,246,0.5)] animate-pulse"
+                                                                        : (isDark ? "bg-white/5 border-white/10 text-white/20" : "bg-slate-50 border-slate-200 text-slate-300")
+                                                        )}>
+                                                            {step.done ? <Check className="w-4 h-4 stroke-[3]" /> : step.warn ? '!' : step.active ? <Clock className="w-4 h-4 animate-spin-slow" /> : '·'}
+                                                        </div>
+                                                        {i < timelineSteps.length - 1 && (
+                                                            <div className={cn("w-0.5 h-8 my-1 rounded-full", step.done ? "bg-emerald-500/30" : (isDark ? "bg-white/5" : "bg-slate-100"))} />
+                                                        )}
+                                                    </div>
+                                                    <div className="flex-1 min-w-0">
+                                                        <p className={cn(
+                                                            "text-[14px] font-bold mt-1",
+                                                            step.active ? "text-primary" : step.done ? (isDark ? "text-white/80" : "text-slate-800") : "opacity-30"
+                                                        )}>
+                                                            {step.label}
+                                                        </p>
+                                                        {step.active && <p className="text-[11px] font-black text-primary/60 uppercase tracking-widest mt-0.5">Current Phase</p>}
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </div>
+
                                 {/* ── CONTRACT ── */}
-                                <div className={cn("rounded-2xl border p-4", isDark ? "bg-primary/5 border-primary/20" : "bg-emerald-50 border-emerald-200")}>
-                                    <div className="flex items-center gap-2 mb-3">
-                                        <div className="w-8 h-8 rounded-xl bg-primary flex items-center justify-center">
-                                            <ShieldCheck className="w-4 h-4 text-white" strokeWidth={2.5} />
+                                <div className={cn(
+                                    "rounded-[2.5rem] border p-6 relative overflow-hidden transition-all duration-500",
+                                    isDark ? "bg-emerald-500/[0.03] border-emerald-500/10" : "bg-emerald-50/50 border-emerald-100 shadow-sm"
+                                )}>
+                                    <div className="absolute top-[-20px] right-[-20px] opacity-5">
+                                        <ShieldCheck className="w-24 h-24" />
+                                    </div>
+                                    <div className="flex items-center gap-4 mb-5">
+                                        <div className="w-10 h-10 rounded-2xl bg-emerald-500 flex items-center justify-center shadow-lg shadow-emerald-500/20">
+                                            <ShieldCheck className="w-5 h-5 text-white" strokeWidth={2.5} />
                                         </div>
                                         <div>
-                                            <p className={cn("text-[13px] font-black leading-tight", isDark ? "text-primary" : "text-emerald-700")}>Creator Armour Protected</p>
-                                            <p className={cn("text-[11px] font-semibold", isDark ? "text-primary/60" : "text-emerald-600")}>Content Rights Agreement</p>
+                                            <p className={cn("text-[14px] font-black leading-tight", isDark ? "text-emerald-400" : "text-emerald-700")}>Creator Armour Protected</p>
+                                            <p className={cn("text-[11px] font-semibold opacity-60", textColor)}>Content Rights Agreement</p>
                                         </div>
                                     </div>
                                     <button type="button"
                                         onClick={() => { triggerHaptic(); import('sonner').then(m => m.toast('Contract download coming soon')); }}
                                         className={cn(
-                                            "w-full py-2.5 rounded-xl text-[13px] font-black border flex items-center justify-center gap-2 active:scale-[0.98] transition-all",
-                                            isDark ? "bg-primary/10 border-primary/20 text-primary" : "bg-white border-emerald-200 text-emerald-700 hover:bg-emerald-100/50"
+                                            "w-full py-4 rounded-[1.5rem] text-[13px] font-black border flex items-center justify-center gap-2 active:scale-[0.98] transition-all",
+                                            isDark ? "bg-white/5 border-white/10 text-white hover:bg-white/10" : "bg-white border-emerald-200 text-emerald-700 hover:bg-emerald-100/50"
                                         )}
                                     >
                                         <Download className="w-4 h-4" />
@@ -7136,31 +7308,41 @@ const MobileDashboardDemo = ({
                                 </div>
 
                                 {/* ── PAYMENT METADATA ── */}
-                                <div className={cn("rounded-2xl border overflow-hidden", cardBgColor, borderColor)}>
-                                    <p className={cn("text-[10px] font-black uppercase tracking-widest px-4 pt-4 pb-2 opacity-40", textColor)}>Payment Details</p>
-                                    {[
-                                        { label: 'Invoice ID', value: invoiceId },
-                                        { label: 'Payment Method', value: pay.payment_terms || 'Direct Bank Transfer' },
-                                        { label: 'Agreement Signed', value: signedDateStr },
-                                        { label: 'Creator Armour Protection', value: '✓ Active' },
-                                    ].map((row, i) => (
-                                        <div key={i} className={cn("flex items-center justify-between px-4 py-3", i > 0 ? (isDark ? "border-t border-border/5" : "border-t border-border") : "")}>
-                                            <span className={cn("text-[12px] font-semibold opacity-60", textColor)}>{row.label}</span>
-                                            <span className={cn("text-[12px] font-black font-mono", textColor)}>{row.value}</span>
-                                        </div>
-                                    ))}
+                                <div className="space-y-3">
+                                    <p className={cn("text-[11px] font-black uppercase tracking-[0.2em] px-4 opacity-30", textColor)}>Transaction Log</p>
+                                    <div className={cn(
+                                        "rounded-[2.5rem] border overflow-hidden p-2 divide-y",
+                                        isDark ? "bg-white/[0.02] border-white/5 divide-white/5 shadow-2xl" : "bg-white border-slate-100 divide-slate-50 shadow-xl shadow-slate-200/40"
+                                    )}>
+                                        {[
+                                            { label: 'System ID', value: invoiceId },
+                                            { label: 'Settlement Node', value: pay.payment_terms || 'Direct Bank/UPI' },
+                                            { label: 'Signed/Verified', value: signedDateStr },
+                                            { label: 'Escrow Coverage', value: '✓ 100% SECURED' },
+                                        ].map((row, i) => (
+                                            <div key={i} className={cn("flex items-center justify-between px-5 py-4", i > 0 ? (isDark ? "border-t border-border/5" : "border-t border-border") : "")}>
+                                                <span className={cn("text-[12px] font-semibold opacity-50", textColor)}>{row.label}</span>
+                                                <span className={cn("text-[12px] font-black font-mono", textColor)}>{row.value}</span>
+                                            </div>
+                                        ))}
+                                    </div>
                                 </div>
 
                                 {/* ── SUBMITTED CONTENT ── */}
                                 {(pay.submission_link || pay.content_url) && (
-                                    <div className={cn("rounded-2xl border p-4", cardBgColor, borderColor)}>
-                                        <p className={cn("text-[10px] font-black uppercase tracking-widest mb-3 opacity-40", textColor)}>Submitted Content</p>
-                                        <div className="flex items-center justify-between">
-                                            <div className="flex items-center gap-2">
-                                                <span className="text-xl">🎬</span>
+                                    <div className="space-y-3">
+                                        <p className={cn("text-[11px] font-black uppercase tracking-[0.2em] px-4 opacity-30", textColor)}>Work Evidence</p>
+                                        <div className={cn(
+                                            "rounded-[2.5rem] border p-5 flex items-center justify-between",
+                                            isDark ? "bg-white/[0.02] border-white/5 shadow-2xl" : "bg-white border-slate-100 shadow-xl shadow-slate-200/40"
+                                        )}>
+                                            <div className="flex items-center gap-4">
+                                                <div className="w-12 h-12 rounded-[1.25rem] bg-indigo-500/10 flex items-center justify-center text-xl shadow-inner border border-indigo-500/20">
+                                                    🎬
+                                                </div>
                                                 <div>
-                                                    <p className={cn("text-[13px] font-black", textColor)}>Instagram Reel</p>
-                                                    <p className={cn("text-[11px] font-semibold", secondaryTextColor)}>Submitted on time</p>
+                                                    <p className={cn("text-[14px] font-black", textColor)}>Instagram Reel</p>
+                                                    <p className={cn("text-[11px] font-black text-emerald-500 uppercase tracking-widest mt-0.5")}>Quality Verified</p>
                                                 </div>
                                             </div>
                                             <a

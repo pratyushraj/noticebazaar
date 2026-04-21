@@ -103,11 +103,15 @@ const fetchDealForBrandMutation = async (dealId: string) => {
 
 const fetchDealForViewer = async (dealId: string) => {
   const selectAttempts = [
-    'id, status, creator_id, brand_id, brand_email, brand_name, collab_type, deal_type, deal_amount, due_date, progress_percentage, payment_released_at, payment_received_date, utr_number, shipping_required, content_submission_url, content_url, content_notes, brand_approval_status, created_at, updated_at',
-    'id, status, creator_id, brand_id, brand_email, brand_name, collab_type, deal_type, deal_amount, due_date, payment_released_at, payment_received_date, utr_number, shipping_required, content_submission_url, content_url, content_notes, brand_approval_status, created_at, updated_at',
+    'id, status, creator_id, brand_id, brand_email, brand_name, brand_logo_url, collab_type, deal_type, deal_amount, due_date, progress_percentage, payment_released_at, payment_received_date, utr_number, shipping_required, content_submission_url, content_url, content_notes, brand_approval_status, created_at, updated_at',
+    'id, status, creator_id, brand_id, brand_email, brand_name, brand_logo_url, collab_type, deal_type, deal_amount, due_date, payment_released_at, payment_received_date, utr_number, shipping_required, content_submission_url, content_url, content_notes, brand_approval_status, created_at, updated_at',
+    'id, status, creator_id, brand_id, brand_email, brand_name, brand_logo_url, deal_type, deal_amount, due_date, payment_released_at, payment_received_date, utr_number, content_submission_url, content_url, content_notes, created_at, updated_at',
     'id, status, creator_id, brand_id, brand_email, brand_name, deal_type, deal_amount, due_date, payment_released_at, payment_received_date, utr_number, content_submission_url, content_url, content_notes, created_at, updated_at',
+    'id, status, creator_id, brand_id, brand_email, brand_name, brand_logo_url, deal_type, deal_amount, due_date, created_at, updated_at',
     'id, status, creator_id, brand_id, brand_email, brand_name, deal_type, deal_amount, due_date, created_at, updated_at',
+    'id, status, creator_id, brand_email, brand_name, brand_logo_url, deal_type, deal_amount, due_date, created_at, updated_at',
     'id, status, creator_id, brand_email, brand_name, deal_type, deal_amount, due_date, created_at, updated_at',
+    'id, status, creator_id, brand_email, brand_name, brand_logo_url, created_at',
     'id, status, creator_id, brand_email, brand_name, created_at',
   ];
 
@@ -134,10 +138,15 @@ const fetchDealForViewer = async (dealId: string) => {
 
 const fetchDealsForCreator = async (creatorId: string, creatorEmail?: string | null) => {
   const selectAttempts = [
+    { select: 'id, status, creator_id, brand_id, brand_email, brand_name, brand_logo_url, collab_type, deal_type, deal_amount, collab_request_id, due_date, progress_percentage, payment_released_at, payment_received_date, utr_number, shipping_required, barter_product_image_url, form_data, content_submission_url, content_url, content_notes, brand_approval_status, created_at, updated_at', canUseCreatorId: true },
     { select: 'id, status, creator_id, brand_id, brand_email, brand_name, collab_type, deal_type, deal_amount, collab_request_id, due_date, progress_percentage, payment_released_at, payment_received_date, utr_number, shipping_required, barter_product_image_url, form_data, content_submission_url, content_url, content_notes, brand_approval_status, created_at, updated_at', canUseCreatorId: true },
+    { select: 'id, status, creator_id, brand_id, brand_email, brand_name, brand_logo_url, collab_type, deal_type, deal_amount, collab_request_id, due_date, payment_released_at, payment_received_date, utr_number, shipping_required, barter_product_image_url, form_data, content_submission_url, content_url, content_notes, created_at, updated_at', canUseCreatorId: true },
     { select: 'id, status, creator_id, brand_id, brand_email, brand_name, collab_type, deal_type, deal_amount, collab_request_id, due_date, payment_released_at, payment_received_date, utr_number, shipping_required, barter_product_image_url, form_data, content_submission_url, content_url, content_notes, created_at, updated_at', canUseCreatorId: true },
+    { select: 'id, status, creator_id, brand_id, brand_email, brand_name, brand_logo_url, collab_type, deal_type, deal_amount, collab_request_id, due_date, payment_released_at, payment_received_date, utr_number, shipping_required, barter_product_image_url, content_submission_url, content_url, content_notes, created_at, updated_at', canUseCreatorId: true },
     { select: 'id, status, creator_id, brand_id, brand_email, brand_name, collab_type, deal_type, deal_amount, collab_request_id, due_date, payment_released_at, payment_received_date, utr_number, shipping_required, barter_product_image_url, content_submission_url, content_url, content_notes, created_at, updated_at', canUseCreatorId: true },
+    { select: 'id, status, creator_id, brand_email, brand_name, brand_logo_url, deal_type, deal_amount, due_date, created_at, updated_at', canUseCreatorId: true },
     { select: 'id, status, creator_id, brand_email, brand_name, deal_type, deal_amount, due_date, created_at, updated_at', canUseCreatorId: true },
+    { select: 'id, status, creator_id, brand_email, brand_name, brand_logo_url, deal_type, deal_amount, due_date, created_at', canUseCreatorId: true },
     { select: 'id, status, creator_id, brand_email, brand_name, deal_type, deal_amount, due_date, created_at', canUseCreatorId: true },
   ];
 

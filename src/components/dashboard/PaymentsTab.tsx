@@ -24,6 +24,7 @@ interface PaymentsTabProps {
 
 export const PaymentsTab: React.FC<PaymentsTabProps> = ({
     isDark,
+    textColor,
     profileFormData,
     setProfileFormData,
     handleSaveProfile,
@@ -80,9 +81,9 @@ export const PaymentsTab: React.FC<PaymentsTabProps> = ({
         <div className="px-5 pt-8 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-32">
             {/* Header */}
             <div className="flex items-center justify-between mb-6">
-                <div>
-                    <h2 className={cn("text-3xl font-bold tracking-tight", isDark ? "text-slate-100" : "text-slate-900")}>Earnings</h2>
-                    <p className="text-slate-500 text-sm font-medium">Manage your payouts and revenue</p>
+                <div className="mb-8 relative z-10">
+                    <h1 className={cn("text-4xl font-black italic uppercase tracking-tighter", isDark ? "text-white" : "text-slate-900")}>Earnings</h1>
+                    <p className={cn("text-[11px] font-black uppercase tracking-[0.2em] mt-1.5 opacity-40 leading-tight", textColor)}>Track and manage your revenue</p>
                 </div>
                 <button className={cn("w-10 h-10 rounded-full flex items-center justify-center border transition-all active:scale-95", isDark ? "bg-slate-800 border-slate-700" : "bg-white border-slate-200 shadow-sm")}>
                     <HelpCircle className="w-5 h-5 text-slate-400" />
@@ -96,17 +97,11 @@ export const PaymentsTab: React.FC<PaymentsTabProps> = ({
                 className={cn("p-6 rounded-[2.5rem] border mb-8 relative overflow-hidden", isDark ? "bg-slate-900 border-slate-800" : "bg-white border-slate-200 shadow-xl shadow-slate-200/50")}
             >
                 <div className="flex justify-between items-start mb-8">
-                    <div>
-                        <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Total Revenue</p>
-                        <h3 className={cn("text-4xl font-bold tracking-tight mb-2", isDark ? "text-white" : "text-slate-900")}>
+                    <div className="mb-4">
+                        <p className={cn("text-[11px] font-black uppercase tracking-[0.2em] opacity-40 mb-1", textColor)}>Total Revenue</p>
+                        <h2 className={cn("text-4xl font-black tracking-tighter transition-all duration-500", isDark ? "text-white" : "text-slate-900")}>
                             ₹{totals.total.toLocaleString()}
-                        </h3>
-                        <div className="flex items-center gap-2">
-                            <span className="text-green-600 text-[13px] font-bold flex items-center gap-0.5">
-                                <TrendingUp className="w-3.5 h-3.5" /> +12.5%
-                            </span>
-                            <span className="text-slate-400 text-[13px] font-medium">vs last month</span>
-                        </div>
+                        </h2>
                     </div>
                     <div className={cn("w-14 h-14 rounded-2xl flex items-center justify-center", isDark ? "bg-slate-800" : "bg-slate-50")}>
                         <Wallet className="w-7 h-7 text-blue-600" />
@@ -117,16 +112,16 @@ export const PaymentsTab: React.FC<PaymentsTabProps> = ({
                     <div className={cn("p-4 rounded-2xl border", isDark ? "bg-slate-800/40 border-slate-700" : "bg-orange-50/30 border-orange-100/50")}>
                         <div className="flex items-center gap-2 mb-2">
                             <div className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse" />
-                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Processing</p>
+                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Processing</p>
                         </div>
-                        <p className={cn("text-xl font-bold", isDark ? "text-slate-200" : "text-slate-900")}>₹{totals.processing.toLocaleString()}</p>
+                        <p className={cn("text-xl font-black", isDark ? "text-slate-200" : "text-slate-900")}>₹{totals.processing.toLocaleString()}</p>
                     </div>
                     <div className={cn("p-4 rounded-2xl border", isDark ? "bg-slate-800/40 border-slate-700" : "bg-green-50/30 border-green-100/50")}>
                         <div className="flex items-center gap-2 mb-2">
                             <div className="w-1.5 h-1.5 rounded-full bg-green-500" />
-                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Paid Out</p>
+                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Paid Out</p>
                         </div>
-                        <p className={cn("text-xl font-bold", isDark ? "text-slate-200" : "text-slate-900")}>₹{totals.paid.toLocaleString()}</p>
+                        <p className={cn("text-xl font-black", isDark ? "text-slate-200" : "text-slate-900")}>₹{totals.paid.toLocaleString()}</p>
                     </div>
                 </div>
             </motion.div>
@@ -165,35 +160,35 @@ export const PaymentsTab: React.FC<PaymentsTabProps> = ({
             <div className="space-y-8">
                 {brandDeals.length > 0 ? groupedTransactions.map(([date, deals]) => (
                     <div key={date} className="space-y-3">
-                        <p className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] px-1">{date}</p>
-                        <div className={cn("rounded-[2rem] border overflow-hidden", isDark ? "bg-slate-900 border-slate-800" : "bg-white border-slate-200 shadow-sm")}>
+                        <p className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] px-2">{date}</p>
+                        <div className={cn("rounded-[24px] border overflow-hidden shadow-sm transition-all duration-300", isDark ? "bg-[#0B1220] border-[#223046]" : "bg-white border-slate-200")}>
                             {deals.map((deal, idx) => {
                                 const payUx = getCreatorPaymentListUX(deal);
                                 const isProcessing = payUx.tone === 'warning';
                                 return (
                                     <div 
                                         key={deal.id || idx} 
-                                        className={cn("p-4 flex items-center justify-between active:bg-slate-50 transition-colors border-b last:border-0", isDark ? "border-slate-800 active:bg-slate-800" : "border-slate-100")}
+                                        className={cn("p-5 flex items-center justify-between active:bg-slate-50 transition-colors border-b last:border-0", isDark ? "border-[#223046] active:bg-[#1A2436]" : "border-slate-100")}
                                         onClick={() => { triggerHaptic(); setSelectedPayment(deal); }}
                                     >
                                         <div className="flex items-center gap-4 min-w-0">
-                                            <div className="w-11 h-11 rounded-xl bg-slate-50 border border-slate-100 p-1.5 overflow-hidden shrink-0">
-                                                {getBrandIcon(deal.brand_logo || deal.brand_logo_url || deal.logo_url || deal.raw?.brand_logo || deal.raw?.brand_logo_url || deal.brand?.logo_url, deal.category, deal.brand_name)}
+                                            <div className={cn("w-14 h-14 rounded-2xl border shrink-0 flex items-center justify-center p-1.5 shadow-sm", isDark ? "bg-white/5 border-white/5" : "bg-slate-50 border-slate-100")}>
+                                                {getBrandIcon(deal.brand_logo_url || deal.brand_logo || deal.logo_url || deal.raw?.brand_logo_url || deal.raw?.brand_logo || deal.brand?.logo_url, deal.category, deal.brand_name)}
                                             </div>
                                             <div className="min-w-0">
-                                                <p className={cn("text-[15px] font-bold truncate", isDark ? "text-white" : "text-slate-900")}>{deal.brand_name || 'Brand Partner'}</p>
-                                                <p className="text-xs font-medium text-slate-500">{isProcessing ? 'Processing Payout' : 'Campaign Payout'}</p>
+                                                <p className={cn("text-[17px] font-black truncate tracking-tight", isDark ? "text-white" : "text-slate-900")}>{deal.brand_name || 'Brand Partner'}</p>
+                                                <p className="text-[12px] font-medium text-slate-500 uppercase tracking-wider">{isProcessing ? 'Processing Payout' : 'Campaign Revenue'}</p>
                                             </div>
                                         </div>
                                         <div className="text-right shrink-0">
-                                            <p className={cn("text-[15px] font-bold mb-1", isDark ? "text-white" : "text-slate-900")}>₹{(deal.deal_amount || 0).toLocaleString()}</p>
+                                            <p className={cn("text-[18px] font-black mb-1.5 tracking-tight", isDark ? "text-white" : "text-slate-900")}>₹{(deal.deal_amount || 0).toLocaleString()}</p>
                                             <span className={cn(
-                                                "px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider",
+                                                "px-2.5 py-1 rounded-full text-[9px] font-black uppercase tracking-[0.05em] border",
                                                 isProcessing 
-                                                    ? "bg-orange-50 text-orange-600 border border-orange-100" 
-                                                    : "bg-green-50 text-green-600 border border-green-100"
+                                                    ? "bg-orange-50 text-orange-600 border-orange-100" 
+                                                    : "bg-emerald-50 text-emerald-600 border-emerald-100"
                                             )}>
-                                                {isProcessing ? 'Processing' : 'Paid'}
+                                                {isProcessing ? 'In Transit' : 'Settled'}
                                             </span>
                                         </div>
                                     </div>

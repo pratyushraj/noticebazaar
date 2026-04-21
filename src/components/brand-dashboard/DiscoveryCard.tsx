@@ -1,10 +1,12 @@
 import React, { useRef, useState, useEffect } from 'react';
-import { motion, useMotionValue, useTransform, useAnimation } from 'framer-motion';
+import { motion, useMotionValue, useTransform, useAnimation, AnimatePresence } from 'framer-motion';
 import { 
     Volume2, VolumeX,
-    Sparkles, ShieldCheck, Plus, X, Info, ChevronUp
+    ShieldCheck, Plus, X, Info, ChevronUp,
+    Zap, Heart, Eye, TrendingUp, Handshake, Shield
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { triggerHaptic } from '@/lib/utils/haptics';
 
 interface CreatorProfile {
     id: string;
@@ -41,35 +43,61 @@ export const DiscoveryCard: React.FC<DiscoveryCardProps> = ({
     const [showDetails, setShowDetails] = useState(false);
     const videoRef = useRef<HTMLVideoElement>(null);
     
+    // Helper to ensure we have a full URL for Supabase assets
+    const safeMediaUrl = (url?: string) => {
+        if (!url) return '';
+        if (url.startsWith('http') || url.startsWith('blob:') || url.startsWith('data:')) return url;
+        // If it's a relative path, assume it's in the creator-discovery bucket
+        const { data } = supabase.storage.from('creator-discovery').getPublicUrl(url);
+        return data.publicUrl;
+    };
+    
     // Motion values for swiping
     const x = useMotionValue(0);
-    const rotate = useTransform(x, [-300, 300], [-18, 18]);
+    const rotate = useTransform(x, [-300, 300], [-10, 10]);
     const opacity = useTransform(x, [-300, -250, 0, 250, 300], [0, 1, 1, 1, 0]);
     
-    // Swipe indicators
-    const likeOpacity = useTransform(x, [30, 120], [0, 1]);
-    const nopeOpacity = useTransform(x, [-120, -30], [1, 0]);
-    const likeScale = useTransform(x, [30, 120], [0.5, 1]);
-    const nopeScale = useTransform(x, [-120, -30], [1, 0.5]);
+    // Swipe indicators (Labels on top of card)
+    const likeOpacity = useTransform(x, [40, 150], [0, 1]);
+    const nopeOpacity = useTransform(x, [-150, -40], [1, 0]);
 
     const controls = useAnimation();
 
     useEffect(() => {
-        if (isActive && videoRef.current) {
-            videoRef.current.play().catch(() => {});
-        } else if (!isActive && videoRef.current) {
+        if (!videoRef.current) return;
+        
+        if (isActive) {
+            // Give the DOM a tiny bit of time to settle
+            const timer = setTimeout(() => {
+                if (!videoRef.current) return;
+                
+                // Force browser to respect muted attribute for autoplay
+                videoRef.current.defaultMuted = true;
+                videoRef.current.muted = true;
+                
+                const playPromise = videoRef.current.play();
+                if (playPromise !== undefined) {
+                    playPromise.catch(error => {
+                        console.info("[DiscoveryCard] Autoplay blocked or failed:", error);
+                    });
+                }
+            }, 100);
+            return () => clearTimeout(timer);
+        } else {
             videoRef.current.pause();
         }
-    }, [isActive]);
+    }, [isActive, creator.discovery_video_url]);
 
     const handleDragEnd = (_: any, info: any) => {
-        const threshold = 100;
+        const threshold = 120;
         if (info.offset.x > threshold) {
-            controls.start({ x: 800, opacity: 0, transition: { duration: 0.25 } }).then(() => onSwipe('right'));
+            triggerHaptic('medium');
+            controls.start({ x: 1000, opacity: 0, transition: { duration: 0.3 } }).then(() => onSwipe('right'));
         } else if (info.offset.x < -threshold) {
-            controls.start({ x: -800, opacity: 0, transition: { duration: 0.25 } }).then(() => onSwipe('left'));
+            triggerHaptic('light');
+            controls.start({ x: -1000, opacity: 0, transition: { duration: 0.3 } }).then(() => onSwipe('left'));
         } else {
-            controls.start({ x: 0, rotate: 0, transition: { type: 'spring', stiffness: 500, damping: 30 } });
+            controls.start({ x: 0, rotate: 0, transition: { type: 'spring', stiffness: 400, damping: 25 } });
         }
     };
 
@@ -80,158 +108,178 @@ export const DiscoveryCard: React.FC<DiscoveryCardProps> = ({
         return num.toString();
     };
 
+    const stats = [
+        { label: 'Avg Views', value: formatCount((creator as any).avg_reel_views_manual || 0), icon: <Eye className="w-3 h-3" /> },
+        { label: 'Engage', value: ((creator as any).engagement_rate || 4.2).toFixed(1) + '%', icon: <TrendingUp className="w-3 h-3" /> },
+        { label: 'Starts at', value: `₹${(creator.starting_price || 5000).toLocaleString()}`, icon: <Zap className="w-3 h-3 text-emerald-400" /> },
+    ];
+
     return (
         <motion.div
             drag={isActive ? "x" : false}
             dragConstraints={{ left: 0, right: 0 }}
-            dragElastic={0.9}
+            dragElastic={0.7}
             style={{ x, rotate, opacity, zIndex: isActive ? 10 : 0, touchAction: 'pan-y' }}
             onDragEnd={handleDragEnd}
             animate={controls}
-            className="absolute inset-0 w-full h-full rounded-[28px] overflow-hidden cursor-grab active:cursor-grabbing select-none"
+            className={cn(
+                "absolute inset-0 w-full h-full rounded-[2.5rem] overflow-hidden flex flex-col border shadow-2xl",
+                isDark ? "bg-[#0B1220] border-white/10" : "bg-white border-slate-200"
+            )}
         >
-            {/* Full-screen Background — Video or Avatar Image */}
-            <div className="absolute inset-0 z-0">
+            {/* Visual Section (Top 68%) */}
+            <div className="relative h-[68%] w-full overflow-hidden">
                 {creator.discovery_video_url ? (
                     <video
                         ref={videoRef}
-                        src={creator.discovery_video_url}
+                        key={creator.discovery_video_url}
+                        src={safeMediaUrl(creator.discovery_video_url)}
                         className="w-full h-full object-cover"
                         muted={isMuted}
                         loop
                         playsInline
-                    />
-                ) : creator.avatar_url ? (
-                    <img 
-                        src={creator.avatar_url} 
-                        alt={creator.first_name}
-                        className="w-full h-full object-cover"
+                        autoPlay
+                        preload="auto"
+                        onError={(e) => {
+                            console.error("[DiscoveryCard] Video failed to load:", creator.discovery_video_url);
+                            const video = e.currentTarget;
+                            if (video.error) {
+                                console.error("[DiscoveryCard] Video error code:", video.error.code, "message:", video.error.message);
+                            }
+                        }}
                     />
                 ) : (
-                    <div className="w-full h-full bg-gradient-to-br from-[#0a1628] via-[#0d1f3c] to-[#061018] flex items-center justify-center">
-                        <div className="text-8xl font-black text-white/10 select-none">
-                            {(creator.first_name || 'C')[0].toUpperCase()}
-                        </div>
-                    </div>
+                    <img 
+                        src={creator.avatar_url || `https://ui-avatars.com/api/?name=${creator.first_name}&background=0D1117&color=fff`} 
+                        className="w-full h-full object-cover"
+                        alt={creator.first_name}
+                    />
                 )}
+
+                {/* Overlays */}
+                <div className="absolute inset-0 bg-gradient-to-t from-[#0B1220] via-transparent to-[#0B1220]/40 z-10" />
                 
-                {/* Gradient overlays */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent z-10" />
-                <div className="absolute inset-x-0 top-0 h-28 bg-gradient-to-b from-black/50 to-transparent z-10" />
-            </div>
+                {/* Swipe Status Stamps */}
+                <motion.div style={{ opacity: likeOpacity }} className="absolute top-8 left-8 z-30 px-6 py-2 border-4 border-emerald-500 rounded-2xl rotate-[-15deg] pointer-events-none">
+                    <span className="text-3xl font-black text-emerald-500 uppercase tracking-tighter">YES</span>
+                </motion.div>
+                <motion.div style={{ opacity: nopeOpacity }} className="absolute top-8 right-8 z-30 px-6 py-2 border-4 border-rose-500 rounded-2xl rotate-[15deg] pointer-events-none">
+                    <span className="text-3xl font-black text-rose-500 uppercase tracking-tighter">SKIP</span>
+                </motion.div>
 
-            {/* LIKE / NOPE Stamps */}
-            <motion.div 
-                style={{ opacity: likeOpacity, scale: likeScale }}
-                className="absolute top-16 left-6 z-30 px-5 py-2 border-[3px] border-emerald-400 text-emerald-400 font-black text-2xl uppercase tracking-tight rounded-lg transform -rotate-12 pointer-events-none"
-            >
-                LIKE
-            </motion.div>
-            <motion.div 
-                style={{ opacity: nopeOpacity, scale: nopeScale }}
-                className="absolute top-16 right-6 z-30 px-5 py-2 border-[3px] border-rose-500 text-rose-500 font-black text-2xl uppercase tracking-tight rounded-lg transform rotate-12 pointer-events-none"
-            >
-                NOPE
-            </motion.div>
-
-            {/* Mute Toggle — top right */}
-            {creator.discovery_video_url && (
-                <div className="absolute top-5 right-5 z-30">
+                {/* Mute Toggle */}
+                {creator.discovery_video_url && (
                     <button 
                         onClick={(e) => { e.stopPropagation(); setIsMuted(!isMuted); }}
-                        className="w-10 h-10 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center text-white/80 active:scale-90 transition-transform"
+                        className="absolute top-6 right-6 z-30 w-10 h-10 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center text-white/90 active:scale-90 transition-all border border-white/10"
                     >
                         {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
                     </button>
-                </div>
-            )}
-
-            {/* Bottom Content Overlay */}
-            <div className="absolute bottom-0 inset-x-0 z-20 p-5 pb-6">
-                {/* Name + Category */}
-                <div className="flex items-end gap-3 mb-3">
-                    <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-1">
-                            <h3 className="text-[28px] font-extrabold text-white leading-none tracking-tight">
-                                {creator.first_name || creator.username}
-                            </h3>
-                            {creator.is_verified && (
-                                <ShieldCheck className="w-5 h-5 text-emerald-400 fill-emerald-400/20 shrink-0" />
-                            )}
-                        </div>
-                        <div className="flex items-center gap-2">
-                            <span className="text-[11px] font-semibold text-white/50">@{creator.username}</span>
-                            {creator.category && (
-                                <>
-                                    <span className="text-white/20">·</span>
-                                    <span className="text-[11px] font-semibold text-emerald-400/80">{creator.category}</span>
-                                </>
-                            )}
-                        </div>
-                    </div>
-
-                    {/* Info toggle */}
-                    <button
-                        onClick={(e) => { e.stopPropagation(); setShowDetails(!showDetails); }}
-                        className="w-8 h-8 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center text-white/60 active:scale-90 transition-transform shrink-0"
-                    >
-                        {showDetails ? <ChevronUp className="w-4 h-4" /> : <Info className="w-4 h-4" />}
-                    </button>
-                </div>
-
-                {/* Compact Stats Row */}
-                <div className="flex items-center gap-3 mb-3">
-                    <div className="flex items-center gap-1.5">
-                        <span className="text-[10px] font-bold text-white/35 uppercase">Reach</span>
-                        <span className="text-[13px] font-bold text-white">{formatCount(creator.followers || (creator as any).followers_count || 0)}</span>
-                    </div>
-                    <span className="text-white/15">|</span>
-                    <div className="flex items-center gap-1.5">
-                        <span className="text-[10px] font-bold text-white/35 uppercase">Views</span>
-                        <span className="text-[13px] font-bold text-white">{formatCount((creator as any).avg_reel_views_manual || 0)}</span>
-                    </div>
-                    <span className="text-white/15">|</span>
-                    <div className="flex items-center gap-1.5">
-                        <span className="text-[10px] font-bold text-white/35 uppercase">From</span>
-                        <span className="text-[13px] font-bold text-emerald-400">₹{Number(creator.starting_price || (creator as any).avg_rate_reel || 0).toLocaleString()}</span>
-                    </div>
-                </div>
-
-                {/* Expandable Bio */}
-                {showDetails && (
-                    <motion.div
-                        initial={{ opacity: 0, height: 0 }}
-                        animate={{ opacity: 1, height: 'auto' }}
-                        exit={{ opacity: 0, height: 0 }}
-                        className="mb-3"
-                    >
-                        <p className="text-[12px] font-medium text-white/60 leading-relaxed line-clamp-3">
-                            {creator.bio || (creator as any).intro_line || "Content creator open to collaborations."}
-                        </p>
-                    </motion.div>
                 )}
 
-                {/* Action Buttons — small & compact like Tinder */}
-                <div className="flex items-center gap-3">
-                    <button 
-                        onClick={(e) => { e.stopPropagation(); onSwipe('left'); }}
-                        className="w-12 h-12 rounded-full bg-white/10 backdrop-blur-sm border border-white/10 flex items-center justify-center text-white/70 active:scale-90 transition-all hover:bg-rose-500/20 hover:border-rose-500/30 hover:text-rose-400"
+                {/* Identity Overlay (Bottom of Visual Area) */}
+                <div className="absolute bottom-6 left-6 z-20 space-y-1">
+                    <div className="flex items-center gap-2">
+                        <h3 className="text-3xl font-black text-white tracking-tight leading-none uppercase italic">
+                            {creator.first_name}
+                        </h3>
+                        {creator.is_verified !== false && (
+                            <ShieldCheck className="w-5 h-5 text-emerald-400 fill-emerald-400/20" />
+                        )}
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <span className="px-2 py-0.5 rounded-lg bg-emerald-500/20 border border-emerald-500/30 text-[10px] font-black text-emerald-400 uppercase tracking-widest">
+                            {creator.category || "Lifestyle"}
+                        </span>
+                        <span className="text-white/40 text-[11px] font-bold">@{creator.username}</span>
+                    </div>
+                </div>
+            </div>
+
+            {/* Info & Stats Section (Middle) */}
+            <div className="flex-1 p-5 flex flex-col justify-between -mt-6 relative z-20">
+                {/* Glass Stats Bar */}
+                <div className={cn(
+                    "grid grid-cols-3 gap-1 rounded-[1.75rem] p-1 border",
+                    isDark ? "bg-white/5 border-white/5 shadow-inner" : "bg-slate-50 border-slate-100"
+                )}>
+                    {stats.map((s, idx) => (
+                        <div key={idx} className="flex flex-col items-center justify-center py-2 gap-0.5">
+                            <div className="flex items-center gap-1 opacity-40">
+                                {s.icon}
+                                <span className="text-[8px] font-black uppercase tracking-widest">{s.label}</span>
+                            </div>
+                            <span className="text-[14px] font-black tracking-tight">{s.value}</span>
+                        </div>
+                    ))}
+                </div>
+
+                {/* Trust Signal Strip */}
+                <div className="flex items-center justify-between px-2 pt-2">
+                    <div className="flex items-center gap-1.5 opacity-40">
+                        <Shield className="w-3 h-3" />
+                        <span className="text-[10px] font-bold uppercase tracking-widest">Aadhar Verified</span>
+                    </div>
+                    <div className="flex items-center gap-1.5 opacity-40">
+                        <Handshake className="w-3 h-3" />
+                        <span className="text-[10px] font-bold uppercase tracking-widest">Instant Contract</span>
+                    </div>
+                </div>
+
+                {/* Main CTA Section (Bottom Focused) */}
+                <div className="space-y-3 pt-1">
+                    {/* Primary Button */}
+                    <motion.button 
+                        whileTap={{ scale: 0.96 }}
+                        onClick={(e) => { e.stopPropagation(); triggerHaptic('medium'); onOpenOffer(); }}
+                        className={cn(
+                            "w-full h-14 rounded-[1.75rem] flex flex-col items-center justify-center relative overflow-hidden transition-all shadow-xl active:scale-[0.98]",
+                            "bg-gradient-to-r from-emerald-600 to-sky-600 text-white shadow-emerald-500/20"
+                        )}
                     >
-                        <X className="w-5 h-5" />
-                    </button>
-                    <button 
-                        onClick={(e) => { e.stopPropagation(); onOpenOffer(); }}
-                        className="flex-1 h-11 bg-emerald-500 hover:bg-emerald-400 text-white rounded-full font-bold text-[12px] tracking-wide transition-all active:scale-95 flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/25"
-                    >
-                        <Plus className="w-4 h-4" />
-                        Send Offer
-                    </button>
-                    <button 
-                        onClick={(e) => { e.stopPropagation(); onSwipe('right'); }}
-                        className="w-12 h-12 rounded-full bg-emerald-500/15 backdrop-blur-sm border border-emerald-500/20 flex items-center justify-center text-emerald-400 active:scale-90 transition-all hover:bg-emerald-500/30"
-                    >
-                        <svg viewBox="0 0 24 24" className="w-5 h-5 fill-current"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
-                    </button>
+                        <div className="flex items-center gap-2 z-10">
+                            <Zap className="w-5 h-5 fill-current" />
+                            <span className="text-[16px] font-black uppercase tracking-tight italic">
+                                Send Offer ₹{(creator.starting_price || 5000).toLocaleString()}
+                            </span>
+                        </div>
+                        <span className="text-[9px] font-bold opacity-70 z-10 uppercase tracking-widest mt-0.5">
+                            Quick deal · Protected payment
+                        </span>
+                        
+                        {/* Shimmer effect */}
+                        <motion.div 
+                            animate={{ x: ['-100%', '200%'] }}
+                            transition={{ repeat: Infinity, duration: 2, ease: "linear" }}
+                            className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent skew-x-12"
+                        />
+                    </motion.button>
+
+                    {/* Secondary Actions Row */}
+                    <div className="grid grid-cols-3 gap-3">
+                        {[
+                            { label: 'Skip', icon: <X className="w-5 h-5" />, action: () => onSwipe('left'), color: 'text-rose-500' },
+                            { label: 'Shortlist', icon: <Plus className="w-5 h-5" />, action: () => {}, color: 'text-blue-500' },
+                            { label: 'Interested', icon: <Heart className="w-5 h-5" />, action: () => onSwipe('right'), color: 'text-emerald-500' },
+                        ].map((btn, idx) => (
+                            <motion.button
+                                key={idx}
+                                whileTap={{ scale: 0.92 }}
+                                onClick={(e) => { e.stopPropagation(); btn.action(); }}
+                                className={cn(
+                                    "flex flex-col items-center gap-1 py-2 rounded-2xl border transition-all",
+                                    isDark ? "bg-white/5 border-white/5 hover:bg-white/10" : "bg-white border-slate-100 shadow-sm"
+                                )}
+                            >
+                                <div className={cn("w-9 h-9 rounded-xl flex items-center justify-center", isDark ? "bg-white/5 shadow-inner" : "bg-slate-50")}>
+                                    {React.cloneElement(btn.icon, { className: cn("w-4 h-4", btn.color) })}
+                                </div>
+                                <span className={cn("text-[9px] font-black uppercase tracking-[0.12em]", isDark ? "text-white/40" : "text-slate-500")}>
+                                    {btn.label}
+                                </span>
+                            </motion.button>
+                        ))}
+                    </div>
                 </div>
             </div>
         </motion.div>

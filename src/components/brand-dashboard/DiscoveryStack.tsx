@@ -288,15 +288,35 @@ export const DiscoveryStack: React.FC<DiscoveryStackProps> = ({
     return (
         <div className="relative flex flex-col gap-6" style={{ touchAction: 'pan-y' }}>
             {/* Header Controls */}
-            <div className="flex items-center justify-between px-1 mb-3">
-                <div className="flex items-center gap-2">
-                    <h2 className={cn("text-lg font-bold tracking-tight", isDark ? "text-white" : "text-slate-900")}>Discover</h2>
-                    <div className="px-2 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/20 text-emerald-400 text-[8px] font-bold uppercase tracking-widest animate-pulse">Live</div>
+            <div className="flex items-center justify-between px-1 mb-2">
+                <div className="flex flex-col">
+                    <div className="flex items-center gap-2">
+                        <h2 className={cn("text-2xl font-black tracking-tight", isDark ? "text-white" : "text-slate-900")}>
+                            Discover Creators
+                        </h2>
+                        <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20">
+                            <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                            <span className="text-[10px] font-black text-emerald-500 uppercase tracking-widest">Live</span>
+                        </div>
+                    </div>
+                    <p className={cn("text-[11px] font-bold opacity-40 uppercase tracking-[0.1em] mt-0.5", isDark ? "text-white" : "text-slate-900")}>
+                        Top matched for your brand
+                    </p>
                 </div>
+                
+                <motion.button
+                    whileTap={{ scale: 0.92 }}
+                    className={cn(
+                        "w-11 h-11 rounded-2xl flex items-center justify-center border transition-all shadow-sm",
+                        isDark ? "bg-white/5 border-white/10 text-white/50" : "bg-white border-slate-200 text-slate-400"
+                    )}
+                >
+                    <Filter className="w-5 h-5" />
+                </motion.button>
             </div>
 
             {/* The Stack Container — near full-screen */}
-            <div className="relative" style={{ height: 'calc(100vh - 220px)' }}>
+            <div className="relative" style={{ height: 'calc(100vh - 190px)' }}>
                 <AnimatePresence>
                     {creators.slice(currentIndex, currentIndex + 2).reverse().map((creator, i) => {
                         const isTop = (currentIndex + (1 - i)) === currentIndex;
@@ -316,31 +336,6 @@ export const DiscoveryStack: React.FC<DiscoveryStackProps> = ({
                         );
                     })}
                 </AnimatePresence>
-            </div>
-
-            {/* Quick Actions — small compact row */}
-            <div className="flex justify-center gap-6 pt-3">
-                <motion.button 
-                    whileTap={{ scale: 0.8 }}
-                    onClick={() => handleSwipe('left')}
-                    className="w-12 h-12 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-rose-400 transition-all hover:bg-rose-500/15 hover:border-rose-500/20"
-                >
-                    <X className="w-5 h-5" />
-                </motion.button>
-                <motion.button 
-                    whileTap={{ scale: 0.8 }}
-                    onClick={() => resetStack()}
-                    className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-blue-400 transition-all hover:bg-blue-500/15 self-center"
-                >
-                    <History className="w-4 h-4" />
-                </motion.button>
-                <motion.button 
-                    whileTap={{ scale: 0.8 }}
-                    onClick={() => handleSwipe('right')}
-                    className="w-12 h-12 rounded-full bg-emerald-500/15 border border-emerald-500/20 flex items-center justify-center text-emerald-400 transition-all hover:bg-emerald-500/30"
-                >
-                    <Heart className="w-5 h-5 fill-current" />
-                </motion.button>
             </div>
 
             {/* Quick Offer Sheet */}
