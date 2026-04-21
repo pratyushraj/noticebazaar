@@ -57,7 +57,7 @@ function LogoutModal({ email, onConfirm, onCancel }: { email: string; onConfirm:
         animate={{ y: 0, opacity: 1, scale: 1 }}
         exit={{ y: 100, opacity: 0, scale: 0.95 }}
         transition={{ type: "spring", damping: 30, stiffness: 400 }}
-        className="relative w-full max-w-sm rounded-[2.5rem] border border-white/10 bg-[#061318] p-8 shadow-2xl mb-24 sm:mb-0"
+        className="relative w-full max-w-sm rounded-[2.5rem] border border-white/10 bg-[#0B1324] p-8 shadow-2xl mb-24 sm:mb-0"
       >
         <div className="w-12 h-12 rounded-2xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center mb-6">
           <LogOut className="w-6 h-6 text-rose-400" />
@@ -104,8 +104,8 @@ const SettingsRow = ({ icon, label, subtext, iconColorClass, hasChevron, isDark,
 const SettingsGroup = ({ children, isDark, className }: any) => (
   <div className={cn(
     "overflow-hidden rounded-[2.5rem] border mb-6",
-    isDark ? "bg-[#0c1e19]/40 border-white/10 divide-white/5" : "bg-white border-slate-200 divide-slate-100 shadow-[0_2px_12px_rgba(0,0,0,0.03)]",
-    "divide-y backdrop-blur-xl",
+    isDark ? "bg-[#0B1324]/40 border-white/5 divide-white/5" : "bg-white border-slate-200 divide-slate-100 shadow-[0_2px_12px_rgba(0,0,0,0.03)]",
+    "divide-y backdrop-blur-3xl",
     className
   )}>
     {children}
@@ -329,9 +329,9 @@ export const BrandSettingsPanel = ({
 
   /* ─── CSS primitives matching existing dashboard ── */
   const card = cn(
-    'rounded-[2.5rem] border backdrop-blur-2xl transition-all duration-500',
+    'rounded-[2.5rem] border backdrop-blur-3xl transition-all duration-500',
     isDark 
-      ? 'bg-[#0B1220]/60 border-white/5 shadow-[0_20px_50px_rgba(0,0,0,0.3)] shadow-black/40' 
+      ? 'bg-[#0B1324]/60 border-white/5 shadow-[0_20px_50px_rgba(0,0,0,0.4)] shadow-black/60' 
       : 'bg-white border-slate-100 shadow-xl shadow-slate-200/40'
   );
   
@@ -413,7 +413,7 @@ export const BrandSettingsPanel = ({
             <div className="relative group perspective">
               <div className={cn(
                 "w-36 h-36 rounded-[3rem] p-1 shadow-[0_30px_60px_rgba(0,0,0,0.5)] transition-transform duration-500 group-hover:scale-105",
-                isDark ? "bg-[#061318] ring-[6px] ring-[#061318]" : "bg-white ring-[6px] ring-[#F9FAFB]"
+                isDark ? "bg-[#0B1324] ring-[6px] ring-[#0B1324]" : "bg-white ring-[6px] ring-[#F9FAFB]"
               )}>
                 <div className={cn(
                   "w-full h-full rounded-[2.6rem] overflow-hidden border flex items-center justify-center relative shadow-inner",
@@ -707,7 +707,7 @@ export const BrandSettingsPanel = ({
         style={{
           paddingBottom: 'max(env(safe-area-inset-bottom), 120px)',
           background: isDark
-            ? 'linear-gradient(to top, #061318 60%, rgba(6,19,24,0.9) 80%, transparent 100%)'
+            ? 'linear-gradient(to top, #0B1324 60%, rgba(11,19,36,0.95) 80%, transparent 100%)'
             : 'linear-gradient(to top, #F9FAFB 60%, rgba(249,250,251,0.95) 80%, transparent 100%)'
         }}
       >
@@ -786,10 +786,10 @@ export const BrandSettingsPanel = ({
 export default function BrandSettings() {
   const navigate = useNavigate();
   return (
-    <div className="min-h-[100dvh] bg-[#061318] text-white">
+    <div className="min-h-[100dvh] bg-[#0B1324] text-white">
       <div
         className="sticky top-0 z-[110] px-6 border-b border-white/[0.03]"
-        style={{ background: 'rgba(6,19,24,0.85)', backdropFilter: 'blur(30px)', paddingTop: 'max(env(safe-area-inset-top), 20px)' }}
+        style={{ background: 'rgba(11,19,36,0.85)', backdropFilter: 'blur(30px)', paddingTop: 'max(env(safe-area-inset-top), 20px)' }}
       >
         <div className="max-w-md mx-auto flex items-center justify-between py-5">
           <div className="flex items-center gap-4">
