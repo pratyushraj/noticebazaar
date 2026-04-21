@@ -5,7 +5,7 @@ import { trackEvent } from '@/lib/utils/analytics';
 import { DashboardEmptyState } from '../components/dashboard/EmptyState';
 import { PaymentsTab } from '../components/dashboard/PaymentsTab';
 import { AccountTab } from '../components/dashboard/AccountTab';
-import { Tag, User, Search, ShieldCheck, Handshake, Camera, Plus, LayoutDashboard, CreditCard, Briefcase, Menu, Instagram, Target, Dumbbell, Shirt, Sun, Moon, RefreshCw, Loader2, Bell, ChevronRight, Zap, Rocket, Link2, CheckCircle2, Download, Clock, Info, Globe, Star, LogOut, Copy, Share2, QrCode, Eye, MoreHorizontal, Landmark, FileText, Smartphone, TrendingUp, BarChart3, Mail, Phone, MessageCircle, MessageSquare, Edit3, Send, X, XCircle, ExternalLink, AlertCircle, AlertTriangle, ArrowRight, Package, Flag, MapPin, Languages, Lock as LockIcon, ArrowUpRight, Wallet, HelpCircle, Sparkles, Youtube, Twitter, Heart, Trash2, Smartphone as SmartphoneIcon, Users, Calendar, ShoppingBag, Video, BookOpen, GraduationCap, Laugh, Coffee, Layers, Flame, Clapperboard, BadgeCheck } from 'lucide-react';
+import { Tag, User, Search, ShieldCheck, Handshake, Camera, Plus, LayoutDashboard, CreditCard, Briefcase, Menu, Instagram, Target, Dumbbell, Shirt, Sun, Moon, RefreshCw, Loader2, Bell, ChevronRight, Zap, Rocket, Link2, CheckCircle2, Download, Clock, Info, Globe, Star, LogOut, Copy, Share2, QrCode, Eye, MoreHorizontal, Landmark, FileText, Smartphone, TrendingUp, BarChart3, Mail, Phone, MessageCircle, MessageSquare, Edit3, Send, X, XCircle, ExternalLink, AlertCircle, AlertTriangle, ArrowRight, Package, Flag, MapPin, Languages, Lock as LockIcon, ArrowUpRight, Wallet, HelpCircle, Sparkles, Youtube, Twitter, Heart, Trash2, Smartphone as SmartphoneIcon, Users, Calendar, ShoppingBag, Video, BookOpen, GraduationCap, Laugh, Coffee, Layers, Flame, Clapperboard, BadgeCheck, Check, IndianRupee } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useSignOut } from '@/lib/hooks/useAuth';
@@ -763,6 +763,58 @@ const MobileDashboardDemo = ({
         return () => mediaQuery.removeEventListener('change', handleChange);
     }, []);
 
+    // ============================================
+    // AUTO-LOCALIZATION (Fix for Flaky Instagram DPs)
+    // ============================================
+    const [autoLocalizeAttempted, setAutoLocalizeAttempted] = useState(false);
+    useEffect(() => {
+        const localize = async () => {
+            // Only attempt once per session and only if we have a profile to work with
+            if (autoLocalizeAttempted || !userId || !profile) return;
+            
+            // Check if we have an external Insta photo but NO internal avatar_url
+            // Or if the internal avatar_url is NOT a supabase link yet
+            const instaPhoto = profile.instagram_profile_photo;
+            const localPhoto = profile.avatar_url;
+            
+            const isExternal = instaPhoto && (instaPhoto.includes('fbcdn.net') || instaPhoto.includes('instagram.com'));
+            const isLocalMissing = !localPhoto || !localPhoto.includes('supabase.co');
+            
+            if (isExternal && isLocalMissing) {
+                setAutoLocalizeAttempted(true);
+                try {
+                    // Use wsrv.nl proxy to avoid CORS when fetching the image blob
+                    const proxyUrl = `https://wsrv.nl/?url=${encodeURIComponent(instaPhoto)}`;
+                    const response = await fetch(proxyUrl);
+                    if (!response.ok) return;
+                    
+                    const blob = await response.blob();
+                    const file = new File([blob], `avatar-${userId}.jpg`, { type: 'image/jpeg' });
+                    
+                    const { url } = await uploadFile(file, {
+                        category: 'document',
+                        userId,
+                        folder: 'avatars'
+                    });
+                    
+                    if (url) {
+                        await supabase
+                            .from('profiles')
+                            .update({ avatar_url: url })
+                            .eq('id', userId);
+                        
+                        // Refetch profile so SessionContext and UI get the new permanent URL
+                        if (refetchProfile) refetchProfile();
+                    }
+                } catch (err) {
+                    console.error('[AutoLocalizeAvatar] Background sync failed:', err);
+                }
+            }
+        };
+        
+        localize();
+    }, [userId, profile, autoLocalizeAttempted, refetchProfile]);
+
     const getSelectedItemUrl = () => {
         if (!selectedItem) return null;
         const itemId = String(selectedItem?.id || selectedItem?.raw?.id || '').trim();
@@ -1211,8 +1263,8 @@ const MobileDashboardDemo = ({
     };
     const avatarUrl =
         resolveAvatarUrl(liveCollabProfile?.profile_photo) ||
-        resolveAvatarUrl(profile?.instagram_profile_photo) ||
         resolveAvatarUrl(profile?.avatar_url) ||
+        resolveAvatarUrl(profile?.instagram_profile_photo) ||
         avatarFallbackUrl;
     const displayName = liveCollabProfile?.name || profile?.full_name || profile?.first_name || 'Pratyush';
 
@@ -3342,97 +3394,208 @@ const MobileDashboardDemo = ({
                     {/* ─── DASHBOARD TAB ─── */}
                     {activeTab === 'dashboard' && (
                         <>
-                            {/* Go Live Checklist (Vibe Readiness) */}
-                            {!completionDismissed && profile && (() => {
-                                const hasMonetizableActivity = Array.isArray(brandDeals) && brandDeals.some((d: any) =>
-                                    ['Payment Pending', 'Completed', 'Approved', 'Active', 'confirmed'].includes(String(d?.status || ''))
-                                );
+                            {(() => {
                                 const hasSetRates = [
                                     profile?.pricing_min,
                                     profile?.avg_rate_reel,
                                     profile?.reel_price,
                                     (profile as any)?.story_price,
                                     (profile as any)?.suggested_reel_rate,
-                                ].some((value) => Number(value) > 0) || Boolean(profile?.deal_templates?.length);
+                                ].some((v) => Number(v) > 0) || Boolean(profile?.deal_templates?.length);
 
-                                const tasks = [
-                                    { done: !!profile.instagram_handle, label: 'Add Instagram', focus: 'instagram' },
-                                    { done: !!profile.bio, label: 'Add intro headline', focus: 'bio' },
-                                    { done: hasSetRates, label: 'Set collab rates', focus: 'rates' },
-                                    { done: !!profile.discovery_video_url, label: 'Add Vibe Video', focus: 'discovery_video' },
-                                    // Only ask for payout when it's actually needed (reduces day-0 drop-off)
-                                    ...(hasMonetizableActivity
-                                        ? [{
-                                            done: Boolean(String(profile.bank_upi || '').trim()),
-                                            label: 'Add payout',
-                                            focus: 'payout',
-                                            tabLink: true
-                                        }]
-                                        : []),
+                                const setupSteps = [
+                                    { id: 'photo', done: !!profile?.instagram_profile_photo || !!profile?.avatar_url, label: 'Add Profile Picture' },
+                                    { id: 'rates', done: hasSetRates, label: 'Add Services & Pricing' },
+                                    { id: 'portfolio', done: (profile?.portfolio_items?.length || 0) > 0, label: 'Add Portfolio Samples' },
+                                    { id: 'link', done: !!profile?.link_shared_at, label: 'Share Your Link' }
                                 ];
-                                const shouldShow = tasks.some(t => !t.done);
-                                if (!shouldShow) return null;
-                                const completed = tasks.filter(t => t.done).length;
-                                const remaining = tasks.filter(t => !t.done);
-                                const pct = Math.round((completed / tasks.length) * 100);
-                                return (
-                                    <div className="mx-5 mb-6 p-5 rounded-[24px] bg-gradient-to-br from-indigo-500/10 via-purple-500/5 to-transparent border border-indigo-500/20 shadow-sm relative overflow-hidden group">
-                                        {/* Background Glow */}
-                                        <div className="absolute -right-4 -top-4 w-24 h-24 bg-indigo-500/10 blur-3xl rounded-full group-hover:bg-indigo-500/20 transition-all duration-700" />
-                                        
-                                        <div className="flex items-center justify-between mb-4">
-                                            <div className="flex items-center gap-3">
-                                                <div className="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center shadow-lg shadow-indigo-500/20">
-                                                    <Rocket className="w-5 h-5 text-white" />
+                                const completedCount = setupSteps.filter(s => s.done).length;
+                                const isSetupComplete = completedCount === setupSteps.length;
+
+                                if (!isSetupComplete) {
+                                    return (
+                                        <div className="space-y-6 pb-20">
+                                            {/* Welcome Header */}
+                                            <div className="px-5 pt-8">
+                                                <h1 className={cn("text-3xl font-black tracking-tight mb-2", isDark ? "text-white" : "text-slate-900")}>
+                                                    Welcome, {profile?.first_name || 'Beyonce'} 👋
+                                                </h1>
+                                                <p className={cn("text-sm font-medium opacity-60", isDark ? "text-white" : "text-slate-900")}>
+                                                    Let's get your creator profile live and ready to receive brand deals.
+                                                </p>
+                                            </div>
+
+                                            {/* Progress Card */}
+                                            <div className={cn(
+                                                "mx-5 p-6 rounded-[32px] border relative overflow-hidden",
+                                                isDark ? "bg-[#111820] border-white/5" : "bg-white border-slate-200 shadow-sm"
+                                            )}>
+                                                <div className="flex items-start gap-6 mb-8">
+                                                    <div className="relative w-16 h-16 flex-shrink-0">
+                                                        <svg className="w-full h-full transform -rotate-90">
+                                                            <circle cx="32" cy="32" r="28" fill="transparent" stroke="currentColor" strokeWidth="6" className="text-white/5" />
+                                                            <circle cx="32" cy="32" r="28" fill="transparent" stroke="currentColor" strokeWidth="6" className="text-primary" strokeDasharray={176} strokeDashoffset={176 * (1 - completedCount / 4)} strokeLinecap="round" />
+                                                        </svg>
+                                                        <div className="absolute inset-0 flex items-center justify-center font-black text-xl italic">{completedCount}/4</div>
+                                                    </div>
+                                                    <div>
+                                                        <div className="flex items-center justify-between">
+                                                            <h3 className="font-bold text-lg">Complete your setup</h3>
+                                                            <ChevronRight className="w-5 h-5 opacity-40" />
+                                                        </div>
+                                                        <p className="text-xs opacity-50 font-medium">Finish these steps to attract your first brand deal.</p>
+                                                    </div>
                                                 </div>
-                                                <div>
-                                                    <p className={cn("text-[16px] font-black tracking-tight", isDark ? "text-white" : "text-slate-900")}>Go Live Checklist</p>
-                                                    <p className={cn("text-[12px] font-bold opacity-50", isDark ? "text-white" : "text-slate-900")}>{completed}/{tasks.length} tasks ready for brands</p>
+
+                                                <div className="flex justify-between items-start gap-2">
+                                                    {setupSteps.map((step, idx) => (
+                                                        <div key={idx} className="flex flex-col items-center gap-3 text-center flex-1">
+                                                            <div className={cn(
+                                                                "w-10 h-10 rounded-full flex items-center justify-center text-xs font-black italic border-2 transition-all",
+                                                                step.done ? "bg-primary border-primary text-white" : (isDark ? "bg-white/5 border-white/10 text-white/40" : "bg-slate-50 border-slate-200 text-slate-400")
+                                                            )}>
+                                                                {step.done ? <Check className="w-5 h-5" /> : idx + 1}
+                                                            </div>
+                                                            <p className="text-[10px] font-bold leading-tight line-clamp-2">{step.label}</p>
+                                                        </div>
+                                                    ))}
                                                 </div>
                                             </div>
-                                            <button onClick={() => setCompletionDismissed(true)} className="p-1 rounded-full hover:bg-slate-200/50 active:scale-95 transition-colors">
-                                                <X className="w-4 h-4 opacity-40" />
-                                            </button>
-                                        </div>
 
-                                        {/* Progress bar */}
-                                        <div className="w-full h-2 bg-slate-200/20 dark:bg-slate-800/50 rounded-full mb-4 overflow-hidden">
-                                            <motion.div 
-                                                initial={{ width: 0 }}
-                                                animate={{ width: `${pct}%` }}
-                                                className="h-full bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full" 
-                                            />
-                                        </div>
-
-                                        <div className="flex flex-wrap gap-2">
-                                            {tasks.map((task, i) => (
-                                                <button
-                                                    key={i}
+                                            {/* Empty State Card */}
+                                            <div className={cn(
+                                                "mx-5 p-8 rounded-[32px] border flex flex-col items-center text-center",
+                                                isDark ? "bg-[#111820] border-white/5" : "bg-white border-slate-200 shadow-sm"
+                                            )}>
+                                                <div className="w-20 h-20 mb-6 relative">
+                                                    <div className="absolute inset-0 bg-primary/20 blur-2xl rounded-full" />
+                                                    <div className="relative w-full h-full bg-gradient-to-br from-primary/30 to-transparent rounded-3xl flex items-center justify-center border border-white/10">
+                                                        <Sparkles className="w-10 h-10 text-primary" />
+                                                    </div>
+                                                </div>
+                                                <h3 className="text-xl font-black italic mb-2">No brand requests yet 👀</h3>
+                                                <p className="text-sm opacity-50 font-medium mb-8 px-4">
+                                                    When brands submit briefs through your collab link, they'll appear here.
+                                                </p>
+                                                <button 
                                                     onClick={() => {
-                                                        triggerHaptic();
-                                                        setActiveTab('profile');
-                                                        if (task.focus === 'discovery_video') setActiveSettingsPage('portfolio');
-                                                        else if (task.focus === 'payout') setActiveSettingsPage('payouts');
-                                                        else {
-                                                            setActiveSettingsPage('personal');
-                                                            setIsEditMode(true);
-                                                        }
+                                                        const url = `https://creatorarmour.com/${profile?.username || 'beyonce'}`;
+                                                        navigator.clipboard.writeText(url);
+                                                        toast.success("Link copied!");
+                                                        triggerHaptic('success');
                                                     }}
-                                                    className={cn(
-                                                        "text-[11px] font-black px-4 py-2 rounded-full border transition-all active:scale-95 flex items-center gap-1.5",
-                                                        task.done 
-                                                            ? (isDark ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400" : "bg-emerald-50 border-emerald-100 text-emerald-700")
-                                                            : (isDark ? "bg-slate-800/50 border-slate-700 text-slate-300" : "bg-white border-slate-200 text-slate-600 shadow-sm")
-                                                    )}
+                                                    className="w-full bg-primary hover:bg-primary/90 text-white font-black italic rounded-2xl py-4 flex items-center justify-center gap-2 mb-8 transition-all active:scale-[0.98]"
                                                 >
-                                                    {task.done ? <CheckCircle2 className="w-3 h-3" /> : <div className="w-2 h-2 rounded-full bg-current opacity-30" />}
-                                                    {task.label}
+                                                    <Link2 className="w-5 h-5" />
+                                                    Share Your Link
                                                 </button>
-                                            ))}
+                                                
+                                                <div className="flex justify-between w-full border-t border-white/5 pt-6 gap-2">
+                                                    {[
+                                                        { icon: ShieldCheck, label: 'Secure & Protected', sub: 'We protect your work and payments' },
+                                                        { icon: Zap, label: 'Instant Connections', sub: 'Get offers from verified brands' },
+                                                        { icon: IndianRupee, label: 'Fair & Transparent', sub: 'Clear deals, no hidden fees' }
+                                                    ].map((perk, i) => (
+                                                        <div key={i} className="flex flex-col items-center gap-1 flex-1">
+                                                            <perk.icon className="w-4 h-4 text-primary" />
+                                                            <p className="text-[9px] font-black leading-none mt-1">{perk.label}</p>
+                                                            <p className="text-[8px] opacity-40 leading-tight">{perk.sub}</p>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+
+                                            {/* Link & WhatsApp Section */}
+                                            <div className={cn(
+                                                "mx-5 p-6 rounded-[32px] border space-y-6",
+                                                isDark ? "bg-[#111820] border-white/5" : "bg-white border-slate-200 shadow-sm"
+                                            )}>
+                                                <div>
+                                                    <div className="flex items-center justify-between mb-4">
+                                                        <p className="text-[10px] font-black uppercase tracking-widest opacity-40">Your Creator Link</p>
+                                                        <div className="flex items-center gap-1.5 opacity-40">
+                                                            <LockIcon className="w-3 h-3" />
+                                                            <p className="text-[9px] font-bold">Send this to brands</p>
+                                                        </div>
+                                                    </div>
+                                                    <div className="flex gap-2">
+                                                        <div className={cn(
+                                                            "flex-1 px-4 py-3 rounded-xl border font-medium text-sm truncate",
+                                                            isDark ? "bg-black border-white/10" : "bg-slate-50 border-slate-200"
+                                                        )}>
+                                                            creatorarmour.com/{profile?.username || 'beyonce'}
+                                                        </div>
+                                                        <button 
+                                                            onClick={() => {
+                                                                navigator.clipboard.writeText(`https://creatorarmour.com/${profile?.username || 'beyonce'}`);
+                                                                toast.success('Copied!');
+                                                            }}
+                                                            className={cn(
+                                                                "px-6 rounded-xl font-black italic text-sm border transition-all active:scale-95",
+                                                                isDark ? "bg-white/5 border-white/10 hover:bg-white/10" : "bg-white border-slate-200 hover:bg-slate-50"
+                                                            )}
+                                                        >
+                                                            Copy
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                                <button 
+                                                    onClick={() => {
+                                                        const url = `https://wa.me/?text=${encodeURIComponent(`Check out my creator profile: https://creatorarmour.com/${profile?.username || 'beyonce'}`)}`;
+                                                        window.open(url, '_blank');
+                                                    }}
+                                                    className="w-full bg-[#25D366] text-white font-black italic rounded-xl py-4 flex items-center justify-center gap-2 transition-all active:scale-[0.98]"
+                                                >
+                                                    <MessageCircle className="w-5 h-5 fill-current" />
+                                                    Share on WhatsApp
+                                                </button>
+                                            </div>
+
+                                            {/* Preview Card */}
+                                            <div className={cn(
+                                                "mx-5 p-8 rounded-[32px] overflow-hidden relative border",
+                                                isDark ? "bg-[#0A101A] border-white/10" : "bg-slate-900 border-slate-800"
+                                            )}>
+                                                <div className="relative z-10 space-y-6">
+                                                    <h4 className="text-[10px] font-black uppercase tracking-widest text-[#22C55E]">WHAT BRANDS WILL SEE</h4>
+                                                    <div className="flex items-center gap-4">
+                                                        <div className="w-16 h-16 rounded-full border-2 border-white/20 overflow-hidden">
+                                                            <img src={profile?.avatar_url || `https://ui-avatars.com/api/?name=${profile?.business_name || 'B'}`} className="w-full h-full object-cover" />
+                                                        </div>
+                                                        <div>
+                                                            <h3 className="text-2xl font-black text-white italic">{profile?.first_name || 'Beyonce'}</h3>
+                                                            <p className="text-primary font-bold">@{profile?.username || 'beyonce'}</p>
+                                                        </div>
+                                                    </div>
+                                                    <p className="text-sm text-white/60 font-medium">
+                                                        Brands open your creator link, choose a service, and send you an offer here.
+                                                    </p>
+                                                    <button 
+                                                        onClick={() => window.open(`/${profile?.username || 'beyonce'}`, '_blank')}
+                                                        className="inline-flex items-center gap-2 bg-white/10 hover:bg-white/20 border border-white/10 text-white rounded-xl px-6 py-3 text-sm font-black italic transition-all active:scale-95"
+                                                    >
+                                                        <Eye className="w-4 h-4" />
+                                                        View Profile Preview
+                                                    </button>
+                                                </div>
+                                                {/* Doc Illustration Mockup */}
+                                                <div className="absolute top-1/2 -right-12 -translate-y-1/2 w-48 h-64 bg-white/5 rounded-3xl transform rotate-12 blur-sm pointer-events-none" />
+                                                <div className="absolute top-1/2 -right-4 -translate-y-1/2 w-48 h-64 bg-white/5 rounded-3xl transform rotate-6 border border-white/20 p-6 pointer-events-none">
+                                                    <div className="w-full h-24 bg-white/10 rounded-xl mb-4" />
+                                                    <div className="w-3/4 h-3 bg-white/20 rounded-full mb-3" />
+                                                    <div className="w-1/2 h-3 bg-white/10 rounded-full" />
+                                                    <div className="absolute top-4 right-4 flex gap-1">
+                                                        <Sparkles className="w-5 h-5 text-yellow-400" />
+                                                    </div>
+                                                </div>
+                                            </div>
                                         </div>
-                                    </div>
-                                );
-                            })()}
+                                    );
+                                }
+
+                                return (
+                                    <>
+
 
                             {/* PWA Install Banner (Android only) */}
                             {canInstall && (
@@ -3687,155 +3850,8 @@ const MobileDashboardDemo = ({
                                 </div>
                             )}
 
-                            {/* Share Link CTA - only for new accounts with no activity */}
-                            {(!isLoadingDeals && !isLoadingProfile) && activeDealsCount === 0 && pendingOffersCount === 0 && (!profile?.instagram_handle || !profile?.bio) && (
-                                <div className="px-5 mb-4">
-                                    <div className={cn("p-5 rounded-2xl border", isDark ? "bg-card border-[#2C2C2E]" : "bg-[#DCFCE7] border-[#16A34A]/20")}>
-                                        <p className={cn("text-[14px] font-bold mb-3", isDark ? "text-foreground" : "text-[#0F172A]")}>Share your link to get your first offer</p>
-                                        <button
-                                            type="button"
-                                            onClick={() => {
-                                                triggerHaptic();
-                                                setShowShareSheet(true);
-                                            }}
-                                            className={cn(
-                                                "h-11 px-5 rounded-xl text-[13px] font-black transition-all active:scale-[0.98]",
-                                                isDark ? "bg-primary text-foreground" : "bg-[#16A34A] text-white"
-                                            )}
-                                        >
-                                            Share Link
-                                        </button>
-                                    </div>
-                                </div>
-                            )}
-
-
-                            {/* Empty State vs Normal Metrics */}
-                            {(!isLoadingDeals && !isLoadingProfile) && activeDealsCount === 0 && pendingOffersCount === 0 && monthlyRevenue === 0 && collabRequests.length === 0 ? (
-                                <>
-                                    {/* Empty State Hero - Improved */}
-                                    <div className="px-5 mb-8">
-                                        <motion.div
-                                            initial={{ opacity: 0, y: 15 }}
-                                            animate={{ opacity: 1, y: 0 }}
-                                            className={cn(
-                                                "p-5 rounded-[2rem] border relative overflow-hidden",
-                                                isDark ? "bg-card border-[#2C2C2E]" : "bg-white border-[#E5E7EB] shadow-sm"
-                                            )}
-                                        >
-                                            <h2 className={cn("text-[22px] font-black mb-2 tracking-tight", isDark ? "text-foreground" : "text-[#0F172A]")}>No brand requests yet 👀</h2>
-                                            <p className={cn("text-[14px] font-medium mb-5 leading-relaxed", isDark ? "text-foreground/70" : "text-[#64748B]")}>
-                                                When brands submit briefs through your collab link, they'll appear here.
-                                            </p>
-
-                                            <button
-                                                type="button"
-                                                onClick={() => {
-                                                    triggerHaptic();
-                                                    setShowActionSheet(false);
-                                                    handleShareOnWhatsApp();
-                                                }}
-                                                className={cn(
-                                                    "h-12 px-6 rounded-2xl flex items-center justify-center font-black text-[14px] active:scale-[0.98] transition-all",
-                                                    isDark ? "bg-primary text-foreground" : "bg-[#16A34A] text-white"
-                                                )}
-                                            >
-                                                Share Link
-                                            </button>
-                                        </motion.div>
-                                    </div>
-
-                                    {/* Beautiful Collab Link Card - moved below empty state */}
-                                    <div className="px-5 mb-8">
-                                        <div className={cn("p-4 rounded-2xl border", isDark ? "bg-card border-[#2C2C2E]" : "bg-white border-[#E5E7EB]")}>
-                                            <div className="flex items-center justify-between mb-2">
-                                                <p className={cn("text-[10px] font-black uppercase tracking-widest opacity-50", textColor)}>Your link</p>
-                                                <p className={cn("text-[10px] font-medium", secondaryTextColor)}>Send this when a brand asks to collaborate</p>
-                                            </div>
-
-                                            <div className={cn("px-4 py-3 rounded-xl font-mono text-[12px] border mb-3 min-w-0 truncate", isDark ? "bg-background border-border text-foreground" : "bg-[#F8FAF9] border-[#E5E7EB] text-[#0F172A]")}>
-                                                creatorarmour.com/{profile?.handle || username || 'creator'}
-                                            </div>
-
-                                            <div className="flex gap-2">
-                                                <button type="button"
-                                                    onClick={() => {
-                                                        handleShareOnWhatsApp();
-                                                    }}
-                                                    className={cn(
-                                                        "flex-1 h-10 rounded-xl flex items-center justify-center font-black text-[12px] active:scale-95 transition-all",
-                                                        isDark ? "bg-primary text-foreground" : "bg-[#16A34A] text-white"
-                                                    )}
-                                                >
-                                                    <MessageCircle className="w-4 h-4 mr-1.5" /> WhatsApp
-                                                </button>
-                                                <button type="button"
-                                                    onClick={() => {
-                                                        handleCopyStorefront();
-                                                    }}
-                                                    className={cn(
-                                                        "h-10 px-4 rounded-xl flex items-center justify-center border font-black text-[12px] active:scale-95 transition-all",
-                                                        isCollabLinkCopied
-                                                            ? "bg-[#16A34A] border-[#16A34A] text-white"
-                                                            : isDark ? "bg-background border-border text-foreground" : "bg-white border-[#E5E7EB] text-[#0F172A]"
-                                                    )}
-                                                >
-                                                    {isCollabLinkCopied ? 'Copied!' : 'Copy'}
-                                                </button>
-                                            </div>
-
-                                            <div className={cn(
-                                                "mt-4 rounded-[24px] border p-4 overflow-hidden relative",
-                                                isDark ? "bg-[#0F172A] border-border" : "bg-[linear-gradient(180deg,#ffffff_0%,#f8fbfa_100%)] border-slate-200"
-                                            )}>
-                                                <div className={cn(
-                                                    "absolute inset-x-0 top-0 h-20 opacity-80 pointer-events-none",
-                                                    isDark
-                                                        ? "bg-gradient-to-r from-emerald-500/10 via-cyan-500/10 to-blue-500/10"
-                                                        : "bg-gradient-to-r from-emerald-50 via-cyan-50 to-blue-50"
-                                                )} />
-                                                <div className="relative">
-                                                    <p className={cn("text-[11px] font-black uppercase tracking-[0.2em] mb-3", isDark ? "text-white/55" : "text-slate-500")}>
-                                                        What brands will see
-                                                    </p>
-                                                    <div className="flex items-center gap-3">
-                                                        <div className="w-11 h-11 rounded-2xl overflow-hidden border border-border shrink-0">
-                                                            <img
-                                                                src={avatarUrl}
-                                                                alt="creator preview avatar"
-                                                                className="w-full h-full object-cover"
-                                                                onError={(e) => {
-                                                                    (e.currentTarget as HTMLImageElement).onerror = null;
-                                                                    (e.currentTarget as HTMLImageElement).src = avatarFallbackUrl;
-                                                                }}
-                                                            />
-                                                        </div>
-                                                        <div className="min-w-0">
-                                                            <p className={cn("text-[17px] font-black tracking-tight truncate", isDark ? "text-white" : "text-slate-900")}>
-                                                                {profile?.first_name || username || 'Creator'}
-                                                            </p>
-                                                            <p className={cn("text-[13px] font-semibold", isDark ? "text-emerald-300" : "text-emerald-700")}>
-                                                                @{profile?.instagram_handle || username || 'creator'}
-                                                            </p>
-                                                        </div>
-                                                    </div>
-                                                    <p className={cn("mt-3 text-[13px] leading-relaxed max-w-[260px]", isDark ? "text-white/70" : "text-slate-600")}>
-                                                        Brands open your creator link, choose a service, and send you an offer here.
-                                                    </p>
-                                                    <div className="mt-4 inline-flex h-10 items-center justify-center rounded-full bg-emerald-600 px-5 text-[11px] font-black uppercase tracking-[0.16em] text-white">
-                                                        Send Offer
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </>
-
-                            ) : (
-                                <>
-
-                                    {/* Metrics Strip (Inspired layout) */}
-                                    <div className="px-5 mb-8 space-y-5">
+                            {/* Normal Metrics - Shown when setup is complete */}
+                            <div className="px-5 mb-8 space-y-5">
                                         {/* Earnings Hero */}
                                         <motion.div
                                             initial={{ scale: 0.97, opacity: 0 }}
@@ -4143,363 +4159,15 @@ const MobileDashboardDemo = ({
                                             >
                                                 View all offers →
                                             </button>
-                                        </div>
-                                    </div>
-
                                     {/* NOTE: Collab link promotion is already covered above (Get More Deals + Grow Your Brand).
                                        Keeping a single surface avoids duplicate "collab link" sections on the dashboard. */}
-                                </>
-                            )}
-
-                            {/* Brand Offers Section (removed from dashboard; use Deals tab instead) */}
-                            {false && (
-                            <div className="px-5 mb-8">
-                                <div className="flex items-center justify-between mb-5">
-                                    <h2 className={cn('text-[16px] font-medium tracking-tight', textColor)}>Deals</h2>
-                                </div>
-
-                                <AnimatePresence mode="popLayout">
-                                    {(() => {
-                                        const fakeDemoOffer = {
-                                            id: 'demo-offer',
-                                            brand_name: 'Zepto (Demo)',
-                                            brand_logo: 'https://upload.wikimedia.org/wikipedia/en/thumb/8/87/Zepto_logo.svg/100px-Zepto_logo.svg.png',
-                                            category: 'Quick Commerce',
-                                            collab_type: 'paid',
-                                            exact_budget: 35000,
-                                            deliverables: ['1 Reel', '2 Stories'],
-                                            deadline: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString(),
-                                            status: 'new',
-                                            isDemo: true
-                                        };
-                                        const confirmedDeals = (brandDeals || [])
-                                            .filter(d => {
-                                                const s = (d.status || '').toLowerCase();
-                                                return s !== 'completed' && s !== 'cancelled';
-                                            })
-                                            .map(d => ({ ...d, isConfirmedDeal: true }))
-                                            .slice(0, 5);
-
-                                        // Dashboard already shows "Incoming Offers" above.
-                                        // Keep the lower list focused on active deals only to avoid duplicating offers.
-                                        const showDemo = confirmedDeals.length === 0 && isDemoOfferEnabled;
-                                        const pendingSection = showDemo ? [fakeDemoOffer] : [];
-                                        const hasAnyDeals = confirmedDeals.length > 0;
-
-                                        if (isLoadingDeals) {
-                                            return (
-                                                <DashboardLoadingStage isDark={isDark} />
-                                            );
-                                        }
-
-                                        if (!hasAnyDeals && !showDemo) {
-                                            return (
-                                                <div className={cn("p-6 rounded-[2rem] border text-center", isDark ? "bg-card border-border" : "bg-card border-border shadow-sm")}>
-                                                    <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-500 to-cyan-500 mx-auto mb-4 flex items-center justify-center shadow-lg shadow-blue-500/20">
-                                                        <Briefcase className="w-7 h-7 text-white" />
-                                                    </div>
-                                                    <h3 className={cn("text-[18px] font-black tracking-tight mb-2 font-outfit", textColor)}>No active deals yet</h3>
-                                                    <p className={cn("text-[13px] leading-relaxed opacity-70 mb-5", textColor)}>New offers will appear in the New Offers tab as soon as brands send them.</p>
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => { triggerHaptic(); setActiveTab('deals'); setCollabSubTab('pending'); }}
-                                                        className="h-12 px-6 rounded-2xl bg-gradient-to-r from-blue-600 to-cyan-500 text-white font-black text-[13px] shadow-lg shadow-blue-500/20 active:scale-95 transition-all"
-                                                    >
-                                                        View New Offers
-                                                    </button>
-                                                </div>
-                                            );
-                                        }
-
-                                        const renderDealCard = (req: any, idx: number) => {
-                                                    const deliverablesArr: string[] = (() => {
-                                                        const raw = req.raw?.deliverables || req.deliverables;
-                                                        if (!raw) return ['1 Reel', '1 Story', '1 Post'];
-                                                        if (Array.isArray(raw)) {
-                                                            return raw.map((d: any) => {
-                                                                if (typeof d === 'string') return d;
-                                                                if (d && typeof d === 'object' && d.contentType && d.count) return `${d.count} ${d.contentType}`;
-                                                                return JSON.stringify(d);
-                                                            }).map((d: string) => d.replace(/[\[\]"'{}]/g, ''));
-                                                        }
-                                                        if (typeof raw === 'string') {
-                                                            try {
-                                                                const parsed = JSON.parse(raw);
-                                                                if (Array.isArray(parsed)) {
-                                                                    return parsed.map((d: any) => {
-                                                                        if (typeof d === 'string') return d;
-                                                                        if (d && typeof d === 'object' && d.contentType && d.count) return `${d.count} ${d.contentType}`;
-                                                                        return JSON.stringify(d);
-                                                                    }).map((d: string) => d.replace(/[\[\]"'{}]/g, ''));
-                                                                }
-                                                                return [parsed.toString()];
-                                                            } catch { return [raw]; }
-                                                        }
-                                                        return ['1 Reel', '1 Story', '1 Post'];
-                                                    })();
-
-                                                    const deadlineText = (() => {
-                                                        if (!req.deadline && !req.due_date) return '';
-                                                        const d = new Date(req.deadline || req.due_date);
-                                                        const diff = Math.ceil((d.getTime() - Date.now()) / 86400000);
-                                                        if (diff > 0) return `${diff}d left`;
-                                                        if (diff === 0) return 'Today';
-                                                        return 'Past Due';
-                                                    })();
-                                                    const isPastDue = deadlineText === 'Past Due' || deadlineText === 'Today';
-                                                    if (req.isConfirmedDeal) {
-                                                        const ux = getCreatorDealCardUX(req);
-                                                        const budget = Number(req?.deal_amount || req?.exact_budget || 0);
-                                                        const dueText = ux.daysUntilDue === null
-                                                            ? null
-                                                            : ux.daysUntilDue < 0
-                                                                ? `OVERDUE ${Math.abs(ux.daysUntilDue)}D`
-                                                                : `${ux.daysUntilDue} DAYS LEFT`;
-                                                        const productImage = resolveCreatorDealProductImage(req);
-                                                        const deliverablesContent = (() => {
-                                                            const raw = req?.deliverables || req?.raw?.deliverables;
-                                                            try {
-                                                                const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;
-                                                                if (Array.isArray(parsed) && parsed.length > 0) {
-                                                                    const types = parsed.map((d: any) => {
-                                                                        if (typeof d === 'string') return d.includes('Reel') ? 'Reel' : d;
-                                                                        const ct = String(d?.contentType || d?.type || '').toLowerCase();
-                                                                        const count = Number(d?.count || d?.quantity || 1) || 1;
-                                                                        const label = ct.includes('reel') ? 'Reel' : ct.includes('story') ? 'Story' : 'Post';
-                                                                        return count > 1 ? `${label} (x${count})` : label;
-                                                                    });
-                                                                    return types.join(' + ');
-                                                                }
-                                                            } catch {}
-                                                            return 'Reel';
-                                                        })();
-
-                                                        return (
-                                                            <motion.div
-                                                                key={req.id || idx}
-                                                                whileTap={{ scale: 0.98 }}
-                                                                onTap={() => {
-                                                                    triggerHaptic();
-                                                                    setSelectedItem(req);
-                                                                    setSelectedType('deal');
-                                                                }}
-                                                                className={cn(
-                                                                    "relative w-full aspect-[4/5] rounded-[40px] overflow-hidden transition-all duration-500 group cursor-pointer border-0 shadow-2xl shadow-black/20",
-                                                                    isDark ? "bg-[#0B1220]" : "bg-slate-100"
-                                                                )}
-                                                            >
-                                                                {/* Background Image/Fallback */}
-                                                                <div className="absolute inset-0">
-                                                                    {productImage ? (
-                                                                        <img 
-                                                                            src={productImage} 
-                                                                            alt="" 
-                                                                            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
-                                                                            loading="lazy" 
-                                                                        />
-                                                                    ) : (
-                                                                        <div className={cn(
-                                                                            "w-full h-full flex flex-col items-center justify-center gap-4",
-                                                                            isDark ? "bg-gradient-to-br from-[#1A1D25] to-[#12141A]" : "bg-gradient-to-br from-slate-100 to-slate-200"
-                                                                        )}>
-                                                                            <div className="w-24 h-24 rounded-3xl bg-white/10 backdrop-blur-md border border-white/10 flex items-center justify-center p-4">
-                                                                                {getBrandIcon(req.brand_logo_url || req.brand_logo || req.logo_url, req.category, req.brand_name)}
-                                                                            </div>
-                                                                        </div>
-                                                                    )}
-                                                                    {/* Premium Overlays */}
-                                                                    <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/30 to-black/5" />
-                                                                </div>
-
-                                                                {/* Content Wrapper */}
-                                                                <div className="absolute inset-0 flex flex-col justify-between z-10">
-                                                                    {/* Top Section: Progress Rail + Status */}
-                                                                    <div>
-                                                                        {/* Top Edge Progress Bar */}
-                                                                        <div className="h-1.5 w-full bg-white/10 flex items-center overflow-hidden">
-                                                                            <motion.div 
-                                                                                initial={{ width: 0 }}
-                                                                                animate={{ width: `${(Math.max(1, ux.progressStep) / 5) * 100}%` }}
-                                                                                className="h-full bg-gradient-to-r from-emerald-400 to-teal-400 relative"
-                                                                            >
-                                                                                {/* Glow dot at the end of progress */}
-                                                                                <div className="absolute right-0 top-1/2 -translate-y-1/2 w-4 h-4 bg-emerald-400/30 blur-md rounded-full" />
-                                                                            </motion.div>
-                                                                        </div>
-
-                                                                        <div className="p-6 flex items-center justify-between">
-                                                                            <div className="flex items-center gap-2">
-                                                                                <div className="px-4 py-2 rounded-full bg-white/10 backdrop-blur-md border border-white/10 flex items-center gap-2">
-                                                                                    <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                                                                                    <span className="text-[11px] font-black uppercase tracking-widest text-white">{ux.stagePill || "Active Deal"}</span>
-                                                                                </div>
-                                                                                {dueText && (
-                                                                                    <div className="px-4 py-2 rounded-full bg-rose-500/20 backdrop-blur-md border border-rose-500/20 flex items-center gap-2">
-                                                                                        <Clock className="w-3.5 h-3.5 text-rose-300" />
-                                                                                        <span className="text-[11px] font-black uppercase tracking-widest text-rose-100">{dueText}</span>
-                                                                                    </div>
-                                                                                )}
-                                                                            </div>
-                                                                            <div className="text-right">
-                                                                                <p className="text-[14px] font-black text-white tracking-tight drop-shadow-md">
-                                                                                    {budget > 0 ? `₹${budget.toLocaleString()}` : '—'}
-                                                                                </p>
-                                                                                <p className="text-[9px] font-black text-emerald-400 uppercase tracking-widest mt-0.5">
-                                                                                    {Math.round((Math.max(1, ux.progressStep) / 5) * 100)}% DONE
-                                                                                </p>
-                                                                            </div>
-                                                                        </div>
-                                                                    </div>
-
-                                                                    {/* Bottom Section */}
-                                                                    <div className="p-6 pt-0">
-                                                                        <h2 className="text-2xl font-black text-white tracking-tighter mb-1 italic uppercase drop-shadow-2xl">
-                                                                            {req.brand_name?.replace(/\s*\([^)]*\)\s*/g, '')}
-                                                                        </h2>
-                                                                        <p className="text-white/70 text-[12px] font-bold mb-6 line-clamp-2 leading-relaxed tracking-tight">
-                                                                            {deliverablesContent} • Campaign Active
-                                                                        </p>
-
-                                                                        {/* Hero CTA - Reduced size and centered */}
-                                                                        <div className="flex justify-center">
-                                                                            <button 
-                                                                                type="button"
-                                                                                className="h-10 px-8 rounded-full bg-white text-black font-black uppercase tracking-[0.15em] text-[11px] flex items-center justify-center gap-2 shadow-2xl active:scale-95 transition-all duration-300 ring-4 ring-black/20"
-                                                                            >
-                                                                                Manage Campaign
-                                                                                <ChevronRight className="w-4 h-4" strokeWidth={3} />
-                                                                            </button>
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
-                                                            </motion.div>
-                                                        );
-                                                    }
-
-                                                    return (
-                                                        <motion.div
-                                                            key={req.id || idx}
-                                                            initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: idx * 0.05 }}
-                                                            whileTap={{ scale: 0.98 }}
-                                                            onTap={() => {
-                                                                triggerHaptic();
-                                                                setSelectedItem(req);
-                                                                setSelectedType(req.isConfirmedDeal ? 'deal' : 'offer');
-                                                            }}
-                                                            className={cn(
-                                                                'rounded-[32px] overflow-hidden transition-all duration-200 active:scale-[0.99] relative',
-                                                                isDark
-                                                                    ? 'bg-background/80 backdrop-blur-sm border border-border/50 hover:border-border'
-                                                                    : 'bg-card border-border shadow-lg hover:shadow-xl hover:border-border'
-                                                            )}
-                                                        >
-                                                            <div className={cn("h-[4px] w-full", req.collab_type === 'barter' ? 'bg-gradient-to-r from-amber-400 via-orange-400 to-amber-500' : 'bg-gradient-to-r from-blue-500 via-violet-500 to-indigo-600')} />
-                                                            <div className="px-5 py-4">
-                                                                <div className="flex items-start gap-4 mb-4">
-                                                                    {(() => {
-                                                                        const productImage = resolveCreatorDealProductImage(req);
-                                                                        return (
-                                                                    <div className={cn(
-                                                                        "w-16 h-16 rounded-2xl border overflow-hidden flex items-center justify-center shrink-0 transition-all duration-300 shadow-sm",
-                                                                        req.collab_type === 'barter'
-                                                                            ? (isDark ? "bg-[#1A1610] border-warning/30" : "bg-warning/5 border-warning/20")
-                                                                            : (isDark ? "bg-[#101420] border-blue-500/30" : "bg-blue-50/50 border-blue-200")
-                                                                    )}>
-                                                                        {productImage ? (
-                                                                            <img src={productImage} alt="" className="w-full h-full object-cover" loading="lazy" />
-                                                                        ) : (
-                                                                            <div className="p-3">
-                                                                                {getBrandIcon(req.brand_logo_url || req.brand_logo || req.logo_url, req.category, req.brand_name)}
-                                                                            </div>
-                                                                        )}
-                                                                    </div>
-                                                                        );
-                                                                    })()}
-                                                                    <div className="flex-1 min-w-0">
-                                                                        <div className="flex items-center gap-2 mb-1.5 flex-wrap">
-                                                                            <p className={cn("text-[17px] font-black tracking-tight truncate leading-tight", isDark ? "text-white" : "text-slate-900")}>
-                                                                                {(req.brand_name || 'Brand').replace(/\s*\([^)]*\)\s*/g, '')}
-                                                                            </p>
-                                                                            {req.collab_type === 'barter' ? (
-                                                                                <span className="shrink-0 px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-amber-500/10 text-amber-500 border border-amber-500/20">🎁 Free products</span>
-                                                                            ) : (
-                                                                                <span className="shrink-0 px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-blue-500/10 text-blue-500 border border-blue-500/20">💳 Paid</span>
-                                                                            )}
-                                                                        </div>
-                                                                        <div className="flex items-center gap-1.5">
-                                                                            <div className="flex items-center gap-1 opacity-70">
-                                                                                <ShieldCheck className="w-3.5 h-3.5 text-blue-500" strokeWidth={3} />
-                                                                                <span className={cn("text-[11px] font-black uppercase tracking-widest", isDark ? "text-slate-400" : "text-slate-500")}>Verified Deal</span>
-                                                                            </div>
-                                                                        </div>
-                                                                    </div>
-                                                                    <div className="shrink-0 text-right">
-                                                                        <p className={cn("text-[22px] font-black tracking-tighter leading-none", isDark ? "text-white" : "text-slate-900")}>
-                                                                            {req.exact_budget || req.deal_amount ? `₹${(req.exact_budget || req.deal_amount).toLocaleString()}` : req.barter_value ? `₹${(req.barter_value / 1000).toFixed(0)}K` : (req.budget_range || '₹75K')}
-                                                                        </p>
-                                                                        <p className={cn("text-[9px] font-black uppercase tracking-[0.2em] mt-1 opacity-40", textColor)}>
-                                                                            {req.collab_type === 'barter' ? 'Value' : 'Cash'}
-                                                                        </p>
-                                                                    </div>
-                                                                </div>
-                                                                <div className="flex items-center gap-2 mb-5 flex-wrap">
-                                                                    {deliverablesArr.slice(0, 2).map((d, i) => (
-                                                                        <span key={i} className={cn("px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest border", isDark ? "bg-white/5 border-white/5 text-slate-400" : "bg-slate-50 border-slate-100 text-slate-500")}>{d}</span>
-                                                                    ))}
-                                                                    <span className={cn("px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest border", isDark ? "bg-blue-500/10 border-blue-500/20 text-blue-400" : "bg-blue-50 border-blue-100 text-blue-600")}>
-                                                                        📅 {(req.deadline || req.due_date) ? new Date(req.deadline || req.due_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) : '21 Mar'}
-                                                                    </span>
-                                                                </div>
-                                                                <div className="flex gap-2">
-                                                                    <button type="button"
-                                                                        className={cn("flex-1 h-12 rounded-2xl font-black uppercase tracking-[0.15em] text-[11px] border transition-all active:scale-[0.96]", isDark ? "border-white/10 text-white hover:bg-white/5 bg-white/5" : "border-slate-200 text-slate-900 hover:bg-slate-50 bg-white shadow-sm")}>
-                                                                        View Details
-                                                                    </button>
-                                                                    {!req.isConfirmedDeal && (
-                                                                        <button type="button"
-                                                                            className={cn("flex-1 h-12 rounded-2xl font-black uppercase tracking-[0.15em] text-[11px] text-white transition-all flex items-center justify-center gap-2 active:scale-[0.96] disabled:opacity-50 shadow-xl", req.collab_type === 'barter' ? "bg-gradient-to-r from-amber-500 to-orange-500 shadow-orange-500/20" : "bg-gradient-to-r from-blue-600 to-violet-600 shadow-blue-500/20")}>
-                                                                            Accept Deal
-                                                                        </button>
-                                                                    )}
-                                                                </div>
-                                                            </div>
-                                                        </motion.div>
-                                                    );
-                                                };
-
-                                                return (
-                                                    <div className="space-y-4">
-                                                {/* Section 1: Incoming / Pending Offers */}
-                                                {(pendingSection.length > 0 || showDemo) && (
-                                                    <div>
-                                                        <div className="flex items-center gap-3 mb-4">
-                                                            <div className={cn("flex-1 h-px", isDark ? "bg-border/50" : "bg-border")} />
-                                                            <span className={cn("text-[10px] font-bold uppercase tracking-widest", secondaryTextColor)}>Incoming Offers</span>
-                                                            <div className={cn("flex-1 h-px", isDark ? "bg-border/50" : "bg-border")} />
-                                                        </div>
-                                                        {pendingSection.map((req: any, idx: number) => renderDealCard(req, idx))}
-                                                    </div>
-                                                )}
-
-                                                {/* Section 2: Confirmed/Active Deals */}
-                                                {confirmedDeals.length > 0 && (
-                                                    <div>
-                                                        <div className="flex items-center gap-3 mb-4">
-                                                            <div className={cn("flex-1 h-px", isDark ? "bg-border/50" : "bg-border")} />
-                                                            <span className={cn("text-[10px] font-bold uppercase tracking-widest", secondaryTextColor)}>Your Active Deals</span>
-                                                            <div className={cn("flex-1 h-px", isDark ? "bg-border/50" : "bg-border")} />
-                                                        </div>
-                                                        {confirmedDeals.map((req: any, idx: number) => renderDealCard(req, idx))}
-                                                    </div>
-                                                )}
-                                            </div>
-                                        );
-                                    })()}
-                                </AnimatePresence>
-                            </div>
-                            )}
-                        </>
-                    )}
+                                        </div>
+                                    </div>
+                            </>
+                        );
+                    })()}
+                </>
+            )}
 
                     {activeTab === 'analytics' && (
                         <>
@@ -4562,8 +4230,8 @@ const MobileDashboardDemo = ({
 
                             <div className="px-5 mb-8">
                                 <DealSearchFilter
-                                    onSearch={(query) => setSearchQuery(query)}
-                                    onFilterChange={(filters) => setDealFilters(filters)}
+                                    onSearch={(query: string) => setSearchQuery(query)}
+                                    onFilterChange={(filters: any) => setDealFilters(filters)}
                                     isDark={isDark}
                                     totalDeals={brandDeals?.length || 0}
                                 />
