@@ -32,7 +32,8 @@ export type NotificationCategory =
   | 'message_unread'
   | 'system_update'
   | 'system_maintenance'
-  | 'reminder_custom';
+  | 'reminder_custom'
+  | 'collab_request';
 
 export interface Notification {
   id: string;

@@ -39,8 +39,10 @@ const NotificationCenter = () => {
     deleteNotification,
     isMarkingAllAsRead,
   } = useNotifications({
-    filter: filter === 'unread' ? { read: false } : filter === 'read' ? { read: true } : {},
-    type: typeFilter !== 'all' ? typeFilter : undefined,
+    filter: {
+      read: filter === 'unread' ? false : filter === 'read' ? true : undefined,
+      type: typeFilter !== 'all' ? typeFilter : undefined,
+    }
   });
 
   // Filter notifications by search query

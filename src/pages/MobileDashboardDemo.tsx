@@ -45,6 +45,7 @@ import confetti from 'canvas-confetti';
 import { uploadFile } from '@/lib/services/fileService';
 import type { PortfolioItem } from '@/types';
 import { DiscoveryVideoUpload } from '@/components/dashboard/DiscoveryVideoUpload';
+import { CreatorDiscoveryStack } from '@/components/creator-dashboard/CreatorDiscoveryStack';
 
 interface MobileDashboardProps {
     profile?: any;
@@ -5119,7 +5120,7 @@ const MobileDashboardDemo = ({
                                                                             type="button"
                                                                             onClick={async (e) => {
                                                                                 e.stopPropagation();
-                                                                                triggerHaptic(HapticPatterns.warning);
+                                                                                triggerHaptic(HapticPatterns.error);
                                                                                 if (req?.isDemo) {
                                                                                     toast.message('This is a demo offer', { description: 'Decline is disabled for demo.' });
                                                                                     return;
