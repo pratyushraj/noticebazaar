@@ -2216,8 +2216,9 @@ const MobileDashboardDemo = ({
                                     <>Edit Profile</>
                                 )}
                             </button>
+                        </div>
 
-                            <div className="px-5 space-y-7">
+                        <div className="px-5 space-y-7">
                             {/* ── AVATAR UPLOAD ── */}
                             <div className="flex flex-col items-center pt-2">
                                 <div className="relative group">
