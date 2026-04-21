@@ -2878,25 +2878,49 @@ const MobileDashboardDemo = ({
                                 </div>
                             </div>
 
-                            {/* ── SAVE ── */}
-                            <div className="pt-4">
-                                <button type="button" onClick={handleSaveProfile} disabled={isSavingProfile}
-                                    className={cn("w-full py-4.5 rounded-[18px] font-black uppercase tracking-widest text-[13px] flex items-center justify-center gap-3 active:scale-[0.98] transition-all", isDark ? "bg-primary text-white shadow-lg shadow-primary/30" : "bg-emerald-600 text-white shadow-xl shadow-emerald-500/20")}>
+                            {/* ── SAVE ACTION ── */}
+                            <div className="pt-8 pb-10">
+                                <motion.button 
+                                    whileTap={{ scale: 0.97 }}
+                                    type="button" 
+                                    onClick={handleSaveProfile} 
+                                    disabled={isSavingProfile}
+                                    className={cn(
+                                        "w-full py-5 rounded-[22px] font-black uppercase tracking-[0.1em] text-[12px] flex items-center justify-center gap-3 transition-all duration-300 shadow-2xl relative overflow-hidden group",
+                                        isDark 
+                                            ? "bg-gradient-to-br from-primary via-primary/90 to-primary/80 text-white shadow-primary/20" 
+                                            : "bg-gradient-to-br from-emerald-400 via-emerald-500 to-emerald-600 text-white shadow-emerald-500/30"
+                                    )}
+                                >
+                                    {/* Glass Shine Effect */}
+                                    <div className="absolute inset-0 bg-gradient-to-tr from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                                    
                                     {isSavingProfile ? (
                                         <>
-                                            <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                                            Saving Profile...
+                                            <Loader2 className="w-4 h-4 animate-spin" />
+                                            <span>Syncing Profile...</span>
                                         </>
                                     ) : (
                                         <>
-                                            <ShieldCheck className="w-4 h-4" />
-                                            Save All Changes
+                                            <div className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center">
+                                                <ShieldCheck className="w-3.5 h-3.5" />
+                                            </div>
+                                            <span className="drop-shadow-sm">Save All Changes</span>
                                         </>
                                     )}
-                                </button>
-                                <p className={cn("mt-5 text-center text-[10px] font-bold opacity-30 px-8 leading-normal uppercase tracking-tighter", textColor)}>
-                                    Changes are instant. View your public landing page to see updates.
-                                </p>
+                                </motion.button>
+                                
+                                <div className="mt-6 flex flex-col items-center gap-2">
+                                    <div className="flex items-center gap-1.5 opacity-30">
+                                        <Sparkles className="w-3 h-3 text-primary" />
+                                        <p className={cn("text-center text-[10px] font-black uppercase tracking-widest", textColor)}>
+                                            Changes are instant
+                                        </p>
+                                    </div>
+                                    <p className={cn("text-center text-[11px] font-bold opacity-30 px-10 leading-tight uppercase tracking-tighter", textColor)}>
+                                        View your public landing page to see updates
+                                    </p>
+                                </div>
                             </div>
                         </div>
                     </motion.div>
