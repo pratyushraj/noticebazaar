@@ -20,6 +20,7 @@ import { triggerHaptic as globalTriggerHaptic, HapticPatterns } from '@/lib/util
 import PremiumDrawer from '@/components/drawer/PremiumDrawer';
 import { supabase } from '@/integrations/supabase/client';
 import { DealStage, getDealStageFromStatus, STAGE_TO_PROGRESS, STAGE_TO_STATUS, useUpdateDealProgress } from '@/lib/hooks/useBrandDeals';
+import { useUpdateProfile } from '@/lib/hooks/useProfiles';
 import { dealPrimaryCtaButtonClass, getDealPrimaryCta } from '@/lib/deals/primaryCta';
 import FiverrPackageEditor from '@/components/profile/FiverrPackageEditor';
 
@@ -580,7 +581,7 @@ const buildProfileFormData = (profile: any, userEmail?: string | null) => {
         story_price: profile?.story_price || '2000',
         content_niches: profile?.content_niches || ['Fashion', 'Tech', 'Lifestyle'],
         bank_account_name: profile?.bank_account_name || '',
-        bank_upi: profile?.bank_upi || '',
+        payout_upi: profile?.payout_upi || '',
         deal_templates: profile?.deal_templates || [],
         // NEW: Audience Demographics
         audience_gender_split: profile?.audience_gender_split || '',
@@ -638,6 +639,7 @@ const MobileDashboardDemo = ({
     const queryClient = useQueryClient();
     const signOutMutation = useSignOut();
     const updateDealProgress = useUpdateDealProgress();
+    const updateProfile = useUpdateProfile();
     const { session, user, refetchProfile } = useSession();
     const userId = user?.id || session?.user?.id || '';
     
@@ -1704,7 +1706,7 @@ const MobileDashboardDemo = ({
                 past_brands: profileFormData.past_brands || [],
                 deal_templates: profileFormData.deal_templates || [],
                 bank_account_name: profileFormData.bank_account_name?.trim() || null,
-                bank_upi: profileFormData.bank_upi?.trim() || null,
+                payout_upi: profileFormData.payout_upi?.trim() || null,
                 discovery_video_url: profileFormData.discovery_video_url || null,
                 portfolio_videos: profileFormData.portfolio_videos || [],
                 instagram_profile_photo: profileFormData.instagram_profile_photo || null,
@@ -3406,19 +3408,20 @@ const MobileDashboardDemo = ({
                                 const setupSteps = [
                                     { id: 'photo', done: !!profile?.instagram_profile_photo || !!profile?.avatar_url, label: 'Add Profile Picture' },
                                     { id: 'rates', done: hasSetRates, label: 'Add Services & Pricing' },
-                                    { id: 'portfolio', done: (profile?.portfolio_items?.length || 0) > 0, label: 'Add Portfolio Samples' },
+                                    { id: 'portfolio', done: (profile?.collab_past_work_items?.length || 0) > 0 || (profile?.portfolio_items?.length || 0) > 0, label: 'Add Portfolio Samples' },
                                     { id: 'link', done: !!profile?.link_shared_at, label: 'Share Your Link' }
                                 ];
                                 const completedCount = setupSteps.filter(s => s.done).length;
                                 const isSetupComplete = completedCount === setupSteps.length;
 
-                                if (!isSetupComplete) {
+                                 const hasDeals = activeDealsCount > 0 || completedDealsCount > 0;
+                                 if (!isSetupComplete && !hasDeals) {
                                     return (
                                         <div className="space-y-6 pb-20">
                                             {/* Welcome Header */}
                                             <div className="px-5 pt-8">
                                                 <h1 className={cn("text-3xl font-black tracking-tight mb-2", isDark ? "text-white" : "text-slate-900")}>
-                                                    Welcome, {profile?.first_name || 'Beyonce'} 👋
+                                                    Welcome, {profile?.first_name || profile?.username || 'Creator'} 👋
                                                 </h1>
                                                 <p className={cn("text-sm font-medium opacity-60", isDark ? "text-white" : "text-slate-900")}>
                                                     Let's get your creator profile live and ready to receive brand deals.
@@ -3430,7 +3433,10 @@ const MobileDashboardDemo = ({
                                                 "mx-5 p-6 rounded-[32px] border relative overflow-hidden",
                                                 isDark ? "bg-[#111820] border-white/5" : "bg-white border-slate-200 shadow-sm"
                                             )}>
-                                                <div className="flex items-start gap-6 mb-8">
+                                                <div 
+                                                    onClick={() => { triggerHaptic(); setActiveTab('profile'); }}
+                                                    className="flex items-start gap-6 mb-8 cursor-pointer active:scale-[0.98] transition-all"
+                                                >
                                                     <div className="relative w-16 h-16 flex-shrink-0">
                                                         <svg className="w-full h-full transform -rotate-90">
                                                             <circle cx="32" cy="32" r="28" fill="transparent" stroke="currentColor" strokeWidth="6" className="text-white/5" />
@@ -3449,7 +3455,19 @@ const MobileDashboardDemo = ({
 
                                                 <div className="flex justify-between items-start gap-2">
                                                     {setupSteps.map((step, idx) => (
-                                                        <div key={idx} className="flex flex-col items-center gap-3 text-center flex-1">
+                                                        <div 
+                                                            key={idx} 
+                                                            onClick={() => {
+                                                                triggerHaptic();
+                                                                if (step.id === 'photo' || step.id === 'rates' || step.id === 'portfolio') {
+                                                                    setActiveTab('profile');
+                                                                }
+                                                            }}
+                                                            className={cn(
+                                                                "flex flex-col items-center gap-3 text-center flex-1 transition-all",
+                                                                !step.done && "cursor-pointer active:scale-95"
+                                                            )}
+                                                        >
                                                             <div className={cn(
                                                                 "w-10 h-10 rounded-full flex items-center justify-center text-xs font-black italic border-2 transition-all",
                                                                 step.done ? "bg-primary border-primary text-white" : (isDark ? "bg-white/5 border-white/10 text-white/40" : "bg-slate-50 border-slate-200 text-slate-400")
@@ -3462,48 +3480,108 @@ const MobileDashboardDemo = ({
                                                 </div>
                                             </div>
 
-                                            {/* Empty State Card */}
-                                            <div className={cn(
-                                                "mx-5 p-8 rounded-[32px] border flex flex-col items-center text-center",
-                                                isDark ? "bg-[#111820] border-white/5" : "bg-white border-slate-200 shadow-sm"
-                                            )}>
-                                                <div className="w-20 h-20 mb-6 relative">
-                                                    <div className="absolute inset-0 bg-primary/20 blur-2xl rounded-full" />
-                                                    <div className="relative w-full h-full bg-gradient-to-br from-primary/30 to-transparent rounded-3xl flex items-center justify-center border border-white/10">
-                                                        <Sparkles className="w-10 h-10 text-primary" />
-                                                    </div>
-                                                </div>
-                                                <h3 className="text-xl font-black italic mb-2">No brand requests yet 👀</h3>
-                                                <p className="text-sm opacity-50 font-medium mb-8 px-4">
-                                                    When brands submit briefs through your collab link, they'll appear here.
-                                                </p>
-                                                <button 
-                                                    onClick={() => {
-                                                        const url = `https://creatorarmour.com/${profile?.username || 'beyonce'}`;
-                                                        navigator.clipboard.writeText(url);
-                                                        toast.success("Link copied!");
-                                                        triggerHaptic('success');
-                                                    }}
-                                                    className="w-full bg-primary hover:bg-primary/90 text-white font-black italic rounded-2xl py-4 flex items-center justify-center gap-2 mb-8 transition-all active:scale-[0.98]"
-                                                >
-                                                    <Link2 className="w-5 h-5" />
-                                                    Share Your Link
-                                                </button>
-                                                
-                                                <div className="flex justify-between w-full border-t border-white/5 pt-6 gap-2">
-                                                    {[
-                                                        { icon: ShieldCheck, label: 'Secure & Protected', sub: 'We protect your work and payments' },
-                                                        { icon: Zap, label: 'Instant Connections', sub: 'Get offers from verified brands' },
-                                                        { icon: IndianRupee, label: 'Fair & Transparent', sub: 'Clear deals, no hidden fees' }
-                                                    ].map((perk, i) => (
-                                                        <div key={i} className="flex flex-col items-center gap-1 flex-1">
-                                                            <perk.icon className="w-4 h-4 text-primary" />
-                                                            <p className="text-[9px] font-black leading-none mt-1">{perk.label}</p>
-                                                            <p className="text-[8px] opacity-40 leading-tight">{perk.sub}</p>
+                                                {/* Empty State or Offer Card */}
+                                                {pendingOffersCount > 0 ? (
+                                                    <div className={cn(
+                                                        "mx-5 p-6 rounded-[32px] border relative overflow-hidden",
+                                                        isDark ? "bg-[#111820] border-white/5" : "bg-white border-slate-200 shadow-sm"
+                                                    )}>
+                                                        <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none" />
+                                                        
+                                                        <div className="flex items-center gap-4 mb-6">
+                                                            <div className="w-12 h-12 rounded-2xl bg-primary/20 flex items-center justify-center">
+                                                                <Zap className="w-6 h-6 text-primary" />
+                                                            </div>
+                                                            <div>
+                                                                <h3 className="text-xl font-black italic leading-tight">New Offer Received! 🚀</h3>
+                                                                <p className="text-xs opacity-50 font-medium">A brand wants to collaborate with you.</p>
+                                                            </div>
                                                         </div>
-                                                    ))}
-                                                </div>
-                                            </div>
+
+                                                        <div className={cn(
+                                                            "p-4 rounded-2xl mb-6 flex items-center gap-4",
+                                                            isDark ? "bg-white/5" : "bg-slate-50"
+                                                        )}>
+                                                            <div className="w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center overflow-hidden">
+                                                                {displayOffers[0]?.brand_logo_url ? (
+                                                                    <img src={displayOffers[0].brand_logo_url} alt="" className="w-full h-full object-cover" />
+                                                                ) : (
+                                                                    <Briefcase className="w-6 h-6 opacity-40" />
+                                                                )}
+                                                            </div>
+                                                            <div className="min-w-0 flex-1">
+                                                                <p className="font-bold truncate">{displayOffers[0]?.brand_name || 'New Brand Partner'}</p>
+                                                                <p className="text-[10px] font-black uppercase tracking-widest text-primary">
+                                                                    ₹{Number(displayOffers[0]?.exact_budget || displayOffers[0]?.deal_amount || 0).toLocaleString()} Earnings
+                                                                </p>
+                                                            </div>
+                                                        </div>
+
+                                                        <button 
+                                                            onClick={() => {
+                                                                triggerHaptic();
+                                                                setActiveTab('deals');
+                                                                setCollabSubTab('pending');
+                                                            }}
+                                                            className="w-full bg-primary hover:bg-primary/90 text-white font-black italic rounded-2xl py-4 flex items-center justify-center gap-2 transition-all active:scale-[0.98] shadow-lg shadow-primary/20"
+                                                        >
+                                                            <Eye className="w-5 h-5" />
+                                                            Review & Accept Offer
+                                                        </button>
+                                                    </div>
+                                                ) : (
+                                                    <div className={cn(
+                                                        "mx-5 p-8 rounded-[32px] border flex flex-col items-center text-center",
+                                                        isDark ? "bg-[#111820] border-white/5" : "bg-white border-slate-200 shadow-sm"
+                                                    )}>
+                                                        <div className="w-20 h-20 mb-6 relative">
+                                                            <div className="absolute inset-0 bg-primary/20 blur-2xl rounded-full" />
+                                                            <div className="relative w-full h-full bg-gradient-to-br from-primary/30 to-transparent rounded-3xl flex items-center justify-center border border-white/10">
+                                                                <Sparkles className="w-10 h-10 text-primary" />
+                                                            </div>
+                                                        </div>
+                                                        <h3 className="text-xl font-black italic mb-2">No brand requests yet 👀</h3>
+                                                        <p className="text-sm opacity-50 font-medium mb-8 px-4">
+                                                            When brands submit briefs through your collab link, they'll appear here.
+                                                        </p>
+                                                        <button 
+                                                            onClick={() => {
+                                                                const url = `https://creatorarmour.com/${profile?.username || 'creator'}`;
+                                                                navigator.clipboard.writeText(url);
+                                                                toast.success("Link copied!");
+                                                                triggerHaptic('success');
+                                                                
+                                                                // Update shared status if not already set
+                                                                if (profile?.id && !profile?.link_shared_at) {
+                                                                    updateProfile.mutate({
+                                                                        id: profile.id,
+                                                                        link_shared_at: new Date().toISOString()
+                                                                    }, {
+                                                                        onSuccess: () => refetchProfile()
+                                                                    });
+                                                                }
+                                                            }}
+                                                            className="w-full bg-primary hover:bg-primary/90 text-white font-black italic rounded-2xl py-4 flex items-center justify-center gap-2 mb-8 transition-all active:scale-[0.98]"
+                                                        >
+                                                            <Link2 className="w-5 h-5" />
+                                                            Share Your Link
+                                                        </button>
+                                                        
+                                                        <div className="flex justify-between w-full border-t border-white/5 pt-6 gap-2">
+                                                            {[
+                                                                { icon: ShieldCheck, label: 'Secure & Protected', sub: 'We protect your work and payments' },
+                                                                { icon: Zap, label: 'Instant Connections', sub: 'Get offers from verified brands' },
+                                                                { icon: IndianRupee, label: 'Fair & Transparent', sub: 'Clear deals, no hidden fees' }
+                                                            ].map((perk, i) => (
+                                                                <div key={i} className="flex flex-col items-center gap-1 flex-1">
+                                                                    <perk.icon className="w-4 h-4 text-primary" />
+                                                                    <p className="text-[9px] font-black leading-none mt-1">{perk.label}</p>
+                                                                    <p className="text-[8px] opacity-40 leading-tight">{perk.sub}</p>
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                )}
 
                                             {/* Link & WhatsApp Section */}
                                             <div className={cn(
@@ -3523,11 +3601,11 @@ const MobileDashboardDemo = ({
                                                             "flex-1 px-4 py-3 rounded-xl border font-medium text-sm truncate",
                                                             isDark ? "bg-black border-white/10" : "bg-slate-50 border-slate-200"
                                                         )}>
-                                                            creatorarmour.com/{profile?.username || 'beyonce'}
+                                                            creatorarmour.com/{profile?.username || 'creator'}
                                                         </div>
                                                         <button 
                                                             onClick={() => {
-                                                                navigator.clipboard.writeText(`https://creatorarmour.com/${profile?.username || 'beyonce'}`);
+                                                                navigator.clipboard.writeText(`https://creatorarmour.com/${profile?.username || 'creator'}`);
                                                                 toast.success('Copied!');
                                                             }}
                                                             className={cn(
@@ -3541,7 +3619,7 @@ const MobileDashboardDemo = ({
                                                 </div>
                                                 <button 
                                                     onClick={() => {
-                                                        const url = `https://wa.me/?text=${encodeURIComponent(`Check out my creator profile: https://creatorarmour.com/${profile?.username || 'beyonce'}`)}`;
+                                                        const url = `https://wa.me/?text=${encodeURIComponent(`Check out my creator profile: https://creatorarmour.com/${profile?.username || 'creator'}`)}`;
                                                         window.open(url, '_blank');
                                                     }}
                                                     className="w-full bg-[#25D366] text-white font-black italic rounded-xl py-4 flex items-center justify-center gap-2 transition-all active:scale-[0.98]"
@@ -3563,15 +3641,15 @@ const MobileDashboardDemo = ({
                                                             <img src={profile?.avatar_url || `https://ui-avatars.com/api/?name=${profile?.business_name || 'B'}`} className="w-full h-full object-cover" />
                                                         </div>
                                                         <div>
-                                                            <h3 className="text-2xl font-black text-white italic">{profile?.first_name || 'Beyonce'}</h3>
-                                                            <p className="text-primary font-bold">@{profile?.username || 'beyonce'}</p>
+                                                            <h3 className="text-2xl font-black text-white italic">{profile?.first_name || profile?.username || 'Creator'}</h3>
+                                                            <p className="text-primary font-bold">@{profile?.username || 'creator'}</p>
                                                         </div>
                                                     </div>
                                                     <p className="text-sm text-white/60 font-medium">
                                                         Brands open your creator link, choose a service, and send you an offer here.
                                                     </p>
                                                     <button 
-                                                        onClick={() => window.open(`/${profile?.username || 'beyonce'}`, '_blank')}
+                                                        onClick={() => window.open(`/${profile?.username || 'creator'}`, '_blank')}
                                                         className="inline-flex items-center gap-2 bg-white/10 hover:bg-white/20 border border-white/10 text-white rounded-xl px-6 py-3 text-sm font-black italic transition-all active:scale-95"
                                                     >
                                                         <Eye className="w-4 h-4" />
@@ -3793,6 +3871,60 @@ const MobileDashboardDemo = ({
                                 </motion.div>
                             </div>
 
+                            {/* Setup Progress - Shown in full dashboard if incomplete but has deals */}
+                            {!isSetupComplete && (
+                                <div className={cn(
+                                    "mx-5 mb-8 p-6 rounded-[32px] border relative overflow-hidden",
+                                    isDark ? "bg-[#111820] border-white/5" : "bg-white border-slate-200 shadow-sm"
+                                )}>
+                                    <div 
+                                        onClick={() => { triggerHaptic(); setActiveTab('profile'); }}
+                                        className="flex items-start gap-6 mb-8 cursor-pointer active:scale-[0.98] transition-all"
+                                    >
+                                        <div className="relative w-16 h-16 flex-shrink-0">
+                                            <svg className="w-full h-full transform -rotate-90">
+                                                <circle cx="32" cy="32" r="28" fill="transparent" stroke="currentColor" strokeWidth="6" className="text-white/5" />
+                                                <circle cx="32" cy="32" r="28" fill="transparent" stroke="currentColor" strokeWidth="6" className="text-primary" strokeDasharray={176} strokeDashoffset={176 * (1 - completedCount / 4)} strokeLinecap="round" />
+                                            </svg>
+                                            <div className="absolute inset-0 flex items-center justify-center font-black text-xl italic">{completedCount}/4</div>
+                                        </div>
+                                        <div>
+                                            <div className="flex items-center justify-between">
+                                                <h3 className="font-bold text-lg">Complete your setup</h3>
+                                                <ChevronRight className="w-5 h-5 opacity-40" />
+                                            </div>
+                                            <p className="text-xs opacity-50 font-medium">Finish these steps to unlock more brand deals.</p>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex justify-between items-start gap-2">
+                                        {setupSteps.map((step, idx) => (
+                                            <div 
+                                                key={idx} 
+                                                onClick={() => {
+                                                    triggerHaptic();
+                                                    if (step.id === 'photo' || step.id === 'rates' || step.id === 'portfolio') {
+                                                        setActiveTab('profile');
+                                                    }
+                                                }}
+                                                className={cn(
+                                                    "flex flex-col items-center gap-3 text-center flex-1 transition-all",
+                                                    !step.done && "cursor-pointer active:scale-95"
+                                                )}
+                                            >
+                                                <div className={cn(
+                                                    "w-10 h-10 rounded-full flex items-center justify-center text-xs font-black italic border-2 transition-all",
+                                                    step.done ? "bg-primary border-primary text-white" : (isDark ? "bg-white/5 border-white/10 text-white/40" : "bg-slate-50 border-slate-200 text-slate-400")
+                                                )}>
+                                                    {step.done ? <Check className="w-5 h-5" /> : idx + 1}
+                                                </div>
+                                                <p className="text-[10px] font-bold leading-tight line-clamp-2">{step.label}</p>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
                             {shouldShowPushPrompt && (
                                 <div className="px-5 mb-6">
                                     <div className={cn("p-5 rounded-[2rem] border relative overflow-hidden", isDark ? "bg-card border-[#2C2C2E]" : "bg-card border-border shadow-sm")}>
@@ -3957,9 +4089,9 @@ const MobileDashboardDemo = ({
                                                 <p className={cn("mt-1 text-sm", isDark ? "text-foreground/60" : "text-slate-500")}>Ongoing</p>
                                             </button>
                                             <button
-                                                type="button"
-                                                onClick={() => { triggerHaptic(); setActiveTab('deals'); setCollabSubTab('pending'); }}
-                                                className={cn("p-4 rounded-[18px] border text-left active:scale-[0.99] transition-all", isDark ? "bg-card border-border" : "bg-white border-[#E5E7EB] shadow-sm")}
+	                                                type="button"
+	                                                onClick={() => { triggerHaptic(); setActiveTab('deals'); setCollabSubTab('pending'); }}
+	                                                className={cn("p-4 rounded-[18px] border text-left active:scale-[0.99] transition-all", isDark ? "bg-card border-border" : "bg-white border-[#E5E7EB] shadow-sm")}
                                             >
                                                 <p className={cn("text-xs font-bold uppercase tracking-wide", isDark ? "text-foreground/50" : "text-slate-400")}>Pending Offers</p>
                                                 <p className={cn("mt-2 text-2xl font-bold tabular-nums tracking-tight", isDark ? "text-foreground" : "text-slate-900")}>{pendingOffersCount}</p>
@@ -4747,7 +4879,7 @@ const MobileDashboardDemo = ({
                                             if (offers.length === 0) {
                                                 const completionScore = (() => {
                                                     let score = 20;
-                                                    if (profileFormData.bank_upi) score += 20;
+                                                    if (profileFormData.payout_upi) score += 20;
                                                     if (profileFormData.audience_gender_split) score += 20;
                                                     if (profileFormData.content_vibes?.length > 0) score += 20;
                                                     if (profileFormData.deal_templates?.length > 0) score += 20;

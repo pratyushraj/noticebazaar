@@ -57,5 +57,5 @@ export const routes = {
   isDemoOverride: (path: string) =>
     path === '/creator-dashboard' || path === '/demo-dashboard',
   isFullScreen: (path: string) =>
-    path === '/creator-dashboard' || path === '/brand-dashboard',
+    path === '/creator-dashboard' || path === '/brand-dashboard' || path === '/creator-onboarding',
 };

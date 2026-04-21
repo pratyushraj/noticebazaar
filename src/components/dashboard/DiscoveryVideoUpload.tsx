@@ -51,12 +51,12 @@ export const DiscoveryVideoUpload: React.FC<DiscoveryVideoUploadProps> = ({
         try {
             const fileExt = file.name.split('.').pop();
             const slotName = selectedSlot === 'primary' ? 'hero' : `sample-${selectedSlot}`;
-            const filePath = `${userId}/discovery/${slotName}_${Date.now()}.${fileExt}`;
+            const filePath = `${userId}/videos/${slotName}_${Date.now()}.${fileExt}`;
 
             // Upload
             setUploadProgress(30);
             const { error: uploadError, data } = await supabase.storage
-                .from('creator-discovery')
+                .from('creator-assets')
                 .upload(filePath, file, {
                     cacheControl: '3600',
                     upsert: true
@@ -66,7 +66,7 @@ export const DiscoveryVideoUpload: React.FC<DiscoveryVideoUploadProps> = ({
 
             setUploadProgress(80);
             const { data: { publicUrl } } = supabase.storage
-                .from('creator-discovery')
+                .from('creator-assets')
                 .getPublicUrl(filePath);
 
             // Update state and parent

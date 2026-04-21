@@ -75,7 +75,7 @@ export const useProfiles = (options?: UseProfilesOptions) => {
   const queryFn = useCallback(async () => {
     // Try with full select statement first, fallback to basic fields if columns don't exist
     // Removed 'pan' as it may not exist in all database schemas
-    const fullSelectStatement = 'id, first_name, last_name, avatar_url, role, updated_at, instagram_handle, youtube_channel_id, tiktok_handle, facebook_profile_url, twitter_handle, avg_rate_reel, learned_avg_rate_reel, learned_deal_count, instagram_followers, instagram_profile_photo, last_instagram_sync';
+    const fullSelectStatement = 'id, first_name, last_name, avatar_url, role, updated_at, instagram_handle, youtube_channel_id, tiktok_handle, facebook_profile_url, twitter_handle, avg_rate_reel, learned_avg_rate_reel, learned_deal_count, instagram_followers, instagram_profile_photo, last_instagram_sync, discovery_video_url, payout_upi, address';
     const basicSelectStatement = 'id, first_name, last_name, avatar_url, role, updated_at';
 
     let query = supabase
@@ -196,7 +196,7 @@ export const useProfileById = (profileId: string | undefined, options?: { enable
     }
 
     // Removed 'pan' as it may not exist in all database schemas
-    const fullSelect = 'id, first_name, last_name, avatar_url, role, instagram_handle, youtube_channel_id, tiktok_handle, facebook_profile_url, twitter_handle, avg_rate_reel, learned_avg_rate_reel, learned_deal_count, instagram_followers';
+    const fullSelect = 'id, first_name, last_name, avatar_url, role, instagram_handle, youtube_channel_id, tiktok_handle, facebook_profile_url, twitter_handle, avg_rate_reel, learned_avg_rate_reel, learned_deal_count, instagram_followers, discovery_video_url, payout_upi, address';
     const basicSelect = 'id, first_name, last_name, avatar_url, role';
 
     let { data, error } = await supabase
@@ -278,6 +278,9 @@ interface UpdateProfileVariables {
   tiktok_followers?: number | null;
   twitter_followers?: number | null;
   facebook_followers?: number | null;
+  discovery_video_url?: string | null;
+  payout_upi?: string | null;
+  address?: string | null;
   // NEW: Profile fields
   phone?: string | null;
   location?: string | null;
@@ -404,6 +407,9 @@ export const useUpdateProfile = () => {
       tiktok_followers,
       twitter_followers,
       facebook_followers,
+      discovery_video_url,
+      payout_upi,
+      address,
       // NEW: Profile fields
       phone,
       location,
@@ -595,6 +601,9 @@ export const useUpdateProfile = () => {
         storefront_views?: number | null;
         profile_completion?: number | null;
         storefront_completion?: number | null;
+        discovery_video_url?: string | null;
+        payout_upi?: string | null;
+        address?: string | null;
       } = {
         updated_at: new Date().toISOString(),
       };
@@ -692,6 +701,15 @@ export const useUpdateProfile = () => {
       }
       if (facebook_followers !== undefined) {
         updateData.facebook_followers = facebook_followers;
+      }
+      if (discovery_video_url !== undefined) {
+        updateData.discovery_video_url = discovery_video_url;
+      }
+      if (payout_upi !== undefined) {
+        updateData.payout_upi = payout_upi;
+      }
+      if (address !== undefined) {
+        updateData.address = address;
       }
       if (phone !== undefined) {
         // Only include phone if it's not null or empty (null is valid to clear the field)

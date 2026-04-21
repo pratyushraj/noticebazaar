@@ -47,8 +47,8 @@ export const DiscoveryCard: React.FC<DiscoveryCardProps> = ({
     const safeMediaUrl = (url?: string) => {
         if (!url) return '';
         if (url.startsWith('http') || url.startsWith('blob:') || url.startsWith('data:')) return url;
-        // If it's a relative path, assume it's in the creator-discovery bucket
-        const { data } = supabase.storage.from('creator-discovery').getPublicUrl(url);
+        // If it's a relative path, assume it's in the standard creator assets bucket
+        const { data } = supabase.storage.from('creator-assets').getPublicUrl(url);
         return data.publicUrl;
     };
     

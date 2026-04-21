@@ -54,7 +54,23 @@ export default defineConfig(() => ({
     hmr: {
       overlay: false,
     },
+    // Proxy /api/* and /supabase-proxy/* to the local Express backend.
+    // This means the frontend can call /api/... relative URLs in development
+    // and they'll be transparently forwarded to port 3001.
+    proxy: {
+      '/api': {
+        target: 'http://127.0.0.1:3001',
+        changeOrigin: true,
+        secure: false,
+      },
+      '/supabase-proxy': {
+        target: 'http://127.0.0.1:3001',
+        changeOrigin: true,
+        secure: false,
+      },
+    },
   },
+
   build: {
     sourcemap: false,
     assetsDir: 'assets',

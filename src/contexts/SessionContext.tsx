@@ -137,42 +137,22 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
         }
       };
 
-      // Keep the profile query intentionally narrow so it doesn't fail in partially-migrated environments.
+      // Core query: only the 6 columns guaranteed to exist in every environment.
+      // Any schema-optional columns are fetched below via fetchOptionalProfileFields.
       const { data: coreData, error: coreError } = await (supabase
         .from('profiles')
-        .select('id, first_name, last_name, avatar_url, role, updated_at, onboarding_complete, organization_id, is_trial, trial_started_at, trial_expires_at, trial_locked, phone, location, bio') as any)
+        .select('id, first_name, last_name, avatar_url, role, updated_at') as any)
         .eq('id', user.id)
         .single();
 
       if (coreError) {
-        const { data: minimalData, error: minimalError } = await (supabase
-          .from('profiles')
-          .select('id, first_name, last_name, avatar_url, role, updated_at') as any)
-          .eq('id', user.id)
-          .single();
-
-        if (minimalError && (minimalError as any).code !== 'PGRST116') {
-          logger.error('SessionContext: Error fetching profile', minimalError);
-          return null;
+        if ((coreError as any).code !== 'PGRST116') {
+          logger.error('SessionContext: Error fetching profile', coreError);
         }
-
-        if (!minimalData) return null;
-
-        return {
-          ...(minimalData as any),
-          onboarding_complete: false,
-          organization_id: null,
-          is_trial: false,
-          trial_started_at: null,
-          trial_expires_at: null,
-          trial_locked: false,
-          phone: null,
-          location: null,
-          bio: null,
-          username: null,
-          instagram_handle: null,
-        } as Profile | null;
+        return null;
       }
+
+      if (!coreData) return null;
 
       let usernameValue: string | null = null;
       let instagramHandleValue: string | null = null;
@@ -184,6 +164,7 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
         avg_rate_reel: null,
         bank_account_name: null,
         bank_upi: null,
+        payout_upi: null,
         pricing_min: null,
         pricing_avg: null,
         pricing_max: null,
@@ -236,6 +217,50 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
       }
 
       try {
+        // Columns confirmed present in the live DB.
+        const coreExtData = await fetchOptionalProfileFields([
+          'onboarding_complete',
+          'organization_id',
+          'phone',
+          'location',
+        ]);
+        if (Object.keys(coreExtData).length > 0) {
+          optionalFields = {
+            ...optionalFields,
+            onboarding_complete: (coreExtData as any)?.onboarding_complete ?? false,
+            organization_id: (coreExtData as any)?.organization_id ?? null,
+            phone: (coreExtData as any)?.phone ?? null,
+            location: (coreExtData as any)?.location ?? null,
+          } as any;
+        }
+      } catch (_error) {
+        // Optional fields may not exist in older schemas.
+      }
+
+
+      try {
+        const trialData = await fetchOptionalProfileFields([
+          'is_trial',
+          'trial_started_at',
+          'trial_expires_at',
+          'trial_locked',
+          'bio'
+        ]);
+        if (Object.keys(trialData).length > 0) {
+          optionalFields = {
+            ...optionalFields,
+            is_trial: (trialData as any)?.is_trial ?? false,
+            trial_started_at: (trialData as any)?.trial_started_at ?? null,
+            trial_expires_at: (trialData as any)?.trial_expires_at ?? null,
+            trial_locked: (trialData as any)?.trial_locked ?? false,
+            bio: (trialData as any)?.bio ?? null,
+          } as any;
+        }
+      } catch (_error) {
+        // Optional fields may not exist in older schemas.
+      }
+
+      try {
         const pricingData = await fetchOptionalProfileFields([
           'avg_rate_reel',
         ]);
@@ -261,12 +286,14 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
         const payoutData = await fetchOptionalProfileFields([
           'bank_account_name',
           'bank_upi',
+          'payout_upi',
         ]);
         if (Object.keys(payoutData).length > 0) {
           optionalFields = {
             ...optionalFields,
             bank_account_name: (payoutData as any)?.bank_account_name ?? null,
-            bank_upi: (payoutData as any)?.bank_upi ?? null,
+            bank_upi: (payoutData as any)?.bank_upi ?? (payoutData as any)?.payout_upi ?? null,
+            payout_upi: (payoutData as any)?.payout_upi ?? (payoutData as any)?.bank_upi ?? null,
           } as any;
         }
       } catch (_error) {

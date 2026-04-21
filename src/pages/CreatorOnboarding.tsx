@@ -2,89 +2,122 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { CheckCircle2, Check, Copy, Instagram, Link2, Loader2, MessageCircleMore } from 'lucide-react';
+import { 
+  CheckCircle2, 
+  Check, 
+  Instagram, 
+  Link2, 
+  Loader2, 
+  Zap, 
+  Sparkles, 
+  IndianRupee, 
+  Video, 
+  Bell, 
+  ArrowRight,
+  Upload,
+  Play,
+  X,
+  Users,
+  ShieldCheck,
+  MapPin,
+  CreditCard,
+  Target,
+  PenTool
+} from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import { useSession } from '@/contexts/SessionContext';
 import { useUpdateProfile } from '@/lib/hooks/useProfiles';
-import { startTrialOnSignup } from '@/lib/trial';
-import { trackEvent } from '@/lib/utils/analytics';
-import { getCreatorProgressPatch } from '@/lib/creatorProfileCompletion';
+import { useDealAlertNotifications } from '@/hooks/useDealAlertNotifications';
 import { OnboardingContainer } from '@/components/onboarding/OnboardingContainer';
+import { OnboardingSlide } from '@/components/onboarding/OnboardingSlide';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { cn } from '@/lib/utils';
+import { supabase } from '@/integrations/supabase/client';
+import { CREATOR_ASSETS_BUCKET } from '@/lib/constants/storage';
 
-type ProgressiveStep = 'instagram' | 'linkReady';
+type OnboardingStep = 'identity' | 'collab' | 'videoSuccess' | 'profile' | 'payout' | 'notifications' | 'finalizing';
 
-const toTitleCaseName = (value: string) =>
-  value
-    .trim()
-    .split(/\s+/)
-    .filter(Boolean)
-    .map((part) => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
-    .join(' ');
+const NICHES = [
+  { id: 'beauty', label: 'Beauty', icon: '💄' },
+  { id: 'fashion', label: 'Fashion', icon: '👗' },
+  { id: 'lifestyle', label: 'Lifestyle', icon: '🏠' },
+  { id: 'tech', label: 'Tech & Gadgets', icon: '💻' },
+  { id: 'fitness', label: 'Fitness', icon: '💪' },
+  { id: 'food', label: 'Food', icon: '🍳' },
+  { id: 'travel', label: 'Travel', icon: '✈️' },
+  { id: 'gaming', label: 'Gaming', icon: '🎮' },
+  { id: 'education', label: 'Education', icon: '📚' }
+];
+
+const FOLLOWER_RANGES = [
+  { id: '<1k', label: '<1k' },
+  { id: '1k-10k', label: '1k–10k' },
+  { id: '10k-50k', label: '10k–50k' },
+  { id: '50k+', label: '50k+' }
+];
+
+const STEP_ORDER: OnboardingStep[] = ['identity', 'collab', 'profile', 'payout', 'notifications'];
 
 export default function CreatorOnboarding() {
   const { profile, user, loading: sessionLoading, refetchProfile } = useSession();
   const navigate = useNavigate();
   const updateProfileMutation = useUpdateProfile();
-  const [step, setStep] = useState<ProgressiveStep>('instagram');
-  // Manual submission state (CTA). Keep this separate from any background automation so we
-  // never block the user from tapping the button.
+  const { enableNotifications } = useDealAlertNotifications();
+
+  const [step, setStep] = useState<OnboardingStep>('identity');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isAutoFinalizing, setIsAutoFinalizing] = useState(false);
-  const hasAutoCopiedLinkRef = useRef(false);
-  const hasAttemptedAutoFinalizeRef = useRef(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
 
-  const fullName = useMemo(() => {
-    const fromProfile = `${profile?.first_name || ''} ${profile?.last_name || ''}`.trim();
-    return fromProfile || user?.user_metadata?.full_name || '';
-  }, [profile, user]);
-
-  const [name] = useState(fullName || 'Creator');
+  // Form State
   const [instagramHandle, setInstagramHandle] = useState('');
+  const [selectedNiches, setSelectedNiches] = useState<string[]>([]);
+  const [followerRange, setFollowerRange] = useState<string>('');
+  const [bio, setBio] = useState('');
+  
+  const [baseRate, setBaseRate] = useState<string>('');
+  const [videoFile, setVideoFile] = useState<File | null>(null);
+  const [videoUrl, setVideoUrl] = useState<string | null>(null);
+  
+  const [instagramLink, setInstagramLink] = useState('');
+  
+  const [upiId, setUpiId] = useState('');
+  const [shippingAddress, setShippingAddress] = useState('');
 
-  const isGeneratedUsername = useMemo(() => {
-    const u = String(profile?.username || '').trim().toLowerCase();
-    return !!u && /^creator-[a-z0-9]+$/i.test(u);
-  }, [profile?.username]);
+  const videoInputRef = useRef<HTMLInputElement>(null);
 
-  const derivedHandle = useMemo(() => {
-    const fromProfile = String(profile?.instagram_handle || '').replace(/^@+/, '').trim().toLowerCase();
-    const fromMetadata = String(user?.user_metadata?.instagram_handle || '').replace(/^@+/, '').trim().toLowerCase();
-    const fromUsername =
-      !isGeneratedUsername
-        ? String(profile?.username || '').replace(/^@+/, '').trim().toLowerCase()
-        : '';
-    return fromProfile || fromMetadata || fromUsername || '';
-  }, [profile?.instagram_handle, profile?.username, user?.user_metadata?.instagram_handle, isGeneratedUsername]);
+  // Current Step Index for progress
+  const currentStepIndex = useMemo(() => {
+    const logicalStep = step === 'videoSuccess' ? 'collab' : step;
+    const idx = STEP_ORDER.indexOf(logicalStep as any);
+    return idx === -1 ? 0 : idx;
+  }, [step]);
 
-  const metadataHandle = useMemo(() => {
-    return (user?.user_metadata?.instagram_handle || '')
-      .toString()
-      .replace(/^@+/, '')
-      .trim()
-      .toLowerCase();
-  }, [user?.user_metadata?.instagram_handle]);
-
-  const persistedHandle = useMemo(() => {
-    const fromProfile = String(profile?.instagram_handle || '').replace(/^@+/, '').trim().toLowerCase();
-    const fromUsername =
-      !isGeneratedUsername ? String(profile?.username || '').replace(/^@+/, '').trim().toLowerCase() : '';
-    return fromProfile || fromUsername || '';
-  }, [profile?.instagram_handle, profile?.username, isGeneratedUsername]);
-
+  // Auto-fill from profile/metadata
   useEffect(() => {
-    if (derivedHandle && !instagramHandle) {
-      setInstagramHandle(derivedHandle);
+    if (profile?.instagram_handle && !instagramHandle) {
+      setInstagramHandle(profile.instagram_handle.replace(/^@+/, ''));
     }
-  }, [derivedHandle, instagramHandle]);
-
-  useEffect(() => {
-    document.title = 'Get Your Collab Link | Creator Armour';
-    const meta = document.querySelector('meta[name="description"]');
-    meta?.setAttribute('content', 'Get your collab link in 1 minute. Share it with brands to receive offers.');
-  }, []);
+    if (profile?.content_niches?.length && selectedNiches.length === 0) {
+      setSelectedNiches(profile.content_niches);
+    }
+    if (profile?.avg_rate_reel && !baseRate) {
+      setBaseRate(profile.avg_rate_reel.toString());
+    }
+    if (profile?.bio && !bio) {
+      setBio(profile.bio);
+    }
+    if (profile?.payout_upi && !upiId) {
+      setUpiId(profile.payout_upi);
+    }
+    if (profile?.location && !shippingAddress) {
+      setShippingAddress(profile.location);
+    }
+  }, [profile, instagramHandle, selectedNiches, baseRate, bio, upiId, shippingAddress]);
 
   useEffect(() => {
     if (sessionLoading) return;
@@ -96,164 +129,162 @@ export default function CreatorOnboarding() {
       navigate('/creator-dashboard', { replace: true });
       return;
     }
-    if (derivedHandle) {
-      setStep('linkReady');
+  }, [sessionLoading, profile, navigate]);
+
+  const handleNext = async () => {
+    if (step === 'identity') {
+      if (instagramHandle.length < 3) {
+        toast.error('Please enter your Instagram username');
+        return;
+      }
+      if (!followerRange) {
+        toast.error('Please select your follower count');
+        return;
+      }
+      if (selectedNiches.length === 0) {
+        toast.error('Please select at least one niche');
+        return;
+      }
+      setStep('collab');
+    } else if (step === 'collab') {
+      if (!videoUrl) {
+        toast.error('Please upload your discovery reel');
+        return;
+      }
+      if (!baseRate || isNaN(Number(baseRate))) {
+        toast.error('Please set your collab rate');
+        return;
+      }
+      setStep('videoSuccess');
+    } else if (step === 'profile') {
+      setStep('payout');
+    } else if (step === 'payout') {
+      if (!upiId) {
+        toast.error('Please enter your UPI ID for payments');
+        return;
+      }
+      setStep('notifications');
     }
-  }, [sessionLoading, profile, navigate, derivedHandle]);
+  };
 
-  const normalizedHandle = instagramHandle.replace(/^@+/, '').trim().toLowerCase();
-  const collabUrl = normalizedHandle ? `${window.location.origin}/${normalizedHandle}` : '';
-  const handleLooksValid = normalizedHandle.length >= 3 && /^[a-z0-9._]+$/.test(normalizedHandle);
-  const handleError =
-    instagramHandle.length === 0
-      ? ''
-      : normalizedHandle.length < 3
-        ? 'Username must be at least 3 characters.'
-        : !/^[a-z0-9._]+$/.test(normalizedHandle)
-          ? 'Use only letters, numbers, dot (.) or underscore (_).'
-          : '';
+  const handleVideoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
 
-  const persistLink = async (
-    cleanHandle: string,
-    options?: { source?: 'manual' | 'auto' },
-  ) => {
-    if (!profile?.id || !user?.id) return;
-
-    if (!cleanHandle || cleanHandle.length < 3) {
-      toast.error('Enter your Instagram username');
+    if (!file.type.startsWith('video/')) {
+      toast.error('Please upload a video file');
       return;
     }
 
-    const source = options?.source || 'manual';
-    if (source === 'manual') setIsSubmitting(true);
-    else setIsAutoFinalizing(true);
+    if (file.size > 50 * 1024 * 1024) {
+      toast.error('Video too large. Please upload under 50MB');
+      return;
+    }
+
+    setVideoFile(file);
+    setIsUploading(true);
+    setUploadProgress(10);
 
     try {
-      if (!profile.is_trial) {
-        await startTrialOnSignup(user.id);
+      setUploadProgress(20);
+      const fileExt = file.name.split('.').pop();
+      const fileName = `portfolio-${Date.now()}.${fileExt}`;
+      const filePath = `${profile?.id}/videos/${fileName}`;
+
+      const { data, error } = await supabase.storage
+        .from(CREATOR_ASSETS_BUCKET)
+        .upload(filePath, file, {
+          cacheControl: '3600',
+          upsert: true
+        });
+
+      if (error) throw error;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from(CREATOR_ASSETS_BUCKET)
+        .getPublicUrl(filePath);
+
+      setVideoUrl(publicUrl);
+      setUploadProgress(100);
+    } catch (err: any) {
+      toast.error('Upload failed: ' + err.message);
+      setVideoFile(null);
+    } finally {
+      setIsUploading(false);
+      setUploadProgress(0);
+    }
+  };
+
+  const handleFinish = async () => {
+    setIsSubmitting(true);
+    try {
+      const cleanHandle = instagramHandle.replace(/^@+/, '').trim().toLowerCase();
+      
+      const portfolioItems: any[] = [];
+      
+      if (videoUrl) {
+        portfolioItems.push({
+          id: crypto.randomUUID(),
+          sourceUrl: videoUrl,
+          mediaType: 'video',
+          title: 'Primary Reel',
+          platform: 'internal'
+        });
       }
 
-      const normalizedFullName = toTitleCaseName(name || '');
-      const [firstName, ...rest] = normalizedFullName.split(' ');
-      const lastName = rest.join(' ') || '';
+      if (instagramLink) {
+        portfolioItems.push({
+          id: crypto.randomUUID(),
+          sourceUrl: instagramLink,
+          mediaType: 'link',
+          title: 'Instagram Reference',
+          platform: 'instagram'
+        });
+      }
 
-      const basePayload = {
-        id: profile.id,
-        first_name: firstName || profile.first_name || 'Creator',
-        last_name: lastName || profile.last_name || '',
-        username: cleanHandle,
+      await updateProfileMutation.mutateAsync({
+        id: profile!.id,
         instagram_handle: cleanHandle,
+        username: cleanHandle,
+        content_niches: selectedNiches,
+        avg_rate_reel: Number(baseRate),
+        reel_price: Number(baseRate),
+        discovery_video_url: videoUrl,
+        follower_count_range: followerRange,
+        bio: bio || null,
+        payout_upi: upiId || null,
+        location: shippingAddress || null,
+        collab_past_work_items: portfolioItems,
         onboarding_complete: true,
         open_to_collabs: true,
-      } as const;
-
-      const progressPatch = getCreatorProgressPatch({ ...(profile as any), ...basePayload });
-
-      // Avoid indefinite spinners in flaky environments. Supabase calls should be fast; if not,
-      // re-enable the CTA so the user can retry.
-      const mutationPromise = updateProfileMutation.mutateAsync({
-        ...basePayload,
-        ...progressPatch,
       } as any);
-      const timeoutPromise = new Promise((_, reject) =>
-        setTimeout(() => reject(new Error('Timed out while creating your link. Please try again.')), 12000),
-      );
-      await Promise.race([mutationPromise, timeoutPromise]);
 
       await refetchProfile?.();
-      trackEvent('creator_link_ready', { creator_id: profile.id, username: cleanHandle });
-      toast.success('Your collab link is ready');
+      toast.success('Onboarding complete!');
       navigate('/creator-link-ready', { replace: true });
     } catch (error: any) {
-      toast.error(error?.message || 'Could not create your collab link');
+      toast.error(error?.message || 'Something went wrong');
     } finally {
-      if (source === 'manual') setIsSubmitting(false);
-      else setIsAutoFinalizing(false);
+      setIsSubmitting(false);
     }
   };
 
-  const handleSaveLink = async () => {
-    await persistLink(normalizedHandle);
-  };
-
-  useEffect(() => {
-    if (
-      sessionLoading ||
-      !profile ||
-      profile.role !== 'creator' ||
-      profile.onboarding_complete ||
-      !metadataHandle ||
-      isSubmitting ||
-      isAutoFinalizing ||
-      hasAttemptedAutoFinalizeRef.current
-    ) {
-      return;
-    }
-
-    const isGeneratedUsername =
-      typeof profile.username === 'string' &&
-      /^creator-[a-z0-9]+$/i.test(profile.username);
-
-    const needsProfileHandlePersistence =
-      metadataHandle !== persistedHandle || !profile.instagram_handle || isGeneratedUsername;
-
-    if (!needsProfileHandlePersistence) {
-      return;
-    }
-
-    hasAttemptedAutoFinalizeRef.current = true;
-    // Background best-effort: never blocks CTA.
-    void persistLink(metadataHandle, { source: 'auto' });
-  }, [
-    sessionLoading,
-    profile,
-    metadataHandle,
-    persistedHandle,
-    isSubmitting,
-    isAutoFinalizing,
-  ]);
-
-  const handleCopyLink = async () => {
-    if (!collabUrl) return;
-    await navigator.clipboard.writeText(collabUrl);
-    toast.success('Link copied');
-    if (!profile?.link_shared_at && profile?.id) {
-      try {
-        const progressPatch = getCreatorProgressPatch({ ...(profile as any), link_shared_at: new Date().toISOString() });
-        await updateProfileMutation.mutateAsync({
-          id: profile.id,
-          link_shared_at: new Date().toISOString(),
-          ...progressPatch,
-        } as any);
-        await refetchProfile?.();
-      } catch {
-        // best effort only
+  const toggleNiche = (id: string) => {
+    setSelectedNiches(prev => {
+      if (prev.includes(id)) return prev.filter(n => n !== id);
+      if (prev.length >= 3) {
+        toast.error('Please select up to 3 niches');
+        return prev;
       }
-    }
-  };
-
-  const handleShareWhatsApp = async () => {
-    if (!collabUrl) return;
-    const message = `Hi, you can send your offer here: ${collabUrl}`;
-    window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, '_blank', 'noopener,noreferrer');
-    await handleCopyLink();
-  };
-
-  useEffect(() => {
-    if (step !== 'linkReady' || hasAutoCopiedLinkRef.current || !collabUrl) return;
-    hasAutoCopiedLinkRef.current = true;
-    void navigator.clipboard.writeText(collabUrl).then(() => {
-      toast.success('Link copied. Paste it in your next brand DM.');
-    }).catch(() => {
-      // Ignore clipboard errors.
+      return [...prev, id];
     });
-  }, [step, collabUrl]);
+  };
 
   if (sessionLoading || !profile) {
     return (
-      <OnboardingContainer theme="light" allowScroll>
-        <div className="flex min-h-[100dvh] items-center justify-center">
-          <Loader2 className="h-8 w-8 animate-spin text-emerald-600" />
+      <OnboardingContainer theme="light">
+        <div className="flex h-full items-center justify-center">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
         </div>
       </OnboardingContainer>
     );
@@ -261,157 +292,374 @@ export default function CreatorOnboarding() {
 
   return (
     <OnboardingContainer theme="light" allowScroll>
-      <div className="mx-auto flex min-h-[100dvh] w-full max-w-5xl flex-col justify-center px-4 py-10 sm:px-6 lg:px-8">
-        {step === 'instagram' && (
-          <div className="mx-auto w-full max-w-xl rounded-[32px] border border-slate-200 bg-white p-6 shadow-xl sm:p-8">
-            <div className="mb-8">
-              {/* Step indicator */}
-              <div className="flex items-center gap-2 mb-5">
-                <div className="flex items-center gap-1.5">
-                  <div className="w-6 h-6 rounded-full bg-emerald-600 text-white text-[10px] font-black flex items-center justify-center">1</div>
-                  <div className="w-6 h-1.5 rounded-full bg-emerald-600" />
-                  <div className="w-6 h-6 rounded-full border-2 border-slate-200 text-slate-400 text-[10px] font-black flex items-center justify-center">2</div>
-                </div>
-                <p className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400">Step 1 of 2</p>
-              </div>
-              <p className="text-[11px] font-black uppercase tracking-[0.25em] text-emerald-600">Creator Armour</p>
-              <h1 className="mt-3 text-4xl font-black tracking-tight text-slate-900">Create your offer link</h1>
-              <p className="mt-3 text-base font-medium leading-relaxed text-slate-600">
-                Just add your Instagram username. You can fill the rest only when a deal needs it.
-              </p>
-            </div>
+      <div className="mx-auto w-full max-w-xl flex-1 flex flex-col pt-6 pb-20 px-6">
+        {/* Progress Indicator */}
+        <div className="flex items-center justify-between mb-8">
+          <div className="flex gap-1.5">
+            {[0, 1, 2, 3, 4].map((i) => (
+              <div 
+                key={i} 
+                className={cn(
+                  "h-1.5 rounded-full transition-all duration-300",
+                  i === currentStepIndex ? "w-8 bg-primary" : (i < currentStepIndex ? "w-4 bg-primary/40" : "w-4 bg-slate-100")
+                )} 
+              />
+            ))}
+          </div>
+          <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Step {currentStepIndex + 1} of 5</span>
+        </div>
 
-            <div className="space-y-5">
-              <div className="space-y-2">
-                <Label htmlFor="instagram-handle" className="text-[11px] font-black uppercase tracking-[0.18em] text-slate-500">
-                  Instagram username
-                </Label>
-                <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-1">
-                  <div className="flex items-center gap-3">
-                    <Instagram className="h-5 w-5 text-slate-400" />
-                    <Input
-                      id="instagram-handle"
+        <AnimatePresence mode="wait">
+          {step === 'identity' && (
+            <OnboardingSlide key="identity" slideKey="identity">
+              <div className="text-center mb-8">
+                <h1 className="text-3xl font-black tracking-tight text-slate-900 mb-2 italic">💸 Start earning from brand deals</h1>
+                <p className="text-emerald-600 font-bold text-xs bg-emerald-50 py-1.5 px-4 rounded-full inline-block tracking-tight">Top creators earned ₹31,000 this month</p>
+              </div>
+
+              <div className="w-full space-y-6 text-left">
+                {/* Instagram Field */}
+                <div className="space-y-2.5">
+                  <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400 px-1 flex justify-between">
+                    <span>Instagram Username</span>
+                    <span className="text-primary tracking-normal">Match with brands</span>
+                  </Label>
+                  <div className="relative">
+                    <div className="absolute left-5 top-1/2 -translate-y-1/2 text-xl font-bold text-slate-400">@</div>
+                    <Input 
                       value={instagramHandle}
-                      onChange={(e) => setInstagramHandle(e.target.value)}
-                      placeholder="your.username"
-                      // Make the typed handle unmistakably visible across themes/devices.
-                      className="border-0 bg-transparent px-0 text-[16px] font-semibold text-slate-900 caret-slate-900 placeholder:text-slate-400 shadow-none focus-visible:ring-0"
-                      autoCapitalize="none"
-                      autoCorrect="off"
-                      autoComplete="username"
-                      inputMode="text"
+                      onChange={e => setInstagramHandle(e.target.value)}
+                      placeholder="e.g. wowvidushi"
+                      className="h-14 pl-12 rounded-2xl border-2 border-slate-100 bg-slate-50 text-lg font-bold text-slate-900 focus:border-primary focus:bg-white transition-all shadow-none"
                     />
                   </div>
                 </div>
-                <p className="text-xs text-slate-500">
-                  Tip: don't type `@` or the full URL. This becomes: `creatorarmour.com/{normalizedHandle || 'yourname'}`
-                </p>
-                {handleError && <p className="text-xs font-bold text-red-500">{handleError}</p>}
+
+                {/* Follower Count */}
+                <div className="space-y-2.5">
+                  <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400 px-1">Your follower count</Label>
+                  <div className="grid grid-cols-4 gap-2">
+                    {FOLLOWER_RANGES.map(range => (
+                      <button
+                        key={range.id}
+                        onClick={() => setFollowerRange(range.id)}
+                        className={cn(
+                          "h-11 rounded-xl border-2 font-black italic text-[11px] transition-all",
+                          followerRange === range.id 
+                            ? "bg-slate-900 border-slate-900 text-white shadow-lg" 
+                            : "bg-white border-slate-100 text-slate-400"
+                        )}
+                      >
+                        {range.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Niche Selection */}
+                <div className="space-y-2.5">
+                  <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400 px-1 flex justify-between">
+                    <span>Choose your niche (max 3)</span>
+                  </Label>
+                  <div className="grid grid-cols-3 gap-2">
+                    {NICHES.map(niche => (
+                      <motion.button
+                        key={niche.id}
+                        whileTap={{ scale: 0.95 }}
+                        onClick={() => toggleNiche(niche.id)}
+                        className={cn(
+                          "h-14 rounded-xl border-2 flex flex-col items-center justify-center transition-all text-[10px] font-black uppercase tracking-tighter",
+                          selectedNiches.includes(niche.id) 
+                            ? "bg-primary border-primary text-white shadow-lg shadow-primary/20" 
+                            : "bg-white border-slate-100 text-slate-400"
+                        )}
+                      >
+                        <span className="text-lg mb-0.5">{niche.icon}</span>
+                        {niche.label}
+                      </motion.button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Bio Field (Bonus for Step 1) */}
+                <div className="space-y-2.5">
+                  <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400 px-1">One line for brands</Label>
+                  <Input 
+                    value={bio}
+                    onChange={e => setBio(e.target.value)}
+                    placeholder="e.g. Creating viral lifestyle content for Gen-Z"
+                    className="h-14 px-5 rounded-2xl border-2 border-slate-100 bg-slate-50 text-sm font-bold text-slate-900 focus:border-primary focus:bg-white transition-all shadow-none"
+                  />
+                </div>
               </div>
 
-              <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4">
-                <p className="text-sm font-bold text-slate-900">You will not be asked for a long profile now.</p>
-                <ul className="mt-2 space-y-1 text-sm text-slate-600">
-                  <li>Price is asked when you accept your first paid offer.</li>
-                  <li>Address is asked when you accept a product deal.</li>
-                  <li>UPI is asked when payment is about to happen.</li>
-                </ul>
+              <div className="mt-auto pt-10 w-full space-y-4">
+                <Button 
+                  onClick={handleNext}
+                  className="w-full h-16 rounded-2xl bg-slate-900 text-white font-black italic text-lg shadow-xl shadow-slate-200 active:scale-95 transition-all flex items-center justify-center gap-2 group"
+                >
+                  Continue <span className="text-primary">→</span> Find brand deals
+                </Button>
+                <div className="flex items-center justify-center gap-2 text-slate-400 font-bold text-[10px] uppercase tracking-widest">
+                  <ShieldCheck className="w-3.5 h-3.5" />
+                  No spam • Only brand collaborations
+                </div>
+              </div>
+            </OnboardingSlide>
+          )}
+
+          {step === 'collab' && (
+            <OnboardingSlide key="collab" slideKey="collab">
+              <div className="text-center mb-8">
+                <h1 className="text-3xl font-black tracking-tight text-slate-900 mb-2 italic">🚀 Build your Collab Page</h1>
+                <p className="text-slate-500 font-bold text-xs uppercase tracking-widest">Discovery video + Collaboration Rate</p>
               </div>
 
-              <div className="rounded-[28px] border border-slate-200 bg-white p-4 shadow-sm">
-                <p className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-500">What brands will see</p>
-                <div className="mt-3 rounded-[24px] border border-slate-200 bg-[linear-gradient(180deg,#ffffff_0%,#f8fbfa_100%)] p-4">
-                  <p className="text-xl font-black text-slate-900">{name || 'Creator Name'}</p>
-                  <p className="mt-1 text-sm font-semibold text-emerald-700">@{normalizedHandle || 'yourusername'}</p>
-                  <p className="mt-3 text-sm text-slate-600">
-                    Brands open your link, choose a service, and send an offer here.
-                  </p>
-                  <div className="mt-4 inline-flex h-11 items-center justify-center rounded-full bg-emerald-600 px-5 text-xs font-black uppercase tracking-[0.16em] text-white">
-                    Choose a Service
+              <div className="w-full space-y-8">
+                {/* Video Upload Section */}
+                <div className="space-y-3">
+                  <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400 px-1 block text-left">Primary Discovery Reel</Label>
+                  <input 
+                    type="file" 
+                    ref={videoInputRef} 
+                    onChange={handleVideoChange} 
+                    accept="video/*" 
+                    className="hidden" 
+                  />
+                  
+                  <button
+                    onClick={() => videoInputRef.current?.click()}
+                    disabled={isUploading}
+                    className={cn(
+                      "w-full h-56 rounded-[2.5rem] border-4 border-dashed flex flex-col items-center justify-center gap-4 transition-all relative overflow-hidden",
+                      isUploading ? "bg-slate-50 border-slate-200" : (videoUrl ? "border-emerald-500/20 bg-emerald-50/10" : "bg-primary/5 border-primary/20 hover:border-primary/40")
+                    )}
+                  >
+                    {isUploading ? (
+                      <div className="space-y-3 text-center z-10">
+                        <Loader2 className="w-10 h-10 text-primary animate-spin mx-auto" />
+                        <p className="text-[10px] font-black italic text-slate-900 uppercase tracking-widest">Uploading...</p>
+                      </div>
+                    ) : videoUrl ? (
+                      <div className="relative w-full h-full">
+                        <video src={videoUrl} className="w-full h-full object-cover" muted playsInline />
+                        <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                          <CheckCircle2 className="w-12 h-12 text-white" />
+                        </div>
+                        <div className="absolute top-4 right-4 bg-white/20 backdrop-blur-md px-3 py-1 rounded-full text-[10px] font-black text-white uppercase tracking-widest">Change Video</div>
+                      </div>
+                    ) : (
+                      <>
+                        <div className="w-14 h-14 rounded-2xl bg-primary text-white flex items-center justify-center shadow-lg shadow-primary/20">
+                          <Upload className="w-7 h-7" />
+                        </div>
+                        <div className="text-center">
+                          <p className="text-base font-black italic text-slate-900 uppercase">Tap to upload reel</p>
+                          <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">MP4 • Max 60sec • 50MB</p>
+                        </div>
+                      </>
+                    )}
+                  </button>
+                </div>
+
+                {/* Pricing Section */}
+                <div className="space-y-3">
+                  <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400 px-1 block text-left">Your Starting Rate (per Reel)</Label>
+                  <div className="relative">
+                    <div className="absolute left-6 top-1/2 -translate-y-1/2 text-2xl font-black italic text-slate-400">₹</div>
+                    <Input 
+                      type="number"
+                      value={baseRate}
+                      onChange={e => setBaseRate(e.target.value)}
+                      placeholder="5,000"
+                      className="h-20 pl-14 text-3xl font-black italic bg-slate-50 border-2 border-slate-100 rounded-3xl text-slate-900 focus:bg-white focus:border-primary transition-all shadow-none"
+                    />
+                  </div>
+                  <div className="grid grid-cols-3 gap-2">
+                    {['2000', '5000', '10000'].map(val => (
+                      <button
+                        key={val}
+                        onClick={() => setBaseRate(val)}
+                        className={cn(
+                          "h-10 rounded-xl border-2 font-black italic text-xs transition-all",
+                          baseRate === val ? "bg-primary border-primary text-white" : "bg-white border-slate-100 text-slate-400"
+                        )}
+                      >
+                        ₹{Number(val).toLocaleString()}
+                      </button>
+                    ))}
                   </div>
                 </div>
               </div>
 
-              <div className="rounded-2xl border border-slate-200 bg-white p-4">
-                <p className="text-[11px] font-black uppercase tracking-[0.18em] text-slate-500">What happens next</p>
-                <div className="mt-3 grid gap-3 sm:grid-cols-3">
-                  {[
-                    'Share this link when a brand asks to work with you',
-                    'The first offer appears in your dashboard',
-                    'We only ask for price, address, or UPI when needed',
-                  ].map((item, index) => (
-                    <div key={item} className="rounded-2xl border border-slate-200 bg-slate-50 p-3">
-                      <p className="text-[10px] font-black uppercase tracking-[0.18em] text-slate-400">0{index + 1}</p>
-                      <p className="mt-2 text-sm font-semibold text-slate-900">{item}</p>
-                    </div>
-                  ))}
+              <div className="mt-auto pt-10 w-full">
+                <Button 
+                  onClick={handleNext}
+                  className="w-full h-16 rounded-2xl bg-slate-900 text-white font-black italic text-lg shadow-xl shadow-slate-200 active:scale-95 transition-all"
+                >
+                  Continue <ArrowRight className="ml-2 w-5 h-5" />
+                </Button>
+              </div>
+            </OnboardingSlide>
+          )}
+
+          {step === 'videoSuccess' && (
+            <OnboardingSlide key="videoSuccess" slideKey="videoSuccess">
+              <div className="w-24 h-24 rounded-full bg-emerald-100 flex items-center justify-center mb-6 mx-auto">
+                <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: 'spring', damping: 12 }}>
+                  <Check className="w-12 h-12 text-emerald-600" />
+                </motion.div>
+              </div>
+              <h1 className="text-3xl font-black tracking-tight text-slate-900 mb-2 italic">🔥 Looks Great!</h1>
+              <p className="text-slate-600 font-medium mb-10 text-sm">Your Collab Page is live in the discovery feed.</p>
+
+              <div className="w-[200px] aspect-[9/16] mx-auto rounded-3xl bg-slate-100 overflow-hidden relative shadow-2xl border-4 border-white mb-10">
+                {videoUrl && <video src={videoUrl} className="w-full h-full object-cover" autoPlay loop muted playsInline />}
+              </div>
+
+              <div className="mt-auto pt-10 w-full">
+                <Button 
+                  onClick={() => setStep('profile')}
+                  className="w-full h-16 rounded-2xl bg-slate-900 text-white font-black italic text-lg shadow-xl shadow-slate-200 active:scale-95 transition-all"
+                >
+                  Amazing, Next <ArrowRight className="ml-2 w-5 h-5" />
+                </Button>
+              </div>
+            </OnboardingSlide>
+          )}
+
+          {step === 'profile' && (
+            <OnboardingSlide key="profile" slideKey="profile">
+              <div className="w-20 h-20 rounded-3xl bg-primary/10 flex items-center justify-center mb-6 mx-auto">
+                <PenTool className="w-10 h-10 text-primary" />
+              </div>
+              <h1 className="text-3xl font-black tracking-tight text-slate-900 mb-2 italic">Complete your profile</h1>
+              <p className="text-slate-600 font-medium mb-10 text-sm italic">Add links to boost your brand trust.</p>
+
+              <div className="w-full space-y-6 text-left">
+                <div className="space-y-2.5">
+                  <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400 px-1">Instagram Profile Link</Label>
+                  <Input 
+                    value={instagramLink}
+                    onChange={e => setInstagramLink(e.target.value)}
+                    placeholder="https://www.instagram.com/p/..."
+                    className="h-14 px-5 rounded-2xl border-2 border-slate-100 bg-slate-50 font-semibold text-slate-900 focus:border-primary focus:bg-white transition-all shadow-none"
+                  />
+                </div>
+
+                <div className="p-5 rounded-3xl border-2 border-primary/10 bg-primary/5">
+                  <p className="text-[10px] font-black text-primary uppercase tracking-widest mb-3 italic">Pro Tip: Brands prefer links</p>
+                  <ul className="space-y-2.5">
+                    {['Show real likes & views', 'Verify your audience', 'Build brand confidence'].map(item => (
+                      <li key={item} className="flex items-center gap-2.5 text-xs text-slate-700 font-bold uppercase tracking-tight">
+                        <div className="w-1.5 h-1.5 rounded-full bg-primary" />
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
                 </div>
               </div>
 
-              <Button
-                type="button"
-                onClick={handleSaveLink}
-                disabled={isSubmitting}
-                className="h-14 w-full rounded-2xl bg-emerald-600 text-xs font-black uppercase tracking-[0.18em] text-white hover:bg-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-emerald-600"
-              >
-                {isSubmitting ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <Link2 className="mr-2 h-5 w-5" />}
-                Create my link
-              </Button>
-              {isAutoFinalizing && !isSubmitting && (
-                <p className="text-[11px] font-bold text-slate-500 text-center">
-                  Setting up your link... If this takes too long, tap "Create my link".
-                </p>
-              )}
-              {!handleLooksValid && !isSubmitting && (
-                <p className="text-[11px] font-bold text-slate-500 text-center">
-                  Enter your Instagram username to create the link.
-                </p>
-              )}
-            </div>
-          </div>
-        )}
+              <div className="mt-auto pt-10 w-full space-y-4">
+                <Button 
+                  onClick={handleNext}
+                  className="w-full h-16 rounded-2xl bg-slate-900 text-white font-black italic text-lg shadow-xl shadow-slate-200 active:scale-95 transition-all"
+                >
+                  Continue <ArrowRight className="ml-2 w-5 h-5" />
+                </Button>
+                <button onClick={() => setStep('payout')} className="w-full text-slate-400 font-black uppercase tracking-widest text-[10px] py-2">
+                  Skip for now
+                </button>
+              </div>
+            </OnboardingSlide>
+          )}
 
-        {step === 'linkReady' && (
-          <div className="mx-auto w-full max-w-xl rounded-[32px] border border-slate-200 bg-white p-6 shadow-xl sm:p-8">
-            {/* Step indicator */}
-            <div className="flex items-center gap-2 mb-6">
-              <div className="flex items-center gap-1.5">
-                <div className="w-6 h-6 rounded-full bg-emerald-600 text-white text-[10px] font-black flex items-center justify-center">
-                  <Check className="w-3.5 h-3.5" />
+          {step === 'payout' && (
+            <OnboardingSlide key="payout" slideKey="payout">
+              <div className="w-20 h-20 rounded-3xl bg-primary/10 flex items-center justify-center mb-6 mx-auto">
+                <CreditCard className="w-10 h-10 text-primary" />
+              </div>
+              <h1 className="text-3xl font-black tracking-tight text-slate-900 mb-2 italic">Payment & Logistics</h1>
+              <p className="text-slate-600 font-medium mb-10 text-sm italic">So brands can pay you and ship products.</p>
+
+              <div className="w-full space-y-6 text-left">
+                <div className="space-y-2.5">
+                  <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400 px-1">Your UPI ID (For Earnings)</Label>
+                  <div className="relative">
+                    <Input 
+                      value={upiId}
+                      onChange={e => setUpiId(e.target.value)}
+                      placeholder="e.g. name@okhdfcbank"
+                      className="h-14 px-5 rounded-2xl border-2 border-slate-100 bg-slate-50 font-bold text-slate-900 focus:border-primary focus:bg-white transition-all shadow-none"
+                    />
+                  </div>
                 </div>
-                <div className="w-6 h-1.5 rounded-full bg-emerald-600" />
-                <div className="w-6 h-6 rounded-full bg-emerald-600 text-white text-[10px] font-black flex items-center justify-center">2</div>
+
+                <div className="space-y-2.5">
+                  <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400 px-1">Delivery Address (For PR Packages)</Label>
+                  <Textarea 
+                    value={shippingAddress}
+                    onChange={e => setShippingAddress(e.target.value)}
+                    placeholder="Enter your full address for product deliveries..."
+                    className="min-h-[100px] p-5 rounded-2xl border-2 border-slate-100 bg-slate-50 font-semibold text-slate-900 focus:border-primary focus:bg-white transition-all shadow-none resize-none"
+                  />
+                </div>
               </div>
-              <p className="text-[11px] font-black uppercase tracking-[0.2em] text-emerald-600">Step 2 of 2</p>
-            </div>
-            <div className="flex items-start gap-4">
-              <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-emerald-100 text-emerald-600">
-                <CheckCircle2 className="h-7 w-7" />
+
+              <div className="mt-auto pt-10 w-full">
+                <Button 
+                  onClick={handleNext}
+                  className="w-full h-16 rounded-2xl bg-slate-900 text-white font-black italic text-lg shadow-xl shadow-slate-200 active:scale-95 transition-all"
+                >
+                  Save & Continue <ArrowRight className="ml-2 w-5 h-5" />
+                </Button>
               </div>
-              <div>
-                <p className="text-[11px] font-black uppercase tracking-[0.25em] text-emerald-600">Almost done</p>
-                <h1 className="mt-2 text-3xl font-black tracking-tight text-slate-900">Confirm your username</h1>
-                <p className="mt-3 text-base font-medium leading-relaxed text-slate-600">
-                  We'll generate your link now. You can change this later.
-                </p>
+            </OnboardingSlide>
+          )}
+
+          {step === 'notifications' && (
+            <OnboardingSlide key="notifications" slideKey="notifications">
+              <div className="w-20 h-20 rounded-3xl bg-primary/10 flex items-center justify-center mb-8 mx-auto">
+                <Bell className="w-10 h-10 text-primary" />
               </div>
-            </div>
-            <div className="mt-6 rounded-2xl border border-slate-200 bg-slate-50 p-4">
-              <p className="text-[11px] font-black uppercase tracking-[0.18em] text-slate-500">Your username</p>
-              <p className="mt-2 text-lg font-black text-slate-900">@{normalizedHandle}</p>
-              <p className="mt-1 text-xs text-slate-500">Link: {collabUrl.replace(/^https?:\/\//, '')}</p>
-            </div>
-            <Button
-              type="button"
-              onClick={handleSaveLink}
-              disabled={isSubmitting}
-              className="mt-6 h-14 w-full rounded-2xl bg-emerald-600 text-xs font-black uppercase tracking-[0.18em] text-white hover:bg-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-emerald-600"
-            >
-              {isSubmitting ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : null}
-              Create my link
-            </Button>
-          </div>
-        )}
+              <h1 className="text-4xl font-black tracking-tight text-slate-900 mb-4 italic">Never miss a deal</h1>
+              <p className="text-slate-600 font-medium mb-12">Enable alerts to get notified instantly when a brand makes you an offer.</p>
+
+              <div className="w-full p-6 rounded-3xl border-2 border-slate-100 bg-white shadow-sm text-left mb-8">
+                <div className="flex items-center gap-4 mb-4">
+                  <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
+                    <Zap className="w-5 h-5 text-primary" />
+                  </div>
+                  <div>
+                    <p className="text-xs font-black uppercase tracking-widest text-slate-400">Preview Notification</p>
+                    <p className="font-bold text-slate-900">New Offer from Mellow Prints! 🚀</p>
+                  </div>
+                </div>
+                <p className="text-sm text-slate-500 font-medium">You have received a new collaboration request for ₹5,000.</p>
+              </div>
+
+              <div className="mt-auto pt-12 w-full space-y-4">
+                <Button 
+                  onClick={async () => {
+                    await enableNotifications();
+                    handleFinish();
+                  }}
+                  disabled={isSubmitting}
+                  className="w-full h-16 rounded-2xl bg-primary text-white font-black italic text-lg shadow-xl shadow-primary/20 active:scale-95 transition-all"
+                >
+                  {isSubmitting ? <Loader2 className="w-6 h-6 animate-spin" /> : "Enable & Finish"}
+                </Button>
+                <button 
+                  onClick={handleFinish}
+                  disabled={isSubmitting}
+                  className="w-full text-slate-400 font-bold text-sm py-2"
+                >
+                  Skip for now
+                </button>
+              </div>
+            </OnboardingSlide>
+          )}
+        </AnimatePresence>
       </div>
     </OnboardingContainer>
   );
