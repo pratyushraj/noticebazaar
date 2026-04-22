@@ -41,7 +41,7 @@ export const AccountTab: React.FC<AccountTabProps> = ({
             animate={{ opacity: 1, y: 0 }} 
             exit={{ opacity: 0, x: -20 }} 
             className={cn(
-                "w-full min-h-screen px-5 pt-12 pb-32 relative overflow-hidden",
+                "w-full px-5 pt-4 pb-32 relative",
                 isDark ? "bg-gradient-to-b from-[#031B1A] to-[#020617]" : "bg-slate-50"
             )}
         >
@@ -120,6 +120,7 @@ export const AccountTab: React.FC<AccountTabProps> = ({
                             label: 'Collab Page', 
                             status: 'Live', 
                             accent: isDark ? 'text-green-400' : 'text-emerald-600',
+                            bgAccent: isDark ? 'bg-green-500/10' : 'bg-emerald-50',
                             onClick: () => setActiveSettingsPage('collab-link')
                         },
                         { 
@@ -128,6 +129,7 @@ export const AccountTab: React.FC<AccountTabProps> = ({
                             label: 'Payments', 
                             status: 'UPI Linked', 
                             accent: isDark ? 'text-blue-400' : 'text-blue-600',
+                            bgAccent: isDark ? 'bg-blue-500/10' : 'bg-blue-50',
                             onClick: () => { setActiveTab('payments'); triggerHaptic(); }
                         },
                         { 
@@ -136,6 +138,7 @@ export const AccountTab: React.FC<AccountTabProps> = ({
                             label: 'Identity', 
                             status: 'Verified', 
                             accent: isDark ? 'text-purple-400' : 'text-purple-600',
+                            bgAccent: isDark ? 'bg-purple-500/10' : 'bg-purple-50',
                             onClick: () => setActiveSettingsPage('personal')
                         },
                         { 
@@ -144,6 +147,7 @@ export const AccountTab: React.FC<AccountTabProps> = ({
                             label: 'Alerts', 
                             status: isPushSubscribed ? 'On' : 'Off', 
                             accent: isPushSubscribed ? (isDark ? 'text-orange-400' : 'text-orange-600') : 'text-slate-500',
+                            bgAccent: isPushSubscribed ? (isDark ? 'bg-orange-500/10' : 'bg-orange-50') : (isDark ? 'bg-white/5' : 'bg-slate-50'),
                             onClick: () => setActiveSettingsPage('notifications')
                         },
                     ].map((item) => (
@@ -160,7 +164,7 @@ export const AccountTab: React.FC<AccountTabProps> = ({
                         >
                             <div className={cn(
                                 "w-10 h-10 rounded-2xl flex items-center justify-center shadow-sm",
-                                isDark ? "bg-white/5" : "bg-slate-50",
+                                item.bgAccent,
                                 item.accent
                             )}>
                                 {item.icon}
