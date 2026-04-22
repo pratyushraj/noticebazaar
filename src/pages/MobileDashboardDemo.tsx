@@ -1256,8 +1256,8 @@ const MobileDashboardDemo = ({
         if (/^(https?:)?\/\//i.test(raw)) url = raw.startsWith('//') ? `https:${raw}` : raw;
         if (/^(data:|blob:)/i.test(raw)) return raw;
         
-        // Proxy through wsrv.nl for ultra-fast CDN caching and compression (skips blob/data URIs)
-        if (url && (url.includes('supabase.co') || url.includes('instagram.com') || url.includes('fbcdn.net'))) {
+        // Proxy through wsrv.nl for ultra-fast CDN caching and compression (skips blob/data URIs and Supabase links which are already optimized)
+        if (url && (url.includes('instagram.com') || url.includes('fbcdn.net'))) {
              return `https://wsrv.nl/?url=${encodeURIComponent(url)}&w=256&h=256&fit=cover`;
         }
         
