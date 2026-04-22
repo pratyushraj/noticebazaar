@@ -3418,6 +3418,118 @@ const MobileDashboardDemo = ({
                 >
                     <div style={{ height: isRefreshingProp ? '60px' : '0' }} className="transition-all duration-300" />
 
+                    {/* PWA Install Banner (Android only) - Now Common */}
+                    {canInstall && (
+                        <div className="mx-5 mb-4 p-3 rounded-2xl bg-gradient-to-r from-emerald-50 to-teal-50 border border-primary/30 flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                                <div className="w-9 h-9 rounded-xl bg-info flex items-center justify-center">
+                                    <Download className="w-4 h-4 text-foreground" />
+                                </div>
+                                <div>
+                                    <p className="text-[13px] font-bold text-foreground">Add to home screen</p>
+                                    <p className="text-[11px] text-muted-foreground">Add to home screen for faster access</p>
+                                </div>
+                            </div>
+                            <button onClick={promptInstall} className="text-[11px] font-bold px-4 py-2 rounded-full bg-info text-foreground active:scale-95">Install</button>
+                        </div>
+                    )}
+
+                    {/* Command Header - Now Sticky and Common across all tabs */}
+                    <div 
+                        className={cn(
+                            "sticky top-0 z-50 px-5 pb-3 transition-all duration-300 mb-2 border-b",
+                            isDark ? "bg-[#061318]/90 backdrop-blur-xl border-white/5" : "bg-white/90 backdrop-blur-xl border-slate-200"
+                        )}
+                        style={{ 
+                            paddingTop: 'max(env(safe-area-inset-top), 12px)'
+                        }}
+                    >
+                        <div className="flex items-center justify-between mb-1">
+                            {/* Left: Sidebar Menu */}
+                            <button type="button" onClick={() => handleAction('menu')} aria-label="Open menu" className={cn("w-10 h-10 -ml-1 rounded-2xl border flex items-center justify-center transition-all active:scale-95", isDark ? 'border-border bg-card text-foreground/70' : 'border-border bg-secondary/80 text-muted-foreground shadow-sm')}>
+                                <Menu className="w-6 h-6" strokeWidth={1.5} />
+                            </button>
+
+                            {/* Center: Wordmark */}
+                            <div className="flex flex-col items-center gap-0">
+                                <div className="flex items-center gap-1.5 font-black text-[15px] tracking-tight">
+                                    <ShieldCheck className={cn("w-3.5 h-3.5", isDark ? "text-primary" : "text-primary")} strokeWidth={3} />
+                                    <span className={cn(isDark ? "text-white" : "text-slate-900")}>Creator Console</span>
+                                </div>
+                            </div>
+
+                            {/* Right: Actions */}
+                            <div className="flex items-center gap-2">
+                                {/* Theme Toggle */}
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        triggerHaptic();
+                                        setTheme((t) => (t === 'dark' ? 'light' : 'dark'));
+                                    }}
+                                    className={cn(
+                                        "w-10 h-10 rounded-2xl border flex items-center justify-center transition-all active:scale-95 shadow-sm",
+                                        isDark ? 'border-border bg-card text-foreground/70' : 'border-border bg-white text-muted-foreground'
+                                    )}
+                                >
+                                    <AnimatePresence mode="wait" initial={false}>
+                                        {isDark ? (
+                                            <motion.div key="moon" initial={{ rotate: -90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: 90, opacity: 0 }} transition={{ duration: 0.2 }}>
+                                                <Moon className="w-[18px] h-[18px]" />
+                                            </motion.div>
+                                        ) : (
+                                            <motion.div key="sun" initial={{ rotate: 90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: -90, opacity: 0 }} transition={{ duration: 0.2 }}>
+                                                <Sun className="w-[18px] h-[18px]" />
+                                            </motion.div>
+                                        )}
+                                    </AnimatePresence>
+                                </button>
+
+                                {/* Bell */}
+                                <button 
+                                    type="button" 
+                                    onClick={() => handleAction('notifications')} 
+                                    className={cn(
+                                        'relative w-11 h-11 rounded-2xl border flex items-center justify-center transition-all active:scale-95 shadow-sm', 
+                                        isDark ? 'border-border bg-card text-foreground/70' : 'border-border bg-white text-muted-foreground'
+                                    )}
+                                >
+                                    <Bell className="w-[22px] h-[22px]" />
+                                    {collabRequests.length > 0 && (
+                                        <span className="absolute -top-1 -right-1 w-5 h-5 bg-destructive rounded-full border-2 text-[9px] font-black flex items-center justify-center text-white" style={{ borderColor: isDark ? '#0B0F14' : '#FFFFFF' }}>
+                                            {collabRequests.length}
+                                        </span>
+                                    )}
+                                    {shouldShowPushPrompt && (
+                                        <span className="absolute bottom-2.5 right-2.5 w-2 h-2 bg-blue-500 rounded-full animate-pulse border border-white" />
+                                    )}
+                                </button>
+
+                                {/* Avatar */}
+                                <button 
+                                    type="button" 
+                                    onClick={() => setActiveTab('profile')} 
+                                    className={cn(
+                                        "w-11 h-11 rounded-2xl border p-0.5 overflow-hidden transition-all active:scale-95 shadow-sm", 
+                                        isDark ? 'border-border bg-card' : 'border-border bg-white'
+                                    )}
+                                >
+                                    <div className="w-full h-full rounded-[14px] overflow-hidden">
+                                        <img
+                                            src={avatarUrl}
+                                            alt="avatar"
+                                            className="w-full h-full object-cover"
+                                            onError={(e) => {
+                                                (e.currentTarget as HTMLImageElement).onerror = null;
+                                                (e.currentTarget as HTMLImageElement).src = avatarFallbackUrl;
+                                            }}
+                                        />
+                                    </div>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
                     {/* ─── DASHBOARD TAB ─── */}
                     {activeTab === 'dashboard' && (
                         <>
@@ -3444,13 +3556,53 @@ const MobileDashboardDemo = ({
                                     return (
                                         <div className="space-y-6 pb-20">
                                             {/* Welcome Header */}
-                                            <div className="px-5 pt-8">
-                                                <h1 className={cn("text-3xl font-black tracking-tight mb-2", isDark ? "text-white" : "text-slate-900")}>
-                                                    Welcome, {profile?.first_name || profile?.username || 'Creator'} 👋
-                                                </h1>
-                                                <p className={cn("text-sm font-medium opacity-60", isDark ? "text-white" : "text-slate-900")}>
-                                                    Let's get your creator profile live and ready to receive brand deals.
-                                                </p>
+                                            <div className="relative z-10 -mt-2 mb-6">
+                                                <div className={cn(
+                                                    "absolute inset-0 -z-10 bg-gradient-to-br overflow-hidden rounded-b-[40px] border-b",
+                                                    isDark 
+                                                        ? "from-emerald-950 via-[#0B1A14] to-[#0A101A] border-emerald-900/30 shadow-[0_4px_40px_rgba(16,185,129,0.1)]" 
+                                                        : "from-emerald-600 via-emerald-700 to-emerald-900 border-emerald-800 shadow-xl"
+                                                )}>
+                                                    <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-emerald-500/10 rounded-full blur-[80px] -mr-[200px] -mt-[200px] pointer-events-none mix-blend-screen" />
+                                                    <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-teal-500/10 rounded-full blur-[60px] -ml-[150px] -mb-[150px] pointer-events-none mix-blend-screen" />
+                                                    <div className="absolute inset-0 bg-[url('/noise.png')] opacity-[0.03] mix-blend-overlay pointer-events-none" />
+                                                </div>
+
+                                                <div className="px-6 pt-8 pb-12">
+                                                    <motion.p 
+                                                        initial={{ opacity: 0, y: 10 }}
+                                                        animate={{ opacity: 1, y: 0 }}
+                                                        transition={{ duration: 0.4 }}
+                                                        className={cn(
+                                                            'text-[11px] font-black uppercase tracking-[0.3em] mb-1', 
+                                                            isDark ? "text-emerald-400" : "text-emerald-100/80"
+                                                        )}
+                                                    >
+                                                        GET STARTED
+                                                    </motion.p>
+                                                    <motion.h1 
+                                                        initial={{ opacity: 0, y: 10 }}
+                                                        animate={{ opacity: 1, y: 0 }}
+                                                        transition={{ duration: 0.4, delay: 0.05 }}
+                                                        className={cn(
+                                                            "text-[36px] font-black tracking-tighter leading-tight italic mb-2", 
+                                                            isDark ? "text-white" : "text-white"
+                                                        )}
+                                                    >
+                                                        Welcome, {profile?.first_name || profile?.username || 'Creator'} 👋
+                                                    </motion.h1>
+                                                    <motion.p 
+                                                        initial={{ opacity: 0, y: 10 }}
+                                                        animate={{ opacity: 1, y: 0 }}
+                                                        transition={{ duration: 0.4, delay: 0.1 }}
+                                                        className={cn(
+                                                            "text-[15px] font-medium leading-relaxed", 
+                                                            isDark ? "text-emerald-100/70" : "text-emerald-50/90"
+                                                        )}
+                                                    >
+                                                        Let's get your creator profile live and ready to receive brand deals.
+                                                    </motion.p>
+                                                </div>
                                             </div>
 
                                             {/* Progress Card */}
@@ -3698,173 +3850,106 @@ const MobileDashboardDemo = ({
 
                                 return (
                                     <>
-                                        <div className="h-full overflow-y-auto overflow-x-hidden relative z-10 pb-[100px] scrollbar-hide">
+                                        {/* Dashboard Hero / Welcome Section */}
+                                        <div className="relative z-10 -mt-2 mb-6">
+                                            {/* Vibrant Background */}
+                                            <div className={cn(
+                                                "absolute inset-0 -z-10 bg-gradient-to-br overflow-hidden rounded-b-[40px] border-b",
+                                                isDark 
+                                                    ? "from-emerald-950 via-[#0B1A14] to-[#0A101A] border-emerald-900/30 shadow-[0_4px_40px_rgba(16,185,129,0.1)]" 
+                                                    : "from-emerald-600 via-emerald-700 to-emerald-900 border-emerald-800 shadow-xl"
+                                            )}>
+                                                {/* Decorative background elements */}
+                                                <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-emerald-500/10 rounded-full blur-[80px] -mr-[200px] -mt-[200px] pointer-events-none mix-blend-screen" />
+                                                <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-teal-500/10 rounded-full blur-[60px] -ml-[150px] -mb-[150px] pointer-events-none mix-blend-screen" />
+                                                <div className="absolute inset-0 bg-[url('/noise.png')] opacity-[0.03] mix-blend-overlay pointer-events-none" />
+                                            </div>
 
-
-                            {/* PWA Install Banner (Android only) */}
-                            {canInstall && (
-                                <div className="mx-5 mb-4 p-3 rounded-2xl bg-gradient-to-r from-emerald-50 to-teal-50 border border-primary/30 flex items-center justify-between">
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-9 h-9 rounded-xl bg-info flex items-center justify-center">
-                                            <Download className="w-4 h-4 text-foreground" />
-                                        </div>
-                                        <div>
-                                            <p className="text-[13px] font-bold text-foreground">Add to home screen</p>
-                                            <p className="text-[11px] text-muted-foreground">Add to home screen for faster access</p>
-                                        </div>
-                                    </div>
-                                    <button onClick={promptInstall} className="text-[11px] font-bold px-4 py-2 rounded-full bg-info text-foreground active:scale-95">Install</button>
-                                </div>
-                            )}
-
-                            {/* Command Header */}
-                            <div 
-                                className="relative z-50 px-5 pb-1 pt-safe transition-all duration-300 mb-2" 
-                                style={{ 
-                                    paddingTop: 'max(env(safe-area-inset-top), 8px)', 
-                                    backgroundColor: 'transparent'
-                                }}
-                            >
-                                <div className="flex items-center justify-between mb-1">
-                                    {/* Left: Sidebar Menu */}
-                                    <button type="button" onClick={() => handleAction('menu')} aria-label="Open menu" className={cn("w-10 h-10 -ml-1 rounded-2xl border flex items-center justify-center transition-all active:scale-95", isDark ? 'border-border bg-card text-foreground/70' : 'border-border bg-secondary/80 text-muted-foreground shadow-sm')}>
-                                        <Menu className="w-6 h-6" strokeWidth={1.5} />
-                                    </button>
-
-                                    {/* Center: Wordmark */}
-                                    <div className="flex flex-col items-center gap-0">
-                                        <div className="flex items-center gap-1.5 font-black text-[15px] tracking-tight">
-                                            <ShieldCheck className={cn("w-3.5 h-3.5", isDark ? "text-primary" : "text-primary")} strokeWidth={3} />
-                                            <span className={cn(isDark ? "text-white" : "text-slate-900")}>Creator Console</span>
-                                        </div>
-                                    </div>
-
-                                    {/* Right: Actions */}
-                                    <div className="flex items-center gap-2">
-                                        {/* Theme Toggle */}
-                                        <button
-                                            type="button"
-                                            onClick={() => {
-                                                triggerHaptic();
-                                                setTheme((t) => (t === 'dark' ? 'light' : 'dark'));
-                                            }}
-                                            className={cn(
-                                                "w-10 h-10 rounded-2xl border flex items-center justify-center transition-all active:scale-95 shadow-sm",
-                                                isDark ? 'border-border bg-card text-foreground/70' : 'border-border bg-white text-muted-foreground'
-                                            )}
-                                        >
-                                            <AnimatePresence mode="wait" initial={false}>
-                                                {isDark ? (
-                                                    <motion.div key="moon" initial={{ rotate: -90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: 90, opacity: 0 }} transition={{ duration: 0.2 }}>
-                                                        <Moon className="w-[18px] h-[18px]" />
+                                            <div className="px-6 pt-8 pb-12">
+                                                <div className="flex flex-col gap-1">
+                                                    <motion.p 
+                                                        initial={{ opacity: 0, y: 10 }}
+                                                        animate={{ opacity: 1, y: 0 }}
+                                                        transition={{ duration: 0.4 }}
+                                                        className={cn(
+                                                            'text-[11px] font-black uppercase tracking-[0.3em] mb-1', 
+                                                            isDark ? "text-emerald-400" : "text-emerald-100/80"
+                                                        )}
+                                                    >
+                                                        Welcome back
+                                                    </motion.p>
+                                                    <motion.div 
+                                                        initial={{ opacity: 0, y: 10 }}
+                                                        animate={{ opacity: 1, y: 0 }}
+                                                        transition={{ duration: 0.4, delay: 0.05 }}
+                                                        className="flex flex-wrap items-center gap-3"
+                                                    >
+                                                        <h1 className={cn(
+                                                            'text-[36px] font-black tracking-tighter leading-tight italic', 
+                                                            isDark ? "text-white" : "text-white"
+                                                        )}>
+                                                            {isLoadingProfile ? (
+                                                                "..."
+                                                            ) : !profile ? (
+                                                                "Creator"
+                                                            ) : (
+                                                                (() => {
+                                                                    let name = (profile?.first_name || '').trim();
+                                                                    if (!name || name === 'Dashboard©' || name.includes('Dashboard') || name.includes('©')) name = '';
+                                                                    return name || 'Creator';
+                                                                })()
+                                                            )}
+                                                        </h1>
+                                                        <div className={cn(
+                                                            "flex items-center gap-1.5 px-3 py-1.5 rounded-full border shadow-sm backdrop-blur-md", 
+                                                            isDark ? "bg-emerald-500/10 border-emerald-500/20" : "bg-white/10 border-white/20"
+                                                        )}>
+                                                            <div className="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_12px_rgba(52,211,153,0.8)] animate-pulse" />
+                                                            <span className={cn(
+                                                                "text-[10px] uppercase font-black tracking-widest",
+                                                                isDark ? "text-emerald-400" : "text-emerald-50"
+                                                            )}>Active</span>
+                                                        </div>
                                                     </motion.div>
-                                                ) : (
-                                                    <motion.div key="sun" initial={{ rotate: 90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: -90, opacity: 0 }} transition={{ duration: 0.2 }}>
-                                                        <Sun className="w-[18px] h-[18px]" />
+                                                    
+                                                    {profile && username && (
+                                                        <motion.p 
+                                                            initial={{ opacity: 0, y: 10 }}
+                                                            animate={{ opacity: 1, y: 0 }}
+                                                            transition={{ duration: 0.4, delay: 0.1 }}
+                                                            className={cn(
+                                                                'text-[15px] font-medium mt-1', 
+                                                                isDark ? "text-emerald-100/60" : "text-emerald-100/80"
+                                                            )}
+                                                        >
+                                                            @{username}
+                                                        </motion.p>
+                                                    )}
+                                                </div>
+                                                
+                                                {/* Data Load Error handling */}
+                                                {hasDataLoadError && (
+                                                    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.15 }} className="mt-6">
+                                                        <div className={cn(
+                                                            "rounded-2xl border px-4 py-3 flex items-start gap-3 backdrop-blur-md",
+                                                            isDark ? "bg-rose-500/10 border-rose-500/20" : "bg-rose-50 border-rose-200"
+                                                        )}>
+                                                            <AlertTriangle className={cn("w-5 h-5 mt-0.5 shrink-0", isDark ? "text-rose-300" : "text-rose-700")} />
+                                                            <div className="min-w-0">
+                                                                <p className={cn("text-[13px] font-black", isDark ? "text-rose-200" : "text-rose-900")}>
+                                                                    Data failed to load
+                                                                </p>
+                                                                <p className={cn("text-[12px] font-semibold mt-0.5 leading-snug", isDark ? "text-rose-200/80" : "text-rose-800")}>
+                                                                    {offersError && dealsError
+                                                                        ? `${offersError} ${dealsError}`
+                                                                        : (offersError || dealsError)}
+                                                                </p>
+                                                            </div>
+                                                        </div>
                                                     </motion.div>
                                                 )}
-                                            </AnimatePresence>
-                                        </button>
-
-                                        {/* Bell */}
-                                        <button 
-                                            type="button" 
-                                            onClick={() => handleAction('notifications')} 
-                                            className={cn(
-                                                'relative w-11 h-11 rounded-2xl border flex items-center justify-center transition-all active:scale-95 shadow-sm', 
-                                                isDark ? 'border-border bg-card text-foreground/70' : 'border-border bg-white text-muted-foreground'
-                                            )}
-                                        >
-                                            <Bell className="w-[22px] h-[22px]" />
-                                            {collabRequests.length > 0 && (
-                                                <span className="absolute -top-1 -right-1 w-5 h-5 bg-destructive rounded-full border-2 text-[9px] font-black flex items-center justify-center text-white" style={{ borderColor: isDark ? '#0B0F14' : '#FFFFFF' }}>
-                                                    {collabRequests.length}
-                                                </span>
-                                            )}
-                                            {/* Suble dot if push notifications not enabled */}
-                                            {shouldShowPushPrompt && (
-                                                <span className="absolute bottom-2.5 right-2.5 w-2 h-2 bg-blue-500 rounded-full animate-pulse border border-white" />
-                                            )}
-                                        </button>
-
-                                        {/* Avatar */}
-                                        <button 
-                                            type="button" 
-                                            onClick={() => setActiveTab('profile')} 
-                                            className={cn(
-                                                "w-11 h-11 rounded-2xl border p-0.5 overflow-hidden transition-all active:scale-95 shadow-sm", 
-                                                isDark ? 'border-border bg-card' : 'border-border bg-white'
-                                            )}
-                                        >
-                                            <div className="w-full h-full rounded-[14px] overflow-hidden">
-                                                <img
-                                                    src={avatarUrl}
-                                                    alt="avatar"
-                                                    className="w-full h-full object-cover"
-                                                    onError={(e) => {
-                                                        (e.currentTarget as HTMLImageElement).onerror = null;
-                                                        (e.currentTarget as HTMLImageElement).src = avatarFallbackUrl;
-                                                    }}
-                                                />
                                             </div>
-                                        </button>
-                                    </div>
-                                </div>
-
-                                {/* Greeting / Status Section */}
-                                <div className="flex items-end justify-between gap-3">
-                                    <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }} className="min-w-0">
-                                        {hasDataLoadError && (
-                                            <div className="mb-3">
-                                                <div className={cn(
-                                                    "rounded-2xl border px-4 py-3 flex items-start gap-3",
-                                                    isDark ? "bg-rose-500/10 border-rose-500/20" : "bg-rose-50 border-rose-200"
-                                                )}>
-                                                    <AlertTriangle className={cn("w-5 h-5 mt-0.5 shrink-0", isDark ? "text-rose-300" : "text-rose-700")} />
-                                                    <div className="min-w-0">
-                                                        <p className={cn("text-[13px] font-black", isDark ? "text-rose-200" : "text-rose-900")}>
-                                                            Data failed to load
-                                                        </p>
-                                                        <p className={cn("text-[12px] font-semibold mt-0.5 leading-snug", isDark ? "text-rose-200/80" : "text-rose-800")}>
-                                                            {offersError && dealsError
-                                                                ? `${offersError} ${dealsError}`
-                                                                : (offersError || dealsError)}
-                                                        </p>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        )}
-                                        
-                                        <div className="flex flex-col gap-0.5">
-                                            <p className={cn('text-[10px] font-black uppercase tracking-[0.25em] opacity-40 mb-1', textColor)}>Welcome back</p>
-                                            <div className="flex items-center gap-3">
-                                                <h1 className={cn('text-[32px] font-black tracking-tighter leading-tight italic', textColor)}>
-                                                    {isLoadingProfile ? (
-                                                        "..."
-                                                    ) : !profile ? (
-                                                        "Creator"
-                                                    ) : (
-                                                        (() => {
-                                                            let name = (profile?.first_name || '').trim();
-                                                            if (!name || name === 'Dashboard©' || name.includes('Dashboard') || name.includes('©')) name = '';
-                                                            return name || 'Creator';
-                                                        })()
-                                                    )}
-                                                </h1>
-                                                <div className={cn("flex items-center gap-1.5 px-2.5 py-1 rounded-lg border shadow-sm", isDark ? "bg-primary/5 border-primary/20" : "bg-primary/5 border-primary/10")}>
-                                                    <div className="w-1.5 h-1.5 rounded-full bg-primary shadow-[0_0_10px_rgba(34,197,94,0.6)] animate-pulse" />
-                                                    <span className={cn("text-[10px] uppercase font-black tracking-widest text-primary")}>Active</span>
-                                                </div>
-                                            </div>
-                                            {profile && username && (
-                                                <p className={cn('text-[13px] opacity-60 font-medium', textColor)}>
-                                                    @{username}
-                                                </p>
-                                            )}
                                         </div>
-                                    </motion.div>
-                                </div>
-                            </div>
 
                             {/* Setup Progress - Shown in full dashboard if incomplete but has deals */}
                             {!isSetupComplete && (
@@ -4290,7 +4375,6 @@ const MobileDashboardDemo = ({
                                         Keeping a single surface avoids duplicate "collab link" sections on the dashboard. */}
                              </div>
                          </div>
-                     </div>
                  </>
              );
                     })()}
@@ -4397,7 +4481,7 @@ const MobileDashboardDemo = ({
 
                     {/* ─── DISCOVERY TAB ─── */}
                     {activeTab === 'discovery' && (
-                        <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 px-5 pt-8 pb-32">
+                        <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 px-5 pb-32">
                             <div className="mb-8">
                                 <h1 className={cn("text-4xl font-black italic uppercase tracking-tighter", isDark ? "text-white" : "text-black")}>
                                     Discovery Lab
@@ -4415,7 +4499,7 @@ const MobileDashboardDemo = ({
 
                     {/* ─── COLLABS TAB ─── */}
                     {activeTab === 'deals' && (
-                        <div className={cn("px-5 pt-8 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-20", isDark ? "" : "bg-slate-50")}>
+                        <div className={cn("px-5 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-20", isDark ? "" : "bg-slate-50")}>
                             {/* Toggle Header */}
                             <div className={cn(
                                 "sticky top-0 z-20 -mx-5 px-5 pt-2 pb-3 mb-4",
@@ -5080,8 +5164,7 @@ const MobileDashboardDemo = ({
 
                     {/* ─── OTHER TABS (Simplified for UI flow) ─── */}
                     {activeTab === 'profile' && (
-                        <div className={cn("animate-in fade-in slide-in-from-bottom-4 duration-500 relative bg-transparent")}>
-                            <AnimatePresence mode="wait">
+                        <AnimatePresence mode="wait">
                                 {!activeSettingsPage ? (
                                     <AccountTab 
                                         isDark={isDark}
@@ -5108,7 +5191,6 @@ const MobileDashboardDemo = ({
                                     </motion.div>
                                 )}
                             </AnimatePresence>
-                        </div>
                     )}
 
 
