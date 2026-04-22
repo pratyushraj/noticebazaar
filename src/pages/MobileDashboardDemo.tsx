@@ -1264,9 +1264,9 @@ const MobileDashboardDemo = ({
         return url;
     };
     const avatarUrl =
-        resolveAvatarUrl(liveCollabProfile?.profile_photo) ||
         resolveAvatarUrl(profile?.avatar_url) ||
         resolveAvatarUrl(profile?.instagram_profile_photo) ||
+        resolveAvatarUrl(liveCollabProfile?.profile_photo) ||
         avatarFallbackUrl;
     const displayName = liveCollabProfile?.name || profile?.full_name || profile?.first_name || 'Pratyush';
 
@@ -3438,7 +3438,7 @@ const MobileDashboardDemo = ({
                     <div 
                         className={cn(
                             "sticky top-0 z-50 px-5 pb-3 transition-all duration-300 mb-2 border-b",
-                            isDark ? "bg-[#061318]/90 backdrop-blur-xl border-white/5" : "bg-white/90 backdrop-blur-xl border-slate-200"
+                            isDark ? "bg-[#03110C]/90 backdrop-blur-xl border-white/5" : "bg-white/90 backdrop-blur-xl border-slate-200"
                         )}
                         style={{ 
                             paddingTop: 'max(env(safe-area-inset-top), 12px)'

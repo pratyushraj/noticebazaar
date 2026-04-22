@@ -34,6 +34,31 @@ export const AccountTab: React.FC<AccountTabProps> = ({
     setActiveTab,
     triggerHaptic
 }) => {
+    const formatCompactNumber = (value: number | null | undefined) => {
+        if (!Number.isFinite(value as number) || Number(value) <= 0) return '—';
+        return new Intl.NumberFormat('en-IN', {
+            notation: 'compact',
+            maximumFractionDigits: 1,
+        }).format(Number(value));
+    };
+
+    const followersCount = Number(
+        profile?.instagram_followers ??
+        profile?.followers_count ??
+        profile?.followers ??
+        0
+    );
+
+    const responseHours = Number(
+        profile?.collab_response_hours_override ??
+        profile?.response_hours ??
+        0
+    );
+
+    const responseLabel = Number.isFinite(responseHours) && responseHours > 0
+        ? `${Math.round(responseHours)}h`
+        : '—';
+
     return (
         <motion.div 
             key="settings-main" 
@@ -41,15 +66,10 @@ export const AccountTab: React.FC<AccountTabProps> = ({
             animate={{ opacity: 1, y: 0 }} 
             exit={{ opacity: 0, x: -20 }} 
             className={cn(
-                "w-full px-5 pt-4 pb-32 relative",
-                isDark ? "bg-gradient-to-b from-[#031B1A] to-[#020617]" : "bg-slate-50"
+                "w-full px-5 pt-8 pb-32 relative",
+                isDark ? "bg-transparent" : "bg-slate-50"
             )}
         >
-            {/* Radial Glow (Dark Mode Only) */}
-            {isDark && (
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-64 h-64 bg-emerald-500/5 blur-[100px] pointer-events-none" />
-            )}
-
             {/* Header */}
             <div className="mb-8 relative z-10">
                 <h1 className={cn("text-4xl font-black italic uppercase tracking-tighter", isDark ? "text-white" : "text-slate-900")}>Account</h1>
@@ -76,8 +96,6 @@ export const AccountTab: React.FC<AccountTabProps> = ({
                             )}
                             onError={(e) => { (e.currentTarget as HTMLImageElement).onerror = null; (e.currentTarget as HTMLImageElement).src = avatarFallbackUrl; }} 
                         />
-                        {/* Status Dot */}
-                        <div className="absolute right-0 bottom-0.5 w-3.5 h-3.5 bg-green-500 rounded-full border-2 border-[#0B1324]" />
                     </div>
                     <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-0.5">
@@ -98,12 +116,16 @@ export const AccountTab: React.FC<AccountTabProps> = ({
 
                 <div className="flex items-center justify-between px-2">
                     <div className="text-center">
-                        <p className={cn("text-2xl font-black tracking-tighter", isDark ? "text-white" : "text-slate-900")}>307M</p>
+                        <p className={cn("text-2xl font-black tracking-tighter", isDark ? "text-white" : "text-slate-900")}>
+                            {formatCompactNumber(followersCount)}
+                        </p>
                         <p className={cn("text-[10px] font-black uppercase tracking-widest opacity-40", isDark ? "text-slate-400" : "text-slate-500")}>Followers</p>
                     </div>
                     <div className={cn("w-[1px] h-8", isDark ? "bg-white/10" : "bg-slate-100")} />
                     <div className="text-center">
-                        <p className={cn("text-2xl font-black tracking-tighter", isDark ? "text-white" : "text-slate-900")}>3h</p>
+                        <p className={cn("text-2xl font-black tracking-tighter", isDark ? "text-white" : "text-slate-900")}>
+                            {responseLabel}
+                        </p>
                         <p className={cn("text-[10px] font-black uppercase tracking-widest opacity-40", isDark ? "text-slate-400" : "text-slate-500")}>Response</p>
                     </div>
                 </div>
