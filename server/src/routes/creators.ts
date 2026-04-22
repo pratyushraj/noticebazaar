@@ -341,11 +341,26 @@ router.get('/', async (req: Request, res: Response) => {
         });
       }
 
-      const creatorName = profile.business_name ||
+      const uname = (profile.username || '').toLowerCase().trim();
+      let creatorName = profile.business_name ||
         `${profile.first_name || ''} ${profile.last_name || ''}`.trim() ||
         'Creator';
 
-      const profilePhoto = getSafeCreatorPhoto(profile);
+      let profilePhoto = getSafeCreatorPhoto(profile);
+
+      if (uname === 'beyonce') {
+        creatorName = 'Beyoncé';
+        profilePhoto = 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=800&h=800';
+      } else if (uname === 'virat.kohli') {
+        creatorName = 'Virat Kohli';
+        profilePhoto = 'https://images.unsplash.com/photo-1541233349642-6e425fe6190e?auto=format&fit=crop&q=80&w=800&h=800';
+      }
+
+      // Also ensure internal profile object has consistent photo
+      if (uname === 'beyonce' || uname === 'virat.kohli') {
+        profile.avatar_url = profilePhoto;
+        profile.instagram_profile_photo = profilePhoto;
+      }
       const avgViews = deriveAvgViews(profile);
       const startingPrice = deriveStartingPrice(profile);
       const stats = {
@@ -562,9 +577,16 @@ router.get('/suggested', async (req: Request, res: Response) => {
     }
 
     const creators = (profiles || []).map((profile: any) => {
-      const creatorName = profile.business_name ||
+      const uname = (profile.username || '').toLowerCase().trim();
+      let creatorName = profile.business_name ||
         `${profile.first_name || ''} ${profile.last_name || ''}`.trim() ||
         'Creator';
+
+      if (uname === 'beyonce') {
+        creatorName = 'Beyoncé';
+      } else if (uname === 'virat.kohli') {
+        creatorName = 'Virat Kohli';
+      }
 
       const effectiveReelRate = getEffectiveReelRate(profile);
       const trust = trustByCreatorId.get(String(profile.id)) || {
@@ -592,7 +614,24 @@ router.get('/suggested', async (req: Request, res: Response) => {
         name: creatorName,
         category: profile.creator_category,
         bio: profile.bio,
-        profile_photo: getSafeCreatorPhoto(profile),
+        profile_photo: (() => {
+          const safePhoto = getSafeCreatorPhoto(profile);
+          const isPlaceholder = !safePhoto || 
+                               safePhoto.includes('photo-1531415074968-036ba1b575da') || 
+                               safePhoto.includes('photo-1541233349642-6e425fe6190e') || 
+                               safePhoto.includes('photo-1493225255756-d9584f8606e9') || 
+                               safePhoto.includes('photo-1516280440614-37939bbacd81') || 
+                               safePhoto.includes('placeholder') ||
+                               (safePhoto.includes('unsplash.com') && !safePhoto.includes('supabase.co'));
+
+          if (uname === 'beyonce' && isPlaceholder) {
+            return 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=800&h=800';
+          }
+          if (uname === 'virat.kohli' && isPlaceholder) {
+            return 'https://images.unsplash.com/photo-1541233349642-6e425fe6190e?auto=format&fit=crop&q=80&w=800&h=800';
+          }
+          return safePhoto;
+        })(),
         followers: numberOrNull(profile.followers_count) ?? profile.instagram_followers ?? null,
         avg_views: stats.avg_views,
         engagement_rate: stats.engagement_rate,

@@ -26,6 +26,7 @@ import { notifyCreatorOnCollabRequestCreated, sendGenericPushNotificationToCreat
 import { findOrCreateBrandUser, generateBrandMagicLink } from '../services/brandAuthService.js';
 import { getCreatorNotificationContent } from '../domains/deals/creatorNotificationCopy.js';
 import { recordMarketplaceEvent } from '../shared/lib/marketplaceAnalytics.js';
+import { invalidateDealsMineCache } from './deals.js';
 
 const router = express.Router();
 
@@ -44,8 +45,16 @@ function getCollabRequestsCache(key: string) {
   return hit.value;
 }
 
-function setCollabRequestsCache(key: string, value: any) {
+export function setCollabRequestsCache(key: string, value: any) {
   collabRequestsCache.set(key, { expiresAt: Date.now() + COLLAB_REQUESTS_CACHE_TTL_MS, value });
+}
+
+export function invalidateCollabRequestsCache(userId: string) {
+  for (const key of collabRequestsCache.keys()) {
+    if (key.startsWith(userId)) {
+      collabRequestsCache.delete(key);
+    }
+  }
 }
 
 // Multer for optional barter product image (in-memory, max 5MB; mimetype validated in handler)
@@ -1023,6 +1032,135 @@ router.get('/availability/:username', async (req: Request, res: Response) => {
   }
 });
 
+const PUBLIC_EMAIL_DOMAINS = new Set([
+  'gmail.com', 'yahoo.com', 'hotmail.com', 'outlook.com', 'icloud.com', 
+  'yopmail.com', 'rediffmail.com', 'zoho.com', 'live.com', 'me.com', 
+  'msn.com', 'mail.com', 'protonmail.com', 'aol.com'
+]);
+
+function inferLogoFromEmail(email: string): string | null {
+  if (!email || !email.includes('@')) return null;
+  const domain = email.split('@')[1].toLowerCase();
+  if (PUBLIC_EMAIL_DOMAINS.has(domain)) return null;
+  // Use Clearbit for custom domains
+  return `https://logo.clearbit.com/${domain}`;
+}
+
+/**
+ * GET /lookup-brand
+ * Fetch brand logo and brand name from registered dashboard email to autofill public forms.
+ */
+router.get('/lookup-brand', async (req: Request, res: Response) => {
+  try {
+    const email = (req.query.email as string)?.trim().toLowerCase();
+    if (!email) {
+      return res.status(400).json({ success: false, error: 'Email query parameter is required' });
+    }
+
+    if (!supabaseInitialized) {
+      return res.status(503).json({ success: false, error: 'Database connection not initialized' });
+    }
+
+    console.log(`[lookup-brand] Looking up: ${email}`);
+    // 1. Check profiles table first (Primary Account Storage)
+    const { data: profileRow, error: profileErr } = await supabase
+      .from('profiles')
+      .select('id, business_name, avatar_url, profile_image_url, role')
+      .ilike('email', email)
+      .limit(1)
+      .maybeSingle();
+
+    if (profileRow && !profileErr) {
+      console.log(`[lookup-brand] Found profile: ${profileRow.id}, searching for brand record...`);
+      // Also check the 'brands' profile table which is where the dashboard usually saves the logo
+      const { data: brandProfile } = await supabase
+        .from('brands')
+        .select('name, logo_url, website_url')
+        .eq('external_id', profileRow.id)
+        .maybeSingle();
+
+      console.log(`[lookup-brand] Brand record found:`, brandProfile);
+      return res.json({
+        success: true,
+        data: {
+          brand_name: brandProfile?.name || profileRow.business_name || null,
+          logo: brandProfile?.logo_url || profileRow.avatar_url || profileRow.profile_image_url || inferLogoFromEmail(email) || null,
+          instagram: null,
+          website: brandProfile?.website_url || null
+        }
+      });
+    }
+
+    // 2. Fallback to brand_users (Legacy/Alternate Storage)
+    console.log(`[lookup-brand] Profile not found, checking brand_users...`);
+    const { data: brandUser, error: brandUserErr } = await supabase
+      .from('brand_users')
+      .select('id, brand_name, brand_logo_url, instagram_handle')
+      .ilike('email', email)
+      .limit(1)
+      .maybeSingle();
+      
+    if (brandUser && !brandUserErr) {
+      const { data: brandProfile } = await supabase
+        .from('brands')
+        .select('name, logo_url, website_url')
+        .eq('external_id', brandUser.id)
+        .maybeSingle();
+
+      return res.json({
+        success: true,
+        data: {
+          brand_name: brandProfile?.name || brandUser.brand_name || null,
+          logo: brandProfile?.logo_url || brandUser.brand_logo_url || inferLogoFromEmail(email) || null,
+          instagram: brandUser.instagram_handle || null,
+          website: brandProfile?.website_url || null
+        }
+      });
+    }
+
+    // 2. Check past collab_requests if no registered brand exists
+    // This allows returning logos for unregistered brands that have previously submitted requests
+    const { data: pastRequest, error: pastReqErr } = await supabase
+      .from('collab_requests')
+      .select('brand_name, brand_logo_url, brand_instagram')
+      .eq('brand_email', email)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (pastRequest && !pastReqErr && pastRequest.brand_name) {
+      return res.json({
+        success: true,
+        data: {
+          brand_name: pastRequest.brand_name || null,
+          logo: pastRequest.brand_logo_url || inferLogoFromEmail(email) || null,
+          instagram: pastRequest.brand_instagram || null
+        }
+      });
+    }
+
+    // 3. Fallback: Infer from email prefix if no record found
+    const emailPrefix = email.split('@')[0];
+    const cleanPrefix = emailPrefix.replace(/[0-9]/g, '').replace(/[._-]/g, ' ').trim();
+    const inferredName = cleanPrefix.split(' ')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .filter(word => word.length > 1)
+      .join(' ');
+
+    return res.json({
+      success: true,
+      data: {
+        brand_name: inferredName || null,
+        logo: inferLogoFromEmail(email) || null,
+        inferred: true
+      }
+    });
+  } catch (error: any) {
+    console.error('[CollabRequests] Error in /lookup-brand:', error);
+    res.status(500).json({ success: false, error: 'Internal server error during brand lookup' });
+  }
+});
+
 /**
  * GET /api/collab/:username
  * Get creator profile info for collab link landing page
@@ -1066,7 +1204,7 @@ router.get('/:username', async (req: Request, res: Response) => {
       });
     }
 
-    // If profile found, fetch additional optional columns separately (to handle missing columns gracefully)
+// If profile found, fetch additional optional columns separately (to handle missing columns gracefully)
     if (profile && !profileError) {
       const { data: extendedProfile } = await supabase
         .from('profiles')
@@ -1096,76 +1234,52 @@ router.get('/:username', async (req: Request, res: Response) => {
           avg_reel_views_manual,
           avg_likes_manual,
           active_brand_collabs_month,
-          campaign_slot_note,
-          collab_brands_count_override,
-          collab_response_hours_override,
-          collab_cancellations_percent_override,
-          collab_region_label,
-          collab_intro_line,
-          collab_audience_fit_note,
-          collab_recent_activity_note,
-          collab_audience_relevance_note,
-          collab_delivery_reliability_note,
-          collab_engagement_confidence_note,
-          collab_response_behavior_note,
-          collab_cta_trust_note,
-          collab_cta_dm_note,
-          collab_cta_platform_note,
-          collab_show_packages,
-          collab_show_trust_signals,
-          collab_show_audience_snapshot,
-          collab_show_past_work,
-          collab_past_work_items,
-          learned_avg_rate_reel,
-          learned_deal_count
-      `)
+          campaign_slot_note
+        `)
         .eq('id', profile.id)
         .maybeSingle();
 
-      // Merge extended data if available (ignore errors for missing columns)
       if (extendedProfile) {
         profile = { ...profile, ...extendedProfile };
       }
 
-      // Fetch portfolio/media-kit separately so a missing optional column in the larger
-      // extended select does not drop the creator's public work highlights.
-      const { data: portfolioProfile } = await supabase
-        .from('profiles')
-        .select('portfolio_links, media_kit_url')
-        .eq('id', profile.id)
-        .maybeSingle();
+      try {
+        const { data: portfolioProfile } = await supabase
+          .from('profiles')
+          .select('portfolio_links, media_kit_url')
+          .eq('id', profile.id)
+          .maybeSingle();
 
-      if (portfolioProfile) {
-        const nextProfile: Record<string, unknown> = { ...profile };
-        if (Array.isArray((portfolioProfile as any).portfolio_links)) {
-          nextProfile.portfolio_links = (portfolioProfile as any).portfolio_links;
+        if (portfolioProfile) {
+          const nextProfile: Record<string, unknown> = { ...profile };
+          if (Array.isArray((portfolioProfile as any).portfolio_links)) {
+            nextProfile.portfolio_links = (portfolioProfile as any).portfolio_links;
+          }
+          if (typeof (portfolioProfile as any).media_kit_url === 'string' || (portfolioProfile as any).media_kit_url === null) {
+            nextProfile.media_kit_url = (portfolioProfile as any).media_kit_url;
+          }
+          profile = nextProfile as typeof profile;
         }
-        if (typeof (portfolioProfile as any).media_kit_url === 'string' || (portfolioProfile as any).media_kit_url === null) {
-          nextProfile.media_kit_url = (portfolioProfile as any).media_kit_url;
-        }
-        profile = nextProfile as typeof profile;
-      }
+      } catch (e) { /* ignore portfolio query errors */ }
 
-      // Fetch optional trust arrays separately so older schemas don't break the main extended select.
-      const { data: trustArraysProfile } = await supabase
-        .from('profiles')
-        .select('past_brands, recent_campaign_types, collab_past_work_items')
-        .eq('id', profile.id)
-        .maybeSingle();
+      try {
+        const { data: trustArraysProfile } = await supabase
+          .from('profiles')
+          .select('past_brands, recent_campaign_types')
+          .eq('id', profile.id)
+          .maybeSingle();
 
-      if (trustArraysProfile) {
-        const nextProfile: Record<string, unknown> = { ...profile };
-        if (Array.isArray((trustArraysProfile as any).past_brands)) {
-          nextProfile.past_brands = (trustArraysProfile as any).past_brands;
+        if (trustArraysProfile) {
+          const nextProfile: Record<string, unknown> = { ...profile };
+          if (Array.isArray((trustArraysProfile as any).past_brands)) {
+            nextProfile.past_brands = (trustArraysProfile as any).past_brands;
+          }
+          if (Array.isArray((trustArraysProfile as any).recent_campaign_types)) {
+            nextProfile.recent_campaign_types = (trustArraysProfile as any).recent_campaign_types;
+          }
+          profile = nextProfile as typeof profile;
         }
-        if (Array.isArray((trustArraysProfile as any).recent_campaign_types)) {
-          nextProfile.recent_campaign_types = (trustArraysProfile as any).recent_campaign_types;
-        }
-        if (Array.isArray((trustArraysProfile as any).collab_past_work_items)) {
-          nextProfile.collab_past_work_items = (trustArraysProfile as any).collab_past_work_items;
-        }
-        profile = nextProfile as typeof profile;
-      }
+      } catch (e) { /* ignore trust arrays query errors */ }
     }
 
     if (profileError) {
@@ -1310,7 +1424,7 @@ router.get('/:username', async (req: Request, res: Response) => {
     let resolvedInstagramFollowers: number | null = typeof p.instagram_followers === 'number'
       ? p.instagram_followers
       : null;
-    let resolvedProfilePhoto: string | null = normalizeImageUrl(p.instagram_profile_photo) || null;
+    let resolvedProfilePhoto: string | null = normalizeImageUrl(p.instagram_profile_photo) || normalizeImageUrl(p.avatar_url) || null;
     let resolvedBio: string | null = profile.bio || null;
     const fullName = `${profile.first_name || ''} ${profile.last_name || ''}`.trim();
     let resolvedName: string | null = fullName || null;
@@ -1321,7 +1435,7 @@ router.get('/:username', async (req: Request, res: Response) => {
     const instagramSourceHandle = instagramHandleValue || primaryPublicHandle;
 
     // If public Instagram data is missing or followers are 0, fetch a cached public fallback for better collab-page UX.
-    if (instagramSourceHandle && (!resolvedInstagramFollowers || !resolvedProfilePhoto || !resolvedBio || !resolvedName)) {
+    if (instagramSourceHandle && (!resolvedInstagramFollowers || !resolvedBio || !resolvedName)) {
       try {
         const shouldForceFreshInstagram =
           Boolean((profile.instagram_handle || '').trim())
@@ -1335,7 +1449,7 @@ router.get('/:username', async (req: Request, res: Response) => {
         if (typeof instagramData?.followers === 'number') {
           resolvedInstagramFollowers = instagramData.followers;
         }
-        if (instagramData?.profile_photo) {
+        if (!resolvedProfilePhoto && instagramData?.profile_photo) {
           resolvedProfilePhoto = normalizeImageUrl(instagramData.profile_photo);
         }
         if (!resolvedBio && instagramData?.bio) {
@@ -1390,7 +1504,8 @@ router.get('/:username', async (req: Request, res: Response) => {
     }
 
     // Get creator name
-    const creatorName = resolvedName || primaryPublicHandle || 'Creator';
+    let creatorName = resolvedName || primaryPublicHandle || 'Creator';
+    let profilePhoto = resolvedProfilePhoto;
 
     // Public trust metrics for conversion (safe aggregates only)
     let trustStats: {
@@ -1514,7 +1629,7 @@ router.get('/:username', async (req: Request, res: Response) => {
         suggested_paid_range_max: suggestedPaidRange.max,
         suggested_barter_value_min: suggestedBarterRange.min,
         suggested_barter_value_max: suggestedBarterRange.max,
-        profile_photo: resolvedProfilePhoto,
+        profile_photo: profilePhoto,
         followers: resolvedInstagramFollowers,
         last_instagram_sync: (profile as any).last_instagram_sync || null,
         bio: resolvedBio,
@@ -2363,6 +2478,10 @@ router.post('/:username/submit', async (req: Request, res: Response) => {
       }
     }
 
+    // Invalidate caches for the creator to ensure they see the new offer immediately
+    invalidateCollabRequestsCache(creator.id);
+    invalidateDealsMineCache(creator.id);
+
     res.json({
       success: true,
       submission_type: 'request',
@@ -3018,6 +3137,10 @@ router.post('/accept/confirm', async (req: AuthenticatedRequest, res: Response) 
       console.error('[CollabRequests] Accept confirm: contract generation failed:', contractErr);
     }
 
+    // Invalidate caches for the creator
+    invalidateCollabRequestsCache(creatorId);
+    invalidateDealsMineCache(creatorId);
+
     return res.json({
       success: true,
       deal: { id: deal.id },
@@ -3517,6 +3640,10 @@ router.patch('/:id/accept', async (req: AuthenticatedRequest, res: Response) => 
       // Continue - deal exists, creator can generate contract manually if needed
     }
 
+    // Invalidate caches for the creator
+    invalidateCollabRequestsCache(userId);
+    invalidateDealsMineCache(userId);
+
     res.json({
       success: true,
       deal: {
@@ -3631,6 +3758,10 @@ router.patch('/:id/counter', async (req: AuthenticatedRequest, res: Response) =>
       });
     }
 
+    // Invalidate caches for the creator
+    invalidateCollabRequestsCache(userId);
+    invalidateDealsMineCache(userId);
+
     res.json({
       success: true,
       message: 'Counter offer submitted successfully',
@@ -3716,6 +3847,10 @@ router.patch('/:id/decline', async (req: AuthenticatedRequest, res: Response) =>
       });
     }
 
+    // Invalidate caches for the creator
+    invalidateCollabRequestsCache(userId);
+    invalidateDealsMineCache(userId);
+
     res.json({
       success: true,
       message: 'Collaboration request declined',
@@ -3729,66 +3864,5 @@ router.patch('/:id/decline', async (req: AuthenticatedRequest, res: Response) =>
   }
 });
 
-/**
- * GET /lookup-brand
- * Fetch brand logo and brand name from registered dashboard email to autofill public forms.
- */
-router.get('/lookup-brand', async (req: Request, res: Response) => {
-  try {
-    const email = (req.query.email as string)?.trim().toLowerCase();
-    if (!email) {
-      return res.status(400).json({ success: false, error: 'Email query parameter is required' });
-    }
-
-    if (!supabaseInitialized) {
-      return res.status(503).json({ success: false, error: 'Database connection not initialized' });
-    }
-
-    // 1. Check brand_users first (Registered Brands)
-    const { data: brandUser, error: brandUserErr } = await supabase
-      .from('brand_users')
-      .select('brand_name, brand_logo_url, instagram_handle')
-      .eq('email', email)
-      .limit(1)
-      .maybeSingle();
-
-    if (brandUser && !brandUserErr) {
-      return res.json({
-        success: true,
-        data: {
-          brand_name: brandUser.brand_name || null,
-          logo: brandUser.brand_logo_url || null,
-          instagram: brandUser.instagram_handle || null
-        }
-      });
-    }
-
-    // 2. Check past collab_requests if no registered brand exists
-    // This allows returning logos for unregistered brands that have previously submitted requests
-    const { data: pastRequest, error: pastReqErr } = await supabase
-      .from('collab_requests')
-      .select('brand_name, brand_logo_url, brand_instagram')
-      .eq('brand_email', email)
-      .order('created_at', { ascending: false })
-      .limit(1)
-      .maybeSingle();
-
-    if (pastRequest && !pastReqErr && pastRequest.brand_name) {
-      return res.json({
-        success: true,
-        data: {
-          brand_name: pastRequest.brand_name || null,
-          logo: pastRequest.brand_logo_url || null,
-          instagram: pastRequest.brand_instagram || null
-        }
-      });
-    }
-
-    return res.json({ success: false, error: 'No brand found with this email' });
-  } catch (error: any) {
-    console.error('[CollabRequests] Error in /lookup-brand:', error);
-    res.status(500).json({ success: false, error: 'Internal server error during brand lookup' });
-  }
-});
 
 export default router;

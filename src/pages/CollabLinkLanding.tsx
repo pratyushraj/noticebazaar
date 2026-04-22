@@ -9,6 +9,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Edit, Plus, Instagram, Youtube, Twitter, Facebook, CheckCircle2, Loader2, ExternalLink, ChevronDown, ShieldCheck, Rocket, Target, IndianRupee, Package, MapPin, FileText, Wallet, Calendar, TrendingUp, Lock, Clapperboard, Send, FileCheck, BadgeCheck, Clock, PenLine, Zap, ArrowRight, ChevronRight, Sparkles, X, Check, Link2, Briefcase, Upload, Image as ImageIcon } from 'lucide-react';
 import { toast } from 'sonner';
@@ -23,6 +24,7 @@ import { VerificationBadge } from '@/components/ui/VerificationBadge';
 import { useUpdateProfile } from '@/lib/hooks/useProfiles';
 import { useSignOut } from '@/lib/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
+import { normalizeLogoUrl } from '@/lib/deals/format';
 import type { PortfolioItem } from '@/types';
 
 // Generic JSON-LD injector for page-specific schema markup
@@ -172,8 +174,6 @@ const decodeHtmlEntities = (value: string) =>
 
 const sanitizeDisplayName = (value: string) =>
   decodeHtmlEntities(String(value || ''))
-    .normalize('NFKD')
-    .replace(/[\u0300-\u036f]/g, '')
     .replace(/\s+/g, ' ')
     .trim();
 
@@ -553,12 +553,12 @@ const CollabLinkLanding = () => {
 
     // Safety check: ensure no prior screens left the document scroll-locked.
     html.style.overflow = '';
-    html.style.overflowY = 'auto';
-    html.style.height = 'auto';
+    html.style.overflowY = '';
+    html.style.height = '';
     html.style.minHeight = '100dvh';
     body.style.overflow = '';
-    body.style.overflowY = 'auto';
-    body.style.height = 'auto';
+    body.style.overflowY = '';
+    body.style.height = '';
     body.style.minHeight = '100dvh';
     body.style.position = 'static';
 
@@ -616,6 +616,8 @@ const CollabLinkLanding = () => {
   const [barterImageUploading, setBarterImageUploading] = useState(false);
   const [brandLogoUrl, setBrandLogoUrl] = useState<string>('');
   const [brandLogoUploading, setBrandLogoUploading] = useState(false);
+  const [isLogoUserUploaded, setIsLogoUserUploaded] = useState(false);
+  const [failedLogos, setFailedLogos] = useState<Set<string>>(new Set());
   const [showSaveDraftModal, setShowSaveDraftModal] = useState(false);
   const [draftEmail, setDraftEmail] = useState('');
   const [saveDraftSubmitting, setSaveDraftSubmitting] = useState(false);
@@ -785,7 +787,15 @@ const CollabLinkLanding = () => {
           
           // Auto-fill if empty
           if (!brandName.trim() && json.data.brand_name) setBrandName(json.data.brand_name);
-          if (!brandLogoUrl && json.data.logo) setBrandLogoUrl(json.data.logo);
+          
+          const backendLogo = json.data.logo;
+          console.log("[CollabLinkLanding] Backend returned logo:", backendLogo);
+          const inferredLogo = normalizeLogoUrl(undefined, json.data.brand_name || brandName);
+          const finalLogo = backendLogo || (inferredLogo && !failedLogos.has(inferredLogo) ? inferredLogo : null);
+          
+          if (!isLogoUserUploaded && finalLogo) {
+            setBrandLogoUrl(finalLogo);
+          }
           if (!brandInstagram.trim() && json.data.instagram) setBrandInstagram(json.data.instagram);
           
           setUseBrandProfile(true);
@@ -799,7 +809,24 @@ const CollabLinkLanding = () => {
     }, 600);
     
     return () => clearTimeout(timer);
-  }, [brandEmail, profile, user, useBrandProfile, brandName, brandLogoUrl, brandInstagram]);
+  }, [brandEmail, profile, user, useBrandProfile, brandName, brandLogoUrl, brandInstagram, failedLogos]);
+
+  // --- NEW: AUTO-LOGO FROM BRAND NAME ---
+  useEffect(() => {
+    if (isLogoUserUploaded || brandLogoUrl || brandName.trim().length < 3 || lookupStatus === 'loading') return;
+
+    const guessed = normalizeLogoUrl(undefined, brandName);
+    if (!guessed || failedLogos.has(guessed)) return;
+
+    const timer = setTimeout(() => {
+      if (!brandLogoUrl && !isLogoUserUploaded) {
+        console.log('[CollabLinkLanding] Auto-guessing logo from name:', brandName);
+        setBrandLogoUrl(guessed);
+      }
+    }, 1500); // Slightly longer debounce to avoid flickers while typing
+
+    return () => clearTimeout(timer);
+  }, [brandName, brandLogoUrl, lookupStatus, failedLogos, isLogoUserUploaded]);
 
   const jumpToOfferForm = (options?: { openCustom?: boolean }) => {
     setHasStartedOffer(true);
@@ -1300,6 +1327,7 @@ const CollabLinkLanding = () => {
       const data = await res.json().catch(() => ({}));
       if (data.success && data.url) {
         setBrandLogoUrl(data.url);
+        setIsLogoUserUploaded(true);
         toast.success('Brand logo uploaded.');
       } else {
         toast.error(data.error || 'Failed to upload logo.');
@@ -2487,7 +2515,7 @@ const CollabLinkLanding = () => {
 
       {/* NOTE: `overflow-x-clip` breaks `position: sticky` in Chromium when applied on an ancestor.
           Keep it on mobile to avoid horizontal scroll, but disable it on desktop so the right panel can stick. */}
-      <div className="light min-h-screen overflow-x-hidden selection:bg-teal-500/30 text-slate-900 relative" style={{ backgroundColor: "#F7F9FB" }}>
+      <div className="light min-h-screen selection:bg-teal-500/30 text-slate-900 relative" style={{ backgroundColor: "#F7F9FB" }}>
         <div className="hidden lg:block pointer-events-none absolute -top-24 -left-20 w-[420px] h-[420px] rounded-full bg-teal-500/10 blur-3xl" />
         <div className="hidden lg:block pointer-events-none absolute top-[18%] -right-24 w-[380px] h-[380px] rounded-full bg-blue-500/10 blur-3xl" />
 
@@ -2890,26 +2918,55 @@ const CollabLinkLanding = () => {
                                 }}
                                 className="h-8 rounded-lg border-slate-200 text-slate-500 text-[9px] font-black uppercase tracking-wider px-3 w-full border-dashed hover:bg-slate-100"
                               >
-                                Not your brand? Use different details
+                                    Not your brand? Use different details
                               </Button>
                             )}
                             {/* Brand Logo Upload */}
                             <div className="pt-2">
                               <div className="flex items-center justify-between mb-2">
                                 <p className="text-[11px] font-black uppercase tracking-widest text-slate-500">Brand Logo</p>
-                                {brandLogoUrl && <span className="text-[10px] font-black text-emerald-600 flex items-center gap-1"><Sparkles className="h-2.5 w-2.5" /> Auto-fetched</span>}
+                                {brandLogoUrl && !isLogoUserUploaded && !failedLogos.has(brandLogoUrl) && (
+                                  <span className="text-[10px] font-bold text-teal-600 bg-teal-50 px-2 py-0.5 rounded-full flex items-center gap-1">
+                                    <Sparkles className="w-2.5 h-2.5" /> Auto-fetched
+                                  </span>
+                                )}
                               </div>
                               {brandLogoUrl ? (
                                 <div className="flex items-center gap-3 bg-white p-2.5 rounded-2xl shadow-sm border border-slate-200 animate-in fade-in zoom-in-95 duration-200">
-                                  <div className="h-12 w-12 rounded-[14px] bg-slate-50 border border-slate-100 overflow-hidden flex-shrink-0 relative">
-                                    <img src={brandLogoUrl} alt="Brand Logo" className="w-full h-full object-contain" referrerPolicy="no-referrer" />
-                                  </div>
+                                    <Avatar className="h-12 w-12 rounded-[14px] bg-slate-50 border border-slate-100 overflow-hidden flex-shrink-0">
+                                      <AvatarImage 
+                                        src={failedLogos.has(brandLogoUrl) ? undefined : brandLogoUrl} 
+                                        alt="Brand Logo" 
+                                        className="w-full h-full object-contain" 
+                                        referrerPolicy="no-referrer"
+                                        onLoadingStatusChange={(status) => {
+                                          if (status === 'error') {
+                                            console.log('[CollabLinkLanding] Logo failed to load:', brandLogoUrl);
+                                            if (brandLogoUrl) {
+                                              setFailedLogos(prev => {
+                                                const next = new Set(prev);
+                                                next.add(brandLogoUrl);
+                                                return next;
+                                              });
+                                            }
+                                            // We keep brandLogoUrl as is for a moment so the initials can show, 
+                                            // but the blacklist will prevent further network attempts.
+                                          }
+                                        }}
+                                      />
+                                      <AvatarFallback className="bg-teal-50 text-teal-700 font-black text-xs">
+                                        {brandName ? brandName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) : 'B'}
+                                      </AvatarFallback>
+                                    </Avatar>
                                   <div className="flex-1">
                                     <p className="text-[13px] font-bold text-slate-900 leading-tight">Logo Ready</p>
                                     <Button
                                       type="button"
                                       variant="ghost"
-                                      onClick={() => setBrandLogoUrl('')}
+                                      onClick={() => {
+                                        setBrandLogoUrl('');
+                                        setIsLogoUserUploaded(false);
+                                      }}
                                       className="h-auto p-0 text-[11px] font-bold text-red-500 hover:text-red-600 hover:bg-transparent mt-1"
                                     >
                                       Change logo

@@ -200,7 +200,11 @@ export async function uploadFile(
   
   if (uploadError) {
     logger.error('File upload failed', uploadError);
-    throw new Error(`Upload failed: ${uploadError.message}. Please check your connection and try again.`);
+    let errorMsg = `Upload failed: ${uploadError.message}`;
+    if (uploadError.message?.includes('bucket') || (uploadError as any).status === 404) {
+      errorMsg = "Storage bucket 'creator-assets' not found. Please create it in your Supabase dashboard or run the storage migration.";
+    }
+    throw new Error(errorMsg);
   }
   
   // Get public URL

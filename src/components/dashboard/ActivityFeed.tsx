@@ -156,13 +156,13 @@ const ActivityFeed: React.FC<ActivityFeedProps> = ({
                       <img
                         src={activity.imageUrl}
                         alt=""
-                        className="w-11 h-11 rounded-lg object-cover border border-border"
+                        className="w-16 h-16 rounded-lg object-cover border border-border"
                         loading="lazy"
                       />
                     </div>
                   ) : (
                     <div className={cn(
-                      'flex-shrink-0 p-2 rounded-lg mt-0.5',
+                      'flex-shrink-0 w-16 h-16 flex items-center justify-center rounded-lg mt-0.5',
                       isDark ? 'bg-secondary/50' : 'bg-background'
                     )}>
                       <div className={config.color}>

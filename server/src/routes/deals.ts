@@ -34,8 +34,12 @@ function getDealsMineCache(key: string) {
   return hit.value;
 }
 
-function setDealsMineCache(key: string, value: any) {
+export function setDealsMineCache(key: string, value: any) {
   dealsMineCache.set(key, { expiresAt: Date.now() + DEALS_MINE_CACHE_TTL_MS, value });
+}
+
+export function invalidateDealsMineCache(key: string) {
+  dealsMineCache.delete(key);
 }
 
 /** Mask phone for contract PDF: 98XXXXXX21 (first 2 + last 2 visible) */
@@ -138,16 +142,8 @@ const fetchDealForViewer = async (dealId: string) => {
 
 const fetchDealsForCreator = async (creatorId: string, creatorEmail?: string | null) => {
   const selectAttempts = [
-    { select: 'id, status, creator_id, brand_id, brand_email, brand_name, brand_logo_url, collab_type, deal_type, deal_amount, collab_request_id, due_date, progress_percentage, payment_released_at, payment_received_date, utr_number, shipping_required, barter_product_image_url, form_data, content_submission_url, content_url, content_notes, brand_approval_status, created_at, updated_at', canUseCreatorId: true },
-    { select: 'id, status, creator_id, brand_id, brand_email, brand_name, collab_type, deal_type, deal_amount, collab_request_id, due_date, progress_percentage, payment_released_at, payment_received_date, utr_number, shipping_required, barter_product_image_url, form_data, content_submission_url, content_url, content_notes, brand_approval_status, created_at, updated_at', canUseCreatorId: true },
-    { select: 'id, status, creator_id, brand_id, brand_email, brand_name, brand_logo_url, collab_type, deal_type, deal_amount, collab_request_id, due_date, payment_released_at, payment_received_date, utr_number, shipping_required, barter_product_image_url, form_data, content_submission_url, content_url, content_notes, created_at, updated_at', canUseCreatorId: true },
-    { select: 'id, status, creator_id, brand_id, brand_email, brand_name, collab_type, deal_type, deal_amount, collab_request_id, due_date, payment_released_at, payment_received_date, utr_number, shipping_required, barter_product_image_url, form_data, content_submission_url, content_url, content_notes, created_at, updated_at', canUseCreatorId: true },
-    { select: 'id, status, creator_id, brand_id, brand_email, brand_name, brand_logo_url, collab_type, deal_type, deal_amount, collab_request_id, due_date, payment_released_at, payment_received_date, utr_number, shipping_required, barter_product_image_url, content_submission_url, content_url, content_notes, created_at, updated_at', canUseCreatorId: true },
-    { select: 'id, status, creator_id, brand_id, brand_email, brand_name, collab_type, deal_type, deal_amount, collab_request_id, due_date, payment_released_at, payment_received_date, utr_number, shipping_required, barter_product_image_url, content_submission_url, content_url, content_notes, created_at, updated_at', canUseCreatorId: true },
-    { select: 'id, status, creator_id, brand_email, brand_name, brand_logo_url, deal_type, deal_amount, due_date, created_at, updated_at', canUseCreatorId: true },
-    { select: 'id, status, creator_id, brand_email, brand_name, deal_type, deal_amount, due_date, created_at, updated_at', canUseCreatorId: true },
-    { select: 'id, status, creator_id, brand_email, brand_name, brand_logo_url, deal_type, deal_amount, due_date, created_at', canUseCreatorId: true },
-    { select: 'id, status, creator_id, brand_email, brand_name, deal_type, deal_amount, due_date, created_at', canUseCreatorId: true },
+    { select: '*, profiles!brand_deals_brand_id_fkey(avatar_url)', canUseCreatorId: true },
+    { select: '*', canUseCreatorId: true },
   ];
 
   for (const attempt of selectAttempts) {
@@ -156,7 +152,14 @@ const fetchDealsForCreator = async (creatorId: string, creatorEmail?: string | n
 
     const { data, error } = await query;
     if (!error) {
-      const deals = (data || []) as any[];
+      const deals = (data || []).map((d: any) => {
+        // Flatten brand logo if joined
+        const profile = Array.isArray(d.profiles) ? d.profiles[0] : d.profiles;
+        if (profile?.avatar_url && !d.brand_logo_url) {
+          d.brand_logo_url = profile.avatar_url;
+        }
+        return d;
+      });
 
       // Hardening: ensure creator dashboard never receives deals with 0/invalid amount.
       // Some legacy barter/hybrid conversions wrote `deal_amount=0` when the request had no budget/value.

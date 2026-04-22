@@ -66,7 +66,15 @@ export const PaymentsTab: React.FC<PaymentsTabProps> = ({
             if (status.includes('paid') || status.includes('released') || status.includes('completed')) {
                 paid += amount;
                 total += amount;
-            } else if (status.includes('approved') || status.includes('delivered') || status.includes('revision')) {
+            } else if (
+                status.includes('approved') || 
+                status.includes('delivered') || 
+                status.includes('revision') ||
+                status.includes('making') ||
+                status.includes('accepted') ||
+                status.includes('working') ||
+                status.includes('ongoing')
+            ) {
                 processing += amount;
                 total += amount;
             }
@@ -172,11 +180,25 @@ export const PaymentsTab: React.FC<PaymentsTabProps> = ({
                                         onClick={() => { triggerHaptic(); setSelectedPayment(deal); }}
                                     >
                                         <div className="flex items-center gap-4 min-w-0">
-                                            <div className={cn("w-14 h-14 rounded-2xl border shrink-0 flex items-center justify-center p-1.5 shadow-sm", isDark ? "bg-white/5 border-white/5" : "bg-slate-50 border-slate-100")}>
-                                                {getBrandIcon(deal.brand_logo_url || deal.brand_logo || deal.logo_url || deal.raw?.brand_logo_url || deal.raw?.brand_logo || deal.brand?.logo_url, deal.category, deal.brand_name)}
+                                            <div className={cn("w-16 h-16 rounded-2xl border shrink-0 flex items-center justify-center p-1.5 shadow-sm overflow-hidden", isDark ? "bg-white/5 border-white/5" : "bg-slate-50 border-slate-100")}>
+                                                {getBrandIcon(
+                                                    deal.brand_logo_url || 
+                                                    deal.brand_logo || 
+                                                    deal.logo_url || 
+                                                    deal.brand?.logo_url || 
+                                                    deal.brand?.brand_logo_url || 
+                                                    deal.brand?.logo ||
+                                                    deal.raw?.brand_logo_url || 
+                                                    deal.raw?.brand_logo || 
+                                                    deal.raw?.logo_url, 
+                                                    deal.category || deal.brand?.category, 
+                                                    deal.brand_name || deal.brand?.brand_name || deal.brand?.name
+                                                )}
                                             </div>
                                             <div className="min-w-0">
-                                                <p className={cn("text-[17px] font-black truncate tracking-tight", isDark ? "text-white" : "text-slate-900")}>{deal.brand_name || 'Brand Partner'}</p>
+                                                <p className={cn("text-[17px] font-black truncate tracking-tight", isDark ? "text-white" : "text-slate-900")}>
+                                                    {deal.brand_name || deal.brand?.brand_name || deal.brand?.name || 'Brand Partner'}
+                                                </p>
                                                 <p className="text-[12px] font-medium text-slate-500 uppercase tracking-wider">{isProcessing ? 'Processing Payout' : 'Campaign Revenue'}</p>
                                             </div>
                                         </div>

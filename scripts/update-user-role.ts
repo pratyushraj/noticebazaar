@@ -57,7 +57,7 @@ if (!userEmail) {
   process.exit(1);
 }
 
-const allowedRoles = ['creator', 'client', 'admin', 'chartered_accountant'];
+const allowedRoles = ['creator', 'client', 'brand', 'admin', 'chartered_accountant'];
 if (!allowedRoles.includes(userRole)) {
   console.error(`❌ Error: Invalid role "${userRole}"`);
   console.error(`Allowed roles: ${allowedRoles.join(', ')}`);

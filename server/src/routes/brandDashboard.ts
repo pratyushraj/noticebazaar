@@ -95,10 +95,63 @@ router.get('/requests', async (req: AuthenticatedRequest, res: Response) => {
     if (creatorIds.length > 0) {
       const { data: profs, error: profErr } = await supabase
         .from('profiles')
-        .select('id, username, first_name, last_name, business_name, avatar_url, bank_account_name, bank_upi')
+        .select('id, username, first_name, last_name, business_name, avatar_url, instagram_profile_photo, bank_account_name, bank_upi')
         .in('id' as any, creatorIds as any[]);
       if (!profErr) {
-        const byId = buildProfilesById(profs);
+        let transformedProfs = profs || [];
+        // Apply hardcoded overrides for consistency
+        transformedProfs = transformedProfs.map(p => {
+          const uname = (p.username || '').toLowerCase().trim();
+          
+          const isBlockedSocial = (url: string | null | undefined) => {
+            const s = String(url || '').toLowerCase();
+            return s.includes('cdninstagram.com') || s.includes('instagram.com') || s.includes('fbcdn.net');
+          };
+
+          const isPlaceholderPhoto = (url: string | null | undefined) => {
+            if (!url) return true;
+            if (isBlockedSocial(url)) return true;
+            const s = url.toLowerCase();
+            return s.includes('photo-1531415074968-036ba1b575da') || 
+                   s.includes('photo-1541233349642-6e425fe6190e') || 
+                   s.includes('photo-1493225255756-d9584f8606e9') || 
+                   s.includes('photo-1516280440614-37939bbacd81') || 
+                   s.includes('placeholder') ||
+                   (s.includes('unsplash.com') && !s.includes('supabase.co'));
+          };
+
+          // Step 1: Resolve best available photo
+          let photoUrl = p.avatar_url || p.instagram_profile_photo;
+          // If the chosen photo is blocked, try the other one
+          if (isBlockedSocial(photoUrl)) {
+            photoUrl = p.avatar_url && !isBlockedSocial(p.avatar_url) ? p.avatar_url : 
+                      (p.instagram_profile_photo && !isBlockedSocial(p.instagram_profile_photo) ? p.instagram_profile_photo : null);
+          }
+
+          // Step 2: Apply Demo Overrides
+          if (uname === 'beyonce') {
+            photoUrl = isPlaceholderPhoto(photoUrl) 
+                ? 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=800&h=800'
+                : photoUrl;
+            return { ...p, first_name: 'Beyoncé', business_name: 'Beyoncé', avatar_url: photoUrl, instagram_profile_photo: photoUrl };
+          }
+          
+          if (uname === 'virat.kohli') {
+            photoUrl = isPlaceholderPhoto(photoUrl)
+                ? 'https://images.unsplash.com/photo-1541233349642-6e425fe6190e?auto=format&fit=crop&q=80&w=800&h=800'
+                : photoUrl;
+            return { ...p, first_name: 'Virat', last_name: 'Kohli', business_name: 'Virat Kohli', avatar_url: photoUrl, instagram_profile_photo: photoUrl };
+          }
+
+          // Step 3: For everyone else, ensure we don't send blocked URLs
+          const safePhoto = !isBlockedSocial(photoUrl) ? photoUrl : null;
+          return {
+            ...p,
+            avatar_url: safePhoto,
+            instagram_profile_photo: safePhoto
+          };
+        });
+        const byId = buildProfilesById(transformedProfs);
         rows = rows.map((r) => ({ ...r, profiles: byId.get(String(r.creator_id)) || null }));
       }
     }
@@ -334,37 +387,35 @@ router.put('/profile', async (req: AuthenticatedRequest, res: Response) => {
       industry: typeof body.industry === 'string' ? body.industry.trim() || 'General' : 'General',
       description: typeof body.description === 'string' ? body.description.trim() || null : null,
       logo_url: typeof body.logo_url === 'string' ? body.logo_url.trim() || null : null,
+      instagram_handle: typeof body.instagram_handle === 'string' ? body.instagram_handle.trim() || null : null,
+      whatsapp_handle: typeof body.whatsapp_handle === 'string' ? body.whatsapp_handle.trim() || null : null,
+      content_niches: Array.isArray(body.content_niches) ? body.content_niches : [],
       updated_at: new Date().toISOString(),
     };
 
-    const { data: existing, error: existingError } = await supabase
-      .from('brands')
-      .select('id')
-      .eq('external_id', userId)
-      .maybeSingle();
-    if (existingError) throw existingError;
-
-    if (existing?.id) {
-      const { data: updated, error: updErr } = await supabase
+    const tryUpsert = async (p: any) => {
+      const { data, error } = await supabase
         .from('brands')
-        .update(payload)
-        .eq('id', existing.id)
+        .upsert(p, { onConflict: 'external_id' })
         .select('*')
         .maybeSingle();
-      if (updErr) throw updErr;
-      res.setHeader('Cache-Control', 'no-store');
-      return res.json({ success: true, brand: updated || null });
+      if (error) throw error;
+      return data;
+    };
+
+    let result: any = null;
+    try {
+      // Primary attempt with all columns
+      result = await tryUpsert(payload);
+    } catch (err: any) {
+      console.warn('[BrandDashboard] Primary profile update failed, retrying with limited columns:', err.message);
+      // Fallback: exclude newer columns if they might not exist in the schema yet
+      const { instagram_handle, whatsapp_handle, content_niches, ...safePayload } = payload;
+      result = await tryUpsert(safePayload);
     }
 
-    const { data: inserted, error: insErr } = await supabase
-      .from('brands')
-      .insert({ ...payload, created_at: new Date().toISOString() })
-      .select('*')
-      .maybeSingle();
-    if (insErr) throw insErr;
-
     res.setHeader('Cache-Control', 'no-store');
-    return res.json({ success: true, brand: inserted || null });
+    return res.json({ success: true, brand: result || null });
   } catch (error: any) {
     console.error('[BrandDashboard] PUT /profile failed:', error);
     return res.status(500).json({ success: false, error: error?.message || 'Failed to save brand profile' });

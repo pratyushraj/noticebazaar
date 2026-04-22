@@ -338,7 +338,7 @@ const CollabRequestsSection = ({ copyCollabLink, usernameForLink: usernameFromPa
             <AlertDialogTitle>Accept Collaboration Request?</AlertDialogTitle>
             <AlertDialogDescription className="text-secondary">
               This will create a new deal and generate a contract for{' '}
-              {selectedRequest?.brand_name}. The brand will receive a signing link.
+              {selectedRequest?.brand_name}. The brand will receive a signing link to eSign the contract.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

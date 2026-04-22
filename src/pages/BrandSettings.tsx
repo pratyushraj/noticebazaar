@@ -263,7 +263,7 @@ export const BrandSettingsPanel = ({
       JSON.stringify(tags) !== JSON.stringify(b.tags) ||
       !!logoFile
     );
-  }, [name, website, industry, description, logoFile]);
+  }, [name, website, industry, description, logoFile, socialLinks, tags]);
 
   /* ─── File validation ── */
   const validateFile = (file: File): boolean => {
@@ -335,7 +335,16 @@ export const BrandSettingsPanel = ({
       const json = await res.json().catch(() => ({}));
       if (!res.ok || !json?.success) throw new Error(json?.error || 'Save failed');
       setSavedAt(Date.now());
-      baselineRef.current = { name: name.trim(), website, industry, description, logo: logoUrl || '' };
+      baselineRef.current = { 
+        name: name.trim(), 
+        website, 
+        industry, 
+        description, 
+        logo: logoUrl || '',
+        instagram: socialLinks.instagram.trim(),
+        whatsapp: socialLinks.whatsapp.trim(),
+        tags: [...tags]
+      };
       setIsDirty(false);
       toast.success('Profile updated ✓');
     } catch (err: any) {
@@ -705,17 +714,17 @@ export const BrandSettingsPanel = ({
         </div>
 
         {/* ── Session Hierarchy ─────────────────────────────────────────── */}
-        <div className="space-y-4 px-1 pt-8 opacity-40 hover:opacity-100 transition-opacity duration-500">
+        <div className="space-y-4 px-1 pt-8 pb-40 transition-opacity duration-500">
           <SectionHeader title="Advanced Ops" isDark={isDark} />
           <SettingsGroup isDark={isDark}>
             <SettingsRow 
               icon={<LogOut />}
               label="Deactivate Session"
               subtext="Log out of this brand account"
-              iconColorClass="text-rose-500/60"
+              iconColorClass="text-rose-500"
               isDark={isDark}
               onClick={() => setShowLogoutModal(true)}
-              labelClassName="text-rose-500/60"
+              labelClassName="text-rose-500 font-black"
             />
           </SettingsGroup>
         </div>

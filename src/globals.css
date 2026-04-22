@@ -109,9 +109,8 @@ html,
 body {
   height: auto;
   min-height: 100dvh;
-  overflow-x: hidden;
-  overscroll-behavior-y: none;
-  /* Disable weird elastic scroll */
+  overflow-x: clip; /* clip is safer than hidden for sticky elements in some browsers, but let's use auto for body if needed */
+  /* Allow native overscroll physics */
 }
 
 /* Calendar-specific fixes */
@@ -145,6 +144,7 @@ body {
   body {
     overflow-x: visible;
     overflow-y: visible;
+    overscroll-behavior-y: auto;
   }
 }
 

@@ -358,13 +358,59 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
       const finalInstagramHandle = instagramHandleValue || metadataHandle;
       const finalUsername = usernameValue || metadataHandle;
 
-      return {
+      let finalProfile = {
         ...(coreData as any),
         username: finalUsername,
         instagram_handle: finalInstagramHandle,
         ...optionalFields,
         ...brandFields,
       } as Profile | null;
+
+      // Virat Kohli Hardcoded Override for consistency in Demo
+      if (user?.email?.toLowerCase() === 'virat@yopmail.com') {
+        const currentPhoto = finalProfile?.instagram_profile_photo || finalProfile?.avatar_url || '';
+        const isSupabase = currentPhoto.includes('supabase.co') || currentPhoto.includes('v1/object/public');
+        const isPlaceholder = !currentPhoto || 
+                             currentPhoto.includes('photo-1531415074968-036ba1b575da') || 
+                             currentPhoto.includes('photo-1541233349642-6e425fe6190e') || 
+                             currentPhoto.includes('placeholder') || 
+                             (currentPhoto.includes('unsplash.com') && !isSupabase);
+        
+        if (isPlaceholder && !isSupabase) {
+          finalProfile = {
+            ...finalProfile,
+            first_name: 'Virat',
+            last_name: 'Kohli',
+            full_name: 'Virat Kohli',
+            avatar_url: 'https://images.unsplash.com/photo-1541233349642-6e425fe6190e?auto=format&fit=crop&q=80&w=800&h=800',
+            instagram_profile_photo: 'https://images.unsplash.com/photo-1541233349642-6e425fe6190e?auto=format&fit=crop&q=80&w=800&h=800',
+          } as any;
+        }
+      }
+
+      // Beyoncé Hardcoded Override for consistency in Demo
+      if (user?.email?.toLowerCase() === 'beyonce@yopmail.com') {
+        const currentPhoto = finalProfile?.instagram_profile_photo || finalProfile?.avatar_url || '';
+        const isSupabase = currentPhoto.includes('supabase.co') || currentPhoto.includes('v1/object/public');
+        const isPlaceholder = !currentPhoto || 
+                             currentPhoto.includes('photo-1493225255756-d9584f8606e9') || 
+                             currentPhoto.includes('photo-1516280440614-37939bbacd81') || 
+                             currentPhoto.includes('placeholder') || 
+                             (currentPhoto.includes('unsplash.com') && !isSupabase);
+
+        if (isPlaceholder && !isSupabase) {
+          finalProfile = {
+            ...finalProfile,
+            first_name: 'Beyoncé',
+            last_name: '',
+            full_name: 'Beyoncé',
+            avatar_url: 'https://images.unsplash.com/photo-1570715316024-8973d70f03f3?auto=format&fit=crop&q=80&w=800&h=800',
+            instagram_profile_photo: 'https://images.unsplash.com/photo-1570715316024-8973d70f03f3?auto=format&fit=crop&q=80&w=800&h=800',
+          } as any;
+        }
+      }
+
+      return finalProfile;
     } catch (err: any) {
       logger.error('SessionContext: Unexpected error fetching profile', err);
       return null;

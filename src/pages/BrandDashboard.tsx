@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSession } from '@/contexts/SessionContext';
 import { getApiBaseUrl } from '@/lib/utils/api';
+import { Loader2 } from 'lucide-react';
 import { useSignOut } from '@/lib/hooks/useAuth';
 import BrandMobileDashboard from '@/pages/BrandMobileDashboard';
 import type { BrandDeal } from '@/types';
@@ -15,7 +16,7 @@ type BrandDashboardStats = {
 
 const BrandDashboard: React.FC = () => {
   const navigate = useNavigate();
-  const { profile, user, session } = useSession();
+  const { profile, user, session, loading: sessionLoading } = useSession();
   const signOutMutation = useSignOut();
 
   const [deals, setDeals] = useState<BrandDeal[]>([]);
@@ -33,6 +34,9 @@ const BrandDashboard: React.FC = () => {
   const isDemoBrand = String(user?.email || '').toLowerCase() === 'brand-demo@noticebazaar.com';
 
   const loadBrandDashboard = useCallback(async () => {
+    // Wait for session to be resolved
+    if (sessionLoading) return;
+
     if (!isBrandUser || !session?.access_token) {
       setDeals([]);
       setRequests([]);
@@ -77,7 +81,7 @@ const BrandDashboard: React.FC = () => {
     const totalSent = (requests || []).length;
     const needsAction = (requests || []).filter((r: any) => {
       const s = String(r?.status || '').toUpperCase();
-      return s.includes('COUNTER') || s.includes('REVISION') || s.includes('ACTION_REQUIRED');
+      return !s || s.includes('COUNTER') || s.includes('REVISION') || s.includes('ACTION_REQUIRED') || s === 'PENDING' || s === 'SENT' || s === 'OFFER_SENT' || s === 'SUBMITTED';
     }).length;
     const activeDeals = (deals || []).filter((d: any) => {
       const s = String(d?.status || '').toLowerCase();
@@ -86,6 +90,14 @@ const BrandDashboard: React.FC = () => {
     const totalInvestment = (deals || []).reduce((acc, d: any) => acc + (Number(d?.deal_amount) || 0), 0);
     return { totalSent, needsAction, activeDeals, totalInvestment };
   }, [deals, requests]);
+
+  if (sessionLoading || (isLoading && requests.length === 0)) {
+    return (
+      <div className="min-h-[100dvh] bg-[#0D0F1A] flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-emerald-500" />
+      </div>
+    );
+  }
 
   if (!isBrandUser) {
     return (

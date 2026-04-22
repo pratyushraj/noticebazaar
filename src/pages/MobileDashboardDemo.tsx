@@ -1710,16 +1710,40 @@ const MobileDashboardDemo = ({
                 discovery_video_url: profileFormData.discovery_video_url || null,
                 portfolio_videos: profileFormData.portfolio_videos || [],
                 instagram_profile_photo: profileFormData.instagram_profile_photo || null,
+                avatar_url: profileFormData.instagram_profile_photo || null,
                 updated_at: new Date().toISOString(),
             };
 
             // Request updated row back so we can detect "0 rows updated" (which otherwise looks like success).
-            const { data: updatedCore, error: coreError } = await (supabase as any)
+            let { data: updatedCore, error: coreError } = await (supabase as any)
                 .from('profiles')
                 .update(corePayload)
                 .eq('id', session.user.id)
                 .select('id')
                 .maybeSingle();
+
+            // RESILIENT FALLBACK: If update fails due to missing columns, try a smaller payload
+            if (coreError && (coreError.message?.includes('column') || coreError.code === '42703' || coreError.code === 'PGRST204')) {
+                console.warn('[handleSaveProfile] Core update failed due to schema mismatch, retrying with minimal payload...');
+                
+                const minimalPayload = {
+                    first_name: corePayload.first_name,
+                    last_name: corePayload.last_name,
+                    instagram_profile_photo: corePayload.instagram_profile_photo,
+                    avatar_url: corePayload.instagram_profile_photo,
+                    updated_at: corePayload.updated_at
+                };
+
+                const { data: retryData, error: retryError } = await (supabase as any)
+                    .from('profiles')
+                    .update(minimalPayload)
+                    .eq('id', session.user.id)
+                    .select('id')
+                    .maybeSingle();
+                
+                updatedCore = retryData;
+                coreError = retryError;
+            }
 
             if (coreError) {
                 console.error('[handleSaveProfile] Core update failed:', {
@@ -2154,7 +2178,7 @@ const MobileDashboardDemo = ({
                 else if (char >= 'U' && char <= 'Z') color = 'bg-gradient-to-br from-pink-500 to-rose-600';
 
                 return (
-                    <div className={cn("w-full h-full flex items-center justify-center text-foreground font-bold text-3xl shadow-inner transition-colors duration-500 rounded-inherit", color)}>
+                    <div className={cn("w-full h-full flex items-center justify-center text-white font-black text-4xl shadow-inner transition-colors duration-500 rounded-inherit", color)}>
                         {firstLetter}
                     </div>
                 );
@@ -3343,9 +3367,10 @@ const MobileDashboardDemo = ({
         >
             {isDark ? (
                 <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
-                    <div className="absolute inset-0 bg-gradient-to-b from-emerald-500/10 via-transparent to-transparent" />
-                    <div className="absolute top-[-8%] right-[-10%] w-[35%] h-[35%] bg-primary/5 rounded-full blur-[100px]" />
-                    <div className="absolute bottom-[-10%] left-[10%] w-[40%] h-[40%] bg-primary/4 rounded-full blur-[120px]" />
+                    <div className="absolute inset-0 bg-gradient-to-b from-emerald-400/20 via-sky-400/15 to-transparent" />
+                    <div className="absolute top-[-12%] left-[-14%] w-[45%] h-[45%] bg-emerald-500/25 rounded-full blur-[120px]" />
+                    <div className="absolute top-[8%] right-[-18%] w-[48%] h-[48%] bg-sky-500/20 rounded-full blur-[140px]" />
+                    <div className="absolute bottom-[-14%] left-[20%] w-[52%] h-[52%] bg-emerald-500/15 rounded-full blur-[150px]" />
                 </div>
             ) : (
                 <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
@@ -3673,6 +3698,7 @@ const MobileDashboardDemo = ({
 
                                 return (
                                     <>
+                                        <div className="h-full overflow-y-auto overflow-x-hidden relative z-10 pb-[100px] scrollbar-hide">
 
 
                             {/* PWA Install Banner (Android only) */}
@@ -3692,99 +3718,85 @@ const MobileDashboardDemo = ({
                             )}
 
                             {/* Command Header */}
-                            <div className="sticky top-0 z-10 px-5 pb-6 pt-safe" style={{ paddingTop: 'max(env(safe-area-inset-top), 24px)', backgroundColor: bgColor }}>
-                                <div className="flex items-center justify-between mb-8">
+                            <div 
+                                className="relative z-50 px-5 pb-1 pt-safe transition-all duration-300 mb-2" 
+                                style={{ 
+                                    paddingTop: 'max(env(safe-area-inset-top), 8px)', 
+                                    backgroundColor: 'transparent'
+                                }}
+                            >
+                                <div className="flex items-center justify-between mb-1">
                                     {/* Left: Sidebar Menu */}
-                                    <button type="button" onClick={() => handleAction('menu')} aria-label="Open menu" className={cn("p-1.5 -ml-1.5 rounded-full transition-all active:scale-95", secondaryTextColor)}>
+                                    <button type="button" onClick={() => handleAction('menu')} aria-label="Open menu" className={cn("w-10 h-10 -ml-1 rounded-2xl border flex items-center justify-center transition-all active:scale-95", isDark ? 'border-border bg-card text-foreground/70' : 'border-border bg-secondary/80 text-muted-foreground shadow-sm')}>
                                         <Menu className="w-6 h-6" strokeWidth={1.5} />
                                     </button>
 
-                                    {/* Center: Wordmark + Connection Status */}
-                                    <div className="flex items-center gap-1.5 font-semibold text-[16px] tracking-tight">
-                                        <ShieldCheck className={cn("w-4 h-4", isDark ? "text-foreground" : "text-muted-foreground")} />
-                                        <span className={textColor}>CreatorArmour</span>
-
+                                    {/* Center: Wordmark */}
+                                    <div className="flex flex-col items-center gap-0">
+                                        <div className="flex items-center gap-1.5 font-black text-[15px] tracking-tight">
+                                            <ShieldCheck className={cn("w-3.5 h-3.5", isDark ? "text-primary" : "text-primary")} strokeWidth={3} />
+                                            <span className={cn(isDark ? "text-white" : "text-slate-900")}>Creator Console</span>
+                                        </div>
                                     </div>
 
-                                    {/* Right: Actions & Avatar */}
+                                    {/* Right: Actions */}
                                     <div className="flex items-center gap-2">
-                                        {/* Preview collab link */}
-                                        {profile?.instagram_handle && (
-                                            <>
-                                                <button
-                                                    type="button"
-                                                    onClick={() => {
-                                                        const handle = (profile.instagram_handle || '').replace('@', '').trim();
-                                                        if (handle) window.open(`/${handle}`, '_blank');
-                                                    }}
-                                                    className={cn("p-1.5 rounded-full transition-all active:scale-95", secondaryTextColor)}
-                                                    title="Preview your collab page"
-                                                >
-                                                    <Eye className="w-5 h-5" />
-                                                </button>
-                                                <button
-                                                    type="button"
-                                                    onClick={() => {
-                                                        const handle = (profile.instagram_handle || '').replace('@', '').trim();
-                                                        const url = `${window.location.origin}/${handle}`;
-                                                        const text = `Check out my collab page on Creator Armour 👇`;
-                                                        // Show share options
-                                                        if (navigator.share) {
-                                                            navigator.share({ title: `${profile.first_name || 'My'} Collab Link`, text, url });
-                                                        } else {
-                                                            navigator.clipboard.writeText(url);
-                                                            toast.success('Collab link copied!');
-                                                        }
-                                                    }}
-                                                    className={cn("p-1.5 rounded-full transition-all active:scale-95", secondaryTextColor)}
-                                                    title="Share your deal page"
-                                                >
-                                                    <Share2 className="w-5 h-5" />
-                                                </button>
-                                            </>
-                                        )}
-
-                                        {/* Dark / Light toggle */}
-                                        <motion.button
-                                            onClick={() => { triggerHaptic(); setTheme(t => t === 'dark' ? 'light' : 'dark'); }}
-                                            whileTap={{ scale: 0.92 }}
+                                        {/* Theme Toggle */}
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                triggerHaptic();
+                                                setTheme((t) => (t === 'dark' ? 'light' : 'dark'));
+                                            }}
                                             className={cn(
-                                                "flex items-center gap-1 px-2.5 py-1.5 rounded-full border transition-all duration-300",
-                                                isDark
-                                                    ? "bg-background border-border text-warning"
-                                                    : "bg-background border-border text-muted-foreground"
+                                                "w-10 h-10 rounded-2xl border flex items-center justify-center transition-all active:scale-95 shadow-sm",
+                                                isDark ? 'border-border bg-card text-foreground/70' : 'border-border bg-white text-muted-foreground'
                                             )}
                                         >
                                             <AnimatePresence mode="wait" initial={false}>
                                                 {isDark ? (
-                                                    <motion.span key="moon" initial={{ rotate: -90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: 90, opacity: 0 }} transition={{ duration: 0.2 }}>
-                                                        <Moon className="w-3.5 h-3.5" />
-                                                    </motion.span>
+                                                    <motion.div key="moon" initial={{ rotate: -90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: 90, opacity: 0 }} transition={{ duration: 0.2 }}>
+                                                        <Moon className="w-[18px] h-[18px]" />
+                                                    </motion.div>
                                                 ) : (
-                                                    <motion.span key="sun" initial={{ rotate: 90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: -90, opacity: 0 }} transition={{ duration: 0.2 }}>
-                                                        <Sun className="w-3.5 h-3.5" />
-                                                    </motion.span>
+                                                    <motion.div key="sun" initial={{ rotate: 90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: -90, opacity: 0 }} transition={{ duration: 0.2 }}>
+                                                        <Sun className="w-[18px] h-[18px]" />
+                                                    </motion.div>
                                                 )}
                                             </AnimatePresence>
-                                            <span className="text-[10px] font-bold tracking-wide">{isDark ? 'Dark' : 'Light'}</span>
-                                        </motion.button>
-
-                                        {/* Notification Permission Prompt */}
-                                        <NotificationPermission />
+                                        </button>
 
                                         {/* Bell */}
-                                        <button type="button" onClick={() => handleAction('notifications')} aria-label={`Notifications${collabRequests.length > 0 ? ` (${collabRequests.length} new)` : ''}`} className={cn('relative min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full', secondaryTextColor)}>
-                                            <Bell className="w-5 h-5" />
+                                        <button 
+                                            type="button" 
+                                            onClick={() => handleAction('notifications')} 
+                                            className={cn(
+                                                'relative w-11 h-11 rounded-2xl border flex items-center justify-center transition-all active:scale-95 shadow-sm', 
+                                                isDark ? 'border-border bg-card text-foreground/70' : 'border-border bg-white text-muted-foreground'
+                                            )}
+                                        >
+                                            <Bell className="w-[22px] h-[22px]" />
                                             {collabRequests.length > 0 && (
-                                                <span className="absolute -top-1 -right-1 w-4 h-4 bg-destructive rounded-full border-2 text-[8px] font-black flex items-center justify-center text-foreground" style={{ borderColor: bgColor }}>
+                                                <span className="absolute -top-1 -right-1 w-5 h-5 bg-destructive rounded-full border-2 text-[9px] font-black flex items-center justify-center text-white" style={{ borderColor: isDark ? '#0B0F14' : '#FFFFFF' }}>
                                                     {collabRequests.length}
                                                 </span>
                                             )}
+                                            {/* Suble dot if push notifications not enabled */}
+                                            {shouldShowPushPrompt && (
+                                                <span className="absolute bottom-2.5 right-2.5 w-2 h-2 bg-blue-500 rounded-full animate-pulse border border-white" />
+                                            )}
                                         </button>
 
-                                        {/* Avatar with Verification Badge */}
-                                        <div className="relative">
-                                            <button type="button" onClick={() => setActiveTab('profile')} className={cn("w-11 h-11 rounded-full border overflow-hidden transition-all active:scale-95", borderColor)}>
+                                        {/* Avatar */}
+                                        <button 
+                                            type="button" 
+                                            onClick={() => setActiveTab('profile')} 
+                                            className={cn(
+                                                "w-11 h-11 rounded-2xl border p-0.5 overflow-hidden transition-all active:scale-95 shadow-sm", 
+                                                isDark ? 'border-border bg-card' : 'border-border bg-white'
+                                            )}
+                                        >
+                                            <div className="w-full h-full rounded-[14px] overflow-hidden">
                                                 <img
                                                     src={avatarUrl}
                                                     alt="avatar"
@@ -3794,81 +3806,64 @@ const MobileDashboardDemo = ({
                                                         (e.currentTarget as HTMLImageElement).src = avatarFallbackUrl;
                                                     }}
                                                 />
-                                            </button>
-                                            {/* Verification Badge — show when profile is verified/onboarding complete */}
-                                            {(profile?.payout_verified || profile?.onboarding_complete) && (
-                                                <div className="absolute -bottom-0.5 -right-0.5">
-                                                    <VerificationBadge size="sm" />
-                                                </div>
-                                            )}
-                                        </div>
+                                            </div>
+                                        </button>
                                     </div>
                                 </div>
 
-	                                {/* Greeting / Status */}
-	                                <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
-	                                    {hasDataLoadError && (
-	                                        <div className="mb-3">
-	                                            <div className={cn(
-	                                                "rounded-2xl border px-4 py-3 flex items-start gap-3",
-	                                                isDark ? "bg-rose-500/10 border-rose-500/20" : "bg-rose-50 border-rose-200"
-	                                            )}>
-	                                                <AlertTriangle className={cn("w-5 h-5 mt-0.5 shrink-0", isDark ? "text-rose-300" : "text-rose-700")} />
-	                                                <div className="min-w-0">
-	                                                    <p className={cn("text-[13px] font-black", isDark ? "text-rose-200" : "text-rose-900")}>
-	                                                        Data failed to load
-	                                                    </p>
-	                                                    <p className={cn("text-[12px] font-semibold mt-0.5 leading-snug", isDark ? "text-rose-200/80" : "text-rose-800")}>
-	                                                        {offersError && dealsError
-	                                                            ? `${offersError} ${dealsError}`
-	                                                            : (offersError || dealsError)}
-	                                                    </p>
-	                                                    <button
-	                                                        type="button"
-	                                                        onClick={() => { void onRefresh?.(); }}
-	                                                        className={cn(
-	                                                            "mt-2 inline-flex items-center gap-2 text-[12px] font-black uppercase tracking-widest",
-	                                                            isDark ? "text-rose-200 hover:text-rose-100" : "text-rose-900 hover:text-rose-950"
-	                                                        )}
-	                                                    >
-	                                                        <RefreshCw className="w-3.5 h-3.5" />
-	                                                        Retry
-	                                                    </button>
-	                                                </div>
-	                                            </div>
-	                                        </div>
-	                                    )}
-	                                    <div className="flex items-center justify-between">
-	                                        {isLoadingProfile ? (
-	                                            /* Profile loading — text fallback, no skeleton */
-	                                            <span className="text-[15px] font-medium text-foreground/60">Loading...</span>
-                                        ) : !profile ? (
-                                            <span className="text-[15px] font-medium text-foreground/60">Welcome back</span>
-                                        ) : (
-                                            <>
-                                                <h1 className={cn('text-lg font-semibold tracking-tight', isDark ? "text-foreground" : "text-slate-900")}>
-                                                    {(() => {
-                                                        const hour = new Date().getHours();
-                                                        let name = (profile?.first_name || '').trim();
-                                                        // Filter out placeholder/bot names
-                                                        if (!name || name === 'Dashboard©' || name.includes('Dashboard') || name.includes('©')) name = '';
-                                                        const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
-                                                        return name ? `${greeting}, ${name}` : greeting;
-                                                    })()}
-                                                </h1>
-                                                <div className={cn("flex items-center gap-1.5 px-2.5 py-1 rounded-full", isDark ? "bg-primary/10" : "bg-primary")}>
-                                                    <span className={cn("w-1.5 h-1.5 rounded-full shadow-[0_0_8px_rgba(16,185,129,0.5)]", isDark ? "bg-primary" : "bg-white")} />
-                                                    <span className={cn("text-[10px] uppercase font-bold tracking-[0.06em]", isDark ? "text-primary" : "text-white")}>Active</span>
+                                {/* Greeting / Status Section */}
+                                <div className="flex items-end justify-between gap-3">
+                                    <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }} className="min-w-0">
+                                        {hasDataLoadError && (
+                                            <div className="mb-3">
+                                                <div className={cn(
+                                                    "rounded-2xl border px-4 py-3 flex items-start gap-3",
+                                                    isDark ? "bg-rose-500/10 border-rose-500/20" : "bg-rose-50 border-rose-200"
+                                                )}>
+                                                    <AlertTriangle className={cn("w-5 h-5 mt-0.5 shrink-0", isDark ? "text-rose-300" : "text-rose-700")} />
+                                                    <div className="min-w-0">
+                                                        <p className={cn("text-[13px] font-black", isDark ? "text-rose-200" : "text-rose-900")}>
+                                                            Data failed to load
+                                                        </p>
+                                                        <p className={cn("text-[12px] font-semibold mt-0.5 leading-snug", isDark ? "text-rose-200/80" : "text-rose-800")}>
+                                                            {offersError && dealsError
+                                                                ? `${offersError} ${dealsError}`
+                                                                : (offersError || dealsError)}
+                                                        </p>
+                                                    </div>
                                                 </div>
-                                            </>
+                                            </div>
                                         )}
-                                    </div>
-                                    {profile && (
-                                        <p className={cn('text-sm mt-0', isDark ? "text-foreground/60" : "text-slate-500")}>
-                                            @{username}
-                                        </p>
-                                    )}
-                                </motion.div>
+                                        
+                                        <div className="flex flex-col gap-0.5">
+                                            <p className={cn('text-[10px] font-black uppercase tracking-[0.25em] opacity-40 mb-1', textColor)}>Welcome back</p>
+                                            <div className="flex items-center gap-3">
+                                                <h1 className={cn('text-[32px] font-black tracking-tighter leading-tight italic', textColor)}>
+                                                    {isLoadingProfile ? (
+                                                        "..."
+                                                    ) : !profile ? (
+                                                        "Creator"
+                                                    ) : (
+                                                        (() => {
+                                                            let name = (profile?.first_name || '').trim();
+                                                            if (!name || name === 'Dashboard©' || name.includes('Dashboard') || name.includes('©')) name = '';
+                                                            return name || 'Creator';
+                                                        })()
+                                                    )}
+                                                </h1>
+                                                <div className={cn("flex items-center gap-1.5 px-2.5 py-1 rounded-lg border shadow-sm", isDark ? "bg-primary/5 border-primary/20" : "bg-primary/5 border-primary/10")}>
+                                                    <div className="w-1.5 h-1.5 rounded-full bg-primary shadow-[0_0_10px_rgba(34,197,94,0.6)] animate-pulse" />
+                                                    <span className={cn("text-[10px] uppercase font-black tracking-widest text-primary")}>Active</span>
+                                                </div>
+                                            </div>
+                                            {profile && username && (
+                                                <p className={cn('text-[13px] opacity-60 font-medium', textColor)}>
+                                                    @{username}
+                                                </p>
+                                            )}
+                                        </div>
+                                    </motion.div>
+                                </div>
                             </div>
 
                             {/* Setup Progress - Shown in full dashboard if incomplete but has deals */}
@@ -4017,7 +4012,7 @@ const MobileDashboardDemo = ({
                                                     </button>
                                                 </div>
 
-                                                <div className="mt-4 text-[44px] leading-none font-black font-outfit tabular-nums">
+                                                <div className="mt-4 text-[36px] leading-none font-black font-outfit tabular-nums">
                                                     ₹{monthlyRevenue.toLocaleString()}
                                                 </div>
 
@@ -4240,13 +4235,13 @@ const MobileDashboardDemo = ({
                                                             )}
                                                         >
                                                             <div className={cn(
-                                                                "w-14 h-14 rounded-2xl overflow-hidden border shrink-0 relative",
+                                                                "w-20 h-20 rounded-3xl overflow-hidden border shrink-0 relative",
                                                                 isDark ? "border-white/10 bg-black/20 shadow-inner" : "border-slate-200 bg-slate-50"
                                                             )}>
                                                                 {productImage ? (
                                                                     <img src={productImage} alt="" className="w-full h-full object-cover transition-transform duration-500 hover:scale-110" loading="lazy" />
                                                                 ) : (
-                                                                    <div className="w-full h-full flex items-center justify-center scale-90">
+                                                                    <div className="w-full h-full flex items-center justify-center">
                                                                         {getBrandIcon(req?.brand_logo_url || req?.brand_logo || req?.logo_url || req?.raw?.brand_logo_url || req?.raw?.brand_logo, req?.category, req?.brand_name)}
                                                                     </div>
                                                                 )}
@@ -4281,22 +4276,23 @@ const MobileDashboardDemo = ({
                                                                 </div>
                                                             </div>
                                                         </div>
-                                                    );
-                                                })}
-                                            </div>
-                                            <button
-                                                type="button"
-                                                onClick={() => { triggerHaptic(); setActiveTab('deals'); setCollabSubTab('pending'); }}
-                                                className={cn("mt-4 w-full text-center text-[12px] font-black", isDark ? "text-sky-300" : "text-sky-700")}
-                                            >
-                                                View all offers →
-                                            </button>
-                                    {/* NOTE: Collab link promotion is already covered above (Get More Deals + Grow Your Brand).
-                                       Keeping a single surface avoids duplicate "collab link" sections on the dashboard. */}
-                                        </div>
-                                    </div>
-                            </>
-                        );
+                                                     );
+                                                 })}
+                                             </div>
+                                             <button
+                                                 type="button"
+                                                 onClick={() => { triggerHaptic(); setActiveTab('deals'); setCollabSubTab('pending'); }}
+                                                 className={cn("mt-4 w-full text-center text-[12px] font-black", isDark ? "text-sky-300" : "text-sky-700")}
+                                             >
+                                                 View all offers →
+                                             </button>
+                                     {/* NOTE: Collab link promotion is already covered above (Get More Deals + Grow Your Brand).
+                                        Keeping a single surface avoids duplicate "collab link" sections on the dashboard. */}
+                             </div>
+                         </div>
+                     </div>
+                 </>
+             );
                     })()}
                 </>
             )}
@@ -4947,7 +4943,7 @@ const MobileDashboardDemo = ({
                                                                         setSelectedType('offer');
                                                                     }}
                                                                     className={cn(
-                                                                        "p-6 rounded-[28px] border transition-all duration-500 group relative cursor-pointer overflow-hidden",
+                                                                        "p-5 rounded-[28px] border transition-all duration-500 group relative cursor-pointer overflow-hidden",
                                                                         isDark 
                                                                             ? "bg-gradient-to-br from-[#0B1220] to-[#070B14] border-[#223046] shadow-[0_20px_50px_rgba(0,0,0,0.3)]" 
                                                                             : "bg-white border-slate-200/60 shadow-[0_15px_35px_rgba(0,0,0,0.05)] hover:shadow-[0_20px_45px_rgba(0,0,0,0.08)]"
@@ -4955,7 +4951,7 @@ const MobileDashboardDemo = ({
                                                                 >
                                                                     {isDark && <div className="absolute top-0 left-0 w-full h-[1px] bg-white/5" />}
                                                                     
-                                                                    <div className="flex items-center justify-between gap-2 mb-6">
+                                                                    <div className="flex items-center justify-between gap-2 mb-4">
                                                                         <div className="flex gap-2">
                                                                             <span className={cn(
                                                                                 "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-wider border",
@@ -4976,21 +4972,21 @@ const MobileDashboardDemo = ({
                                                                         </span>
                                                                     </div>
 
-                                                                    <div className="flex gap-5 mb-8">
+                                                                    <div className="flex gap-4 mb-6">
                                                                         <div className={cn(
-                                                                            "w-24 h-24 rounded-[22px] overflow-hidden border shrink-0 p-1.5 shadow-md transition-all duration-500 group-hover:scale-[1.05] relative", 
+                                                                            "w-[120px] h-[120px] rounded-[24px] overflow-hidden border shrink-0 p-1 shadow-md transition-all duration-500 group-hover:scale-[1.05] relative", 
                                                                             isDark ? "border-white/5 bg-white/5" : "border-slate-100 bg-slate-50/50"
                                                                         )}>
                                                                             {offerImage ? (
-                                                                                <img src={offerImage} alt="" className="w-full h-full object-cover rounded-[14px]" loading="lazy" />
+                                                                                <img src={offerImage} alt="" className="w-full h-full object-cover rounded-[18px]" loading="lazy" />
                                                                             ) : (
-                                                                                <div className={cn("w-full h-full rounded-[14px] flex items-center justify-center", isDark ? "bg-slate-800" : "bg-white")}>
+                                                                                <div className={cn("w-full h-full rounded-[18px] flex items-center justify-center", isDark ? "bg-slate-800" : "bg-white")}>
                                                                                     {getBrandIcon(req.brand_logo_url || req.brand_logo || req.logo_url || req.raw?.brand_logo_url || req.raw?.brand_logo || (req as any).brand?.logo_url, req.category, brandName)}
                                                                                 </div>
                                                                             )}
                                                                         </div>
 
-                                                                        <div className="min-w-0 flex-1 py-1 flex flex-col justify-between">
+                                                                        <div className="min-w-0 flex-1 py-0.5 flex flex-col justify-between">
                                                                             <div className="min-w-0">
                                                                                 <h4 className={cn("text-[20px] font-black tracking-tight leading-tight truncate capitalize", isDark ? "text-white" : "text-slate-900")}>
                                                                                     {brandName}
@@ -5002,7 +4998,7 @@ const MobileDashboardDemo = ({
 
                                                                             <div className="pt-2">
                                                                                 <div className="flex items-baseline gap-1.5">
-                                                                                    <p className={cn("text-[26px] font-black tracking-tighter tabular-nums leading-none", isDark ? "text-white" : "text-slate-900")}>
+                                                                                    <p className={cn("text-[28px] font-black tracking-tighter tabular-nums leading-none", isDark ? "text-white" : "text-slate-900")}>
                                                                                         ₹{Number.isFinite(amount) ? amount.toLocaleString() : '—'}
                                                                                     </p>
                                                                                     <p className={cn("text-[10px] font-black uppercase tracking-widest opacity-40")}>Earnings</p>
@@ -5011,7 +5007,7 @@ const MobileDashboardDemo = ({
                                                                         </div>
                                                                     </div>
 
-                                                                    <div className="grid grid-cols-2 gap-3 mb-5">
+                                                                    <div className="grid grid-cols-2 gap-3 mb-4">
                                                                         <button
                                                                             type="button"
                                                                             onClick={async (e) => {
@@ -5063,10 +5059,11 @@ const MobileDashboardDemo = ({
                                                                             setSelectedType('offer');
                                                                             toast.message('Counter Offer', { description: 'Open offer details to counter.' });
                                                                         }}
-                                                                        className={cn("w-full py-2 text-center text-[11px] font-black uppercase tracking-[0.2em] opacity-40 hover:opacity-100 transition-opacity", textColor)}
+                                                                        className={cn("w-full py-1 text-center text-[11px] font-black uppercase tracking-[0.2em] opacity-40 hover:opacity-100 transition-opacity", textColor)}
                                                                     >
                                                                         Send Counter Offer
                                                                     </button>
+
                                                                 </motion.div>
                                                             );
                                                         })}
@@ -5923,9 +5920,9 @@ const MobileDashboardDemo = ({
 	                                            <div className="mb-6">
 	                                                <h4 className={cn("text-[13px] font-black uppercase tracking-wider mb-3 opacity-50", textColor)}>Product Included</h4>
 	                                                <div className={cn("rounded-xl border p-3 flex items-center gap-4", isDark ? "bg-card border-border" : "bg-background border-border")}>
-                                                    <div className="w-16 h-16 rounded-xl bg-warning shrink-0 overflow-hidden border border-black/5">
-                                                        <img src={selectedItem.product_image || "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&q=80&w=300"} alt="Product" className="w-full h-full object-cover" />
-                                                    </div>
+<div className="w-20 h-20 rounded-xl bg-warning shrink-0 overflow-hidden border border-black/5">
+                                                         <img src={selectedItem.product_image || "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&q=80&w=300"} alt="Product" className="w-full h-full object-cover" />
+                                                     </div>
                                                     <div>
                                                         <p className={cn("text-[14px] font-black leading-tight", textColor)}>{selectedItem.product_name || 'Signature Hoodie + Apparel Box'}</p>
                                                         <p className={cn("text-[12px] font-semibold mt-1", secondaryTextColor)}>Product Value {renderBudgetValue(selectedItem)}</p>

@@ -225,9 +225,15 @@ export const normalizeLogoUrl = (value?: string, brandName?: string): string => 
   const raw = String(value || '').trim();
   if (!raw || raw === 'null' || raw === 'undefined') {
     if (brandName) {
-      const bn = brandName.toLowerCase();
+      const bn = brandName.toLowerCase().trim();
+      // 1. Check known mappings
       for (const [key, url] of Object.entries(KNOWN_BRAND_LOGOS)) {
         if (bn.includes(key)) return url;
+      }
+      // 2. Generic guess for other brands (exclude very short names)
+      if (bn.length >= 3) {
+        const domainGuess = bn.replace(/[^a-z0-9]/g, '');
+        if (domainGuess) return `https://logo.clearbit.com/${domainGuess}.com`;
       }
     }
     return '';

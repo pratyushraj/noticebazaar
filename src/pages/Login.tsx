@@ -1,7 +1,7 @@
 "use client";
 
 import { supabase } from '@/integrations/supabase/client';
-import { ShieldCheck, ArrowLeft, Loader2 } from 'lucide-react';
+import { ShieldCheck, ArrowLeft, Loader2, Eye, EyeOff } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useSession } from '@/contexts/SessionContext';
 import { useEffect, useState } from 'react';
@@ -17,6 +17,7 @@ const Login = () => {
   const { session, loading } = useSession();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
@@ -181,17 +182,27 @@ const Login = () => {
                     Forgot password?
                   </button>
                 </div>
-                <Input
-                  id="password"
-                  type="password"
-                  placeholder="••••••••"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="bg-background/85 border-border text-foreground placeholder:text-muted-foreground/50 text-[17px] h-[56px] rounded-2xl border-2 focus:border-primary focus:ring-2 focus:ring-primary/25 focus:bg-background px-5 transition-all outline-none"
-                  required
-                  autoComplete="current-password"
-                  aria-label="Password"
-                />
+                <div className="relative">
+                  <Input
+                    id="password"
+                    type={showPassword ? "text" : "password"}
+                    placeholder="••••••••"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="bg-background/85 border-border text-foreground placeholder:text-muted-foreground/50 text-[17px] h-[56px] rounded-2xl border-2 focus:border-primary focus:ring-2 focus:ring-primary/25 focus:bg-background px-5 pr-12 transition-all outline-none"
+                    required
+                    autoComplete="current-password"
+                    aria-label="Password"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 flex items-center justify-center rounded-xl text-muted-foreground/60 hover:text-primary hover:bg-primary/10 transition-all active:scale-90"
+                    aria-label={showPassword ? "Hide password" : "Show password"}
+                  >
+                    {showPassword ? <EyeOff className="h-[18px] w-[18px]" /> : <Eye className="h-[18px] w-[18px]" />}
+                  </button>
+                </div>
               </div>
 	              <Button
 	                type="submit"
