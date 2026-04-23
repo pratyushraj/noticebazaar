@@ -20,6 +20,37 @@ const debugError = (...args: unknown[]) => {
   if (import.meta.env.DEV) console.error(...args);
 };
 
+const formatUnknownError = (error: unknown) => {
+  if (error instanceof Error) {
+    return {
+      name: error.name,
+      message: error.message,
+      stack: error.stack,
+    };
+  }
+
+  if (error && typeof error === 'object') {
+    const record = error as Record<string, unknown>;
+    return {
+      name: typeof record.name === 'string' ? record.name : 'NonErrorObject',
+      message:
+        typeof record.message === 'string'
+          ? record.message
+          : typeof record.error_description === 'string'
+            ? record.error_description
+            : JSON.stringify(record),
+      stack: typeof record.stack === 'string' ? record.stack : undefined,
+      details: record,
+    };
+  }
+
+  return {
+    name: 'UnknownError',
+    message: String(error),
+    stack: undefined,
+  };
+};
+
 let hasLoggedMissingSessionProvider = false;
 
 type RedirectProfile = {
@@ -616,7 +647,7 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
                 debugLog('[SessionContext] Using stored intended route from sessionStorage:', intendedRoute);
               }
             } else if (!intendedRoute || intendedRoute === 'login') {
-              const metadataRole = getMetadataRole(currentSession?.user || null);
+              const metadataRole = getMetadataRole(null);
               intendedRoute = getFallbackRedirectPath(metadataRole, metadataRole === 'brand' ? false : null).replace(/^\//, '');
               if (import.meta.env?.DEV) {
                 debugLog('[SessionContext] No intended route found, defaulting from metadata role:', intendedRoute);
@@ -765,7 +796,30 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
           }
         }
       } catch (e: any) {
-        logger.error("Critical error initializing session", e);
+        const formattedError = formatUnknownError(e);
+        logger.error('Critical error initializing session', formattedError, {
+          pathname: window.location.pathname,
+          hash: window.location.hash?.slice(0, 120) || '',
+          search: window.location.search || '',
+        });
+
+        const message = String(formattedError.message || '').toLowerCase();
+        const shouldResetSession =
+          message.includes('refresh token') ||
+          message.includes('auth session missing') ||
+          message.includes('invalid jwt') ||
+          message.includes('jwt') ||
+          message.includes('session');
+
+        if (shouldResetSession) {
+          try {
+            await supabase.auth.signOut();
+          } catch (signOutError) {
+            logger.error('Failed to clear invalid session after init error', formatUnknownError(signOutError));
+          }
+          setSession(null);
+          setUser(null);
+        }
       } finally {
         setInitialLoadComplete(true); // Mark initial load as complete
       }

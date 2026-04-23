@@ -916,13 +916,13 @@ const BrandMobileDashboard = ({
 	  }, [profile?.id]);
 
   const brandLogo = useMemo(() => {
-    const src = profile?.avatar_url || profile?.logo_url || brandLogoDbUrl;
+    const src = brandLogoDbUrl || profile?.logo_url || profile?.avatar_url;
     return src || null; // Let AvatarFallback render initials — avoids ui-avatars.com CORS issues
-  }, [profile?.avatar_url, profile?.logo_url, brandLogoDbUrl]);
+  }, [brandLogoDbUrl, profile?.avatar_url, profile?.logo_url]);
 
   const hasUploadedBrandLogo = useMemo(() => {
-    return !!(profile?.avatar_url || profile?.logo_url || brandLogoDbUrl);
-  }, [profile?.avatar_url, profile?.logo_url, brandLogoDbUrl]);
+    return !!(brandLogoDbUrl || profile?.logo_url || profile?.avatar_url);
+  }, [brandLogoDbUrl, profile?.avatar_url, profile?.logo_url]);
 
 	  const openCreateOfferSheet = () => {
 	    if (hasUploadedBrandLogo) {

@@ -51,6 +51,7 @@ import aiRouter from './routes/ai.js';
 import creatorSignRouter from './routes/creatorSign.js';
 import otpRouter from './routes/otp.js';
 import profileRouter from './routes/profile.js';
+import authRouter from './routes/auth.js';
 import dealsRouter from './routes/deals.js';
 import complaintsRouter from './routes/complaints.js';
 import influencersRouter from './routes/influencers.js';
@@ -648,6 +649,7 @@ app.use('/api/complaints', authMiddleware, rateLimitMiddleware, complaintsRouter
 app.use('/api/influencers', authMiddleware, rateLimitMiddleware, influencersRouter);
 app.use('/api/collab-requests', authMiddleware, rateLimitMiddleware, collabRequestsRouter); // Protected collab request management routes
 app.use('/api/reminders', remindersRouter);
+app.use('/api/auth', authRouter);
 app.use('/api/brand-dashboard', authMiddleware, rateLimitMiddleware, brandDashboardRouter);
 // Note: /api/collab-analytics is already mounted as public route above (line 284)
 // OTP routes - protected routes require auth

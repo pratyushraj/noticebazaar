@@ -1,8 +1,11 @@
+import crypto from 'crypto';
 import express, { Response } from 'express';
+import multer from 'multer';
 import { AuthenticatedRequest } from '../middleware/auth.js';
 import { supabase } from '../lib/supabase.js';
 
 const router = express.Router();
+const upload = multer({ storage: multer.memoryStorage() });
 
 const buildProfilesById = (profiles: any[] | null | undefined) => {
   const map = new Map<string, any>();
@@ -24,6 +27,15 @@ const isMissingColumnError = (err: any, column: string) => {
     msg.includes(`${col} does not exist`) ||
     (msg.includes('column') && msg.includes(col) && msg.includes('does not exist')) ||
     (msg.includes('schema cache') && msg.includes(col))
+  );
+};
+
+const isAnyMissingColumnError = (err: any) => {
+  const msg = String(err?.message || err?.details || err?.hint || '').toLowerCase();
+  return (
+    msg.includes('could not find the') ||
+    msg.includes('does not exist') ||
+    (msg.includes('column') && msg.includes('schema cache'))
   );
 };
 
@@ -370,6 +382,45 @@ router.get('/profile', async (req: AuthenticatedRequest, res: Response) => {
   }
 });
 
+router.post(
+  '/upload-logo',
+  upload.single('file'),
+  async (req: AuthenticatedRequest & { file?: Express.Multer.File }, res: Response) => {
+    try {
+      const brand = await requireBrand(req, res);
+      if (!brand.ok) return;
+
+      const file = req.file;
+      if (!file || !file.buffer) {
+        return res.status(400).json({ success: false, error: 'No image file provided' });
+      }
+
+      const allowed = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/svg+xml'];
+      if (!allowed.includes(file.mimetype)) {
+        return res.status(400).json({ success: false, error: 'Only JPEG, PNG, WebP, SVG, and GIF are allowed' });
+      }
+
+      const ext = file.mimetype.split('/')[1]?.split('+')[0] || 'png';
+      const path = `brand-assets/logos/${brand.id}/${crypto.randomUUID()}.${ext}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('creator-assets')
+        .upload(path, file.buffer, { contentType: file.mimetype, upsert: false });
+
+      if (uploadError) {
+        console.error('[BrandDashboard] POST /upload-logo upload failed:', uploadError);
+        return res.status(500).json({ success: false, error: 'Failed to upload logo' });
+      }
+
+      const { data: urlData } = supabase.storage.from('creator-assets').getPublicUrl(path);
+      return res.status(200).json({ success: true, url: urlData.publicUrl });
+    } catch (error: any) {
+      console.error('[BrandDashboard] POST /upload-logo failed:', error);
+      return res.status(500).json({ success: false, error: error?.message || 'Failed to upload logo' });
+    }
+  }
+);
+
 router.put('/profile', async (req: AuthenticatedRequest, res: Response) => {
   try {
     const brand = await requireBrand(req, res);
@@ -379,6 +430,8 @@ router.put('/profile', async (req: AuthenticatedRequest, res: Response) => {
     const body = req.body || {};
     const name = typeof body.name === 'string' ? body.name.trim() : '';
     if (!name) return res.status(400).json({ success: false, error: 'Brand name required' });
+
+    const budgetRange = typeof body.budget_range === 'string' ? body.budget_range.trim() || null : null;
 
     const payload: any = {
       external_id: userId,
@@ -393,25 +446,85 @@ router.put('/profile', async (req: AuthenticatedRequest, res: Response) => {
       updated_at: new Date().toISOString(),
     };
 
-    const tryUpsert = async (p: any) => {
+    if (budgetRange) {
+      const parsed = budgetRange.match(/(\d+)(?:k|l)?/gi);
+      if (parsed && parsed.length >= 1) {
+        const toNumber = (raw: string) => {
+          const normalized = raw.toLowerCase();
+          const value = Number.parseFloat(normalized.replace(/[^\d.]/g, ''));
+          if (Number.isNaN(value)) return null;
+          if (normalized.includes('l')) return Math.round(value * 100000);
+          if (normalized.includes('k')) return Math.round(value * 1000);
+          return Math.round(value);
+        };
+        const min = toNumber(parsed[0]);
+        const max = parsed[1] ? toNumber(parsed[1]) : min;
+        if (min !== null) payload.budget_min = min;
+        if (max !== null) payload.budget_max = max;
+      }
+    }
+
+    const tryUpsert = async (selectColumns: string[], p: any) => {
       const { data, error } = await supabase
         .from('brands')
         .upsert(p, { onConflict: 'external_id' })
-        .select('*')
+        .select(selectColumns.join(', '))
         .maybeSingle();
       if (error) throw error;
       return data;
     };
 
+    const selectColumns = [
+      'id',
+      'external_id',
+      'name',
+      'website_url',
+      'industry',
+      'description',
+      'logo_url',
+      'budget_min',
+      'budget_max',
+      'created_at',
+      'updated_at',
+    ];
+
+    const payloadAttempts = [
+      payload,
+      (() => {
+        const { instagram_handle, whatsapp_handle, content_niches, ...safePayload } = payload;
+        return safePayload;
+      })(),
+      (() => {
+        const {
+          instagram_handle,
+          whatsapp_handle,
+          content_niches,
+          budget_min,
+          budget_max,
+          ...legacyPayload
+        } = payload;
+        return legacyPayload;
+      })(),
+    ];
+
     let result: any = null;
-    try {
-      // Primary attempt with all columns
-      result = await tryUpsert(payload);
-    } catch (err: any) {
-      console.warn('[BrandDashboard] Primary profile update failed, retrying with limited columns:', err.message);
-      // Fallback: exclude newer columns if they might not exist in the schema yet
-      const { instagram_handle, whatsapp_handle, content_niches, ...safePayload } = payload;
-      result = await tryUpsert(safePayload);
+    let lastError: any = null;
+    for (const attempt of payloadAttempts) {
+      try {
+        result = await tryUpsert(selectColumns, attempt);
+        lastError = null;
+        break;
+      } catch (err: any) {
+        lastError = err;
+        if (!isAnyMissingColumnError(err)) {
+          throw err;
+        }
+        console.warn('[BrandDashboard] Profile update fallback triggered:', err?.message || err);
+      }
+    }
+
+    if (lastError) {
+      throw lastError;
     }
 
     res.setHeader('Cache-Control', 'no-store');

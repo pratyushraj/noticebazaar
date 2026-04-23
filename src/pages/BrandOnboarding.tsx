@@ -126,7 +126,7 @@ export default function BrandOnboarding() {
       if (selectedBudget) payload.budget_range = selectedBudget;
 
       if (Object.keys(payload).length > 0) {
-        await fetch(`${apiBase}/api/brand-dashboard/profile`, {
+        const profileRes = await fetch(`${apiBase}/api/brand-dashboard/profile`, {
           method: 'PUT',
           headers: {
             Authorization: `Bearer ${session.access_token}`,
@@ -134,6 +134,21 @@ export default function BrandOnboarding() {
           },
           body: JSON.stringify(payload),
         });
+        const profileJson = await profileRes.json().catch(() => ({}));
+        if (!profileRes.ok || !profileJson?.success) {
+          throw new Error(profileJson?.error || 'Failed to save brand profile');
+        }
+      }
+
+      if (logoUrl) {
+        const { error: avatarSyncError } = await supabase
+          .from('profiles')
+          .update({ avatar_url: logoUrl })
+          .eq('id', session.user.id);
+
+        if (avatarSyncError) {
+          throw avatarSyncError;
+        }
       }
 
       // Finalize onboarding status in profiles table
