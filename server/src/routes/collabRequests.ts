@@ -1657,6 +1657,7 @@ router.get('/:username', async (req: Request, res: Response) => {
       success: true,
       creator: {
         id: profile.id,
+        _debug_p: p,
         is_registered: true,
         profile_type: 'verified',
         profile_label: 'Verified Creator Profile',
