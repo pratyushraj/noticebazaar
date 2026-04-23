@@ -50,11 +50,6 @@ export function SmartIndustrySelector({
     [value]
   );
 
-  const popularOptions = useMemo(
-    () => BRAND_INDUSTRY_OPTIONS.filter((option) => option.popular),
-    []
-  );
-
   const filteredOptions = useMemo(() => {
     const normalized = query.trim().toLowerCase();
     if (!normalized) return BRAND_INDUSTRY_OPTIONS;
@@ -154,15 +149,6 @@ export function SmartIndustrySelector({
               className="w-full rounded-2xl border border-slate-200 bg-slate-50 py-3 pl-10 pr-4 text-[14px] font-medium text-slate-900 outline-none transition-all focus:border-emerald-400 focus:bg-white"
             />
           </div>
-
-          {!query.trim() && (
-            <div className="mb-4">
-              <p className="mb-2 px-1 text-[11px] font-black uppercase tracking-[0.16em] text-slate-400">Popular</p>
-              <div className="space-y-2">
-                {popularOptions.map(renderOption)}
-              </div>
-            </div>
-          )}
 
           <div className="max-h-72 space-y-2 overflow-y-auto pr-1">
             {filteredOptions.map(renderOption)}
