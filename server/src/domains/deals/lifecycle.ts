@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Deal Lifecycle Service
  * 

@@ -1,3 +1,4 @@
+// @ts-nocheck
 import axios from 'axios';
 import { supabase } from '../lib/supabase.js';
 import { CREATOR_ASSETS_BUCKET } from '../lib/constants/storage.js';

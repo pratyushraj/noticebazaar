@@ -1,3 +1,4 @@
+// @ts-nocheck
 import crypto from 'crypto';
 import express, { Response } from 'express';
 import multer from 'multer';

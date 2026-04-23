@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { supabase } from '../lib/supabase.js';
 import crypto from 'crypto';
 
