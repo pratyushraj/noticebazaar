@@ -27,6 +27,7 @@ import { findOrCreateBrandUser, generateBrandMagicLink } from '../services/brand
 import { getCreatorNotificationContent } from '../domains/deals/creatorNotificationCopy.js';
 import { recordMarketplaceEvent } from '../shared/lib/marketplaceAnalytics.js';
 import { invalidateDealsMineCache } from './deals.js';
+import { saveExternalImageToStorage } from '../services/imageStorageService.js';
 
 const router = express.Router();
 
@@ -354,8 +355,16 @@ const startRegisteredCreatorBackgroundSync = (profile: any) => {
     ? new Date(profile.last_instagram_sync).getTime()
     : 0;
   const sevenDaysMs = 7 * 24 * 60 * 60 * 1000;
+  
+  // Check if current photo is external (Instagram CDN)
+  const isExternalPhoto = existingPhoto && (
+    existingPhoto.includes('cdninstagram.com') || 
+    existingPhoto.includes('fbcdn.net') || 
+    !existingPhoto.includes('supabase.co')
+  );
+
   const isStale = !lastSync || (Date.now() - lastSync) > sevenDaysMs;
-  const shouldSync = isStale || !existingFollowers || !existingPhoto;
+  const shouldSync = isStale || !existingFollowers || isExternalPhoto;
   if (!shouldSync) return;
 
   setTimeout(async () => {
@@ -366,8 +375,33 @@ const startRegisteredCreatorBackgroundSync = (profile: any) => {
       const updatePayload: Record<string, unknown> = {
         last_instagram_sync: new Date().toISOString(),
       };
+      
       if (typeof instaData.followers === 'number') updatePayload.instagram_followers = instaData.followers;
-      if (instaData.profile_photo) updatePayload.instagram_profile_photo = instaData.profile_photo;
+      
+      // Permanently save the profile photo if it's from Instagram
+      if (instaData.profile_photo) {
+        const isNewExternal = instaData.profile_photo.includes('cdninstagram.com') || 
+                             instaData.profile_photo.includes('fbcdn.net') ||
+                             !instaData.profile_photo.includes('supabase.co');
+        
+        if (isNewExternal) {
+          const fileName = `profile-${Date.now()}.jpg`;
+          const filePath = `${profile.id}/${fileName}`;
+          const permanentUrl = await saveExternalImageToStorage(instaData.profile_photo, filePath);
+          
+          if (permanentUrl) {
+            updatePayload.instagram_profile_photo = permanentUrl;
+            updatePayload.avatar_url = permanentUrl;
+            console.log('[CollabRequests] Permanently saved profile photo for:', profile.instagram_handle);
+          } else {
+            // Fallback to the temporary URL if saving failed
+            updatePayload.instagram_profile_photo = instaData.profile_photo;
+          }
+        } else {
+          updatePayload.instagram_profile_photo = instaData.profile_photo;
+        }
+      }
+      
       // Optional enrichment: only backfill bio/name if creator hasn't set them already.
       if (!profile.bio && instaData.bio) updatePayload.bio = instaData.bio;
       if (!profile.business_name && instaData.full_name) updatePayload.business_name = instaData.full_name;
