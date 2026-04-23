@@ -1456,11 +1456,16 @@ router.get('/:username', async (req: Request, res: Response) => {
 
     // Build platforms array (handle missing columns gracefully)
     const platforms: Array<{ name: string; handle: string; followers?: number }> = [];
-    const p = profile as any; // Use type assertion to access potentially missing columns
+    const p = profile as any;
     let resolvedInstagramFollowers: number | null = typeof p.instagram_followers === 'number'
       ? p.instagram_followers
       : null;
-    let resolvedProfilePhoto: string | null = normalizeImageUrl(p.avatar_url) || normalizeImageUrl(p.instagram_profile_photo) || null;
+
+    // Resolve profile photo with strict priority: avatar_url (Supabase) > instagram_profile_photo (CDN)
+    let resolvedProfilePhoto: string | null = 
+      normalizeImageUrl(p.avatar_url) || 
+      normalizeImageUrl(p.instagram_profile_photo) || 
+      null;
     let resolvedBio: string | null = profile.bio || null;
     const fullName = `${profile.first_name || ''} ${profile.last_name || ''}`.trim();
     let resolvedName: string | null = fullName || null;
