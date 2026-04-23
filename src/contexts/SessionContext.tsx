@@ -59,6 +59,17 @@ const fetchRedirectProfile = async (userId: string): Promise<RedirectProfile | n
   return (fallbackResult.data as RedirectProfile | null) ?? null;
 };
 
+const getFallbackRedirectPath = (
+  role: string | null | undefined,
+  onboardingComplete?: boolean | null,
+) => {
+  if (role === 'brand') return onboardingComplete ? '/brand-dashboard' : '/brand-onboarding';
+  if (role === 'admin') return '/admin-dashboard';
+  if (role === 'chartered_accountant') return '/ca-dashboard';
+  if (role === 'lawyer') return '/lawyer-dashboard';
+  return '/creator-dashboard';
+};
+
 type AuthStatus = 'loading' | 'authenticated' | 'unauthenticated';
 
 interface SessionContextType {
@@ -605,9 +616,10 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
                 debugLog('[SessionContext] Using stored intended route from sessionStorage:', intendedRoute);
               }
             } else if (!intendedRoute || intendedRoute === 'login') {
-              intendedRoute = 'creator-dashboard';
+              const metadataRole = getMetadataRole(currentSession?.user || null);
+              intendedRoute = getFallbackRedirectPath(metadataRole, metadataRole === 'brand' ? false : null).replace(/^\//, '');
               if (import.meta.env?.DEV) {
-                debugLog('[SessionContext] No intended route found, defaulting to creator-dashboard');
+                debugLog('[SessionContext] No intended route found, defaulting from metadata role:', intendedRoute);
               }
             }
           } else if (isUsernameRoute) {
@@ -659,7 +671,7 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
                 // Use path-based route (BrowserRouter).
                 // Production safety: `profiles.role` is the only source of truth for redirects.
                 // Do not redirect based solely on user_metadata; wait for profile.
-                let redirectPath = '/creator-dashboard';
+                let redirectPath = getFallbackRedirectPath(getMetadataRole(sessionData.session.user), getMetadataRole(sessionData.session.user) === 'brand' ? false : null);
 
                 if (intendedRoute && intendedRoute !== 'login' && intendedRoute !== 'signup') {
                   redirectPath = `/${intendedRoute}`;
@@ -671,15 +683,9 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
                     const p = (profileData as any);
 
                     if (isPratyush) redirectPath = '/creator-dashboard';
-                    else if (p?.role === 'admin') redirectPath = '/admin-dashboard';
-                    else if (p?.role === 'brand') redirectPath = '/brand-dashboard';
-                    else if (p?.role === 'chartered_accountant') redirectPath = '/ca-dashboard';
-                    else if (p?.role === 'lawyer') redirectPath = '/lawyer-dashboard';
-                    else redirectPath = '/creator-dashboard';
+                    else redirectPath = getFallbackRedirectPath(p?.role, p?.onboarding_complete);
                   } catch (error) {
-                    debugError('[SessionContext] Error fetching profile in initializeSession:', error);
-                    // If profile can't be read, don't guess; let ProtectedRoute hold the user on a loader + retry.
-                    return;
+                    debugWarn('[SessionContext] Error fetching profile in initializeSession, using metadata fallback:', error);
                   }
                 }
 
@@ -747,12 +753,10 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
             try {
               const profileData = await fetchRedirectProfile(currentSession.user.id);
               const p = (profileData as any);
-              const defaultPath =
-                p?.role === 'brand' ? '/brand-dashboard' :
-                p?.role === 'admin' ? '/admin-dashboard' :
-                p?.role === 'chartered_accountant' ? '/ca-dashboard' :
-                p?.role === 'lawyer' ? '/lawyer-dashboard' :
-                '/creator-dashboard';
+              const defaultPath = getFallbackRedirectPath(
+                p?.role || getMetadataRole(currentSession.user),
+                p?.onboarding_complete ?? (getMetadataRole(currentSession.user) === 'brand' ? false : null),
+              );
               navigate(defaultPath, { replace: true });
             } catch (e) {
               debugWarn('[SessionContext] Unable to fetch profile for root/login redirect; skipping redirect until profile is available.');
@@ -906,7 +910,7 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
           }
 
           // If we're already on a dashboard path, skip profile fetch and redirect (avoids timeout + log spam on token refresh / repeated SIGNED_IN)
-          const dashboardPaths = ['/creator-dashboard', '/admin-dashboard', '/ca-dashboard', '/lawyer-dashboard'];
+          const dashboardPaths = ['/creator-dashboard', '/brand-dashboard', '/brand-onboarding', '/admin-dashboard', '/ca-dashboard', '/lawyer-dashboard'];
           if (dashboardPaths.includes(pathname)) {
             setIsAuthInitializing(false);
             return;
@@ -921,7 +925,7 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
             userEmail: session?.user?.email
           });
 
-          let targetPath = '/creator-dashboard';
+          let targetPath = getFallbackRedirectPath(getMetadataRole(session?.user || null), getMetadataRole(session?.user || null) === 'brand' ? false : null);
 
           // Routes that should redirect admin users to admin dashboard instead
           const adminOnlyRoutes = ['admin-influencers', 'admin-discovery'];
@@ -947,14 +951,12 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
               const isPratyush = userEmail === 'pratyushraj@outlook.com';
               const p = (profileData as any);
               if (isPratyush) targetPath = '/creator-dashboard';
-              else if (p?.role === 'admin') targetPath = '/admin-dashboard';
-              else if (p?.role === 'brand') targetPath = '/brand-dashboard';
-              else if (p?.role === 'chartered_accountant') targetPath = '/ca-dashboard';
-              else if (p?.role === 'lawyer') targetPath = '/lawyer-dashboard';
-              else targetPath = '/creator-dashboard';
+              else targetPath = getFallbackRedirectPath(
+                p?.role || getMetadataRole(session.user),
+                p?.onboarding_complete ?? (getMetadataRole(session.user) === 'brand' ? false : null),
+              );
             } catch (error) {
-              debugWarn('[SessionContext] Profile fetch for redirect failed; skipping redirect until profile is available:', error);
-              return;
+              debugWarn('[SessionContext] Profile fetch for redirect failed; using metadata fallback:', error);
             }
           }
 

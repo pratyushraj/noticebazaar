@@ -50,14 +50,15 @@ async function fetchBrandDeals() {
 const CreatorDashboard = () => {
   const { user, profile, loading: isLoadingProfile } = useSession();
   const queryClient = useQueryClient();
+  const isBrandSession = profile?.role === 'brand' || user?.user_metadata?.account_mode === 'brand' || user?.user_metadata?.role === 'brand';
 
-  const collabQuery = useCollabRequests(user?.id);
+  const collabQuery = useCollabRequests(isBrandSession ? undefined : user?.id);
   const { requests: collabRequests, isLoading: isLoadingCollab, error: collabError } = collabQuery;
 
   const dealsQuery = useQuery({
     queryKey: ['brand-deals', user?.id],
     queryFn: fetchBrandDeals,
-    enabled: !!user?.id,
+    enabled: !!user?.id && !isBrandSession,
     retry: false, // Don't retry — backend may be unavailable, fail fast
   });
   const brandDeals = (dealsQuery.data ?? []) as any[];
