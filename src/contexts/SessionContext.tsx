@@ -419,7 +419,7 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
 
       // Virat Kohli Hardcoded Override for consistency in Demo
       if (user?.email?.toLowerCase() === 'virat@yopmail.com') {
-        const currentPhoto = finalProfile?.instagram_profile_photo || finalProfile?.avatar_url || '';
+        const currentPhoto = finalProfile?.avatar_url || finalProfile?.instagram_profile_photo || '';
         const isSupabase = currentPhoto.includes('supabase.co') || currentPhoto.includes('v1/object/public');
         const isPlaceholder = !currentPhoto || 
                              currentPhoto.includes('photo-1531415074968-036ba1b575da') || 
@@ -441,7 +441,7 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
 
       // Beyoncé Hardcoded Override for consistency in Demo
       if (user?.email?.toLowerCase() === 'beyonce@yopmail.com') {
-        const currentPhoto = finalProfile?.instagram_profile_photo || finalProfile?.avatar_url || '';
+        const currentPhoto = finalProfile?.avatar_url || finalProfile?.instagram_profile_photo || '';
         const isSupabase = currentPhoto.includes('supabase.co') || currentPhoto.includes('v1/object/public');
         const isPlaceholder = !currentPhoto || 
                              currentPhoto.includes('photo-1493225255756-d9584f8606e9') || 
@@ -696,7 +696,12 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
               });
 
               if (setSessionError) {
-                debugError('[SessionContext] Error setting session:', setSessionError);
+                // Check for lock acquisition timeout - common in multi-tab scenarios or race conditions
+                if (setSessionError.name === 'NavigatorLockAcquireTimeoutError' || setSessionError.message?.includes('Lock')) {
+                  debugWarn('[SessionContext] Lock acquisition timeout in initializeSession, will rely on background processing');
+                } else {
+                  debugError('[SessionContext] Error setting session:', setSessionError);
+                }
               } else if (sessionData.session) {
                 debugLog('[SessionContext] Session set successfully via manual token parsing');
                 // Use path-based route (BrowserRouter).

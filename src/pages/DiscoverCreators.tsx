@@ -18,6 +18,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { triggerHaptic, HapticPatterns } from '@/lib/utils/haptics';
 import { toast } from 'sonner';
+import { safeAvatarSrc } from '@/lib/utils/image';
 
 interface Creator {
     id: string;
@@ -322,7 +323,7 @@ const DiscoverCreators = () => {
                                                 <div className="relative mb-4 inline-block self-start">
                                                     <div className="w-20 h-20 rounded-2xl overflow-hidden border-4 border-[#0D1219] shadow-xl group-hover:scale-105 transition-transform duration-500">
                                                         {creator.profile_photo ? (
-                                                            <img src={creator.profile_photo} alt={creator.name} className="w-full h-full object-cover" loading="lazy" />
+                                                            <img src={safeAvatarSrc(creator.profile_photo)} alt={creator.name} className="w-full h-full object-cover" loading="lazy" />
                                                         ) : (
                                                             <div className="w-full h-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-foreground font-black text-2xl uppercase">
                                                                 {creator.name.charAt(0)}

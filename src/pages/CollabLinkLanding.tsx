@@ -946,7 +946,7 @@ const CollabLinkLanding = () => {
     const latestHandle = getPreferredPublicHandle(profile?.instagram_handle, profile?.username, creator.username);
     const latestName = `${profile?.first_name || ''} ${profile?.last_name || ''}`.trim();
     const latestFollowers = Number((profile as any)?.instagram_followers || 0) || null;
-    const latestProfilePhoto = (profile as any)?.instagram_profile_photo || profile?.avatar_url || creator.profile_photo || null;
+    const latestProfilePhoto = profile?.avatar_url || (profile as any)?.instagram_profile_photo || creator.profile_photo || null;
     const latestReelRate = Number((profile as any)?.avg_rate_reel || 0) || null;
     const latestTemplates = (profile as any)?.deal_templates || [];
 

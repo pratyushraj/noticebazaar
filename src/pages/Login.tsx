@@ -53,29 +53,51 @@ const Login = () => {
     try {
       const response = await fetch(`${getApiBaseUrl()}/api/auth/login`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           identifier: identifier.trim(),
           password,
         }),
       });
-      const json = await response.json().catch(() => ({}));
 
-      if (!response.ok || !json?.success || !json?.session?.access_token || !json?.session?.refresh_token) {
-        toast.error(json?.error || 'Failed to sign in');
+      if (!response.ok) {
+        let errorMessage = 'Failed to sign in';
+        try {
+          const errorJson = await response.json();
+          errorMessage = errorJson.error || errorMessage;
+        } catch (e) {
+          // Response is not JSON (like a 404 HTML page)
+          errorMessage = `Server error (${response.status}): ${response.statusText || 'Endpoint not found'}`;
+        }
+        
+        console.error(`[Login] API request failed with status ${response.status}:`, errorMessage);
+        toast.error(errorMessage);
         return;
       }
 
-      const { error } = await supabase.auth.setSession({
-        access_token: json.session.access_token,
-        refresh_token: json.session.refresh_token,
-      });
+      const json = await response.json().catch(() => ({}));
 
-      if (error) {
-        console.error('[Login] Session set error:', error);
-        toast.error(`Failed to establish session: ${error.message}`);
+      if (!json?.success || !json?.session?.access_token || !json?.session?.refresh_token) {
+        toast.error(json?.error || 'Invalid session received from server');
+        return;
+      }
+
+      try {
+        const { error } = await supabase.auth.setSession({
+          access_token: json.session.access_token,
+          refresh_token: json.session.refresh_token,
+        });
+
+        if (error) {
+          throw error;
+        }
+      } catch (sessionError: any) {
+        if (sessionError.name === 'NavigatorLockAcquireTimeoutError' || sessionError.message?.includes('Lock')) {
+          console.warn('[Login] Lock acquisition timeout during setSession, proceeding anyway:', sessionError);
+          // Don't return or toast error. Trust SessionContext to pick up the SIGNED_IN event.
+        } else {
+          throw sessionError;
+        }
       }
     } catch (err: unknown) {
       console.error('[Login] Email/password exception:', err);

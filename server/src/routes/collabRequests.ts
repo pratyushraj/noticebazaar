@@ -1458,7 +1458,7 @@ router.get('/:username', async (req: Request, res: Response) => {
     let resolvedInstagramFollowers: number | null = typeof p.instagram_followers === 'number'
       ? p.instagram_followers
       : null;
-    let resolvedProfilePhoto: string | null = normalizeImageUrl(p.instagram_profile_photo) || normalizeImageUrl(p.avatar_url) || null;
+    let resolvedProfilePhoto: string | null = normalizeImageUrl(p.avatar_url) || normalizeImageUrl(p.instagram_profile_photo) || null;
     let resolvedBio: string | null = profile.bio || null;
     const fullName = `${profile.first_name || ''} ${profile.last_name || ''}`.trim();
     let resolvedName: string | null = fullName || null;

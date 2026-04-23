@@ -1,15 +1,9 @@
 import * as React from "react";
+import { safeAvatarSrc } from "@/lib/utils/image";
 import * as AvatarPrimitive from "@radix-ui/react-avatar";
 
 import { cn } from "@/lib/utils";
 
-const safeAvatarSrc = (src?: string | null) => {
-  const raw = String(src || "").trim();
-  if (!raw) return undefined;
-  // Instagram CDN frequently blocks hotlinking (403), which spams console and breaks avatars.
-  if (/cdninstagram\.com/i.test(raw)) return undefined;
-  return raw;
-};
 
 const Avatar = React.forwardRef<
   React.ElementRef<typeof AvatarPrimitive.Root>,

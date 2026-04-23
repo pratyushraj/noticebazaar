@@ -395,6 +395,10 @@ app.use('/api/shipping', shippingRouter); // Public shipping update (brand, no a
 app.use('/api/cron', cronDealRemindersRouter); // Cron: deal reminders (protected by CRON_SECRET in route)
 app.use('/api/cron', cronOnboardingEmailsRouter); // Cron: creator onboarding sequence (protected by CRON_SECRET)
 
+// Authentication Routes - Must be registered before catch-all and after other public routes
+console.log('[Server] Registering auth routes at /api/auth');
+app.use('/api/auth', authRouter);
+
 // API Routes (protected)
 app.use('/api/brand-reply-tokens', authMiddleware, rateLimitMiddleware, brandReplyTokensRouter);
 app.use('/api/conversations', authMiddleware, rateLimitMiddleware, conversationsRouter);
@@ -649,7 +653,6 @@ app.use('/api/complaints', authMiddleware, rateLimitMiddleware, complaintsRouter
 app.use('/api/influencers', authMiddleware, rateLimitMiddleware, influencersRouter);
 app.use('/api/collab-requests', authMiddleware, rateLimitMiddleware, collabRequestsRouter); // Protected collab request management routes
 app.use('/api/reminders', remindersRouter);
-app.use('/api/auth', authRouter);
 app.use('/api/brand-dashboard', authMiddleware, rateLimitMiddleware, brandDashboardRouter);
 // Note: /api/collab-analytics is already mounted as public route above (line 284)
 // OTP routes - protected routes require auth

@@ -91,6 +91,13 @@ const BrandDashboard: React.FC = () => {
     return { totalSent, needsAction, activeDeals, totalInvestment };
   }, [deals, requests]);
 
+  useEffect(() => {
+    if (sessionLoading) return;
+    if (profile && profile.role === 'brand' && !profile.onboarding_complete) {
+      navigate('/brand-onboarding', { replace: true });
+    }
+  }, [profile, sessionLoading, navigate]);
+
   if (sessionLoading || (isLoading && requests.length === 0)) {
     return (
       <div className="min-h-[100dvh] bg-[#0D0F1A] flex items-center justify-center">

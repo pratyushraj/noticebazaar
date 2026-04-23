@@ -2,7 +2,7 @@
 
 import React, { useEffect } from "react";
 import { motion, AnimatePresence, useMotionValue, useTransform, useSpring } from "framer-motion";
-import { Briefcase, Wallet, Shield, Link2, Calendar, Plus, Upload, Settings, LogOut, Bell, HelpCircle, BarChart3, ChevronRight, CalendarCheck, FileText } from 'lucide-react';
+import { Briefcase, Wallet, Shield, Link2, Calendar, Plus, Upload, Settings, LogOut, Bell, HelpCircle, BarChart3, ChevronRight, CalendarCheck, FileText, LayoutDashboard } from 'lucide-react';
 import { useNavigate, useLocation } from "react-router-dom";
 import { useSession } from "@/contexts/SessionContext";
 import { getInitials } from "@/lib/utils/avatar";
@@ -234,10 +234,10 @@ export default function PremiumDrawer({
 
   const menuData: DrawerMenuData = {
     main: [
+      { id: 'dashboard', label: 'Home', icon: LayoutDashboard, path: '/creator-dashboard' },
       { id: 'deals', label: 'Collabs', icon: Briefcase, path: '/creator-dashboard?tab=deals' },
       { id: 'payments', label: 'Payments', icon: Wallet, path: '/creator-dashboard?tab=payments' },
       { id: 'collab', label: 'Collab Link', icon: Link2, path: '/creator-dashboard?tab=collab' },
-      { id: 'calendar', label: 'Calendar', icon: Calendar, path: '/calendar' },
     ],
     quickActions: [
       { id: 'upload-contract', label: 'Upload Contract', icon: Upload, path: '/contract-upload', variant: 'default' },
@@ -252,7 +252,6 @@ export default function PremiumDrawer({
       { id: 'profile', label: 'Account', icon: Settings, path: '/creator-profile?section=account' },
       { id: 'notification-settings', label: 'Notifications', icon: Bell, path: '/creator-profile?section=notifications' },
       { id: 'help', label: 'Help & Support', icon: HelpCircle },
-      { id: 'analytics', label: 'Analytics', icon: BarChart3, path: '/creator-analytics' },
     ],
   };
 

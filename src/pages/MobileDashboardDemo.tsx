@@ -24,6 +24,7 @@ import { useUpdateProfile } from '@/lib/hooks/useProfiles';
 import { dealPrimaryCtaButtonClass, getDealPrimaryCta } from '@/lib/deals/primaryCta';
 import FiverrPackageEditor from '@/components/profile/FiverrPackageEditor';
 import { useInstagramSync } from '@/lib/hooks/useInstagramSync';
+import { safeAvatarSrc } from '@/lib/utils/image';
 
 import DashboardMetricsCards from '@/components/dashboard/DashboardMetricsCards';
 import DealSearchFilter from '@/components/dashboard/DealSearchFilter';
@@ -1739,8 +1740,8 @@ const MobileDashboardDemo = ({
                 payout_upi: profileFormData.payout_upi?.trim() || null,
                 discovery_video_url: profileFormData.discovery_video_url || null,
                 portfolio_videos: profileFormData.portfolio_videos || [],
-                instagram_profile_photo: profileFormData.instagram_profile_photo || null,
-                avatar_url: profileFormData.instagram_profile_photo || null,
+                instagram_profile_photo: profileFormData.instagram_profile_photo || profileFormData.avatar_url || null,
+                avatar_url: profileFormData.avatar_url || profileFormData.instagram_profile_photo || null,
                 updated_at: new Date().toISOString(),
             };
 
@@ -2444,7 +2445,7 @@ const MobileDashboardDemo = ({
                                             userId, 
                                             folder: 'avatars' 
                                         });
-                                        setProfileFormData((p: any) => ({ ...p, instagram_profile_photo: url }));
+                                        setProfileFormData((p: any) => ({ ...p, instagram_profile_photo: url, avatar_url: url }));
                                         toast.dismiss();
                                         toast.success('Photo uploaded!');
                                         triggerHaptic();
@@ -3650,749 +3651,286 @@ const MobileDashboardDemo = ({
                     {/* ─── DASHBOARD TAB ─── */}
                     {activeTab === 'dashboard' && (
                         <>
-                            {(() => {
-                                const hasSetRates = [
-                                    profile?.pricing_min,
-                                    profile?.avg_rate_reel,
-                                    profile?.reel_price,
-                                    (profile as any)?.story_price,
-                                    (profile as any)?.suggested_reel_rate,
-                                ].some((v) => Number(v) > 0) || Boolean(profile?.deal_templates?.length);
-
-                                const setupSteps = [
-                                    { id: 'photo', done: !!profile?.instagram_profile_photo || !!profile?.avatar_url, label: 'Add Profile Picture' },
-                                    { id: 'rates', done: hasSetRates, label: 'Add Services & Pricing' },
-                                    { id: 'portfolio', done: (profile?.collab_past_work_items?.length || 0) > 0 || (profile?.portfolio_items?.length || 0) > 0, label: 'Add Portfolio Samples' },
-                                    { id: 'link', done: !!profile?.link_shared_at, label: 'Share Your Link' }
-                                ];
-                                const completedCount = setupSteps.filter(s => s.done).length;
-                                const isSetupComplete = completedCount === setupSteps.length;
-
-                                 const hasDeals = activeDealsCount > 0 || completedDealsCount > 0;
-                                 if (!isSetupComplete && !hasDeals) {
-                                    return (
-                                        <div className="space-y-6 pb-20">
-                                            {/* Welcome Header */}
-                                            <div className="relative z-10 -mt-2 mb-6">
-                                                <div className={cn(
-                                                    "absolute inset-0 -z-10 bg-gradient-to-br overflow-hidden rounded-b-[40px] border-b",
-                                                    isDark 
-                                                        ? "from-emerald-950 via-[#0B1A14] to-[#0A101A] border-emerald-900/30 shadow-[0_4px_40px_rgba(16,185,129,0.1)]" 
-                                                        : "from-emerald-600 via-emerald-700 to-emerald-900 border-emerald-800 shadow-xl"
-                                                )}>
-                                                    <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-emerald-500/10 rounded-full blur-[80px] -mr-[200px] -mt-[200px] pointer-events-none mix-blend-screen" />
-                                                    <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-teal-500/10 rounded-full blur-[60px] -ml-[150px] -mb-[150px] pointer-events-none mix-blend-screen" />
-                                                    <div className="absolute inset-0 bg-[url('/noise.png')] opacity-[0.03] mix-blend-overlay pointer-events-none" />
-                                                </div>
-
-                                                <div className="px-6 pt-8 pb-12">
-                                                    <motion.p 
-                                                        initial={{ opacity: 0, y: 10 }}
-                                                        animate={{ opacity: 1, y: 0 }}
-                                                        transition={{ duration: 0.4 }}
-                                                        className={cn(
-                                                            'text-[11px] font-black uppercase tracking-[0.3em] mb-1', 
-                                                            isDark ? "text-emerald-400" : "text-emerald-100/80"
-                                                        )}
-                                                    >
-                                                        GET STARTED
-                                                    </motion.p>
-                                                    <motion.h1 
-                                                        initial={{ opacity: 0, y: 10 }}
-                                                        animate={{ opacity: 1, y: 0 }}
-                                                        transition={{ duration: 0.4, delay: 0.05 }}
-                                                        className={cn(
-                                                            "text-[26px] font-black tracking-tighter leading-tight italic mb-2 truncate w-full whitespace-nowrap", 
-                                                            isDark ? "text-white" : "text-white"
-                                                        )}
-                                                    >
-                                                        Welcome, {displayName} 👋
-                                                    </motion.h1>
-                                                    <motion.p 
-                                                        initial={{ opacity: 0, y: 10 }}
-                                                        animate={{ opacity: 1, y: 0 }}
-                                                        transition={{ duration: 0.4, delay: 0.1 }}
-                                                        className={cn(
-                                                            "text-[15px] font-medium leading-relaxed", 
-                                                            isDark ? "text-emerald-100/70" : "text-emerald-50/90"
-                                                        )}
-                                                    >
-                                                        Let's get your creator profile live and ready to receive brand deals.
-                                                    </motion.p>
-                                                </div>
-                                            </div>
-
-                                                {/* Empty State or Offer Card */}
-                                                {pendingOffersCount > 0 ? (
-                                                    <div className={cn(
-                                                        "mx-5 p-6 rounded-[32px] border relative overflow-hidden",
-                                                        isDark ? "bg-[#111820] border-white/5" : "bg-white border-slate-200 shadow-sm"
-                                                    )}>
-                                                        <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none" />
-                                                        
-                                                        <div className="flex items-center gap-4 mb-6">
-                                                            <div className="w-12 h-12 rounded-2xl bg-primary/20 flex items-center justify-center">
-                                                                <Zap className="w-6 h-6 text-primary" />
-                                                            </div>
-                                                            <div>
-                                                                <h3 className="text-xl font-black italic leading-tight">New Offer Received! 🚀</h3>
-                                                                <p className="text-xs opacity-50 font-medium">A brand wants to collaborate with you.</p>
-                                                            </div>
-                                                        </div>
-
-                                                        <div className={cn(
-                                                            "p-4 rounded-2xl mb-6 flex items-center gap-4",
-                                                            isDark ? "bg-white/5" : "bg-slate-50"
-                                                        )}>
-                                                            <div className="w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center overflow-hidden">
-                                                                {displayOffers[0]?.brand_logo_url ? (
-                                                                    <img src={displayOffers[0].brand_logo_url} alt="" className="w-full h-full object-cover" />
-                                                                ) : (
-                                                                    <Briefcase className="w-6 h-6 opacity-40" />
-                                                                )}
-                                                            </div>
-                                                            <div className="min-w-0 flex-1">
-                                                                <p className="font-bold truncate">{displayOffers[0]?.brand_name || 'New Brand Partner'}</p>
-                                                                <p className="text-[10px] font-black uppercase tracking-widest text-primary">
-                                                                    ₹{Number(displayOffers[0]?.exact_budget || displayOffers[0]?.deal_amount || 0).toLocaleString()} Earnings
-                                                                </p>
-                                                            </div>
-                                                        </div>
-
-                                                        <button 
-                                                            onClick={() => {
-                                                                triggerHaptic();
-                                                                setActiveTab('deals');
-                                                                setCollabSubTab('pending');
-                                                            }}
-                                                            className="w-full bg-primary hover:bg-primary/90 text-white font-black italic rounded-2xl py-4 flex items-center justify-center gap-2 transition-all active:scale-[0.98] shadow-lg shadow-primary/20"
-                                                        >
-                                                            <Eye className="w-5 h-5" />
-                                                            Review & Accept Offer
-                                                        </button>
-                                                    </div>
-                                                ) : (
-                                                    <div className={cn(
-                                                        "mx-5 p-8 rounded-[32px] border flex flex-col items-center text-center",
-                                                        isDark ? "bg-[#111820] border-white/5" : "bg-white border-slate-200 shadow-sm"
-                                                    )}>
-                                                        <div className="w-20 h-20 mb-6 relative">
-                                                            <div className="absolute inset-0 bg-primary/20 blur-2xl rounded-full" />
-                                                            <div className="relative w-full h-full bg-gradient-to-br from-primary/30 to-transparent rounded-3xl flex items-center justify-center border border-white/10">
-                                                                <Sparkles className="w-10 h-10 text-primary" />
-                                                            </div>
-                                                        </div>
-                                                        <h3 className="text-xl font-black italic mb-2">No brand requests yet 👀</h3>
-                                                        <p className="text-sm opacity-50 font-medium mb-8 px-4">
-                                                            When brands submit briefs through your collab link, they'll appear here.
-                                                        </p>
-                                                        <button 
-                                                            onClick={() => {
-                                                                const url = `https://creatorarmour.com/${profile?.username || 'creator'}`;
-                                                                navigator.clipboard.writeText(url);
-                                                                toast.success("Link copied!");
-                                                                triggerHaptic('success');
-                                                                
-                                                                // Update shared status if not already set
-                                                                if (profile?.id && !profile?.link_shared_at) {
-                                                                    updateProfile.mutate({
-                                                                        id: profile.id,
-                                                                        link_shared_at: new Date().toISOString()
-                                                                    }, {
-                                                                        onSuccess: () => refetchProfile()
-                                                                    });
-                                                                }
-                                                            }}
-                                                            className="w-full bg-primary hover:bg-primary/90 text-white font-black italic rounded-2xl py-4 flex items-center justify-center gap-2 mb-8 transition-all active:scale-[0.98]"
-                                                        >
-                                                            <Link2 className="w-5 h-5" />
-                                                            Share Your Link
-                                                        </button>
-                                                        
-                                                        <div className="flex justify-between w-full border-t border-white/5 pt-6 gap-2">
-                                                            {[
-                                                                { icon: ShieldCheck, label: 'Secure & Protected', sub: 'We protect your work and payments' },
-                                                                { icon: Zap, label: 'Instant Connections', sub: 'Get offers from verified brands' },
-                                                                { icon: IndianRupee, label: 'Fair & Transparent', sub: 'Clear deals, no hidden fees' }
-                                                            ].map((perk, i) => (
-                                                                <div key={i} className="flex flex-col items-center gap-1 flex-1">
-                                                                    <perk.icon className="w-4 h-4 text-primary" />
-                                                                    <p className="text-[9px] font-black leading-none mt-1">{perk.label}</p>
-                                                                    <p className="text-[8px] opacity-40 leading-tight">{perk.sub}</p>
-                                                                </div>
-                                                            ))}
-                                                        </div>
-                                                    </div>
-                                                )}
-
-                                            {/* Link & WhatsApp Section */}
-                                            <div className={cn(
-                                                "mx-5 p-6 rounded-[32px] border space-y-6",
-                                                isDark ? "bg-[#111820] border-white/5" : "bg-white border-slate-200 shadow-sm"
-                                            )}>
-                                                <div>
-                                                    <div className="flex items-center justify-between mb-4">
-                                                        <p className="text-[10px] font-black uppercase tracking-widest opacity-40">Your Creator Link</p>
-                                                        <div className="flex items-center gap-1.5 opacity-40">
-                                                            <LockIcon className="w-3 h-3" />
-                                                            <p className="text-[9px] font-bold">Send this to brands</p>
-                                                        </div>
-                                                    </div>
-                                                    <div className="flex gap-2">
-                                                        <div className={cn(
-                                                            "flex-1 px-4 py-3 rounded-xl border font-medium text-sm truncate",
-                                                            isDark ? "bg-black border-white/10" : "bg-slate-50 border-slate-200"
-                                                        )}>
-                                                            creatorarmour.com/{profile?.username || 'creator'}
-                                                        </div>
-                                                        <button 
-                                                            onClick={() => {
-                                                                navigator.clipboard.writeText(`https://creatorarmour.com/${profile?.username || 'creator'}`);
-                                                                toast.success('Copied!');
-                                                            }}
-                                                            className={cn(
-                                                                "px-6 rounded-xl font-black italic text-sm border transition-all active:scale-95",
-                                                                isDark ? "bg-white/5 border-white/10 hover:bg-white/10" : "bg-white border-slate-200 hover:bg-slate-50"
-                                                            )}
-                                                        >
-                                                            Copy
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                                <button 
-                                                    onClick={() => {
-                                                        const url = `https://wa.me/?text=${encodeURIComponent(`Check out my creator profile: https://creatorarmour.com/${profile?.username || 'creator'}`)}`;
-                                                        window.open(url, '_blank');
-                                                    }}
-                                                    className="w-full bg-[#25D366] text-white font-black italic rounded-xl py-4 flex items-center justify-center gap-2 transition-all active:scale-[0.98]"
-                                                >
-                                                    <MessageCircle className="w-5 h-5 fill-current" />
-                                                    Share on WhatsApp
-                                                </button>
-                                            </div>
-
-                                            {/* Preview Card */}
-                                            <div className={cn(
-                                                "mx-5 p-8 rounded-[32px] overflow-hidden relative border",
-                                                isDark ? "bg-[#0A101A] border-white/10" : "bg-slate-900 border-slate-800"
-                                            )}>
-                                                <div className="relative z-10 space-y-6">
-                                                    <h4 className="text-[10px] font-black uppercase tracking-widest text-[#22C55E]">WHAT BRANDS WILL SEE</h4>
-                                                    <div className="flex items-center gap-4">
-                                                        <div className="w-16 h-16 rounded-full border-2 border-white/20 overflow-hidden">
-                                                            <img src={profile?.avatar_url || `https://ui-avatars.com/api/?name=${profile?.business_name || 'B'}`} className="w-full h-full object-cover" />
-                                                        </div>
-                                                        <div>
-                                                            <h3 className="text-2xl font-black text-white italic">{profile?.first_name || profile?.username || 'Creator'}</h3>
-                                                            <p className="text-primary font-bold">@{profile?.username || 'creator'}</p>
-                                                        </div>
-                                                    </div>
-                                                    <p className="text-sm text-white/60 font-medium">
-                                                        Brands open your creator link, choose a service, and send you an offer here.
-                                                    </p>
-                                                    <button 
-                                                        onClick={() => window.open(`/${profile?.username || 'creator'}`, '_blank')}
-                                                        className="inline-flex items-center gap-2 bg-white/10 hover:bg-white/20 border border-white/10 text-white rounded-xl px-6 py-3 text-sm font-black italic transition-all active:scale-95"
-                                                    >
-                                                        <Eye className="w-4 h-4" />
-                                                        View Profile Preview
-                                                    </button>
-                                                </div>
-                                                {/* Doc Illustration Mockup */}
-                                                <div className="absolute top-1/2 -right-12 -translate-y-1/2 w-48 h-64 bg-white/5 rounded-3xl transform rotate-12 blur-sm pointer-events-none" />
-                                                <div className="absolute top-1/2 -right-4 -translate-y-1/2 w-48 h-64 bg-white/5 rounded-3xl transform rotate-6 border border-white/20 p-6 pointer-events-none">
-                                                    <div className="w-full h-24 bg-white/10 rounded-xl mb-4" />
-                                                    <div className="w-3/4 h-3 bg-white/20 rounded-full mb-3" />
-                                                    <div className="w-1/2 h-3 bg-white/10 rounded-full" />
-                                                    <div className="absolute top-4 right-4 flex gap-1">
-                                                        <Sparkles className="w-5 h-5 text-yellow-400" />
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    );
-                                }
+                             {(() => {
+                                const hasDeals = activeDealsCount > 0 || completedDealsCount > 0;
 
                                 return (
-                                    <>
-                                        {/* Dashboard Hero / Welcome Section */}
+                                    <div className="space-y-6 pb-20">
+                                        {/* Welcome Header */}
                                         <div className="relative z-10 -mt-2 mb-6">
-                                            {/* Vibrant Background */}
                                             <div className={cn(
                                                 "absolute inset-0 -z-10 bg-gradient-to-br overflow-hidden rounded-b-[40px] border-b",
                                                 isDark 
                                                     ? "from-emerald-950 via-[#0B1A14] to-[#0A101A] border-emerald-900/30 shadow-[0_4px_40px_rgba(16,185,129,0.1)]" 
                                                     : "from-emerald-600 via-emerald-700 to-emerald-900 border-emerald-800 shadow-xl"
                                             )}>
-                                                {/* Decorative background elements */}
                                                 <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-emerald-500/10 rounded-full blur-[80px] -mr-[200px] -mt-[200px] pointer-events-none mix-blend-screen" />
                                                 <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-teal-500/10 rounded-full blur-[60px] -ml-[150px] -mb-[150px] pointer-events-none mix-blend-screen" />
                                                 <div className="absolute inset-0 bg-[url('/noise.png')] opacity-[0.03] mix-blend-overlay pointer-events-none" />
                                             </div>
 
                                             <div className="px-6 pt-8 pb-12">
-                                                <div className="flex flex-col gap-1">
-                                                    <motion.p 
-                                                        initial={{ opacity: 0, y: 10 }}
-                                                        animate={{ opacity: 1, y: 0 }}
-                                                        transition={{ duration: 0.4 }}
-                                                        className={cn(
-                                                            'text-[11px] font-black uppercase tracking-[0.3em] mb-1', 
-                                                            isDark ? "text-emerald-400" : "text-emerald-100/80"
-                                                        )}
-                                                    >
-                                                        Welcome back
-                                                    </motion.p>
-                                                    <motion.div 
-                                                        initial={{ opacity: 0, y: 10 }}
-                                                        animate={{ opacity: 1, y: 0 }}
-                                                        transition={{ duration: 0.4, delay: 0.05 }}
-                                                        className="flex items-center gap-3 overflow-hidden"
-                                                    >
-                                                        <h1 className={cn(
-                                                            'text-[36px] font-black tracking-tighter leading-tight italic truncate whitespace-nowrap', 
-                                                            isDark ? "text-white" : "text-white"
-                                                        )}>
-                                                            {isLoadingProfile ? (
-                                                                "..."
-                                                            ) : !profile ? (
-                                                                "Creator"
-                                                            ) : (
-                                                                (() => {
-                                                                    let name = (profile?.first_name || '').trim();
-                                                                    if (!name || name === 'Dashboard©' || name.includes('Dashboard') || name.includes('©')) name = '';
-                                                                    return name || 'Creator';
-                                                                })()
-                                                            )}
-                                                        </h1>
-                                                        <div className={cn(
-                                                            "flex items-center gap-1.5 px-3 py-1.5 rounded-full border shadow-sm backdrop-blur-md", 
-                                                            isDark ? "bg-emerald-500/10 border-emerald-500/20" : "bg-white/10 border-white/20"
-                                                        )}>
-                                                            <div className="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_12px_rgba(52,211,153,0.8)] animate-pulse" />
-                                                            <span className={cn(
-                                                                "text-[10px] uppercase font-black tracking-widest",
-                                                                isDark ? "text-emerald-400" : "text-emerald-50"
-                                                            )}>Active</span>
-                                                        </div>
-                                                    </motion.div>
-                                                    
-                                                    {profile && username && (
-                                                        <motion.p 
-                                                            initial={{ opacity: 0, y: 10 }}
-                                                            animate={{ opacity: 1, y: 0 }}
-                                                            transition={{ duration: 0.4, delay: 0.1 }}
-                                                            className={cn(
-                                                                'text-[15px] font-medium mt-1', 
-                                                                isDark ? "text-emerald-100/60" : "text-emerald-100/80"
-                                                            )}
-                                                        >
-                                                            @{username}
-                                                        </motion.p>
+                                                <motion.p 
+                                                    initial={{ opacity: 0, y: 10 }}
+                                                    animate={{ opacity: 1, y: 0 }}
+                                                    transition={{ duration: 0.4 }}
+                                                    className={cn(
+                                                        'text-[11px] font-black uppercase tracking-[0.3em] mb-1', 
+                                                        isDark ? "text-emerald-400" : "text-emerald-100/80"
                                                     )}
-                                                </div>
-                                                
-                                                {/* Data Load Error handling */}
-                                                {hasDataLoadError && (
-                                                    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.15 }} className="mt-6">
-                                                        <div className={cn(
-                                                            "rounded-2xl border px-4 py-3 flex items-start gap-3 backdrop-blur-md",
-                                                            isDark ? "bg-rose-500/10 border-rose-500/20" : "bg-rose-50 border-rose-200"
-                                                        )}>
-                                                            <AlertTriangle className={cn("w-5 h-5 mt-0.5 shrink-0", isDark ? "text-rose-300" : "text-rose-700")} />
-                                                            <div className="min-w-0">
-                                                                <p className={cn("text-[13px] font-black", isDark ? "text-rose-200" : "text-rose-900")}>
-                                                                    Data failed to load
-                                                                </p>
-                                                                <p className={cn("text-[12px] font-semibold mt-0.5 leading-snug", isDark ? "text-rose-200/80" : "text-rose-800")}>
-                                                                    {offersError && dealsError
-                                                                        ? `${offersError} ${dealsError}`
-                                                                        : (offersError || dealsError)}
-                                                                </p>
-                                                            </div>
-                                                        </div>
-                                                    </motion.div>
-                                                )}
+                                                >
+                                                    {hasDeals ? "CREATOR DASHBOARD" : "GET STARTED"}
+                                                </motion.p>
+                                                <motion.h1 
+                                                    initial={{ opacity: 0, y: 10 }}
+                                                    animate={{ opacity: 1, y: 0 }}
+                                                    transition={{ duration: 0.4, delay: 0.05 }}
+                                                    className={cn(
+                                                        "text-[26px] font-black tracking-tighter leading-tight italic mb-2 truncate w-full whitespace-nowrap", 
+                                                        isDark ? "text-white" : "text-white"
+                                                    )}
+                                                >
+                                                    {hasDeals ? `Welcome back, ${displayName} 👋` : `Welcome, ${displayName} 👋`}
+                                                </motion.h1>
+                                                <motion.p 
+                                                    initial={{ opacity: 0, y: 10 }}
+                                                    animate={{ opacity: 1, y: 0 }}
+                                                    transition={{ duration: 0.4, delay: 0.1 }}
+                                                    className={cn(
+                                                        "text-[15px] font-medium leading-relaxed", 
+                                                        isDark ? "text-emerald-100/70" : "text-emerald-50/90"
+                                                    )}
+                                                >
+                                                    {hasDeals 
+                                                        ? "Your performance and incoming offers are ready for you below."
+                                                        : "Let's get your creator profile live and ready to receive brand deals."}
+                                                </motion.p>
                                             </div>
                                         </div>
 
+                                        {/* Total Earnings Section - Only after 1 deal completes */}
+                                        {completedDealsCount > 0 && (
+                                            <div className="px-5">
+                                                <motion.div
+                                                    initial={{ scale: 0.97, opacity: 0 }}
+                                                    animate={{ scale: 1, opacity: 1 }}
+                                                    transition={{ delay: 0.08 }}
+                                                    className={cn(
+                                                        "p-6 rounded-[32px] overflow-hidden border relative",
+                                                        isDark ? "bg-[#0B1220] border-[#223046]" : "bg-white border-[#E5E7EB] shadow-sm"
+                                                    )}
+                                                >
+                                                    <div className={cn(
+                                                        "absolute inset-0",
+                                                        isDark
+                                                            ? "bg-[linear-gradient(135deg,rgba(16,185,129,0.25),rgba(14,165,233,0.18),rgba(37,99,235,0.25))]"
+                                                            : "bg-[linear-gradient(135deg,#10B981_0%,#0EA5E9_50%,#2563EB_100%)] opacity-95"
+                                                    )} />
+                                                    <div className="absolute inset-0 opacity-30" style={{ background: "radial-gradient(800px 220px at 20% 0%, rgba(255,255,255,0.35), transparent 60%)" }} />
 
+                                                    <div className="relative z-10 text-white">
+                                                        <div className="flex items-center justify-between gap-3">
+                                                            <p className="text-[10px] font-black uppercase tracking-[0.2em] opacity-90">TOTAL EARNINGS</p>
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => { triggerHaptic(); setActiveTab('payments'); }}
+                                                                className="h-8 px-3 rounded-full bg-black/20 backdrop-blur-md border border-white/15 text-[10px] font-black uppercase tracking-widest flex items-center gap-2 active:scale-95"
+                                                            >
+                                                                Details
+                                                                <ArrowRight className="w-3.5 h-3.5" />
+                                                            </button>
+                                                        </div>
 
-                            {shouldShowPushPrompt && (
-                                <div className="px-5 mb-6">
-                                    <div className={cn("p-5 rounded-[2rem] border relative overflow-hidden", isDark ? "bg-card border-[#2C2C2E]" : "bg-card border-border shadow-sm")}>
-                                        <div className="absolute -top-10 -right-10 w-28 h-28 bg-primary/5 rounded-full blur-3xl pointer-events-none" />
-                                        <div className="flex items-start gap-3">
-                                            <div className={cn("w-10 h-10 rounded-2xl flex items-center justify-center shrink-0", isDark ? "bg-primary/15" : "bg-primary/15")}>
-                                                <Bell className="w-5 h-5 text-primary" />
+                                                        <div className="mt-4 text-[32px] leading-none font-black font-outfit tabular-nums">
+                                                            ₹{monthlyRevenue.toLocaleString()}
+                                                        </div>
+
+                                                        <div className="mt-4 flex items-center gap-3">
+                                                            <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/15 border border-white/15 text-[11px] font-black">
+                                                                <TrendingUp className="w-3.5 h-3.5" />
+                                                                Performance Up
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                </motion.div>
                                             </div>
-                                            <div className="min-w-0 flex-1">
-                                                <p className={cn("text-[14px] font-bold tracking-tight", textColor)}>Enable Deal Alerts</p>
-                                                <p className={cn("text-[12px] mt-1 opacity-90 leading-relaxed font-medium", isDark ? "text-slate-300" : "text-slate-600")}>
-                                                    Get instant notifications when a brand sends you a collaboration request.
+                                        )}
+
+                                        {/* Incoming Offers Preview */}
+                                        {pendingOffersCount > 0 ? (
+                                            <div className="px-5">
+                                                <div className={cn(
+                                                    "p-6 rounded-[32px] border",
+                                                    isDark ? "bg-[#111820] border-white/5" : "bg-white border-slate-200 shadow-sm"
+                                                )}>
+                                                    <div className="flex items-center justify-between mb-4">
+                                                        <h3 className={cn("text-lg font-black italic", textColor)}>
+                                                            Incoming Offers ({pendingOffersCount})
+                                                        </h3>
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => { triggerHaptic(); setActiveTab('deals'); setCollabSubTab('pending'); }}
+                                                            className={cn("text-[11px] font-black uppercase tracking-widest text-primary")}
+                                                        >
+                                                            View all →
+                                                        </button>
+                                                    </div>
+                                                    <div className="space-y-3">
+                                                        {pendingOffersDeduplicated.slice(0, 3).map((req: any, idx: number) => {
+                                                            const amount = Number(req?.exact_budget || req?.deal_amount || req?.barter_value || 0);
+                                                            const productImage = resolveCreatorDealProductImage(req);
+                                                            return (
+                                                                <div
+                                                                    key={String(req?.id || idx)}
+                                                                    onClick={() => { triggerHaptic(); setSelectedItem(req); setSelectedType('offer'); }}
+                                                                    className={cn(
+                                                                        "p-4 rounded-2xl border flex items-center gap-4 active:scale-[0.98] transition-all",
+                                                                        isDark ? "bg-white/5 border-white/10" : "bg-slate-50 border-slate-200"
+                                                                    )}
+                                                                >
+                                                                    <div className="w-12 h-12 rounded-xl border overflow-hidden shrink-0 bg-black/20">
+                                                                        {productImage ? (
+                                                                            <img src={productImage} alt="" className="w-full h-full object-cover" />
+                                                                        ) : (
+                                                                            <div className="w-full h-full flex items-center justify-center">
+                                                                                {getBrandIcon(req?.brand_logo_url, req?.category, req?.brand_name)}
+                                                                            </div>
+                                                                        )}
+                                                                    </div>
+                                                                    <div className="min-w-0 flex-1">
+                                                                        <p className={cn("font-bold truncate text-[14px]", textColor)}>{req?.brand_name || 'Brand'}</p>
+                                                                        <p className="text-[10px] font-black uppercase tracking-widest text-primary">₹{amount.toLocaleString()}</p>
+                                                                    </div>
+                                                                    <div className="shrink-0">
+                                                                        <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                                                                            <ArrowRight className="w-4 h-4 text-primary" />
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            );
+                                                        })}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            /* Empty State */
+                                            <div className={cn(
+                                                "mx-5 p-8 rounded-[32px] border flex flex-col items-center text-center",
+                                                isDark ? "bg-[#111820] border-white/5" : "bg-white border-slate-200 shadow-sm"
+                                            )}>
+                                                <div className="w-20 h-20 mb-6 relative">
+                                                    <div className="absolute inset-0 bg-primary/20 blur-2xl rounded-full" />
+                                                    <div className="relative w-full h-full bg-gradient-to-br from-primary/30 to-transparent rounded-3xl flex items-center justify-center border border-white/10">
+                                                        <Sparkles className="w-10 h-10 text-primary" />
+                                                    </div>
+                                                </div>
+                                                <h3 className="text-xl font-black italic mb-2">No brand requests yet 👀</h3>
+                                                <p className="text-sm opacity-50 font-medium mb-8 px-4 leading-relaxed">
+                                                    When brands submit briefs through your collab link, they'll appear here for you to review and accept.
                                                 </p>
-                                                <div className="mt-4 flex gap-2">
-                                                    <button type="button"
-                                                        onClick={async () => {
-                                                            triggerHaptic();
-                                                            if (isIOSNeedsInstall) {
-                                                                setShowPushInstallGuide(true);
-                                                                return;
-                                                            }
-                                                            if (pushPermission === 'denied') {
-                                                                toast.error("Notifications are blocked. Enable them in browser settings.");
-                                                                return;
-                                                            }
-                                                            const res = await enableNotifications();
-                                                            if (res.success) toast.success("Push notifications enabled!");
-                                                            else toast.error("Couldn’t enable notifications.", { description: res.reason || 'Unknown reason' });
-                                                        }}
-                                                        className="flex-1 h-11 rounded-2xl font-black text-[11px] uppercase tracking-widest shadow-lg active:scale-95 transition-all bg-primary text-foreground hover:bg-primary"
-                                                    >
-                                                        Enable
-                                                    </button>
-                                                    <button type="button"
+                                                <button 
+                                                    onClick={() => {
+                                                        const url = `https://creatorarmour.com/${profile?.username || 'creator'}`;
+                                                        navigator.clipboard.writeText(url);
+                                                        toast.success("Link copied!");
+                                                        triggerHaptic('success');
+                                                    }}
+                                                    className="w-full bg-primary hover:bg-primary/90 text-white font-black italic rounded-2xl py-4 flex items-center justify-center gap-2 transition-all active:scale-[0.98] shadow-lg shadow-primary/20"
+                                                >
+                                                    <Link2 className="w-5 h-5" />
+                                                    Share Your Link
+                                                </button>
+                                            </div>
+                                        )}
+
+                                        {/* Link & WhatsApp Section */}
+                                        <div className={cn(
+                                            "mx-5 p-6 rounded-[32px] border space-y-6",
+                                            isDark ? "bg-[#111820] border-white/5" : "bg-white border-slate-200 shadow-sm"
+                                        )}>
+                                            <div>
+                                                <div className="flex items-center justify-between mb-4">
+                                                    <p className="text-[10px] font-black uppercase tracking-widest opacity-40">Your Creator Link</p>
+                                                    <div className="flex items-center gap-1.5 opacity-40">
+                                                        <LockIcon className="w-3 h-3" />
+                                                        <p className="text-[9px] font-bold">Secure Link</p>
+                                                    </div>
+                                                </div>
+                                                <div className="flex gap-2">
+                                                    <div className={cn(
+                                                        "flex-1 px-4 py-3 rounded-xl border font-medium text-sm truncate",
+                                                        isDark ? "bg-black border-white/10" : "bg-slate-50 border-slate-200"
+                                                    )}>
+                                                        creatorarmour.com/{profile?.username || 'creator'}
+                                                    </div>
+                                                    <button 
                                                         onClick={() => {
-                                                            triggerHaptic();
-                                                            dismissPushPrompt();
+                                                            navigator.clipboard.writeText(`https://creatorarmour.com/${profile?.username || 'creator'}`);
+                                                            toast.success('Copied!');
                                                         }}
                                                         className={cn(
-                                                            "h-11 px-4 rounded-2xl border text-[11px] font-black uppercase tracking-widest active:scale-95 transition-all",
-                                                            isDark ? "border-border bg-card text-foreground/80 hover:bg-secondary/50" : "border-border bg-card text-muted-foreground hover:bg-background"
+                                                            "px-6 rounded-xl font-black italic text-sm border transition-all active:scale-95",
+                                                            isDark ? "bg-white/5 border-white/10 hover:bg-white/10" : "bg-white border-slate-200 hover:bg-slate-50"
                                                         )}
                                                     >
-                                                        Not now
+                                                        Copy
                                                     </button>
                                                 </div>
-                                                {isIOSNeedsInstall && (
-                                                    <p className={cn("text-[11.5px] mt-3 font-semibold", isDark ? "text-amber-400" : "text-amber-600")}>
-                                                        iPhone/iPad: install to Home Screen first (no “Allow” popup will show in a Safari tab).
-                                                    </p>
-                                                )}
+                                            </div>
+                                            <button 
+                                                onClick={() => {
+                                                    const url = `https://wa.me/?text=${encodeURIComponent(`Check out my creator profile: https://creatorarmour.com/${profile?.username || 'creator'}`)}`;
+                                                    window.open(url, '_blank');
+                                                }}
+                                                className="w-full bg-[#25D366] text-white font-black italic rounded-xl py-4 flex items-center justify-center gap-2 transition-all active:scale-[0.98]"
+                                            >
+                                                <MessageCircle className="w-5 h-5 fill-current" />
+                                                Share on WhatsApp
+                                            </button>
+                                        </div>
+
+                                        {/* Preview Card */}
+                                        <div className={cn(
+                                            "mx-5 p-8 rounded-[32px] overflow-hidden relative border",
+                                            isDark ? "bg-[#0A101A] border-white/10" : "bg-slate-900 border-slate-800"
+                                        )}>
+                                            <div className="relative z-10 space-y-6">
+                                                <h4 className="text-[10px] font-black uppercase tracking-widest text-[#22C55E]">WHAT BRANDS WILL SEE</h4>
+                                                <div className="flex items-center gap-4">
+                                                    <div className="w-16 h-16 rounded-full border-2 border-white/20 overflow-hidden bg-white/5">
+                                                        <img src={safeAvatarSrc(profile?.avatar_url) || `https://ui-avatars.com/api/?name=${profile?.business_name || 'B'}`} className="w-full h-full object-cover" />
+                                                    </div>
+                                                    <div>
+                                                        <h3 className="text-2xl font-black text-white italic truncate max-w-[200px]">{profile?.first_name || profile?.username || 'Creator'}</h3>
+                                                        <p className="text-primary font-bold">@{profile?.username || 'creator'}</p>
+                                                    </div>
+                                                </div>
+                                                <p className="text-sm text-white/60 font-medium leading-relaxed">
+                                                    Brands can view your portfolio, services, and send you direct collaboration offers.
+                                                </p>
+                                                <button 
+                                                    onClick={() => window.open(`/${profile?.username || 'creator'}`, '_blank')}
+                                                    className="inline-flex items-center gap-2 bg-white/10 hover:bg-white/20 border border-white/10 text-white rounded-xl px-6 py-3 text-sm font-black italic transition-all active:scale-95"
+                                                >
+                                                    <Eye className="w-4 h-4" />
+                                                    View Public Profile
+                                                </button>
+                                            </div>
+                                            <div className="absolute top-1/2 -right-12 -translate-y-1/2 w-48 h-64 bg-white/5 rounded-3xl transform rotate-12 blur-sm pointer-events-none" />
+                                            <div className="absolute top-1/2 -right-4 -translate-y-1/2 w-48 h-64 bg-white/5 rounded-3xl transform rotate-6 border border-white/20 p-6 pointer-events-none">
+                                                <div className="w-full h-24 bg-white/10 rounded-xl mb-4" />
+                                                <div className="w-3/4 h-3 bg-white/20 rounded-full mb-3" />
+                                                <div className="w-1/2 h-3 bg-white/10 rounded-full" />
+                                                <div className="absolute top-4 right-4 flex gap-1">
+                                                    <Sparkles className="w-5 h-5 text-yellow-400" />
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
-                                </div>
-                            )}
-
-                            {/* Normal Metrics - Shown when setup is complete */}
-                            <div className="px-5 mb-8 space-y-5">
-                                        {/* Earnings Hero */}
-                                        <motion.div
-                                            initial={{ scale: 0.97, opacity: 0 }}
-                                            animate={{ scale: 1, opacity: 1 }}
-                                            transition={{ delay: 0.08 }}
-                                            className={cn(
-                                                "p-6 rounded-[28px] overflow-hidden border relative",
-                                                isDark ? "bg-[#0B1220] border-[#223046]" : "bg-white border-[#E5E7EB] shadow-sm"
-                                            )}
-                                        >
-                                            <div className={cn(
-                                                "absolute inset-0",
-                                                isDark
-                                                    ? "bg-[linear-gradient(135deg,rgba(16,185,129,0.25),rgba(14,165,233,0.18),rgba(37,99,235,0.25))]"
-                                                    : "bg-[linear-gradient(135deg,#10B981_0%,#0EA5E9_50%,#2563EB_100%)] opacity-95"
-                                            )} />
-                                            <div className="absolute inset-0 opacity-30" style={{ background: "radial-gradient(800px 220px at 20% 0%, rgba(255,255,255,0.35), transparent 60%)" }} />
-
-                                            <div className="relative z-10 text-white">
-                                                <div className="flex items-center justify-between gap-3">
-                                                    <div>
-                                                        <p className="text-[11px] font-black uppercase tracking-[0.18em] opacity-90">TOTAL EARNINGS (THIS MONTH)</p>
-                                                    </div>
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => { triggerHaptic(); setActiveTab('payments'); }}
-                                                        className="h-9 px-4 rounded-full bg-black/20 backdrop-blur-md border border-white/15 text-[12px] font-black tracking-tight flex items-center gap-2 active:scale-95"
-                                                    >
-                                                        View Earnings
-                                                        <ArrowRight className="w-4 h-4" />
-                                                    </button>
-                                                </div>
-
-                                                <div className="mt-4 text-[36px] leading-none font-black font-outfit tabular-nums">
-                                                    ₹{monthlyRevenue.toLocaleString()}
-                                                </div>
-
-                                                <div className="mt-4 flex items-center gap-3">
-                                                    <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/15 border border-white/15 text-[12px] font-black">
-                                                        <TrendingUp className="w-4 h-4" />
-                                                        +12%
-                                                    </span>
-                                                    <span className="text-[12px] font-semibold opacity-90">vs last month</span>
-                                                </div>
-
-                                                <div className="mt-5 flex items-center gap-2 text-[12px] font-semibold opacity-95">
-                                                    <Clock className="w-4 h-4" />
-                                                    {(() => {
-                                                        const next = (brandDeals || [])
-                                                            .map((d: any) => d?.payment_expected_date || d?.due_date || null)
-                                                            .filter(Boolean)
-                                                            .map((v: any) => new Date(v))
-                                                            .filter((d: Date) => !Number.isNaN(d.getTime()))
-                                                            .sort((a: Date, b: Date) => a.getTime() - b.getTime())[0];
-                                                        if (!next) return <>Next payout date will appear here</>;
-                                                        return <>Next payout on {next.toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' })}</>;
-                                                    })()}
-                                                </div>
-
-                                                <div className="mt-5 pt-4 border-t border-white/15 flex items-center justify-between text-[12px]">
-                                                    <span className="font-semibold opacity-90">+₹12,500 this week</span>
-                                                    <span className="font-semibold opacity-90">Top 10% creators</span>
-                                                </div>
-                                            </div>
-                                        </motion.div>
-
-	                                        {/* Get More Deals */}
-	                                        <div className={cn(
-	                                            "p-5 rounded-[22px] border flex items-center justify-between gap-4",
-	                                            isDark ? "bg-card border-border" : "bg-[#EFF6FF] border-[#DBEAFE]"
-	                                        )}>
-	                                            <div className="flex items-center gap-3 min-w-0">
-	                                                <div className={cn("w-12 h-12 rounded-2xl flex items-center justify-center shrink-0", isDark ? "bg-emerald-500/12" : "bg-white")}>
-	                                                    <Rocket className={cn("w-6 h-6", isDark ? "text-emerald-300" : "text-emerald-700")} />
-	                                                </div>
-	                                                <div className="min-w-0">
-	                                                    <p className={cn("text-[16px] font-black tracking-tight", textColor)}>Get More Deals</p>
-	                                                    <p className={cn("text-[12px] font-semibold opacity-70", secondaryTextColor)}>Increase your visibility and get 3x more offers</p>
-	                                                </div>
-	                                            </div>
-                                            <button
-                                                type="button"
-                                                onClick={() => { triggerHaptic(); setShowShareSheet(true); }}
-                                                className={cn(
-                                                    "h-10 px-4 rounded-xl text-[12px] font-black flex items-center gap-2 active:scale-95 transition-all",
-                                                    isDark ? "bg-[#2563EB] text-white" : "bg-[#2563EB] text-white"
-                                                )}
-                                            >
-                                                Share Link
-                                                <ArrowRight className="w-4 h-4" />
-                                            </button>
-                                        </div>
-
-	                                        {/* Stats Grid */}
-	                                        <div className="grid grid-cols-3 gap-3">
-	                                            <button
-	                                                type="button"
-	                                                onClick={() => { triggerHaptic(); setActiveTab('deals'); setCollabSubTab('active'); }}
-	                                                className={cn("p-4 rounded-[18px] border text-left active:scale-[0.99] transition-all", isDark ? "bg-card border-border" : "bg-white border-[#E5E7EB] shadow-sm")}
-                                            >
-                                                <p className={cn("text-xs font-bold uppercase tracking-wide", isDark ? "text-foreground/50" : "text-slate-400")}>Active Deals</p>
-                                                <p className={cn("mt-2 text-2xl font-bold tabular-nums tracking-tight", isDark ? "text-foreground" : "text-slate-900")}>{activeDealsCount}</p>
-                                                <p className={cn("mt-1 text-sm", isDark ? "text-foreground/60" : "text-slate-500")}>Ongoing</p>
-                                            </button>
-                                            <button
-	                                                type="button"
-	                                                onClick={() => { triggerHaptic(); setActiveTab('deals'); setCollabSubTab('pending'); }}
-	                                                className={cn("p-4 rounded-[18px] border text-left active:scale-[0.99] transition-all", isDark ? "bg-card border-border" : "bg-white border-[#E5E7EB] shadow-sm")}
-                                            >
-                                                <p className={cn("text-xs font-bold uppercase tracking-wide", isDark ? "text-foreground/50" : "text-slate-400")}>Pending Offers</p>
-                                                <p className={cn("mt-2 text-2xl font-bold tabular-nums tracking-tight", isDark ? "text-foreground" : "text-slate-900")}>{pendingOffersCount}</p>
-                                                <p className={cn("mt-1 text-sm", isDark ? "text-foreground/60" : "text-slate-500")}>Awaiting your response</p>
-                                            </button>
-                                            <button
-                                                type="button"
-                                                onClick={() => { triggerHaptic(); setActiveTab('deals'); setCollabSubTab('completed'); }}
-                                                className={cn("p-4 rounded-[18px] border text-left active:scale-[0.99] transition-all", isDark ? "bg-card border-border" : "bg-white border-[#E5E7EB] shadow-sm")}
-                                            >
-                                                <p className={cn("text-xs font-bold uppercase tracking-wide", isDark ? "text-foreground/50" : "text-slate-400")}>Completed</p>
-                                                <p className={cn("mt-2 text-2xl font-bold tabular-nums tracking-tight", isDark ? "text-foreground" : "text-slate-900")}>{completedDealsCount}</p>
-                                                <p className={cn("mt-1 text-sm", isDark ? "text-foreground/60" : "text-slate-500")}>This month</p>
-                                            </button>
-	                                        </div>
-
-                                        {/* Performance Insight */}
-                                        <div className={cn(
-                                            "p-5 rounded-[22px] border flex items-center justify-between gap-4",
-                                            isDark ? "bg-card border-border" : "bg-white border-[#E5E7EB] shadow-sm"
-                                        )}>
-                                            <div className="min-w-0">
-                                                <div className="flex items-center gap-2 mb-2">
-                                                    <TrendingUp className={cn("w-4 h-4", isDark ? "text-emerald-300" : "text-emerald-700")} />
-                                                    <p className={cn("text-base font-medium tracking-tight", isDark ? "text-foreground" : "text-slate-900")}>Performance Insight</p>
-                                                    <span className={cn("text-[10px] font-black px-2 py-0.5 rounded-full", isDark ? "bg-emerald-500/12 text-emerald-300 border border-emerald-400/20" : "bg-emerald-50 text-emerald-700 border border-emerald-100")}>New</span>
-                                                </div>
-                                                <p className={cn("text-sm leading-relaxed", isDark ? "text-foreground/60" : "text-slate-500")}>
-                                                    {performanceInsightMessage}
-                                                </p>
-                                            </div>
-                                            <div className={cn("w-14 h-14 rounded-full border flex items-center justify-center shrink-0", isDark ? "border-border bg-background/40" : "border-[#E5E7EB] bg-[#F8FAFC]")}>
-                                                <BarChart3 className={cn("w-6 h-6", isDark ? "text-emerald-300" : "text-emerald-700")} />
-                                            </div>
-                                        </div>
-
-		                                        {/* Grow Your Brand */}
-		                                        <div className={cn(
-		                                            "p-5 rounded-[22px] border",
-		                                            isDark ? "bg-card border-border" : "bg-white border-[#E5E7EB] shadow-sm"
-		                                        )}>
-		                                            <div className="mb-3">
-		                                                <p className={cn("text-base font-medium tracking-tight", isDark ? "text-foreground" : "text-slate-900")}>Grow Your Brand</p>
-		                                                <p className={cn("text-sm", isDark ? "text-foreground/50" : "text-slate-400")}>Share your link with brands and get more deals</p>
-		                                            </div>
-
-	                                            <div className={cn(
-	                                                "flex items-center gap-3 p-3 rounded-2xl border",
-	                                                isDark ? "bg-background/40 border-border" : "bg-[#F8FAFC] border-[#E5E7EB]"
-	                                            )}>
-	                                                <p className={cn("text-sm font-mono font-medium truncate", isDark ? "text-foreground/90" : "text-slate-700")}>
-	                                                    creatorarmour.com/{username || 'creator'}
-	                                                </p>
-	                                                <button
-	                                                    type="button"
-	                                                    onClick={() => { triggerHaptic(); handleCopyStorefront(); }}
-	                                                    className="ml-auto h-9 px-5 rounded-xl text-[12px] font-black bg-emerald-600 text-white active:scale-95 transition-all"
-	                                                >
-	                                                    Copy
-	                                                </button>
-	                                            </div>
-
-		                                            <div className="mt-4 grid grid-cols-3 gap-3">
-		                                                <button
-		                                                    type="button"
-		                                                    onClick={() => { triggerHaptic(); handleShareOnWhatsApp(); }}
-		                                                    className={cn(
-		                                                        "h-14 rounded-2xl border flex flex-col items-center justify-center gap-1 active:scale-[0.99] transition-all",
-		                                                        isDark ? "bg-background/40 border-border" : "bg-white border-[#E5E7EB]"
-		                                                    )}
-		                                                >
-		                                                    <MessageCircle className={cn("w-5 h-5", isDark ? "text-emerald-300" : "text-emerald-600")} />
-		                                                    <span className={cn("text-xs font-semibold", isDark ? "text-foreground/70" : "text-slate-600")}>WhatsApp</span>
-		                                                </button>
-	                                                <button
-	                                                    type="button"
-	                                                    onClick={() => { triggerHaptic(); toast.message('Instagram', { description: 'Copy link and paste in your story/bio.' }); }}
-	                                                    className={cn(
-	                                                        "h-14 rounded-2xl border flex flex-col items-center justify-center gap-1 active:scale-[0.99] transition-all",
-	                                                        isDark ? "bg-background/40 border-border" : "bg-white border-[#E5E7EB]"
-	                                                    )}
-	                                                >
-	                                                    <Instagram className={cn("w-5 h-5", isDark ? "text-pink-300" : "text-pink-600")} />
-	                                                    <span className={cn("text-[11px] font-bold", textColor)}>Instagram</span>
-	                                                </button>
-	                                                <button
-	                                                    type="button"
-	                                                    onClick={() => { triggerHaptic(); setShowShareSheet(true); }}
-	                                                    className={cn(
-	                                                        "h-14 rounded-2xl border flex flex-col items-center justify-center gap-1 active:scale-[0.99] transition-all",
-	                                                        isDark ? "bg-background/40 border-border" : "bg-white border-[#E5E7EB]"
-	                                                    )}
-	                                                >
-	                                                    <MoreHorizontal className={cn("w-5 h-5", isDark ? "text-foreground/70" : "text-slate-700")} />
-	                                                    <span className={cn("text-[11px] font-bold", textColor)}>More</span>
-	                                                </button>
-	                                            </div>
-                                            <p className={cn("mt-3 text-[11px] font-semibold opacity-60", secondaryTextColor)}>
-                                                Brands can view your profile and send you collab offers.
-                                            </p>
-                                        </div>
-
-                                        {/* Incoming Offers Preview */}
-                                        <div className={cn(
-                                            "p-5 rounded-[22px] border",
-                                            isDark ? "bg-card border-border" : "bg-white border-[#E5E7EB] shadow-sm"
-                                        )}>
-                                            <div className="flex items-center justify-between mb-4">
-                                                <p className={cn("text-[16px] font-black tracking-tight", textColor)}>
-                                                    Incoming Offers ({pendingOffersCount})
-                                                </p>
-                                                <button
-                                                    type="button"
-                                                    onClick={() => { triggerHaptic(); setActiveTab('deals'); setCollabSubTab('pending'); }}
-                                                    className={cn("text-[12px] font-black", isDark ? "text-sky-300" : "text-sky-700")}
-                                                >
-                                                    View all →
-                                                </button>
-                                            </div>
-                                            <div className="space-y-3">
-                                                {pendingOffersDeduplicated.slice(0, 3).map((req: any, idx: number) => {
-                                                    const amount = Number(req?.exact_budget || req?.deal_amount || req?.barter_value || 0);
-                                                    const productImage = resolveCreatorDealProductImage(req);
-                                                    const deliverables = (() => {
-                                                        const raw = req?.deliverables || req?.raw?.deliverables;
-                                                        try {
-                                                            const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;
-                                                            if (Array.isArray(parsed) && parsed.length > 0) {
-                                                                const first = parsed[0];
-                                                                if (typeof first === 'string') return first;
-                                                            }
-                                                        } catch { }
-                                                        return 'Reel';
-                                                    })();
-                                                    return (
-                                                        <div
-                                                            key={String(req?.id || idx)}
-                                                            role="button"
-                                                            tabIndex={0}
-                                                            onClick={() => { triggerHaptic(); setSelectedItem(req); setSelectedType('offer'); }}
-                                                            className={cn(
-                                                                "p-5 rounded-3xl border flex items-center gap-4 transition-all duration-300 active:scale-[0.98]",
-                                                                isDark 
-                                                                    ? "bg-white/5 border-white/10 hover:bg-white/10 shadow-lg shadow-black/20" 
-                                                                    : "bg-white border-slate-200/60 shadow-sm hover:shadow-md"
-                                                            )}
-                                                        >
-                                                            <div className={cn(
-                                                                "w-20 h-20 rounded-3xl overflow-hidden border shrink-0 relative",
-                                                                isDark ? "border-white/10 bg-black/20 shadow-inner" : "border-slate-200 bg-slate-50"
-                                                            )}>
-                                                                {productImage ? (
-                                                                    <img src={productImage} alt="" className="w-full h-full object-cover transition-transform duration-500 hover:scale-110" loading="lazy" />
-                                                                ) : (
-                                                                    <div className="w-full h-full flex items-center justify-center">
-                                                                        {getBrandIcon(req?.brand_logo_url || req?.brand_logo || req?.logo_url || req?.raw?.brand_logo_url || req?.raw?.brand_logo, req?.category, req?.brand_name)}
-                                                                    </div>
-                                                                )}
-                                                            </div>
-                                                            <div className="min-w-0 flex-1">
-                                                                <p className={cn("text-[16px] font-black tracking-tight leading-tight truncate capitalize", isDark ? "text-white" : "text-slate-900")}>
-                                                                    {String(req?.brand_name || 'Brand')}
-                                                                </p>
-                                                                <div className="flex items-center gap-1.5 mt-1">
-                                                                    {req?.collab_type?.toLowerCase().includes('barter') && <span className="text-[10px] scale-90">🎁</span>}
-                                                                    <p className={cn("text-[11px] font-black uppercase tracking-widest opacity-40", textColor)}>
-                                                                        {deliverables}
-                                                                    </p>
-                                                                </div>
-                                                            </div>
-                                                            <div className="text-right shrink-0">
-                                                                <p className={cn("text-[15px] font-black tracking-tight tabular-nums", isDark ? "text-white" : "text-slate-900")}>
-                                                                    ₹{amount > 0 ? amount.toLocaleString() : '—'}
-                                                                </p>
-                                                                <div className="mt-2 flex items-center gap-1.5 justify-end">
-                                                                    <button
-                                                                        type="button"
-                                                                        onClick={async (e) => { 
-                                                                            e.stopPropagation(); 
-                                                                            triggerHaptic();
-                                                                            if (!req?.isDemo) await handleAccept(req); 
-                                                                        }}
-                                                                        className="h-8 px-3 rounded-xl text-[11px] font-black bg-blue-600 text-white shadow-lg shadow-blue-500/20 active:scale-90 transition-all"
-                                                                    >
-                                                                        Accept
-                                                                    </button>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                     );
-                                                 })}
-                                             </div>
-                                             <button
-                                                 type="button"
-                                                 onClick={() => { triggerHaptic(); setActiveTab('deals'); setCollabSubTab('pending'); }}
-                                                 className={cn("mt-4 w-full text-center text-[12px] font-black", isDark ? "text-sky-300" : "text-sky-700")}
-                                             >
-                                                 View all offers →
-                                             </button>
-                                     {/* NOTE: Collab link promotion is already covered above (Get More Deals + Grow Your Brand).
-                                        Keeping a single surface avoids duplicate "collab link" sections on the dashboard. */}
-                             </div>
-                         </div>
-                 </>
-             );
-                    })()}
-                </>
-            )}
+                                );
+                            })()}
+                        </>
+                    )}
 
                     {activeTab === 'analytics' && (
                         <>
@@ -7324,7 +6862,7 @@ const MobileDashboardDemo = ({
                 })()}
             </AnimatePresence>
 
-        </div >
+        </div>
     );
 };
 
