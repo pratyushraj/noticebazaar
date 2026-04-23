@@ -317,7 +317,7 @@ export const buildProfileFormData = (profile: any, userEmail?: string | null) =>
         avg_rate_reel: profile?.avg_rate_reel || '5000',
         content_niches: profile?.content_niches || ['Fashion', 'Tech', 'Lifestyle'],
         bank_account_name: profile?.bank_account_name || '',
-        bank_upi: profile?.bank_upi || '',
+        payout_upi: profile?.payout_upi || '',
         deal_templates: profile?.deal_templates || [],
         // NEW: Audience Demographics
         audience_gender_split: profile?.audience_gender_split || '',

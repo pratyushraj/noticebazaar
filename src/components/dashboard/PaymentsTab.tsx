@@ -20,6 +20,7 @@ interface PaymentsTabProps {
     getBrandIcon: (logo: string, cat: string, name: string) => React.ReactNode;
     triggerHaptic: () => void;
     setSelectedPayment: (deal: any) => void;
+    setActiveSettingsPage: (page: string | null) => void;
 }
 
 export const PaymentsTab: React.FC<PaymentsTabProps> = ({
@@ -83,7 +84,7 @@ export const PaymentsTab: React.FC<PaymentsTabProps> = ({
         return { total, processing, paid };
     }, [brandDeals]);
 
-    const hasUpi = Boolean(profileFormData.bank_upi);
+    const hasUpi = Boolean(profileFormData.payout_upi);
 
     return (
         <div className="px-5 pt-8 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-32">
@@ -138,10 +139,18 @@ export const PaymentsTab: React.FC<PaymentsTabProps> = ({
             <div className="mb-10">
                 <div className="flex items-center justify-between mb-4 px-1">
                     <h4 className={cn("text-sm font-bold uppercase tracking-widest text-slate-400")}>Payout Method</h4>
-                    <button className="text-xs font-bold text-blue-600">Edit Details</button>
+                    <button 
+                        onClick={() => { triggerHaptic(); setActiveSettingsPage('personal'); }}
+                        className="text-xs font-bold text-blue-600 active:scale-95 transition-all"
+                    >
+                        Edit Details
+                    </button>
                 </div>
                 <div className={cn("p-5 rounded-3xl border flex items-center justify-between", isDark ? "bg-slate-900 border-slate-800" : "bg-white border-slate-200 shadow-sm")}>
-                    <div className="flex items-center gap-4">
+                    <div 
+                        onClick={() => { triggerHaptic(); setActiveSettingsPage('personal'); }}
+                        className="flex items-center gap-4 cursor-pointer"
+                    >
                         <div className={cn("w-12 h-12 rounded-2xl flex items-center justify-center", isDark ? "bg-slate-800 text-slate-300" : "bg-slate-50 text-slate-600")}>
                             <Landmark className="w-6 h-6" />
                         </div>
@@ -150,7 +159,7 @@ export const PaymentsTab: React.FC<PaymentsTabProps> = ({
                                 <p className={cn("text-[15px] font-bold", isDark ? "text-white" : "text-slate-900")}>UPI Transfer</p>
                                 {hasUpi && <span className={cn("px-1.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-green-50 text-green-600 border border-green-100")}>Verified</span>}
                             </div>
-                            <p className="text-xs font-medium text-slate-400 font-mono tracking-tight">{hasUpi ? `${profileFormData.bank_upi.split('@')[0].slice(0,3)}*****@${profileFormData.bank_upi.split('@')[1]}` : 'Not set'}</p>
+                            <p className="text-xs font-medium text-slate-400 font-mono tracking-tight">{hasUpi ? `${profileFormData.payout_upi.split('@')[0].slice(0,3)}*****@${profileFormData.payout_upi.split('@')[1]}` : 'Not set'}</p>
                         </div>
                     </div>
                     <ChevronRight className="w-5 h-5 text-slate-300" />

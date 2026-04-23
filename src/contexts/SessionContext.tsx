@@ -358,8 +358,17 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
       const finalInstagramHandle = instagramHandleValue || metadataHandle;
       const finalUsername = usernameValue || metadataHandle;
 
+      // Prefer metadata for name if DB is empty (common in fresh signups)
+      const metadataFirstName = user?.user_metadata?.first_name || null;
+      const metadataLastName = user?.user_metadata?.last_name || null;
+      const metadataFullName = user?.user_metadata?.full_name || null;
+
       let finalProfile = {
         ...(coreData as any),
+        first_name: (coreData as any)?.first_name || metadataFirstName,
+        last_name: (coreData as any)?.last_name || metadataLastName,
+        full_name: (coreData as any)?.full_name || metadataFullName || 
+                  ((coreData as any)?.first_name || metadataFirstName ? `${(coreData as any)?.first_name || metadataFirstName} ${(coreData as any)?.last_name || metadataLastName || ''}`.trim() : null),
         username: finalUsername,
         instagram_handle: finalInstagramHandle,
         ...optionalFields,

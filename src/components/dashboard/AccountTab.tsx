@@ -34,20 +34,23 @@ export const AccountTab: React.FC<AccountTabProps> = ({
     setActiveTab,
     triggerHaptic
 }) => {
-    const formatCompactNumber = (value: number | null | undefined) => {
-        if (!Number.isFinite(value as number) || Number(value) <= 0) return '—';
-        return new Intl.NumberFormat('en-IN', {
+    const formatCompactNumber = (value: any) => {
+        if (value === undefined || value === null || value === '') return '—';
+        const num = Number(value);
+        if (isNaN(num)) return String(value);
+        if (num === 0) return '0';
+        return new Intl.NumberFormat('en-US', {
             notation: 'compact',
             maximumFractionDigits: 1,
-        }).format(Number(value));
+        }).format(num);
     };
 
-    const followersCount = Number(
-        profile?.instagram_followers ??
-        profile?.followers_count ??
-        profile?.followers ??
-        0
-    );
+    const followersCount = 
+        profile?.instagram_followers ||
+        profile?.followers_count ||
+        profile?.followers ||
+        profile?.follower_range ||
+        0;
 
     const responseHours = Number(
         profile?.collab_response_hours_override ??
@@ -57,7 +60,7 @@ export const AccountTab: React.FC<AccountTabProps> = ({
 
     const responseLabel = Number.isFinite(responseHours) && responseHours > 0
         ? `${Math.round(responseHours)}h`
-        : '—';
+        : responseHours === 0 ? 'Instant' : '—';
 
     return (
         <motion.div 

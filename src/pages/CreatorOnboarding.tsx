@@ -28,6 +28,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import { useSession } from '@/contexts/SessionContext';
 import { useUpdateProfile } from '@/lib/hooks/useProfiles';
+import { fetchInstagramStats } from '@/lib/utils/socialStats';
 import { useDealAlertNotifications } from '@/hooks/useDealAlertNotifications';
 import { OnboardingContainer } from '@/components/onboarding/OnboardingContainer';
 import { OnboardingSlide } from '@/components/onboarding/OnboardingSlide';
@@ -76,10 +77,13 @@ export default function CreatorOnboarding() {
   // Form State
   const [instagramHandle, setInstagramHandle] = useState('');
   const [selectedNiches, setSelectedNiches] = useState<string[]>([]);
-  const [followerRange, setFollowerRange] = useState<string>('');
+  const [followerCount, setFollowerCount] = useState<string>('');
+  const [creatorTitle, setCreatorTitle] = useState('');
+  const [topCities, setTopCities] = useState('');
   const [bio, setBio] = useState('');
   
   const [baseRate, setBaseRate] = useState<string>('');
+  const [contentVibes, setContentVibes] = useState<string[]>([]);
   const [videoFile, setVideoFile] = useState<File | null>(null);
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
   
@@ -87,6 +91,8 @@ export default function CreatorOnboarding() {
   
   const [upiId, setUpiId] = useState('');
   const [shippingAddress, setShippingAddress] = useState('');
+  const [pincode, setPincode] = useState('');
+  const [isSyncing, setIsSyncing] = useState(false);
 
   const videoInputRef = useRef<HTMLInputElement>(null);
 
@@ -115,9 +121,46 @@ export default function CreatorOnboarding() {
       setUpiId(profile.payout_upi);
     }
     if (profile?.location && !shippingAddress) {
-      setShippingAddress(profile.location);
+      const parts = profile.location.split(',').map(p => p.trim());
+      const pincodeMatch = profile.location.match(/\b\d{6}\b/);
+      if (pincodeMatch) {
+        setPincode(pincodeMatch[0]);
+        setShippingAddress(profile.location.replace(pincodeMatch[0], '').replace(/,\s*,/g, ',').replace(/^,\s*|,\s*$/g, '').trim());
+      } else {
+        setShippingAddress(profile.location);
+      }
     }
   }, [profile, instagramHandle, selectedNiches, baseRate, bio, upiId, shippingAddress]);
+
+  // Helper to map count to range ID
+  const getFollowerRangeId = (count: number): string => {
+    if (count < 1000) return '<1k';
+    if (count < 10000) return '1k-10k';
+    if (count < 50000) return '10k-50k';
+    return '50k+';
+  };
+
+  // Auto-fetch followers when handle changes
+  useEffect(() => {
+    const cleanHandle = instagramHandle.replace(/^@+/, '').trim();
+    if (!cleanHandle || cleanHandle.length < 3) return;
+    
+    const timer = setTimeout(async () => {
+      try {
+        setIsSyncing(true);
+        const stats = await fetchInstagramStats(cleanHandle);
+        if (stats.followers) {
+          setFollowerCount(String(stats.followers));
+        }
+      } catch (err) {
+        console.warn('Auto-fetch failed', err);
+      } finally {
+        setIsSyncing(false);
+      }
+    }, 1200); // 1.2s debounce
+    
+    return () => clearTimeout(timer);
+  }, [instagramHandle]);
 
   useEffect(() => {
     if (sessionLoading) return;
@@ -161,6 +204,14 @@ export default function CreatorOnboarding() {
     } else if (step === 'payout') {
       if (!upiId) {
         toast.error('Please enter your UPI ID for payments');
+        return;
+      }
+      if (shippingAddress && !pincode) {
+        toast.error('Please enter your pincode');
+        return;
+      }
+      if (pincode && !/^\d{6}$/.test(pincode)) {
+        toast.error('Please enter a valid 6-digit pincode');
         return;
       }
       setStep('notifications');
@@ -250,10 +301,14 @@ export default function CreatorOnboarding() {
         avg_rate_reel: Number(baseRate),
         reel_price: Number(baseRate),
         discovery_video_url: videoUrl,
-        follower_count_range: followerRange,
-        bio: bio || null,
+        instagram_followers: Number(followerCount) || 0,
+        follower_count_range: getFollowerRangeId(Number(followerCount)),
+        bio: creatorTitle || null,
+        collab_region_label: creatorTitle || null,
+        top_cities: topCities.split(',').map(c => c.trim()).filter(Boolean),
+        content_vibes: contentVibes,
         payout_upi: upiId || null,
-        location: shippingAddress || null,
+        location: shippingAddress ? `${shippingAddress}${pincode ? ', ' + pincode : ''}` : null,
         collab_past_work_items: portfolioItems,
         onboarding_complete: true,
         open_to_collabs: true,
@@ -318,6 +373,20 @@ export default function CreatorOnboarding() {
               </div>
 
               <div className="w-full space-y-6 text-left">
+                {/* Creator Title */}
+                <div className="space-y-2.5">
+                  <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400 px-1 flex justify-between">
+                    <span>Professional Title</span>
+                    <span className="text-primary tracking-normal">e.g. Travel Vlogger</span>
+                  </Label>
+                  <Input 
+                    value={creatorTitle}
+                    onChange={e => setCreatorTitle(e.target.value)}
+                    placeholder="e.g. Tech Enthusiast & Reviewer"
+                    className="h-14 px-5 rounded-2xl border-2 border-slate-100 bg-slate-50 text-lg font-bold text-slate-900 focus:border-primary focus:bg-white transition-all shadow-none"
+                  />
+                </div>
+
                 {/* Instagram Field */}
                 <div className="space-y-2.5">
                   <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400 px-1 flex justify-between">
@@ -337,22 +406,27 @@ export default function CreatorOnboarding() {
 
                 {/* Follower Count */}
                 <div className="space-y-2.5">
-                  <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400 px-1">Your follower count</Label>
-                  <div className="grid grid-cols-4 gap-2">
-                    {FOLLOWER_RANGES.map(range => (
-                      <button
-                        key={range.id}
-                        onClick={() => setFollowerRange(range.id)}
-                        className={cn(
-                          "h-11 rounded-xl border-2 font-black italic text-[11px] transition-all",
-                          followerRange === range.id 
-                            ? "bg-slate-900 border-slate-900 text-white shadow-lg" 
-                            : "bg-white border-slate-100 text-slate-400"
-                        )}
-                      >
-                        {range.label}
-                      </button>
-                    ))}
+                  <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400 px-1 flex justify-between">
+                    <span>Number of Followers</span>
+                    <span className="text-primary tracking-normal">Enter exact count</span>
+                  </Label>
+                  <div className="relative group">
+                    <div className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors">
+                      <Users className="w-5 h-5" />
+                    </div>
+                    <Input 
+                      type="number"
+                      value={followerCount}
+                      onChange={e => setFollowerCount(e.target.value)}
+                      placeholder="e.g. 15400"
+                      className="h-14 pl-12 rounded-2xl border-2 border-slate-100 bg-slate-50 text-lg font-bold text-slate-900 focus:border-primary focus:bg-white transition-all shadow-none"
+                    />
+                    {isSyncing && (
+                      <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-2">
+                        <Loader2 className="w-4 h-4 animate-spin text-primary" />
+                        <span className="text-[10px] font-black text-primary uppercase tracking-widest">Syncing...</span>
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -381,13 +455,24 @@ export default function CreatorOnboarding() {
                   </div>
                 </div>
 
-                {/* Bio Field (Bonus for Step 1) */}
+                {/* Bio Field */}
                 <div className="space-y-2.5">
-                  <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400 px-1">One line for brands</Label>
+                  <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400 px-1">Content Vibe / Bio (One line)</Label>
                   <Input 
                     value={bio}
                     onChange={e => setBio(e.target.value)}
                     placeholder="e.g. Creating viral lifestyle content for Gen-Z"
+                    className="h-14 px-5 rounded-2xl border-2 border-slate-100 bg-slate-50 text-sm font-bold text-slate-900 focus:border-primary focus:bg-white transition-all shadow-none"
+                  />
+                </div>
+
+                {/* Top Cities */}
+                <div className="space-y-2.5">
+                  <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400 px-1">Audience Top Cities (Comma separated)</Label>
+                  <Input 
+                    value={topCities}
+                    onChange={e => setTopCities(e.target.value)}
+                    placeholder="e.g. Mumbai, Delhi, Bangalore"
                     className="h-14 px-5 rounded-2xl border-2 border-slate-100 bg-slate-50 text-sm font-bold text-slate-900 focus:border-primary focus:bg-white transition-all shadow-none"
                   />
                 </div>
@@ -538,25 +623,60 @@ export default function CreatorOnboarding() {
 
               <div className="w-full space-y-6 text-left">
                 <div className="space-y-2.5">
-                  <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400 px-1">Instagram Profile Link</Label>
+                  <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400 px-1">Top Audience Cities</Label>
+                  <Input 
+                    value={topCities}
+                    onChange={e => setTopCities(e.target.value)}
+                    placeholder="e.g. Mumbai, Delhi, Bangalore"
+                    className="h-14 px-5 rounded-2xl border-2 border-slate-100 bg-slate-50 font-semibold text-slate-900 focus:border-primary focus:bg-white transition-all shadow-none"
+                  />
+                  <p className="text-[10px] text-slate-400 px-1">Comma separated list of cities where your audience is from.</p>
+                </div>
+
+                <div className="space-y-3">
+                  <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400 px-1">Content Vibes (Max 3)</Label>
+                  <div className="flex flex-wrap gap-2">
+                    {[
+                      { label: 'Aesthetic', icon: '✨' },
+                      { label: 'Relatable', icon: '🤝' },
+                      { label: 'Informative', icon: '💡' },
+                      { label: 'High Energy', icon: '⚡' },
+                      { label: 'Minimalist', icon: '⚪' },
+                      { label: 'Luxury', icon: '💎' }
+                    ].map((vibe) => {
+                      const isSelected = contentVibes.includes(vibe.label);
+                      return (
+                        <button
+                          key={vibe.label}
+                          type="button"
+                          onClick={() => {
+                            if (isSelected) setContentVibes(contentVibes.filter(v => v !== vibe.label));
+                            else if (contentVibes.length < 3) setContentVibes([...contentVibes, vibe.label]);
+                            else toast.error('Choose max 3 vibes');
+                          }}
+                          className={cn(
+                            "px-4 py-2.5 rounded-xl text-[11px] font-black tracking-tight border flex items-center gap-2 transition-all",
+                            isSelected 
+                              ? "bg-primary border-primary text-white shadow-lg shadow-primary/20" 
+                              : "bg-white border-slate-100 text-slate-500"
+                          )}
+                        >
+                          <span>{vibe.icon}</span>
+                          {vibe.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <div className="space-y-2.5 pt-4">
+                  <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400 px-1">Reference Reel/Post Link</Label>
                   <Input 
                     value={instagramLink}
                     onChange={e => setInstagramLink(e.target.value)}
                     placeholder="https://www.instagram.com/p/..."
                     className="h-14 px-5 rounded-2xl border-2 border-slate-100 bg-slate-50 font-semibold text-slate-900 focus:border-primary focus:bg-white transition-all shadow-none"
                   />
-                </div>
-
-                <div className="p-5 rounded-3xl border-2 border-primary/10 bg-primary/5">
-                  <p className="text-[10px] font-black text-primary uppercase tracking-widest mb-3 italic">Pro Tip: Brands prefer links</p>
-                  <ul className="space-y-2.5">
-                    {['Show real likes & views', 'Verify your audience', 'Build brand confidence'].map(item => (
-                      <li key={item} className="flex items-center gap-2.5 text-xs text-slate-700 font-bold uppercase tracking-tight">
-                        <div className="w-1.5 h-1.5 rounded-full bg-primary" />
-                        {item}
-                      </li>
-                    ))}
-                  </ul>
                 </div>
               </div>
 
@@ -600,8 +720,18 @@ export default function CreatorOnboarding() {
                   <Textarea 
                     value={shippingAddress}
                     onChange={e => setShippingAddress(e.target.value)}
-                    placeholder="Enter your full address for product deliveries..."
-                    className="min-h-[100px] p-5 rounded-2xl border-2 border-slate-100 bg-slate-50 font-semibold text-slate-900 focus:border-primary focus:bg-white transition-all shadow-none resize-none"
+                    placeholder="Building, Street, Area..."
+                    className="min-h-[80px] p-5 rounded-2xl border-2 border-slate-100 bg-slate-50 font-semibold text-slate-900 focus:border-primary focus:bg-white transition-all shadow-none resize-none"
+                  />
+                </div>
+
+                <div className="space-y-2.5">
+                  <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400 px-1">Pincode</Label>
+                  <Input 
+                    value={pincode}
+                    onChange={e => setPincode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                    placeholder="6-digit Pincode"
+                    className="h-14 px-5 rounded-2xl border-2 border-slate-100 bg-slate-50 font-bold text-slate-900 focus:border-primary focus:bg-white transition-all shadow-none"
                   />
                 </div>
               </div>

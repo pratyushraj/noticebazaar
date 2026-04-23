@@ -70,30 +70,32 @@ function DrawerHeader({ userName, userHandle, userAvatar, userInitials, onProfil
   const avatarSpring = useSpring(avatarY, { damping: 20, stiffness: 300 });
 
   return (
-    <div className="px-1 pb-1">
+    <div className="px-0 pb-2">
       <motion.button
         onClick={handleProfileClick}
         className={cn(
-          "flex items-center gap-3 w-full p-3 rounded-2xl",
-          "bg-background border border-border dark:bg-card dark:border-border",
-          "hover:bg-background dark:hover:bg-secondary/[0.08] active:scale-[0.98]",
-          "transition-all duration-150 focus:outline-none"
+          "flex items-center gap-4 w-full p-4 rounded-[2rem]",
+          "bg-card border border-border/50 shadow-sm",
+          "hover:bg-secondary/5 active:scale-[0.98]",
+          "transition-all duration-200 focus:outline-none"
         )}
         whileTap={{ scale: 0.97 }}
       >
         <motion.div style={{ y: avatarSpring }}>
-          <Avatar className="h-11 w-11 ring-2 ring-slate-200 dark:ring-white/10 shadow-lg">
+          <Avatar className="h-14 w-14 ring-2 ring-emerald-500/20 dark:ring-emerald-500/40 shadow-xl">
             <AvatarImage src={userAvatar || DEFAULT_AVATAR_URL} alt={displayName} />
-            <AvatarFallback className="bg-gradient-to-br from-blue-600 to-indigo-700 text-foreground text-sm font-bold">
+            <AvatarFallback className="bg-gradient-to-br from-emerald-600 to-sky-700 text-foreground text-lg font-bold">
               {userInitials}
             </AvatarFallback>
           </Avatar>
         </motion.div>
         <div className="flex-1 text-left min-w-0">
-          <p className="text-muted-foreground dark:text-foreground text-[15px] font-bold truncate leading-tight">{displayName}</p>
-          <p className="text-muted-foreground dark:text-foreground/40 text-[11px] font-medium truncate mt-0.5">@{userHandle}</p>
+          <p className="text-foreground text-[17px] font-black truncate tracking-tight">{displayName}</p>
+          <p className="text-muted-foreground text-[12px] font-medium truncate mt-0.5 opacity-60">@{userHandle}</p>
         </div>
-        <ChevronRight className="w-4 h-4 text-muted-foreground dark:text-foreground/30 flex-shrink-0" />
+        <div className="w-10 h-10 rounded-full bg-secondary/50 flex items-center justify-center">
+          <ChevronRight className="w-5 h-5 text-muted-foreground/50" />
+        </div>
       </motion.button>
     </div>
   );
@@ -107,12 +109,11 @@ interface DrawerSectionProps {
 
 function DrawerSection({ title, children, showSeparator = true }: DrawerSectionProps) {
   return (
-    <div className="mt-1">
-      {showSeparator && <div className="h-[1px] w-full bg-background dark:bg-card my-4" />}
-      <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground dark:text-foreground/30 mb-2 px-1">
+    <div className="mt-4 first:mt-2">
+      <p className="text-[11px] font-black uppercase tracking-[0.25em] text-foreground/30 mb-3 px-1">
         {title}
       </p>
-      <div className="space-y-1.5">
+      <div className="grid grid-cols-1 gap-2.5">
         {children}
       </div>
     </div>
@@ -138,35 +139,42 @@ function DrawerItem({ item, isActive, onClick }: DrawerItemProps) {
       onClick={handleClick}
       aria-label={item.label}
       aria-current={isActive ? 'page' : undefined}
-      whileTap={{ scale: 0.97 }}
+      whileTap={{ scale: 0.98 }}
       className={cn(
         "group relative flex items-center w-full overflow-hidden",
-        "rounded-2xl px-4 py-3",
-        "transition-all duration-150 focus:outline-none",
+        "rounded-[1.25rem] p-4 border transition-all duration-200",
         isActive
-          ? "bg-info shadow-lg shadow-blue-600/25 text-foreground"
-          : "bg-background border border-border hover:bg-background text-muted-foreground hover:text-muted-foreground dark:bg-card dark:border-border/[0.06] dark:hover:bg-secondary/[0.09] dark:text-foreground/75 dark:hover:text-foreground"
+          ? "bg-gradient-to-br from-emerald-500 to-sky-500 border-emerald-400/30 text-white shadow-[0_8px_25px_rgba(16,185,129,0.25)]"
+          : "bg-card border-border/40 hover:bg-secondary/10 text-muted-foreground hover:text-foreground dark:bg-card/50"
       )}
     >
-      {isActive && (
-        <div className="absolute inset-x-0 top-0 h-12 bg-gradient-to-b from-white/10 to-transparent pointer-events-none rounded-2xl" />
-      )}
-      <Icon className={cn(
-        "w-4 h-4 flex-shrink-0 mr-3 relative z-10 transition-colors",
-        isActive ? "text-foreground" : "text-muted-foreground group-hover:text-muted-foreground dark:text-foreground/50 dark:group-hover:text-foreground/80"
-      )} />
-      <span className={cn(
-        "text-[13px] font-semibold flex-1 text-left relative z-10 tracking-tight",
-        isActive ? "text-foreground" : "text-muted-foreground dark:text-foreground/80"
+      <div className={cn(
+        "w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 mr-4 transition-colors",
+        isActive ? "bg-white/20" : "bg-secondary/50"
       )}>
-        {item.label}
-      </span>
+        <Icon className={cn(
+          "w-5 h-5",
+          isActive ? "text-white" : "text-muted-foreground group-hover:text-foreground"
+        )} />
+      </div>
+      
+      <div className="flex-1 text-left">
+        <span className={cn(
+          "text-[14px] font-bold tracking-tight block",
+          isActive ? "text-white" : "text-foreground"
+        )}>
+          {item.label}
+        </span>
+        {isActive && (
+          <span className="text-[10px] text-white/70 font-medium uppercase tracking-wider">Active View</span>
+        )}
+      </div>
 
       {item.badge && (
         <motion.span
           animate={{ scale: [1, 1.1, 1] }}
           transition={{ duration: 0.5, repeat: Infinity, repeatDelay: 2 }}
-          className="w-5 h-5 flex items-center justify-center text-[10px] font-bold rounded-full bg-destructive text-foreground ml-2 relative z-10"
+          className="w-5 h-5 flex items-center justify-center text-[10px] font-bold rounded-full bg-destructive text-white ml-2"
         >
           {item.badge}
         </motion.span>
@@ -185,16 +193,17 @@ function LogoutButton({ onClick }: { onClick: () => void }) {
     <motion.button
       onClick={handleClick}
       aria-label="Log out"
-      whileTap={{ scale: 0.97 }}
+      whileTap={{ scale: 0.98 }}
       className={cn(
-        "w-full flex items-center gap-3 rounded-2xl px-4 py-3",
-        "bg-destructive border border-destructive dark:bg-destructive/8 dark:border-destructive/15",
-        "hover:bg-destructive dark:hover:bg-destructive/15 hover:border-destructive dark:hover:border-destructive/25",
-        "text-destructive dark:text-destructive transition-all duration-150 focus:outline-none"
+        "w-full flex items-center gap-4 rounded-[1.25rem] p-4 border transition-all duration-200",
+        "bg-destructive/5 border-destructive/20 text-destructive",
+        "hover:bg-destructive/10 active:scale-95"
       )}
     >
-      <LogOut className="w-4 h-4 relative z-10 flex-shrink-0" />
-      <span className="text-[13px] font-semibold flex-1 text-left relative z-10">Log Out</span>
+      <div className="w-10 h-10 rounded-xl bg-destructive/10 flex items-center justify-center flex-shrink-0">
+        <LogOut className="w-5 h-5" />
+      </div>
+      <span className="text-[14px] font-bold tracking-tight">Log Out</span>
     </motion.button>
   );
 }
@@ -322,45 +331,51 @@ export default function PremiumDrawer({
             aria-hidden="true"
           />
 
-          {/* Drawer Panel */}
           <motion.div
-            initial={{ x: '-100%', opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            exit={{ x: '-100%', opacity: 0 }}
+            initial={{ y: '100%' }}
+            animate={{ y: 0 }}
+            exit={{ y: '100%' }}
             transition={{ type: "spring", damping: 28, stiffness: 280, mass: 0.8 }}
             className={cn(
-              "fixed top-0 left-0 h-full",
-              "w-[82vw] max-w-[300px]",
-              "bg-card dark:bg-background",
-              "border-r border-border",
-              "shadow-[4px_0_40px_rgba(15,23,42,0.18)] dark:shadow-[4px_0_60px_rgba(0,0,0,0.6)]",
-              "overflow-y-auto",
-              "px-4 py-6",
+              "fixed bottom-0 inset-x-0 h-[85dvh] max-h-[800px] z-[110]",
+              "rounded-t-[2.5rem] border-t shadow-2xl",
+              "overflow-y-auto overflow-x-hidden",
+              "px-6 pt-2 pb-safe",
               "flex flex-col gap-0",
+              "overscroll-contain",
               "[&::-webkit-scrollbar]:w-0",
-              "overscroll-contain"
+              "dark:bg-background dark:border-border",
+              "bg-card border-border"
             )}
             style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
             role="navigation"
             aria-label="Navigation menu"
           >
-
-            {/* Ambient gradient top */}
-            <div className="absolute top-0 left-0 right-0 h-48 bg-gradient-to-b from-emerald-100 via-teal-50 to-transparent dark:from-emerald-500/10 dark:via-teal-500/5 pointer-events-none" />
+            {/* Handle Bar */}
+            <div className="w-12 h-1 bg-foreground/10 dark:bg-background/20 rounded-full mx-auto my-5 flex-shrink-0" />
 
             {/* Logo + App Label */}
-            <div className="flex items-center gap-3 px-1 mb-6 relative z-10">
-              <div className="w-9 h-9 bg-gradient-to-br from-emerald-600 to-green-600 rounded-xl flex items-center justify-center shadow-lg shadow-emerald-600/25">
-                <Shield className="w-5 h-5 text-foreground" />
+            <div className="flex items-center justify-between px-1 mb-8 relative z-10">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-green-600 rounded-2xl flex items-center justify-center shadow-lg shadow-emerald-500/20 ring-1 ring-emerald-400/20">
+                  <Shield className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <p className="text-[15px] font-black tracking-tight text-foreground leading-none">
+                    CreatorArmour
+                  </p>
+                  <p className="text-[10px] font-black uppercase tracking-[0.25em] text-muted-foreground mt-0.5">
+                    Console
+                  </p>
+                </div>
               </div>
-              <div>
-                <p className="text-[13px] font-black tracking-tight text-muted-foreground dark:text-foreground leading-none">
-                  CreatorArmour
-                </p>
-                <p className="text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground dark:text-foreground/30 mt-0.5">
-                  Console
-                </p>
-              </div>
+              <button 
+                onClick={onClose}
+                className="w-10 h-10 rounded-full bg-secondary/50 flex items-center justify-center active:scale-90 transition-transform"
+              >
+                <div className="w-5 h-0.5 bg-foreground/40 rounded-full rotate-45 absolute" />
+                <div className="w-5 h-0.5 bg-foreground/40 rounded-full -rotate-45 absolute" />
+              </button>
             </div>
 
             {/* Header - User Profile Card */}
@@ -375,7 +390,7 @@ export default function PremiumDrawer({
             </div>
 
             {/* Main Navigation */}
-            <div className="relative z-10 mt-4 space-y-1.5">
+            <div className="relative z-10 mt-6 grid grid-cols-1 gap-2.5">
               {menuData.main.map((item) => (
                 <DrawerItem
                   key={item.id}
@@ -404,7 +419,7 @@ export default function PremiumDrawer({
 
             {/* Settings */}
             <div className="relative z-10">
-              <DrawerSection title="Settings">
+              <DrawerSection title="Settings & Tools">
                 {menuData.settings.map((item) => (
                   <DrawerItem
                     key={item.id}
@@ -417,7 +432,7 @@ export default function PremiumDrawer({
             </div>
 
             {/* Logout */}
-            <div className="relative z-10 mt-4 pt-4 border-t border-border dark:border-border/5 pb-[max(calc(env(safe-area-inset-bottom,0px)+12px),12px)]">
+            <div className="relative z-10 mt-8 pt-6 border-t border-border/50 pb-8">
               <LogoutButton onClick={handleLogout} />
             </div>
 

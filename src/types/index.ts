@@ -163,6 +163,8 @@ export type Profile = Tables<'profiles'> & {
   manual_badge?: string | null;
   is_verified?: boolean | null;
   auto_pricing_enabled?: boolean | null;
+  full_name?: string | null;
+  pincode?: string | null;
 };
 
 export type Message = Tables<'messages'> & {

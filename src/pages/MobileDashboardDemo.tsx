@@ -23,6 +23,7 @@ import { DealStage, getDealStageFromStatus, STAGE_TO_PROGRESS, STAGE_TO_STATUS, 
 import { useUpdateProfile } from '@/lib/hooks/useProfiles';
 import { dealPrimaryCtaButtonClass, getDealPrimaryCta } from '@/lib/deals/primaryCta';
 import FiverrPackageEditor from '@/components/profile/FiverrPackageEditor';
+import { useInstagramSync } from '@/lib/hooks/useInstagramSync';
 
 import DashboardMetricsCards from '@/components/dashboard/DashboardMetricsCards';
 import DealSearchFilter from '@/components/dashboard/DealSearchFilter';
@@ -581,7 +582,8 @@ const buildProfileFormData = (profile: any, userEmail?: string | null) => {
         story_price: profile?.story_price || '2000',
         content_niches: profile?.content_niches || ['Fashion', 'Tech', 'Lifestyle'],
         bank_account_name: profile?.bank_account_name || '',
-        payout_upi: profile?.payout_upi || '',
+        instagram_followers: profile?.instagram_followers || profile?.followers_count || profile?.followers || '',
+        payout_upi: profile?.payout_upi || profile?.bank_upi || profile?.upi_id || '',
         deal_templates: profile?.deal_templates || [],
         // NEW: Audience Demographics
         audience_gender_split: profile?.audience_gender_split || '',
@@ -1268,7 +1270,18 @@ const MobileDashboardDemo = ({
         resolveAvatarUrl(profile?.instagram_profile_photo) ||
         resolveAvatarUrl(liveCollabProfile?.profile_photo) ||
         avatarFallbackUrl;
-    const displayName = liveCollabProfile?.name || profile?.full_name || profile?.first_name || 'Pratyush';
+    const rawDisplayName = liveCollabProfile?.name || 
+        profile?.full_name || 
+        (profile?.first_name ? `${profile.first_name}${profile.last_name ? ' ' + profile.last_name : ''}` : null) || 
+        profile?.username || 
+        'Creator';
+    
+    const decodedName = typeof rawDisplayName === 'string' 
+        ? rawDisplayName.replace(/&#x([0-9a-f]+);/gi, (_, hex) => String.fromCodePoint(parseInt(hex, 16)))
+                        .replace(/&#([0-9]+);/g, (_, dec) => String.fromCodePoint(parseInt(dec, 10)))
+        : rawDisplayName;
+    
+    const displayName = (typeof decodedName === 'string' ? decodedName.trim().split(/\s+/)[0] : decodedName) || 'Creator';
 
     const uniqBy = <T,>(items: T[], keyFn: (row: T) => string) => {
         const seen = new Set<string>();
@@ -1452,6 +1465,19 @@ const MobileDashboardDemo = ({
             .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
             .slice(0, 8);
     }, [pendingOffersDeduplicated, activeDealsList, completedDealsList]);
+
+    const performanceInsightMessage = React.useMemo(() => {
+        if (pendingOffersCount > 0) {
+            return `You have ${pendingOffersCount} new offer${pendingOffersCount > 1 ? 's' : ''}. Reply fast to show brands you're ready to collaborate!`;
+        }
+        if (actionRequiredDealsCount > 0) {
+            return `You have ${actionRequiredDealsCount} deal${actionRequiredDealsCount > 1 ? 's' : ''} requiring action. Complete them to boost your Trust Score.`;
+        }
+        if (activeDealsCount > 0) {
+            return "You're doing great! Keep delivering high-quality content to unlock more premium brand invites.";
+        }
+        return "Share your collab link on Instagram to start receiving offers from brands directly!";
+    }, [pendingOffersCount, actionRequiredDealsCount, activeDealsCount]);
     const pendingAmount = React.useMemo(() => {
         return (brandDeals || []).reduce((sum, deal) => {
             const status = String(deal?.status || '').toLowerCase();
@@ -1639,6 +1665,9 @@ const MobileDashboardDemo = ({
         globalTriggerHaptic(pattern);
     };
 
+    // Auto-sync Instagram stats if stale
+    useInstagramSync(profile);
+
     const [isSavingProfile, setIsSavingProfile] = useState(false);
     const [uploadingPortfolioSlot, setUploadingPortfolioSlot] = useState<number | null>(null);
     const [profileFormData, setProfileFormData] = useState<any>(buildProfileFormData(profile, user?.email || null));
@@ -1706,6 +1735,7 @@ const MobileDashboardDemo = ({
                 past_brands: profileFormData.past_brands || [],
                 deal_templates: profileFormData.deal_templates || [],
                 bank_account_name: profileFormData.bank_account_name?.trim() || null,
+                instagram_followers: Number(profileFormData.instagram_followers) || 0,
                 payout_upi: profileFormData.payout_upi?.trim() || null,
                 discovery_video_url: profileFormData.discovery_video_url || null,
                 portfolio_videos: profileFormData.portfolio_videos || [],
@@ -2264,7 +2294,7 @@ const MobileDashboardDemo = ({
                         exit={{ opacity: 0 }}
                         className="pb-36 touch-pan-y"
                     >
-                        <div className="px-6 pt-16 pb-2 flex items-center justify-between">
+                        <div className="px-6 pt-4 pb-2 flex items-center justify-between">
                             <div className="flex items-center gap-4">
                                 <motion.button
                                     whileTap={{ scale: 0.9 }}
@@ -2309,13 +2339,47 @@ const MobileDashboardDemo = ({
                         <div className="px-5 space-y-7">
                         <div className="relative mb-8 pt-4">
                             <div className={cn(
-                                "relative h-36 rounded-[3rem] overflow-hidden mb-[-50px] z-0 px-8 py-6 flex flex-col justify-end",
-                                isDark ? "bg-[#0b1324]/60 border border-white/5" : "bg-gradient-to-br from-primary/10 to-blue-500/5 border border-slate-200"
+                                "relative h-44 rounded-[3.5rem] overflow-hidden mb-[-60px] z-0 px-10 py-8 flex flex-col justify-end transition-all duration-700 group/banner",
+                                isDark ? "bg-[#0b1324] border border-white/5" : "bg-white border border-slate-200/60 shadow-2xl shadow-slate-200/40"
                             )}>
-                                <div className="absolute inset-0 opacity-20 filter blur-3xl mix-blend-overlay animate-pulse bg-primary" />
-                                <p className={cn("relative z-10 text-[10px] font-black uppercase tracking-[0.3em] mb-1 opacity-40", textColor)}>
-                                    Profile Identity
-                                </p>
+                                {/* Rich Mesh Gradient Background */}
+                                <div className={cn(
+                                    "absolute inset-0 opacity-40 transition-opacity duration-1000 group-hover/banner:opacity-60",
+                                    isDark 
+                                        ? "bg-[radial-gradient(at_0%_0%,rgba(16,185,129,0.3)_0,transparent_50%),radial-gradient(at_50%_0%,rgba(59,130,246,0.2)_0,transparent_50%),radial-gradient(at_100%_0%,rgba(139,92,246,0.3)_0,transparent_50%)]" 
+                                        : "bg-[radial-gradient(at_0%_0%,rgba(16,185,129,0.15)_0,transparent_50%),radial-gradient(at_50%_0%,rgba(59,130,246,0.1)_0,transparent_50%),radial-gradient(at_100%_0%,rgba(139,92,246,0.15)_0,transparent_50%)]"
+                                )} />
+                                
+                                {/* Animated Blobs */}
+                                <motion.div 
+                                    animate={{ 
+                                        scale: [1, 1.2, 1],
+                                        rotate: [0, 90, 0],
+                                        x: [0, 50, 0],
+                                        y: [0, -30, 0]
+                                    }}
+                                    transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+                                    className="absolute -top-20 -left-20 w-64 h-64 bg-primary/20 rounded-full blur-[80px] mix-blend-multiply pointer-events-none" 
+                                />
+                                <motion.div 
+                                    animate={{ 
+                                        scale: [1, 1.3, 1],
+                                        rotate: [0, -120, 0],
+                                        x: [0, -40, 0],
+                                        y: [0, 20, 0]
+                                    }}
+                                    transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
+                                    className="absolute -bottom-20 -right-20 w-80 h-80 bg-blue-500/10 rounded-full blur-[100px] mix-blend-multiply pointer-events-none" 
+                                />
+
+                                <div className={cn(
+                                    "absolute top-6 right-8 z-10 px-3 py-1.5 rounded-full backdrop-blur-md border",
+                                    isDark ? "bg-white/5 border-white/10" : "bg-black/5 border-black/5"
+                                )}>
+                                    <p className={cn("text-[9px] font-black uppercase tracking-[0.4em] opacity-60", textColor)}>
+                                        Profile Identity
+                                    </p>
+                                </div>
                             </div>
 
                             <div className="relative px-8 flex items-end gap-6 z-10">
@@ -2591,6 +2655,29 @@ const MobileDashboardDemo = ({
                                         </div>
                                     </div>
 
+                                    {/* Followers */}
+                                    <div className={cn("flex items-center gap-4 px-4 py-4 rounded-[1.75rem] transition-all", isDark ? "hover:bg-white/5" : "hover:bg-slate-50")}>
+                                        <div className={cn("w-10 h-10 rounded-2xl flex items-center justify-center shrink-0", isDark ? "bg-indigo-500/15" : "bg-indigo-50")}>
+                                            <Users className="w-5 h-5 text-indigo-500" />
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <p className={cn("text-[10px] font-black uppercase tracking-widest mb-1 opacity-50", textColor)}>Follower Count</p>
+                                            {isEditMode ? (
+                                                <input
+                                                    type="number"
+                                                    className={cn("w-full bg-transparent outline-none font-black text-[15px] p-0 border-none focus:ring-0", textColor)}
+                                                    value={profileFormData.instagram_followers || ''}
+                                                    placeholder="e.g. 15000"
+                                                    onChange={e => setProfileFormData((p: any) => ({ ...p, instagram_followers: e.target.value }))}
+                                                />
+                                            ) : (
+                                                <p className={cn("font-black text-[15px]", textColor)}>
+                                                    {profileFormData.instagram_followers ? Number(profileFormData.instagram_followers).toLocaleString() : <span className="opacity-20 font-bold italic">Not set</span>}
+                                                </p>
+                                            )}
+                                        </div>
+                                    </div>
+
                                     {/* Media Kit */}
                                     <div className={cn("flex items-center gap-4 px-4 py-4 rounded-[1.75rem] transition-all", isDark ? "hover:bg-white/5" : "hover:bg-slate-50")}>
                                         <div className={cn("w-10 h-10 rounded-2xl flex items-center justify-center shrink-0", isDark ? "bg-blue-500/15" : "bg-blue-50")}>
@@ -2608,6 +2695,36 @@ const MobileDashboardDemo = ({
                                             ) : (
                                                 <p className={cn("font-black text-[15px] truncate text-blue-500 underline underline-offset-4 decoration-current/30", !isDark && "text-blue-600")}>
                                                     {profileFormData.media_kit_url || <span className="opacity-20 font-bold italic">Not set</span>}
+                                                </p>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* ── PAYOUT METHOD ── */}
+                            <div>
+                                <p className={cn("text-[11px] font-black uppercase tracking-[0.2em] px-2 mb-4 opacity-40", textColor)}>4. Payout Method</p>
+                                <div className={cn(
+                                    "rounded-[2.25rem] border overflow-hidden p-2 space-y-1.5 transition-all duration-500",
+                                    isDark ? "bg-[#0B1324] border-white/5 shadow-2xl shadow-black/20" : "bg-white border-slate-200/60 shadow-xl shadow-slate-100/50"
+                                )}>
+                                    <div className={cn("flex items-center gap-4 px-4 py-4 rounded-[1.75rem] transition-all", isDark ? "hover:bg-white/5" : "hover:bg-slate-50")}>
+                                        <div className={cn("w-10 h-10 rounded-2xl flex items-center justify-center shrink-0", isDark ? "bg-blue-500/15" : "bg-blue-50")}>
+                                            <Landmark className="w-5 h-5 text-blue-500" />
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <p className={cn("text-[10px] font-black uppercase tracking-widest mb-1 opacity-50", textColor)}>Payout UPI ID</p>
+                                            {isEditMode ? (
+                                                <input
+                                                    className={cn("w-full bg-transparent outline-none font-black text-[15px] p-0 border-none focus:ring-0 text-blue-500", !isDark && "text-blue-600")}
+                                                    value={profileFormData.payout_upi || ''}
+                                                    placeholder="yourname@upi"
+                                                    onChange={e => setProfileFormData((p: any) => ({ ...p, payout_upi: e.target.value }))}
+                                                />
+                                            ) : (
+                                                <p className={cn("font-black text-[15px] truncate text-blue-500", !isDark && "text-blue-600")}>
+                                                    {profileFormData.payout_upi || <span className="opacity-20 font-bold italic">Not set</span>}
                                                 </p>
                                             )}
                                         </div>
@@ -3585,11 +3702,11 @@ const MobileDashboardDemo = ({
                                                         animate={{ opacity: 1, y: 0 }}
                                                         transition={{ duration: 0.4, delay: 0.05 }}
                                                         className={cn(
-                                                            "text-[36px] font-black tracking-tighter leading-tight italic mb-2", 
+                                                            "text-[26px] font-black tracking-tighter leading-tight italic mb-2 truncate w-full whitespace-nowrap", 
                                                             isDark ? "text-white" : "text-white"
                                                         )}
                                                     >
-                                                        Welcome, {profile?.first_name || profile?.username || 'Creator'} 👋
+                                                        Welcome, {displayName} 👋
                                                     </motion.h1>
                                                     <motion.p 
                                                         initial={{ opacity: 0, y: 10 }}
@@ -3602,58 +3719,6 @@ const MobileDashboardDemo = ({
                                                     >
                                                         Let's get your creator profile live and ready to receive brand deals.
                                                     </motion.p>
-                                                </div>
-                                            </div>
-
-                                            {/* Progress Card */}
-                                            <div className={cn(
-                                                "mx-5 p-6 rounded-[32px] border relative overflow-hidden",
-                                                isDark ? "bg-[#111820] border-white/5" : "bg-white border-slate-200 shadow-sm"
-                                            )}>
-                                                <div 
-                                                    onClick={() => { triggerHaptic(); setActiveTab('profile'); }}
-                                                    className="flex items-start gap-6 mb-8 cursor-pointer active:scale-[0.98] transition-all"
-                                                >
-                                                    <div className="relative w-16 h-16 flex-shrink-0">
-                                                        <svg className="w-full h-full transform -rotate-90">
-                                                            <circle cx="32" cy="32" r="28" fill="transparent" stroke="currentColor" strokeWidth="6" className="text-white/5" />
-                                                            <circle cx="32" cy="32" r="28" fill="transparent" stroke="currentColor" strokeWidth="6" className="text-primary" strokeDasharray={176} strokeDashoffset={176 * (1 - completedCount / 4)} strokeLinecap="round" />
-                                                        </svg>
-                                                        <div className="absolute inset-0 flex items-center justify-center font-black text-xl italic">{completedCount}/4</div>
-                                                    </div>
-                                                    <div>
-                                                        <div className="flex items-center justify-between">
-                                                            <h3 className="font-bold text-lg">Complete your setup</h3>
-                                                            <ChevronRight className="w-5 h-5 opacity-40" />
-                                                        </div>
-                                                        <p className="text-xs opacity-50 font-medium">Finish these steps to attract your first brand deal.</p>
-                                                    </div>
-                                                </div>
-
-                                                <div className="flex justify-between items-start gap-2">
-                                                    {setupSteps.map((step, idx) => (
-                                                        <div 
-                                                            key={idx} 
-                                                            onClick={() => {
-                                                                triggerHaptic();
-                                                                if (step.id === 'photo' || step.id === 'rates' || step.id === 'portfolio') {
-                                                                    setActiveTab('profile');
-                                                                }
-                                                            }}
-                                                            className={cn(
-                                                                "flex flex-col items-center gap-3 text-center flex-1 transition-all",
-                                                                !step.done && "cursor-pointer active:scale-95"
-                                                            )}
-                                                        >
-                                                            <div className={cn(
-                                                                "w-10 h-10 rounded-full flex items-center justify-center text-xs font-black italic border-2 transition-all",
-                                                                step.done ? "bg-primary border-primary text-white" : (isDark ? "bg-white/5 border-white/10 text-white/40" : "bg-slate-50 border-slate-200 text-slate-400")
-                                                            )}>
-                                                                {step.done ? <Check className="w-5 h-5" /> : idx + 1}
-                                                            </div>
-                                                            <p className="text-[10px] font-bold leading-tight line-clamp-2">{step.label}</p>
-                                                        </div>
-                                                    ))}
                                                 </div>
                                             </div>
 
@@ -3882,10 +3947,10 @@ const MobileDashboardDemo = ({
                                                         initial={{ opacity: 0, y: 10 }}
                                                         animate={{ opacity: 1, y: 0 }}
                                                         transition={{ duration: 0.4, delay: 0.05 }}
-                                                        className="flex flex-wrap items-center gap-3"
+                                                        className="flex items-center gap-3 overflow-hidden"
                                                     >
                                                         <h1 className={cn(
-                                                            'text-[36px] font-black tracking-tighter leading-tight italic', 
+                                                            'text-[36px] font-black tracking-tighter leading-tight italic truncate whitespace-nowrap', 
                                                             isDark ? "text-white" : "text-white"
                                                         )}>
                                                             {isLoadingProfile ? (
@@ -3951,59 +4016,7 @@ const MobileDashboardDemo = ({
                                             </div>
                                         </div>
 
-                            {/* Setup Progress - Shown in full dashboard if incomplete but has deals */}
-                            {!isSetupComplete && (
-                                <div className={cn(
-                                    "mx-5 mb-8 p-6 rounded-[32px] border relative overflow-hidden",
-                                    isDark ? "bg-[#111820] border-white/5" : "bg-white border-slate-200 shadow-sm"
-                                )}>
-                                    <div 
-                                        onClick={() => { triggerHaptic(); setActiveTab('profile'); }}
-                                        className="flex items-start gap-6 mb-8 cursor-pointer active:scale-[0.98] transition-all"
-                                    >
-                                        <div className="relative w-16 h-16 flex-shrink-0">
-                                            <svg className="w-full h-full transform -rotate-90">
-                                                <circle cx="32" cy="32" r="28" fill="transparent" stroke="currentColor" strokeWidth="6" className="text-white/5" />
-                                                <circle cx="32" cy="32" r="28" fill="transparent" stroke="currentColor" strokeWidth="6" className="text-primary" strokeDasharray={176} strokeDashoffset={176 * (1 - completedCount / 4)} strokeLinecap="round" />
-                                            </svg>
-                                            <div className="absolute inset-0 flex items-center justify-center font-black text-xl italic">{completedCount}/4</div>
-                                        </div>
-                                        <div>
-                                            <div className="flex items-center justify-between">
-                                                <h3 className="font-bold text-lg">Complete your setup</h3>
-                                                <ChevronRight className="w-5 h-5 opacity-40" />
-                                            </div>
-                                            <p className="text-xs opacity-50 font-medium">Finish these steps to unlock more brand deals.</p>
-                                        </div>
-                                    </div>
 
-                                    <div className="flex justify-between items-start gap-2">
-                                        {setupSteps.map((step, idx) => (
-                                            <div 
-                                                key={idx} 
-                                                onClick={() => {
-                                                    triggerHaptic();
-                                                    if (step.id === 'photo' || step.id === 'rates' || step.id === 'portfolio') {
-                                                        setActiveTab('profile');
-                                                    }
-                                                }}
-                                                className={cn(
-                                                    "flex flex-col items-center gap-3 text-center flex-1 transition-all",
-                                                    !step.done && "cursor-pointer active:scale-95"
-                                                )}
-                                            >
-                                                <div className={cn(
-                                                    "w-10 h-10 rounded-full flex items-center justify-center text-xs font-black italic border-2 transition-all",
-                                                    step.done ? "bg-primary border-primary text-white" : (isDark ? "bg-white/5 border-white/10 text-white/40" : "bg-slate-50 border-slate-200 text-slate-400")
-                                                )}>
-                                                    {step.done ? <Check className="w-5 h-5" /> : idx + 1}
-                                                </div>
-                                                <p className="text-[10px] font-bold leading-tight line-clamp-2">{step.label}</p>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-                            )}
 
                             {shouldShowPushPrompt && (
                                 <div className="px-5 mb-6">
@@ -4200,7 +4213,7 @@ const MobileDashboardDemo = ({
                                                     <span className={cn("text-[10px] font-black px-2 py-0.5 rounded-full", isDark ? "bg-emerald-500/12 text-emerald-300 border border-emerald-400/20" : "bg-emerald-50 text-emerald-700 border border-emerald-100")}>New</span>
                                                 </div>
                                                 <p className={cn("text-sm leading-relaxed", isDark ? "text-foreground/60" : "text-slate-500")}>
-                                                    You're getting 2x more offers than average creators. Reply faster to unlock premium brands.
+                                                    {performanceInsightMessage}
                                                 </p>
                                             </div>
                                             <div className={cn("w-14 h-14 rounded-full border flex items-center justify-center shrink-0", isDark ? "border-border bg-background/40" : "border-[#E5E7EB] bg-[#F8FAFC]")}>
@@ -4450,7 +4463,7 @@ const MobileDashboardDemo = ({
                             </div>
 
                             <div className="px-5 mb-8">
-                                <EnhancedInsights isDark={isDark} />
+                                <EnhancedInsights isDark={isDark} brandDeals={brandDeals} />
                             </div>
 
                             <div className="px-5 mb-8">
@@ -4481,19 +4494,23 @@ const MobileDashboardDemo = ({
 
                     {/* ─── DISCOVERY TAB ─── */}
                     {activeTab === 'discovery' && (
-                        <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 px-5 pb-32">
-                            <div className="mb-8">
-                                <h1 className={cn("text-4xl font-black italic uppercase tracking-tighter", isDark ? "text-white" : "text-black")}>
-                                    Discovery Lab
-                                </h1>
-                                <div className="flex items-center gap-2 mt-1">
-                                    <div className="h-1 w-12 bg-rose-500 rounded-full" />
-                                    <p className={cn("text-[10px] font-black uppercase tracking-widest opacity-40 italic")}>
-                                        Premium Opportunities
-                                    </p>
+                        <div className="flex flex-col items-center justify-center min-h-[60vh] px-8 text-center animate-in fade-in zoom-in duration-500">
+                            <div className="relative mb-8">
+                                <div className="absolute inset-0 bg-rose-500/20 blur-3xl rounded-full" />
+                                <div className="relative w-24 h-24 bg-gradient-to-br from-rose-500 to-rose-600 rounded-[2.5rem] flex items-center justify-center shadow-2xl shadow-rose-500/20 rotate-12">
+                                    <Heart className="w-12 h-12 text-white animate-pulse" />
                                 </div>
                             </div>
-                            <CreatorDiscoveryStack isDark={isDark} />
+                            <h1 className={cn("text-3xl font-black italic uppercase tracking-tighter mb-4", isDark ? "text-white" : "text-black")}>
+                                Discovery Lab
+                            </h1>
+                            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-rose-500/10 border border-rose-500/20 mb-6">
+                                <span className="w-2 h-2 rounded-full bg-rose-500 animate-pulse" />
+                                <span className="text-[10px] font-black uppercase tracking-widest text-rose-500">Coming Soon</span>
+                            </div>
+                            <p className={cn("text-sm font-medium leading-relaxed max-w-[280px]", isDark ? "text-slate-400" : "text-slate-600")}>
+                                We're building a new way for you to discover and apply to premium brand campaigns directly. Stay tuned!
+                            </p>
                         </div>
                     )}
 
@@ -5208,6 +5225,7 @@ const MobileDashboardDemo = ({
                             getBrandIcon={getBrandIcon}
                             triggerHaptic={triggerHaptic}
                             setSelectedPayment={setSelectedPayment}
+                            setActiveSettingsPage={setActiveSettingsPage}
                         />
                     )}
                 </div>

@@ -16,14 +16,16 @@ interface DealInsight {
 
 interface EnhancedInsightsProps {
   insights?: DealInsight[];
+  brandDeals?: any[];
   isDark?: boolean;
   aiMessage?: string;
 }
 
 const EnhancedInsights: React.FC<EnhancedInsightsProps> = ({
   insights = [],
+  brandDeals = [],
   isDark = true,
-  aiMessage = "You're closing deals 23% faster than other creators on the platform. Keep it up! 🚀",
+  aiMessage: providedAiMessage,
 }) => {
   const defaultInsights: DealInsight[] = [
     {
@@ -56,7 +58,80 @@ const EnhancedInsights: React.FC<EnhancedInsightsProps> = ({
     },
   ];
 
-  const displayInsights = insights.length > 0 ? insights : defaultInsights;
+  // Dynamic calculation logic
+  const dynamicInsights = React.useMemo(() => {
+    if (!brandDeals || brandDeals.length === 0) return defaultInsights;
+
+    const validDeals = brandDeals.filter(d => !String(d?.id || '').includes('demo'));
+    const dealsToUse = validDeals.length > 0 ? validDeals : brandDeals;
+
+    // 1. Avg Deal Value
+    const totalAmount = dealsToUse.reduce((sum, d) => sum + (Number(d.deal_amount) || 0), 0);
+    const avgValue = dealsToUse.length > 0 ? Math.round(totalAmount / dealsToUse.length) : 0;
+    
+    // 2. Success Rate
+    const completedCount = dealsToUse.filter(d => {
+      const s = String(d?.status || '').toLowerCase();
+      return s.includes('completed') || s === 'paid' || s.includes('approved');
+    }).length;
+    const successRate = dealsToUse.length > 0 ? Math.round((completedCount / dealsToUse.length) * 100) : 0;
+
+    // 3. Top Platform
+    const platforms = dealsToUse.map(d => String(d.platform || 'Instagram'));
+    const platformCounts = platforms.reduce((acc, p) => {
+      acc[p] = (acc[p] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+    const topPlatform = Object.entries(platformCounts).sort((a, b) => b[1] - a[1])[0]?.[0] || 'Instagram';
+
+    // 4. Total Deals
+    const totalDeals = dealsToUse.length;
+
+    return [
+      {
+        label: 'Avg Deal Value',
+        value: `₹${(avgValue / 1000).toFixed(1)}K`,
+        trend: 12, // Mock trend for now
+        icon: <TrendingUp className="w-5 h-5" />,
+        color: 'from-emerald-500 to-teal-600',
+      },
+      {
+        label: 'Total Deals',
+        value: totalDeals.toString(),
+        trend: 8,
+        icon: <BarChartIcon className="w-5 h-5" />,
+        color: 'from-blue-500 to-cyan-600',
+      },
+      {
+        label: 'Success Rate',
+        value: `${successRate}%`,
+        trend: 2,
+        icon: <Check className="w-5 h-5" />,
+        color: 'from-purple-500 to-pink-600',
+      },
+      {
+        label: 'Top Platform',
+        value: topPlatform,
+        trend: 0,
+        icon: <PieChart className="w-5 h-5" />,
+        color: 'from-violet-500 to-indigo-600',
+      },
+    ];
+  }, [brandDeals, defaultInsights]);
+
+  const dynamicAiMessage = React.useMemo(() => {
+    if (providedAiMessage) return providedAiMessage;
+    if (!brandDeals || brandDeals.length === 0) return "Start sharing your collab link to get your first deal insights! 🚀";
+    
+    const completedCount = brandDeals.filter(d => String(d?.status || '').toLowerCase().includes('completed')).length;
+    if (completedCount > 0) {
+      return `Awesome! You've completed ${completedCount} deals. Creators with your success rate typically see a 15% rate increase. 📈`;
+    }
+    return "You're building momentum! Keep delivering high-quality content to boost your brand trust score. 🌟";
+  }, [brandDeals, providedAiMessage]);
+
+  const displayInsights = insights.length > 0 ? insights : dynamicInsights;
+  const aiMessage = dynamicAiMessage;
 
   return (
     <Card className={cn(

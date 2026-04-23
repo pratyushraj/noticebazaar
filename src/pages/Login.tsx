@@ -273,12 +273,19 @@ const Login = () => {
           </div>
         )}
 
-        {/* Sign Up Link */}
+        {/* Sign Up Links */}
         {!session && (
-          <div className="text-center">
-            <Link to="/signup" className="text-muted-foreground hover:text-foreground transition-all text-[13px] font-medium group inline-flex items-center gap-2">
-              Don't have a brand account? <span className="text-primary font-bold group-hover:underline">Create a brand account →</span>
-            </Link>
+          <div className="space-y-4 text-center">
+            <div>
+              <Link to="/signup?mode=creator" className="text-muted-foreground hover:text-foreground transition-all text-[13px] font-medium group inline-flex items-center gap-2">
+                Don't have a creator account? <span className="text-primary font-bold group-hover:underline">Create a creator account →</span>
+              </Link>
+            </div>
+            <div>
+              <Link to="/signup?mode=brand" className="text-muted-foreground hover:text-foreground transition-all text-[13px] font-medium group inline-flex items-center gap-2">
+                Don't have a brand account? <span className="text-primary font-bold group-hover:underline">Create a brand account →</span>
+              </Link>
+            </div>
           </div>
         )}
 
