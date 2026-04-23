@@ -133,12 +133,7 @@ router.get('/requests', async (req: AuthenticatedRequest, res: Response) => {
           };
 
           // Step 1: Resolve best available photo
-          let photoUrl = p.avatar_url || p.instagram_profile_photo;
-          // If the chosen photo is blocked, try the other one
-          if (isBlockedSocial(photoUrl)) {
-            photoUrl = p.avatar_url && !isBlockedSocial(p.avatar_url) ? p.avatar_url : 
-                      (p.instagram_profile_photo && !isBlockedSocial(p.instagram_profile_photo) ? p.instagram_profile_photo : null);
-          }
+          let photoUrl = p.avatar_url || p.instagram_profile_photo || null;
 
           // Step 2: Apply Demo Overrides
           if (uname === 'beyonce') {
@@ -155,12 +150,11 @@ router.get('/requests', async (req: AuthenticatedRequest, res: Response) => {
             return { ...p, first_name: 'Virat', last_name: 'Kohli', business_name: 'Virat Kohli', avatar_url: photoUrl, instagram_profile_photo: photoUrl };
           }
 
-          // Step 3: For everyone else, ensure we don't send blocked URLs
-          const safePhoto = !isBlockedSocial(photoUrl) ? photoUrl : null;
+          // Step 3: For everyone else, return the photo
           return {
             ...p,
-            avatar_url: safePhoto,
-            instagram_profile_photo: safePhoto
+            avatar_url: photoUrl,
+            instagram_profile_photo: photoUrl
           };
         });
         const byId = buildProfilesById(transformedProfs);

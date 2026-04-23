@@ -110,10 +110,10 @@ const isBlockedSocialAvatar = (value: unknown) => {
 
 const getSafeCreatorPhoto = (profile: any) => {
   const avatarUrl = String((profile as any)?.avatar_url || '').trim();
-  if (avatarUrl && !isBlockedSocialAvatar(avatarUrl)) return avatarUrl;
+  if (avatarUrl) return avatarUrl;
 
   const instagramPhoto = String(profile?.instagram_profile_photo || '').trim();
-  if (instagramPhoto && !isBlockedSocialAvatar(instagramPhoto)) return instagramPhoto;
+  if (instagramPhoto) return instagramPhoto;
 
   return null;
 };

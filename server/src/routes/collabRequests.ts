@@ -1223,6 +1223,7 @@ router.get('/:username', async (req: Request, res: Response) => {
       instagram_handle,
       bio,
       onboarding_complete,
+      avatar_url,
       username
     `;
 
@@ -1264,6 +1265,7 @@ router.get('/:username', async (req: Request, res: Response) => {
           content_niches,
           media_kit_url,
           portfolio_links,
+          avatar_url,
           avg_rate_reel,
           avg_reel_views_manual,
           avg_likes_manual,
