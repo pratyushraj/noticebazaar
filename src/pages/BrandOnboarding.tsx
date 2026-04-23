@@ -12,7 +12,9 @@ import { toast } from 'sonner';
 import { useSession } from '@/contexts/SessionContext';
 import { getApiBaseUrl } from '@/lib/utils/api';
 import { trackEvent } from '@/lib/utils/analytics';
+import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
+import { SmartIndustrySelector } from '@/components/brand/SmartIndustrySelector';
 
 type OnboardingStep = 'logo' | 'budget' | 'ready';
 
@@ -22,12 +24,6 @@ const BUDGET_OPTIONS = [
   { label: '₹50K – ₹2L', value: '50k-2l', desc: 'Established creators', emoji: '⭐' },
   { label: '₹2L+', value: '2l+', desc: 'Top-tier creators', emoji: '👑' },
   { label: 'Not sure yet', value: 'undecided', desc: 'I want to explore first', emoji: '🤔' },
-];
-
-const INDUSTRY_OPTIONS = [
-  'Apparel & Fashion', 'Beauty & Cosmetics', 'Consumer Electronics',
-  'Food & Beverage', 'Health & Wellness', 'Home & Furniture',
-  'SaaS & Software', 'Travel & Hospitality', 'Other',
 ];
 
 export default function BrandOnboarding() {
@@ -140,6 +136,14 @@ export default function BrandOnboarding() {
         });
       }
 
+      // Finalize onboarding status in profiles table
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .update({ onboarding_complete: true })
+        .eq('id', session.user.id);
+
+      if (profileError) throw profileError;
+
       trackEvent('brand_onboarding_complete', {
         has_logo: !!logoUrl,
         budget: selectedBudget || 'skipped',
@@ -231,19 +235,11 @@ export default function BrandOnboarding() {
                     <label className="text-[11px] font-black uppercase tracking-[0.18em] text-slate-500 mb-2 block">
                       Industry
                     </label>
-                    <div className="relative">
-                      <select
-                        value={industry}
-                        onChange={(e) => setIndustry(e.target.value)}
-                        className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3.5 text-[16px] font-semibold text-slate-900 appearance-none focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 transition-all"
-                      >
-                        <option value="" disabled>Select your industry...</option>
-                        {INDUSTRY_OPTIONS.map(opt => (
-                          <option key={opt} value={opt}>{opt}</option>
-                        ))}
-                      </select>
-                      <ChevronRight className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 rotate-90 pointer-events-none" />
-                    </div>
+                    <SmartIndustrySelector
+                      value={industry}
+                      onChange={(value) => setIndustry(String(value || ''))}
+                      placeholder="Select your industry..."
+                    />
                   </div>
 
                   {/* Logo Upload */}
