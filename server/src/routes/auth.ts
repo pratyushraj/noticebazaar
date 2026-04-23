@@ -1,18 +1,32 @@
 import { Router, Response } from 'express';
 import { createClient } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabase.js';
+import type { Database } from '../types/supabase.js';
 
 const router = Router();
 
 const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || '';
-const supabaseAnonKey = process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY || '';
+const supabaseAuthKey =
+  process.env.SUPABASE_ANON_KEY ||
+  process.env.VITE_SUPABASE_ANON_KEY ||
+  process.env.SUPABASE_SERVICE_ROLE_KEY ||
+  process.env.VITE_SUPABASE_SERVICE_ROLE_KEY ||
+  process.env.SUPABASE_SERVICE_KEY ||
+  process.env.SUPABASE_KEY ||
+  '';
 
-const authClient = createClient(supabaseUrl, supabaseAnonKey, {
-  auth: {
-    autoRefreshToken: false,
-    persistSession: false,
-  },
-});
+const createAuthClient = () => {
+  if (!supabaseUrl || !supabaseAuthKey) {
+    return null;
+  }
+
+  return createClient<Database>(supabaseUrl, supabaseAuthKey, {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false,
+    },
+  });
+};
 
 const isEmailLike = (value: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
 
@@ -23,6 +37,12 @@ router.post('/login', async (req, res: Response) => {
 
     if (!identifier || !password) {
       return res.status(400).json({ success: false, error: 'Identifier and password are required' });
+    }
+
+    const authClient = createAuthClient();
+    if (!authClient) {
+      console.error('[Auth] Missing Supabase auth credentials for /login route');
+      return res.status(500).json({ success: false, error: 'Login is temporarily unavailable' });
     }
 
     let email = identifier;
