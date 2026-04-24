@@ -1728,7 +1728,24 @@ const MobileDashboardDemo = ({
 
     useEffect(() => {
         if (profile && !isSavingProfile) {
-            setProfileFormData((prev: any) => ({ ...prev, ...buildProfileFormData(profile, user?.email || null) }));
+            const nextData = buildProfileFormData(profile, user?.email || null);
+            setProfileFormData((prev: any) => ({
+                ...prev,
+                ...nextData,
+                content_niches: Array.isArray(nextData.content_niches) && nextData.content_niches.length > 0
+                    ? nextData.content_niches
+                    : prev.content_niches || [],
+                content_vibes: Array.isArray(nextData.content_vibes) && nextData.content_vibes.length > 0
+                    ? nextData.content_vibes
+                    : prev.content_vibes || [],
+                top_cities: Array.isArray(nextData.top_cities) && nextData.top_cities.length > 0
+                    ? nextData.top_cities
+                    : prev.top_cities || [],
+                audience_gender_split: nextData.audience_gender_split || prev.audience_gender_split || '',
+                audience_age_range: nextData.audience_age_range || prev.audience_age_range || '',
+                primary_audience_language: nextData.primary_audience_language || prev.primary_audience_language || '',
+                collab_region_label: nextData.collab_region_label || prev.collab_region_label || '',
+            }));
         }
     }, [profile, user?.email, isSavingProfile]);
 
