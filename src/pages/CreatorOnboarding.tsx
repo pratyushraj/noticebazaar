@@ -95,6 +95,12 @@ const normalizeVibeValue = (value: string) => {
   return match?.label || value;
 };
 
+const buildVibeFallbackTemplate = (contentVibes: string[]) => ({
+  id: '__creator_profile_meta__',
+  type: 'creator_profile_meta',
+  content_vibes: contentVibes,
+});
+
 const FOLLOWER_RANGES = [
   { id: '<1k', label: '<1k' },
   { id: '1k-10k', label: '1k–10k' },
@@ -517,6 +523,7 @@ export default function CreatorOnboarding() {
           id: profile!.id,
           content_niches: selectedNiches,
           content_vibes: contentVibes,
+          deal_templates: contentVibes.length ? [buildVibeFallbackTemplate(contentVibes)] : [],
         } as any);
 
         setStep('collab');
@@ -680,6 +687,7 @@ export default function CreatorOnboarding() {
         bio: creatorTitle || null,
         top_cities: [topCity1, topCity2, topCity3].map(c => c.trim()).filter(Boolean),
         content_vibes: contentVibes,
+        deal_templates: contentVibes.length ? [buildVibeFallbackTemplate(contentVibes)] : [],
         payout_upi: upiId || null,
         phone: phone || null,
         location: shippingAddress ? `${shippingAddress}${pincode ? ', ' + pincode : ''}` : null,

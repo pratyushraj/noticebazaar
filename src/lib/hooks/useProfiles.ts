@@ -997,6 +997,7 @@ export const useUpdateProfile = () => {
             'twitter_followers',
             'facebook_followers',
             'open_to_collabs',
+            'content_vibes',
             'media_kit_url',
             'avg_rate_reel',
             'learned_avg_rate_reel',
