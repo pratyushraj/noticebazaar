@@ -43,7 +43,7 @@ const queryClient = new QueryClient({
   },
 });
 
-const APP_SHELL_VERSION = '2026-04-25-1';
+const APP_SHELL_VERSION = '2026-04-25-2';
 
 const RouterInstrumentation = () => {
   usePerformanceMonitoring();
