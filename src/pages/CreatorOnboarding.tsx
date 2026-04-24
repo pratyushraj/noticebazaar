@@ -717,11 +717,44 @@ export default function CreatorOnboarding() {
     });
   };
 
-  const handleCityBlur = (
+  const getNormalizedCityFields = () => {
+    const values = [
+      normalizeCityValue(baseCity),
+      normalizeCityValue(topCity1),
+      normalizeCityValue(topCity2),
+      normalizeCityValue(topCity3),
+    ].filter(Boolean);
+
+    return values;
+  };
+
+  const isCityDuplicate = (nextCity: string, currentValue: string) => {
+    const normalizedNextCity = normalizeCityValue(nextCity);
+    const normalizedCurrentValue = normalizeCityValue(currentValue);
+    if (!normalizedNextCity) return false;
+
+    return getNormalizedCityFields().some(
+      (city) => city === normalizedNextCity && city !== normalizedCurrentValue
+    );
+  };
+
+  const setUniqueCityValue = (
     value: string,
+    currentValue: string,
     setter: React.Dispatch<React.SetStateAction<string>>
   ) => {
-    setter(normalizeCityValue(value));
+    const normalizedValue = normalizeCityValue(value);
+    if (!normalizedValue) {
+      setter('');
+      return;
+    }
+
+    if (isCityDuplicate(normalizedValue, currentValue)) {
+      toast.error('Pick a different city. Each audience city must be unique.');
+      return;
+    }
+
+    setter(normalizedValue);
   };
 
   const getCitySuggestions = (query: string) => {
@@ -749,7 +782,7 @@ export default function CreatorOnboarding() {
               type="button"
               onMouseDown={(event) => {
                 event.preventDefault();
-                setter(city);
+                setUniqueCityValue(city, value, setter);
                 setActiveCityField(null);
               }}
               className={cn(
@@ -1005,12 +1038,12 @@ export default function CreatorOnboarding() {
                     <div className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors">
                       <MapPin className="w-5 h-5" />
                     </div>
-                    <Input
-                      value={baseCity}
+                      <Input
+                        value={baseCity}
                       onChange={e => setBaseCity(e.target.value)}
                       onFocus={() => setActiveCityField('baseCity')}
                       onBlur={e => {
-                        handleCityBlur(e.target.value, setBaseCity);
+                        setUniqueCityValue(e.target.value, baseCity, setBaseCity);
                         window.setTimeout(() => setActiveCityField((current) => current === 'baseCity' ? null : current), 100);
                       }}
                       placeholder="e.g. Mumbai"
@@ -1034,7 +1067,7 @@ export default function CreatorOnboarding() {
                         onChange={e => setTopCity1(e.target.value)}
                         onFocus={() => setActiveCityField('topCity1')}
                         onBlur={e => {
-                          handleCityBlur(e.target.value, setTopCity1);
+                          setUniqueCityValue(e.target.value, topCity1, setTopCity1);
                           window.setTimeout(() => setActiveCityField((current) => current === 'topCity1' ? null : current), 100);
                         }}
                         placeholder="City 1"
@@ -1049,7 +1082,7 @@ export default function CreatorOnboarding() {
                         onChange={e => setTopCity2(e.target.value)}
                         onFocus={() => setActiveCityField('topCity2')}
                         onBlur={e => {
-                          handleCityBlur(e.target.value, setTopCity2);
+                          setUniqueCityValue(e.target.value, topCity2, setTopCity2);
                           window.setTimeout(() => setActiveCityField((current) => current === 'topCity2' ? null : current), 100);
                         }}
                         placeholder="City 2"
@@ -1064,7 +1097,7 @@ export default function CreatorOnboarding() {
                         onChange={e => setTopCity3(e.target.value)}
                         onFocus={() => setActiveCityField('topCity3')}
                         onBlur={e => {
-                          handleCityBlur(e.target.value, setTopCity3);
+                          setUniqueCityValue(e.target.value, topCity3, setTopCity3);
                           window.setTimeout(() => setActiveCityField((current) => current === 'topCity3' ? null : current), 100);
                         }}
                         placeholder="City 3"
