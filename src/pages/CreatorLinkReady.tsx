@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { CheckCircle2, Copy, Instagram, MessageCircleMore } from "lucide-react";
+import { ArrowRight, CheckCircle2, Copy, Instagram, Link2, MessageCircleMore, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { useSession } from "@/contexts/SessionContext";
 import { useUpdateProfile } from "@/lib/hooks/useProfiles";
@@ -87,56 +87,74 @@ export default function CreatorLinkReady() {
 
   return (
     <OnboardingContainer theme="light" allowScroll>
-      <div className="mx-auto flex min-h-[100dvh] w-full max-w-5xl flex-col justify-center px-4 py-10 sm:px-6 lg:px-8">
-        <div className="mx-auto w-full max-w-2xl rounded-[32px] border border-slate-200 bg-white p-6 shadow-xl sm:p-8">
-          <div className="flex items-start gap-4">
-            <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-emerald-100 text-emerald-600">
-              <CheckCircle2 className="h-7 w-7" />
+      <div className="mx-auto flex min-h-[100dvh] w-full max-w-5xl flex-col justify-center px-4 py-6 sm:px-6 lg:px-8">
+        <div className="mx-auto w-full max-w-2xl overflow-hidden rounded-[36px] border border-slate-200 bg-white shadow-[0_24px_80px_-32px_rgba(15,23,42,0.35)]">
+          <div className="border-b border-slate-100 bg-gradient-to-b from-emerald-50/80 to-white px-6 py-5 sm:px-8">
+            <div className="flex items-center gap-3">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-emerald-100 text-emerald-600 ring-1 ring-emerald-200">
+                <CheckCircle2 className="h-6 w-6" />
+              </div>
+              <div className="flex items-center gap-2">
+                <Sparkles className="h-4 w-4 text-emerald-600" />
+                <p className="text-[11px] font-black uppercase tracking-[0.28em] text-emerald-600">Link ready</p>
+              </div>
             </div>
-            <div>
-              <p className="text-[11px] font-black uppercase tracking-[0.25em] text-emerald-600">Link ready</p>
-              <h1 className="mt-2 text-4xl font-black tracking-tight text-slate-900">Your offer link is live</h1>
-              <p className="mt-3 text-base font-medium leading-relaxed text-slate-600">
-                Share this when a brand asks how to work with you. You can fill price, address, or UPI only when a deal needs it.
+
+            <div className="mt-5 max-w-xl">
+              <h1 className="text-[2.15rem] font-black tracking-tight text-slate-950 leading-[0.95] sm:text-5xl">
+                Your offer link is live
+              </h1>
+              <p className="mt-4 max-w-lg text-[15px] leading-7 text-slate-600 sm:text-base">
+                Share this when a brand asks how to work with you. Keep your price, address, and UPI private until a deal actually needs them.
               </p>
             </div>
           </div>
 
-          <div className="mt-8 rounded-[28px] border border-slate-200 bg-slate-50 p-5">
-            <p className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-500">Your link</p>
-            <p className="mt-3 break-all text-2xl font-black text-slate-900">{collabUrl.replace(/^https?:\/\//, "")}</p>
-          </div>
+          <div className="px-6 py-6 sm:px-8">
+            <div className="rounded-[28px] border border-slate-200 bg-slate-50/90 p-4 shadow-sm">
+              <div className="flex items-center gap-2 text-[11px] font-black uppercase tracking-[0.22em] text-slate-500">
+                <Link2 className="h-3.5 w-3.5" />
+                Your link
+              </div>
+              <div className="mt-3 rounded-[22px] bg-white px-4 py-4 ring-1 ring-slate-200">
+                <p className="break-all text-xl font-black leading-snug text-slate-950 sm:text-[1.7rem]">{collabUrl.replace(/^https?:\/\//, "")}</p>
+              </div>
+            </div>
 
-          <div className="mt-6 grid gap-3 sm:grid-cols-3">
-            <Button type="button" onClick={() => void handleShareWhatsApp()} className="h-14 rounded-2xl bg-emerald-600 text-white hover:bg-emerald-500">
-              <MessageCircleMore className="mr-2 h-5 w-5" />
-              Share on WhatsApp
-            </Button>
-            <Button type="button" variant="outline" onClick={() => void handleCopyLink()} className="h-14 rounded-2xl border-slate-300 bg-white text-slate-900 hover:bg-slate-50">
-              <Copy className="mr-2 h-5 w-5" />
-              Copy Link
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => window.open(collabUrl, "_blank", "noopener,noreferrer")}
-              className="h-14 rounded-2xl border-slate-300 bg-white text-slate-900 hover:bg-slate-50"
-            >
-              <Instagram className="mr-2 h-5 w-5" />
-              Preview Page
-            </Button>
-          </div>
+            <div className="mt-5 grid gap-3">
+              <Button type="button" onClick={() => void handleShareWhatsApp()} className="h-14 rounded-2xl bg-emerald-600 text-white shadow-[0_16px_30px_-18px_rgba(16,185,129,0.9)] hover:bg-emerald-500">
+                <MessageCircleMore className="mr-2 h-5 w-5" />
+                Share on WhatsApp
+              </Button>
 
-          <Button
-            type="button"
-            onClick={() => navigate("/creator-dashboard")}
-            className="mt-8 h-14 w-full rounded-2xl bg-slate-900 text-xs font-black uppercase tracking-[0.18em] text-white hover:bg-slate-800"
-          >
-            Go to dashboard
-          </Button>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <Button type="button" variant="outline" onClick={() => void handleCopyLink()} className="h-14 rounded-2xl border-slate-300 bg-white text-slate-900 hover:bg-slate-50">
+                  <Copy className="mr-2 h-5 w-5" />
+                  Copy Link
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => window.open(collabUrl, "_blank", "noopener,noreferrer")}
+                  className="h-14 rounded-2xl border-slate-300 bg-white text-slate-900 hover:bg-slate-50"
+                >
+                  <Instagram className="mr-2 h-5 w-5" />
+                  Preview Page
+                </Button>
+              </div>
+
+              <Button
+                type="button"
+                onClick={() => navigate("/creator-dashboard")}
+                className="h-14 rounded-2xl bg-slate-950 text-xs font-black uppercase tracking-[0.2em] text-white hover:bg-slate-800"
+              >
+                Go to Dashboard
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
+            </div>
+          </div>
         </div>
       </div>
     </OnboardingContainer>
   );
 }
-

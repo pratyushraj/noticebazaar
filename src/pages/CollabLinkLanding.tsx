@@ -885,13 +885,9 @@ const CollabLinkLanding = () => {
 
   useEffect(() => {
     if (creator) {
-      const visibleDealTemplates = Array.isArray(creator.deal_templates)
-        ? creator.deal_templates.filter((template: any) => template?.id !== '__creator_profile_meta__' && template?.type !== 'creator_profile_meta')
-        : [];
-
-      if (visibleDealTemplates.length > 0) {
+      if (creator.deal_templates && creator.deal_templates.length > 0) {
         const fallbackRate = (creator as any).avg_rate_reel || creator.suggested_reel_rate || 5000;
-        const validatedTemplates = visibleDealTemplates.slice(0, 4).map((t, i) => {
+        const validatedTemplates = creator.deal_templates.slice(0, 4).map((t, i) => {
           // If it's a barter deal or has a price, keep it
           if (t.budget > 0 || t.type === 'barter') return t;
           

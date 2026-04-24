@@ -525,9 +525,7 @@ const ProfileSettings = () => {
         contentNiches: Array.isArray(profile.content_niches) ? profile.content_niches : [],
         collaborationPreference: savedCollabPreference,
         autoPricingEnabled: !!profile.auto_pricing_enabled,
-        dealTemplates: Array.isArray(profile.deal_templates)
-          ? profile.deal_templates.filter((template: any) => template?.id !== '__creator_profile_meta__' && template?.type !== 'creator_profile_meta')
-          : [],
+        dealTemplates: Array.isArray(profile.deal_templates) ? profile.deal_templates : [],
       } as any);
       setGenderSplit(profile.audience_gender_split || '');
       setTopCities(

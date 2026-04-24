@@ -100,9 +100,7 @@ const getFallbackOptions = (creator: any) => {
 };
 
 const getCreatorPackages = (creator: any) => {
-    const templates = Array.isArray(creator?.deal_templates)
-        ? creator.deal_templates.filter((template: any) => template?.id !== '__creator_profile_meta__' && template?.type !== 'creator_profile_meta')
-        : [];
+    const templates = Array.isArray(creator?.deal_templates) ? creator.deal_templates : [];
     const validTemplates = templates
         .map((template: DealTemplate, index: number) => ({
             key: String(template?.id || `template-${index}`),

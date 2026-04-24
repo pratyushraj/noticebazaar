@@ -593,37 +593,10 @@ const parseLocationParts = (location?: string | null) => {
     return { address, city, pincode };
 };
 
-const CREATOR_PROFILE_META_TEMPLATE_ID = '__creator_profile_meta__';
-
-const isCreatorProfileMetaTemplate = (template: any) =>
-    template?.id === CREATOR_PROFILE_META_TEMPLATE_ID || template?.type === 'creator_profile_meta';
-
-const stripCreatorProfileMetaTemplates = (templates: any[] = []) =>
-    templates.filter((template) => !isCreatorProfileMetaTemplate(template));
-
-const getFallbackContentVibes = (templates: any[] = []) => {
-    const meta = templates.find(isCreatorProfileMetaTemplate);
-    return Array.isArray(meta?.content_vibes) ? meta.content_vibes : [];
-};
-
-const withCreatorProfileMetaTemplate = (templates: any[] = [], contentVibes: string[] = []) => {
-    const visibleTemplates = stripCreatorProfileMetaTemplates(templates);
-    if (!contentVibes.length) return visibleTemplates;
-    return [
-        ...visibleTemplates,
-        {
-            id: CREATOR_PROFILE_META_TEMPLATE_ID,
-            type: 'creator_profile_meta',
-            content_vibes: contentVibes,
-        },
-    ];
-};
-
 const buildProfileFormData = (profile: any, userEmail?: string | null) => {
     const fullName = `${profile?.first_name || ''} ${profile?.last_name || ''}`.trim() || profile?.full_name || '';
     const parsedLocation = parseLocationParts(profile?.location);
     const portfolioItems = buildPortfolioSlots(profile?.portfolio_items || profile?.collab_past_work_items, profile?.portfolio_links);
-    const rawDealTemplates = Array.isArray(profile?.deal_templates) ? profile.deal_templates : [];
     const normalizeNicheLabel = (value: string) => {
         const raw = String(value || '').trim().toLowerCase();
         const aliases: Record<string, string> = {
@@ -665,6 +638,7 @@ const buildProfileFormData = (profile: any, userEmail?: string | null) => {
             'relatable': 'Relatable',
             'informative': 'Informative',
             'high energy': 'High Energy',
+            'high_energy': 'High Energy',
             'minimalist': 'Minimalist',
             'luxury': 'Luxury',
             'bold': 'Bold',
@@ -692,13 +666,11 @@ const buildProfileFormData = (profile: any, userEmail?: string | null) => {
         suggested_reel_rate: profile?.suggested_reel_rate || profile?.avg_rate_reel || '5000',
         story_price: profile?.story_price || '2000',
         content_niches: Array.isArray(profile?.content_niches) ? profile.content_niches.map(normalizeNicheLabel) : [],
-        content_vibes: (Array.isArray(profile?.content_vibes) && profile.content_vibes.length > 0
-            ? profile.content_vibes
-            : getFallbackContentVibes(rawDealTemplates)).map(normalizeVibeLabel),
+        content_vibes: Array.isArray(profile?.content_vibes) ? profile.content_vibes.map(normalizeVibeLabel) : [],
         bank_account_name: profile?.bank_account_name || '',
         instagram_followers: profile?.instagram_followers || profile?.followers_count || profile?.followers || '',
         payout_upi: profile?.payout_upi || profile?.bank_upi || profile?.upi_id || '',
-        deal_templates: stripCreatorProfileMetaTemplates(rawDealTemplates),
+        deal_templates: profile?.deal_templates || [],
         // NEW: Audience Demographics
         audience_gender_split: profile?.audience_gender_split || '',
         top_cities: Array.isArray(profile?.top_cities) ? profile.top_cities : [],
@@ -1854,14 +1826,11 @@ const MobileDashboardDemo = ({
         (async () => {
             const { data, error } = await supabase
                 .from('profiles')
-                .select('content_niches, audience_gender_split, audience_age_range, primary_audience_language, top_cities, content_vibes, collab_region_label, deal_templates')
+                .select('content_niches, audience_gender_split, audience_age_range, primary_audience_language, top_cities, content_vibes, collab_region_label')
                 .eq('id', session.user.id)
                 .maybeSingle();
 
             if (cancelled || error || !data) return;
-
-            const fallbackVibes = getFallbackContentVibes(Array.isArray(data.deal_templates) ? data.deal_templates : []);
-            const visibleDealTemplates = stripCreatorProfileMetaTemplates(Array.isArray(data.deal_templates) ? data.deal_templates : []);
 
             setProfileFormData((prev: any) => ({
                 ...prev,
@@ -1876,12 +1845,7 @@ const MobileDashboardDemo = ({
                     : prev.top_cities || [],
                 content_vibes: Array.isArray(data.content_vibes) && data.content_vibes.length > 0
                     ? data.content_vibes
-                    : fallbackVibes.length > 0
-                        ? fallbackVibes
                     : prev.content_vibes || [],
-                deal_templates: visibleDealTemplates.length > 0
-                    ? visibleDealTemplates
-                    : prev.deal_templates || [],
                 collab_region_label: data.collab_region_label || prev.collab_region_label || '',
             }));
             hasHydratedCollabFieldsRef.current = true;
@@ -1974,12 +1938,6 @@ const MobileDashboardDemo = ({
                 { instagram_followers: Number(profileFormData.instagram_followers) || 0 },
                 { city: profileFormData.city || null },
                 { collaboration_preference: profileFormData.collaboration_preference || 'Hybrid' },
-                {
-                    deal_templates: withCreatorProfileMetaTemplate(
-                        profileFormData.deal_templates || [],
-                        Array.isArray(profileFormData.content_vibes) ? profileFormData.content_vibes : []
-                    ),
-                },
                 { portfolio_links: normalizedPortfolioItems.map((item) => item.sourceUrl || '').filter(Boolean) },
                 { collab_past_work_items: normalizedPortfolioItems },
                 {
