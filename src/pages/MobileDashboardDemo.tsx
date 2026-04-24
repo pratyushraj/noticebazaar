@@ -1705,6 +1705,7 @@ const MobileDashboardDemo = ({
 
     const [isSavingProfile, setIsSavingProfile] = useState(false);
     const [activeCitySuggestionField, setActiveCitySuggestionField] = useState<number | null>(null);
+    const hasHydratedCollabFieldsRef = useRef(false);
 
     const [uploadingPortfolioSlot, setUploadingPortfolioSlot] = useState<number | null>(null);
     const [profileFormData, setProfileFormData] = useState<any>(buildProfileFormData(profile, user?.email || null));
@@ -1730,6 +1731,57 @@ const MobileDashboardDemo = ({
             setProfileFormData((prev: any) => ({ ...prev, ...buildProfileFormData(profile, user?.email || null) }));
         }
     }, [profile, user?.email, isSavingProfile]);
+
+    useEffect(() => {
+        if (hasHydratedCollabFieldsRef.current) return;
+        if (!session?.user?.id || activeTab !== 'profile') return;
+
+        const alreadyHydrated =
+            profileFormData.audience_gender_split ||
+            profileFormData.audience_age_range ||
+            profileFormData.primary_audience_language ||
+            (Array.isArray(profileFormData.top_cities) && profileFormData.top_cities.some((city: string) => String(city || '').trim())) ||
+            (Array.isArray(profileFormData.content_vibes) && profileFormData.content_vibes.length > 0);
+
+        if (alreadyHydrated) {
+            hasHydratedCollabFieldsRef.current = true;
+            return;
+        }
+
+        let cancelled = false;
+        (async () => {
+            const { data, error } = await supabase
+                .from('profiles')
+                .select('audience_gender_split, audience_age_range, primary_audience_language, top_cities, content_vibes, collab_region_label')
+                .eq('id', session.user.id)
+                .maybeSingle();
+
+            if (cancelled || error || !data) return;
+
+            setProfileFormData((prev: any) => ({
+                ...prev,
+                audience_gender_split: data.audience_gender_split || prev.audience_gender_split || '',
+                audience_age_range: data.audience_age_range || prev.audience_age_range || '',
+                primary_audience_language: data.primary_audience_language || prev.primary_audience_language || '',
+                top_cities: Array.isArray(data.top_cities) ? data.top_cities : prev.top_cities || [],
+                content_vibes: Array.isArray(data.content_vibes) ? data.content_vibes : prev.content_vibes || [],
+                collab_region_label: data.collab_region_label || prev.collab_region_label || '',
+            }));
+            hasHydratedCollabFieldsRef.current = true;
+        })();
+
+        return () => {
+            cancelled = true;
+        };
+    }, [
+        activeTab,
+        session?.user?.id,
+        profileFormData.audience_gender_split,
+        profileFormData.audience_age_range,
+        profileFormData.primary_audience_language,
+        profileFormData.top_cities,
+        profileFormData.content_vibes,
+    ]);
 
     const handleSaveProfile = async () => {
         if (!session?.user?.id) return;
