@@ -23,7 +23,8 @@ import {
   CreditCard,
   Target,
   PenTool,
-  Sparkles
+  Sparkles,
+  User
 } from 'lucide-react';
 import { generateAIBios } from '@/utils/aiBioGenerator';
 import { CITY_OPTIONS } from '@/constants/cities';
