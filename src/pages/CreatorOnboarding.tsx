@@ -22,8 +22,10 @@ import {
   MapPin,
   CreditCard,
   Target,
-  PenTool
+  PenTool,
+  Sparkles
 } from 'lucide-react';
+import { generateAIBios } from '@/utils/aiBioGenerator';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import { useSession } from '@/contexts/SessionContext';
@@ -316,27 +318,18 @@ const normalizeCityValue = (value: string) => {
 const AUDIENCE_GENDER_OPTIONS = [
   {
     id: 'women-majority',
-    label: 'Women Majority',
-    description: 'Better for beauty, fashion, lifestyle and wellness deals',
-    women: 72,
-    men: 28,
+    label: 'Mostly Women',
     storedValue: 'Women 70%+',
   },
   {
     id: 'balanced',
-    label: 'Balanced Audience',
-    description: 'Works best for broad consumer and mass-market campaigns',
-    women: 50,
-    men: 50,
+    label: 'Balanced Mix',
     storedValue: 'Balanced Mix',
   },
   {
     id: 'men-majority',
-    label: 'Men Majority',
-    description: 'Useful for tech, gaming, finance and performance-led campaigns',
-    women: 34,
-    men: 66,
-    storedValue: 'Men 60%+',
+    label: 'Mostly Men',
+    storedValue: 'Men 70%+',
   },
 ] as const;
 
@@ -1079,9 +1072,28 @@ export default function CreatorOnboarding() {
 
                 {/* Creator Title */}
                 <div className="space-y-2.5">
-                  <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400 px-1 flex justify-between">
+                  <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400 px-1 flex justify-between items-center">
                     <span>Professional Title</span>
-                    <span className="text-primary tracking-normal">e.g. Travel Vlogger</span>
+                    <button 
+                      type="button"
+                      onClick={() => {
+                        const bios = generateAIBios({
+                          name: instagramHandle || 'Creator',
+                          niches: selectedNiches,
+                          vibes: contentVibes,
+                          city: baseCity
+                        });
+                        // Cycle through bios
+                        const currentIndex = bios.indexOf(creatorTitle);
+                        const nextIndex = (currentIndex + 1) % bios.length;
+                        setCreatorTitle(bios[nextIndex]);
+                        toast.success('AI Bio Generated ✨');
+                      }}
+                      className="flex items-center gap-1.5 text-primary hover:text-primary/80 transition-colors"
+                    >
+                      <Sparkles className="w-3.5 h-3.5" />
+                      <span>AI Generate</span>
+                    </button>
                   </Label>
                   <Input
                     value={creatorTitle}
@@ -1251,7 +1263,7 @@ export default function CreatorOnboarding() {
             <OnboardingSlide key="audience" slideKey="audience">
               <div className="space-y-8 text-left">
                 <div>
-                  <h1 className="text-3xl font-black tracking-tight text-slate-900">Your Audience Profile</h1>
+                  <h1 className="text-3xl font-black tracking-tight text-slate-900">👥 Who follows you?</h1>
                   <p className="mt-3 text-lg font-medium leading-relaxed text-slate-500">
                     This helps brands match you with better deals
                   </p>
@@ -1260,12 +1272,12 @@ export default function CreatorOnboarding() {
                 <div className="space-y-10">
                   <div className="space-y-4">
                     <Label className="px-1 text-[10px] font-black uppercase tracking-[0.35em] text-slate-400">Gender Split</Label>
-                    <div className="grid grid-cols-3 gap-3">
+                    <div className="flex flex-wrap justify-center gap-3">
                       {AUDIENCE_GENDER_OPTIONS.map((option) => {
                         const isSelected = audienceGenderSplit === option.storedValue;
-                        const iconColor = option.id === 'women-majority'
+                        const iconColor = option.id.includes('women')
                           ? 'text-emerald-500'
-                          : option.id === 'men-majority'
+                          : option.id.includes('men')
                             ? 'text-sky-500'
                             : 'text-violet-500';
 
@@ -1275,19 +1287,17 @@ export default function CreatorOnboarding() {
                             type="button"
                             onClick={() => setAudienceGenderSplit(option.storedValue)}
                             className={cn(
-                              "flex min-h-[118px] flex-col items-center justify-center rounded-[26px] border bg-white px-3 py-4 text-center transition-all duration-200 active:scale-[0.985]",
+                              "flex min-h-[110px] min-w-[100px] flex-1 flex-col items-center justify-center rounded-[26px] border bg-white px-4 py-4 text-center transition-all duration-200 active:scale-[0.985]",
                               isSelected
                                 ? "border-emerald-400 shadow-[0_16px_36px_rgba(34,197,94,0.12)]"
                                 : "border-slate-200 shadow-[0_8px_24px_rgba(15,23,42,0.05)]"
                             )}
                           >
-                            <div className={cn("mb-3", iconColor)}>
-                              {option.id === 'balanced' ? <Users className="h-7 w-7" /> : <Users className="h-7 w-7" />}
+                            <div className={cn("mb-2", iconColor)}>
+                              <Users className="h-6 w-6" />
                             </div>
-                            <div className="text-[15px] font-black leading-tight tracking-tight text-slate-900">
-                              {option.label.split(' ').map((word, index) => (
-                                <div key={`${option.id}-${word}-${index}`}>{word}</div>
-                              ))}
+                            <div className="text-[13px] font-black leading-tight tracking-tight text-slate-900">
+                              {option.label}
                             </div>
                           </button>
                         );

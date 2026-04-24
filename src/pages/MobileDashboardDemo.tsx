@@ -26,8 +26,8 @@ import FiverrPackageEditor from '@/components/profile/FiverrPackageEditor';
 import { useInstagramSync } from '@/lib/hooks/useInstagramSync';
 import { safeAvatarSrc } from '@/lib/utils/image';
 
-import DashboardMetricsCards from '@/components/dashboard/DashboardMetricsCards';
 import DealSearchFilter from '@/components/dashboard/DealSearchFilter';
+import { generateAIBios } from '@/utils/aiBioGenerator';
 import EnhancedEmptyStates from '@/components/dashboard/EnhancedEmptyStates';
 
 import ActivityFeed from '@/components/dashboard/ActivityFeed';
@@ -594,8 +594,8 @@ const buildProfileFormData = (profile: any, userEmail?: string | null) => {
         phone: profile?.phone || '',
         bio: profile?.bio || '',
         pincode: profile?.pincode || parsedLocation.pincode || '',
-        city: profile?.city || parsedLocation.city || '',
-        address: profile?.address || parsedLocation.address || '',
+        city: profile?.city || profile?.collab_region_label || parsedLocation.city || '',
+        address: profile?.address || profile?.shipping_address || parsedLocation.address || '',
         instagram_handle: profile?.instagram_handle || '',
         media_kit_url: profile?.media_kit_url || '',
         open_to_collabs: profile?.open_to_collabs ?? true,
@@ -1767,14 +1767,6 @@ const MobileDashboardDemo = ({
                 phone: profileFormData.phone || null,
                 bio: profileFormData.bio || null,
                 location: location,
-                media_kit_url: profileFormData.media_kit_url || null,
-                avg_rate_reel: Number(profileFormData.avg_rate_reel) || null,
-                bank_account_name: profileFormData.bank_account_name?.trim() || null,
-                payout_upi: profileFormData.payout_upi?.trim() || null,
-                discovery_video_url: profileFormData.discovery_video_url || null,
-                portfolio_videos: profileFormData.portfolio_videos || [],
-                instagram_profile_photo: profileFormData.instagram_profile_photo || profileFormData.avatar_url || null,
-                avatar_url: profileFormData.avatar_url || profileFormData.instagram_profile_photo || null,
                 updated_at: new Date().toISOString(),
             };
 
@@ -1788,6 +1780,14 @@ const MobileDashboardDemo = ({
             }
 
             const optionalProfilePatches: Record<string, unknown>[] = [
+                { instagram_profile_photo: profileFormData.instagram_profile_photo || profileFormData.avatar_url || null },
+                { avatar_url: profileFormData.avatar_url || profileFormData.instagram_profile_photo || null },
+                { discovery_video_url: profileFormData.discovery_video_url || null },
+                { portfolio_videos: profileFormData.portfolio_videos || [] },
+                { media_kit_url: profileFormData.media_kit_url || null },
+                { avg_rate_reel: Number(profileFormData.avg_rate_reel) || null },
+                { bank_account_name: profileFormData.bank_account_name?.trim() || null },
+                { payout_upi: profileFormData.payout_upi?.trim() || null },
                 { open_to_collabs: profileFormData.open_to_collabs },
                 { story_price: Number(profileFormData.story_price) || null },
                 { instagram_followers: Number(profileFormData.instagram_followers) || 0 },
@@ -1796,7 +1796,8 @@ const MobileDashboardDemo = ({
                 { primary_audience_language: profileFormData.primary_audience_language || null },
                 { top_cities: profileFormData.top_cities || [] },
                 { content_vibes: Array.isArray(profileFormData.content_vibes) ? profileFormData.content_vibes : [] },
-                { collab_region_label: profileFormData.collab_region_label || null },
+                { city: profileFormData.city || null },
+                { address: profileFormData.address || null },
                 { collaboration_preference: profileFormData.collaboration_preference || 'Hybrid' },
                 { past_brands: profileFormData.past_brands || [] },
                 { deal_templates: profileFormData.deal_templates || [] },
@@ -2637,7 +2638,33 @@ const MobileDashboardDemo = ({
                                             <Edit3 className="w-5 h-5 text-pink-500" />
                                         </div>
                                         <div className="flex-1 min-w-0">
-                                            <p className={cn("text-[10px] font-black uppercase tracking-widest mb-1 opacity-50", textColor)}>Bio / Headline</p>
+                                            <div className="flex items-center justify-between mb-1">
+                                                <p className={cn("text-[10px] font-black uppercase tracking-widest opacity-50", textColor)}>Bio / Headline</p>
+                                                {isEditMode && (
+                                                    <button 
+                                                        type="button"
+                                                        onClick={() => {
+                                                            const bios = generateAIBios({
+                                                                name: profileFormData.full_name || 'Creator',
+                                                                niches: profileFormData.content_niches || [],
+                                                                vibes: profileFormData.content_vibes || [],
+                                                                city: profileFormData.city,
+                                                                platform: profileFormData.primary_platform || 'Instagram'
+                                                            });
+                                                            // Cycle through bios
+                                                            const currentIndex = bios.indexOf(profileFormData.bio || '');
+                                                            const nextIndex = (currentIndex + 1) % bios.length;
+                                                            setProfileFormData({ ...profileFormData, bio: bios[nextIndex] });
+                                                            triggerHaptic(HapticPatterns.success);
+                                                            toast.success('AI Bio Generated ✨');
+                                                        }}
+                                                        className="flex items-center gap-1.5 text-primary hover:text-primary/80 transition-colors text-[10px] font-black uppercase"
+                                                    >
+                                                        <Sparkles className="w-3.5 h-3.5" />
+                                                        <span>AI Generate</span>
+                                                    </button>
+                                                )}
+                                            </div>
                                             {isEditMode ? (
                                                 <textarea
                                                     className={cn("w-full bg-transparent outline-none font-black text-[15px] p-0 border-none focus:ring-0 resize-none leading-relaxed", textColor)}
@@ -2885,8 +2912,8 @@ const MobileDashboardDemo = ({
                 return (
                     <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="pb-20 touch-pan-y">
                         <PageHeader 
-                            title="Collab Page Setup" 
-                            subtitle="Optimize your profile to get more deals" 
+                            title="Money Generator Setup" 
+                            subtitle="Optimize your profile to start getting paid" 
                         />
                         
                         <div className="px-4 space-y-7">
@@ -2898,8 +2925,8 @@ const MobileDashboardDemo = ({
                                             <Zap className={cn("w-6 h-6", profileFormData.open_to_collabs && "animate-pulse")} />
                                         </div>
                                         <div>
-                                            <p className={cn("text-[14px] font-black", textColor)}>Accepting New Deals</p>
-                                            <p className={cn("text-[11px] opacity-60 font-bold", textColor)}>{profileFormData.open_to_collabs ? "Your profile is LIVE" : "Profile hidden from brands"}</p>
+                                            <p className={cn("text-[14px] font-black uppercase tracking-tight", textColor)}>🟢 Profile is LIVE</p>
+                                            <p className={cn("text-[11px] opacity-60 font-bold", textColor)}>{profileFormData.open_to_collabs ? "Brands can discover and pay you now" : "Profile hidden from brands"}</p>
                                         </div>
                                     </div>
                                     <ToggleSwitch
@@ -2987,7 +3014,8 @@ const MobileDashboardDemo = ({
                             </div>
 
                             <div>
-                                <p className={cn("text-[11px] font-black uppercase tracking-widest opacity-60 mb-3 px-1", textColor)}>2. Audience</p>
+                                <p className={cn("text-[11px] font-black uppercase tracking-widest opacity-60 mb-3 px-1", textColor)}>2. 👥 Who follows you?</p>
+                                <p className={cn("text-[9px] font-bold opacity-40 px-1 mb-3 -mt-2", textColor)}>(This helps brands match you with better deals)</p>
                                 <div className={cn("rounded-[28px] border p-5 space-y-6", isDark ? "bg-card border-border shadow-2xl shadow-black/20" : "bg-white border-[#E5E7EB] shadow-sm")}>
                                     <div className="grid grid-cols-1 gap-6">
                                         <div className="space-y-3 px-1">
@@ -2996,24 +3024,41 @@ const MobileDashboardDemo = ({
                                                 <Users className="w-3.5 h-3.5 opacity-20" />
                                             </div>
                                             <div className="flex flex-wrap gap-2">
-                                                {['Women 70%+', 'Women 60%+', 'Men 60%+', 'Men 70%+', 'Balanced Mix'].map((split) => {
-                                                    const isSelected = profileFormData.audience_gender_split === split;
+                                            <div className="grid grid-cols-3 gap-3">
+                                                {[
+                                                    { id: 'women', label: 'Mostly Women', value: 'Women 70%+', color: 'text-pink-500' },
+                                                    { id: 'balanced', label: 'Balanced', value: 'Balanced Mix', color: 'text-violet-500' },
+                                                    { id: 'men', label: 'Mostly Men', value: 'Men 70%+', color: 'text-sky-500' }
+                                                ].map((split) => {
+                                                    const isSelected = profileFormData.audience_gender_split === split.value;
                                                     return (
                                                         <button 
-                                                            key={split}
+                                                            key={split.id}
                                                             type="button"
-                                                            onClick={() => { triggerHaptic(); setProfileFormData({ ...profileFormData, audience_gender_split: isSelected ? '' : split }); }}
+                                                            onClick={() => { triggerHaptic(); setProfileFormData({ ...profileFormData, audience_gender_split: isSelected ? '' : split.value }); }}
                                                             className={cn(
-                                                                "px-3 py-2 rounded-xl text-[11px] font-black border transition-all active:scale-95",
+                                                                "flex flex-col items-center justify-center p-3 rounded-2xl border transition-all active:scale-95 gap-2",
                                                                 isSelected 
-                                                                    ? (isDark ? "bg-primary/20 border-primary/40 text-primary" : "bg-emerald-500 border-emerald-500 text-white shadow-md shadow-emerald-500/10")
-                                                                    : (isDark ? "bg-white/5 border-white/10 text-white/40" : "bg-[#F3F4F6] border-[#E5E7EB] text-[#374151]")
+                                                                    ? (isDark ? "bg-primary/20 border-primary shadow-lg shadow-primary/10" : "bg-emerald-500 border-emerald-500 shadow-md shadow-emerald-500/10")
+                                                                    : (isDark ? "bg-white/5 border-white/10" : "bg-slate-50 border-slate-200")
                                                             )}
                                                         >
-                                                            {split}
+                                                            <div className={cn(
+                                                                "w-8 h-8 rounded-full flex items-center justify-center mb-0.5",
+                                                                isSelected ? "bg-white/20 text-white" : (isDark ? "bg-white/5 " + split.color : "bg-white " + split.color)
+                                                            )}>
+                                                                <Users className="w-4 h-4" />
+                                                            </div>
+                                                            <span className={cn(
+                                                                "text-[10px] font-black tracking-tight text-center leading-tight",
+                                                                isSelected ? "text-white" : (isDark ? "text-white/60" : "text-slate-600")
+                                                            )}>
+                                                                {split.label}
+                                                            </span>
                                                         </button>
                                                     );
                                                 })}
+                                            </div>
                                             </div>
                                         </div>
 
@@ -3046,37 +3091,30 @@ const MobileDashboardDemo = ({
 
                                         <div className="space-y-3 px-1">
                                             <div className="flex items-center justify-between">
-                                                <p className={cn("text-[10px] font-black uppercase tracking-wider opacity-50", textColor)}>Top Cities</p>
+                                                <p className={cn("text-[10px] font-black uppercase tracking-wider opacity-50", textColor)}>Audience Top 3 Cities</p>
                                                 <MapPin className="w-3.5 h-3.5 opacity-20" />
                                             </div>
-                                            <div className="flex flex-wrap gap-2 mb-1">
-                                                {(profileFormData.top_cities || []).map((city: string, idx: number) => (
-                                                    <div key={idx} className={cn("flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[11px] font-black border animate-in zoom-in-95 duration-200", isDark ? "bg-primary/10 border-primary/20 text-primary" : "bg-emerald-50 border-emerald-200 text-emerald-700 shadow-sm")}>
-                                                        {city}
-                                                        <X className="w-3 h-3 cursor-pointer opacity-60 hover:opacity-100" onClick={() => {
-                                                            const newCities = [...profileFormData.top_cities];
-                                                            newCities.splice(idx, 1);
+                                            <div className="grid grid-cols-3 gap-2">
+                                                {[0, 1, 2].map((idx) => (
+                                                    <input 
+                                                        key={idx}
+                                                        className={cn(
+                                                            "h-12 px-3 rounded-2xl border font-black text-[11px] outline-none transition-all focus:ring-2 focus:ring-primary/20",
+                                                            isDark ? "bg-white/5 border-white/10 text-white placeholder:text-white/20" : "bg-slate-50 border-slate-200 text-slate-900 placeholder:text-slate-400"
+                                                        )}
+                                                        placeholder={`City ${idx + 1}`}
+                                                        value={profileFormData.top_cities?.[idx] || ''}
+                                                        onChange={(e) => {
+                                                            const newCities = [...(profileFormData.top_cities || ['', '', ''])];
+                                                            newCities[idx] = e.target.value;
                                                             setProfileFormData({ ...profileFormData, top_cities: newCities });
-                                                        }} />
-                                                    </div>
+                                                        }}
+                                                    />
                                                 ))}
                                             </div>
-                                            <div className="flex flex-wrap gap-1.5">
-                                                {['Delhi', 'Mumbai', 'Bangalore', 'Hyderabad', 'Pune', 'Chennai'].map((city) => {
-                                                    const isAdded = (profileFormData.top_cities || []).includes(city);
-                                                    if (isAdded) return null;
-                                                    return (
-                                                        <button 
-                                                            key={city}
-                                                            type="button"
-                                                            onClick={() => { triggerHaptic(); setProfileFormData({ ...profileFormData, top_cities: [...(profileFormData.top_cities || []), city] }); }}
-                                                            className={cn("px-2.5 py-1.5 rounded-lg text-[10px] font-black border border-dashed transition-all active:scale-95", isDark ? "bg-white/5 border-white/10 text-white/30" : "bg-slate-50 border-slate-200 text-slate-400")}
-                                                        >
-                                                            + {city}
-                                                        </button>
-                                                    );
-                                                })}
-                                            </div>
+                                            <p className="px-1 text-[9px] font-medium leading-relaxed opacity-40 italic">
+                                                Tip: Use specific city names to help brands find you in local searches.
+                                            </p>
                                         </div>
                                     </div>
 
@@ -3090,7 +3128,8 @@ const MobileDashboardDemo = ({
                             </div>
 
                             <div>
-                                <p className={cn("text-[11px] font-black uppercase tracking-widest opacity-60 mb-3 px-1", textColor)}>3. Discovery Media</p>
+                                <p className={cn("text-[11px] font-black uppercase tracking-widest opacity-60 mb-1 px-1", textColor)}>3. 🎥 Show Brands Your Style</p>
+                                <p className={cn("text-[9px] font-black text-primary uppercase tracking-wider px-1 mb-3")}>Your First Impression (MOST IMPORTANT)</p>
                                 <div className={cn("rounded-[28px] border p-5", isDark ? "bg-card border-border shadow-2xl shadow-black/20" : "bg-white border-[#E5E7EB] shadow-sm")}>
                                     <DiscoveryVideoUpload 
                                         userId={userId}
@@ -3103,7 +3142,7 @@ const MobileDashboardDemo = ({
                             </div>
 
                             <div>
-                                <p className={cn("text-[11px] font-black uppercase tracking-widest opacity-60 mb-3 px-1", textColor)}>3. Content & Vibe</p>
+                                <p className={cn("text-[11px] font-black uppercase tracking-widest opacity-60 mb-3 px-1", textColor)}>4. Vibe & Niche</p>
                                 <div className={cn("rounded-[28px] border p-5 space-y-7", isDark ? "bg-card border-border shadow-2xl shadow-black/20" : "bg-white border-[#E5E7EB] shadow-sm")}>
                                     <div className="space-y-3 px-1">
                                         <div className="flex flex-col">
@@ -3112,8 +3151,8 @@ const MobileDashboardDemo = ({
                                         </div>
                                         <div className="flex flex-wrap gap-2">
                                             {[
-                                                { label: 'Aesthetic', icon: <Sparkles className="w-3.5 h-3.5" /> },
-                                                { label: 'High Energy', icon: <Flame className="w-3.5 h-3.5" /> },
+                                                { label: 'Aesthetic', icon: <Sparkles className="w-3.5 h-3.5" />, recommended: true },
+                                                { label: 'High Energy', icon: <Flame className="w-3.5 h-3.5" />, recommended: true },
                                                 { label: 'Minimalist', icon: <Layers className="w-3.5 h-3.5" /> },
                                                 { label: 'Cinematic', icon: <Video className="w-3.5 h-3.5" /> },
                                                 { label: 'Raw/Authentic', icon: <Zap className="w-3.5 h-3.5" /> },
@@ -3138,14 +3177,21 @@ const MobileDashboardDemo = ({
                                                             }
                                                         }}
                                                         className={cn(
-                                                            "px-3.5 py-2.5 rounded-xl text-[11px] font-black tracking-tight border flex items-center gap-2 transition-all active:scale-95",
+                                                            "px-3.5 py-2.5 rounded-xl text-[11px] font-black tracking-tight border flex flex-col items-center gap-1.5 transition-all active:scale-95 relative overflow-hidden",
                                                             isSelected 
                                                                 ? (isDark ? "bg-primary text-white border-primary shadow-lg shadow-primary/20" : "bg-emerald-500 border-emerald-500 text-white shadow-md shadow-emerald-500/10")
                                                                 : (isDark ? "bg-white/5 border-white/10 text-white/40" : "bg-slate-50 border-slate-200 text-slate-500")
                                                         )}
                                                     >
-                                                        {vibe.icon}
-                                                        {vibe.label}
+                                                        {vibe.recommended && !isSelected && (
+                                                            <div className="absolute top-0 right-0 px-1.5 py-0.5 bg-primary/20 text-primary text-[6px] font-black uppercase tracking-tighter rounded-bl-lg">
+                                                                Popular
+                                                            </div>
+                                                        )}
+                                                        <div className="flex items-center gap-2">
+                                                            {vibe.icon}
+                                                            {vibe.label}
+                                                        </div>
                                                     </button>
                                                 );
                                             })}
@@ -3212,7 +3258,11 @@ const MobileDashboardDemo = ({
                             </div>
 
                             <div>
-                                <p className={cn("text-[11px] font-black uppercase tracking-widest opacity-60 mb-3 px-1", textColor)}>4. Earnings & Packages</p>
+                                <p className={cn("text-[11px] font-black uppercase tracking-widest opacity-60 mb-1 px-1", textColor)}>5. Earnings & Packages</p>
+                                <div className={cn("mb-3 px-2 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center gap-2")}>
+                                    <Sparkles className="w-3 h-3 text-emerald-500" />
+                                    <p className="text-[9px] font-black text-emerald-500 uppercase tracking-wider">💡 Tip: Creators with pricing get 2x more deals</p>
+                                </div>
                                 <div className="space-y-4">
                                     <div className={cn("rounded-[28px] border", isDark ? "bg-card border-border shadow-2xl shadow-black/20" : "bg-white border-[#E5E7EB] shadow-sm")}>
                                         <div className="p-5 bg-primary/5">
@@ -3250,7 +3300,7 @@ const MobileDashboardDemo = ({
 
                             {/* ── 5. PAST WORK ── */}
                             <div>
-                                <p className={cn("text-[11px] font-black uppercase tracking-widest opacity-60 mb-3 px-1", textColor)}>5. Past Partnerships</p>
+                                <p className={cn("text-[11px] font-black uppercase tracking-widest opacity-60 mb-3 px-1", textColor)}>6. Past Partnerships</p>
                                 <div className={cn("rounded-[28px] border p-5 space-y-7", isDark ? "bg-card border-border shadow-2xl shadow-black/20" : "bg-white border-[#E5E7EB] shadow-sm")}>
                                     {/* Media Kit (Option 3) */}
                                     <div className="space-y-3 px-1">
@@ -3294,9 +3344,9 @@ const MobileDashboardDemo = ({
                                     ) : (
                                         <>
                                             <div className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center">
-                                                <ShieldCheck className="w-3.5 h-3.5" />
+                                                <Zap className="w-3.5 h-3.5" />
                                             </div>
-                                            <span className="drop-shadow-sm">Save All Changes</span>
+                                            <span className="drop-shadow-sm">🚀 Go Live & Start Getting Deals</span>
                                         </>
                                     )}
                                 </motion.button>

@@ -242,12 +242,12 @@ export const DiscoveryVideoUpload: React.FC<DiscoveryVideoUploadProps> = ({
             )}>
                 <AlertCircle className="w-5 h-5 text-blue-500 shrink-0 mt-0.5" />
                 <div className="space-y-1">
-                    <p className={cn("text-[13px] font-bold", isDark ? "text-blue-100" : "text-blue-900")}>Discovery Guidelines</p>
+                    <p className={cn("text-[13px] font-bold", isDark ? "text-blue-100" : "text-blue-900")}>🔥 What works best</p>
                     <ul className={cn("text-[11px] font-medium opacity-70 list-disc pl-4 space-y-1", isDark ? "text-blue-100" : "text-blue-800")}>
-                        <li>Vertical (9:16) aspect ratio works best</li>
-                        <li>Keep Discovery Pitch under 20 seconds</li>
-                        <li>Muted videos autoplay for brands - be visual!</li>
-                        <li>Max file size: 10MB per video</li>
+                        <li>9:16 reels (under 20 sec)</li>
+                        <li>Face + energy = higher conversions</li>
+                        <li>Clear niche content wins deals</li>
+                        <li>Brands decide in 3 seconds. Add your best reel here.</li>
                     </ul>
                 </div>
             </div>
