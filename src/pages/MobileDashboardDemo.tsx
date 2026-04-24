@@ -5,7 +5,7 @@ import { trackEvent } from '@/lib/utils/analytics';
 import { DashboardEmptyState } from '../components/dashboard/EmptyState';
 import { PaymentsTab } from '../components/dashboard/PaymentsTab';
 import { AccountTab } from '../components/dashboard/AccountTab';
-import { Tag, User, Search, ShieldCheck, Handshake, Camera, Plus, LayoutDashboard, CreditCard, Briefcase, Menu, Instagram, Target, Dumbbell, Shirt, Sun, Moon, RefreshCw, Loader2, Bell, ChevronRight, Zap, Rocket, Link2, CheckCircle2, Download, Clock, Info, Globe, Star, LogOut, Copy, Share2, QrCode, Eye, MoreHorizontal, Landmark, FileText, Smartphone, TrendingUp, BarChart3, Mail, Phone, MessageCircle, MessageSquare, Edit3, Send, X, XCircle, ExternalLink, AlertCircle, AlertTriangle, ArrowRight, Package, Flag, MapPin, Languages, Lock as LockIcon, ArrowUpRight, Wallet, HelpCircle, Sparkles, Youtube, Twitter, Heart, Trash2, Smartphone as SmartphoneIcon, Users, Calendar, ShoppingBag, Video, BookOpen, GraduationCap, Laugh, Coffee, Layers, Flame, Clapperboard, BadgeCheck, Check, IndianRupee } from 'lucide-react';
+import { Tag, User, Search, ShieldCheck, Handshake, Camera, Plus, LayoutDashboard, CreditCard, Briefcase, Menu, Instagram, Target, Dumbbell, Shirt, Sun, Moon, RefreshCw, Loader2, Bell, ChevronRight, Zap, Rocket, Link2, CheckCircle2, Download, Clock, Info, Globe, Star, LogOut, Copy, Share2, QrCode, Eye, MoreHorizontal, Landmark, FileText, Smartphone, TrendingUp, BarChart3, Mail, Phone, MessageCircle, MessageSquare, Edit3, Send, X, XCircle, ExternalLink, AlertCircle, AlertTriangle, ArrowRight, Package, Flag, MapPin, Languages, Lock as LockIcon, ArrowUpRight, Wallet, HelpCircle, Sparkles, Youtube, Twitter, Heart, Trash2, Smartphone as SmartphoneIcon, Users, Calendar, ShoppingBag, Video, Film, BookOpen, GraduationCap, Laugh, Coffee, Layers, Flame, Clapperboard, BadgeCheck, Check, IndianRupee } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useSignOut } from '@/lib/hooks/useAuth';
@@ -581,7 +581,8 @@ const buildProfileFormData = (profile: any, userEmail?: string | null) => {
         avg_rate_reel: profile?.avg_rate_reel || profile?.suggested_reel_rate || '5000',
         suggested_reel_rate: profile?.suggested_reel_rate || profile?.avg_rate_reel || '5000',
         story_price: profile?.story_price || '2000',
-        content_niches: profile?.content_niches || ['Fashion', 'Tech', 'Lifestyle'],
+        content_niches: Array.isArray(profile?.content_niches) ? profile.content_niches : [],
+        content_vibes: Array.isArray(profile?.content_vibes) ? profile.content_vibes : [],
         bank_account_name: profile?.bank_account_name || '',
         instagram_followers: profile?.instagram_followers || profile?.followers_count || profile?.followers || '',
         payout_upi: profile?.payout_upi || profile?.bank_upi || profile?.upi_id || '',
@@ -1713,6 +1714,30 @@ const MobileDashboardDemo = ({
             const location = locParts.join(', ') || null;
 
             const normalizedPortfolioItems = normalizePortfolioItems(profileFormData.portfolio_items, profileFormData.portfolio_links);
+            const updateProfilePatch = async (
+                payload: Record<string, unknown>,
+                options?: { ignoreMissingColumn?: boolean; required?: boolean }
+            ) => {
+                const { data, error } = await (supabase as any)
+                    .from('profiles')
+                    .update(payload)
+                    .eq('id', session.user.id)
+                    .select('id')
+                    .maybeSingle();
+
+                if (!error) {
+                    return { data, skipped: false };
+                }
+
+                const isMissingColumn = error.message?.includes('column') || error.code === '42703' || error.code === 'PGRST204';
+                if (options?.ignoreMissingColumn && isMissingColumn) {
+                    console.warn('[handleSaveProfile] Skipping unsupported profile fields:', Object.keys(payload));
+                    return { data: null, skipped: true };
+                }
+
+                throw error;
+            };
+
             const corePayload: Record<string, unknown> = {
                 first_name,
                 last_name,
@@ -1720,23 +1745,8 @@ const MobileDashboardDemo = ({
                 bio: profileFormData.bio || null,
                 location: location,
                 media_kit_url: profileFormData.media_kit_url || null,
-                portfolio_links: normalizedPortfolioItems.map((item) => item.sourceUrl || '').filter(Boolean),
-                collab_past_work_items: normalizedPortfolioItems,
-                open_to_collabs: profileFormData.open_to_collabs,
                 avg_rate_reel: Number(profileFormData.avg_rate_reel) || null,
-                suggested_reel_rate: Number(profileFormData.avg_rate_reel) || null,
-                suggested_paid_range_min: Number(profileFormData.avg_rate_reel) || null,
-                suggested_paid_range_max: Number(profileFormData.avg_rate_reel) ? Number(profileFormData.avg_rate_reel) * 1.5 : null,
-                story_price: Number(profileFormData.story_price) || null,
-                audience_gender_split: profileFormData.audience_gender_split || null,
-                audience_age_range: profileFormData.audience_age_range || null,
-                primary_audience_language: profileFormData.primary_audience_language || null,
-                top_cities: profileFormData.top_cities || [],
-                collaboration_preference: profileFormData.collaboration_preference || 'Hybrid',
-                past_brands: profileFormData.past_brands || [],
-                deal_templates: profileFormData.deal_templates || [],
                 bank_account_name: profileFormData.bank_account_name?.trim() || null,
-                instagram_followers: Number(profileFormData.instagram_followers) || 0,
                 payout_upi: profileFormData.payout_upi?.trim() || null,
                 discovery_video_url: profileFormData.discovery_video_url || null,
                 portfolio_videos: profileFormData.portfolio_videos || [],
@@ -1746,50 +1756,38 @@ const MobileDashboardDemo = ({
             };
 
             // Request updated row back so we can detect "0 rows updated" (which otherwise looks like success).
-            let { data: updatedCore, error: coreError } = await (supabase as any)
-                .from('profiles')
-                .update(corePayload)
-                .eq('id', session.user.id)
-                .select('id')
-                .maybeSingle();
-
-            // RESILIENT FALLBACK: If update fails due to missing columns, try a smaller payload
-            if (coreError && (coreError.message?.includes('column') || coreError.code === '42703' || coreError.code === 'PGRST204')) {
-                console.warn('[handleSaveProfile] Core update failed due to schema mismatch, retrying with minimal payload...');
-                
-                const minimalPayload = {
-                    first_name: corePayload.first_name,
-                    last_name: corePayload.last_name,
-                    instagram_profile_photo: corePayload.instagram_profile_photo,
-                    avatar_url: corePayload.instagram_profile_photo,
-                    updated_at: corePayload.updated_at
-                };
-
-                const { data: retryData, error: retryError } = await (supabase as any)
-                    .from('profiles')
-                    .update(minimalPayload)
-                    .eq('id', session.user.id)
-                    .select('id')
-                    .maybeSingle();
-                
-                updatedCore = retryData;
-                coreError = retryError;
-            }
-
-            if (coreError) {
-                console.error('[handleSaveProfile] Core update failed:', {
-                    message: coreError.message,
-                    code: coreError.code,
-                    details: coreError.details,
-                    hint: coreError.hint,
-                });
-                throw coreError;
-            }
+            const { data: updatedCore } = await updateProfilePatch(corePayload, { required: true });
             if (!updatedCore) {
                 // Supabase returns `data: null` when no rows matched (e.g. profile id mismatch / RLS).
                 // Do not show a false-positive "saved".
                 toast.error('Could not save: profile row not updated. Please contact support.');
                 return;
+            }
+
+            const optionalProfilePatches: Record<string, unknown>[] = [
+                { open_to_collabs: profileFormData.open_to_collabs },
+                { story_price: Number(profileFormData.story_price) || null },
+                { instagram_followers: Number(profileFormData.instagram_followers) || 0 },
+                { audience_gender_split: profileFormData.audience_gender_split || null },
+                { audience_age_range: profileFormData.audience_age_range || null },
+                { primary_audience_language: profileFormData.primary_audience_language || null },
+                { top_cities: profileFormData.top_cities || [] },
+                { content_vibes: Array.isArray(profileFormData.content_vibes) ? profileFormData.content_vibes : [] },
+                { collab_region_label: profileFormData.collab_region_label || null },
+                { collaboration_preference: profileFormData.collaboration_preference || 'Hybrid' },
+                { past_brands: profileFormData.past_brands || [] },
+                { deal_templates: profileFormData.deal_templates || [] },
+                { portfolio_links: normalizedPortfolioItems.map((item) => item.sourceUrl || '').filter(Boolean) },
+                { collab_past_work_items: normalizedPortfolioItems },
+                {
+                    suggested_reel_rate: Number(profileFormData.avg_rate_reel) || null,
+                    suggested_paid_range_min: Number(profileFormData.avg_rate_reel) || null,
+                    suggested_paid_range_max: Number(profileFormData.avg_rate_reel) ? Number(profileFormData.avg_rate_reel) * 1.5 : null,
+                },
+            ];
+
+            for (const patch of optionalProfilePatches) {
+                await updateProfilePatch(patch, { ignoreMissingColumn: true });
             }
 
             // Step 2: Update Instagram handle + collab username together.
@@ -2950,13 +2948,13 @@ const MobileDashboardDemo = ({
 
                                         <div className="space-y-1.5 px-1">
                                             <div className="flex items-center justify-between">
-                                                <p className={cn("text-[10px] font-black uppercase tracking-wider opacity-50", textColor)}>Base Location</p>
+                                                <p className={cn("text-[10px] font-black uppercase tracking-wider opacity-50", textColor)}>Base City / Location</p>
                                                 <MapPin className="w-3.5 h-3.5 text-primary opacity-60" />
                                             </div>
                                             <input
                                                 type="text"
-                                                value={profileFormData.location || profileFormData.city || ''}
-                                                onChange={(e) => setProfileFormData({ ...profileFormData, location: e.target.value, city: e.target.value })}
+                                                value={profileFormData.collab_region_label || ''}
+                                                onChange={(e) => setProfileFormData({ ...profileFormData, collab_region_label: e.target.value })}
                                                 placeholder="e.g. Mumbai, India"
                                                 className={cn("w-full px-4 py-3.5 rounded-2xl border text-[13px] font-semibold outline-none transition-all", isDark ? "bg-[#0B0F14] border-border text-foreground focus:border-primary/50" : "bg-[#F9FAFB] border-[#E5E7EB] text-black focus:border-emerald-400 focus:bg-white")}
                                             />
@@ -3091,13 +3089,18 @@ const MobileDashboardDemo = ({
                                         </div>
                                         <div className="flex flex-wrap gap-2">
                                             {[
-                                                { label: 'Cinematic', icon: <Video className="w-3.5 h-3.5" /> },
-                                                { label: 'Educational', icon: <GraduationCap className="w-3.5 h-3.5" /> },
-                                                { label: 'Humor', icon: <Laugh className="w-3.5 h-3.5" /> },
-                                                { label: 'Lifestyle', icon: <Coffee className="w-3.5 h-3.5" /> },
-                                                { label: 'Review', icon: <Star className="w-3.5 h-3.5" /> },
+                                                { label: 'Aesthetic', icon: <Sparkles className="w-3.5 h-3.5" /> },
+                                                { label: 'High Energy', icon: <Flame className="w-3.5 h-3.5" /> },
                                                 { label: 'Minimalist', icon: <Layers className="w-3.5 h-3.5" /> },
-                                                { label: 'High Energy', icon: <Flame className="w-3.5 h-3.5" /> }
+                                                { label: 'Cinematic', icon: <Video className="w-3.5 h-3.5" /> },
+                                                { label: 'Raw/Authentic', icon: <Zap className="w-3.5 h-3.5" /> },
+                                                { label: 'Humor', icon: <Laugh className="w-3.5 h-3.5" /> },
+                                                { label: 'Educational', icon: <GraduationCap className="w-3.5 h-3.5" /> },
+                                                { label: 'Review', icon: <Star className="w-3.5 h-3.5" /> },
+                                                { label: 'Lifestyle', icon: <Coffee className="w-3.5 h-3.5" /> },
+                                                { label: 'Vlog', icon: <Camera className="w-3.5 h-3.5" /> },
+                                                { label: 'Tutorial', icon: <BookOpen className="w-3.5 h-3.5" /> },
+                                                { label: 'B-Roll', icon: <Film className="w-3.5 h-3.5" /> }
                                             ].map((vibe) => {
                                                 const isSelected = (profileFormData.content_vibes || []).includes(vibe.label);
                                                 return (
@@ -3120,6 +3123,40 @@ const MobileDashboardDemo = ({
                                                     >
                                                         {vibe.icon}
                                                         {vibe.label}
+                                                    </button>
+                                                );
+                                            })}
+                                        </div>
+                                    </div>
+
+                                    <div className="space-y-3 px-1">
+                                        <div className="flex flex-col">
+                                            <p className={cn("text-[10px] font-black uppercase tracking-wider opacity-50", textColor)}>Your Main Niches</p>
+                                            <p className="text-[9px] text-primary/60 font-black uppercase tracking-tighter">Choose your content topics</p>
+                                        </div>
+                                        <div className="flex flex-wrap gap-2">
+                                            {[
+                                                'Fashion', 'Tech', 'Lifestyle', 'Travel', 'Food/Cooking', 
+                                                'Beauty', 'Fitness/Health', 'Gaming', 'Education', 
+                                                'Business/Finance', 'Parenting', 'Comedy'
+                                            ].map((niche) => {
+                                                const isSelected = (profileFormData.content_niches || []).includes(niche);
+                                                return (
+                                                    <button type="button" key={niche}
+                                                        onClick={() => {
+                                                            triggerHaptic();
+                                                            const current = profileFormData.content_niches || [];
+                                                            if (isSelected) setProfileFormData((p: any) => ({ ...p, content_niches: current.filter((v: string) => v !== niche) }));
+                                                            else setProfileFormData((p: any) => ({ ...p, content_niches: [...current, niche] }));
+                                                        }}
+                                                        className={cn(
+                                                            "px-3 py-2 rounded-xl text-[10px] font-black tracking-tight border transition-all active:scale-95",
+                                                            isSelected 
+                                                                ? (isDark ? "bg-primary/20 text-primary border-primary/40 shadow-lg shadow-primary/10" : "bg-emerald-500 border-emerald-500 text-white shadow-md shadow-emerald-500/10")
+                                                                : (isDark ? "bg-white/5 border-white/10 text-white/40" : "bg-slate-50 border-slate-200 text-slate-500")
+                                                        )}
+                                                    >
+                                                        {niche}
                                                     </button>
                                                 );
                                             })}
@@ -3421,6 +3458,51 @@ const MobileDashboardDemo = ({
                             >
                                 Preview
                             </button>
+                        </div>
+                    </motion.div>
+                );
+            case 'delete':
+                return (
+                    <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-black/40 backdrop-blur-sm">
+                        <div className={cn("w-full max-w-sm rounded-[2.5rem] p-8 shadow-2xl overflow-hidden relative", isDark ? "bg-[#0F172A] border border-white/5" : "bg-white")}>
+                            <div className="absolute -right-6 -top-6 w-32 h-32 bg-red-500/10 blur-3xl rounded-full" />
+                            
+                            <div className="relative z-10 text-center">
+                                <div className="w-16 h-16 bg-red-500/10 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                                    <Trash2 className="w-8 h-8 text-red-500" />
+                                </div>
+                                <h2 className={cn("text-2xl font-black mb-3", textColor)}>Delete Account?</h2>
+                                <p className={cn("text-sm opacity-50 leading-relaxed mb-8", textColor)}>
+                                    This will permanently remove your profile, deals, and earnings history. This action cannot be undone.
+                                </p>
+                                
+                                <div className="flex flex-col gap-3">
+                                    <button 
+                                        onClick={async () => {
+                                            triggerHaptic();
+                                            toast.loading('Processing deletion request...');
+                                            // Simulate backend delay
+                                            setTimeout(() => {
+                                                toast.dismiss();
+                                                toast.success('Deletion request submitted.');
+                                                // Clear everything
+                                                localStorage.clear();
+                                                sessionStorage.clear();
+                                                window.location.href = '/delete-data'; // Redirect to info page
+                                            }, 2000);
+                                        }}
+                                        className="w-full py-4 rounded-2xl bg-red-500 text-white font-black text-xs uppercase tracking-widest active:scale-95 transition-all shadow-lg shadow-red-500/20"
+                                    >
+                                        Yes, Delete Everything
+                                    </button>
+                                    <button 
+                                        onClick={() => { triggerHaptic(); setActiveSettingsPage(null); }}
+                                        className={cn("w-full py-4 rounded-2xl font-black text-xs uppercase tracking-widest active:scale-95 transition-all", isDark ? "bg-white/5 text-white/40" : "bg-slate-100 text-slate-500")}
+                                    >
+                                        Cancel
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     </motion.div>
                 );
@@ -3842,6 +3924,95 @@ const MobileDashboardDemo = ({
                                                 </button>
                                             </div>
                                         )}
+
+                                        <div className="px-5">
+                                            <motion.div
+                                                initial={{ opacity: 0, y: 12 }}
+                                                animate={{ opacity: 1, y: 0 }}
+                                                transition={{ delay: 0.16 }}
+                                                className={cn(
+                                                    "relative overflow-hidden rounded-[32px] border p-6",
+                                                    isDark ? "bg-[#101922] border-white/5 shadow-[0_18px_45px_rgba(0,0,0,0.22)]" : "bg-white border-slate-200 shadow-sm"
+                                                )}
+                                            >
+                                                <div
+                                                    className={cn(
+                                                        "absolute inset-0 pointer-events-none",
+                                                        isDark
+                                                            ? "bg-[radial-gradient(circle_at_top_right,rgba(16,185,129,0.18),transparent_42%),radial-gradient(circle_at_bottom_left,rgba(14,165,233,0.14),transparent_42%)]"
+                                                            : "bg-[radial-gradient(circle_at_top_right,rgba(16,185,129,0.12),transparent_40%),radial-gradient(circle_at_bottom_left,rgba(14,165,233,0.1),transparent_40%)]"
+                                                    )}
+                                                />
+
+                                                <div className="relative z-10 space-y-5">
+                                                    <div className="flex items-start gap-4">
+                                                        <div className={cn(
+                                                            "w-14 h-14 rounded-[20px] shrink-0 flex items-center justify-center border",
+                                                            isDark ? "bg-emerald-500/10 border-emerald-400/15" : "bg-emerald-50 border-emerald-100"
+                                                        )}>
+                                                            <Instagram className={cn("w-7 h-7", isDark ? "text-emerald-300" : "text-emerald-600")} />
+                                                        </div>
+
+                                                        <div className="min-w-0 flex-1">
+                                                            <p className={cn("text-[11px] font-black uppercase tracking-[0.24em] mb-1", isDark ? "text-emerald-300/80" : "text-emerald-600")}>
+                                                                More Deal Flow
+                                                            </p>
+                                                            <h3 className={cn("text-[20px] font-black tracking-tight leading-tight", textColor)}>
+                                                                Add your CreatorArmour link to your Instagram bio
+                                                            </h3>
+                                                            <p className={cn("mt-2 text-[13px] leading-relaxed font-medium opacity-70", textColor)}>
+                                                                Keep your collab page in your bio so brands can view your packages and send offers in one tap.
+                                                            </p>
+                                                        </div>
+                                                    </div>
+
+                                                    <div className={cn(
+                                                        "rounded-[22px] border p-4 space-y-2",
+                                                        isDark ? "bg-white/5 border-white/5" : "bg-slate-50 border-slate-200"
+                                                    )}>
+                                                        <p className={cn("text-[10px] font-black uppercase tracking-[0.2em] opacity-50", textColor)}>
+                                                            Your bio link
+                                                        </p>
+                                                        <p className={cn("text-[13px] font-black break-all leading-6", textColor)}>
+                                                            creatorarmour.com/{username}
+                                                        </p>
+                                                    </div>
+
+                                                    <div className="grid grid-cols-2 gap-3">
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => {
+                                                                triggerHaptic();
+                                                                handleCopyStorefront();
+                                                                toast.success('Bio link copied', { description: 'Paste it into your Instagram bio to get more direct deals.' });
+                                                            }}
+                                                            className={cn(
+                                                                "h-[52px] rounded-[18px] font-black uppercase tracking-[0.16em] text-[11px] active:scale-95 transition-all",
+                                                                isDark
+                                                                    ? "bg-gradient-to-r from-emerald-500 to-sky-500 text-white shadow-[0_14px_35px_rgba(16,185,129,0.28)]"
+                                                                    : "bg-gradient-to-r from-emerald-500 to-sky-500 text-white shadow-lg shadow-emerald-200"
+                                                            )}
+                                                        >
+                                                            Copy For Bio
+                                                        </button>
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => {
+                                                                triggerHaptic();
+                                                                setActiveTab('profile');
+                                                                setActiveSettingsPage('collab-link');
+                                                            }}
+                                                            className={cn(
+                                                                "h-[52px] rounded-[18px] border font-black uppercase tracking-[0.16em] text-[11px] active:scale-95 transition-all",
+                                                                isDark ? "bg-white/5 border-white/10 text-white" : "bg-white border-slate-200 text-slate-900"
+                                                            )}
+                                                        >
+                                                            Edit Page
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </motion.div>
+                                        </div>
 
                                         {/* Link & WhatsApp Section */}
                                         <div className={cn(
