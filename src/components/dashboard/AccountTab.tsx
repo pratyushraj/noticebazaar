@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { 
     ShieldCheck, ChevronRight, Link2, Landmark, 
     Bell, User, Sun, Moon, LogOut, CheckCircle2,
-    ExternalLink
+    ExternalLink, Trash2
 } from 'lucide-react';
 import { cn } from '../../lib/utils';
 
@@ -283,17 +283,28 @@ export const AccountTab: React.FC<AccountTabProps> = ({
                 </div>
             </div>
 
-            {/* Logout */}
-            <div className="flex justify-center relative z-10">
+            {/* Logout & Deletion */}
+            <div className="flex flex-col items-center gap-4 relative z-10">
                 <button 
                     onClick={() => { triggerHaptic(); setActiveSettingsPage('logout'); }}
                     className={cn(
-                        "flex items-center gap-2 font-bold text-sm active:scale-95 transition-all py-4 px-8 rounded-full",
+                        "w-full flex items-center justify-center gap-2 font-bold text-sm active:scale-95 transition-all py-4 px-8 rounded-full",
                         isDark ? "text-red-400 bg-red-500/5 hover:bg-red-500/10" : "text-red-500 bg-red-50 hover:bg-red-100"
                     )}
                 >
                     <LogOut className="w-4 h-4" />
                     Sign Out Account
+                </button>
+
+                <button 
+                    onClick={() => { triggerHaptic(); setActiveSettingsPage('delete'); }}
+                    className={cn(
+                        "text-[11px] font-black uppercase tracking-[0.2em] opacity-30 hover:opacity-100 transition-opacity flex items-center gap-2 py-2 px-4",
+                        isDark ? "text-red-400" : "text-red-600"
+                    )}
+                >
+                    <Trash2 className="w-3.5 h-3.5" />
+                    Delete My Account
                 </button>
             </div>
         </motion.div>

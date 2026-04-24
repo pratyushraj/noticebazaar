@@ -4,7 +4,7 @@ import React, { Suspense, lazy, useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useSession } from '@/contexts/SessionContext';
 import { SEOHead } from '@/components/seo/SEOHead';
-import { ArrowRight, ShieldCheck, CheckCircle2, Sparkles, Link as LinkIcon, ExternalLink, Instagram, Linkedin, Twitter, Menu, X, IndianRupee, FileText, BriefcaseBusiness, Clock3 } from 'lucide-react';
+import { ArrowRight, ShieldCheck, CheckCircle2, Instagram, Linkedin, Twitter, Menu, X, BriefcaseBusiness, Zap, Clock, XCircle, Wallet, Landmark, ChevronRight, FileText, Gavel, AlertTriangle } from 'lucide-react';
 import { triggerHaptic, HapticPatterns } from '@/lib/utils/haptics';
 import { cn } from '@/lib/utils';
 
@@ -22,93 +22,185 @@ const ROHAN_IMG = "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?
 const dashboardShowcase = [
   {
     eyebrow: 'Incoming Offers',
-    title: 'Know which brand is offering what',
+    title: 'Know what brands are offering',
     description: 'Creators see live offer value, deliverables, and due dates instead of re-reading old chats.',
-    icon: BriefcaseBusiness,
     accent: 'emerald',
+    icon: BriefcaseBusiness,
     body: (
-      <div className="space-y-3">
-        <div className="rounded-2xl border border-[#E5E7EB] bg-white p-4 shadow-sm">
-          <div className="flex items-start justify-between">
-            <div>
-              <p className="text-sm font-black text-[#0F172A]">Nykaa Summer Drop</p>
-              <p className="mt-1 text-xs font-bold text-[#64748B]">1 Reel + 3 stories • due in 4 days</p>
+      <div className="space-y-4">
+        {/* New Offers Card Demo */}
+        <div className="p-5 rounded-[28px] border bg-white border-slate-200/60 shadow-[0_15px_35px_rgba(0,0,0,0.05)] relative overflow-hidden group">
+          <div className="flex items-center justify-between gap-2 mb-4">
+            <div className="flex gap-2">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-wider border bg-blue-50 text-blue-700 border-blue-100 whitespace-nowrap">
+                <Zap className="w-3 h-3 fill-current" />
+                Standard Deal
+              </span>
             </div>
-            <span className="rounded-full bg-[#16A34A] px-3 py-1 text-[11px] font-black uppercase tracking-wide text-[#16A34A]">Pending</span>
+            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-wider border bg-rose-50 text-rose-600 border-rose-100 whitespace-nowrap">
+              <Clock className="w-3 h-3" />
+              Exp. in 2 days
+            </span>
           </div>
-          <div className="mt-4 flex items-center justify-between border-t border-[#E5E7EB] pt-3">
-            <span className="text-xs font-bold text-[#64748B]">Offer value</span>
-            <span className="text-lg font-black text-[#0F172A]">₹18,000</span>
+
+          <div className="flex gap-4 mb-6">
+            <div className="w-[100px] h-[100px] rounded-[24px] overflow-hidden border border-slate-100 bg-slate-50/50 shrink-0 p-1 shadow-md transition-all duration-500 group-hover:scale-[1.05]">
+              <img 
+                src="https://images.unsplash.com/photo-1596462502278-27bfdc403348?auto=format&fit=crop&w=500&h=500&q=80" 
+                alt="Brand Logo" 
+                className="w-full h-full object-cover rounded-[18px]" 
+              />
+            </div>
+
+            <div className="min-w-0 flex-1 py-0.5 flex flex-col justify-between">
+              <div className="min-w-0">
+                <h4 className="text-[18px] font-black tracking-tight leading-tight truncate text-slate-900">
+                  Nykaa Beauty
+                </h4>
+                <p className="text-[12px] font-bold mt-1 text-slate-500 truncate">
+                  1 Reel + 3 Stories
+                </p>
+              </div>
+
+              <div className="pt-2">
+                <div className="flex items-baseline gap-1.5">
+                  <p className="text-[24px] font-black tracking-tighter tabular-nums leading-none text-slate-900">
+                    ₹18,000
+                  </p>
+                  <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Earnings</p>
+                </div>
+              </div>
+            </div>
           </div>
-        </div>
-        <div className="grid grid-cols-2 gap-3">
-          <div className="rounded-2xl bg-white border border-[#E5E7EB] px-4 py-3 text-[#0F172A]">
-            <p className="text-[10px] font-bold uppercase tracking-widest text-[#64748B]">Awaiting reply</p>
-            <p className="mt-2 text-2xl font-black">03</p>
-          </div>
-          <div className="rounded-2xl border border-[#E5E7EB] bg-white px-4 py-3">
-            <p className="text-[10px] font-bold uppercase tracking-widest text-[#64748B]">Best-fit brand</p>
-            <p className="mt-2 text-sm font-black text-[#0F172A]">Beauty / D2C</p>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div className="h-[48px] rounded-[18px] font-black uppercase tracking-widest text-[11px] flex items-center justify-center gap-2 bg-blue-600 text-white shadow-lg shadow-blue-600/20">
+              <CheckCircle2 className="w-4 h-4" />
+              Accept
+            </div>
+            <div className="h-[48px] rounded-[18px] font-black uppercase tracking-widest text-[11px] flex items-center justify-center gap-2 bg-white border border-slate-200 text-slate-600">
+              <XCircle className="w-4 h-4" />
+              Decline
+            </div>
           </div>
         </div>
       </div>
     ),
   },
   {
-    eyebrow: 'Contract Clarity',
-    title: 'See risky deal terms before accepting',
-    description: 'Important clauses are highlighted so a creator who has only used DMs can still understand what matters.',
-    icon: FileText,
-    accent: 'blue',
-    body: (
-      <div className="space-y-3">
-        <div className="rounded-2xl border border-[#E5E7EB] bg-white p-4 shadow-sm">
-          <div className="flex items-center justify-between">
-            <p className="text-sm font-black text-[#0F172A]">Campaign agreement scan</p>
-            <span className="rounded-full bg-amber-50 px-3 py-1 text-[11px] font-black uppercase tracking-wide text-amber-700 border border-amber-200">2 flags</span>
-          </div>
-          <div className="mt-4 space-y-2">
-            <div className="rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-bold text-amber-700">
-              Unlimited usage rights detected
-            </div>
-            <div className="rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-bold text-rose-700">
-              No payment due date mentioned
-            </div>
-          </div>
-        </div>
-        <div className="rounded-2xl border border-[#E5E7EB] bg-white px-4 py-3">
-          <p className="text-[10px] font-bold uppercase tracking-widest text-[#64748B]">Suggested fix</p>
-          <p className="mt-2 text-sm font-bold text-[#64748B]">Add 50% advance, 30-day usage cap, and final payment within 7 days of posting.</p>
-        </div>
-      </div>
-    ),
-  },
-  {
-    eyebrow: 'Payout Tracking',
-    title: 'Track what is paid, late, or at risk',
+    eyebrow: 'Revenue Management',
+    title: 'Track paid, late, or at risk',
     description: 'The payout side should feel as visible as the storefront so creators know what to follow up on fast.',
-    icon: IndianRupee,
+    icon: Wallet,
     accent: 'teal',
     body: (
-      <div className="space-y-3">
-        <div className="rounded-2xl bg-gradient-to-br from-[#16A34A] to-[#15803D] p-4 text-white shadow-lg shadow-[#16A34A]/20">
-          <p className="text-[10px] font-bold uppercase tracking-widest text-[#16A34A]">This month</p>
-          <p className="mt-2 text-3xl font-black">₹42,500</p>
-          <p className="mt-1 text-sm font-medium text-[#16A34A]">2 paid deals, 1 overdue payout</p>
-        </div>
-        <div className="rounded-2xl border border-[#E5E7EB] bg-white p-4 shadow-sm">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-black text-[#0F172A]">Myntra festive edit</p>
-              <p className="mt-1 text-xs font-bold text-[#64748B]">Final payment pending</p>
+      <div className="space-y-6">
+        <div className="p-6 rounded-[2.5rem] border bg-white border-slate-200 shadow-xl shadow-slate-200/50 relative overflow-hidden">
+          <div className="flex justify-between items-start mb-8">
+            <div className="text-left">
+              <p className="text-[11px] font-black uppercase tracking-[0.2em] opacity-40 mb-1 text-slate-500">Total Revenue</p>
+              <h2 className="text-4xl font-black tracking-tighter text-slate-900">
+                ₹50,159
+              </h2>
             </div>
-            <span className="rounded-full bg-rose-50 px-3 py-1 text-[11px] font-black uppercase tracking-wide text-rose-700">4 days late</span>
+            <div className="w-14 h-14 rounded-2xl flex items-center justify-center bg-slate-50">
+              <Wallet className="w-7 h-7 text-blue-600" />
+            </div>
           </div>
-          <div className="mt-4 flex items-center justify-between border-t border-[#E5E7EB] pt-3">
-            <span className="text-xs font-bold text-[#64748B]">Amount due</span>
-            <span className="text-lg font-black text-[#0F172A]">₹12,000</span>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="p-4 rounded-2xl border bg-orange-50/30 border-orange-100/50 text-left">
+              <div className="flex items-center gap-2 mb-2">
+                <div className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse" />
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Processing</p>
+              </div>
+              <p className="text-xl font-black text-slate-900">₹41,160</p>
+            </div>
+            <div className="p-4 rounded-2xl border bg-green-50/30 border-green-100/50 text-left">
+              <div className="flex items-center gap-2 mb-2">
+                <div className="w-1.5 h-1.5 rounded-full bg-green-500" />
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Paid Out</p>
+              </div>
+              <p className="text-xl font-black text-slate-900">₹8,999</p>
+            </div>
           </div>
         </div>
+        
+        <div className="space-y-3">
+          <div className="flex items-center justify-between px-1">
+            <h4 className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Payout Method</h4>
+            <button className="text-[10px] font-bold text-blue-600">Edit Details</button>
+          </div>
+          <div className="p-5 rounded-3xl border flex items-center justify-between bg-white border-slate-200 shadow-sm text-left">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 rounded-2xl flex items-center justify-center bg-slate-50 text-slate-600">
+                <Landmark className="w-6 h-6" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2 mb-0.5">
+                  <p className="text-[15px] font-bold text-slate-900">UPI Transfer</p>
+                  <span className="px-1.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-green-50 text-green-600 border border-green-100">Verified</span>
+                </div>
+                <p className="text-xs font-medium text-slate-400 font-mono tracking-tight">ama*****@oksbi</p>
+              </div>
+            </div>
+            <ChevronRight className="w-5 h-5 text-slate-300" />
+          </div>
+        </div>
+      </div>
+    ),
+  },
+  {
+    eyebrow: 'Legal Protection',
+    title: 'Lawyer support on demand',
+    description: 'In case a brand denies payment or breaches the agreement, our legal team is ready to step in.',
+    icon: Gavel,
+    accent: 'blue',
+    body: (
+      <div className="space-y-4">
+      <div className="p-5 rounded-[28px] border bg-white border-slate-200/60 shadow-[0_15px_35px_rgba(0,0,0,0.05)] relative overflow-hidden group">
+        <div className="flex gap-4 mb-6">
+          <div className="w-[100px] h-[100px] rounded-[24px] overflow-hidden border border-slate-100 bg-slate-50/50 shrink-0 p-1 shadow-md transition-all duration-500 group-hover:scale-[1.05]">
+            <img 
+              src="/assets/images/lawyer-pratik.png" 
+              alt="Lawyer Pratik Singh" 
+              className="w-full h-full object-cover rounded-[18px]" 
+            />
+          </div>
+
+          <div className="min-w-0 flex-1 py-0.5 flex flex-col justify-center text-left">
+            <div className="min-w-0">
+              <h4 className="text-[18px] font-black tracking-tight leading-tight truncate text-slate-900">
+                Pratik Singh
+              </h4>
+              <p className="text-[12px] font-bold mt-1 text-slate-500 truncate">
+                Senior Legal Counsel
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-3 mb-4">
+          <div className="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center">
+            <AlertTriangle className="w-5 h-5 text-amber-600" />
+          </div>
+          <div className="text-left">
+            <p className="text-[11px] font-black uppercase tracking-widest text-slate-400">Dispute Detected</p>
+            <p className="text-sm font-black text-slate-900">Payment Overdue: 14 Days</p>
+          </div>
+        </div>
+        
+        <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100 mb-4 text-left">
+          <p className="text-xs font-medium text-slate-600 leading-relaxed italic">
+            "Brand has not released payment after approval. Initiating legal notice..."
+          </p>
+        </div>
+
+        <button className="w-full h-12 rounded-[18px] font-black uppercase tracking-widest text-[11px] flex items-center justify-center gap-2 bg-slate-900 text-white shadow-lg">
+          <Gavel className="w-4 h-4" />
+          Request Legal Aid
+        </button>
+      </div>
       </div>
     ),
   },
@@ -296,10 +388,10 @@ const LandingPage = () => {
             <div className="flex-1 w-full max-w-[420px] lg:max-w-none relative">
               {/* Floating Creator Profile Badge */}
               <div className="hidden md:flex absolute -left-16 md:-left-24 top-20 bg-white p-4 rounded-3xl shadow-2xl border border-[#E5E7EB] z-20 items-center gap-4 animate-in fade-in slide-in-from-bottom-4 duration-1000 delay-300 hover:scale-105 transition-transform">
-                <img src={AANYA_IMG} alt="Aanya Kapoor" className="w-16 h-16 rounded-full object-cover shadow-sm border-2 border-white" />
+                <img src={AANYA_IMG} alt="Ananya Kapoor" className="w-16 h-16 rounded-full object-cover shadow-sm border-2 border-white" />
                 <div>
                   <div className="flex items-center gap-1.5 mb-1">
-                    <h3 className="text-base font-black text-[#0F172A]">Aanya Kapoor</h3>
+                    <h3 className="text-base font-black text-[#0F172A]">Ananya Kapoor</h3>
                     <CheckCircle2 className="w-4 h-4 text-[#16A34A] fill-[#DCFCE7]" />
                   </div>
                   <p className="text-[12px] font-bold text-[#64748B] leading-tight">Lifestyle Creator • 42K followers</p>
@@ -329,7 +421,7 @@ const LandingPage = () => {
 
               <div className="hidden xl:flex absolute -right-20 bottom-28 z-30 rounded-3xl border border-[#E5E7EB] bg-white px-4 py-3 text-[#0F172A] shadow-2xl items-center gap-4 animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-900 hover:scale-105 transition-transform">
                 <div className="w-11 h-11 rounded-2xl bg-[#DCFCE7]/50 flex items-center justify-center text-[#16A34A]">
-                  <Clock3 className="w-5 h-5" />
+                  <Clock className="w-5 h-5" />
                 </div>
                 <div>
                   <p className="text-[11px] font-bold uppercase tracking-wider text-[#64748B]">Payment follow-up</p>
@@ -348,7 +440,7 @@ const LandingPage = () => {
 
                   <div className="relative z-10 flex flex-col items-center mb-6">
                     <img src={AANYA_IMG} className="w-24 h-24 rounded-full object-cover border-4 border-white shadow-md mb-4" alt="Creator" />
-                    <h2 className="text-2xl font-black text-[#0F172A] flex items-center gap-1">Aanya Kapoor <CheckCircle2 className="w-6 h-6 text-[#16A34A] fill-[#DCFCE7]" /></h2>
+                    <h2 className="text-2xl font-black text-[#0F172A] flex items-center gap-1">Ananya Kapoor <CheckCircle2 className="w-6 h-6 text-[#16A34A] fill-[#DCFCE7]" /></h2>
                     <p className="text-[13px] font-bold text-[#64748B] mb-4">@aanyakapoor</p>
 
                     <div className="bg-[#F8FAF9] border border-[#E5E7EB] rounded-2xl p-4 w-full shadow-sm text-center">
@@ -478,9 +570,9 @@ const LandingPage = () => {
                   <div className="flex items-center gap-3 mb-5">
                     <div className={cn(
                       'w-11 h-11 rounded-2xl flex items-center justify-center',
-                      panel.accent === 'emerald' && 'bg-[#16A34A] text-[#16A34A]',
-                      panel.accent === 'blue' && 'bg-[#DCFCE7] text-[#16A34A]',
-                      panel.accent === 'teal' && 'bg-[#DCFCE7] text-[#15803D]',
+                      panel.accent === 'emerald' && 'bg-[#DCFCE7] text-[#16A34A]',
+                      panel.accent === 'blue' && 'bg-[#DBEAFE] text-[#2563EB]',
+                      panel.accent === 'teal' && 'bg-[#F0FDFA] text-[#0D9488]',
                     )}>
                       <Icon className="w-5 h-5" />
                     </div>
@@ -488,7 +580,7 @@ const LandingPage = () => {
                   </div>
 
                   <div className="mb-6">
-                    <h3 className="text-2xl font-black tracking-tight text-[#0F172A] leading-tight">{panel.title}</h3>
+                    <h3 className="text-[19px] sm:text-2xl font-black tracking-tight text-[#0F172A] leading-tight whitespace-nowrap overflow-hidden text-ellipsis sm:whitespace-normal">{panel.title}</h3>
                     <p className="mt-3 text-sm font-medium leading-6 text-[#64748B]">{panel.description}</p>
                   </div>
 
@@ -500,6 +592,8 @@ const LandingPage = () => {
             })}
           </div>
         </section>
+
+
 
         {/* 2. CREATOR SOCIAL PROOF */}
         <section id="social-proof" className="px-4 sm:px-6 max-w-[1200px] mx-auto scroll-mt-24 py-16 lg:py-20">
@@ -591,78 +685,50 @@ const LandingPage = () => {
           </div>
         </section>
 
-        {/* 4. MARKETPLACE PACKAGE PREVIEW */}
-        <section id="marketplace" className="px-4 sm:px-6 max-w-[1200px] mx-auto scroll-mt-24 py-16 lg:py-20">
-          <div className="bg-white rounded-[28px] md:rounded-[40px] border border-[#E5E7EB] shadow-[0_8px_24px_rgba(0,0,0,0.06)] overflow-hidden">
-            <div className="text-center px-6 md:px-8 pt-12 md:pt-16 pb-8 md:pb-12 bg-[#F8FAF9] border-b border-[#E5E7EB]">
-              <h2 className="text-3xl md:text-[44px] font-black tracking-tight text-[#0F172A] mb-4">Your custom marketplace</h2>
-              <p className="text-lg text-[#64748B] font-medium">Let brands shop your services like a high-end catalog.</p>
-            </div>
 
-            <div className="p-5 md:p-16 bg-white">
-              <div className="max-w-[1000px] mx-auto">
-                <div className="flex flex-col md:flex-row items-center gap-6 mb-12 pb-12 border-b border-[#E5E7EB]">
-                  <img src={ROHAN_IMG} alt="Rohan Mehta" className="w-24 h-24 rounded-full object-cover shadow-md border border-[#E5E7EB]" loading="lazy" />
-                  <div className="text-center md:text-left">
-                    <h3 className="text-3xl font-black text-[#0F172A] mb-1">Rohan Mehta</h3>
-                    <p className="text-base font-bold text-[#64748B] flex items-center justify-center md:justify-start gap-2">Travel Creator <span className="w-1.5 h-1.5 rounded-full bg-[#E5E7EB]"></span> 58K followers</p>
-                  </div>
-                  <div className="md:ml-auto mt-4 md:mt-0">
-                    <button type="button" className="bg-white text-[#0F172A] font-black px-6 py-3 rounded-xl shadow-lg hover:bg-[#F8FAF9] transition-all">Collab With Rohan</button>
-                  </div>
-                </div>
 
-                <div className="rounded-2xl border border-[#E5E7EB] bg-[#F8FAF9] p-6 md:p-8 text-center">
-                  <p className="text-sm font-bold text-[#64748B] mb-1">Interactive package catalog</p>
-                  <p className="text-sm text-[#64748B] mb-4">See how brands browse creator packages, compare deliverables, and send structured offers.</p>
-                  <button type="button"
-                    onClick={() => navigate('/pratyush')}
-                    className="bg-white text-[#0F172A] font-black px-6 py-3 rounded-xl shadow-lg hover:bg-[#F8FAF9] transition-all"
-                  >
-                    Explore Demo Creator Page
-                  </button>
-                </div>
-              </div>
-            </div>
+
+
+        {/* CUSTOM MARKETPLACE SECTION */}
+        <section id="marketplace" className="px-4 sm:px-6 max-w-[1200px] mx-auto py-16 lg:py-24 border-t border-slate-100/50">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-[42px] font-black tracking-tight text-[#0F172A] whitespace-nowrap overflow-hidden text-ellipsis sm:whitespace-normal">
+              Your custom marketplace
+            </h2>
+            <p className="mt-4 text-lg text-[#64748B] font-medium max-w-2xl mx-auto">
+              Replace messy email threads with a sleek marketplace where brands buy your packages instantly.
+            </p>
           </div>
-        </section>
 
-        {/* 5. DEAL PROOF SECTION */}
-        <section className="px-4 sm:px-6 max-w-[1200px] mx-auto py-16 lg:py-20">
-          <div className="text-center mb-10 md:mb-16">
-            <h2 className="text-3xl md:text-[40px] font-black text-[#0F172A] mb-4">Real deals closed recently</h2>
-            <p className="text-lg text-[#64748B] font-medium">Creators are consistently booking deals using their Armour profiles.</p>
-          </div>
-          <div className="flex md:grid md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 overflow-x-auto md:overflow-visible pb-2 snap-x snap-mandatory">
-            {[
-              { name: 'Priya Sharma', img: PRIYA_IMG, brand: 'Myntra', package: '1 Reel + 2 Stories', val: '₹4,500', earned: '₹24,500 earned this week' },
-              { name: 'Arjun Patel', img: ARJUN_IMG, brand: 'Boat', package: 'Product Review', val: '₹3,000 + product', earned: '₹12,000 per reel' },
-              { name: 'Neha Verma', img: NEHA_IMG, brand: 'Mamaearth', package: '1 Reel', val: '₹2,000', earned: '₹18,500 last month' },
-            ].map((d, i) => (
-              <div key={i} className="bg-white border border-[#E5E7EB] p-6 md:p-8 rounded-[20px] md:rounded-[24px] shadow-[0_8px_24px_rgba(0,0,0,0.06)] hover:shadow-[0_12px_32px_rgba(0,0,0,0.1)] hover:-translate-y-1 transition-all min-w-[280px] sm:min-w-[320px] md:min-w-0 snap-start">
-                <div className="flex items-center gap-3 mb-4">
-                  <img src={d.img} alt={d.name} className="w-14 h-14 rounded-full border border-[#E5E7EB] object-cover shrink-0" loading="lazy" />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12 max-w-5xl mx-auto">
+            {/* Rohan Mehta Card */}
+            <div className="bg-white rounded-[3rem] border border-slate-200 p-8 shadow-2xl shadow-slate-200/40 relative overflow-hidden group hover:-translate-y-2 transition-all duration-500">
+               <div className="flex items-center gap-4 mb-8 text-left">
+                  <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-white shadow-lg">
+                    <img src={ROHAN_IMG} className="w-full h-full object-cover" alt="Rohan Mehta" />
+                  </div>
                   <div>
-                    <span className="font-black text-lg text-[#0F172A] leading-tight">{d.name}</span>
-                    <p className="text-sm font-medium text-[#16A34A]">{d.earned}</p>
+                    <h3 className="text-xl font-black text-slate-900">Rohan Mehta</h3>
+                    <p className="text-sm font-bold text-slate-500">Travel Creator • 120K followers</p>
                   </div>
-                </div>
-                <div className="space-y-4">
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm font-bold text-[#64748B]">Brand</span>
-                    <span className="text-lg font-black text-[#0F172A]">{d.brand}</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm font-bold text-[#64748B]">Package</span>
-                    <span className="text-base font-bold text-[#0F172A] bg-[#F8FAF9] px-3 py-1 rounded-lg border border-[#E5E7EB]">{d.package}</span>
-                  </div>
-                  <div className="flex justify-between pt-4 border-t border-[#E5E7EB] items-center">
-                    <span className="text-sm font-bold text-[#64748B]">Deal Value</span>
-                    <span className="text-3xl font-black text-[#16A34A]">{d.val}</span>
-                  </div>
-                </div>
-              </div>
-            ))}
+               </div>
+               
+               <div className="space-y-4">
+                 <div className="p-6 rounded-[2rem] border-2 border-emerald-500 bg-emerald-50/30 relative text-left">
+                   <div className="absolute -top-3 right-6 px-3 py-1 bg-emerald-500 text-white text-[10px] font-black uppercase tracking-widest rounded-full shadow-lg">
+                     Most Popular
+                   </div>
+                   <h4 className="text-lg font-black text-slate-900 mb-1">Ultimate Travel Vlog Bundle</h4>
+                   <p className="text-sm font-medium text-slate-500 mb-4">1 YouTube Vlog + 3 Instagram Reels + 5 High-res Photos</p>
+                   <div className="flex items-center justify-between">
+                     <p className="text-2xl font-black text-slate-900">₹25,000</p>
+                     <button className="px-6 py-2.5 rounded-full bg-slate-900 text-white font-black text-[12px] uppercase tracking-widest hover:bg-emerald-600 transition-colors">
+                       Book Now
+                     </button>
+                   </div>
+                 </div>
+               </div>
+            </div>
           </div>
         </section>
 
@@ -692,124 +758,96 @@ const LandingPage = () => {
       </main>
 
       {/* FOOTER */}
-      <footer className="border-t border-[#E5E7EB] bg-[#F8FAF9] pt-[60px] pb-[40px] px-6">
-        <div className="max-w-[1200px] mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-12 gap-10 md:gap-12">
-            <div className="md:col-span-4">
-              <Link to="/" className="flex items-center gap-2 group">
-                <div className="w-9 h-9 bg-[#16A34A] rounded-xl flex items-center justify-center shadow-lg shadow-[#16A34A]/25">
-                  <ShieldCheck className="w-5 h-5 text-white" />
+      <footer className="bg-[#05070A] pt-24 pb-12 px-6 relative overflow-hidden border-t border-white/5">
+        {/* Subtle background glow */}
+        <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-[#16A34A]/5 rounded-full blur-[120px] pointer-events-none" />
+        <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-[#2563EB]/5 rounded-full blur-[120px] pointer-events-none" />
+        
+        <div className="max-w-[1200px] mx-auto relative z-10">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 lg:gap-12 pb-20 border-b border-white/5">
+            {/* Brand Column */}
+            <div className="lg:col-span-5 space-y-8">
+              <Link to="/" className="flex items-center gap-2 group w-fit">
+                <div className="w-11 h-11 bg-[#16A34A] rounded-xl flex items-center justify-center shadow-lg shadow-[#16A34A]/25 transition-all group-hover:scale-105 group-hover:rotate-3">
+                  <ShieldCheck className="w-6 h-6 text-white" />
                 </div>
-                <h3 className="text-[20px] font-black tracking-tight text-[#0F172A]">Creator Armour</h3>
+                <h3 className="text-[24px] font-black tracking-tight text-white italic uppercase">Creator Armour</h3>
               </Link>
-              <p className="mt-4 max-w-sm text-[15px] leading-relaxed font-medium text-[#64748B]">
-                Close brand deals without Instagram DMs.
+              <p className="max-w-md text-[17px] leading-relaxed font-medium text-slate-400">
+                The high-performance infrastructure for creators to close brand deals, manage contracts, and track revenue professionally.
               </p>
-              <div className="mt-5 flex items-center gap-2">
-                <a href="https://instagram.com/creatorarmour" target="_blank" rel="noreferrer" className="w-10 h-10 rounded-xl border border-[#E5E7EB] bg-white text-[#64748B] hover:text-[#16A34A] hover:border-[#16A34A] inline-flex items-center justify-center transition-colors" aria-label="Creator Armour Instagram">
-                  <Instagram className="w-4.5 h-4.5" />
+              
+              <div className="flex items-center gap-4 pt-4">
+                <a href="https://www.instagram.com/creatorarmour" target="_blank" rel="noreferrer" className="w-12 h-12 rounded-2xl border border-white/10 bg-white/5 text-slate-400 hover:text-[#16A34A] hover:border-[#16A34A]/50 inline-flex items-center justify-center transition-all hover:-translate-y-1 hover:shadow-[0_0_20px_rgba(22,163,74,0.15)]" aria-label="Instagram">
+                  <Instagram className="w-5.5 h-5.5" />
                 </a>
-                <a href="https://x.com/creatorarmour" target="_blank" rel="noreferrer" className="w-10 h-10 rounded-xl border border-[#E5E7EB] bg-white text-[#64748B] hover:text-[#16A34A] hover:border-[#16A34A] inline-flex items-center justify-center transition-colors" aria-label="Creator Armour X">
-                  <Twitter className="w-4.5 h-4.5" />
+                <a href="https://x.com/CreatorArmour" target="_blank" rel="noreferrer" className="w-12 h-12 rounded-2xl border border-white/10 bg-white/5 text-slate-400 hover:text-[#16A34A] hover:border-[#16A34A]/50 inline-flex items-center justify-center transition-all hover:-translate-y-1 hover:shadow-[0_0_20px_rgba(22,163,74,0.15)]" aria-label="X">
+                  <Twitter className="w-5.5 h-5.5" />
                 </a>
-                <a href="https://www.linkedin.com/company/creatorarmour" target="_blank" rel="noreferrer" className="w-10 h-10 rounded-xl border border-[#E5E7EB] bg-white text-[#64748B] hover:text-[#16A34A] hover:border-[#16A34A] inline-flex items-center justify-center transition-colors" aria-label="Creator Armour LinkedIn">
-                  <Linkedin className="w-4.5 h-4.5" />
+                <a href="https://www.linkedin.com/company/creatorarmour/" target="_blank" rel="noreferrer" className="w-12 h-12 rounded-2xl border border-white/10 bg-white/5 text-slate-400 hover:text-[#16A34A] hover:border-[#16A34A]/50 inline-flex items-center justify-center transition-all hover:-translate-y-1 hover:shadow-[0_0_20px_rgba(22,163,74,0.15)]" aria-label="LinkedIn">
+                  <Linkedin className="w-5.5 h-5.5" />
                 </a>
+              </div>
+                            <div className="flex items-center gap-4 pt-6">
+                <div className="flex -space-x-3">
+                  <img src={PRIYA_IMG} className="w-10 h-10 rounded-full border-2 border-[#05070A] object-cover" alt="User 1" />
+                  <img src={ARJUN_IMG} className="w-10 h-10 rounded-full border-2 border-[#05070A] object-cover" alt="User 2" />
+                  <img src={NEHA_IMG} className="w-10 h-10 rounded-full border-2 border-[#05070A] object-cover" alt="User 3" />
+                </div>
+                <p className="text-[15px] font-bold text-slate-300">Join <span className="text-white">500+</span> top creators</p>
+              </div>
+
+              <div className="pt-6">
+                <div className="inline-flex items-center gap-3 px-4 py-2 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-sm">
+                  <div className="w-2 h-2 rounded-full bg-[#16A34A] shadow-[0_0_10px_rgba(22,163,74,0.8)]" />
+                  <span className="text-[12px] font-black uppercase tracking-[0.2em] text-white/80">Fintech Grade Security</span>
+                </div>
               </div>
             </div>
 
-            <div className="hidden md:grid md:col-span-8 grid-cols-4 gap-8">
-              <div className="space-y-3">
-                <p className="text-sm font-black text-[#64748B]">Product</p>
-                <div className="space-y-2.5 text-sm font-medium text-[#64748B]">
-                  <Link to="/signup" className="block hover:text-[#16A34A]">Create Collab Link</Link>
-                  <Link to="/discover" className="block hover:text-[#16A34A]">Creator Marketplace</Link>
-                  <Link to="/collab-requests" className="block hover:text-[#16A34A]">Brand Offers</Link>
-                  <Link to="/plan/growth" className="block hover:text-[#16A34A]">Pricing</Link>
+            {/* Links Columns */}
+            <div className="lg:col-span-7 grid grid-cols-2 sm:grid-cols-3 gap-12 sm:gap-8">
+              <div className="space-y-6">
+                <p className="text-[13px] font-black uppercase tracking-[0.25em] text-white/30">Platform</p>
+                <div className="flex flex-col gap-4 text-[16px] font-bold text-slate-400">
+                  <Link to="/signup" className="hover:text-white transition-colors w-fit">Collab Link</Link>
+                  <a href="#marketplace" className="hover:text-white transition-colors w-fit">Marketplace</a>
+                  <Link to="/signup" className="hover:text-white transition-colors w-fit">Brand Offers</Link>
+                  <Link to="/signup" className="hover:text-white transition-colors w-fit">Pricing</Link>
                 </div>
               </div>
-              <div className="space-y-3">
-                <p className="text-sm font-black text-[#64748B]">Creators</p>
-                <div className="space-y-2.5 text-sm font-medium text-[#64748B]">
-                  <a href="#how-it-works" className="block hover:text-[#16A34A]">How it works</a>
-                  <a href="#marketplace" className="block hover:text-[#16A34A]">Creator packages</a>
-                  <button type="button" onClick={() => navigate('/pratyush')} className="block text-left hover:text-[#16A34A]">Examples</button>
-                  <Link to="/creator-dashboard" className="block hover:text-[#16A34A]">Creator dashboard</Link>
+              <div className="space-y-6">
+                <p className="text-[13px] font-black uppercase tracking-[0.25em] text-white/30">Resources</p>
+                <div className="flex flex-col gap-4 text-[16px] font-bold text-slate-400">
+                  <Link to="/signup" className="hover:text-white transition-colors w-fit">Creator Blog</Link>
+                  <a href="mailto:support@creatorarmour.com" className="hover:text-white transition-colors w-fit">Help Center</a>
+                  <Link to="/signup" className="hover:text-white transition-colors w-fit">Contract Templates</Link>
+                  <Link to="/signup" className="hover:text-white transition-colors w-fit">Rate Tool</Link>
                 </div>
               </div>
-              <div className="space-y-3">
-                <p className="text-sm font-black text-[#64748B]">Resources</p>
-                <div className="space-y-2.5 text-sm font-medium text-[#64748B]">
-                  <Link to="/blog" className="block hover:text-[#16A34A]">Blog</Link>
-                  <a href="mailto:support@creatorarmour.com" className="block hover:text-[#16A34A]">Help Center</a>
-                  <Link to="/free-influencer-contract" className="block hover:text-[#16A34A]">Guides for creators</Link>
-                  <Link to="/rate-calculator" className="block hover:text-[#16A34A]">Influencer pricing guide</Link>
-                </div>
-              </div>
-              <div className="space-y-3">
-                <p className="text-sm font-black text-[#64748B]">Company</p>
-                <div className="space-y-2.5 text-sm font-medium text-[#64748B]">
-                  <Link to="/about" className="block hover:text-[#16A34A]">About</Link>
-                  <a href="mailto:support@creatorarmour.com" className="block hover:text-[#16A34A]">Contact</a>
-                  <Link to="/privacy-policy" className="block hover:text-[#16A34A]">Privacy</Link>
-                  <Link to="/terms-of-service" className="block hover:text-[#16A34A]">Terms</Link>
+              <div className="space-y-6">
+                <p className="text-[13px] font-black uppercase tracking-[0.25em] text-white/30">Company</p>
+                <div className="flex flex-col gap-4 text-[16px] font-bold text-slate-400">
+                  <Link to="/signup" className="hover:text-white transition-colors w-fit">About Us</Link>
+                  <Link to="/privacy-policy" className="hover:text-white transition-colors w-fit">Privacy</Link>
+                  <Link to="/terms-of-service" className="hover:text-white transition-colors w-fit">Terms</Link>
+                  <a href="mailto:support@creatorarmour.com" className="hover:text-white transition-colors w-fit">Contact</a>
                 </div>
               </div>
             </div>
           </div>
 
-          <div className="md:hidden mt-7 space-y-2">
-            <details className="bg-white border border-[#E5E7EB] rounded-2xl px-4 py-3">
-              <summary className="list-none cursor-pointer text-sm font-black text-[#64748B] flex items-center justify-between">Product <span className="text-[#64748B]">▼</span></summary>
-              <div className="pt-3 space-y-2 text-sm font-medium text-[#64748B]">
-                <Link to="/signup" className="block">Create Collab Link</Link>
-                <Link to="/discover" className="block">Creator Marketplace</Link>
-                <Link to="/collab-requests" className="block">Brand Offers</Link>
-                <Link to="/plan/growth" className="block">Pricing</Link>
-              </div>
-            </details>
-            <details className="bg-white border border-[#E5E7EB] rounded-2xl px-4 py-3">
-              <summary className="list-none cursor-pointer text-sm font-black text-[#64748B] flex items-center justify-between">Creators <span className="text-[#64748B]">▼</span></summary>
-              <div className="pt-3 space-y-2 text-sm font-medium text-[#64748B]">
-                <a href="#how-it-works" className="block">How it works</a>
-                <a href="#marketplace" className="block">Creator packages</a>
-                <button type="button" onClick={() => navigate('/pratyush')} className="block text-left">Examples</button>
-                <Link to="/creator-dashboard" className="block">Creator dashboard</Link>
-              </div>
-            </details>
-            <details className="bg-white border border-[#E5E7EB] rounded-2xl px-4 py-3">
-              <summary className="list-none cursor-pointer text-sm font-black text-[#64748B] flex items-center justify-between">Resources <span className="text-[#64748B]">▼</span></summary>
-              <div className="pt-3 space-y-2 text-sm font-medium text-[#64748B]">
-                <Link to="/blog" className="block">Blog</Link>
-                <a href="mailto:support@creatorarmour.com" className="block">Help Center</a>
-                <Link to="/free-influencer-contract" className="block">Guides for creators</Link>
-                <Link to="/rate-calculator" className="block">Influencer pricing guide</Link>
-              </div>
-            </details>
-            <details className="bg-white border border-[#E5E7EB] rounded-2xl px-4 py-3">
-              <summary className="list-none cursor-pointer text-sm font-black text-[#64748B] flex items-center justify-between">Company <span className="text-[#64748B]">▼</span></summary>
-              <div className="pt-3 space-y-2 text-sm font-medium text-[#64748B]">
-                <Link to="/about" className="block">About</Link>
-                <a href="mailto:support@creatorarmour.com" className="block">Contact</a>
-                <Link to="/privacy-policy" className="block">Privacy</Link>
-                <Link to="/terms-of-service" className="block">Terms</Link>
-              </div>
-            </details>
-          </div>
-
-          <div className="mt-10 border-t border-[#E5E7EB] pt-6">
-            <p className="text-sm font-medium text-[#64748B] text-center">
-              <span className="font-semibold text-[#16A34A]">50+ creators</span> already using Creator Armour to collaborate professionally with brands.
-            </p>
-          </div>
-
-          <div className="mt-6 border-t border-[#E5E7EB] pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-sm text-[#64748B]">
-            <p>© 2026 Creator Armour</p>
-            <p className="font-medium">Made for creators</p>
-            <div className="flex items-center gap-3">
-              <Link to="/privacy-policy" className="hover:text-[#64748B]">Privacy</Link>
-              <span className="text-[#64748B]">•</span>
-              <Link to="/terms-of-service" className="hover:text-[#64748B]">Terms</Link>
+          <div className="mt-16 flex flex-col lg:flex-row items-center justify-between gap-10">
+            <div className="flex flex-col items-center lg:items-start gap-3">
+              <p className="text-[15px] font-medium text-slate-500 text-center lg:text-left">
+                © 2026 Creator Armour. All rights reserved. Built for professional creators.
+              </p>
+            </div>
+            
+            <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-4 text-[14px] font-bold text-slate-500">
+              <Link to="/privacy-policy" className="hover:text-white transition-colors">Privacy Policy</Link>
+              <Link to="/terms-of-service" className="hover:text-white transition-colors">Terms of Service</Link>
+              <Link to="/privacy-policy" className="hover:text-white transition-colors">Cookie Policy</Link>
             </div>
           </div>
         </div>

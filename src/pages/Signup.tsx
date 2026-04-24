@@ -304,7 +304,7 @@ const Signup = () => {
 
     // If session loading is finished and a session exists, redirect.
     // But don't redirect if we're in the middle of signup (let signup handler manage it)
-    if (!loading && session && !isLoading) {
+    if (session && !isLoading) {
       // Check if we just signed up - if so, let the signup handler manage redirect
       const justSignedUp = sessionStorage.getItem('just_signed_up') === 'true';
 
@@ -585,20 +585,33 @@ const Signup = () => {
           toast.error('Failed to sign in: ' + error.message);
         }
       } else if (data.session) {
-        // Don't show toast - AuthLoadingScreen will handle the transition
+        // Fast path: navigate immediately based on metadata or fallback
+        const metadata = data.session.user?.user_metadata || {};
+        const role = metadata.role || metadata.account_mode || accountMode;
+        
+        let path = '/creator-dashboard';
+        if (role === 'brand') {
+          path = '/brand-dashboard';
+        }
+
+        // We still try to get the real profile role for better precision if it's quick
         try {
           const { data: p } = await profilesTable
             .select('role, onboarding_complete')
             .eq('id', data.session.user.id)
             .maybeSingle();
+          
           if (p?.role === 'brand') {
-            navigate('/brand-dashboard', { replace: true });
-          } else {
-            navigate(getCreatorTargetPath(p), { replace: true });
+            path = p.onboarding_complete ? '/brand-dashboard' : '/brand-onboarding';
+          } else if (p?.role) {
+            path = p.onboarding_complete ? '/creator-dashboard' : '/creator-onboarding';
           }
-        } catch {
-          navigate(accountMode === 'brand' ? '/brand-dashboard' : '/creator-onboarding', { replace: true });
+        } catch (e) {
+          console.warn('[Signup] Profile lookup failed, using fallback path:', path);
         }
+
+        console.log('[Signup] Login success, navigating to:', path);
+        window.location.href = path;
       }
     } catch (err: unknown) {
       console.error('[Signup] Email/password exception:', err);

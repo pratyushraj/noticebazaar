@@ -7,6 +7,12 @@ import AuthLoadingScreen from '@/components/AuthLoadingScreen';
 import FullScreenLoader from '@/components/FullScreenLoader';
 import { getCollabReadiness } from '@/lib/collab/readiness';
 import { routes } from '@/lib/routes';
+import { Shield } from 'lucide-react';
+import { triggerHaptic } from '@/lib/utils/haptics';
+
+const debugLog = (...args: any[]) => {
+  if (import.meta.env.DEV) console.log(...args);
+};
 
 interface ProtectedRouteProps {
   children: ReactNode;
@@ -87,7 +93,9 @@ const ProtectedRoute = ({ children, allowedRoles, requiredRole }: ProtectedRoute
     const userRole = profile?.role || null;
 
     // Unauthenticated — redirect to login
+    // Safety: Wait for initialLoadComplete to be true before deciding user is unauthenticated
     if (!session && authStatus === 'unauthenticated' && !routes.isRoot(path) && !routes.isAuth(path)) {
+      debugLog('[ProtectedRoute] Unauthenticated, redirecting to login');
       navigate('/login', { replace: true });
       return;
     }
@@ -129,16 +137,11 @@ const ProtectedRoute = ({ children, allowedRoles, requiredRole }: ProtectedRoute
   // Loading gate (no bypass)
   if (isLoading) {
     return (
-      <div className="min-h-[100dvh] flex flex-col items-center justify-center bg-gradient-to-br from-white via-emerald-50 to-teal-50 px-4">
-        <FullScreenLoader message="Preparing your protected workspace..." />
-        {session && (
-          <button
-            onClick={() => refetchProfile?.()}
-            className="mt-4 px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-semibold transition-colors shadow-lg"
-          >
-            Retry loading profile
-          </button>
-        )}
+      <div className="min-h-[100dvh] flex flex-col items-center justify-center bg-[#020D0A]">
+        <FullScreenLoader 
+          message="Preparing your protected workspace..." 
+          secondaryMessage={session ? "Retrieving your secure credentials..." : undefined}
+        />
       </div>
     );
   }
@@ -149,16 +152,35 @@ const ProtectedRoute = ({ children, allowedRoles, requiredRole }: ProtectedRoute
   // Session but no profile — show error
   if (session && !profile && user) {
     return (
-      <div className="nb-screen-height flex flex-col items-center justify-center bg-gradient-to-br from-white via-emerald-50 to-teal-50 p-4">
-        <div className="text-center max-w-md">
-          <h2 className="text-2xl font-bold text-slate-900 mb-4">Account Setup Issue</h2>
-          <p className="text-slate-600 mb-6">We're having trouble setting up your account. Please try refreshing the page or contact support if the issue persists.</p>
-          <div className="flex items-center justify-center gap-2">
-            <button onClick={() => refetchProfile?.()} className="px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-semibold transition-colors">
-              Retry
+      <div className="nb-screen-height flex flex-col items-center justify-center bg-[#020D0A] p-4 font-outfit relative overflow-hidden">
+        {/* Emerald Background Accents */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-emerald-500/10 rounded-full blur-[100px]" />
+        </div>
+
+        <div className="text-center max-w-md relative z-10">
+          <div className="w-16 h-16 bg-white/5 border border-white/10 rounded-2xl flex items-center justify-center mx-auto mb-6 backdrop-blur-sm">
+            <Shield className="w-8 h-8 text-emerald-400" />
+          </div>
+          <h2 className="text-xl font-black text-white mb-3 uppercase tracking-wider">Account Setup Issue</h2>
+          <p className="text-emerald-100/50 text-[13px] font-medium mb-8 leading-relaxed">
+            We're having trouble retrieving your profile data. This can happen during high traffic or temporary connectivity shifts.
+          </p>
+          <div className="flex flex-col items-center gap-3">
+            <button 
+              onClick={() => {
+                triggerHaptic?.();
+                refetchProfile?.();
+              }} 
+              className="w-full max-w-[200px] px-6 py-3 bg-emerald-500 text-white rounded-xl text-[11px] font-black uppercase tracking-widest transition-all shadow-lg shadow-emerald-500/20 active:scale-95"
+            >
+              Retry Connection
             </button>
-            <button onClick={() => window.location.reload()} className="px-6 py-3 bg-white border border-emerald-200 text-emerald-800 rounded-lg font-semibold transition-colors">
-              Reload
+            <button 
+              onClick={() => window.location.reload()} 
+              className="text-[10px] text-emerald-500/40 hover:text-emerald-500/60 font-black uppercase tracking-widest transition-colors"
+            >
+              Force Reload Page
             </button>
           </div>
         </div>

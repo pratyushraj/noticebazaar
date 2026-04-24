@@ -18,14 +18,12 @@ export interface SocialStats {
  */
 export const fetchInstagramStats = async (handle: string): Promise<SocialStats> => {
   // TODO: Implement actual Instagram API integration
-  // For now, return mocked data
-  await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API delay
-  
-  // Mock data - in production, use Instagram Graph API or similar
-  const mockFollowers = Math.floor(Math.random() * 100000) + 1000;
+  // For now, we return 0 as a safe fallback instead of random numbers
+  // to avoid confusion during development and respect potential API limits.
+  await new Promise(resolve => setTimeout(resolve, 800)); // Simulate API delay
   
   return {
-    followers: mockFollowers,
+    followers: 0,
   };
 };
 
@@ -36,12 +34,10 @@ export const fetchInstagramStats = async (handle: string): Promise<SocialStats> 
  */
 export const fetchYouTubeStats = async (channelId: string): Promise<SocialStats> => {
   // TODO: Implement actual YouTube Data API integration
-  await new Promise(resolve => setTimeout(resolve, 1000));
-  
-  const mockSubs = Math.floor(Math.random() * 50000) + 500;
+  await new Promise(resolve => setTimeout(resolve, 800));
   
   return {
-    subscribers: mockSubs,
+    subscribers: 0,
   };
 };
 
@@ -52,12 +48,10 @@ export const fetchYouTubeStats = async (channelId: string): Promise<SocialStats>
  */
 export const fetchTikTokStats = async (handle: string): Promise<SocialStats> => {
   // TODO: Implement actual TikTok API integration
-  await new Promise(resolve => setTimeout(resolve, 1000));
-  
-  const mockFollowers = Math.floor(Math.random() * 200000) + 1000;
+  await new Promise(resolve => setTimeout(resolve, 800));
   
   return {
-    followers: mockFollowers,
+    followers: 0,
   };
 };
 
@@ -68,12 +62,10 @@ export const fetchTikTokStats = async (handle: string): Promise<SocialStats> => 
  */
 export const fetchTwitterStats = async (handle: string): Promise<SocialStats> => {
   // TODO: Implement actual Twitter API integration
-  await new Promise(resolve => setTimeout(resolve, 1000));
-  
-  const mockFollowers = Math.floor(Math.random() * 50000) + 500;
+  await new Promise(resolve => setTimeout(resolve, 800));
   
   return {
-    followers: mockFollowers,
+    followers: 0,
   };
 };
 
@@ -84,12 +76,10 @@ export const fetchTwitterStats = async (handle: string): Promise<SocialStats> =>
  */
 export const fetchFacebookStats = async (url: string): Promise<SocialStats> => {
   // TODO: Implement actual Facebook Graph API integration
-  await new Promise(resolve => setTimeout(resolve, 1000));
-  
-  const mockFollowers = Math.floor(Math.random() * 30000) + 500;
+  await new Promise(resolve => setTimeout(resolve, 800));
   
   return {
-    followers: mockFollowers,
+    followers: 0,
   };
 };
 

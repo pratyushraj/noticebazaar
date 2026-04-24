@@ -1,10 +1,10 @@
-// Service Worker v1.2.1 - Simple Cache API (no Workbox CDN dependency)
+// Service Worker v1.3.0 - Safer SPA caching
 // Precaches app shell for offline support
 
-const CACHE_NAME = 'creator-armour-v1';
-const STATIC_CACHE = 'creator-armour-static-v1';
-const IMAGE_CACHE = 'creator-armour-images-v1';
-const FONT_CACHE = 'creator-armour-fonts-v1';
+const CACHE_NAME = 'creator-armour-v2';
+const STATIC_CACHE = 'creator-armour-static-v2';
+const IMAGE_CACHE = 'creator-armour-images-v2';
+const FONT_CACHE = 'creator-armour-fonts-v2';
 
 // Files to precache for offline
 const PRECACHE_URLS = [
@@ -71,6 +71,13 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
+  // Let the browser handle hashed build assets directly.
+  // Caching these in the SW can pin stale chunk URLs across deploys and cause
+  // "module script served as text/html" failures when index.html updates first.
+  if (url.pathname.startsWith('/assets/')) {
+    return;
+  }
+
   // Cache-first for images
   if (request.destination === 'image') {
     event.respondWith(
@@ -99,6 +106,26 @@ self.addEventListener('fetch', (event) => {
           }).catch(() => new Response('', { status: 408 }));
         })
       )
+    );
+    return;
+  }
+
+  // Network-first for navigations so new deploys pick up the latest index.html.
+  if (request.mode === 'navigate') {
+    event.respondWith(
+      fetch(request)
+        .then((response) => {
+          if (response.ok) {
+            const responseClone = response.clone();
+            caches.open(STATIC_CACHE).then((cache) => {
+              cache.put('/index.html', responseClone);
+            });
+          }
+          return response;
+        })
+        .catch(() =>
+          caches.open(STATIC_CACHE).then((cache) => cache.match('/index.html')).then((cached) => cached || new Response('', { status: 408 }))
+        )
     );
     return;
   }

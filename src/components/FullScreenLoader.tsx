@@ -1,8 +1,10 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { Shield } from 'lucide-react';
+import { Shield, Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useSession } from '@/contexts/SessionContext';
+import { triggerHaptic } from '@/lib/utils/haptics';
 
 interface FullScreenLoaderProps {
   message?: string;
@@ -13,107 +15,107 @@ export const FullScreenLoader = ({
   message = 'Preparing your protected workspace...',
   secondaryMessage,
 }: FullScreenLoaderProps) => {
-  const [showFooter, setShowFooter] = useState(false);
+  const [showRetry, setShowRetry] = useState(false);
+  const { refetchProfile, session } = useSession();
 
-  // Fade in footer after a delay to keep focus on loader initially
   useEffect(() => {
     const timer = setTimeout(() => {
-      setShowFooter(true);
-    }, 800); // Show footer after 800ms
-
+      setShowRetry(true);
+    }, 6000); // Show retry after 6 seconds
     return () => clearTimeout(timer);
   }, []);
 
   return (
-    <div className="min-h-[100dvh] flex flex-col items-center justify-center bg-gradient-to-br from-white via-emerald-50 to-teal-50 px-4">
-      {/* Branded Loader - Shield with pulse animation */}
-      <div className="relative">
-        {/* Outer gradient ring with pulse */}
-        <motion.div
-          className="absolute inset-0 rounded-full"
+    <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#020D0A] overflow-hidden">
+      {/* Animated Emerald Background Accents */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <motion.div 
           animate={{
             scale: [1, 1.2, 1],
-            opacity: [0.3, 0.6, 0.3],
+            opacity: [0.05, 0.1, 0.05],
           }}
-          transition={{
-            duration: 2,
-            repeat: Infinity,
-            ease: "easeInOut",
-          }}
-          style={{
-            background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.25), rgba(20, 184, 166, 0.25))',
-            filter: 'blur(8px)',
-          }}
+          transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+          className="absolute top-[-10%] left-[-10%] w-[60%] h-[60%] bg-emerald-500 rounded-full blur-[120px]" 
         />
-        
-        {/* Shield icon with subtle rotation */}
-        <motion.div
-          className="relative w-16 h-16 flex items-center justify-center"
+        <motion.div 
           animate={{
-            rotate: [0, 5, -5, 0],
+            scale: [1.2, 1, 1.2],
+            opacity: [0.05, 0.1, 0.05],
           }}
-          transition={{
-            duration: 3,
-            repeat: Infinity,
-            ease: "easeInOut",
-          }}
-        >
-          <Shield className="w-12 h-12 text-primary drop-shadow-lg" strokeWidth={2} />
-          
-          {/* Inner glow */}
-          <motion.div
-            className="absolute inset-0 rounded-full"
-            animate={{
-              scale: [1, 1.1, 1],
-              opacity: [0.5, 0.8, 0.5],
-            }}
-            transition={{
-              duration: 1.5,
-              repeat: Infinity,
-              ease: "easeInOut",
-            }}
-            style={{
-              background: 'radial-gradient(circle, rgba(16, 185, 129, 0.2), transparent)',
-            }}
-          />
-        </motion.div>
+          transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
+          className="absolute bottom-[-10%] right-[-10%] w-[60%] h-[60%] bg-sky-500 rounded-full blur-[120px]" 
+        />
       </div>
 
-      {/* Loading message */}
-      <motion.p
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.2, duration: 0.3 }}
-        className="mt-6 text-lg text-muted-foreground text-center font-medium"
-      >
-        {message}
-      </motion.p>
-      
-      {secondaryMessage && (
-        <motion.p
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.4, duration: 0.3 }}
-          className="mt-2 text-sm text-muted-foreground text-center max-w-md"
-        >
-          {secondaryMessage}
-        </motion.p>
-      )}
-
-      {/* Footer - Fades in after delay */}
-      <AnimatePresence>
-        {showFooter && (
+      <div className="relative z-10 flex flex-col items-center justify-center px-6 text-center">
+        {/* Shield with Glow */}
+        <div className="relative mb-10">
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.5 }}
-            className="mt-12"
+            animate={{ scale: [1, 1.15, 1], opacity: [0.4, 0.7, 0.4] }}
+            transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+            className="absolute inset-0 bg-emerald-500/20 blur-2xl rounded-full"
+          />
+          <div className="w-20 h-20 rounded-3xl bg-white/5 border border-white/10 shadow-2xl flex items-center justify-center relative z-20 backdrop-blur-md">
+            <Shield className="w-10 h-10 text-emerald-400" strokeWidth={1.5} />
+          </div>
+        </div>
+
+        {/* Text content */}
+        <div className="space-y-4">
+          <motion.div 
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="flex items-center justify-center gap-3"
           >
-            <span className="text-sm text-foreground/30">Powered by CreatorArmour ©2026</span>
+            <Loader2 className="w-4 h-4 text-emerald-400 animate-spin" />
+            <h2 className="text-[13px] font-black text-white tracking-[0.25em] uppercase">
+              {message}
+            </h2>
           </motion.div>
-        )}
-      </AnimatePresence>
+          
+          {secondaryMessage && (
+            <p className="text-[13px] text-emerald-100/50 font-medium max-w-[240px] leading-relaxed mx-auto">
+              {secondaryMessage}
+            </p>
+          )}
+        </div>
+
+        {/* Retry Actions */}
+        <AnimatePresence>
+          {showRetry && (
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mt-12 flex flex-col items-center gap-4"
+            >
+              <button
+                onClick={() => {
+                  triggerHaptic?.();
+                  if (refetchProfile) refetchProfile();
+                  else window.location.reload();
+                }}
+                className="px-6 py-3 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 rounded-2xl text-[11px] font-black uppercase tracking-widest transition-all backdrop-blur-sm"
+              >
+                Retry Loading
+              </button>
+              
+              <button
+                onClick={() => window.location.reload()}
+                className="text-[10px] text-emerald-500/40 hover:text-emerald-500/60 font-black uppercase tracking-[0.2em] transition-colors"
+              >
+                Hard Reload
+              </button>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+
+      {/* OS Branding */}
+      <div className="absolute bottom-10 left-0 right-0 text-center opacity-20">
+        <p className="text-[10px] uppercase font-black tracking-[0.4em] text-emerald-500">
+          CreatorArmour OS
+        </p>
+      </div>
     </div>
   );
 };

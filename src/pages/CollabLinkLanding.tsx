@@ -778,25 +778,42 @@ const CollabLinkLanding = () => {
       setLookupStatus('loading');
       try {
         const apiBase = getApiBaseUrl(); 
-        const res = await fetch(`${apiBase}/api/collab/lookup-brand?email=${encodeURIComponent(email)}`);
+        const url = `${apiBase}/api/collab/lookup-brand?email=${encodeURIComponent(email)}`;
+        
+        let res: Response | null = null;
+        let attempts = 0;
+        const maxAttempts = 2;
+        
+        while (attempts <= maxAttempts) {
+          try {
+            res = await fetch(url);
+            break;
+          } catch (e: any) {
+            attempts++;
+            if (attempts > maxAttempts) throw e;
+            console.warn(`[CollabLinkLanding] Brand lookup failed (attempt ${attempts}), retrying...`, e);
+            await new Promise(r => setTimeout(r, 500 * attempts));
+          }
+        }
+
+        if (!res) throw new Error("Fetch failed after retries");
         const json = await res.json();
         
         if (res.ok && json.success && json.data) {
           setLookupStatus('found');
           setLookupData(json.data);
           
-          // Auto-fill if empty
           if (!brandName.trim() && json.data.brand_name) setBrandName(json.data.brand_name);
           
           const backendLogo = json.data.logo;
           console.log("[CollabLinkLanding] Backend returned logo:", backendLogo);
           const inferredLogo = normalizeLogoUrl(undefined, json.data.brand_name || brandName);
-          const finalLogo = backendLogo || (inferredLogo && !failedLogos.has(inferredLogo) ? inferredLogo : null);
+          const finalLogo = backendLogo || (inferredLogo \u0026\u0026 !failedLogos.has(inferredLogo) ? inferredLogo : null);
           
-          if (!isLogoUserUploaded && finalLogo) {
+          if (!isLogoUserUploaded \u0026\u0026 finalLogo) {
             setBrandLogoUrl(finalLogo);
           }
-          if (!brandInstagram.trim() && json.data.instagram) setBrandInstagram(json.data.instagram);
+          if (!brandInstagram.trim() \u0026\u0026 json.data.instagram) setBrandInstagram(json.data.instagram);
           
           setUseBrandProfile(true);
         } else {
@@ -804,7 +821,8 @@ const CollabLinkLanding = () => {
           setLookupData(null);
         }
       } catch (e) {
-        setLookupStatus('idle'); // Silent fail
+        console.error("[CollabLinkLanding] Brand lookup final failure:", e);
+        setLookupStatus('idle');
       }
     }, 600);
     

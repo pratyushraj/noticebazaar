@@ -67,27 +67,35 @@ const getMetadataRole = (user: { user_metadata?: Record<string, unknown> | null 
 };
 
 const fetchRedirectProfile = async (userId: string): Promise<RedirectProfile | null> => {
-  const fullResult = await (supabase
-    .from('profiles')
-    .select('role, onboarding_complete, profile_completion') as any)
-    .eq('id', userId)
-    .single();
+  const fetchPromise = (async () => {
+    const fullResult = await (supabase
+      .from('profiles')
+      .select('role, onboarding_complete, profile_completion') as any)
+      .eq('id', userId)
+      .single();
 
-  if (!fullResult.error) {
-    return (fullResult.data as RedirectProfile | null) ?? null;
-  }
+    if (!fullResult.error) {
+      return (fullResult.data as RedirectProfile | null) ?? null;
+    }
 
-  const fallbackResult = await (supabase
-    .from('profiles')
-    .select('role, onboarding_complete') as any)
-    .eq('id', userId)
-    .single();
+    const fallbackResult = await (supabase
+      .from('profiles')
+      .select('role, onboarding_complete') as any)
+      .eq('id', userId)
+      .single();
 
-  if (fallbackResult.error) {
-    throw fallbackResult.error;
-  }
+    if (fallbackResult.error) {
+      throw fallbackResult.error;
+    }
 
-  return (fallbackResult.data as RedirectProfile | null) ?? null;
+    return (fallbackResult.data as RedirectProfile | null) ?? null;
+  })();
+
+  const timeoutPromise = new Promise<never>((_, reject) => 
+    setTimeout(() => reject(new Error('FETCH_REDIRECT_PROFILE_TIMEOUT')), 5000)
+  );
+
+  return Promise.race([fetchPromise, timeoutPromise]);
 };
 
 const getFallbackRedirectPath = (
@@ -140,6 +148,7 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
   const [user, setUser] = useState<User | null>(null);
   const [initialLoadComplete, setInitialLoadComplete] = useState(false);
   const [isAuthInitializing, setIsAuthInitializing] = useState(false);
+  const [isProfileSlow, setIsProfileSlow] = useState(false);
   const navigate = useNavigate();
 
   // Use useSupabaseQuery to fetch the profile, leveraging React Query's caching and stability
@@ -212,6 +221,7 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
         pricing_max: null,
         open_to_collabs: true,
         content_niches: [],
+        content_vibes: [],
         media_kit_url: null,
         avg_reel_views_manual: null,
         avg_likes_manual: null,
@@ -241,159 +251,77 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
         collab_show_audience_snapshot: true,
         collab_show_past_work: true,
         collab_past_work_items: [],
+        shipping_address: null,
+        pincode: null,
+        follower_count_range: null,
       };
+      // 1. Fetch critical onboarding field alone first
       try {
-        const handleData = await fetchOptionalProfileFields([
-          'username',
-          'instagram_handle',
-          'instagram_profile_photo',
-        ]);
-
-        if (Object.keys(handleData).length > 0) {
-          usernameValue = (handleData as any)?.username || null;
-          instagramHandleValue = (handleData as any)?.instagram_handle || null;
-          optionalFields.instagram_profile_photo = (handleData as any)?.instagram_profile_photo || null;
-        }
-      } catch (_error) {
-        // Optional fields may not exist in older schemas.
-      }
-
-      try {
-        // Columns confirmed present in the live DB.
-        const coreExtData = await fetchOptionalProfileFields([
-          'onboarding_complete',
-          'organization_id',
-          'phone',
-          'location',
-        ]);
-        if (Object.keys(coreExtData).length > 0) {
-          optionalFields = {
-            ...optionalFields,
-            onboarding_complete: (coreExtData as any)?.onboarding_complete ?? false,
-            organization_id: (coreExtData as any)?.organization_id ?? null,
-            phone: (coreExtData as any)?.phone ?? null,
-            location: (coreExtData as any)?.location ?? null,
-          } as any;
-        }
-      } catch (_error) {
-        // Optional fields may not exist in older schemas.
-      }
-
-
-      try {
-        const trialData = await fetchOptionalProfileFields([
-          'is_trial',
-          'trial_started_at',
-          'trial_expires_at',
-          'trial_locked',
-          'bio'
-        ]);
-        if (Object.keys(trialData).length > 0) {
-          optionalFields = {
-            ...optionalFields,
-            is_trial: (trialData as any)?.is_trial ?? false,
-            trial_started_at: (trialData as any)?.trial_started_at ?? null,
-            trial_expires_at: (trialData as any)?.trial_expires_at ?? null,
-            trial_locked: (trialData as any)?.trial_locked ?? false,
-            bio: (trialData as any)?.bio ?? null,
-          } as any;
-        }
-      } catch (_error) {
-        // Optional fields may not exist in older schemas.
-      }
-
-      try {
-        const pricingData = await fetchOptionalProfileFields([
-          'avg_rate_reel',
-        ]);
-        if (Object.keys(pricingData).length > 0) {
-          optionalFields = {
-            ...optionalFields,
-            avg_rate_reel: (pricingData as any)?.avg_rate_reel ?? null,
-            reel_price: (pricingData as any)?.reel_price ?? null,
-            pricing_min: (pricingData as any)?.pricing_min ?? null,
-            pricing_avg: (pricingData as any)?.pricing_avg ?? null,
-            pricing_max: (pricingData as any)?.pricing_max ?? null,
-            typical_story_rate: (pricingData as any)?.typical_story_rate ?? null,
-            story_price: (pricingData as any)?.story_price ?? null,
-            instagram_followers: (pricingData as any)?.instagram_followers ?? null,
-            last_instagram_sync: (pricingData as any)?.last_instagram_sync ?? null,
-          } as any;
-        }
-      } catch (_error) {
-        // Optional fields may not exist in older schemas.
-      }
-
-      try {
-        const payoutData = await fetchOptionalProfileFields([
-          'bank_account_name',
-          'bank_upi',
-          'payout_upi',
-        ]);
-        if (Object.keys(payoutData).length > 0) {
-          optionalFields = {
-            ...optionalFields,
-            bank_account_name: (payoutData as any)?.bank_account_name ?? null,
-            bank_upi: (payoutData as any)?.bank_upi ?? (payoutData as any)?.payout_upi ?? null,
-            payout_upi: (payoutData as any)?.payout_upi ?? (payoutData as any)?.bank_upi ?? null,
-          } as any;
-        }
-      } catch (_error) {
-        // Optional fields may not exist in older schemas.
-      }
-
-      try {
-        const portfolioData = await fetchOptionalProfileFields([
-          'portfolio_links',
-          'media_kit_url',
-        ]);
-        if (Object.keys(portfolioData).length > 0) {
-          optionalFields = {
-            ...optionalFields,
-            portfolio_links: (portfolioData as any)?.portfolio_links || [],
-            media_kit_url: (portfolioData as any)?.media_kit_url ?? null,
-          } as any;
-        }
-      } catch (_error) {
-        // Optional fields may not exist in older schemas.
-      }
-
-      try {
-        const mediaData = await fetchOptionalProfileFields([
-          'discovery_video_url',
-          'portfolio_videos',
-        ]);
-        if (Object.keys(mediaData).length > 0) {
-          optionalFields = {
-            ...optionalFields,
-            discovery_video_url: (mediaData as any)?.discovery_video_url ?? null,
-            portfolio_videos: (mediaData as any)?.portfolio_videos || [],
-          } as any;
-        }
-      } catch (_error) {
-        // Optional fields may not exist in older schemas.
-      }
-
-      // Brand-specific fields are not part of the narrow "core" query above.
-      // Fetch them opportunistically so the brand console can render name/email,
-      // but don't fail if the columns don't exist in older environments.
-      let brandFields: Partial<Profile> = {};
-      try {
-        const { data: brandData, error: brandError } = await (supabase
+        const { data: onboardingData } = await supabase
           .from('profiles')
-          // `profiles.email` doesn't exist in many environments (auth email lives in `auth.users`).
-          // Only read `business_name` here to avoid noisy 400s.
-          .select('business_name') as any)
+          .select('onboarding_complete')
           .eq('id', user.id)
           .single();
-        if (!brandError && brandData) {
-          brandFields = {
-            business_name: (brandData as any)?.business_name ?? null,
-          } as any;
+        if (onboardingData) {
+          optionalFields.onboarding_complete = onboardingData.onboarding_complete;
         }
-      } catch (_error) {
-        // ignore brand fields
+      } catch (e) {
+        debugWarn('[SessionContext] onboarding_complete field not found in profiles table');
       }
+
+      let brandFields: Partial<Profile> = {};
+      // 2. Fetch other groups sequentially but with internal parallelism for those that are likely to exist
+      const fetchGroup = async () => {
+        // Group handles and basic info
+        try {
+          const handleData = await fetchOptionalProfileFields(['username', 'instagram_handle', 'instagram_profile_photo']);
+          usernameValue = handleData?.username || null;
+          instagramHandleValue = handleData?.instagram_handle || null;
+          optionalFields.instagram_profile_photo = handleData?.instagram_profile_photo || null;
+        } catch (e) {}
+
+        // Group trial and bio
+        try {
+          const trialData = await fetchOptionalProfileFields(['is_trial', 'trial_started_at', 'trial_expires_at', 'trial_locked', 'bio']);
+          optionalFields = { ...optionalFields, ...trialData } as any;
+        } catch (e) {}
+
+        // Group core extensions (minus onboarding_complete which we already got)
+        try {
+          const extData = await fetchOptionalProfileFields(['organization_id', 'phone', 'location', 'content_niches', 'content_vibes', 'top_cities']);
+          optionalFields = { ...optionalFields, ...extData } as any;
+        } catch (e) {}
+
+        // Group pricing
+        try {
+          const pricingData = await fetchOptionalProfileFields(['avg_rate_reel', 'reel_price', 'pricing_min', 'pricing_avg', 'pricing_max', 'story_price', 'instagram_followers', 'last_instagram_sync']);
+          optionalFields = { ...optionalFields, ...pricingData } as any;
+        } catch (e) {}
+
+        // Group payout
+        try {
+          const payoutData = await fetchOptionalProfileFields(['bank_account_name', 'bank_upi', 'payout_upi']);
+          if (payoutData.bank_upi || payoutData.payout_upi) {
+            optionalFields.bank_upi = payoutData.bank_upi || payoutData.payout_upi;
+            optionalFields.payout_upi = payoutData.payout_upi || payoutData.bank_upi;
+          }
+          if (payoutData.bank_account_name) optionalFields.bank_account_name = payoutData.bank_account_name;
+        } catch (e) {}
+
+        // Group portfolio and media
+        try {
+          const mediaData = await fetchOptionalProfileFields(['portfolio_links', 'media_kit_url', 'discovery_video_url', 'portfolio_videos']);
+          optionalFields = { ...optionalFields, ...mediaData } as any;
+        } catch (e) {}
+
+        // Brand fields
+        try {
+          const { data: brandData } = await supabase.from('profiles').select('business_name').eq('id', user.id).single();
+          if (brandData) brandFields.business_name = brandData.business_name;
+        } catch (e) {}
+      };
+
+      await fetchGroup();
 
       // Fallback to user metadata if profile doesn't have the handle
       const metadataHandle = user?.user_metadata?.instagram_handle || null;
@@ -488,9 +416,21 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
   const isBrand = profile?.role === 'brand';
   const organizationId = profile?.organization_id || null;
   const trialStatus = useMemo(() => getTrialStatus(profile), [profile]); // Calculate trial status
+  // Safety timeout for profile loading
+  useEffect(() => {
+    if (isLoadingProfile && !profile) {
+      const timer = setTimeout(() => {
+        setIsProfileSlow(true);
+      }, 7000);
+      return () => clearTimeout(timer);
+    } else {
+      setIsProfileSlow(false);
+    }
+  }, [isLoadingProfile, !!profile]);
+
   // Overall loading state: initial session not complete, OR profile loading when we have no profile yet.
-  // Once we have profile data, don't gate on refetches — avoids loop where dashboard mounts, refetches profile, loading flips true, loader shows again.
-  const loading = !initialLoadComplete || (isLoadingProfile && !profile);
+  // If profile is taking too long (isProfileSlow), we stop gating here and let ProtectedRoute handle the fallback/retry.
+  const loading = !initialLoadComplete || (isLoadingProfile && !profile && !isProfileSlow);
   const authStatus: AuthStatus = loading
     ? 'loading'
     : session
@@ -500,15 +440,26 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
   // Clear auth initialization state once profile is loaded
   // Add a small delay to ensure smooth transition and let dashboard start fetching data
   useEffect(() => {
-    if (isAuthInitializing && profile && !isLoadingProfile) {
+    // If loading is finished, we should clear the initialization state
+    // We check initialLoadComplete to ensure we've at least tried to fetch the session
+    if (isAuthInitializing && !isLoadingProfile && initialLoadComplete) {
       // Delay to ensure smooth transition and give dashboard time to start fetching
-      // This prevents flicker between loading screen and dashboard loading states
       const timer = setTimeout(() => {
         setIsAuthInitializing(false);
-      }, 800); // Increased delay to ensure dashboard has time to start fetching
+      }, 500); 
       return () => clearTimeout(timer);
     }
-  }, [isAuthInitializing, profile, isLoadingProfile]);
+  }, [isAuthInitializing, isLoadingProfile, initialLoadComplete]);
+
+  // Safety timeout: clear isAuthInitializing after 4 seconds even if profile fetch is slow
+  useEffect(() => {
+    if (isAuthInitializing) {
+      const timer = setTimeout(() => {
+        setIsAuthInitializing(false);
+      }, 4000);
+      return () => clearTimeout(timer);
+    }
+  }, [isAuthInitializing]);
 
   // Check and lock trial if expired on profile load
   useEffect(() => {
@@ -524,6 +475,7 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
 
   useEffect(() => {
     const initializeSession = async () => {
+      let hasAccessToken = false;
       try {
         // PKCE OAuth callback support (Supabase returns `?code=...`).
         // In some environments, `getSession()` does not reliably exchange the code for a session
@@ -563,7 +515,7 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
         // We need to extract the route, let Supabase process tokens, then clean hash IMMEDIATELY
         // to prevent React Router from routing to /access_token=...
         let hash = window.location.hash;
-        let hasAccessToken = false;
+        hasAccessToken = false;
         let intendedRoute: string | null = null;
 
         // Check for double hash format: #/route#access_token=...
@@ -826,7 +778,14 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
           setUser(null);
         }
       } finally {
-        setInitialLoadComplete(true); // Mark initial load as complete
+        // Safety delay to ensure onAuthStateChange has a chance to fire
+        // if getSession() returned null but tokens exist in storage
+        if (hasAccessToken) {
+          debugLog('[SessionContext] Waiting for onAuthStateChange to process hash tokens...');
+          // Don't set initialLoadComplete yet
+        } else {
+          setInitialLoadComplete(true);
+        }
       }
     };
 
@@ -845,7 +804,12 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
         setSession(session);
         const currentUser = session?.user ?? null;
         setUser(currentUser);
-        setInitialLoadComplete(true); // Ensure this is set after any auth change
+        
+        // Ensure initialLoadComplete is set after any auth change
+        // We use a small timeout to let the state propagate smoothly
+        setTimeout(() => {
+          setInitialLoadComplete(true);
+        }, 50);
 
         // Track auth initialization state - true when user just signed in
         if (event === 'SIGNED_IN' && session) {
