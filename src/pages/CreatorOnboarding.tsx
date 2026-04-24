@@ -718,7 +718,6 @@ export default function CreatorOnboarding() {
 
   const getNormalizedCityFields = () => {
     const values = [
-      normalizeCityValue(baseCity),
       normalizeCityValue(topCity1),
       normalizeCityValue(topCity2),
       normalizeCityValue(topCity3),
