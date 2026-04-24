@@ -263,7 +263,7 @@ const FiverrPackageEditor: React.FC<FiverrPackageEditorProps> = ({
                   onChange={(e) => handleUpdate(template.id, { description: e.target.value })}
                   disabled={disabled}
                   placeholder="What's included in this package?"
-                  className="text-sm leading-relaxed bg-white/4 border-white/8 text-white/90 placeholder:text-white/35 resize-none min-h-[92px] rounded-2xl"
+                  className="text-sm leading-relaxed bg-white/5 border-white/10 text-white/90 placeholder:text-white/35 resize-none min-h-[88px] rounded-2xl shadow-inner shadow-black/10 focus-visible:ring-emerald-400/20"
                 />
 
                 <div className="space-y-2">
@@ -279,7 +279,7 @@ const FiverrPackageEditor: React.FC<FiverrPackageEditorProps> = ({
                   
                   <div className="space-y-2">
                     {(template.deliverables || []).map((item, idx) => (
-                      <div key={idx} className="group flex items-center gap-2.5 rounded-2xl border border-white/6 bg-white/4 px-3 py-2.5">
+                      <div key={idx} className="group flex items-center gap-2.5 rounded-2xl border border-white/6 bg-white/5 px-3 py-2.5">
                         <Check className="w-3.5 h-3.5 text-emerald-400 flex-shrink-0" />
                         <Input
                           value={item}
