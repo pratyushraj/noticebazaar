@@ -168,101 +168,128 @@ const FiverrPackageEditor: React.FC<FiverrPackageEditorProps> = ({
 
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {localTemplates.map((template) => {
           const isExpanded = expandedId === template.id;
           const isPremium = template.id === 'premium';
           const isStandard = template.id === 'standard';
+          const isBasic = template.id === 'basic';
 
           return (
             <Card 
               key={template.id} 
               className={cn(
-                "relative overflow-hidden transition-all duration-300 border bg-muted/30",
-                isStandard && "border-primary/30 bg-primary/5",
-                isPremium && "border-warning/30 bg-warning/5",
-                isExpanded && " ring-2 ring-primary/20 scale-[1.02]"
+                "relative overflow-hidden rounded-[2rem] border bg-[#171b24] shadow-[0_18px_50px_rgba(0,0,0,0.22)] transition-all duration-300",
+                "border-white/8 hover:border-emerald-400/40 hover:-translate-y-0.5 hover:shadow-[0_24px_70px_rgba(0,0,0,0.32)]",
+                isStandard && "border-emerald-400/35 shadow-[0_20px_60px_rgba(16,185,129,0.10)]",
+                isPremium && "border-amber-400/30 shadow-[0_20px_60px_rgba(245,158,11,0.10)]",
+                isExpanded && "ring-2 ring-emerald-400/20 scale-[1.01]"
               )}
             >
+              <div className={cn(
+                "absolute inset-x-0 top-0 h-1.5 bg-gradient-to-r",
+                isBasic ? "from-slate-200/60 via-slate-400/30 to-transparent" :
+                isStandard ? "from-emerald-400/60 via-green-400/30 to-transparent" :
+                "from-amber-400/60 via-orange-400/30 to-transparent"
+              )} />
               {/* Header */}
-              <div className="p-4 border-b border-border/50">
-                <div className="flex justify-between items-start mb-2">
-                  <div className="flex items-center gap-2">
+              <div className="p-4 sm:p-5 border-b border-white/6">
+                <div className="flex items-start justify-between gap-3 mb-4">
+                  <div className="flex items-center gap-2 flex-wrap">
                     <span className={cn(
-                      "text-[10px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded",
-                      template.id === 'basic' ? "bg-background/20 text-muted-foreground" :
-                      isStandard ? "bg-primary/20 text-primary" : "bg-warning/20 text-warning"
+                      "text-[10px] font-black uppercase tracking-[0.26em] px-2.5 py-1 rounded-full border",
+                      isBasic ? "bg-white/6 text-white/55 border-white/8" :
+                      isStandard ? "bg-emerald-500/10 text-emerald-300 border-emerald-400/20" :
+                      "bg-amber-500/10 text-amber-300 border-amber-400/20"
                     )}>
                       {template.id}
                     </span>
                     {template.isPopular && (
-                      <span className="text-[9px] bg-amber-500 text-white font-black px-1.5 py-0.5 rounded uppercase tracking-tighter">Most Popular</span>
+                      <span className="text-[9px] bg-amber-500 text-white font-black px-2.5 py-1 rounded-full uppercase tracking-[0.2em] shadow-sm">
+                        Most Popular
+                      </span>
                     )}
                   </div>
                   <button type="button" 
                     onClick={() => setExpandedId(isExpanded ? null : template.id)}
-                    className="p-1 hover:bg-secondary/50 rounded-full transition-colors"
+                    className="p-2 rounded-full border border-white/6 hover:bg-white/6 transition-colors"
                   >
-                    <Settings2 className={cn("w-4 h-4 text-muted-foreground", isExpanded && "text-primary")} />
+                    <Settings2 className={cn("w-4 h-4 text-white/45", isExpanded && "text-emerald-300")} />
                   </button>
                 </div>
                 
-                <div className="flex items-center gap-2">
-                  <span className="text-lg">{template.icon}</span>
-                  <Input
-                    value={template.label}
-                    onChange={(e) => handleUpdate(template.id, { label: e.target.value })}
-                    disabled={disabled}
-                    className="bg-transparent border-none p-0 text-sm font-bold shadow-none focus-visible:ring-0 h-auto"
-                  />
-                </div>
-                
-                <div className="flex items-baseline gap-1 mt-2">
-                  <span className="text-lg font-black tracking-tight">₹</span>
-                  <Input
-                    type="number"
-                    value={template.budget || 0}
-                    onChange={(e) => handleUpdate(template.id, { budget: parseInt(e.target.value) || 0 })}
-                    disabled={disabled}
-                    className="bg-transparent border-none p-0 text-2xl font-black shadow-none focus-visible:ring-0 h-auto w-24"
-                  />
+                <div className="flex items-start gap-3">
+                  <div className={cn(
+                    "w-11 h-11 rounded-2xl flex items-center justify-center shrink-0 border",
+                    isBasic ? "bg-white/6 border-white/8" :
+                    isStandard ? "bg-emerald-500/10 border-emerald-400/20" :
+                    "bg-amber-500/10 border-amber-400/20"
+                  )}>
+                    <span className="text-lg">{template.icon}</span>
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <Input
+                      value={template.label}
+                      onChange={(e) => handleUpdate(template.id, { label: e.target.value })}
+                      disabled={disabled}
+                      className="bg-transparent border-none p-0 text-[1.02rem] font-extrabold tracking-tight shadow-none focus-visible:ring-0 h-auto text-white placeholder:text-white/35"
+                    />
+                    <div className="mt-3 flex items-end justify-between gap-3">
+                      <div className="flex items-baseline gap-1">
+                        <span className="text-[13px] font-bold text-white/45">₹</span>
+                        <Input
+                          type="number"
+                          value={template.budget || 0}
+                          onChange={(e) => handleUpdate(template.id, { budget: parseInt(e.target.value) || 0 })}
+                          disabled={disabled}
+                          className={cn(
+                            "bg-transparent border-none p-0 text-[2rem] sm:text-[2.15rem] font-black tracking-tight shadow-none focus-visible:ring-0 h-auto w-28",
+                            isBasic ? "text-white" : isStandard ? "text-emerald-300" : "text-amber-300"
+                          )}
+                        />
+                      </div>
+                      <div className="pb-1 text-[10px] uppercase tracking-[0.24em] text-white/35">
+                        Base rate
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
 
               {/* Body */}
-              <div className="p-4 space-y-4">
+              <div className="p-4 sm:p-5 space-y-5">
                 <Textarea
                   value={template.description || ''}
                   onChange={(e) => handleUpdate(template.id, { description: e.target.value })}
                   disabled={disabled}
                   placeholder="What's included in this package?"
-                  className="text-xs bg-muted/50 border-border/5 resize-none min-h-[60px]"
+                  className="text-sm leading-relaxed bg-white/4 border-white/8 text-white/90 placeholder:text-white/35 resize-none min-h-[92px] rounded-2xl"
                 />
 
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">Deliverables</span>
+                    <span className="text-[11px] font-black text-white/45 uppercase tracking-[0.24em]">Deliverables</span>
                     <button type="button" 
                       onClick={() => addDeliverable(template.id)}
-                      className="text-[11px] text-primary hover:underline font-bold"
+                      className="text-[11px] text-emerald-400 hover:text-emerald-300 font-black tracking-wide"
                     >
                       + Add
                     </button>
                   </div>
                   
-                  <div className="space-y-1.5">
+                  <div className="space-y-2">
                     {(template.deliverables || []).map((item, idx) => (
-                      <div key={idx} className="flex items-center gap-2 group">
-                        <Check className="w-3.5 h-3.5 text-primary flex-shrink-0" />
+                      <div key={idx} className="group flex items-center gap-2.5 rounded-2xl border border-white/6 bg-white/4 px-3 py-2.5">
+                        <Check className="w-3.5 h-3.5 text-emerald-400 flex-shrink-0" />
                         <Input
                           value={item}
                           onChange={(e) => updateDeliverable(template.id, idx, e.target.value)}
                           disabled={disabled}
-                          className="text-[11px] bg-transparent border-none p-0 h-auto shadow-none focus-visible:ring-0 flex-1 truncate"
+                          className="text-sm bg-transparent border-none p-0 h-auto shadow-none focus-visible:ring-0 flex-1 truncate text-white/90 placeholder:text-white/35"
                         />
                         <button type="button" 
                           onClick={() => removeDeliverable(template.id, idx)}
-                          className="opacity-0 group-hover:opacity-100 p-0.5 text-destructive hover:bg-destructive/10 rounded transition-all"
+                          className="opacity-0 group-hover:opacity-100 p-1.5 text-white/40 hover:bg-white/6 rounded-xl transition-all"
                         >
                           <Trash2 className="w-3 h-3" />
                         </button>
@@ -272,9 +299,9 @@ const FiverrPackageEditor: React.FC<FiverrPackageEditorProps> = ({
                 </div>
 
                 {isExpanded && (
-                  <div className="pt-2 grid grid-cols-2 gap-3 border-t border-border/50 animate-in fade-in slide-in-from-top-2 duration-300">
+                  <div className="pt-2 grid grid-cols-2 gap-3 border-t border-white/6 animate-in fade-in slide-in-from-top-2 duration-300">
                     <div className="space-y-1">
-                      <label className="text-[10px] text-muted-foreground flex items-center gap-1">
+                      <label className="text-[10px] text-white/45 flex items-center gap-1 font-black uppercase tracking-[0.2em]">
                         <Clock className="w-3 h-3" /> Delivery Time
                       </label>
                       <div className="flex items-center gap-1.5">
@@ -283,9 +310,9 @@ const FiverrPackageEditor: React.FC<FiverrPackageEditorProps> = ({
                           value={template.deadlineDays || 0}
                           onChange={(e) => handleUpdate(template.id, { deadlineDays: parseInt(e.target.value) || 0 })}
                           disabled={disabled}
-                          className="h-8 text-xs bg-muted/50 border-border/5 w-12"
+                          className="h-8 text-sm bg-white/4 border-white/8 w-16 rounded-xl text-white/90"
                         />
-                        <span className="text-[10px] text-muted-foreground font-medium">Days</span>
+                        <span className="text-[10px] text-white/40 font-medium">Days</span>
                       </div>
                     </div>
                     <div className="space-y-1 flex flex-col justify-end">
@@ -293,8 +320,10 @@ const FiverrPackageEditor: React.FC<FiverrPackageEditorProps> = ({
                         type="button"
                         onClick={() => handleUpdate(template.id, { isPopular: !template.isPopular })}
                         className={cn(
-                          "h-8 px-2 rounded-lg text-[10px] font-black uppercase tracking-tight border transition-all",
-                          template.isPopular ? "bg-amber-500 text-white border-amber-600" : "bg-white text-muted-foreground border-border/50"
+                          "h-8 px-2 rounded-xl text-[10px] font-black uppercase tracking-[0.18em] border transition-all",
+                          template.isPopular
+                            ? "bg-amber-500 text-white border-amber-500 shadow-sm"
+                            : "bg-white/5 text-white/60 border-white/8 hover:bg-white/8"
                         )}
                       >
                         {template.isPopular ? "Unmark Popular" : "Mark Popular"}
