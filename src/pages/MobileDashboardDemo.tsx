@@ -597,6 +597,31 @@ const buildProfileFormData = (profile: any, userEmail?: string | null) => {
     const fullName = `${profile?.first_name || ''} ${profile?.last_name || ''}`.trim() || profile?.full_name || '';
     const parsedLocation = parseLocationParts(profile?.location);
     const portfolioItems = buildPortfolioSlots(profile?.portfolio_items || profile?.collab_past_work_items, profile?.portfolio_links);
+    const normalizeNicheLabel = (value: string) => {
+        const raw = String(value || '').trim().toLowerCase();
+        if (raw === 'food/cooking' || raw === 'food cooking') return 'Food';
+        if (raw === 'business/finance' || raw === 'business finance') return 'Business';
+        if (raw === 'fitness/health' || raw === 'fitness health') return 'Fitness';
+        return value;
+    };
+    const normalizeVibeLabel = (value: string) => {
+        const raw = String(value || '').trim().toLowerCase();
+        const aliases: Record<string, string> = {
+            'experimental': 'Experimental',
+            'aesthetic': 'Aesthetic',
+            'relatable': 'Relatable',
+            'informative': 'Informative',
+            'high energy': 'High Energy',
+            'minimalist': 'Minimalist',
+            'luxury': 'Luxury',
+            'bold': 'Bold',
+            'fun': 'Fun',
+            'professional': 'Professional',
+            'authentic': 'Authentic',
+            'cinematic': 'Cinematic',
+        };
+        return aliases[raw] || value;
+    };
     return {
         full_name: fullName,
         email: profile?.email || userEmail || '',
@@ -613,8 +638,8 @@ const buildProfileFormData = (profile: any, userEmail?: string | null) => {
         avg_rate_reel: profile?.avg_rate_reel || profile?.suggested_reel_rate || '5000',
         suggested_reel_rate: profile?.suggested_reel_rate || profile?.avg_rate_reel || '5000',
         story_price: profile?.story_price || '2000',
-        content_niches: Array.isArray(profile?.content_niches) ? profile.content_niches : [],
-        content_vibes: Array.isArray(profile?.content_vibes) ? profile.content_vibes : [],
+        content_niches: Array.isArray(profile?.content_niches) ? profile.content_niches.map(normalizeNicheLabel) : [],
+        content_vibes: Array.isArray(profile?.content_vibes) ? profile.content_vibes.map(normalizeVibeLabel) : [],
         bank_account_name: profile?.bank_account_name || '',
         instagram_followers: profile?.instagram_followers || profile?.followers_count || profile?.followers || '',
         payout_upi: profile?.payout_upi || profile?.bank_upi || profile?.upi_id || '',
@@ -3289,18 +3314,18 @@ const MobileDashboardDemo = ({
                                         </div>
                                         <div className="flex flex-wrap gap-2">
                                             {[
-                                                { label: 'Aesthetic', icon: <Sparkles className="w-3.5 h-3.5" />, recommended: true },
-                                                { label: 'High Energy', icon: <Flame className="w-3.5 h-3.5" />, recommended: true },
+                                                { label: 'Aesthetic', icon: <Sparkles className="w-3.5 h-3.5" /> },
+                                                { label: 'Relatable', icon: <Handshake className="w-3.5 h-3.5" /> },
+                                                { label: 'Informative', icon: <Info className="w-3.5 h-3.5" /> },
+                                                { label: 'High Energy', icon: <Zap className="w-3.5 h-3.5" /> },
                                                 { label: 'Minimalist', icon: <Layers className="w-3.5 h-3.5" /> },
-                                                { label: 'Cinematic', icon: <Video className="w-3.5 h-3.5" /> },
-                                                { label: 'Raw/Authentic', icon: <Zap className="w-3.5 h-3.5" /> },
-                                                { label: 'Humor', icon: <Laugh className="w-3.5 h-3.5" /> },
-                                                { label: 'Educational', icon: <GraduationCap className="w-3.5 h-3.5" /> },
-                                                { label: 'Review', icon: <Star className="w-3.5 h-3.5" /> },
-                                                { label: 'Lifestyle', icon: <Coffee className="w-3.5 h-3.5" /> },
-                                                { label: 'Vlog', icon: <Camera className="w-3.5 h-3.5" /> },
-                                                { label: 'Tutorial', icon: <BookOpen className="w-3.5 h-3.5" /> },
-                                                { label: 'B-Roll', icon: <Film className="w-3.5 h-3.5" /> }
+                                                { label: 'Luxury', icon: <Star className="w-3.5 h-3.5" /> },
+                                                { label: 'Bold', icon: <Flame className="w-3.5 h-3.5" /> },
+                                                { label: 'Fun', icon: <Laugh className="w-3.5 h-3.5" /> },
+                                                { label: 'Professional', icon: <Briefcase className="w-3.5 h-3.5" /> },
+                                                { label: 'Authentic', icon: <User className="w-3.5 h-3.5" /> },
+                                                { label: 'Cinematic', icon: <Film className="w-3.5 h-3.5" /> },
+                                                { label: 'Experimental', icon: <Video className="w-3.5 h-3.5" /> }
                                             ].map((vibe) => {
                                                 const isSelected = (profileFormData.content_vibes || []).includes(vibe.label);
                                                 return (
@@ -3343,9 +3368,10 @@ const MobileDashboardDemo = ({
                                         </div>
                                         <div className="flex flex-wrap gap-2">
                                             {[
-                                                'Fashion', 'Tech', 'Lifestyle', 'Travel', 'Food/Cooking', 
-                                                'Beauty', 'Fitness/Health', 'Gaming', 'Education', 
-                                                'Business/Finance', 'Parenting', 'Comedy'
+                                                'Beauty', 'Fashion', 'Lifestyle', 'Tech & Gadgets', 'Fitness',
+                                                'Food', 'Travel', 'Gaming', 'Education', 'Parenting',
+                                                'Pets', 'Finance', 'Art', 'Entertainment', 'Sports',
+                                                'Business', 'Wellness', 'Automotive', 'Spirituality'
                                             ].map((niche) => {
                                                 const isSelected = (profileFormData.content_niches || []).includes(niche);
                                                 return (
