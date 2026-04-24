@@ -43,6 +43,8 @@ const queryClient = new QueryClient({
   },
 });
 
+const APP_SHELL_VERSION = '2026-04-24-2';
+
 const RouterInstrumentation = () => {
   usePerformanceMonitoring();
   return null;
@@ -57,28 +59,25 @@ const App = () => {
   // On localhost, proactively unregister SW and clear our Workbox caches.
   useEffect(() => {
     if (typeof window === "undefined") return;
-    const host = window.location.hostname.toLowerCase();
-    const isLocalhost = host === "localhost" || host === "127.0.0.1";
-    if (!isLocalhost) return;
     if (!("serviceWorker" in navigator)) return;
+
+    const previousVersion = window.localStorage.getItem('app_shell_version');
+    if (previousVersion === APP_SHELL_VERSION) return;
 
     navigator.serviceWorker.getRegistrations()
       .then((regs) => Promise.all(regs.map((r) => r.unregister())))
       .catch(() => { /* ignore */ });
 
-    // Best-effort cache cleanup (may be blocked in some browser modes).
-    // Use "delete all" on localhost because cache names vary across Workbox versions/builds
-    // and stale bundles can cause redirect loops (e.g. /404 interpreted as a username).
+    // Best-effort cache cleanup. This is safe to do once per app-shell version
+    // because stale HTML can pin old chunk URLs and produce MIME errors.
     const c: any = (window as any).caches;
     if (c?.keys && c?.delete) {
       c.keys()
-        .then((keys: string[]) =>
-          Promise.all(
-            keys.map((k) => c.delete(k))
-          )
-        )
+        .then((keys: string[]) => Promise.all(keys.map((k) => c.delete(k))))
         .catch(() => { /* ignore */ });
     }
+
+    window.localStorage.setItem('app_shell_version', APP_SHELL_VERSION);
   }, []);
 
   // Removed the temporary useEffect block for role update
