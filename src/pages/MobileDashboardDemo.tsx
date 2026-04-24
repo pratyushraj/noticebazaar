@@ -1300,10 +1300,11 @@ const MobileDashboardDemo = ({
         return url;
     };
     const avatarUrl =
-        resolveAvatarUrl(profile?.avatar_url) ||
         resolveAvatarUrl(profile?.instagram_profile_photo) ||
+        resolveAvatarUrl(profile?.avatar_url) ||
         resolveAvatarUrl(liveCollabProfile?.profile_photo) ||
         avatarFallbackUrl;
+    const avatarVersionedUrl = withCacheBuster(avatarUrl, profile?.updated_at) || avatarUrl;
     const rawDisplayName = liveCollabProfile?.name || 
         profile?.full_name || 
         (profile?.first_name ? `${profile.first_name}${profile.last_name ? ' ' + profile.last_name : ''}` : null) || 
@@ -5073,7 +5074,7 @@ const MobileDashboardDemo = ({
                                         secondaryTextColor={secondaryTextColor}
                                         profile={profile}
                                         username={username}
-                                        avatarUrl={avatarUrl}
+                                        avatarUrl={avatarVersionedUrl}
                                         avatarFallbackUrl={avatarFallbackUrl}
                                         isPushSubscribed={isPushSubscribed}
                                         setActiveSettingsPage={setActiveSettingsPage}
