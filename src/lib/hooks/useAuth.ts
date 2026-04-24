@@ -10,28 +10,12 @@ export const useSignOut = () => {
 
   return useSupabaseMutation<void, Error, void>(
     async () => {
+      // 1. Immediately clear local state to prevent transient errors during network request
       try {
-        // Sign out from Supabase - this clears the session on the server
-        const { error } = await supabase.auth.signOut();
+        queryClient.clear();
         
-        // Check if the error is due to a missing session (user already logged out)
-        if (error && error.message !== 'Auth session missing!' && error.message !== 'Invalid Refresh Token: Refresh Token Not Found') {
-          throw new Error(error.message);
-        }
-        // If error is 'Auth session missing!' or 'Invalid Refresh Token', we treat it as a successful sign out
-      } catch (err: any) {
-        // Even if signOut fails, clear local state
-        console.warn('Sign out error (proceeding with cleanup):', err);
-      }
-      
-      // Always clear cache and local storage regardless of signOut result
-      queryClient.clear();
-      
-      // Clear all Supabase-related localStorage keys
-      try {
-        // Get all localStorage keys
+        // Clear all Supabase-related localStorage keys
         const keys = Object.keys(localStorage);
-        // Find and remove all Supabase auth-related keys
         keys.forEach(key => {
           if (key.includes('supabase.auth') || key.startsWith('sb-')) {
             localStorage.removeItem(key);
@@ -44,6 +28,18 @@ export const useSignOut = () => {
         localStorage.removeItem('aiPitchHistory');
       } catch (e) {
         // Ignore localStorage errors
+      }
+
+      try {
+        // Sign out from Supabase - this clears the session on the server
+        const { error } = await supabase.auth.signOut();
+        
+        // Check if the error is due to a missing session (user already logged out)
+        if (error && error.message !== 'Auth session missing!' && error.message !== 'Invalid Refresh Token: Refresh Token Not Found') {
+          throw new Error(error.message);
+        }
+      } catch (err: any) {
+        console.warn('Sign out error (proceeding with cleanup):', err);
       }
       
       // Verify session is cleared

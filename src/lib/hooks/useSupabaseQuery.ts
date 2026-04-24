@@ -76,6 +76,26 @@ export const useSupabaseQuery = <
       
       const isMissingTableOrFunction = isPartnerTableOrFunction && isMissingTableError;
       
+      const isAuthError =
+        errorMessageStr.includes('not authenticated') ||
+        errorMessageStr.includes('session expired') ||
+        errorMessageStr.includes('unauthorized') ||
+        errorMessageStr.includes('jwt') ||
+        errorCode === 401 ||
+        errorCode === 'PGRST301' ||
+        errorCode === '401';
+
+      if (isAuthError) {
+        // Silently handle auth errors during transitions - ProtectedRoute/SessionContext handles these.
+        if (import.meta.env.DEV) {
+          console.warn('[useSupabaseQuery] Suppressing auth error during transition:', {
+            queryKey: queryKeyStr,
+            error: errorMessageStr,
+          });
+        }
+        return;
+      }
+
       if (isMissingTableOrFunction) {
         // Log in dev so developers know a table is missing, but don't toast
         if (import.meta.env.DEV) {

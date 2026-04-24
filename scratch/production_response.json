@@ -1,0 +1,87 @@
+* Host noticebazaar-api.onrender.com:443 was resolved.
+* IPv6: (none)
+* IPv4: 216.24.57.251, 216.24.57.7
+*   Trying 216.24.57.251:443...
+* Connected to noticebazaar-api.onrender.com (216.24.57.251) port 443
+* ALPN: curl offers h2,http/1.1
+} [5 bytes data]
+* TLSv1.3 (OUT), TLS handshake, Client hello (1):
+} [512 bytes data]
+*  CAfile: /opt/anaconda3/ssl/cacert.pem
+*  CApath: none
+{ [5 bytes data]
+* TLSv1.3 (IN), TLS handshake, Server hello (2):
+{ [122 bytes data]
+* TLSv1.3 (IN), TLS handshake, Encrypted Extensions (8):
+{ [19 bytes data]
+* TLSv1.3 (IN), TLS handshake, Certificate (11):
+{ [2534 bytes data]
+* TLSv1.3 (IN), TLS handshake, CERT verify (15):
+{ [80 bytes data]
+* TLSv1.3 (IN), TLS handshake, Finished (20):
+{ [52 bytes data]
+* TLSv1.3 (OUT), TLS change cipher, Change cipher spec (1):
+} [1 bytes data]
+* TLSv1.3 (OUT), TLS handshake, Finished (20):
+} [52 bytes data]
+* SSL connection using TLSv1.3 / TLS_AES_256_GCM_SHA384 / X25519 / id-ecPublicKey
+* ALPN: server accepted h2
+* Server certificate:
+*  subject: CN=onrender.com
+*  start date: Mar 28 21:00:26 2026 GMT
+*  expire date: Jun 26 22:00:22 2026 GMT
+*  subjectAltName: host "noticebazaar-api.onrender.com" matched cert's "*.onrender.com"
+*  issuer: C=US; O=Google Trust Services; CN=WE1
+*  SSL certificate verify ok.
+*   Certificate level 0: Public key type EC/prime256v1 (256/128 Bits/secBits), signed using ecdsa-with-SHA256
+*   Certificate level 1: Public key type EC/prime256v1 (256/128 Bits/secBits), signed using ecdsa-with-SHA384
+*   Certificate level 2: Public key type EC/secp384r1 (384/192 Bits/secBits), signed using ecdsa-with-SHA384
+} [5 bytes data]
+* using HTTP/2
+* [HTTP/2] [1] OPENED stream for https://noticebazaar-api.onrender.com/api/collab/dikshagargx_?t=1776963644186233000
+* [HTTP/2] [1] [:method: GET]
+* [HTTP/2] [1] [:scheme: https]
+* [HTTP/2] [1] [:authority: noticebazaar-api.onrender.com]
+* [HTTP/2] [1] [:path: /api/collab/dikshagargx_?t=1776963644186233000]
+* [HTTP/2] [1] [user-agent: curl/8.9.1]
+* [HTTP/2] [1] [accept: */*]
+} [5 bytes data]
+> GET /api/collab/dikshagargx_?t=1776963644186233000 HTTP/2
+> Host: noticebazaar-api.onrender.com
+> User-Agent: curl/8.9.1
+> Accept: */*
+> 
+* Request completely sent off
+{ [5 bytes data]
+* TLSv1.3 (IN), TLS handshake, Newsession Ticket (4):
+{ [230 bytes data]
+* TLSv1.3 (IN), TLS handshake, Newsession Ticket (4):
+{ [230 bytes data]
+< HTTP/2 200 
+< date: Thu, 23 Apr 2026 17:00:48 GMT
+< content-type: application/json; charset=utf-8
+< access-control-allow-credentials: true
+< access-control-expose-headers: Content-Length,Content-Type
+< cross-origin-opener-policy: same-origin
+< etag: W/"a0f-YdVYI1x0tAZPchaXKh/4L8nwSDg"
+< origin-agent-cluster: ?1
+< referrer-policy: no-referrer
+< rndr-id: b543e2bd-c3c0-4980
+< strict-transport-security: max-age=15552000; includeSubDomains
+< vary: Origin
+< vary: Accept-Encoding
+< x-content-type-options: nosniff
+< x-dns-prefetch-control: off
+< x-download-options: noopen
+< x-frame-options: SAMEORIGIN
+< x-permitted-cross-domain-policies: none
+< x-render-origin-server: Render
+< x-xss-protection: 0
+< cf-cache-status: DYNAMIC
+< server: cloudflare
+< cf-ray: 9f0e6d190eb0b6fe-BOM
+< alt-svc: h3=":443"; ma=86400
+< 
+{ [5 bytes data]
+* Connection #0 to host noticebazaar-api.onrender.com left intact
+{"success":true,"creator":{"id":"1ecf4da0-4bd4-4493-a3c8-bdf364b079e2","is_registered":true,"profile_type":"verified","profile_label":"Verified Creator Profile","submission_flow":"direct_request","name":"Diksha Garg&#x2665;&#xfe0f;","username":"dikshagargx_","platforms":[{"name":"Instagram","handle":"dikshagargx_"}],"suggested_reel_rate":1500,"suggested_paid_range_min":1200,"suggested_paid_range_max":1800,"suggested_barter_value_min":1350,"suggested_barter_value_max":1950,"profile_photo":null,"followers":null,"last_instagram_sync":null,"bio":"8,815 Followers, 2,354 Following, 1,027 Posts - See Instagram photos and videos from Diksha Garg&#x2665;&#xfe0f; (@dikshagargx_)","open_to_collabs":true,"content_niches":[],"media_kit_url":null,"portfolio_links":[],"audience_gender_split":null,"top_cities":[],"audience_age_range":null,"primary_audience_language":null,"posting_frequency":null,"active_brand_collabs_month":null,"campaign_slot_note":null,"collab_brands_count_override":null,"collab_response_hours_override":null,"collab_cancellations_percent_override":null,"collab_region_label":null,"collab_intro_line":null,"collab_audience_fit_note":null,"collab_recent_activity_note":null,"collab_audience_relevance_note":null,"collab_delivery_reliability_note":null,"collab_engagement_confidence_note":null,"collab_response_behavior_note":null,"collab_cta_trust_note":null,"collab_cta_dm_note":null,"collab_cta_platform_note":null,"collab_show_packages":true,"collab_show_trust_signals":true,"collab_show_audience_snapshot":true,"collab_show_past_work":true,"collab_past_work_items":[{"id":"aaad9b44-ca6c-4c56-94f5-8b0e9dfeb18a","title":"Primary Reel","platform":"internal","mediaType":"video","sourceUrl":"https://ooaxtwmqrvfzdqzoijcj.supabase.co/storage/v1/object/public/creator-assets/1ecf4da0-4bd4-4493-a3c8-bdf364b079e2/videos/portfolio-1776927019509.mp4"},{"id":"501383f4-1700-4668-a1d3-c46f402cb050","title":"Instagram Reference","platform":"instagram","mediaType":"link","sourceUrl":"https://www.instagram.com/dikshagargx_/"}],"past_brands":[],"recent_campaign_types":[],"avg_reel_views":null,"avg_likes":null,"past_brand_count":0,"performance_proof":null,"trust_stats":{"brands_count":0,"completed_deals":0,"total_deals":0,"completion_rate":98,"avg_response_hours":3},"min_deal_value":null,"min_lead_time_days":3,"typical_story_rate":null,"typical_post_rate":null,"premium_production_multiplier":null,"brand_type_preferences":null,"campaign_type_support":null,"revision_policy":null,"allow_negotiation":true,"allow_counter_offer":true,"onboarding_complete":true}}

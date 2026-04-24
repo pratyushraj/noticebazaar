@@ -389,65 +389,88 @@ const getCreatorDealCardUX = (deal: any) => {
     };
 };
 
-const DashboardLoadingStage = ({ isDark }: { isDark: boolean }) => {
+const DashboardLoadingStage = ({ isDark, tab = 'analytics' }: { isDark: boolean; tab?: string }) => {
     return (
-        <div className="space-y-4">
-            <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.35 }}
-                className={cn(
-                    "relative overflow-hidden rounded-[2rem] border px-5 py-4",
-                    isDark ? "border-white/10 bg-white/5" : "border-slate-200 bg-white/80 shadow-sm"
-                )}
-            >
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/15 to-transparent animate-shimmer" />
-                <div className="relative flex items-center justify-between gap-4">
-                    <div>
-                        <p className={cn("text-[11px] font-black uppercase tracking-[0.28em]", isDark ? "text-primary/80" : "text-emerald-600")}>
-                            Loading dashboard
-                        </p>
-                        <p className={cn("mt-1 text-[14px] font-semibold", isDark ? "text-white/75" : "text-slate-700")}>
-                            Pulling offers, deals, and performance data
-                        </p>
+        <div className="space-y-6 animate-in fade-in duration-500">
+            {tab === 'dashboard' ? (
+                <>
+                    {/* Skeleton for Welcome Header */}
+                    <div className="relative z-10 -mt-2 mb-6">
+                        <div className={cn(
+                            "absolute inset-0 -z-10 overflow-hidden rounded-b-[40px] border-b",
+                            isDark ? "bg-[#0B1A14] border-emerald-900/20" : "bg-emerald-600 border-emerald-700"
+                        )}>
+                            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent animate-shimmer" />
+                        </div>
+                        <div className="px-6 pt-8 pb-12 space-y-3">
+                            <div className={cn("h-3 w-32 rounded-full", isDark ? "bg-white/10" : "bg-white/20")} />
+                            <div className={cn("h-8 w-64 rounded-xl", isDark ? "bg-white/10" : "bg-white/20")} />
+                            <div className={cn("h-4 w-48 rounded-lg", isDark ? "bg-white/10" : "bg-white/20")} />
+                        </div>
                     </div>
-                    <div className="relative flex h-12 w-12 items-center justify-center">
-                        <div className={cn("absolute inset-0 rounded-full animate-ping", isDark ? "bg-primary/20" : "bg-emerald-500/15")} />
-                        <Loader2 className={cn("relative h-5 w-5 animate-spin", isDark ? "text-primary" : "text-emerald-600")} />
+
+                    <div className="px-5 space-y-6">
+                        {/* Skeleton for Earnings Card */}
+                        <div className={cn("h-40 rounded-[32px] border relative overflow-hidden", isDark ? "bg-white/5 border-white/5" : "bg-white border-slate-200")}>
+                            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent animate-shimmer" />
+                        </div>
+
+                        {/* Skeleton for Offers Section */}
+                        <div className={cn("p-8 rounded-[40px] border space-y-6", isDark ? "bg-white/5 border-white/5" : "bg-white border-slate-200")}>
+                            <div className="flex items-center justify-between">
+                                <div className={cn("h-6 w-40 rounded-lg", isDark ? "bg-white/10" : "bg-slate-100")} />
+                                <div className={cn("h-4 w-20 rounded-full", isDark ? "bg-white/10" : "bg-slate-100")} />
+                            </div>
+                            {[0, 1].map(i => (
+                                <div key={i} className={cn("h-24 rounded-3xl border relative overflow-hidden", isDark ? "bg-white/5 border-white/5" : "bg-slate-50 border-slate-100")}>
+                                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent animate-shimmer" />
+                                </div>
+                            ))}
+                        </div>
                     </div>
-                </div>
-            </motion.div>
+                </>
+            ) : (
+                <>
+                    {/* Skeleton for Analytics Header */}
+                    <div className="px-5 pb-6 pt-safe" style={{ paddingTop: 'max(env(safe-area-inset-top), 24px)' }}>
+                        <div className="flex items-center justify-between mb-8">
+                            <div className={cn("w-6 h-6 rounded-full", isDark ? "bg-white/10" : "bg-slate-200")} />
+                            <div className={cn("h-4 w-32 rounded-lg", isDark ? "bg-white/10" : "bg-slate-200")} />
+                            <div className={cn("w-11 h-11 rounded-full", isDark ? "bg-white/10" : "bg-slate-200")} />
+                        </div>
+                        <div className="space-y-3">
+                            <div className={cn("h-7 w-32 rounded-lg", isDark ? "bg-white/10" : "bg-slate-200")} />
+                            <div className={cn("h-4 w-full rounded-lg", isDark ? "bg-white/10" : "bg-slate-200")} />
+                        </div>
+                    </div>
 
-            <motion.div
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.05, duration: 0.35 }}
-                className="grid grid-cols-2 gap-3"
-            >
-                {[0, 1, 2, 3].map((i) => (
-                    <motion.div
-                        key={i}
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.08 + i * 0.06, duration: 0.25 }}
-                    >
-                        <ShimmerSkeleton className="h-20 rounded-2xl" />
-                    </motion.div>
-                ))}
-            </motion.div>
+                    <div className="px-5 space-y-6">
+                        {/* Skeleton for Performance Card */}
+                        <div className={cn("h-32 rounded-3xl border relative overflow-hidden", isDark ? "bg-white/5 border-white/5" : "bg-white border-slate-200")}>
+                            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent animate-shimmer" />
+                        </div>
 
-            <motion.div
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.18, duration: 0.35 }}
-                className="space-y-3"
-            >
-                <ShimmerSkeleton className="h-24 w-full rounded-3xl" />
-                <div className="grid grid-cols-2 gap-3">
-                    <ShimmerSkeleton className="h-24 rounded-2xl" />
-                    <ShimmerSkeleton className="h-24 rounded-2xl" />
-                </div>
-            </motion.div>
+                        {/* Skeleton for Filter */}
+                        <div className={cn("h-12 rounded-2xl border", isDark ? "bg-white/5 border-white/5" : "bg-white border-slate-200")} />
+
+                        {/* Skeleton for Insights */}
+                        <div className={cn("h-48 rounded-[32px] border", isDark ? "bg-white/5 border-white/5" : "bg-white border-slate-200")} />
+
+                        <motion.div
+                            initial={{ opacity: 0, y: 12 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.18, duration: 0.35 }}
+                            className="space-y-3"
+                        >
+                            <ShimmerSkeleton className="h-24 w-full rounded-3xl" />
+                            <div className="grid grid-cols-2 gap-3">
+                                <ShimmerSkeleton className="h-24 rounded-2xl" />
+                                <ShimmerSkeleton className="h-24 rounded-2xl" />
+                            </div>
+                        </motion.div>
+                    </div>
+                </>
+            )}
         </div>
     );
 };
@@ -3733,11 +3756,18 @@ const MobileDashboardDemo = ({
                     {/* ─── DASHBOARD TAB ─── */}
                     {activeTab === 'dashboard' && (
                         <>
-                             {(() => {
+                            {isLoadingDeals ? (
+                                <DashboardLoadingStage isDark={isDark} tab="dashboard" />
+                            ) : (() => {
                                 const hasDeals = activeDealsCount > 0 || completedDealsCount > 0;
 
                                 return (
-                                    <div className="space-y-6 pb-20">
+                                    <motion.div 
+                                        initial={{ opacity: 0 }}
+                                        animate={{ opacity: 1 }}
+                                        transition={{ duration: 0.5 }}
+                                        className="space-y-6 pb-20"
+                                    >
                                         {/* Welcome Header */}
                                         <div className="relative z-10 -mt-2 mb-6">
                                             <div className={cn(
@@ -4099,10 +4129,10 @@ const MobileDashboardDemo = ({
                                                     </div>
                                                 </div>
                                             </motion.div>
-                                        </div>
                                     </div>
-                                );
-                            })()}
+                                </motion.div>
+                            );
+                        })()}
                         </>
                     )}
 

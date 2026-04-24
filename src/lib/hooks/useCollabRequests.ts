@@ -41,7 +41,9 @@ const FAST_POLL_INTERVAL_MS = 5 * 1000; // 5s
 async function fetchCollabRequests(): Promise<CollabRequest[]> {
   const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
   if (sessionError || !sessionData.session) {
-    throw new Error('Not authenticated');
+    // If no session, return empty list instead of throwing.
+    // This prevents console noise during logout/transition.
+    return [];
   }
 
   const controller = new AbortController();

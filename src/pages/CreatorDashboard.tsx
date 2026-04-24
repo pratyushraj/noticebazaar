@@ -11,9 +11,9 @@ import { toast } from 'sonner';
 async function fetchBrandDeals() {
   const { data: sessionData } = await supabase.auth.getSession();
   if (!sessionData.session) {
-    const err: any = new Error('NOT_AUTHENTICATED');
-    err.status = 401;
-    throw err;
+    // If no session, return empty deals instead of throwing.
+    // This prevents console noise during logout/transition.
+    return [];
   }
 
   const controller = new AbortController();
@@ -50,15 +50,19 @@ async function fetchBrandDeals() {
 const CreatorDashboard = () => {
   const { user, profile, loading: isLoadingProfile } = useSession();
   const queryClient = useQueryClient();
+
+  // If no user and not loading, we shouldn't be here (transitioning or logged out)
+  if (!user?.id && !isLoadingProfile) return null;
+
   const isBrandSession = profile?.role === 'brand' || user?.user_metadata?.account_mode === 'brand' || user?.user_metadata?.role === 'brand';
 
-  const collabQuery = useCollabRequests(isBrandSession ? undefined : user?.id);
+  const collabQuery = useCollabRequests((isBrandSession || isLoadingProfile) ? undefined : user?.id);
   const { requests: collabRequests, isLoading: isLoadingCollab, error: collabError } = collabQuery;
 
   const dealsQuery = useQuery({
     queryKey: ['brand-deals', user?.id],
     queryFn: fetchBrandDeals,
-    enabled: !!user?.id && !isBrandSession,
+    enabled: !!user?.id && !isBrandSession && !isLoadingProfile,
     retry: false, // Don't retry — backend may be unavailable, fail fast
   });
   const brandDeals = (dealsQuery.data ?? []) as any[];

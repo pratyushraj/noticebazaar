@@ -129,19 +129,11 @@ const ProtectedRoute = ({ children, allowedRoles, requiredRole }: ProtectedRoute
 
   // --- Render logic ---
 
-  // Show auth init screen while bootstrapping
-  if (isAuthInitializing && session && !profile) {
-    return <AuthLoadingScreen />;
-  }
-
-  // Loading gate (no bypass)
-  if (isLoading) {
+  // Unified loading gate to prevent screen flicker between different loaders
+  if (isAuthInitializing || isLoading) {
     return (
       <div className="min-h-[100dvh] flex flex-col items-center justify-center bg-[#020D0A]">
-        <FullScreenLoader 
-          message="Preparing your protected workspace..." 
-          secondaryMessage={session ? "Retrieving your secure credentials..." : undefined}
-        />
+        <FullScreenLoader message="" />
       </div>
     );
   }

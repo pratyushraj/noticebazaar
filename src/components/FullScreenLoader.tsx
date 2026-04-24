@@ -12,7 +12,7 @@ interface FullScreenLoaderProps {
 }
 
 export const FullScreenLoader = ({
-  message = 'Preparing your protected workspace...',
+  message = '',
   secondaryMessage,
 }: FullScreenLoaderProps) => {
   const [showRetry, setShowRetry] = useState(false);
@@ -48,45 +48,93 @@ export const FullScreenLoader = ({
       </div>
 
       <div className="relative z-10 flex flex-col items-center justify-center px-6 text-center">
-        {/* Shield with Glow */}
-        <div className="relative mb-10">
+        {/* Advanced Brand Animation */}
+        <div className="relative mb-12">
+          {/* Sonar Pulse Effects */}
+          {[0, 1, 2].map((i) => (
+            <motion.div
+              key={i}
+              initial={{ scale: 0.8, opacity: 0.5 }}
+              animate={{ scale: 2.5, opacity: 0 }}
+              transition={{
+                duration: 3,
+                repeat: Infinity,
+                delay: i * 1,
+                ease: "easeOut",
+              }}
+              className="absolute inset-0 rounded-full bg-emerald-500/20 blur-xl"
+            />
+          ))}
+
+          {/* Rotating Orbital Ring */}
           <motion.div
-            animate={{ scale: [1, 1.15, 1], opacity: [0.4, 0.7, 0.4] }}
-            transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-            className="absolute inset-0 bg-emerald-500/20 blur-2xl rounded-full"
+            animate={{ rotate: 360 }}
+            transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
+            className="absolute -inset-6 rounded-full border-2 border-dashed border-emerald-500/10"
           />
-          <div className="w-20 h-20 rounded-3xl bg-white/5 border border-white/10 shadow-2xl flex items-center justify-center relative z-20 backdrop-blur-md">
-            <Shield className="w-10 h-10 text-emerald-400" strokeWidth={1.5} />
-          </div>
+          
+          <motion.div
+            animate={{ rotate: -360 }}
+            transition={{ duration: 12, repeat: Infinity, ease: "linear" }}
+            className="absolute -inset-10 rounded-full border border-emerald-500/5"
+          />
+
+          {/* Shield Core */}
+          <motion.div
+            animate={{ 
+              y: [0, -4, 0],
+              filter: ["brightness(1)", "brightness(1.2)", "brightness(1)"]
+            }}
+            transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+            className="w-24 h-24 rounded-[2.5rem] bg-gradient-to-br from-white/10 to-white/5 border border-white/10 shadow-[0_0_50px_rgba(16,185,129,0.15)] flex items-center justify-center relative z-20 backdrop-blur-xl overflow-hidden group"
+          >
+            {/* Internal Scanning Light */}
+            <motion.div 
+              animate={{ y: [-100, 100] }}
+              transition={{ duration: 2.5, repeat: Infinity, ease: "linear" }}
+              className="absolute inset-0 w-full h-1 bg-gradient-to-r from-transparent via-emerald-400/30 to-transparent -rotate-45"
+            />
+            
+            <Shield className="w-11 h-11 text-emerald-400" strokeWidth={1.5} />
+          </motion.div>
         </div>
 
-        {/* Text content */}
+        {/* Dynamic Status Display */}
         <div className="space-y-4">
           <motion.div 
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="flex items-center justify-center gap-3"
+            transition={{ duration: 0.8 }}
+            className="flex flex-col items-center gap-3"
           >
-            <Loader2 className="w-4 h-4 text-emerald-400 animate-spin" />
-            <h2 className="text-[13px] font-black text-white tracking-[0.25em] uppercase">
-              {message}
-            </h2>
+            <div className="flex items-center gap-3">
+              <span className="w-8 h-[1px] bg-gradient-to-r from-transparent to-emerald-500/30" />
+              <h2 className="text-[12px] font-black text-white tracking-[0.4em] uppercase">
+                {message || "Preparing Workspace"}
+              </h2>
+              <span className="w-8 h-[1px] bg-gradient-to-l from-transparent to-emerald-500/30" />
+            </div>
+            
+            <div className="flex items-center gap-1.5 h-4">
+              <motion.div 
+                animate={{ scale: [1, 1.5, 1], opacity: [0.3, 1, 0.3] }}
+                transition={{ duration: 1.5, repeat: Infinity }}
+                className="w-1 h-1 rounded-full bg-emerald-500" 
+              />
+              <p className="text-[10px] font-bold text-emerald-500/40 uppercase tracking-[0.2em]">
+                {secondaryMessage || "Securing encrypted session"}
+              </p>
+            </div>
           </motion.div>
-          
-          {secondaryMessage && (
-            <p className="text-[13px] text-emerald-100/50 font-medium max-w-[240px] leading-relaxed mx-auto">
-              {secondaryMessage}
-            </p>
-          )}
         </div>
 
         {/* Retry Actions */}
         <AnimatePresence>
           {showRetry && (
             <motion.div 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="mt-12 flex flex-col items-center gap-4"
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="mt-16 flex flex-col items-center gap-4"
             >
               <button
                 onClick={() => {
@@ -94,16 +142,10 @@ export const FullScreenLoader = ({
                   if (refetchProfile) refetchProfile();
                   else window.location.reload();
                 }}
-                className="px-6 py-3 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 rounded-2xl text-[11px] font-black uppercase tracking-widest transition-all backdrop-blur-sm"
+                className="group relative px-8 py-3.5 bg-white/5 hover:bg-emerald-500/10 text-emerald-400 border border-white/10 rounded-2xl text-[11px] font-black uppercase tracking-widest transition-all backdrop-blur-sm overflow-hidden"
               >
-                Retry Loading
-              </button>
-              
-              <button
-                onClick={() => window.location.reload()}
-                className="text-[10px] text-emerald-500/40 hover:text-emerald-500/60 font-black uppercase tracking-[0.2em] transition-colors"
-              >
-                Hard Reload
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:animate-shine" />
+                <span className="relative">Retry Connection</span>
               </button>
             </motion.div>
           )}
@@ -111,11 +153,16 @@ export const FullScreenLoader = ({
       </div>
 
       {/* OS Branding */}
-      <div className="absolute bottom-10 left-0 right-0 text-center opacity-20">
-        <p className="text-[10px] uppercase font-black tracking-[0.4em] text-emerald-500">
-          CreatorArmour OS
+      <motion.div 
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 1 }}
+        className="absolute bottom-12 left-0 right-0 text-center"
+      >
+        <p className="text-[10px] uppercase font-black tracking-[0.5em] text-emerald-500/20">
+          CreatorArmour Enterprise
         </p>
-      </div>
+      </motion.div>
     </div>
   );
 };
