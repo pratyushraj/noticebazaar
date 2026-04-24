@@ -5076,6 +5076,7 @@ const MobileDashboardDemo = ({
                                         username={username}
                                         avatarUrl={avatarVersionedUrl}
                                         avatarFallbackUrl={avatarFallbackUrl}
+                                        avatarCacheKey={profile?.last_instagram_sync || profile?.updated_at || profile?.avatar_url || profile?.instagram_profile_photo || username}
                                         isPushSubscribed={isPushSubscribed}
                                         setActiveSettingsPage={setActiveSettingsPage}
                                         setActiveTab={setActiveTab}

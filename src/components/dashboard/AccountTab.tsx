@@ -1,11 +1,12 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { 
+import {
     ShieldCheck, ChevronRight, Link2, Landmark, 
     Bell, User, Sun, Moon, LogOut, CheckCircle2,
     ExternalLink, Trash2
 } from 'lucide-react';
 import { cn } from '../../lib/utils';
+import { withCacheBuster } from '@/lib/utils/image';
 
 interface AccountTabProps {
     isDark: boolean;
@@ -15,6 +16,7 @@ interface AccountTabProps {
     username: string;
     avatarUrl: string;
     avatarFallbackUrl: string;
+    avatarCacheKey?: string | number | null;
     isPushSubscribed: boolean;
     setActiveSettingsPage: (page: string | null) => void;
     setActiveTab: (tab: string) => void;
@@ -29,6 +31,7 @@ export const AccountTab: React.FC<AccountTabProps> = ({
     username,
     avatarUrl,
     avatarFallbackUrl,
+    avatarCacheKey,
     isPushSubscribed,
     setActiveSettingsPage,
     setActiveTab,
@@ -61,6 +64,7 @@ export const AccountTab: React.FC<AccountTabProps> = ({
     const responseLabel = Number.isFinite(responseHours) && responseHours > 0
         ? `${Math.round(responseHours)}h`
         : responseHours === 0 ? 'Instant' : '—';
+    const profileAvatarSrc = withCacheBuster(avatarUrl, avatarCacheKey) || avatarUrl || avatarFallbackUrl;
 
     return (
         <motion.div 
@@ -91,7 +95,7 @@ export const AccountTab: React.FC<AccountTabProps> = ({
                 <div className="flex items-center gap-4">
                     <div className="relative">
                         <img 
-                            src={avatarUrl} 
+                            src={profileAvatarSrc}
                             alt="avatar" 
                             className={cn(
                                 "w-14 h-14 rounded-full object-cover ring-2",
