@@ -578,7 +578,15 @@ const parseLocationParts = (location?: string | null) => {
         city = nonPincodeParts[nonPincodeParts.length - 1];
         address = nonPincodeParts.slice(0, -1).join(', ');
     } else if (nonPincodeParts.length === 1) {
-        city = nonPincodeParts[0];
+        const part = nonPincodeParts[0];
+        // Heuristic: If it has numbers or is quite long, it's probably an address, not just a city name
+        if (/\d/.test(part) || part.length > 20) {
+            address = part;
+            city = ''; 
+        } else {
+            city = part;
+            address = '';
+        }
     }
 
     return { address, city, pincode };

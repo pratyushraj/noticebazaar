@@ -838,6 +838,8 @@ export default function CreatorOnboarding() {
         payout_upi: upiId || null,
         phone: phone || null,
         location: shippingAddress ? `${shippingAddress}${pincode ? ', ' + pincode : ''}` : null,
+        city: baseCity || null,
+        address: shippingAddress || null,
         collab_region_label: baseCity || null,
         shipping_address: shippingAddress || null,
         pincode: pincode || null,
