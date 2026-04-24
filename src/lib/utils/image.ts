@@ -9,6 +9,11 @@
 export const safeAvatarSrc = (src?: string | null): string | undefined => {
   const raw = String(src || "").trim();
   if (!raw || raw === "undefined" || raw === "null") return undefined;
+
+  // If the URL is already proxied, do not wrap it again.
+  if (/wsrv\.nl/i.test(raw)) {
+    return raw;
+  }
   
   // Instagram/FB CDN frequently blocks hotlinking (403).
   // Use wsrv.nl proxy to bypass these restrictions.
