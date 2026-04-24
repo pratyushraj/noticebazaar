@@ -1892,7 +1892,6 @@ const MobileDashboardDemo = ({
                 { instagram_profile_photo: profileFormData.instagram_profile_photo || profileFormData.avatar_url || null },
                 { avatar_url: profileFormData.avatar_url || profileFormData.instagram_profile_photo || null },
                 { discovery_video_url: profileFormData.discovery_video_url || null },
-                { portfolio_videos: profileFormData.portfolio_videos || [] },
                 { media_kit_url: profileFormData.media_kit_url || null },
                 { avg_rate_reel: Number(profileFormData.avg_rate_reel) || null },
                 { bank_account_name: profileFormData.bank_account_name?.trim() || null },
@@ -1900,16 +1899,8 @@ const MobileDashboardDemo = ({
                 { open_to_collabs: profileFormData.open_to_collabs },
                 { story_price: Number(profileFormData.story_price) || null },
                 { instagram_followers: Number(profileFormData.instagram_followers) || 0 },
-        { audience_gender_split: profileFormData.audience_gender_split || null },
-        { audience_age_range: profileFormData.audience_age_range || null },
-        { primary_audience_language: profileFormData.primary_audience_language || null },
-        { top_cities: profileFormData.top_cities || [] },
-        { content_niches: Array.isArray(profileFormData.content_niches) ? profileFormData.content_niches : [] },
-        { content_vibes: Array.isArray(profileFormData.content_vibes) ? profileFormData.content_vibes : [] },
-        { city: profileFormData.city || null },
+                { city: profileFormData.city || null },
                 { collaboration_preference: profileFormData.collaboration_preference || 'Hybrid' },
-                { past_brands: profileFormData.past_brands || [] },
-                { deal_templates: profileFormData.deal_templates || [] },
                 { portfolio_links: normalizedPortfolioItems.map((item) => item.sourceUrl || '').filter(Boolean) },
                 { collab_past_work_items: normalizedPortfolioItems },
                 {
@@ -1918,6 +1909,25 @@ const MobileDashboardDemo = ({
                     suggested_paid_range_max: Number(profileFormData.avg_rate_reel) ? Number(profileFormData.avg_rate_reel) * 1.5 : null,
                 },
             ];
+
+            if (profileFormData.audience_gender_split) {
+                optionalProfilePatches.push({ audience_gender_split: profileFormData.audience_gender_split });
+            }
+            if (profileFormData.audience_age_range) {
+                optionalProfilePatches.push({ audience_age_range: profileFormData.audience_age_range });
+            }
+            if (profileFormData.primary_audience_language) {
+                optionalProfilePatches.push({ primary_audience_language: profileFormData.primary_audience_language });
+            }
+            if (Array.isArray(profileFormData.top_cities) && profileFormData.top_cities.some((city: string) => String(city || '').trim())) {
+                optionalProfilePatches.push({ top_cities: profileFormData.top_cities.filter((city: string) => String(city || '').trim()) });
+            }
+            if (Array.isArray(profileFormData.content_niches) && profileFormData.content_niches.length > 0) {
+                optionalProfilePatches.push({ content_niches: profileFormData.content_niches });
+            }
+            if (Array.isArray(profileFormData.content_vibes) && profileFormData.content_vibes.length > 0) {
+                optionalProfilePatches.push({ content_vibes: profileFormData.content_vibes });
+            }
 
             for (const patch of optionalProfilePatches) {
                 await updateProfilePatch(patch, { ignoreMissingColumn: true });
@@ -3307,12 +3317,17 @@ const MobileDashboardDemo = ({
                             <div>
                                 <p className={cn("text-[11px] font-black uppercase tracking-widest opacity-60 mb-3 px-1", textColor)}>4. Vibe & Niche</p>
                                 <div className={cn("rounded-[28px] border p-5 space-y-7", isDark ? "bg-card border-border shadow-2xl shadow-black/20" : "bg-white border-[#E5E7EB] shadow-sm")}>
-                                    <div className="space-y-3 px-1">
-                                        <div className="flex flex-col">
-                                            <p className={cn("text-[10px] font-black uppercase tracking-wider opacity-50", textColor)}>Select Your Vibe</p>
-                                            <p className="text-[9px] text-primary/60 font-black uppercase tracking-tighter">Choose max 3</p>
-                                        </div>
-                                        <div className="flex flex-wrap gap-2">
+                                        <div className="space-y-3 px-1">
+                                            <div className="flex items-end justify-between gap-3">
+                                                <div className="flex flex-col">
+                                                    <p className={cn("text-[10px] font-black uppercase tracking-wider opacity-50", textColor)}>Select Your Vibe</p>
+                                                    <p className="text-[9px] text-primary/60 font-black uppercase tracking-tighter">Choose max 3</p>
+                                                </div>
+                                                <span className="text-[10px] font-black uppercase tracking-[0.22em] text-emerald-400">
+                                                    {(profileFormData.content_vibes || []).length}/3
+                                                </span>
+                                            </div>
+                                            <div className="flex flex-wrap gap-2">
                                             {[
                                                 { label: 'Aesthetic', icon: <Sparkles className="w-3.5 h-3.5" /> },
                                                 { label: 'Relatable', icon: <Handshake className="w-3.5 h-3.5" /> },
@@ -3340,7 +3355,7 @@ const MobileDashboardDemo = ({
                                                             }
                                                         }}
                                                         className={cn(
-                                                            "px-3.5 py-2.5 rounded-xl text-[11px] font-black tracking-tight border flex flex-col items-center gap-1.5 transition-all active:scale-95 relative overflow-hidden",
+                                                            "px-3.5 py-2.5 rounded-2xl text-[11px] font-black tracking-tight border flex flex-col items-center gap-1.5 transition-all active:scale-95 relative overflow-hidden min-w-[102px]",
                                                             isSelected 
                                                                 ? (isDark ? "bg-primary text-white border-primary shadow-lg shadow-primary/20" : "bg-emerald-500 border-emerald-500 text-white shadow-md shadow-emerald-500/10")
                                                                 : (isDark ? "bg-white/5 border-white/10 text-white/40" : "bg-slate-50 border-slate-200 text-slate-500")
@@ -3362,9 +3377,14 @@ const MobileDashboardDemo = ({
                                     </div>
 
                                     <div className="space-y-3 px-1">
-                                        <div className="flex flex-col">
-                                            <p className={cn("text-[10px] font-black uppercase tracking-wider opacity-50", textColor)}>Your Main Niches</p>
-                                            <p className="text-[9px] text-primary/60 font-black uppercase tracking-tighter">Choose your content topics</p>
+                                        <div className="flex items-end justify-between gap-3">
+                                            <div className="flex flex-col">
+                                                <p className={cn("text-[10px] font-black uppercase tracking-wider opacity-50", textColor)}>Your Main Niches</p>
+                                                <p className="text-[9px] text-primary/60 font-black uppercase tracking-tighter">Choose your content topics</p>
+                                            </div>
+                                            <span className="text-[10px] font-black uppercase tracking-[0.22em] text-emerald-400">
+                                                {(profileFormData.content_niches || []).length} selected
+                                            </span>
                                         </div>
                                         <div className="flex flex-wrap gap-2">
                                             {[
