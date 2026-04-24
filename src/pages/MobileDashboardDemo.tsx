@@ -1804,15 +1804,19 @@ const MobileDashboardDemo = ({
         if (hasHydratedCollabFieldsRef.current) return;
         if (!session?.user?.id || activeTab !== 'profile') return;
 
-        const alreadyHydrated =
-            (Array.isArray(profileFormData.content_niches) && profileFormData.content_niches.length > 0) ||
-            profileFormData.audience_gender_split ||
-            profileFormData.audience_age_range ||
-            profileFormData.primary_audience_language ||
-            (Array.isArray(profileFormData.top_cities) && profileFormData.top_cities.some((city: string) => String(city || '').trim())) ||
-            (Array.isArray(profileFormData.content_vibes) && profileFormData.content_vibes.length > 0);
+        const hasHydratedCoreCollabFields =
+            Array.isArray(profileFormData.content_niches) &&
+            profileFormData.content_niches.length > 0 &&
+            Array.isArray(profileFormData.content_vibes) &&
+            profileFormData.content_vibes.length > 0 &&
+            Boolean(profileFormData.audience_gender_split) &&
+            Boolean(profileFormData.audience_age_range) &&
+            (
+                Boolean(profileFormData.primary_audience_language) ||
+                (Array.isArray(profileFormData.top_cities) && profileFormData.top_cities.some((city: string) => String(city || '').trim()))
+            );
 
-        if (alreadyHydrated) {
+        if (hasHydratedCoreCollabFields) {
             hasHydratedCollabFieldsRef.current = true;
             return;
         }
