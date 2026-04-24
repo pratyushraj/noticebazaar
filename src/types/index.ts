@@ -76,6 +76,7 @@ export type Profile = Tables<'profiles'> & {
   // Creator readiness for brands (open to collabs, niches, media kit)
   open_to_collabs?: boolean | null;
   content_niches?: string[] | null;
+  content_vibes?: string[] | null;
   media_kit_url?: string | null;
   // NEW: Creator Rate fields
   avg_rate_reel?: number | null;
