@@ -1808,7 +1808,6 @@ const MobileDashboardDemo = ({
                 { top_cities: profileFormData.top_cities || [] },
                 { content_vibes: Array.isArray(profileFormData.content_vibes) ? profileFormData.content_vibes : [] },
                 { city: profileFormData.city || null },
-                { address: profileFormData.address || null },
                 { collaboration_preference: profileFormData.collaboration_preference || 'Hybrid' },
                 { past_brands: profileFormData.past_brands || [] },
                 { deal_templates: profileFormData.deal_templates || [] },
