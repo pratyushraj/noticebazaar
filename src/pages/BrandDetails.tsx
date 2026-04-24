@@ -1,4 +1,4 @@
-"use client";
+
 
 import { useParams, useNavigate } from 'react-router-dom';
 import { useBrandById } from '@/lib/hooks/useBrands';

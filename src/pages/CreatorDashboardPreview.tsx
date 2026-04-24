@@ -1,4 +1,4 @@
-"use client";
+
 
 import { useEffect, useState, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';

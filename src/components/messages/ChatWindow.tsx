@@ -1,4 +1,4 @@
-"use client";
+
 
 import React, { useEffect, useRef } from 'react';
 import { MessageSquare } from 'lucide-react';

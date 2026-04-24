@@ -1,4 +1,4 @@
-"use client";
+
 
 import { toast, ExternalToast } from "sonner";
 

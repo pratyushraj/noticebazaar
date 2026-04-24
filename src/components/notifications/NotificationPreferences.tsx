@@ -1,4 +1,4 @@
-"use client";
+
 
 import React, { useState } from 'react';
 import { Bell, Mail, Smartphone, Monitor, Moon, ChevronDown, ChevronUp } from 'lucide-react';

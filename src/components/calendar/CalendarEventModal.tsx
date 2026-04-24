@@ -1,4 +1,4 @@
-"use client";
+
 
 import { Briefcase, Wallet, FileText, Calendar, IndianRupee, AlertCircle } from 'lucide-react';
 

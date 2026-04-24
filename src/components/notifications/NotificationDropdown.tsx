@@ -1,4 +1,4 @@
-"use client";
+
 
 import React from 'react';
 import { Bell, Check, ExternalLink, ChevronRight } from 'lucide-react';

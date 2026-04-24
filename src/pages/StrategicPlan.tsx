@@ -1,4 +1,4 @@
-"use client";
+
 
 import PlanDetailLayout from '@/components/PlanDetailLayout';
 import { PLAN_DETAILS } from '@/data/planDetails';

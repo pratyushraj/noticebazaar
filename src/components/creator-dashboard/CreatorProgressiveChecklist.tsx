@@ -1,4 +1,4 @@
-"use client";
+
 
 import { useMemo, useState } from 'react';
 import { CheckCircle2, ChevronRight, Circle, Copy, ExternalLink, Gauge, Link2, MessageCircleMore, Sparkles, TrendingUp } from 'lucide-react';

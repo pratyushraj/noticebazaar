@@ -1,4 +1,4 @@
-"use client";
+
 
 import React, { useState } from 'react';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';

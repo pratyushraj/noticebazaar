@@ -1,4 +1,4 @@
-"use client";
+
 
 import clsx from 'clsx';
 import { Calculator, Scale } from 'lucide-react';

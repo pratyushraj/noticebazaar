@@ -1,4 +1,4 @@
-"use client";
+
 
 import React from 'react';
 import { Link, useLocation, useSearchParams } from 'react-router-dom';

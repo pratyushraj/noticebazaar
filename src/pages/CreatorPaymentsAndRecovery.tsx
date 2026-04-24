@@ -1,4 +1,4 @@
-"use client";
+
 
 import { useState, useMemo, useEffect } from 'react';
 import { Download, Search, CreditCard, ArrowDownRight } from 'lucide-react';

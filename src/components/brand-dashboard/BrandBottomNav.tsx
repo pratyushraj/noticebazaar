@@ -1,4 +1,4 @@
-"use client";
+
 
 import { LayoutDashboard, Briefcase, BarChart3 } from 'lucide-react';
 import { cn } from '@/lib/utils';

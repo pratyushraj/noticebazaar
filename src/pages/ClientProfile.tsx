@@ -1,4 +1,4 @@
-"use client";
+
 
 import { useSession } from '@/contexts/SessionContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';

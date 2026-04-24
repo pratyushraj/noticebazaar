@@ -1,4 +1,4 @@
-"use client";
+
 
 import { supabase } from '@/integrations/supabase/client';
 import { ShieldCheck, ArrowLeft, Shield, TrendingUp, MessageCircle, Eye, EyeOff, Loader2, Link2 } from 'lucide-react';

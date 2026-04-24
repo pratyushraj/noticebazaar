@@ -1,4 +1,4 @@
-"use client";
+
 
 import React, { useRef, useState } from 'react';
 import { Card } from '@/components/ui/card';

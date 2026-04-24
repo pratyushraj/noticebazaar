@@ -1,4 +1,4 @@
-"use client";
+
 
 import React from 'react';
 import { FileText, IndianRupee, Calendar, Package, CreditCard, AlertCircle } from 'lucide-react';

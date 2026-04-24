@@ -1,4 +1,4 @@
-"use client";
+
 
 import MobileDashboardDemo from '@/pages/MobileDashboardDemo';
 import { useSession } from '@/contexts/SessionContext';

@@ -1,4 +1,4 @@
-"use client";
+
 
 import React from 'react';
 import { MessageSquare, FileText, Search, Filter, X, Upload, Briefcase, Wallet, Sparkles, Scale, BarChart3 } from 'lucide-react';

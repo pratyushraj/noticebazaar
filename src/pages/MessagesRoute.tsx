@@ -1,4 +1,4 @@
-"use client";
+
 
 import { Navigate, useLocation } from 'react-router-dom';
 import { useSession } from '@/contexts/SessionContext';

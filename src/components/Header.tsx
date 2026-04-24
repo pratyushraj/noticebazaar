@@ -6,7 +6,7 @@
  * To use the navbar, import Navbar from '@/components/navbar/Navbar' in Layout.tsx
  */
 
-"use client";
+
 
 // DISABLED: This component is deprecated and replaced by Navbar
 // All code below is disabled but kept for reference

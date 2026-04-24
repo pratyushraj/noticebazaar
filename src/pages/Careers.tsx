@@ -1,4 +1,4 @@
-"use client";
+
 
 import { SEOHead } from '@/components/seo/SEOHead';
 import { Link } from 'react-router-dom';

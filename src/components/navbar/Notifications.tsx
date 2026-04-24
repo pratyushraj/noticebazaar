@@ -1,4 +1,4 @@
-"use client";
+
 
 import React, { useState } from 'react';
 import { Bell, ExternalLink } from 'lucide-react';

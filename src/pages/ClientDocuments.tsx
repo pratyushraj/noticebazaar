@@ -1,4 +1,4 @@
-"use client";
+
 
 import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import { useSession } from '@/contexts/SessionContext';

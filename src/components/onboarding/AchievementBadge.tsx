@@ -1,4 +1,4 @@
-"use client";
+
 
 import { motion, AnimatePresence } from 'framer-motion';
 import { Award, Trophy, Star, Zap, Shield, TrendingUp, CheckCircle } from 'lucide-react';

@@ -1,4 +1,4 @@
-"use client";
+
 
 import React, { useMemo } from 'react';
 import { TrendingUp, Clock, CheckCircle } from 'lucide-react';

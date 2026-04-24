@@ -1,4 +1,4 @@
-"use client";
+
 
 import React from 'react';
 import { ArrowRight, Loader2 } from 'lucide-react';
