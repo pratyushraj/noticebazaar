@@ -35,7 +35,8 @@ export const PaymentsTab: React.FC<PaymentsTabProps> = ({
     getCreatorPaymentListUX,
     getBrandIcon,
     triggerHaptic,
-    setSelectedPayment
+    setSelectedPayment,
+    setActiveSettingsPage
 }) => {
     // Group transactions by date
     const groupedTransactions = React.useMemo(() => {
