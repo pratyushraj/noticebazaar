@@ -86,69 +86,57 @@ const Login = () => {
 
     setIsLoading(true);
     try {
-      const response = await fetch(`${getApiBaseUrl()}/api/auth/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          identifier: identifier.trim(),
-          password,
-        }),
+      const trimmedIdentifier = identifier.trim();
+      const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedIdentifier);
+
+      let resolvedEmail = trimmedIdentifier;
+      if (!isEmail) {
+        const response = await fetch(`${getApiBaseUrl()}/api/auth/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            identifier: trimmedIdentifier,
+            password: '__resolve_only__',
+          }),
+        });
+
+        if (!response.ok) {
+          let errorMessage = 'Failed to resolve Instagram username';
+          try {
+            const errorJson = await response.json();
+            errorMessage = errorJson.error || errorMessage;
+          } catch (e) {
+            errorMessage = `Server error (${response.status}): ${response.statusText || 'Endpoint not found'}`;
+          }
+
+          console.error(`[Login] Username resolution failed with status ${response.status}:`, errorMessage);
+          toast.error(errorMessage);
+          return;
+        }
+
+        const json = await response.json().catch(() => ({}));
+        resolvedEmail = String(json?.email || json?.resolved_email || '').trim();
+        if (!resolvedEmail) {
+          toast.error('Could not resolve that Instagram username to an email address');
+          return;
+        }
+      }
+
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: resolvedEmail,
+        password,
       });
 
-      if (!response.ok) {
-        let errorMessage = 'Failed to sign in';
-        try {
-          const errorJson = await response.json();
-          errorMessage = errorJson.error || errorMessage;
-        } catch (e) {
-          // Response is not JSON (like a 404 HTML page)
-          errorMessage = `Server error (${response.status}): ${response.statusText || 'Endpoint not found'}`;
-        }
-        
-        console.error(`[Login] API request failed with status ${response.status}:`, errorMessage);
-        toast.error(errorMessage);
+      if (error || !data.session || !data.user) {
+        const message = error?.message || 'Invalid email/username or password';
+        console.error('[Login] Supabase sign-in failed:', message);
+        toast.error(message);
         return;
       }
 
-      const json = await response.json().catch(() => ({}));
-
-      if (!json?.success || !json?.session?.access_token || !json?.session?.refresh_token) {
-        toast.error(json?.error || 'Invalid session received from server');
-        return;
-      }
-
-      try {
-        // Double check if we already have a session that matches (avoid unnecessary writes)
-        const { data: { session: existingSession } } = await supabase.auth.getSession();
-        if (existingSession?.access_token === json.session.access_token) {
-          console.log('[Login] Session already exists and matches, skipping write');
-        } else {
-          await Promise.race([
-            supabase.auth.setSession({
-              access_token: json.session.access_token,
-              refresh_token: json.session.refresh_token,
-            }),
-            new Promise<never>((_, reject) =>
-              setTimeout(() => reject(new Error('SESSION_WRITE_TIMEOUT')), 5000)
-            ),
-          ]);
-        }
-      } catch (sessionError: any) {
-        if (
-          sessionError?.name === 'NavigatorLockAcquireTimeoutError' ||
-          sessionError?.message?.includes('Lock') ||
-          sessionError?.message === 'SESSION_WRITE_TIMEOUT'
-        ) {
-          console.warn('[Login] Session write timed out, proceeding with redirect fallback:', sessionError);
-          // SessionContext will attempt to hydrate from storage/tokens on the next page
-        } else {
-          throw sessionError;
-        }
-      }
-
-      const metadata = json.session.user?.user_metadata || {};
+      const metadata = data.user.user_metadata || {};
       const role = metadata.role || metadata.account_mode || 'creator';
-      const onboardingComplete = json.session.user?.profile?.onboarding_complete ?? false;
+      const onboardingComplete = (data.user as any)?.profile?.onboarding_complete ?? false;
       
       let path = '/creator-dashboard';
       if (role === 'brand') {
@@ -156,7 +144,7 @@ const Login = () => {
       } else if (role === 'admin') {
         path = '/admin-dashboard';
       }
-      
+
       console.log('[Login] Navigating to:', path);
       navigate(path, { replace: true });
     } catch (err: unknown) {

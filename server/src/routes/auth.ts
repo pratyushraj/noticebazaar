@@ -34,6 +34,7 @@ router.post('/login', async (req, res: Response) => {
   try {
     const identifier = String(req.body?.identifier || req.body?.email || '').trim();
     const password = String(req.body?.password || '');
+    const resolveOnly = password === '__resolve_only__';
 
     if (!identifier || !password) {
       return res.status(400).json({ success: false, error: 'Identifier and password are required' });
@@ -75,6 +76,18 @@ router.post('/login', async (req, res: Response) => {
       if (!email) {
         return res.status(401).json({ success: false, error: 'Invalid email/username or password' });
       }
+
+      if (resolveOnly) {
+        return res.json({
+          success: true,
+          email,
+          resolved_email: email,
+        });
+      }
+    }
+
+    if (resolveOnly) {
+      return res.status(400).json({ success: false, error: 'Resolution is only supported for username logins' });
     }
 
     const { data, error } = await authClient.auth.signInWithPassword({
