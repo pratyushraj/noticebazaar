@@ -1737,6 +1737,7 @@ const MobileDashboardDemo = ({
         if (!session?.user?.id || activeTab !== 'profile') return;
 
         const alreadyHydrated =
+            (Array.isArray(profileFormData.content_niches) && profileFormData.content_niches.length > 0) ||
             profileFormData.audience_gender_split ||
             profileFormData.audience_age_range ||
             profileFormData.primary_audience_language ||
@@ -1752,7 +1753,7 @@ const MobileDashboardDemo = ({
         (async () => {
             const { data, error } = await supabase
                 .from('profiles')
-                .select('audience_gender_split, audience_age_range, primary_audience_language, top_cities, content_vibes, collab_region_label')
+                .select('content_niches, audience_gender_split, audience_age_range, primary_audience_language, top_cities, content_vibes, collab_region_label')
                 .eq('id', session.user.id)
                 .maybeSingle();
 
@@ -1760,6 +1761,7 @@ const MobileDashboardDemo = ({
 
             setProfileFormData((prev: any) => ({
                 ...prev,
+                content_niches: Array.isArray(data.content_niches) ? data.content_niches : prev.content_niches || [],
                 audience_gender_split: data.audience_gender_split || prev.audience_gender_split || '',
                 audience_age_range: data.audience_age_range || prev.audience_age_range || '',
                 primary_audience_language: data.primary_audience_language || prev.primary_audience_language || '',
@@ -1779,6 +1781,7 @@ const MobileDashboardDemo = ({
         profileFormData.audience_gender_split,
         profileFormData.audience_age_range,
         profileFormData.primary_audience_language,
+        profileFormData.content_niches,
         profileFormData.top_cities,
         profileFormData.content_vibes,
     ]);
@@ -1855,12 +1858,13 @@ const MobileDashboardDemo = ({
                 { open_to_collabs: profileFormData.open_to_collabs },
                 { story_price: Number(profileFormData.story_price) || null },
                 { instagram_followers: Number(profileFormData.instagram_followers) || 0 },
-                { audience_gender_split: profileFormData.audience_gender_split || null },
-                { audience_age_range: profileFormData.audience_age_range || null },
-                { primary_audience_language: profileFormData.primary_audience_language || null },
-                { top_cities: profileFormData.top_cities || [] },
-                { content_vibes: Array.isArray(profileFormData.content_vibes) ? profileFormData.content_vibes : [] },
-                { city: profileFormData.city || null },
+        { audience_gender_split: profileFormData.audience_gender_split || null },
+        { audience_age_range: profileFormData.audience_age_range || null },
+        { primary_audience_language: profileFormData.primary_audience_language || null },
+        { top_cities: profileFormData.top_cities || [] },
+        { content_niches: Array.isArray(profileFormData.content_niches) ? profileFormData.content_niches : [] },
+        { content_vibes: Array.isArray(profileFormData.content_vibes) ? profileFormData.content_vibes : [] },
+        { city: profileFormData.city || null },
                 { collaboration_preference: profileFormData.collaboration_preference || 'Hybrid' },
                 { past_brands: profileFormData.past_brands || [] },
                 { deal_templates: profileFormData.deal_templates || [] },
