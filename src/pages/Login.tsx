@@ -190,7 +190,7 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#020D0A] text-white flex flex-col font-outfit relative overflow-hidden" 
+    <div className="min-h-screen bg-[#020D0A] text-white flex flex-col items-center justify-center font-outfit relative overflow-hidden" 
       style={{
         minHeight: '100dvh',
         paddingTop: 'max(24px, env(safe-area-inset-top, 0px))',

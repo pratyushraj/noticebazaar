@@ -28,6 +28,7 @@ import { safeAvatarSrc } from '@/lib/utils/image';
 
 import DealSearchFilter from '@/components/dashboard/DealSearchFilter';
 import { generateAIBios } from '@/utils/aiBioGenerator';
+import { CITY_OPTIONS } from '@/constants/cities';
 import EnhancedEmptyStates from '@/components/dashboard/EnhancedEmptyStates';
 
 import ActivityFeed from '@/components/dashboard/ActivityFeed';
@@ -1702,6 +1703,8 @@ const MobileDashboardDemo = ({
     useInstagramSync(profile);
 
     const [isSavingProfile, setIsSavingProfile] = useState(false);
+    const [activeCitySuggestionField, setActiveCitySuggestionField] = useState<number | null>(null);
+
     const [uploadingPortfolioSlot, setUploadingPortfolioSlot] = useState<number | null>(null);
     const [profileFormData, setProfileFormData] = useState<any>(buildProfileFormData(profile, user?.email || null));
     const profileCompleteness = useMemo(() => {
@@ -2713,26 +2716,57 @@ const MobileDashboardDemo = ({
                                     </div>
 
                                     {/* Followers */}
-                                    <div className={cn("flex items-center gap-4 px-4 py-4 rounded-[1.75rem] transition-all", isDark ? "hover:bg-white/5" : "hover:bg-slate-50")}>
-                                        <div className={cn("w-10 h-10 rounded-2xl flex items-center justify-center shrink-0", isDark ? "bg-indigo-500/15" : "bg-indigo-50")}>
-                                            <Users className="w-5 h-5 text-indigo-500" />
+                                    <div className={cn("flex flex-col gap-3 px-4 py-4 rounded-[1.75rem] transition-all", isDark ? "hover:bg-white/5" : "hover:bg-slate-50")}>
+                                        <div className="flex items-center gap-4">
+                                            <div className={cn("w-10 h-10 rounded-2xl flex items-center justify-center shrink-0", isDark ? "bg-indigo-500/15" : "bg-indigo-50")}>
+                                                <Users className="w-5 h-5 text-indigo-500" />
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                                <p className={cn("text-[10px] font-black uppercase tracking-widest mb-1 opacity-50", textColor)}>Follower Count</p>
+                                                {!isEditMode && (
+                                                    <p className={cn("font-black text-[15px]", textColor)}>
+                                                        {profileFormData.instagram_followers ? (
+                                                            Number(profileFormData.instagram_followers) < 1000 ? '<1k' :
+                                                            Number(profileFormData.instagram_followers) <= 10000 ? '1k–10k' :
+                                                            Number(profileFormData.instagram_followers) <= 50000 ? '10k–50k' : '50k+'
+                                                        ) : <span className="opacity-20 font-bold italic">Not set</span>}
+                                                    </p>
+                                                )}
+                                            </div>
                                         </div>
-                                        <div className="flex-1 min-w-0">
-                                            <p className={cn("text-[10px] font-black uppercase tracking-widest mb-1 opacity-50", textColor)}>Follower Count</p>
-                                            {isEditMode ? (
-                                                <input
-                                                    type="number"
-                                                    className={cn("w-full bg-transparent outline-none font-black text-[15px] p-0 border-none focus:ring-0", textColor)}
-                                                    value={profileFormData.instagram_followers || ''}
-                                                    placeholder="e.g. 15000"
-                                                    onChange={e => setProfileFormData((p: any) => ({ ...p, instagram_followers: e.target.value }))}
-                                                />
-                                            ) : (
-                                                <p className={cn("font-black text-[15px]", textColor)}>
-                                                    {profileFormData.instagram_followers ? Number(profileFormData.instagram_followers).toLocaleString() : <span className="opacity-20 font-bold italic">Not set</span>}
-                                                </p>
-                                            )}
-                                        </div>
+                                        
+                                        {isEditMode && (
+                                            <div className="grid grid-cols-2 gap-2 mt-1">
+                                                {[
+                                                    { label: '<1k', value: 500 },
+                                                    { label: '1k–10k', value: 5000 },
+                                                    { label: '10k–50k', value: 25000 },
+                                                    { label: '50k+', value: 75000 }
+                                                ].map((range) => {
+                                                    const isSelected = (
+                                                        (range.value === 500 && Number(profileFormData.instagram_followers) < 1000) ||
+                                                        (range.value === 5000 && Number(profileFormData.instagram_followers) >= 1000 && Number(profileFormData.instagram_followers) <= 10000) ||
+                                                        (range.value === 25000 && Number(profileFormData.instagram_followers) > 10000 && Number(profileFormData.instagram_followers) <= 50000) ||
+                                                        (range.value === 75000 && Number(profileFormData.instagram_followers) > 50000)
+                                                    );
+                                                    return (
+                                                        <button
+                                                            key={range.label}
+                                                            type="button"
+                                                            onClick={() => { triggerHaptic(); setProfileFormData({ ...profileFormData, instagram_followers: range.value }); }}
+                                                            className={cn(
+                                                                "py-2 rounded-xl text-[10px] font-black border transition-all active:scale-95",
+                                                                isSelected
+                                                                    ? (isDark ? "bg-primary border-primary text-white" : "bg-emerald-500 border-emerald-500 text-white shadow-md")
+                                                                    : (isDark ? "bg-white/5 border-white/10 text-white/40" : "bg-slate-50 border-slate-200 text-slate-400")
+                                                            )}
+                                                        >
+                                                            {range.label}
+                                                        </button>
+                                                    );
+                                                })}
+                                            </div>
+                                        )}
                                     </div>
 
                                     {/* Media Kit */}
@@ -3034,9 +3068,9 @@ const MobileDashboardDemo = ({
                                             <div className="flex flex-wrap gap-2">
                                             <div className="grid grid-cols-3 gap-3">
                                                 {[
-                                                    { id: 'women', label: 'Mostly Women', value: 'Women 70%+', color: 'text-pink-500' },
-                                                    { id: 'balanced', label: 'Balanced', value: 'Balanced Mix', color: 'text-violet-500' },
-                                                    { id: 'men', label: 'Mostly Men', value: 'Men 70%+', color: 'text-sky-500' }
+                                                    { id: 'women', label: 'Mostly Women', value: 'Women 70%+', color: 'text-pink-500', icon: 'User' },
+                                                    { id: 'balanced', label: 'Balanced', value: 'Balanced Mix', color: 'text-violet-500', icon: 'Users' },
+                                                    { id: 'men', label: 'Mostly Men', value: 'Men 70%+', color: 'text-sky-500', icon: 'User' }
                                                 ].map((split) => {
                                                     const isSelected = profileFormData.audience_gender_split === split.value;
                                                     return (
@@ -3055,7 +3089,7 @@ const MobileDashboardDemo = ({
                                                                 "w-8 h-8 rounded-full flex items-center justify-center mb-0.5",
                                                                 isSelected ? "bg-white/20 text-white" : (isDark ? "bg-white/5 " + split.color : "bg-white " + split.color)
                                                             )}>
-                                                                <Users className="w-4 h-4" />
+                                                                {split.icon === 'Users' ? <Users className="w-4 h-4" /> : <User className="w-4 h-4" />}
                                                             </div>
                                                             <span className={cn(
                                                                 "text-[10px] font-black tracking-tight text-center leading-tight",
@@ -3102,22 +3136,45 @@ const MobileDashboardDemo = ({
                                                 <p className={cn("text-[10px] font-black uppercase tracking-wider opacity-50", textColor)}>Audience Top 3 Cities</p>
                                                 <MapPin className="w-3.5 h-3.5 opacity-20" />
                                             </div>
-                                            <div className="grid grid-cols-3 gap-2">
+                                            <div className="grid grid-cols-3 gap-2 relative">
                                                 {[0, 1, 2].map((idx) => (
-                                                    <input 
-                                                        key={idx}
-                                                        className={cn(
-                                                            "h-12 px-3 rounded-2xl border font-black text-[11px] outline-none transition-all focus:ring-2 focus:ring-primary/20",
-                                                            isDark ? "bg-white/5 border-white/10 text-white placeholder:text-white/20" : "bg-slate-50 border-slate-200 text-slate-900 placeholder:text-slate-400"
+                                                    <div key={idx} className="relative">
+                                                        <input 
+                                                            className={cn(
+                                                                "h-12 w-full px-3 rounded-2xl border font-black text-[11px] outline-none transition-all focus:ring-2 focus:ring-primary/20",
+                                                                isDark ? "bg-white/5 border-white/10 text-white placeholder:text-white/20" : "bg-slate-50 border-slate-200 text-slate-900 placeholder:text-slate-400"
+                                                            )}
+                                                            placeholder={`City ${idx + 1}`}
+                                                            value={profileFormData.top_cities?.[idx] || ''}
+                                                            onFocus={() => setActiveCitySuggestionField(idx)}
+                                                            onBlur={() => setTimeout(() => setActiveCitySuggestionField(null), 200)}
+                                                            onChange={(e) => {
+                                                                const newCities = [...(profileFormData.top_cities || ['', '', ''])];
+                                                                newCities[idx] = e.target.value;
+                                                                setProfileFormData({ ...profileFormData, top_cities: newCities });
+                                                            }}
+                                                        />
+                                                        {activeCitySuggestionField === idx && profileFormData.top_cities?.[idx]?.length > 1 && (
+                                                            <div className="absolute left-0 right-0 top-full mt-1 z-50 rounded-xl border border-border bg-popover p-1 shadow-xl max-h-32 overflow-y-auto">
+                                                                {CITY_OPTIONS.filter(c => c.toLowerCase().includes(profileFormData.top_cities[idx].toLowerCase())).slice(0, 5).map(city => (
+                                                                    <button
+                                                                        key={city}
+                                                                        type="button"
+                                                                        onMouseDown={(e) => {
+                                                                            e.preventDefault();
+                                                                            const newCities = [...(profileFormData.top_cities || ['', '', ''])];
+                                                                            newCities[idx] = city;
+                                                                            setProfileFormData({ ...profileFormData, top_cities: newCities });
+                                                                            setActiveCitySuggestionField(null);
+                                                                        }}
+                                                                        className="w-full text-left px-3 py-2 text-[10px] font-bold hover:bg-accent rounded-lg transition-colors"
+                                                                    >
+                                                                        {city}
+                                                                    </button>
+                                                                ))}
+                                                            </div>
                                                         )}
-                                                        placeholder={`City ${idx + 1}`}
-                                                        value={profileFormData.top_cities?.[idx] || ''}
-                                                        onChange={(e) => {
-                                                            const newCities = [...(profileFormData.top_cities || ['', '', ''])];
-                                                            newCities[idx] = e.target.value;
-                                                            setProfileFormData({ ...profileFormData, top_cities: newCities });
-                                                        }}
-                                                    />
+                                                    </div>
                                                 ))}
                                             </div>
                                             <p className="px-1 text-[9px] font-medium leading-relaxed opacity-40 italic">

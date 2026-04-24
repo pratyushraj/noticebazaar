@@ -672,7 +672,7 @@ const Signup = () => {
 
   return (
     <div
-      className="nb-screen-height bg-[#F4F7FB] relative flex items-start justify-start md:items-center md:justify-center p-4 font-inter overflow-x-hidden overflow-y-auto"
+      className="nb-screen-height bg-[#F4F7FB] relative flex items-center justify-center p-4 font-inter overflow-x-hidden overflow-y-auto"
       style={{
         minHeight: '100dvh',
         paddingTop: 'max(16px, env(safe-area-inset-top, 0px))',
