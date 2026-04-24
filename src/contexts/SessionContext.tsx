@@ -293,7 +293,18 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
 
         // Group core extensions (minus onboarding_complete which we already got)
         try {
-          const extData = await fetchOptionalProfileFields(['organization_id', 'phone', 'location', 'content_niches', 'content_vibes', 'top_cities']);
+          const extData = await fetchOptionalProfileFields([
+            'organization_id',
+            'phone',
+            'location',
+            'content_niches',
+            'content_vibes',
+            'top_cities',
+            'audience_gender_split',
+            'audience_age_range',
+            'primary_audience_language',
+            'collab_region_label',
+          ]);
           optionalFields = { ...optionalFields, ...extData } as any;
         } catch (e) {}
 
