@@ -109,6 +109,11 @@ const getFallbackRedirectPath = (
   return '/creator-dashboard';
 };
 
+const isRecoveryAuthFlow = (hash: string, event?: string) =>
+  event === 'PASSWORD_RECOVERY' ||
+  hash.includes('type=recovery') ||
+  hash.includes('PASSWORD_RECOVERY');
+
 type AuthStatus = 'loading' | 'authenticated' | 'unauthenticated';
 
 interface SessionContextType {
@@ -886,6 +891,7 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
           // Set auth initializing state for OAuth callbacks too
           setIsAuthInitializing(true);
           const pathname = window.location.pathname || '';
+          const recoveryFlow = isRecoveryAuthFlow(window.location.hash || '', event);
 
           // Get intended route from sessionStorage if not already extracted from hash
           if (!intendedRoute) {
@@ -926,7 +932,9 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
             pathname.startsWith('/deal/brand-response/') ||
             pathname.startsWith('/creator-contracts/');
 
-          if (isUsernameRoute || isPublicRoute || isPublicPathname || (!isOAuthCallback && pathname !== '/' && pathname !== '/login')) {
+          if (recoveryFlow) {
+            debugLog('[SessionContext] Recovery flow detected; forcing reset-password route');
+          } else if (isUsernameRoute || isPublicRoute || isPublicPathname || (!isOAuthCallback && pathname !== '/' && pathname !== '/login')) {
             debugLog('[SessionContext] Skipping redirect (already on valid path or not an auth flow):', pathname);
             setIsAuthInitializing(false);
             return;
@@ -948,12 +956,16 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
             userEmail: session?.user?.email
           });
 
-          let targetPath = getFallbackRedirectPath(getMetadataRole(session?.user || null), getMetadataRole(session?.user || null) === 'brand' ? false : null);
+          let targetPath = recoveryFlow
+            ? '/reset-password'
+            : getFallbackRedirectPath(getMetadataRole(session?.user || null), getMetadataRole(session?.user || null) === 'brand' ? false : null);
 
           // Routes that should redirect admin users to admin dashboard instead
           const adminOnlyRoutes = ['admin-influencers', 'admin-discovery'];
 
-          if (intendedRoute && intendedRoute !== 'login' && intendedRoute !== 'signup') {
+          if (recoveryFlow) {
+            targetPath = '/reset-password';
+          } else if (intendedRoute && intendedRoute !== 'login' && intendedRoute !== 'signup') {
             // Check if this is an influencer route - we'll redirect admin users away from these
             const isInfluencerRoute = intendedRoute.includes('influencer') || intendedRoute.includes('discovery');
 
@@ -966,7 +978,7 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
             }
           }
 
-          if (session?.user?.id) {
+          if (session?.user?.id && !recoveryFlow) {
             try {
               debugLog('[SessionContext] Fetching profile for redirect (profiles.role source of truth):', session.user.id);
               const profileData = await fetchRedirectProfile(session.user.id);
