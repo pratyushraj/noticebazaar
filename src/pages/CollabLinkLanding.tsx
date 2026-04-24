@@ -808,12 +808,12 @@ const CollabLinkLanding = () => {
           const backendLogo = json.data.logo;
           console.log("[CollabLinkLanding] Backend returned logo:", backendLogo);
           const inferredLogo = normalizeLogoUrl(undefined, json.data.brand_name || brandName);
-          const finalLogo = backendLogo || (inferredLogo \u0026\u0026 !failedLogos.has(inferredLogo) ? inferredLogo : null);
+          const finalLogo = backendLogo || (inferredLogo && !failedLogos.has(inferredLogo) ? inferredLogo : null);
           
-          if (!isLogoUserUploaded \u0026\u0026 finalLogo) {
+          if (!isLogoUserUploaded && finalLogo) {
             setBrandLogoUrl(finalLogo);
           }
-          if (!brandInstagram.trim() \u0026\u0026 json.data.instagram) setBrandInstagram(json.data.instagram);
+          if (!brandInstagram.trim() && json.data.instagram) setBrandInstagram(json.data.instagram);
           
           setUseBrandProfile(true);
         } else {
