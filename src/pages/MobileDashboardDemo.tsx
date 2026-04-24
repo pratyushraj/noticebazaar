@@ -599,9 +599,35 @@ const buildProfileFormData = (profile: any, userEmail?: string | null) => {
     const portfolioItems = buildPortfolioSlots(profile?.portfolio_items || profile?.collab_past_work_items, profile?.portfolio_links);
     const normalizeNicheLabel = (value: string) => {
         const raw = String(value || '').trim().toLowerCase();
-        if (raw === 'food/cooking' || raw === 'food cooking') return 'Food';
-        if (raw === 'business/finance' || raw === 'business finance') return 'Business';
-        if (raw === 'fitness/health' || raw === 'fitness health') return 'Fitness';
+        const aliases: Record<string, string> = {
+            beauty: 'Beauty',
+            fashion: 'Fashion',
+            lifestyle: 'Lifestyle',
+            tech: 'Tech & Gadgets',
+            'tech & gadgets': 'Tech & Gadgets',
+            fitness: 'Fitness',
+            food: 'Food',
+            travel: 'Travel',
+            gaming: 'Gaming',
+            education: 'Education',
+            parenting: 'Parenting',
+            pets: 'Pets',
+            finance: 'Finance',
+            art: 'Art',
+            entertainment: 'Entertainment',
+            sports: 'Sports',
+            business: 'Business',
+            wellness: 'Wellness',
+            automotive: 'Automotive',
+            spirituality: 'Spirituality',
+            'food/cooking': 'Food',
+            'food cooking': 'Food',
+            'business/finance': 'Business',
+            'business finance': 'Business',
+            'fitness/health': 'Fitness',
+            'fitness health': 'Fitness',
+        };
+        if (aliases[raw]) return aliases[raw];
         return value;
     };
     const normalizeVibeLabel = (value: string) => {

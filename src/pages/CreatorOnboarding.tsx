@@ -83,6 +83,18 @@ const VIBES = [
   { id: 'experimental', label: 'Experimental', icon: '🧪' },
 ];
 
+const normalizeNicheValue = (value: string) => {
+  const raw = String(value || '').trim().toLowerCase();
+  const match = NICHES.find((niche) => niche.id === raw || niche.label.toLowerCase() === raw);
+  return match?.label || value;
+};
+
+const normalizeVibeValue = (value: string) => {
+  const raw = String(value || '').trim().toLowerCase();
+  const match = VIBES.find((vibe) => vibe.id === raw || vibe.label.toLowerCase() === raw);
+  return match?.label || value;
+};
+
 const FOLLOWER_RANGES = [
   { id: '<1k', label: '<1k' },
   { id: '1k-10k', label: '1k–10k' },
@@ -222,7 +234,10 @@ export default function CreatorOnboarding() {
       setInstagramHandle(profile.instagram_handle.replace(/^@+/, ''));
     }
     if (profile?.content_niches?.length && selectedNiches.length === 0) {
-      setSelectedNiches(profile.content_niches);
+      setSelectedNiches(profile.content_niches.map(normalizeNicheValue));
+    }
+    if (profile?.content_vibes?.length && contentVibes.length === 0) {
+      setContentVibes(profile.content_vibes.map(normalizeVibeValue));
     }
     if (profile?.avg_rate_reel && !baseRate) {
       setBaseRate(profile.avg_rate_reel.toString());
@@ -268,7 +283,7 @@ export default function CreatorOnboarding() {
           .filter(Boolean)
       );
     }
-  }, [profile, instagramHandle, selectedNiches, baseRate, bio, upiId, shippingAddress, topCity1, topCity2, topCity3, phone, followerCount]);
+  }, [profile, instagramHandle, selectedNiches, contentVibes, baseRate, bio, upiId, shippingAddress, topCity1, topCity2, topCity3, phone, followerCount]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -280,7 +295,7 @@ export default function CreatorOnboarding() {
         setStep(draft.step as OnboardingStep);
       }
       if (draft.instagramHandle && !instagramHandle) setInstagramHandle(draft.instagramHandle);
-      if (Array.isArray(draft.selectedNiches) && selectedNiches.length === 0) setSelectedNiches(draft.selectedNiches);
+      if (Array.isArray(draft.selectedNiches) && selectedNiches.length === 0) setSelectedNiches(draft.selectedNiches.map(normalizeNicheValue));
       if (draft.followerCount && !followerCount) setFollowerCount(draft.followerCount);
       if (draft.creatorTitle && !creatorTitle) setCreatorTitle(draft.creatorTitle);
       if (draft.topCity1 && !topCity1) setTopCity1(draft.topCity1);
@@ -288,7 +303,7 @@ export default function CreatorOnboarding() {
       if (draft.topCity3 && !topCity3) setTopCity3(draft.topCity3);
       if (draft.bio && !bio) setBio(draft.bio);
       if (draft.baseRate && !baseRate) setBaseRate(draft.baseRate);
-      if (Array.isArray(draft.contentVibes) && contentVibes.length === 0) setContentVibes(draft.contentVibes);
+      if (Array.isArray(draft.contentVibes) && contentVibes.length === 0) setContentVibes(draft.contentVibes.map(normalizeVibeValue));
       if (draft.videoUrl && !videoUrl) setVideoUrl(draft.videoUrl);
       if (draft.instagramLink && !instagramLink) setInstagramLink(draft.instagramLink);
       if (draft.upiId && !upiId) setUpiId(draft.upiId);
@@ -695,18 +710,19 @@ export default function CreatorOnboarding() {
 
   const toggleNiche = (id: string) => {
     setSelectedNiches(prev => {
-      if (prev.includes(id)) return prev.filter(n => n !== id);
+      const label = normalizeNicheValue(id);
+      if (prev.includes(label)) return prev.filter(n => n !== label);
       if (prev.length >= 3) {
         toast.error('Please select up to 3 niches');
         return prev;
       }
-      return [...prev, id];
+      return [...prev, label];
     });
   };
 
   const toggleVibe = (id: string) => {
     setContentVibes(prev => {
-      const label = VIBES.find(v => v.id === id)?.label || id;
+      const label = normalizeVibeValue(id);
       if (prev.includes(label)) return prev.filter(v => v !== label);
       if (prev.length >= 3) {
         toast.error('Please select up to 3 vibes');
@@ -1235,10 +1251,10 @@ export default function CreatorOnboarding() {
                       <motion.button
                         key={niche.id}
                         whileTap={{ scale: 0.95 }}
-                        onClick={() => toggleNiche(niche.id)}
+                        onClick={() => toggleNiche(niche.label)}
                         className={cn(
                           "h-14 rounded-xl border-2 flex flex-col items-center justify-center transition-all text-[9px] font-black uppercase tracking-tighter text-center px-1",
-                          selectedNiches.includes(niche.id)
+                          selectedNiches.includes(niche.label)
                             ? "bg-primary border-primary text-white shadow-lg shadow-primary/20"
                             : "bg-white border-slate-100 text-slate-400"
                         )}
@@ -1260,7 +1276,7 @@ export default function CreatorOnboarding() {
                       <motion.button
                         key={vibe.id}
                         whileTap={{ scale: 0.95 }}
-                        onClick={() => toggleVibe(vibe.id)}
+                        onClick={() => toggleVibe(vibe.label)}
                         className={cn(
                           "h-14 rounded-xl border-2 flex flex-col items-center justify-center transition-all text-[9px] font-black uppercase tracking-tighter text-center px-1",
                           contentVibes.includes(vibe.label)

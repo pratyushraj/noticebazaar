@@ -11,7 +11,15 @@ import type { PortfolioItem } from '@/types';
 
 const unsupportedProfileColumns = new Set<string>();
 
-const UNSUPPORTED_PROFILE_COLUMNS_STORAGE_KEY = 'nb_unsupported_profile_columns_v1';
+const UNSUPPORTED_PROFILE_COLUMNS_STORAGE_KEY = 'nb_unsupported_profile_columns_v2';
+const REQUIRED_CREATOR_PROFILE_COLUMNS = new Set([
+  'content_niches',
+  'content_vibes',
+  'audience_gender_split',
+  'audience_age_range',
+  'top_cities',
+  'collab_region_label',
+]);
 
 const loadUnsupportedProfileColumns = () => {
   // Avoid crashing in non-browser contexts/tests.
@@ -22,7 +30,9 @@ const loadUnsupportedProfileColumns = () => {
     const parsed = JSON.parse(raw);
     if (!Array.isArray(parsed)) return;
     for (const col of parsed) {
-      if (typeof col === 'string' && col) unsupportedProfileColumns.add(col);
+      if (typeof col === 'string' && col && !REQUIRED_CREATOR_PROFILE_COLUMNS.has(col)) {
+        unsupportedProfileColumns.add(col);
+      }
     }
   } catch {
     // Ignore bad storage state.
@@ -47,6 +57,7 @@ loadUnsupportedProfileColumns();
 const omitUnsupportedProfileColumns = (payload: Record<string, unknown>) => {
   const nextPayload = { ...payload };
   for (const column of unsupportedProfileColumns) {
+    if (REQUIRED_CREATOR_PROFILE_COLUMNS.has(column)) continue;
     delete nextPayload[column];
   }
   return nextPayload;
@@ -986,8 +997,6 @@ export const useUpdateProfile = () => {
             'twitter_followers',
             'facebook_followers',
             'open_to_collabs',
-            'content_niches',
-            'content_vibes',
             'media_kit_url',
             'avg_rate_reel',
             'learned_avg_rate_reel',
