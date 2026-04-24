@@ -15,6 +15,7 @@ import { Button } from '@/components/ui/button';
 import { LogOut, User as UserIcon, Settings, HelpCircle, UserPlus } from 'lucide-react';
 import { useSignOut } from '@/lib/hooks/useAuth';
 import { getInitials, DEFAULT_AVATAR_URL } from '@/lib/utils/avatar';
+import { withCacheBuster } from '@/lib/utils/image';
 import { toast } from 'sonner';
 
 interface ProfileMenuProps {
@@ -22,6 +23,7 @@ interface ProfileMenuProps {
     first_name?: string | null;
     last_name?: string | null;
     avatar_url?: string | null;
+    updated_at?: string | null;
   } | null;
   user: {
     email?: string | null;
@@ -44,7 +46,10 @@ const ProfileMenu: React.FC<ProfileMenuProps> = ({ profile, user, profilePath })
           className="relative h-9 w-9 rounded-full p-0 hover:bg-accent/50 transition-all"
         >
           <Avatar className="h-9 w-9 ring-2 ring-border/50 hover:ring-primary/50 transition-all">
-            <AvatarImage src={(profile?.avatar_url ?? DEFAULT_AVATAR_URL) as string} alt={profile?.first_name ?? "User"} />
+            <AvatarImage
+              src={withCacheBuster(profile?.avatar_url ?? DEFAULT_AVATAR_URL, profile?.updated_at)}
+              alt={profile?.first_name ?? "User"}
+            />
             <AvatarFallback className="bg-primary/10 text-primary text-sm font-medium">
               {getInitials(profile?.first_name, profile?.last_name)}
             </AvatarFallback>
@@ -133,4 +138,3 @@ const ProfileMenu: React.FC<ProfileMenuProps> = ({ profile, user, profilePath })
 };
 
 export default ProfileMenu;
-

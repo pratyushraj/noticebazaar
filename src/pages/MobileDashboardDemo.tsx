@@ -24,7 +24,7 @@ import { useUpdateProfile } from '@/lib/hooks/useProfiles';
 import { dealPrimaryCtaButtonClass, getDealPrimaryCta } from '@/lib/deals/primaryCta';
 import FiverrPackageEditor from '@/components/profile/FiverrPackageEditor';
 import { useInstagramSync } from '@/lib/hooks/useInstagramSync';
-import { safeAvatarSrc } from '@/lib/utils/image';
+import { safeAvatarSrc, withCacheBuster } from '@/lib/utils/image';
 
 import DealSearchFilter from '@/components/dashboard/DealSearchFilter';
 import { generateAIBios } from '@/utils/aiBioGenerator';
@@ -4126,7 +4126,10 @@ const MobileDashboardDemo = ({
                                                 <h4 className="text-[10px] font-black uppercase tracking-widest text-[#22C55E]">WHAT BRANDS WILL SEE</h4>
                                                 <div className="flex items-center gap-4">
                                                     <div className="w-16 h-16 rounded-full border-2 border-white/20 overflow-hidden bg-white/5">
-                                                        <img src={safeAvatarSrc(profile?.avatar_url) || `https://ui-avatars.com/api/?name=${profile?.business_name || 'B'}`} className="w-full h-full object-cover" />
+                                                        <img
+                                                          src={withCacheBuster(profile?.avatar_url, profile?.updated_at) || `https://ui-avatars.com/api/?name=${profile?.business_name || 'B'}`}
+                                                          className="w-full h-full object-cover"
+                                                        />
                                                     </div>
                                                     <div>
                                                         <h3 className="text-2xl font-black text-white italic truncate max-w-[200px]">{profile?.first_name || profile?.username || 'Creator'}</h3>

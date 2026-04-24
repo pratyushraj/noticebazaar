@@ -22,3 +22,18 @@ export const safeAvatarSrc = (src?: string | null): string | undefined => {
   
   return undefined;
 };
+
+export const withCacheBuster = (src?: string | null, cacheKey?: string | number | null): string | undefined => {
+  const base = safeAvatarSrc(src);
+  const key = String(cacheKey || '').trim();
+  if (!base || !key) return base;
+
+  try {
+    const url = new URL(base);
+    url.searchParams.set('v', key);
+    return url.toString();
+  } catch {
+    const separator = base.includes('?') ? '&' : '?';
+    return `${base}${separator}v=${encodeURIComponent(key)}`;
+  }
+};

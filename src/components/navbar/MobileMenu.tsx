@@ -10,6 +10,7 @@ import { useSession } from '@/contexts/SessionContext';
 import { useSignOut } from '@/lib/hooks/useAuth';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { getInitials, DEFAULT_AVATAR_URL } from '@/lib/utils/avatar';
+import { withCacheBuster } from '@/lib/utils/image';
 
 interface NavTab {
   to: string;
@@ -46,6 +47,7 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ tabs, profilePath }) => {
   const fullName = `${profile?.first_name || ''} ${profile?.last_name || ''}`.trim() || 'User';
   const email = user?.email || '';
   const role = profile?.role === 'creator' ? 'Creator' : profile?.role === 'admin' ? 'Admin' : 'Client';
+  const avatarSrc = withCacheBuster(profile?.avatar_url || DEFAULT_AVATAR_URL, profile?.updated_at);
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
@@ -71,7 +73,7 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ tabs, profilePath }) => {
         <div className="p-5 border-b border-border">
           <div className="flex items-center gap-3 mb-4">
             <Avatar className="h-11 w-11 ring-2 ring-border rounded-xl">
-              <AvatarImage src={profile?.avatar_url || DEFAULT_AVATAR_URL} alt={fullName} />
+              <AvatarImage src={avatarSrc} alt={fullName} />
               <AvatarFallback className="bg-secondary text-muted-foreground text-sm font-medium">
                 {getInitials(profile?.first_name, profile?.last_name)}
               </AvatarFallback>
