@@ -1833,12 +1833,18 @@ const MobileDashboardDemo = ({
 
             setProfileFormData((prev: any) => ({
                 ...prev,
-                content_niches: Array.isArray(data.content_niches) ? data.content_niches : prev.content_niches || [],
+                content_niches: Array.isArray(data.content_niches) && data.content_niches.length > 0
+                    ? data.content_niches
+                    : prev.content_niches || [],
                 audience_gender_split: data.audience_gender_split || prev.audience_gender_split || '',
                 audience_age_range: data.audience_age_range || prev.audience_age_range || '',
                 primary_audience_language: data.primary_audience_language || prev.primary_audience_language || '',
-                top_cities: Array.isArray(data.top_cities) ? data.top_cities : prev.top_cities || [],
-                content_vibes: Array.isArray(data.content_vibes) ? data.content_vibes : prev.content_vibes || [],
+                top_cities: Array.isArray(data.top_cities) && data.top_cities.length > 0
+                    ? data.top_cities
+                    : prev.top_cities || [],
+                content_vibes: Array.isArray(data.content_vibes) && data.content_vibes.length > 0
+                    ? data.content_vibes
+                    : prev.content_vibes || [],
                 collab_region_label: data.collab_region_label || prev.collab_region_label || '',
             }));
             hasHydratedCollabFieldsRef.current = true;
