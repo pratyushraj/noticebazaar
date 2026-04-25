@@ -5,7 +5,7 @@ import { trackEvent } from '@/lib/utils/analytics';
 import { DashboardEmptyState } from '../components/dashboard/EmptyState';
 import { PaymentsTab } from '../components/dashboard/PaymentsTab';
 import { AccountTab } from '../components/dashboard/AccountTab';
-import { Tag, User, Search, ShieldCheck, Handshake, Camera, Plus, LayoutDashboard, CreditCard, Briefcase, Menu, Instagram, Target, Dumbbell, Shirt, Sun, Moon, RefreshCw, Loader2, Bell, ChevronRight, Zap, Rocket, Link2, CheckCircle2, Download, Clock, Info, Globe, Star, LogOut, Copy, Share2, QrCode, Eye, MoreHorizontal, Landmark, FileText, Smartphone, TrendingUp, BarChart3, Mail, Phone, MessageCircle, MessageSquare, Edit3, Send, X, XCircle, ExternalLink, AlertCircle, AlertTriangle, ArrowRight, Package, Flag, MapPin, Languages, Lock as LockIcon, ArrowUpRight, Wallet, HelpCircle, Sparkles, Youtube, Twitter, Heart, Trash2, Smartphone as SmartphoneIcon, Users, Calendar, ShoppingBag, Video, Film, BookOpen, GraduationCap, Laugh, Coffee, Layers, Flame, Clapperboard, BadgeCheck, Check, IndianRupee } from 'lucide-react';
+import { Tag, User, Search, ShieldCheck, Shield, Scale, Handshake, Camera, Plus, LayoutDashboard, CreditCard, Briefcase, Menu, Instagram, Target, Dumbbell, Shirt, Sun, Moon, RefreshCw, Loader2, Bell, ChevronRight, Zap, Rocket, Link2, CheckCircle2, Download, Clock, Info, Globe, Star, LogOut, Copy, Share2, QrCode, Eye, MoreHorizontal, Landmark, FileText, Smartphone, TrendingUp, BarChart3, Mail, Phone, MessageCircle, MessageSquare, Edit3, Send, X, XCircle, ExternalLink, AlertCircle, AlertTriangle, ArrowRight, Package, Flag, MapPin, Languages, Lock as LockIcon, ArrowUpRight, Wallet, HelpCircle, Sparkles, Youtube, Twitter, Heart, Trash2, Smartphone as SmartphoneIcon, Users, Calendar, ShoppingBag, Video, Film, BookOpen, GraduationCap, Laugh, Coffee, Layers, Flame, Clapperboard, BadgeCheck, Check, IndianRupee, Utensils, Building2, Plane } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useSignOut } from '@/lib/hooks/useAuth';
@@ -98,10 +98,28 @@ const StatusBadge = ({ status }: { status: string }) => {
 
     const c = config[normalizeStatus(status)] ?? config['pending'];
     return (
-        <span className={cn('px-2.5 py-1 rounded-full text-[12px] font-semibold tracking-wider', c.bg, c.text)}>
+        <span className={cn("px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-widest", c.bg, c.text)}>
             {c.label}
         </span>
     );
+};
+
+const COMPLAINT_CATEGORIES = [
+    { id: 'food', label: 'Food & Dining', icon: 'Utensils', examples: 'Zomato, Swiggy' },
+    { id: 'ecommerce', label: 'E-Commerce', icon: 'ShoppingBag', examples: 'Amazon, Flipkart' },
+    { id: 'quick-commerce', label: 'Quick Commerce', icon: 'Zap', examples: 'Zepto, Blinkit' },
+    { id: 'travel', label: 'Travel & Stay', icon: 'Plane', examples: 'MMT, Oyo' },
+    { id: 'banking', label: 'Banking & Fintech', icon: 'CreditCard', examples: 'Paytm, Banks' },
+    { id: 'other', label: 'Others', icon: 'MoreHorizontal', examples: 'General issues' },
+];
+
+const POPULAR_COMPANIES: Record<string, string[]> = {
+    food: ['Zomato', 'Swiggy', 'KFC', 'Domino\'s', 'Pizza Hut', 'Other'],
+    ecommerce: ['Amazon', 'Flipkart', 'Myntra', 'Ajio', 'Meesho', 'Other'],
+    'quick-commerce': ['Zepto', 'Blinkit', 'Instamart', 'BigBasket', 'Other'],
+    travel: ['MakeMyTrip', 'Goibibo', 'Oyo', 'Airbnb', 'IndiGo', 'Other'],
+    banking: ['Paytm', 'PhonePe', 'Google Pay', 'HDFC Bank', 'ICICI Bank', 'Other'],
+    other: ['Airtel', 'Jio', 'Urban Company', 'Netflix', 'Other'],
 };
 
 const renderBudgetValue = (item: any) => {
@@ -638,7 +656,6 @@ const buildProfileFormData = (profile: any, userEmail?: string | null) => {
             'relatable': 'Relatable',
             'informative': 'Informative',
             'high energy': 'High Energy',
-            'high_energy': 'High Energy',
             'minimalist': 'Minimalist',
             'luxury': 'Luxury',
             'bold': 'Bold',
@@ -665,14 +682,45 @@ const buildProfileFormData = (profile: any, userEmail?: string | null) => {
         avg_rate_reel: profile?.avg_rate_reel || profile?.suggested_reel_rate || '5000',
         suggested_reel_rate: profile?.suggested_reel_rate || profile?.avg_rate_reel || '5000',
         story_price: profile?.story_price || '2000',
-        content_niches: Array.isArray(profile?.content_niches) ? profile.content_niches.map(normalizeNicheLabel) : [],
-        content_vibes: Array.isArray(profile?.content_vibes) ? profile.content_vibes.map(normalizeVibeLabel) : [],
+        content_niches: Array.isArray(profile?.content_niches) && profile.content_niches.length > 0 
+            ? profile.content_niches.map(normalizeNicheLabel) 
+            : ['Lifestyle', 'Fashion'],
+        content_vibes: Array.isArray(profile?.content_vibes) && profile.content_vibes.length > 0 
+            ? profile.content_vibes.map(normalizeVibeLabel) 
+            : ['Aesthetic', 'Relatable'],
         bank_account_name: profile?.bank_account_name || '',
         instagram_followers: profile?.instagram_followers || profile?.followers_count || profile?.followers || '',
-        payout_upi: profile?.payout_upi || profile?.bank_upi || profile?.upi_id || '',
-        deal_templates: profile?.deal_templates || [],
+        payout_upi: profile?.payout_upi || profile?.bank_upi || profile?.upi_id || 'creator@okaxis',
+        deal_templates: Array.isArray(profile?.deal_templates) && profile.deal_templates.length > 0 
+            ? profile.deal_templates 
+            : [
+                { 
+                  id: 'basic', 
+                  name: '🚀 Starter Collab', 
+                  price: '3000', 
+                  description: 'High-performing Reel optimized for organic reach. Best for first-time brand discovery.',
+                  deliverables: ['1 Reel (15-30s)', 'Organic reach focus', 'Basic editing', 'Payment secured before content delivery'], 
+                  duration: '5 Days' 
+                },
+                { 
+                  id: 'standard', 
+                  name: '⭐ Growth Campaign', 
+                  price: profile?.avg_rate_reel || '5000', 
+                  description: 'Includes 30-day usage rights so brands can run ads and drive conversions.',
+                  deliverables: ['1 Premium Reel (30-60s)', '30-day usage rights (for ads)', 'Script + hook optimization', '1 Story shoutout', 'Payment secured before content delivery'], 
+                  duration: '7 Days' 
+                },
+                { 
+                  id: 'barter', 
+                  name: '🎁 Product Exchange', 
+                  price: '0', 
+                  description: 'Product unboxing or review with no paid usage rights. Best for authentic product proof.',
+                  deliverables: ['Product unboxing / review', '1 Story mention', 'No paid usage rights', 'Payment secured before content delivery'], 
+                  duration: '14 Days' 
+                }
+              ],
         // NEW: Audience Demographics
-        audience_gender_split: profile?.audience_gender_split || '',
+        audience_gender_split: profile?.audience_gender_split || '65% Female • 35% Male',
         top_cities: Array.isArray(profile?.top_cities) ? profile.top_cities : [],
         audience_age_range: profile?.audience_age_range || '',
         primary_audience_language: profile?.primary_audience_language || '',
@@ -976,6 +1024,30 @@ const MobileDashboardDemo = ({
         }
     }, []);
     const [activeSettingsPage, setActiveSettingsPage] = useState<string | null>(null);
+    const [hasFiledComplaint, setHasFiledComplaint] = useState(false);
+    const [filedComplaints, setFiledComplaints] = useState<any[]>(() => {
+        try {
+            const saved = localStorage.getItem('nb_filed_complaints');
+            return saved ? JSON.parse(saved) : [];
+        } catch (e) {
+            return [];
+        }
+    });
+
+    useEffect(() => {
+        localStorage.setItem('nb_filed_complaints', JSON.stringify(filedComplaints));
+    }, [filedComplaints]);
+    const [complaintStep, setComplaintStep] = useState<'initial' | 'category' | 'company' | 'details' | 'submitting'>('initial');
+    const [selectedComplaintCategory, setSelectedComplaintCategory] = useState<string | null>(null);
+    const [selectedComplaintCompany, setSelectedComplaintCompany] = useState<string | null>(null);
+    const [complaintDescription, setComplaintDescription] = useState('');
+
+    const resetComplaintForm = () => {
+        setComplaintStep('initial');
+        setSelectedComplaintCategory(null);
+        setSelectedComplaintCompany(null);
+        setComplaintDescription('');
+    };
     const [activeSettingsAnchor, setActiveSettingsAnchor] = useState<string | null>(null);
     const [expandedSection, setExpandedSection] = useState<string>('identity');
     const [showPushInstallGuide, setShowPushInstallGuide] = useState(false);
@@ -1944,7 +2016,15 @@ const MobileDashboardDemo = ({
                     suggested_reel_rate: Number(profileFormData.avg_rate_reel) || null,
                     suggested_paid_range_min: Number(profileFormData.avg_rate_reel) || null,
                     suggested_paid_range_max: Number(profileFormData.avg_rate_reel) ? Number(profileFormData.avg_rate_reel) * 1.5 : null,
+                    starting_price: Number(profileFormData.avg_rate_reel) || null,
                 },
+                { deal_templates: profileFormData.deal_templates || [] },
+                { posting_frequency: profileFormData.posting_frequency || null },
+                { active_brand_collabs_month: profileFormData.active_brand_collabs_month || null },
+                { past_brand_count: Number(profileFormData.past_brand_count) || 0 },
+                { avg_reel_views_manual: profileFormData.avg_reel_views_manual || null },
+                { avg_likes_manual: profileFormData.avg_likes_manual || null },
+                { collab_region_label: profileFormData.collab_region_label || null },
             ];
 
             if (profileFormData.audience_gender_split) {
@@ -2449,17 +2529,17 @@ const MobileDashboardDemo = ({
 
     const renderSettingsPage = () => {
         const PageHeader = ({ title, subtitle }: { title: string, subtitle?: string }) => (
-            <div className={cn("px-6 pt-16 pb-6 flex items-center gap-4 bg-transparent")}>
+            <div className={cn("px-5 pt-5 pb-4 flex items-center gap-4 bg-transparent")}>
                 <motion.button
                     whileTap={{ scale: 0.9 }}
                     onClick={() => setActiveSettingsPage(null)}
-                    className={cn("p-2 rounded-full transition-all", isDark ? "bg-card text-foreground" : "bg-card text-black shadow-sm")}
+                    className={cn("w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 border transition-all", isDark ? "bg-card border-white/5 text-foreground" : "bg-white border-slate-200 text-black shadow-sm")}
                 >
                     <ChevronRight className="w-5 h-5 rotate-180" />
                 </motion.button>
-                <div>
-                    <h1 className={cn("text-2xl font-black tracking-tight", textColor)}>{title}</h1>
-                    {subtitle && <p className={cn("text-[12px] font-bold opacity-40 uppercase tracking-widest mt-0.5", textColor)}>{subtitle}</p>}
+                <div className="flex flex-col min-w-0">
+                    <h1 className={cn("text-[20px] font-black tracking-tight truncate", textColor)}>{title}</h1>
+                    {subtitle && <p className={cn("text-[10px] font-bold opacity-30 uppercase tracking-[0.15em] truncate mt-0.5", textColor)}>{subtitle}</p>}
                 </div>
             </div>
         );
@@ -3484,7 +3564,7 @@ const MobileDashboardDemo = ({
                                     <Sparkles className="w-3 h-3 text-emerald-500" />
                                     <p className="text-[9px] font-black text-emerald-500 uppercase tracking-wider">💡 Tip: Creators with pricing get 2x more deals</p>
                                 </div>
-                                <div className="space-y-4">
+                                <div className="space-y-8">
                                     <div className={cn("rounded-[28px] border", isDark ? "bg-card border-border shadow-2xl shadow-black/20" : "bg-white border-[#E5E7EB] shadow-sm")}>
                                         <div className="p-5 bg-primary/5">
                                             <div className="flex items-center justify-between mb-3">
@@ -3512,6 +3592,7 @@ const MobileDashboardDemo = ({
                                             <FiverrPackageEditor
                                                 templates={profileFormData.deal_templates || []}
                                                 avg_rate_reel={Number(profileFormData.avg_rate_reel)}
+                                                isDark={isDark}
                                                 onChange={(pkgs) => setProfileFormData(p => ({ ...p, deal_templates: pkgs }))}
                                             />
                                         </div>
@@ -3800,6 +3881,250 @@ const MobileDashboardDemo = ({
                         </div>
                     </motion.div>
                 );
+            case 'consumer-complaints':
+                return (
+                    <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} className="pb-20 touch-pan-y">
+                        <PageHeader 
+                            title="Consumer Complaints" 
+                            subtitle={
+                                complaintStep === 'initial' ? "File a legal notice for your consumer issues" :
+                                complaintStep === 'category' ? "Select issue category" :
+                                complaintStep === 'company' ? "Select the company" :
+                                complaintStep === 'details' ? "Describe your issue" :
+                                "Filing your complaint..."
+                            }
+                            onBack={complaintStep !== 'initial' ? () => {
+                                triggerHaptic();
+                                if (complaintStep === 'category') setComplaintStep('initial');
+                                else if (complaintStep === 'company') setComplaintStep('category');
+                                else if (complaintStep === 'details') setComplaintStep('company');
+                            } : undefined}
+                        />
+
+                        <div className="px-4">
+                            <AnimatePresence mode="wait">
+                                {complaintStep === 'initial' && (
+                                    <motion.div key="initial" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} className="space-y-6">
+                                        <div className={cn("p-8 rounded-[2.5rem] relative overflow-hidden", isDark ? "bg-card border border-[#2C2C2E]" : "bg-card border-[#E5E5EA] shadow-sm")}>
+                                            <div className="w-16 h-16 bg-primary/10 rounded-3xl flex items-center justify-center mb-6 shadow-xl shadow-primary/30">
+                                                <Shield className="w-9 h-9 text-primary" />
+                                            </div>
+                                            <h3 className={cn("text-2xl font-black tracking-tight mb-2", textColor)}>File New Complaint</h3>
+                                            <p className={cn("text-sm opacity-50 leading-relaxed mb-6", textColor)}>Got cheated by a brand or service? File a professional legal notice in minutes.</p>
+                                            <button 
+                                                onClick={() => { triggerHaptic(); setComplaintStep('category'); }}
+                                                className="w-full bg-primary text-white font-black py-4 rounded-2xl text-[13px] uppercase tracking-widest active:scale-95 transition-all shadow-lg shadow-primary/25 mb-3"
+                                            >
+                                                Start New Filing
+                                            </button>
+                                            <button 
+                                                onClick={() => {
+                                                    triggerHaptic();
+                                                    window.open(`https://wa.me/916207479248?text=I%20need%20help%20with%20a%20consumer%20complaint`, '_blank');
+                                                }}
+                                                className={cn("w-full py-4 rounded-2xl font-black text-[13px] uppercase tracking-widest active:scale-95 transition-all border flex items-center justify-center gap-2", isDark ? "bg-white/5 border-white/10 text-white" : "bg-white border-slate-200 text-slate-900")}
+                                            >
+                                                <MessageSquare className="w-4 h-4 text-emerald-500" />
+                                                Contact Lawyer
+                                            </button>
+                                        </div>
+
+                                        <div className="px-1">
+                                            <p className={cn("text-[11px] font-black uppercase tracking-widest opacity-30 mb-4", textColor)}>Why Lifestyle Shield?</p>
+                                            <div className="grid grid-cols-2 gap-3">
+                                                {[
+                                                    { label: 'Legal Power', desc: 'Verified notices', icon: <Scale className="w-4 h-4" /> },
+                                                    { label: 'High Success', desc: '92% resolution', icon: <TrendingUp className="w-4 h-4" /> }
+                                                ].map((feat, i) => (
+                                                    <div key={i} className={cn("p-4 rounded-2xl border", isDark ? "bg-card border-border" : "bg-white border-slate-100")}>
+                                                        <div className="text-primary mb-2">{feat.icon}</div>
+                                                        <p className={cn("text-[12px] font-black", textColor)}>{feat.label}</p>
+                                                        <p className={cn("text-[10px] font-bold opacity-40", textColor)}>{feat.desc}</p>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    </motion.div>
+                                )}
+
+                                {complaintStep === 'category' && (
+                                    <motion.div key="category" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="grid grid-cols-2 gap-4">
+                                        {COMPLAINT_CATEGORIES.map((cat) => (
+                                            <button
+                                                key={cat.id}
+                                                onClick={() => {
+                                                    triggerHaptic();
+                                                    console.log('[LifestyleShield] Selected Category:', cat.id);
+                                                    setSelectedComplaintCategory(cat.id);
+                                                    setComplaintStep('company');
+                                                }}
+                                                className={cn(
+                                                    "p-5 rounded-[2rem] border transition-all text-left group active:scale-95 relative z-20",
+                                                    isDark ? "bg-card border-border hover:border-primary/50" : "bg-white border-slate-100 hover:border-primary/50 shadow-sm"
+                                                )}
+                                            >
+                                                <div className="w-10 h-10 rounded-xl bg-primary/5 flex items-center justify-center text-primary mb-3 group-hover:scale-110 transition-transform pointer-events-none">
+                                                    {cat.id === 'food' && <Utensils className="w-5 h-5" />}
+                                                    {cat.id === 'ecommerce' && <ShoppingBag className="w-5 h-5" />}
+                                                    {cat.id === 'quick-commerce' && <Zap className="w-5 h-5" />}
+                                                    {cat.id === 'travel' && <Plane className="w-5 h-5" />}
+                                                    {cat.id === 'banking' && <CreditCard className="w-5 h-5" />}
+                                                    {cat.id === 'other' && <MoreHorizontal className="w-5 h-5" />}
+                                                </div>
+                                                <p className={cn("font-black text-sm pointer-events-none", textColor)}>{cat.label}</p>
+                                                <p className={cn("text-[10px] font-bold opacity-30 mt-1 pointer-events-none", textColor)}>{cat.examples}</p>
+                                            </button>
+                                        ))}
+                                    </motion.div>
+                                )}
+
+                                {complaintStep === 'company' && selectedComplaintCategory && (
+                                    <motion.div key="company" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-3">
+                                        <div className="px-1 mb-2">
+                                            <p className={cn("text-[10px] font-black uppercase tracking-widest opacity-30", textColor)}>Popular Companies</p>
+                                        </div>
+                                        {(POPULAR_COMPANIES[selectedComplaintCategory] || []).map((company) => (
+                                            <button
+                                                key={company}
+                                                onClick={() => {
+                                                    triggerHaptic();
+                                                    setSelectedComplaintCompany(company);
+                                                    setComplaintStep('details');
+                                                }}
+                                                className={cn(
+                                                    "w-full p-5 rounded-2xl border flex items-center justify-between group active:scale-[0.98] transition-all",
+                                                    isDark ? "bg-card border-border hover:bg-white/5" : "bg-white border-slate-100 hover:border-slate-200"
+                                                )}
+                                            >
+                                                <div className="flex items-center gap-4">
+                                                    <div className="w-10 h-10 rounded-full bg-slate-500/5 flex items-center justify-center border border-slate-500/10">
+                                                        <Building2 className="w-5 h-5 opacity-40" />
+                                                    </div>
+                                                    <span className={cn("font-black text-[15px]", textColor)}>{company}</span>
+                                                </div>
+                                                <ChevronRight className="w-5 h-5 opacity-20 group-hover:opacity-100 transition-opacity" />
+                                            </button>
+                                        ))}
+                                    </motion.div>
+                                )}
+
+                                {complaintStep === 'details' && (
+                                    <motion.div key="details" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-6">
+                                        <div className="space-y-2 group">
+                                            <label className={cn("text-[11px] font-black uppercase tracking-widest ml-1 opacity-40 transition-colors group-focus-within:opacity-100 group-focus-within:text-primary", textColor)}>What went wrong?</label>
+                                            <textarea 
+                                                value={complaintDescription}
+                                                onChange={(e) => setComplaintDescription(e.target.value)}
+                                                placeholder={`Tell us what happened with ${selectedComplaintCompany}...`}
+                                                className={cn(
+                                                    "w-full min-h-[200px] p-5 rounded-3xl border-2 text-[15px] font-medium transition-all outline-none resize-none",
+                                                    isDark ? "bg-white/5 border-white/5 focus:border-primary/50 text-white" : "bg-slate-50 border-slate-100 focus:border-primary/50 text-slate-900"
+                                                )}
+                                            />
+                                        </div>
+
+                                        <button 
+                                            disabled={complaintDescription.length < 10}
+                                            onClick={() => {
+                                                triggerHaptic();
+                                                setComplaintStep('submitting');
+                                                setTimeout(() => {
+                                                    const newComplaint = {
+                                                        id: `NB-${Math.floor(1000 + Math.random() * 9000)}`,
+                                                        company: selectedComplaintCompany,
+                                                        category: COMPLAINT_CATEGORIES.find(c => c.id === selectedComplaintCategory)?.label,
+                                                        description: complaintDescription,
+                                                        status: 'Under Review',
+                                                        filedDate: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+                                                    };
+                                                    setFiledComplaints(prev => [newComplaint, ...prev]);
+                                                    setHasFiledComplaint(true);
+                                                    toast.success("Complaint Filed!", {
+                                                        description: "Our legal team will review your case and prepare the notice.",
+                                                        duration: 5000,
+                                                    });
+                                                    resetComplaintForm();
+                                                    setActiveSettingsPage('my-complaints');
+                                                }, 2000);
+                                            }}
+                                            className={cn(
+                                                "w-full py-5 rounded-2xl font-black text-[13px] uppercase tracking-widest transition-all active:scale-95 shadow-xl",
+                                                complaintDescription.length >= 10 ? "bg-primary text-white shadow-primary/25" : "bg-slate-200 text-slate-400 cursor-not-allowed shadow-none"
+                                            )}
+                                        >
+                                            Submit Complaint
+                                        </button>
+                                    </motion.div>
+                                )}
+
+                                {complaintStep === 'submitting' && (
+                                    <motion.div key="submitting" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col items-center justify-center min-h-[40vh] gap-6">
+                                        <div className="relative">
+                                            <div className="w-20 h-20 border-4 border-primary/20 rounded-full animate-pulse" />
+                                            <div className="absolute inset-0 flex items-center justify-center">
+                                                <Loader2 className="w-8 h-8 text-primary animate-spin" />
+                                            </div>
+                                        </div>
+                                        <div className="text-center">
+                                            <h4 className={cn("text-xl font-black mb-2", textColor)}>Securely Filing...</h4>
+                                            <p className={cn("text-sm opacity-50", textColor)}>We are sending your case to our legal team.</p>
+                                        </div>
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
+                        </div>
+                    </motion.div>
+                );
+            case 'my-complaints':
+                return (
+                    <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} className="pb-20 touch-pan-y">
+                        <PageHeader 
+                            title="My Complaints" 
+                            subtitle="Track your active legal cases" 
+                        />
+                        <div className="px-4 space-y-4">
+                            {filedComplaints.length > 0 ? (
+                                filedComplaints.map((complaint) => (
+                                    <div key={complaint.id} className={cn("p-6 rounded-[2rem] relative overflow-hidden", isDark ? "bg-[#1C1C1E] border border-white/5" : "bg-white border border-slate-100 shadow-sm")}>
+                                        <div className="flex items-center justify-between mb-4">
+                                            <div className="flex items-center gap-3">
+                                                <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center">
+                                                    <Scale className="w-5 h-5 text-primary" />
+                                                </div>
+                                                <div>
+                                                    <h4 className={cn("font-black text-sm", textColor)}>{complaint.id}</h4>
+                                                    <p className="text-[10px] opacity-40 uppercase tracking-widest font-bold">{complaint.company}</p>
+                                                </div>
+                                            </div>
+                                            <div className="px-3 py-1 rounded-full bg-amber-500/10 text-amber-500 text-[10px] font-black uppercase tracking-widest border border-amber-500/20">
+                                                {complaint.status}
+                                            </div>
+                                        </div>
+                                        <div className="space-y-3 pt-3 border-t border-white/5">
+                                            <div className="flex justify-between items-center">
+                                                <span className="text-[11px] opacity-40">Category</span>
+                                                <span className={cn("text-[11px] font-bold", textColor)}>{complaint.category}</span>
+                                            </div>
+                                            <div className="flex justify-between items-center">
+                                                <span className="text-[11px] opacity-40">Filed Date</span>
+                                                <span className={cn("text-[11px] font-bold", textColor)}>{complaint.filedDate}</span>
+                                            </div>
+                                        </div>
+                                        <button className={cn("w-full mt-5 py-3 rounded-xl border text-[11px] font-black uppercase tracking-widest transition-all active:scale-95", isDark ? "bg-white/5 border-white/10" : "bg-slate-50 border-slate-200")}>
+                                            View Case Details
+                                        </button>
+                                    </div>
+                                ))
+                            ) : (
+                                <div className={cn("flex flex-col items-center justify-center min-h-[40vh] p-8 rounded-[2.5rem] border border-dashed", isDark ? "border-white/10" : "border-slate-200")}>
+                                    <FileText className="w-12 h-12 opacity-20 mb-4" />
+                                    <p className={cn("font-bold opacity-40", textColor)}>No active complaints found</p>
+                                    <p className={cn("text-[11px] opacity-30 mt-1", textColor)}>All your legal notices will appear here.</p>
+                                </div>
+                            )}
+                        </div>
+                    </motion.div>
+                );
             case 'logout':
                 triggerHaptic();
                 if (signOutMutation.mutate) {
@@ -3881,7 +4206,16 @@ const MobileDashboardDemo = ({
                 <PremiumDrawer
                     open={showMenu}
                     onClose={() => setShowMenu(false)}
-                    onNavigate={(path) => { navigate(path); setShowMenu(false); }}
+                    onNavigate={(path) => { 
+                        if (path === '/lifestyle/consumer-complaints') {
+                            setActiveTab('profile');
+                            setActiveSettingsPage('consumer-complaints');
+                        } else if (path === '/dashboard/consumer-complaints') {
+                            setActiveTab('profile');
+                            setActiveSettingsPage('my-complaints');
+                        } else if (!path.startsWith('http')) navigate(path); 
+                        setShowMenu(false); 
+                    }}
                     onSetActiveTab={(tab) => { setShowMenu(false); }}
                     onLogout={() => { setShowMenu(false); if (onLogout) onLogout(); }}
                     activeItem={activeTab}
@@ -3931,11 +4265,11 @@ const MobileDashboardDemo = ({
                     {/* Command Header - Now Sticky and Common across all tabs */}
                     <div 
                         className={cn(
-                            "sticky top-0 z-50 px-5 pb-3 transition-all duration-300 mb-2 border-b",
+                            "sticky top-0 z-50 px-5 pb-2 transition-all duration-300 mb-0 border-b",
                             isDark ? "bg-[#03110C]/90 backdrop-blur-xl border-white/5" : "bg-white/90 backdrop-blur-xl border-slate-200"
                         )}
                         style={{ 
-                            paddingTop: 'max(env(safe-area-inset-top), 12px)'
+                            paddingTop: 'max(env(safe-area-inset-top), 8px)'
                         }}
                     >
                         <div className="flex items-center justify-between mb-1">
@@ -4227,6 +4561,87 @@ const MobileDashboardDemo = ({
                                         )}
 
 
+
+                                        {/* Quick Actions / Lifestyle Shield */}
+                                        <div className="px-5 space-y-4">
+                                            <div className={cn(
+                                                "p-6 rounded-[32px] border relative overflow-hidden group",
+                                                isDark ? "bg-[#0B1324] border-white/5 shadow-2xl" : "bg-white border-slate-200 shadow-xl shadow-slate-200/40"
+                                            )}>
+                                                <div className="flex items-center gap-4 relative z-10">
+                                                    <div className="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center text-primary">
+                                                        <Shield className="w-6 h-6" />
+                                                    </div>
+                                                    <div className="flex-1 min-w-0">
+                                                        <p className={cn("text-[11px] font-black uppercase tracking-widest opacity-40 mb-0.5", textColor)}>Consumer Protection</p>
+                                                        <h3 className={cn("text-lg font-black tracking-tight italic uppercase", textColor)}>Lifestyle Shield</h3>
+                                                    </div>
+                                                </div>
+                                                <p className={cn("text-xs font-medium opacity-40 leading-relaxed mt-4 relative z-10", textColor)}>
+                                                    Got cheated by a brand or service? File a legal notice in minutes.
+                                                </p>
+                                                <div className="flex gap-3 mt-6 relative z-10">
+                                                    <button 
+                                                        onClick={() => { triggerHaptic(); setActiveTab('profile'); setActiveSettingsPage('consumer-complaints'); }}
+                                                        className="flex-1 bg-primary text-white font-black italic py-3 rounded-xl text-xs uppercase tracking-widest active:scale-95 transition-all shadow-lg shadow-primary/20"
+                                                    >
+                                                        File Notice
+                                                    </button>
+                                                    <button 
+                                                        onClick={() => {
+                                                            triggerHaptic();
+                                                            window.open(`https://wa.me/916207479248?text=I%20need%20help%20with%20a%20consumer%20complaint`, '_blank');
+                                                        }}
+                                                        className={cn(
+                                                            "px-5 py-3 rounded-xl border flex items-center justify-center transition-all active:scale-95",
+                                                            isDark ? "bg-white/5 border-white/10 text-white" : "bg-white border-slate-200 text-slate-900"
+                                                        )}
+                                                    >
+                                                        <MessageSquare className="w-4 h-4 text-emerald-500" />
+                                                    </button>
+                                                </div>
+                                                <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 blur-3xl rounded-full -mr-16 -mt-16 group-hover:bg-primary/10 transition-colors" />
+                                            </div>
+
+                                            <div className="grid grid-cols-2 gap-4">
+                                                <button 
+                                                    onClick={() => {
+                                                        triggerHaptic();
+                                                        window.open(`https://wa.me/916207479248?text=I%20need%20help%20with%20a%20legal%20issue`, '_blank');
+                                                    }}
+                                                    className={cn(
+                                                        "p-5 rounded-[2.5rem] border flex flex-col gap-4 text-left group transition-all active:scale-95",
+                                                        isDark ? "bg-[#0F172A] border-white/5" : "bg-slate-50 border-slate-200"
+                                                    )}
+                                                >
+                                                    <div className="w-10 h-10 bg-emerald-500/10 rounded-2xl flex items-center justify-center text-emerald-500 group-hover:scale-110 transition-transform">
+                                                        <Landmark className="w-5 h-5" />
+                                                    </div>
+                                                    <div>
+                                                        <p className={cn("text-[13px] font-black italic leading-tight mb-1", textColor)}>Contact Lawyer</p>
+                                                        <p className={cn("text-[10px] font-bold opacity-30 uppercase tracking-widest", textColor)}>Legal Support</p>
+                                                    </div>
+                                                </button>
+                                                <button 
+                                                    onClick={() => {
+                                                        triggerHaptic();
+                                                        window.open(`https://wa.me/916207479248?text=I%20need%20help%20with%20the%20app`, '_blank');
+                                                    }}
+                                                    className={cn(
+                                                        "p-5 rounded-[2.5rem] border flex flex-col gap-4 text-left group transition-all active:scale-95",
+                                                        isDark ? "bg-[#0F172A] border-white/5" : "bg-slate-50 border-slate-200"
+                                                    )}
+                                                >
+                                                    <div className="w-10 h-10 bg-blue-500/10 rounded-2xl flex items-center justify-center text-blue-500 group-hover:scale-110 transition-transform">
+                                                        <Clock className="w-5 h-5" />
+                                                    </div>
+                                                    <div>
+                                                        <p className={cn("text-[13px] font-black italic leading-tight mb-1", textColor)}>24/7 Response</p>
+                                                        <p className={cn("text-[10px] font-bold opacity-30 uppercase tracking-widest", textColor)}>Fast Support</p>
+                                                    </div>
+                                                </button>
+                                            </div>
+                                        </div>
 
                                         {/* Link & WhatsApp Section */}
                                         <div className={cn(
@@ -5292,12 +5707,16 @@ const MobileDashboardDemo = ({
                 <div
                     className={cn(
                         'fixed bottom-0 inset-x-0 border-t z-[1100] transition-all duration-500',
-                        isDark ? 'border-white/5 bg-black/80' : 'border-border bg-secondary/90',
+                        isDark ? 'border-white/10 bg-[#0B0F14]' : 'border-slate-200 bg-white shadow-[0_-8px_30px_rgb(0,0,0,0.04)]',
                         isOverlayOpen && 'pointer-events-none'
                     )}
-                    style={{ backdropFilter: 'blur(30px)', WebkitBackdropFilter: 'blur(30px)' }}
+                    style={{ 
+                        paddingBottom: 'max(env(safe-area-inset-bottom), 12px)',
+                        backdropFilter: 'blur(30px)', 
+                        WebkitBackdropFilter: 'blur(30px)' 
+                    }}
                 >
-                    <div className="max-w-md md:max-w-2xl mx-auto flex items-center justify-between px-4 py-3 pb-safe gap-1" style={{ paddingBottom: 'max(env(safe-area-inset-bottom), 16px)' }}>
+                    <div className="max-w-md md:max-w-2xl mx-auto flex items-center justify-between px-6 pt-3 gap-1">
                         <motion.button whileTap={{ scale: 0.94 }} onClick={() => { if (scrollRef.current) scrollPositionsRef.current[activeTab] = scrollRef.current.scrollTop; triggerHaptic(); setActiveTab('dashboard'); }} className={cn("flex flex-col items-center justify-center gap-1 min-w-[64px] h-[54px] px-2 rounded-2xl transition-all", activeTab === 'dashboard' ? (isDark ? 'bg-white/5' : 'bg-white shadow-sm border border-[#E5E7EB]') : 'bg-transparent')}>
                             <LayoutDashboard className={cn('w-[22px] h-[22px]', activeTab === 'dashboard' ? (isDark ? 'text-white' : 'text-[#111827]') : (isDark ? 'text-slate-500' : secondaryTextColor))} />
                             <span className={cn('text-[10px] tracking-tight', activeTab === 'dashboard' ? (isDark ? 'text-white font-bold' : 'text-[#111827] font-bold') : cn('font-medium', isDark ? 'text-slate-500' : secondaryTextColor))}>Home</span>
@@ -5308,10 +5727,25 @@ const MobileDashboardDemo = ({
                             <span className={cn('text-[10px] tracking-tight', activeTab === 'deals' ? (isDark ? 'text-white font-bold' : 'text-[#111827] font-bold') : cn('font-medium', isDark ? 'text-slate-500' : secondaryTextColor))}>Deals</span>
                         </motion.button>
 
-                        <motion.button whileTap={{ scale: 0.94 }} onClick={() => { if (scrollRef.current) scrollPositionsRef.current[activeTab] = scrollRef.current.scrollTop; triggerHaptic(); setActiveTab('discovery'); }} className={cn("flex flex-col items-center justify-center gap-1 min-w-[64px] h-[54px] px-2 rounded-2xl transition-all", activeTab === 'discovery' ? (isDark ? 'bg-white/5' : 'bg-white shadow-sm border border-[#E5E7EB]') : 'bg-transparent')}>
-                            <Heart className={cn('w-[22px] h-[22px]', activeTab === 'discovery' ? (isDark ? 'text-rose-500' : 'text-rose-600') : (isDark ? 'text-slate-500' : secondaryTextColor))} />
-                            <span className={cn('text-[10px] tracking-tight', activeTab === 'discovery' ? (isDark ? 'text-rose-500 font-bold' : 'text-rose-600 font-bold') : cn('font-medium', isDark ? 'text-slate-500' : secondaryTextColor))}>Discovery</span>
-                        </motion.button>
+                        <div className="relative">
+                            <motion.button 
+                                whileTap={{ scale: 0.94 }} 
+                                onClick={() => { 
+                                    triggerHaptic(); 
+                                    toast.info("Discovery is coming soon! Approach brands directly from here.", {
+                                        icon: '🚀',
+                                        style: { borderRadius: '20px', fontWeight: 'bold' }
+                                    });
+                                }} 
+                                className={cn("flex flex-col items-center justify-center gap-1 min-w-[64px] h-[54px] px-2 rounded-2xl transition-all", activeTab === 'discovery' ? (isDark ? 'bg-white/5' : 'bg-white shadow-sm border border-[#E5E7EB]') : 'bg-transparent')}
+                            >
+                                <Heart className={cn('w-[22px] h-[22px]', isDark ? 'text-slate-500' : secondaryTextColor)} />
+                                <span className={cn('text-[10px] tracking-tight font-medium', isDark ? 'text-slate-500' : secondaryTextColor)}>Discovery</span>
+                            </motion.button>
+                            <div className={cn("absolute -top-1 -right-1 px-1.5 py-0.5 rounded-full text-[7px] font-black uppercase tracking-tighter border shadow-sm", isDark ? "bg-primary/20 border-primary/30 text-primary" : "bg-emerald-500 border-emerald-600 text-white")}>
+                                Soon
+                            </div>
+                        </div>
 
                         <motion.button whileTap={{ scale: 0.94 }} onClick={() => { if (scrollRef.current) scrollPositionsRef.current[activeTab] = scrollRef.current.scrollTop; triggerHaptic(); setActiveTab('payments'); }} className={cn("flex flex-col items-center justify-center gap-1 min-w-[64px] h-[54px] px-2 rounded-2xl transition-all", activeTab === 'payments' ? (isDark ? 'bg-white/5' : 'bg-white shadow-sm border border-[#E5E7EB]') : 'bg-transparent')}>
                             <CreditCard className={cn('w-[22px] h-[22px]', activeTab === 'payments' ? (isDark ? 'text-white' : 'text-[#111827]') : (isDark ? 'text-slate-500' : secondaryTextColor))} />

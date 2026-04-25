@@ -27,7 +27,7 @@ const getErrorMessage = (error: unknown, fallback = 'An error occurred. Please t
 
 const Login = () => {
   const navigate = useNavigate();
-  const { session, loading, profile, isAdmin, isBrand, isCreator } = useSession();
+  const { session, loading, profile } = useSession();
   const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -62,14 +62,11 @@ const Login = () => {
     meta?.setAttribute('content', 'Sign in to see your brand offers, active deals, and payments in one place.');
   }, []);
 
-  // Login page no longer owns redirect logic.
-  // SessionContext + ProtectedRoute control all navigation after auth.
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const error = urlParams.get('error') || urlParams.get('error_code') || urlParams.get('error_description');
     if (!error) return;
 
-    // Clean URL to prevent loops (and keep the login screen usable).
     const cleanUrl = window.location.pathname + window.location.hash;
     window.history.replaceState({}, '', cleanUrl);
     sessionStorage.removeItem('oauth_intended_route');
@@ -78,17 +75,14 @@ const Login = () => {
 
   const handleEmailPasswordLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-
     if (!identifier.trim() || !password.trim()) {
       toast.error('Please enter your email or Instagram username and password');
       return;
     }
-
     setIsLoading(true);
     try {
       const trimmedIdentifier = identifier.trim();
       const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedIdentifier);
-
       let resolvedEmail = trimmedIdentifier;
       if (!isEmail) {
         const response = await fetch(`${getApiBaseUrl()}/api/auth/login`, {
@@ -99,7 +93,6 @@ const Login = () => {
             password: '__resolve_only__',
           }),
         });
-
         if (!response.ok) {
           let errorMessage = 'Failed to resolve Instagram username';
           try {
@@ -108,12 +101,9 @@ const Login = () => {
           } catch (e) {
             errorMessage = `Server error (${response.status}): ${response.statusText || 'Endpoint not found'}`;
           }
-
-          console.error(`[Login] Username resolution failed with status ${response.status}:`, errorMessage);
           toast.error(errorMessage);
           return;
         }
-
         const json = await response.json().catch(() => ({}));
         resolvedEmail = String(json?.email || json?.resolved_email || '').trim();
         if (!resolvedEmail) {
@@ -121,34 +111,17 @@ const Login = () => {
           return;
         }
       }
-
       const { data, error } = await supabase.auth.signInWithPassword({
         email: resolvedEmail,
         password,
       });
-
       if (error || !data.session || !data.user) {
         const message = error?.message || 'Invalid email/username or password';
-        console.error('[Login] Supabase sign-in failed:', message);
         toast.error(message);
         return;
       }
-
-      const metadata = data.user.user_metadata || {};
-      const role = metadata.role || metadata.account_mode || 'creator';
-      const onboardingComplete = (data.user as any)?.profile?.onboarding_complete ?? false;
-      
-      let path = '/creator-dashboard';
-      if (role === 'brand') {
-        path = onboardingComplete ? '/brand-dashboard' : '/brand-onboarding';
-      } else if (role === 'admin') {
-        path = '/admin-dashboard';
-      }
-
-      console.log('[Login] Navigating to:', path);
-      navigate(path, { replace: true });
+      navigate('/creator-dashboard', { replace: true });
     } catch (err: unknown) {
-      console.error('[Login] Email/password exception:', err);
       toast.error(getErrorMessage(err));
     } finally {
       setIsLoading(false);
@@ -160,25 +133,22 @@ const Login = () => {
       toast.error('Please enter your email address first');
       return;
     }
-
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(identifier.trim(), {
         redirectTo: `${window.location.origin}/reset-password`,
       });
-
       if (error) {
         toast.error('Failed to send password reset email: ' + error.message);
       } else {
         toast.success('Password reset email sent! Check your inbox.');
       }
     } catch (err: unknown) {
-      console.error('[Login] Forgot password exception:', err);
       toast.error(getErrorMessage(err));
     }
   };
 
   return (
-    <div className="min-h-screen bg-[#020D0A] text-white flex flex-col items-center justify-center font-outfit relative overflow-hidden" 
+    <div className="min-h-screen bg-white text-slate-900 flex flex-col items-center justify-center font-outfit relative" 
       style={{
         minHeight: '100dvh',
         paddingTop: 'max(24px, env(safe-area-inset-top, 0px))',
@@ -187,61 +157,46 @@ const Login = () => {
         paddingRight: 'env(safe-area-inset-right, 0px)',
       }}
     >
-      {/* Dynamic Background Elements */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-[-15%] right-[-5%] w-[60%] h-[60%] bg-primary/5 rounded-full blur-[140px] animate-pulse" />
-        <div className="absolute bottom-[-15%] left-[-5%] w-[60%] h-[60%] bg-emerald-500/5 rounded-full blur-[140px] animate-pulse" style={{ animationDelay: '2s' }} />
-        <div className="absolute top-[30%] left-[10%] w-[30%] h-[30%] bg-indigo-500/5 rounded-full blur-[120px]" />
-      </div>
-
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
+        initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, ease: "easeOut" }}
-        className="w-full max-w-[440px] relative z-10"
+        transition={{ duration: 0.5, ease: "easeOut" }}
+        className="w-full max-w-[420px] relative z-10 px-4"
       >
         <div 
-          className="p-8 md:p-10 rounded-[2.5rem] shadow-[0_32px_64px_-16px_rgba(0,0,0,0.5)] border border-white/5 bg-[#0D1117]/60 relative overflow-hidden"
-          style={{ backdropFilter: 'blur(32px)' }}
+          className="p-8 md:p-10 rounded-[2.5rem] bg-white border border-slate-100"
         >
-          {/* Subtle top reflection */}
-          <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-white/10 to-transparent" />
-
-          {/* Branding & Trust Header */}
+          {/* Branding */}
           <div className="flex flex-col items-center mb-8">
-            <div className="w-14 h-14 bg-gradient-to-br from-primary to-emerald-600 rounded-2xl flex items-center justify-center shadow-2xl shadow-primary/30 mb-4 group transition-transform hover:scale-110 active:scale-95 duration-300">
-              <ShieldCheck className="h-7 w-7 text-white" aria-hidden="true" />
+            <div className="w-12 h-12 bg-slate-900 rounded-2xl flex items-center justify-center mb-4 transition-transform hover:scale-105 duration-300">
+              <ShieldCheck className="h-6 w-6 text-white" aria-hidden="true" />
             </div>
             
-            <h1 className="text-2xl font-black tracking-tight text-white mb-2">Creator Armour</h1>
-            
-            <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20">
-              <Shield className="w-3 h-3 text-emerald-400" />
-              <span className="text-[10px] font-black uppercase tracking-[0.1em] text-emerald-400">Secure Fintech Login</span>
-            </div>
+            <h1 className="text-xl font-black tracking-tight text-slate-900 mb-1">Creator Armour</h1>
+            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Secure Fintech Login</p>
           </div>
 
-          {/* Title and Subtitle */}
-          <div className="text-center mb-8">
-            <h2 className="text-3xl font-black text-white mb-2 tracking-tight">Welcome back 👋</h2>
-            <p className="text-slate-400 text-sm font-medium leading-relaxed">
-              Login to manage your deals & earnings
+          {/* Title */}
+          <div className="text-center mb-10">
+            <h2 className="text-3xl font-black text-slate-900 mb-2 tracking-tight">Welcome back</h2>
+            <p className="text-slate-500 text-sm font-medium">
+              Manage your deals & earnings in one place
             </p>
           </div>
 
-        {/* Loading: wait for session (with timeout so user isn't stuck) */}
+        {/* Loading: wait for session */}
         {loading && !session && (
           <div className="mb-6 flex flex-col items-center justify-center py-10 gap-4">
             <Loader2 className="h-10 w-10 animate-spin text-primary" aria-hidden="true" />
-            <p className="text-muted-foreground text-sm font-bold tracking-widest uppercase">Checking your sign-in...</p>
+            <p className="text-slate-400 text-xs font-black tracking-widest uppercase">Checking your sign-in...</p>
           </div>
         )}
 
         {/* Already signed in */}
         {session && (
           <div className="mb-6 space-y-4">
-            <p className="text-muted-foreground text-sm text-center font-medium">
-              {loading ? 'Authenticating…' : 'Signed in. Opening your dashboard…'}
+            <p className="text-slate-500 text-sm text-center font-medium">
+              Authenticating… Opening your dashboard…
             </p>
           </div>
         )}
@@ -251,11 +206,11 @@ const Login = () => {
           <div className="mb-6">
             <form onSubmit={handleEmailPasswordLogin} className="space-y-5">
               <div className="space-y-2 group">
-                <Label htmlFor="identifier" className="text-slate-400 text-[12px] font-black uppercase tracking-widest ml-1 transition-colors group-focus-within:text-primary">
+                <Label htmlFor="identifier" className="text-slate-500 text-[12px] font-black uppercase tracking-widest ml-1 transition-colors group-focus-within:text-primary">
                   Email or Username
                 </Label>
                 <div className="relative">
-                  <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-primary transition-colors">
+                  <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors">
                     <Mail className="w-5 h-5" />
                   </div>
                   <Input
@@ -264,7 +219,7 @@ const Login = () => {
                     placeholder="name@example.com"
                     value={identifier}
                     onChange={(e) => setIdentifier(e.target.value)}
-                    className="bg-white/[0.03] border-white/5 text-white placeholder:text-slate-600 text-[16px] h-[60px] rounded-2xl border-2 focus:border-primary/50 focus:ring-4 focus:ring-primary/10 focus:bg-white/[0.05] pl-12 pr-5 transition-all outline-none"
+                    className="bg-white border-slate-200 text-slate-900 placeholder:text-slate-400 text-[16px] h-[60px] rounded-2xl border-2 focus:border-slate-900 focus:ring-4 focus:ring-slate-900/5 focus:bg-white pl-12 pr-5 transition-all outline-none"
                     required
                     autoComplete="username"
                     aria-label="Email or Instagram username"
@@ -274,12 +229,12 @@ const Login = () => {
 
               <div className="space-y-2 group">
                 <div className="flex justify-between items-center px-1">
-                  <Label htmlFor="password" className="text-slate-400 text-[12px] font-black uppercase tracking-widest transition-colors group-focus-within:text-primary">
+                  <Label htmlFor="password" className="text-slate-500 text-[12px] font-black uppercase tracking-widest transition-colors group-focus-within:text-slate-900">
                     Password
                   </Label>
                 </div>
                 <div className="relative">
-                  <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-primary transition-colors">
+                  <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-slate-900 transition-colors">
                     <Lock className="w-5 h-5" />
                   </div>
                   <Input
@@ -288,7 +243,7 @@ const Login = () => {
                     placeholder="••••••••"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="bg-white/[0.03] border-white/5 text-white placeholder:text-slate-600 text-[16px] h-[60px] rounded-2xl border-2 focus:border-primary/50 focus:ring-4 focus:ring-primary/10 focus:bg-white/[0.05] pl-12 pr-12 transition-all outline-none"
+                    className="bg-white border-slate-200 text-slate-900 placeholder:text-slate-400 text-[16px] h-[60px] rounded-2xl border-2 focus:border-slate-900 focus:ring-4 focus:ring-slate-900/5 focus:bg-white pl-12 pr-12 transition-all outline-none"
                     required
                     autoComplete="current-password"
                     aria-label="Password"
@@ -296,7 +251,7 @@ const Login = () => {
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center rounded-xl text-slate-500 hover:text-white hover:bg-white/5 transition-all active:scale-90"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center rounded-xl text-slate-400 hover:text-slate-900 hover:bg-slate-50 transition-all active:scale-90"
                     aria-label={showPassword ? "Hide password" : "Show password"}
                   >
                     {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
@@ -306,7 +261,7 @@ const Login = () => {
                   <button
                     type="button"
                     onClick={handleForgotPassword}
-                    className="text-[13px] font-bold text-slate-500 hover:text-primary transition-colors"
+                    className="text-[13px] font-bold text-slate-400 hover:text-slate-900 transition-colors"
                   >
                     Forgot password?
                   </button>
@@ -316,7 +271,7 @@ const Login = () => {
               <Button
                 type="submit"
                 disabled={isLoading || !identifier.trim() || !password.trim()}
-                className="w-full bg-primary hover:bg-emerald-400 text-black font-black h-[60px] rounded-2xl shadow-[0_20px_40px_-12px_rgba(16,185,129,0.25)] transition-all active:scale-[0.98] text-[16px] mt-4 relative overflow-hidden group"
+                className="w-full bg-slate-900 hover:bg-slate-800 text-white font-black h-[60px] rounded-2xl shadow-xl shadow-slate-900/10 transition-all active:scale-[0.98] text-[16px] mt-4 relative overflow-hidden group border-none"
               >
                 <AnimatePresence mode="wait">
                   {isLoading ? (
@@ -344,33 +299,31 @@ const Login = () => {
                 </AnimatePresence>
                 
                 {/* Subtle shine effect */}
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:animate-shine" />
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full group-hover:animate-shine" />
               </Button>
             </form>
           </div>
         )}
 
-
-
         {/* Signup Options */}
         {!session && (
           <div className="space-y-6 pt-2">
             <div className="text-center">
-              <p className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-500 mb-4">New here?</p>
+              <p className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400 mb-4">New here?</p>
               <div className="grid grid-cols-2 gap-4">
                 <Link 
                   to="/signup?mode=creator" 
-                  className="flex flex-col items-center justify-center p-4 rounded-[2rem] bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/20 hover:border-primary/40 transition-all group active:scale-95"
+                  className="flex flex-col items-center justify-center p-4 rounded-[2rem] bg-white border border-slate-100 hover:border-slate-300 hover:shadow-sm transition-all group active:scale-95"
                 >
-                  <User className="w-6 h-6 text-primary mb-2 group-hover:scale-110 transition-transform" />
-                  <span className="text-[13px] font-black text-white">I'm a Creator</span>
+                  <User className="w-6 h-6 text-slate-400 mb-2 group-hover:text-emerald-500 group-hover:scale-110 transition-all" />
+                  <span className="text-[13px] font-black text-slate-900">I'm a Creator</span>
                 </Link>
                 <Link 
                   to="/signup?mode=brand" 
-                  className="flex flex-col items-center justify-center p-4 rounded-[2rem] bg-gradient-to-br from-blue-500/10 to-blue-500/5 border border-blue-500/20 hover:border-blue-500/40 transition-all group active:scale-95"
+                  className="flex flex-col items-center justify-center p-4 rounded-[2rem] bg-white border border-slate-100 hover:border-slate-300 hover:shadow-sm transition-all group active:scale-95"
                 >
-                  <ShieldCheck className="w-6 h-6 text-blue-400 mb-2 group-hover:scale-110 transition-transform" />
-                  <span className="text-[13px] font-black text-white">I'm a Brand</span>
+                  <ShieldCheck className="w-6 h-6 text-slate-400 mb-2 group-hover:text-blue-500 group-hover:scale-110 transition-all" />
+                  <span className="text-[13px] font-black text-slate-900">I'm a Brand</span>
                 </Link>
               </div>
             </div>
@@ -378,8 +331,8 @@ const Login = () => {
         )}
 
         {/* Subtle Bottom Link */}
-        <div className="mt-10 pt-6 border-t border-white/5 flex flex-col items-center gap-6">
-          <Link to="/" className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-500 hover:text-white transition-colors flex items-center gap-2 group">
+        <div className="mt-10 pt-6 border-t border-slate-50 flex flex-col items-center gap-6">
+          <Link to="/" className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400 hover:text-slate-900 transition-colors flex items-center gap-2 group">
             <ArrowLeft className="w-3 h-3 group-hover:-translate-x-1 transition-transform" />
             Back to homepage
           </Link>
@@ -389,11 +342,11 @@ const Login = () => {
 
       {/* Legal Footer */}
       <div className="mt-8 text-center px-4 max-w-[320px]">
-        <p className="text-slate-600 text-[10px] leading-relaxed font-bold uppercase tracking-widest">
+        <p className="text-slate-400 text-[10px] leading-relaxed font-bold uppercase tracking-widest">
           By continuing, you agree to our{' '}
-          <a href="/terms" className="text-slate-400 hover:text-primary transition-colors">Terms</a>
+          <a href="/terms" className="text-slate-500 hover:text-primary transition-colors">Terms</a>
           {' '}&{' '}
-          <a href="/privacy" className="text-slate-400 hover:text-primary transition-colors">Privacy</a>
+          <a href="/privacy" className="text-slate-500 hover:text-primary transition-colors">Privacy</a>
         </p>
       </div>
     </div>

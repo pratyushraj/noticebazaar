@@ -74,16 +74,14 @@ const getFallbackOptions = (creator: any) => {
     if (postRate > 0) {
         options.push({ key: 'post', label: 'Post', rate: postRate, deliverables: ['Post'], type: 'paid' });
     }
-    if (barterValue > 0) {
-        options.push({
-            key: 'barter',
-            label: 'Free products as payment',
-            rate: barterValue,
-            deliverables: ['Product Review'],
-            type: 'barter',
-            description: 'Send product instead of cash payment',
-        });
-    }
+    options.push({
+        key: 'barter',
+        label: '🎁 Product Exchange',
+        rate: barterValue > 0 ? barterValue : 0,
+        deliverables: ['Product unboxing / review', '1 Story mention', 'No paid usage rights'],
+        type: 'barter',
+        description: 'Product unboxing or review with no paid usage rights.',
+    });
 
     if (options.length === 0) {
         const baseRate = Number(creator?.starting_price || 0);
@@ -104,8 +102,8 @@ const getCreatorPackages = (creator: any) => {
     const validTemplates = templates
         .map((template: DealTemplate, index: number) => ({
             key: String(template?.id || `template-${index}`),
-            label: String(template?.name || `Package ${index + 1}`),
-            rate: Number(template?.rate || 0),
+            label: String((template as any)?.label || template?.name || `Package ${index + 1}`),
+            rate: Number((template as any)?.budget || template?.rate || 0),
             deliverables: Array.isArray(template?.deliverables) && template.deliverables.length > 0
                 ? template.deliverables
                 : ['Instagram Reel'],
@@ -114,7 +112,26 @@ const getCreatorPackages = (creator: any) => {
         }))
         .filter((template) => template.rate > 0 || template.type === 'barter');
 
-    return validTemplates.length > 0 ? validTemplates : getFallbackOptions(creator);
+    let finalPackages = [...validTemplates];
+    
+    if (finalPackages.length === 0) {
+        finalPackages = getFallbackOptions(creator);
+    }
+
+    // Ensure barter is always the last card if not already present
+    if (!finalPackages.some(t => t.type === 'barter')) {
+        const barterValue = Number(creator?.barter_min_value || 0);
+        finalPackages.push({
+            key: 'barter-default',
+            label: '🎁 Product Exchange',
+            rate: barterValue,
+            deliverables: ['Product unboxing / review', '1 Story mention', 'No paid usage rights'],
+            description: 'Product unboxing or review with no paid usage rights.',
+            type: 'barter',
+        });
+    }
+
+    return finalPackages;
 };
 
 export const QuickOfferSheet: React.FC<QuickOfferSheetProps> = ({

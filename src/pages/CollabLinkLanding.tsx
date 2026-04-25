@@ -908,40 +908,40 @@ const CollabLinkLanding = () => {
         const defaultTemplates: DealTemplate[] = [
           {
             id: 'basic',
-            label: 'Basic Starter',
+            label: '🚀 Starter Collab',
             icon: '🚀',
             budget: reelRate,
             type: 'paid',
             category: creator.category || 'Lifestyle',
-            description: '1 Professional Reel (up to 30s) with basic editing and raw footage.',
-            deliverables: ['Instagram Reel'],
+            description: 'High-performing Reel optimized for organic reach. Best for first-time brand discovery.',
+            deliverables: ['1 Reel (15-30s)', 'Organic reach focus', 'Basic editing', 'Payment secured before content delivery'],
             quantities: { 'Instagram Reel': 1 },
             deadlineDays: 3,
-            notes: 'Basic starting package'
+            notes: 'Payment secured before content delivery.'
           },
           {
             id: 'standard',
-            label: 'Standard Growth',
+            label: '⭐ Growth Campaign',
             icon: '⭐',
             budget: Math.round(reelRate * 2),
             type: 'paid',
             category: creator.category || 'Lifestyle',
-            description: '1 High-quality Reel + 2 Stories with trending audio and custom captions.',
-            deliverables: ['Instagram Reel', 'Instagram Stories'],
+            description: 'Includes 30-day usage rights so brands can run ads and drive conversions.',
+            deliverables: ['1 Premium Reel (30-60s)', '30-day usage rights (for ads)', 'Script + hook optimization', '1 Story shoutout', 'Payment secured before content delivery'],
             quantities: { 'Instagram Reel': 1, 'Instagram Stories': 2 },
             deadlineDays: 5,
             isPopular: true,
-            notes: 'Most popular option'
+            notes: 'Most chosen by brands'
           },
           {
             id: 'product_review',
-            label: 'Product Review',
-            icon: '📦',
+            label: '🎁 Product Exchange',
+            icon: '🎁',
             budget: 0,
             type: 'barter',
             category: creator.category || 'Lifestyle',
-            description: 'In-depth product unboxing and review with 1 story mention.',
-            deliverables: ['Unboxing Video', 'Story'],
+            description: 'Product unboxing or review with no paid usage rights. Best for authentic product proof.',
+            deliverables: ['Product unboxing / review', '1 Story mention', 'No paid usage rights', 'Payment secured before content delivery'],
             quantities: { 'Unboxing Video': 1, 'Story': 1 },
             deadlineDays: 14,
             notes: 'Product must be shipped before shoot. Honest review only.'
@@ -2597,7 +2597,7 @@ const CollabLinkLanding = () => {
               {template.isPopular && (
                 <div className="absolute -top-3 left-6 z-10">
                   <div className="bg-emerald-500 text-white text-[9px] font-black uppercase tracking-widest px-3 py-1 rounded-full shadow-sm">
-                    Most Popular
+                    Most chosen by brands
                   </div>
                 </div>
               )}

@@ -449,49 +449,48 @@ const LandingPage = () => {
                     </div>
                   </div>
 
-                  {/* Packages */}
-                  <div className="space-y-4 relative z-10">
-                    <div className="border border-[#E5E7EB] rounded-2xl p-5 bg-white shadow-sm hover:border-[#16A34A] transition-colors">
-                      <div className="flex justify-between items-start mb-2">
-                        <h5 className="font-black text-[15px] text-[#0F172A]">Reel Deal</h5>
-                        <div className="w-8 h-8 rounded-full bg-[#F8FAF9] flex items-center justify-center">
-                          <span className="text-xl">🎬</span>
+                                <div className="space-y-4 relative z-10">
+                      <div className="border border-[#E5E7EB] rounded-2xl p-5 bg-white shadow-sm hover:border-[#16A34A] transition-colors">
+                        <div className="flex justify-between items-start mb-2">
+                          <h5 className="font-black text-[15px] text-[#0F172A]">🚀 Starter Collab</h5>
+                          <div className="w-8 h-8 rounded-full bg-[#F8FAF9] flex items-center justify-center">
+                            <span className="text-xl">🎬</span>
+                          </div>
+                        </div>
+                        <p className="text-xs font-medium text-[#64748B] mb-4 line-clamp-2">High-performing Reel optimized for organic reach.</p>
+                        <div className="flex justify-between items-center pt-3 border-t border-[#E5E7EB]">
+                          <span className="text-lg font-black text-[#0F172A]">₹1,999</span>
+                          <div className="bg-[#F8FAF9] text-[#64748B] px-4 py-1.5 rounded-xl text-xs font-black">Select</div>
                         </div>
                       </div>
-                      <p className="text-xs font-medium text-[#64748B] mb-4 line-clamp-2">1 High-quality Instagram Reel with professional hooks and brand tagging.</p>
-                      <div className="flex justify-between items-center pt-3 border-t border-[#E5E7EB]">
-                        <span className="text-lg font-black text-[#0F172A]">₹2,499</span>
-                        <div className="bg-[#F8FAF9] text-[#64748B] px-4 py-1.5 rounded-xl text-xs font-black">Select</div>
-                      </div>
-                    </div>
 
-                    <div className="border-2 border-[#16A34A] bg-white rounded-2xl p-5 relative shadow-lg shadow-[#16A34A]/10">
-                      <div className="absolute -top-3 left-4 bg-[#16A34A] text-white text-[11px] uppercase font-black px-3 py-1 rounded-full tracking-wide">Most Popular</div>
-                      <div className="flex justify-between items-start mb-2 mt-1">
-                        <h5 className="font-black text-[15px] text-[#0F172A]">Engagement Package</h5>
-                        <div className="w-8 h-8 rounded-full bg-[#16A34A] flex items-center justify-center">
-                          <span className="text-xl">🔥</span>
+                      <div className="border-2 border-[#16A34A] bg-white rounded-2xl p-5 relative shadow-lg shadow-[#16A34A]/10">
+                        <div className="absolute -top-3 left-4 bg-[#16A34A] text-white text-[11px] uppercase font-black px-3 py-1 rounded-full tracking-wide">Most chosen</div>
+                        <div className="flex justify-between items-start mb-2 mt-1">
+                          <h5 className="font-black text-[15px] text-[#0F172A]">⭐ Growth Campaign</h5>
+                          <div className="w-8 h-8 rounded-full bg-[#16A34A] flex items-center justify-center">
+                            <span className="text-xl">🔥</span>
+                          </div>
+                        </div>
+                        <p className="text-xs font-medium text-[#64748B] mb-4">Premium Reel, 30-day ad usage rights, hook optimization, and Story shoutout.</p>
+                        <div className="flex justify-between items-center pt-3 border-t border-[#16A34A]">
+                          <span className="text-lg font-black text-[#16A34A]">₹3,499</span>
+                          <div className="bg-[#16A34A] text-white px-4 py-1.5 rounded-xl text-xs font-black shadow-sm">Select</div>
                         </div>
                       </div>
-                      <p className="text-xs font-medium text-[#64748B] mb-4">1 Reel + 2 Engagement Stories to maximize reach and drive action.</p>
-                      <div className="flex justify-between items-center pt-3 border-t border-[#16A34A]">
-                        <span className="text-lg font-black text-[#16A34A]">₹3,999</span>
-                        <div className="bg-[#16A34A] text-white px-4 py-1.5 rounded-xl text-xs font-black shadow-sm">Select</div>
-                      </div>
-                    </div>
 
-                    <div className="border border-[#E5E7EB] rounded-2xl p-5 bg-white shadow-sm hover:border-[#16A34A] transition-colors">
-                      <div className="flex justify-between items-start mb-2">
-                        <h5 className="font-black text-[15px] text-[#0F172A]">Product Review</h5>
-                        <div className="w-8 h-8 rounded-full bg-[#F8FAF9] flex items-center justify-center">
-                          <span className="text-xl">📦</span>
+                      <div className="border border-[#E5E7EB] rounded-2xl p-5 bg-white shadow-sm hover:border-[#16A34A] transition-colors">
+                        <div className="flex justify-between items-start mb-2">
+                          <h5 className="font-black text-[15px] text-[#0F172A]">🎁 Product Exchange</h5>
+                          <div className="w-8 h-8 rounded-full bg-[#F8FAF9] flex items-center justify-center">
+                            <span className="text-xl">📦</span>
+                          </div>
                         </div>
-                      </div>
-                      <p className="text-xs font-medium text-[#64748B] mb-4">In-depth product unboxing and review with 1 story mention.</p>
-                      <div className="flex justify-between items-center pt-3 border-t border-[#E5E7EB]">
-                        <span className="text-lg font-black text-[#0F172A]">Barter</span>
-                        <div className="bg-[#F8FAF9] text-[#64748B] px-4 py-1.5 rounded-xl text-xs font-black">Select</div>
-                      </div>
+                        <p className="text-xs font-medium text-[#64748B] mb-4">Product unboxing or review with Story mention and no paid usage rights.</p>
+                        <div className="flex justify-between items-center pt-3 border-t border-[#E5E7EB]">
+                          <span className="text-lg font-black text-[#0F172A]">Barter</span>
+                          <div className="bg-[#F8FAF9] text-[#64748B] px-4 py-1.5 rounded-xl text-xs font-black">Select</div>
+                        </div>
                     </div>
                   </div>
                 </div>
@@ -674,7 +673,7 @@ const LandingPage = () => {
                       </div>
                       <div className="bg-white border border-[#E5E7EB] p-3 rounded-2xl shadow-sm flex justify-between items-center relative overflow-hidden">
                         <div className="absolute top-0 right-0 w-12 h-12 bg-[#16A34A] rounded-bl-full" />
-                        <span className="font-black text-sm text-[#0F172A] relative z-10">Engagement Package</span>
+                        <span className="font-black text-sm text-[#0F172A] relative z-10">⭐ Growth Campaign</span>
                         <span className="font-black text-sm text-[#16A34A] relative z-10">₹3,499</span>
                       </div>
                     </div>
@@ -716,7 +715,7 @@ const LandingPage = () => {
                <div className="space-y-4">
                  <div className="p-6 rounded-[2rem] border-2 border-emerald-500 bg-emerald-50/30 relative text-left">
                    <div className="absolute -top-3 right-6 px-3 py-1 bg-emerald-500 text-white text-[10px] font-black uppercase tracking-widest rounded-full shadow-lg">
-                     Most Popular
+                     Most chosen
                    </div>
                    <h4 className="text-lg font-black text-slate-900 mb-1">Ultimate Travel Vlog Bundle</h4>
                    <p className="text-sm font-medium text-slate-500 mb-4">1 YouTube Vlog + 3 Instagram Reels + 5 High-res Photos</p>

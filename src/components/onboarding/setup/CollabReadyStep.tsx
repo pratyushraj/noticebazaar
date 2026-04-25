@@ -322,13 +322,13 @@ export const CollabReadyStep: React.FC<CollabReadyStepProps> = ({
               </div>
               <div className="rounded-2xl border-2 border-warning bg-gradient-to-b from-amber-50/60 to-white p-2.5 shadow-[0_8px_18px_rgba(245,158,11,0.15)]">
                 <div className="inline-flex rounded-full bg-warning px-2 py-0.5 text-[9px] font-black uppercase tracking-wider text-warning">
-                  Most Popular
+                  Most chosen by brands
                 </div>
-                <p className="mt-1.5 text-[11px] font-black uppercase tracking-wider text-muted-foreground">Engagement Package</p>
+                <p className="mt-1.5 text-[11px] font-black uppercase tracking-wider text-muted-foreground">⭐ Growth Campaign</p>
                 <ul className="mt-1.5 space-y-0.5 text-[11px] font-semibold text-muted-foreground">
-                  <li>• 1 Reel</li>
-                  <li>• 2 Story mentions</li>
-                  <li>• Link sticker</li>
+                  <li>• Premium Reel</li>
+                  <li>• 30-day usage rights</li>
+                  <li>• Story shoutout</li>
                 </ul>
                 <div className="mt-2.5 relative">
                   <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm font-bold">₹</span>
@@ -343,10 +343,11 @@ export const CollabReadyStep: React.FC<CollabReadyStepProps> = ({
                 </div>
               </div>
               <div className="rounded-2xl border border-border bg-card p-2.5 shadow-[0_4px_12px_rgba(15,23,42,0.05)]">
-                <p className="text-[11px] font-black uppercase tracking-wider text-muted-foreground">Product Review (Free Products)</p>
+                <p className="text-[11px] font-black uppercase tracking-wider text-muted-foreground">🎁 Product Exchange</p>
                 <ul className="mt-1.5 space-y-0.5 text-[11px] font-semibold text-muted-foreground">
-                  <li>• 1 Unboxing</li>
+                  <li>• Product review</li>
                   <li>• 1 Story mention</li>
+                  <li>• No paid usage rights</li>
                 </ul>
                 <div className="mt-2.5 relative">
                   <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm font-bold">₹</span>
