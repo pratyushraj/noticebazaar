@@ -12,6 +12,7 @@ const Signup = lazy(() => import("@/pages/Signup"));
 const ResetPassword = lazy(() => import("@/pages/ResetPassword"));
 const ForgotPassword = lazy(() => import("@/pages/ForgotPassword"));
 const LandingPage = lazy(() => import("@/pages/LandingPage"));
+const BrandLandingPage = lazy(() => import("@/pages/BrandLandingPage"));
 const PrivacyPolicy = lazy(() => import("@/pages/PrivacyPolicy"));
 const TermsOfService = lazy(() => import("@/pages/TermsOfService"));
 const CollabLinkLanding = lazy(() => import("@/pages/CollabLinkLanding"));
@@ -19,6 +20,8 @@ const CollabLinkLanding = lazy(() => import("@/pages/CollabLinkLanding"));
 export const PublicRoutes = () => (
   <>
     <Route path="/" element={<LazyRoute><LandingPage /></LazyRoute>} />
+    <Route path="/brands" element={<LazyRoute><BrandLandingPage /></LazyRoute>} />
+    <Route path="/brand" element={<Navigate to="/brands" replace />} />
     <Route path="/login" element={<LazyRoute><Login /></LazyRoute>} />
     <Route path="/signup" element={<LazyRoute><Signup /></LazyRoute>} />
     <Route path="/reset-password" element={<LazyRoute><ResetPassword /></LazyRoute>} />

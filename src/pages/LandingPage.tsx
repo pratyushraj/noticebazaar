@@ -1,7 +1,7 @@
 
 
 import React, { Suspense, lazy, useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useSession } from '@/contexts/SessionContext';
 import { SEOHead } from '@/components/seo/SEOHead';
 import { ArrowRight, ShieldCheck, CheckCircle2, Instagram, Linkedin, Twitter, Menu, X, BriefcaseBusiness, Zap, Clock, XCircle, Wallet, Landmark, ChevronRight, FileText, Gavel, AlertTriangle } from 'lucide-react';
@@ -209,6 +209,7 @@ const dashboardShowcase = [
 const LandingPage = () => {
   const { session, loading, profile } = useSession();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const [hasScrolled, setHasScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -244,6 +245,28 @@ const LandingPage = () => {
       }
     }
   }, [session, profile, loading, navigate]);
+
+  useEffect(() => {
+    if (loading) return;
+    const params = new URLSearchParams(location.search);
+    const audience = params.get('audience');
+    if (audience === 'brand') {
+      navigate('/brands', { replace: true });
+      return;
+    }
+    if (audience === 'creator') {
+      navigate('/', { replace: true });
+    }
+  }, [location.search, loading, navigate]);
+
+  const setLandingAudience = (audience: 'creator' | 'brand') => {
+    try {
+      localStorage.setItem('landing_audience', audience);
+    } catch {
+      // ignore storage failures
+    }
+    navigate(audience === 'brand' ? '/brands' : '/');
+  };
 
   return (
     <div className="min-h-screen bg-[#F8FAF9] text-[#0F172A] font-sans selection:bg-[#16A34A]/20 overflow-x-hidden">
@@ -360,6 +383,31 @@ const LandingPage = () => {
               <p className="text-[20px] md:text-[24px] text-[#64748B] font-medium mb-10 max-w-lg mx-auto lg:mx-0 leading-relaxed text-pretty">
                 Send one link. Brands send offers.
               </p>
+
+              <div className="mb-8 inline-flex flex-col sm:flex-row gap-3 p-2 rounded-[1.5rem] border border-[#E5E7EB] bg-white/80 backdrop-blur-sm shadow-sm">
+                <button
+                  type="button"
+                  onClick={() => {
+                    triggerHaptic(HapticPatterns.light);
+                    setLandingAudience('creator');
+                  }}
+                  className="min-w-[180px] px-5 py-3 rounded-[1.1rem] text-left transition-all"
+                >
+                  <span className="block text-[10px] font-black uppercase tracking-[0.18em] text-[#16A34A]">For creators</span>
+                  <span className="block mt-1 text-sm font-black text-[#0F172A]">Build your collab link</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    triggerHaptic(HapticPatterns.light);
+                    setLandingAudience('brand');
+                  }}
+                  className="min-w-[180px] px-5 py-3 rounded-[1.1rem] bg-[#0F172A] text-white text-left transition-all shadow-[0_10px_24px_rgba(15,23,42,0.18)]"
+                >
+                  <span className="block text-[10px] font-black uppercase tracking-[0.18em] text-emerald-300">For brands</span>
+                  <span className="block mt-1 text-sm font-black">Discover and send offers</span>
+                </button>
+              </div>
 
               {/* Floating 3D Hero Illustration */}
               <div className="hidden xl:flex justify-center mb-8">
