@@ -31,8 +31,18 @@ export default function DeleteAccount() {
         throw new Error(err.details || err.error || 'Failed to delete account');
       }
       toast.success('Account deleted successfully');
-      // Redirect to homepage after a short delay
-      setTimeout(() => navigate('/'), 1500);
+      
+      // Sign out locally to clear the session
+      try {
+        const { supabase } = await import('@/integrations/supabase/client');
+        await supabase.auth.signOut({ scope: 'local' });
+        localStorage.clear();
+      } catch (e) {
+        console.error('Error clearing local session:', e);
+      }
+      
+      // Redirect to login after a short delay
+      setTimeout(() => navigate('/login'), 1500);
     } catch (err: any) {
       toast.error(err.message || 'Failed to delete account');
     } finally {
