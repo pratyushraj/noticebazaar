@@ -4938,15 +4938,16 @@ const MobileDashboardDemo = ({
 
                                     <button type="button" onClick={() => setActiveTab('profile')} className={cn("w-10 h-10 rounded-xl border p-0.5 overflow-hidden transition-all active:scale-95 shadow-sm", isDark ? "border-white/10 bg-white/5" : "border-slate-200 bg-white")}>
                                         <div className="w-full h-full rounded-[10px] overflow-hidden">
-                                        <img
-                                            src={avatarUrl}
-                                            alt="avatar"
-                                            className="w-full h-full object-cover"
-                                            onError={(e) => {
-                                                (e.currentTarget as HTMLImageElement).onerror = null;
-                                                (e.currentTarget as HTMLImageElement).src = avatarFallbackUrl;
-                                            }}
-                                        />
+                                            <img
+                                                src={avatarUrl}
+                                                alt="avatar"
+                                                className="w-full h-full object-cover"
+                                                onError={(e) => {
+                                                    (e.currentTarget as HTMLImageElement).onerror = null;
+                                                    (e.currentTarget as HTMLImageElement).src = avatarFallbackUrl;
+                                                }}
+                                            />
+                                        </div>
                                     </button>
                                 </div>
 
