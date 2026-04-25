@@ -795,7 +795,7 @@ const CollabLinkLanding = () => {
 
   const isStep1Ready = Boolean(
     collabType &&
-    (selectedTemplate ? deliverables.length > 0 : campaignDescription.trim().length >= 10)
+    (selectedTemplateId ? deliverables.length > 0 : campaignDescription.trim().length >= 10)
   )
   const isValidBrandEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(brandEmail)
   const isProductImageRequired = Boolean(selectedTemplateId) || isBarterLikeCollab(collabType)
