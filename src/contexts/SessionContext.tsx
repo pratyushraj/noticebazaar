@@ -709,7 +709,16 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
         let { data: { session: currentSession }, error } = await supabase.auth.getSession();
 
         if (error) {
-          logger.error("Error getting session", error);
+          const isExpectedAuthError = error.message.includes("Refresh Token Not Found") || 
+                                      error.message.includes("Invalid Refresh Token") ||
+                                      error.message.includes("session_not_found");
+          
+          if (isExpectedAuthError) {
+            debugWarn("[SessionContext] Auth session refresh needed or token expired:", error.message);
+          } else {
+            logger.error("Error getting session", error);
+          }
+
           // Auto-recovery for stuck refresh tokens:
           // If the token is completely invalid/revoked, force sign-out to clear local storage and avoid infinite loops.
           if (error.message.includes("Refresh Token Not Found") || error.message.includes("Invalid Refresh Token")) {

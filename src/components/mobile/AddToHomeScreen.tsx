@@ -1,12 +1,12 @@
 
-
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ShieldCheck, Share, PlusSquare, X } from 'lucide-react';
+import { ShieldCheck, Share, PlusSquare, X, ArrowRight, Zap } from 'lucide-react';
 import { useLocation } from 'react-router-dom';
 import { trackEvent } from '@/lib/utils/analytics';
 import { triggerHaptic, HapticPatterns } from '@/lib/utils/haptics';
 import { toast } from 'sonner';
+import { cn } from '@/lib/utils';
 
 const AddToHomeScreen: React.FC = () => {
   const location = useLocation();
@@ -33,9 +33,8 @@ const AddToHomeScreen: React.FC = () => {
       || ['email', 'whatsapp', 'push', 'collab_submit'].includes((params.get('source') || '').toLowerCase());
     const shouldForceShow = forceInstallPreview || forceInstallIntent;
 
-    // Only show the banner where it makes product sense (deal console / dashboards),
-    // or when explicitly forced by the redirect (e.g. after collab submission).
-    const eligiblePrefixes = ['/deal/', '/creator-dashboard', '/brand-dashboard', '/dashboard-preview'];
+    // Only show the banner where it makes product sense
+    const eligiblePrefixes = ['/deal/', '/creator-dashboard', '/brand-dashboard', '/dashboard-preview', '/creator-link-ready'];
     const isEligibleRoute = eligiblePrefixes.some(prefix => location.pathname.startsWith(prefix));
 
     const canShowIOSGuide = isIOS && isSafari;
@@ -57,7 +56,6 @@ const AddToHomeScreen: React.FC = () => {
       return;
     }
 
-    // Show the same install banner UI on both iOS and Android.
     setShowBanner(true);
     trackEvent('pwa_install_banner_shown', {
       platform: canShowIOSGuide ? 'ios' : 'android',
@@ -89,16 +87,6 @@ const AddToHomeScreen: React.FC = () => {
     };
   }, [location.pathname]);
 
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const shouldToast = localStorage.getItem('pwa_show_install_success_toast') === '1';
-    if (!shouldToast) return;
-    localStorage.removeItem('pwa_show_install_success_toast');
-    toast.success('Welcome to App Mode', {
-      description: 'You now get faster loading and a smoother creator workflow.',
-    });
-  }, []);
-
   const handleInstall = async () => {
     trackEvent('pwa_install_cta_clicked', {
       platform: isIOSDevice ? 'ios' : 'android',
@@ -108,6 +96,7 @@ const AddToHomeScreen: React.FC = () => {
     if (!deferredPrompt) {
       if (isIOSDevice) {
         setShowSteps(true);
+        triggerHaptic(HapticPatterns.light);
       } else {
         toast.message('Install from browser menu', {
           description: 'Tap browser menu and choose "Install app" or "Add to Home screen".',
@@ -123,15 +112,6 @@ const AddToHomeScreen: React.FC = () => {
     if (outcome === 'accepted') {
       setShowBanner(false);
       localStorage.setItem(INSTALL_DISMISS_KEY, Date.now().toString());
-      trackEvent('pwa_install_prompt_accepted', {
-        platform: isIOSDevice ? 'ios' : 'android',
-        route: location.pathname,
-      });
-    } else {
-      trackEvent('pwa_install_prompt_dismissed', {
-        platform: isIOSDevice ? 'ios' : 'android',
-        route: location.pathname,
-      });
     }
     
     setDeferredPrompt(null);
@@ -141,55 +121,88 @@ const AddToHomeScreen: React.FC = () => {
     triggerHaptic(HapticPatterns.light);
     setShowBanner(false);
     localStorage.setItem(INSTALL_DISMISS_KEY, Date.now().toString());
-    trackEvent('pwa_install_prompt_dismissed', {
-      platform: isIOSDevice ? 'ios' : 'android',
-      route: location.pathname,
-      manual: true,
-    });
   };
+
   if (!showBanner) return null;
 
   return (
     <AnimatePresence>
       <motion.div
-        initial={{ y: -80, opacity: 0 }}
+        initial={{ y: -100, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        exit={{ y: -80, opacity: 0 }}
-        className="fixed top-0 inset-x-0 z-[9999] md:hidden"
+        exit={{ y: -100, opacity: 0 }}
+        className="fixed top-0 inset-x-0 z-[9999] p-4 md:hidden pointer-events-none"
       >
-        <div
-          className="bg-card border-b border-border px-3 py-1.5 shadow-[0_4px_14px_rgba(15,23,42,0.08)]"
-          style={{ paddingTop: 'max(6px, env(safe-area-inset-top, 0px))', backgroundColor: '#ffffff' }}
-        >
-          <div className="max-w-screen-sm mx-auto flex items-center gap-2.5 min-h-[44px]">
-            <div className="w-9 h-9 rounded-xl bg-primary border border-primary flex items-center justify-center shrink-0">
-              <ShieldCheck className="w-5 h-5 text-primary" />
+        <div className="max-w-screen-sm mx-auto pointer-events-auto">
+          <div
+            className="relative overflow-hidden rounded-[28px] border border-white/10 bg-[#0B0F14]/90 backdrop-blur-2xl px-5 py-4 shadow-[0_20px_50px_rgba(0,0,0,0.5)]"
+            style={{ paddingTop: 'max(16px, env(safe-area-inset-top, 0px))' }}
+          >
+            {/* Background Glow */}
+            <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 rounded-full -mr-16 -mt-16 blur-2xl" />
+            
+            <div className="flex items-center gap-4 relative z-10">
+              <div className="w-12 h-12 rounded-[18px] bg-emerald-500 flex items-center justify-center shrink-0 shadow-lg shadow-emerald-500/20">
+                <ShieldCheck className="w-6 h-6 text-white" />
+              </div>
+              
+              <div className="min-w-0 flex-1">
+                <p className="text-emerald-400 font-black text-[10px] uppercase tracking-[0.2em] mb-0.5">Premium Experience</p>
+                <h3 className="text-white font-black italic text-[16px] leading-tight">Creator Armour App</h3>
+                <p className="text-white/40 text-[11px] font-bold leading-tight mt-1 truncate">
+                  {isAndroid ? 'Install for 2x faster deal alerts' : 'Add to home screen for native workflow'}
+                </p>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button 
+                  type="button"
+                  onClick={handleInstall}
+                  className="bg-white text-black font-black px-4 py-2.5 rounded-full text-[12px] uppercase tracking-widest shadow-lg active:scale-95 transition-transform"
+                >
+                  {showSteps ? 'Tap Share' : 'Open'}
+                </button>
+                <button 
+                  type="button"
+                  onClick={handleDismiss}
+                  className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-white/20 active:scale-90 transition-transform"
+                  aria-label="Dismiss app banner"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
             </div>
-            <div className="min-w-0 flex-1">
-              <p className="text-muted-foreground font-bold text-[14px] leading-tight">Creator Armour</p>
-              <p className="text-muted-foreground text-[12px] leading-tight">
-                {isAndroid ? 'Install app for faster deal alerts' : 'Open in the Creator Armour app'}
-              </p>
+
+            <AnimatePresence>
               {showSteps && isIOSDevice && (
-                <div className="mt-1.5 rounded-lg border border-primary bg-primary px-2 py-1.5 text-[11px] text-muted-foreground">
-                  <p className="flex items-center gap-1"><Share className="w-3 h-3 text-primary" /> Tap Share</p>
-                  <p className="flex items-center gap-1 mt-0.5"><PlusSquare className="w-3 h-3" /> Add to Home Screen</p>
-                </div>
+                <motion.div 
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: 'auto', opacity: 1 }}
+                  className="mt-4 pt-4 border-t border-white/5"
+                >
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="bg-white/5 rounded-2xl p-3 border border-white/5">
+                      <div className="flex items-center gap-2 mb-2">
+                        <div className="w-6 h-6 rounded-lg bg-emerald-500/10 flex items-center justify-center">
+                          <Share className="w-3.5 h-3.5 text-emerald-400" />
+                        </div>
+                        <span className="text-[10px] font-black uppercase text-white/40 tracking-widest">Step 1</span>
+                      </div>
+                      <p className="text-[11px] font-bold text-white/80">Tap 'Share' in Safari browser</p>
+                    </div>
+                    <div className="bg-white/5 rounded-2xl p-3 border border-white/5">
+                      <div className="flex items-center gap-2 mb-2">
+                        <div className="w-6 h-6 rounded-lg bg-emerald-500/10 flex items-center justify-center">
+                          <PlusSquare className="w-3.5 h-3.5 text-emerald-400" />
+                        </div>
+                        <span className="text-[10px] font-black uppercase text-white/40 tracking-widest">Step 2</span>
+                      </div>
+                      <p className="text-[11px] font-bold text-white/80">Choose 'Add to Home Screen'</p>
+                    </div>
+                  </div>
+                </motion.div>
               )}
-            </div>
-            <button type="button"
-              onClick={handleInstall}
-              className="shrink-0 bg-primary hover:bg-primary text-foreground font-bold px-4 py-1.5 rounded-full text-[13px] leading-none shadow-sm"
-            >
-              OPEN
-            </button>
-            <button type="button"
-              onClick={handleDismiss}
-              className="shrink-0 w-7 h-7 rounded-full bg-background hover:bg-background border border-border flex items-center justify-center"
-              aria-label="Dismiss app banner"
-            >
-              <X className="w-3.5 h-3.5 text-muted-foreground" />
-            </button>
+            </AnimatePresence>
           </div>
         </div>
       </motion.div>

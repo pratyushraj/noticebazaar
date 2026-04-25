@@ -113,11 +113,21 @@ const CreatorDashboard = () => {
           table: 'collab_requests',
           filter: `creator_id=eq.${user.id}`,
         },
-        () => {
+        (payload) => {
+          console.log('[Realtime] Collab request update received:', payload);
+          // Use a broader invalidation to catch all variants of the collab-requests key
           queryClient.invalidateQueries({ queryKey: ['collab-requests'] });
+          
+          // Also refetch immediately to be sure
+          collabQuery.refetch();
+
           // Also toast for visibility if the tab is active
           if (document.visibilityState === 'visible') {
-            toast.info('New offer update received!');
+            triggerHaptic();
+            toast.success('🔥 New offer received!', {
+              description: 'A brand just sent you a new collaboration request.',
+              duration: 5000,
+            });
           }
         }
       )
@@ -129,11 +139,17 @@ const CreatorDashboard = () => {
           table: 'brand_deals',
           filter: `creator_id=eq.${user.id}`,
         },
-        () => {
+        (payload) => {
+          console.log('[Realtime] Brand deal update received:', payload);
           queryClient.invalidateQueries({ queryKey: ['brand-deals'] });
+          dealsQuery.refetch();
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        if (status === 'SUBSCRIBED') {
+          console.log('[Realtime] Creator dashboard is now LIVE and listening for updates');
+        }
+      });
 
     return () => {
       supabase.removeChannel(channel);

@@ -1523,9 +1523,30 @@ const CollabLinkLanding = () => {
             } catch (_e) {
               console.warn('[CollabLinkLanding] Portfolio supplement fetch failed (non-critical):', _e);
             }
+            }
           }
+          
           trackEvent('collab_link_viewed', { username: normalizedUsername });
-          // Track page view event (anonymous, no auth required)
+
+          // Direct recording to collab_link_events for the real-time dashboard
+          if (data.creator?.id) {
+            supabase.from('collab_link_events').insert({
+              creator_id: data.creator.id,
+              event_type: 'view',
+              metadata: {
+                source: new URLSearchParams(window.location.search).get('utm_source') || 'direct',
+                path: window.location.pathname,
+                referrer: document.referrer || null
+              }
+            }).then(({ error }) => {
+              if (error) {
+                // If this fails, it might be due to RLS. But we want to try.
+                console.warn('[CollabLinkLanding] Direct event recording skipped:', error.message);
+              }
+            });
+          }
+
+          // Track page view event (anonymous, no auth required) via analytics service
           try {
             // Extract UTM parameters from URL
             const urlParams = new URLSearchParams(window.location.search);

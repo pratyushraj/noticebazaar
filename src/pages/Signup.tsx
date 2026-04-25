@@ -1,5 +1,4 @@
 
-
 import { supabase } from '@/integrations/supabase/client';
 import { ShieldCheck, ArrowLeft, Shield, TrendingUp, MessageCircle, Eye, EyeOff, Loader2, Link2 } from 'lucide-react';
 import { useNavigate, Link, useSearchParams } from 'react-router-dom';
@@ -13,6 +12,7 @@ import { Label } from '@/components/ui/label';
 import { getApiBaseUrl } from '@/lib/utils/api';
 import { cn } from '@/lib/utils';
 import { trackEvent } from '@/lib/utils/analytics';
+import { triggerHaptic } from '@/lib/utils/haptics';
 import type { Tables } from '@/types/supabase';
 import { SmartIndustrySelector } from '@/components/brand/SmartIndustrySelector';
 
@@ -50,7 +50,6 @@ const Signup = () => {
   const [password, setPassword] = useState('');
   const [emailError, setEmailError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [showLoginPassword, setShowLoginPassword] = useState(false);
   const [signupPhase, setSignupPhase] = useState<'idle' | 'creating' | 'provisioning' | 'opening'>('idle');
 
   useEffect(() => {
@@ -643,424 +642,275 @@ const Signup = () => {
     }
   };
 
-  const features = [
-    {
-      icon: Link2,
-      title: 'Collab Link',
-      description: 'Share one link to receive brand deals safely',
-      color: 'text-emerald-400'
-    },
-    {
-      icon: Shield,
-      title: 'Auto-Protected Deals',
-      description: 'Contracts + payments handled automatically',
-      color: 'text-green-400'
-    },
-    {
-      icon: TrendingUp,
-      title: 'Track Brand Earnings',
-      description: 'Know what you earned from every collab',
-      color: 'text-blue-400'
-    },
-    {
-      icon: MessageCircle,
-      title: 'Expert Backup',
-      description: 'Legal help when you actually need it',
-      color: 'text-teal-300'
-    }
-  ];
-
   return (
     <div
-      className="nb-screen-height bg-[#F4F7FB] relative flex items-center justify-center p-4 font-inter overflow-x-hidden overflow-y-auto"
+      className="min-h-screen bg-[#020D0A] text-white relative flex items-center justify-center p-6 font-outfit overflow-x-hidden overflow-y-auto"
       style={{
         minHeight: '100dvh',
-        paddingTop: 'max(16px, env(safe-area-inset-top, 0px))',
-        paddingBottom: 'max(16px, env(safe-area-inset-bottom, 0px))',
+        paddingTop: 'max(24px, env(safe-area-inset-top, 0px))',
+        paddingBottom: 'max(24px, env(safe-area-inset-bottom, 0px))',
         paddingLeft: 'env(safe-area-inset-left, 0px)',
         paddingRight: 'env(safe-area-inset-right, 0px)',
         WebkitOverflowScrolling: 'touch',
       }}
     >
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-[-10%] right-[-10%] w-[50%] h-[50%] bg-emerald-600/10 rounded-full blur-[120px]" />
-        <div className="absolute bottom-[-10%] left-[-10%] w-[50%] h-[50%] bg-emerald-600/10 rounded-full blur-[120px]" />
+      {/* Premium Background Accents */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        <div className="absolute top-[-10%] left-[-20%] w-[60%] h-[60%] bg-emerald-500/10 rounded-full blur-[120px]" />
+        <div className="absolute bottom-[-10%] right-[-20%] w-[60%] h-[60%] bg-teal-500/10 rounded-full blur-[120px]" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-[0.03]" />
       </div>
 
-      <div className="w-full max-w-6xl grid md:grid-cols-2 gap-12 items-center relative z-10">
-        {/* Left Side - Branding & Features */}
-        <motion.div
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.5 }}
-          className="hidden md:block text-slate-900 space-y-12"
-        >
-          <div className="space-y-6">
-            <div className="flex items-center gap-3 mb-10">
-              <div className="w-12 h-12 rounded-2xl bg-emerald-600 flex items-center justify-center shadow-lg shadow-emerald-600/25">
-                <ShieldCheck className="w-6 h-6 text-white" />
-              </div>
-              <h1 className="text-xl font-black tracking-tight">Creator Armour</h1>
-            </div>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+        className="w-full max-w-[440px] relative z-10"
+      >
+        {/* Branding */}
+        <div className="flex flex-col items-center mb-10">
+          <motion.div 
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            className="w-16 h-16 bg-gradient-to-br from-emerald-500 to-teal-500 rounded-[22px] flex items-center justify-center mb-6 shadow-[0_20px_40px_rgba(16,185,129,0.3)] relative group"
+          >
+            <ShieldCheck className="h-8 w-8 text-white relative z-10" />
+            <div className="absolute inset-0 bg-white/20 rounded-[22px] opacity-0 group-hover:opacity-100 transition-opacity" />
+          </motion.div>
+          <h1 className="text-2xl font-black tracking-tighter text-white mb-1 uppercase italic">Creator Armour</h1>
+          <div className="flex items-center gap-2">
+            <span className="w-8 h-[1px] bg-emerald-500/30" />
+            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-emerald-500/80">Securing your future</p>
+            <span className="w-8 h-[1px] bg-emerald-500/30" />
+          </div>
+        </div>
 
-            <h2 className="text-5xl font-black leading-tight tracking-tight">
-              Protect and scale<br />
-              your creator business
+        <div className="bg-white/5 backdrop-blur-2xl border border-white/10 rounded-[40px] p-8 shadow-2xl relative overflow-hidden">
+          <div className="relative z-10">
+            {/* Toggle Mode */}
+            {!showLogin && (
+              <div className="mb-8">
+                <div className="inline-flex rounded-2xl border border-white/10 bg-white/5 p-1 w-full">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      triggerHaptic?.();
+                      const next = new URLSearchParams(searchParams);
+                      next.set('mode', 'creator');
+                      setSearchParams(next, { replace: true });
+                    }}
+                    className={cn(
+                      'flex-1 h-11 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all',
+                      accountMode === 'creator'
+                        ? 'bg-emerald-500 text-white shadow-lg'
+                        : 'bg-transparent text-white/40 hover:text-white'
+                    )}
+                  >
+                    Creator
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      triggerHaptic?.();
+                      const next = new URLSearchParams(searchParams);
+                      next.set('mode', 'brand');
+                      setSearchParams(next, { replace: true });
+                    }}
+                    className={cn(
+                      'flex-1 h-11 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all',
+                      accountMode === 'brand'
+                        ? 'bg-emerald-500 text-white shadow-lg'
+                        : 'bg-transparent text-white/40 hover:text-white'
+                    )}
+                  >
+                    Brand
+                  </button>
+                </div>
+              </div>
+            )}
+
+            <h2 className="text-2xl font-black text-white mb-2 tracking-tight">
+              {showLogin ? 'Welcome back' : `Create ${accountMode} account`}
             </h2>
-            <p className="text-xl text-slate-600 font-medium leading-relaxed max-w-md">
-              Create your creator link, get brand offers, and track active deals in one place.
+            <p className="text-white/40 text-[13px] font-medium mb-8 leading-relaxed">
+              {showLogin 
+                ? 'Sign in to access your dashboard.' 
+                : accountMode === 'brand'
+                  ? 'Join the network to find and hire creators safely.'
+                  : 'Get your professional collab link in seconds.'
+              }
             </p>
-          </div>
 
-          <div className="space-y-6 pt-4">
-            {features.map((feature, index) => {
-              const Icon = feature.icon;
-              const colorClass = feature.color;
-              return (
-                <motion.div
-                  key={feature.title}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.1, duration: 0.5 }}
-                  className="flex items-start gap-5"
-                >
-                  <div className="w-12 h-12 rounded-2xl bg-white border border-slate-200 flex items-center justify-center flex-shrink-0 shadow-sm">
-                    <Icon className={`w-6 h-6 ${colorClass}`} />
+            <form onSubmit={showLogin ? handleEmailPasswordLogin : handleEmailPasswordSignup} className="space-y-5">
+              {!showLogin && (
+                <>
+                  <div className="space-y-2 group">
+                    <Label className="text-white/40 text-[10px] font-black uppercase tracking-widest ml-1 group-focus-within:text-emerald-400">
+                      Full Name
+                    </Label>
+                    <Input
+                      placeholder="e.g. John Doe"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      className="bg-white/5 border-white/10 text-white placeholder:text-white/10 text-[16px] h-[60px] rounded-[20px] focus:border-emerald-500/50 focus:ring-0 focus:bg-white/10 transition-all outline-none"
+                      required
+                    />
                   </div>
-                  <div>
-                    <h3 className="font-bold text-lg mb-1">{feature.title}</h3>
-                    <p className="text-slate-600 text-sm font-medium">{feature.description}</p>
-                  </div>
-                </motion.div>
-              );
-            })}
-          </div>
 
-          <div className="pt-10 border-t border-slate-200 flex gap-10">
-            <div>
-              <p className="text-slate-900 text-xl font-black">10,000+</p>
-              <p className="text-slate-500 text-[11px] font-black uppercase tracking-widest mt-1">Contracts Analyzed</p>
-            </div>
-            <div>
-              <p className="text-slate-900 text-xl font-black">₹2Cr+</p>
-              <p className="text-slate-500 text-[11px] font-black uppercase tracking-widest mt-1">Value Protected</p>
-            </div>
-          </div>
-        </motion.div>
+                  {accountMode === 'creator' && (
+                    <div className="space-y-2 group">
+                      <Label className="text-white/40 text-[10px] font-black uppercase tracking-widest ml-1 group-focus-within:text-emerald-400">
+                        Instagram Username
+                      </Label>
+                      <div className="relative">
+                        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-white/20 font-bold">@</span>
+                        <Input
+                          placeholder="yourhandle"
+                          value={instagramHandle}
+                          onChange={(e) => setInstagramHandle(e.target.value)}
+                          className="bg-white/5 border-white/10 text-white placeholder:text-white/10 text-[16px] h-[60px] rounded-[20px] focus:border-emerald-500/50 focus:ring-0 focus:bg-white/10 pl-10 transition-all outline-none"
+                        />
+                      </div>
+                    </div>
+                  )}
 
-        {/* Right Side - Signup Form */}
-        <motion.div
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.5 }}
-          className="w-full"
-        >
-          <div className="bg-white shadow-xl rounded-[2.5rem] p-10 border border-slate-200">
-            {/* Mobile Logo */}
-            <div className="md:hidden flex items-center gap-3 mb-10">
-              <div className="w-10 h-10 rounded-xl bg-emerald-600 flex items-center justify-center shadow-lg shadow-emerald-600/25">
-                <ShieldCheck className="w-5 h-5 text-white" />
+                  {accountMode === 'brand' && (
+                    <>
+                      <div className="space-y-2 group">
+                        <Label className="text-white/40 text-[10px] font-black uppercase tracking-widest ml-1 group-focus-within:text-emerald-400">
+                          Brand / Agency Name
+                        </Label>
+                        <Input
+                          placeholder="e.g. Nike, noticebazaar"
+                          value={brandName}
+                          onChange={(e) => setBrandName(e.target.value)}
+                          className="bg-white/5 border-white/10 text-white placeholder:text-white/10 text-[16px] h-[60px] rounded-[20px] focus:border-emerald-500/50 focus:ring-0 focus:bg-white/10 transition-all outline-none"
+                          required
+                        />
+                      </div>
+                      <div className="space-y-2 group">
+                        <Label className="text-white/40 text-[10px] font-black uppercase tracking-widest ml-1 group-focus-within:text-emerald-400">
+                          Industry
+                        </Label>
+                        <SmartIndustrySelector
+                          value={brandIndustry}
+                          onChange={setBrandIndustry}
+                          className="w-full"
+                        />
+                      </div>
+                    </>
+                  )}
+                </>
+              )}
+
+              <div className="space-y-2 group">
+                <Label className="text-white/40 text-[10px] font-black uppercase tracking-widest ml-1 group-focus-within:text-emerald-400">
+                  Email Address
+                </Label>
+                <Input
+                  type="email"
+                  placeholder="name@example.com"
+                  value={email}
+                  onChange={(e) => handleEmailChange(e.target.value)}
+                  className={cn(
+                    "bg-white/5 border-white/10 text-white placeholder:text-white/10 text-[16px] h-[60px] rounded-[20px] focus:border-emerald-500/50 focus:ring-0 focus:bg-white/10 transition-all outline-none",
+                    emailError && "border-red-500/50 focus:border-red-500/50"
+                  )}
+                  required
+                />
               </div>
-              <h1 className="text-lg font-black text-slate-900 tracking-tight">Creator Armour</h1>
-	            </div>
-	
-	            <div className="mb-10">
-                {!showLogin && (
-                  <div className="mb-6">
-                    <div className="inline-flex rounded-2xl border border-slate-200 bg-slate-50 p-1 w-full">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          const next = new URLSearchParams(searchParams);
-                          next.set('mode', 'creator');
-                          setSearchParams(next, { replace: true });
-                        }}
-                        className={cn(
-                          'flex-1 h-11 rounded-xl text-[12px] font-black uppercase tracking-widest transition-all',
-                          accountMode === 'creator'
-                            ? 'bg-white text-slate-900 shadow-sm border border-slate-200'
-                            : 'bg-transparent text-slate-600 hover:text-slate-900'
-                        )}
-                      >
-                        Creator
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          const next = new URLSearchParams(searchParams);
-                          next.set('mode', 'brand');
-                          setSearchParams(next, { replace: true });
-                        }}
-                        className={cn(
-                          'flex-1 h-11 rounded-xl text-[12px] font-black uppercase tracking-widest transition-all',
-                          accountMode === 'brand'
-                            ? 'bg-white text-slate-900 shadow-sm border border-slate-200'
-                            : 'bg-transparent text-slate-600 hover:text-slate-900'
-                        )}
-                      >
-                        Brand
-                      </button>
+
+              <div className="space-y-2 group">
+                <div className="flex justify-between">
+                  <Label className="text-white/40 text-[10px] font-black uppercase tracking-widest ml-1 group-focus-within:text-emerald-400">
+                    Password
+                  </Label>
+                  {showLogin && (
+                    <button type="button" onClick={() => { triggerHaptic?.(); handleForgotPassword(); }} className="text-[10px] font-black uppercase tracking-widest text-emerald-500/60 hover:text-emerald-500">
+                      Forgot?
+                    </button>
+                  )}
+                </div>
+                <div className="relative">
+                  <Input
+                    type={showPassword ? "text" : "password"}
+                    placeholder="••••••••"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="bg-white/5 border-white/10 text-white placeholder:text-white/10 text-[16px] h-[60px] rounded-[20px] focus:border-emerald-500/50 focus:ring-0 focus:bg-white/10 pr-12 transition-all outline-none"
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      triggerHaptic?.();
+                      setShowPassword(!showPassword);
+                    }}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center rounded-xl text-white/20 hover:text-white transition-all active:scale-90"
+                  >
+                    {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                  </button>
+                </div>
+                {!showLogin && password.length > 0 && (
+                  <div className="px-1 pt-1">
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-[9px] font-black uppercase tracking-widest text-white/30">{passwordHelper}</span>
+                    </div>
+                    <div className="h-1 w-full bg-white/5 rounded-full overflow-hidden">
+                      <div 
+                        className={cn("h-full transition-all duration-500", passwordStrength.color)} 
+                        style={{ width: `${(passwordStrength.strength / 4) * 100}%` }}
+                      />
                     </div>
                   </div>
                 )}
-
-	              <h2 className="text-4xl font-black text-slate-900 mb-3 tracking-tight">
-	                {showLogin ? 'Sign In' : accountMode === 'brand' ? 'Create Brand Account' : 'Create your page'}
-	              </h2>
-	              <p className="text-slate-600 font-medium leading-relaxed">
-	                {showLogin
-	                  ? 'Sign in to see your brand offers and active deals.'
-	                  : accountMode === 'brand'
-	                    ? 'Send structured offers, track deals, and sign contracts without DMs.'
-	                    : 'Sign up and get your link. Brands send offers through it.'
-	                }
-	              </p>
-	            </div>
-
-            {/* Login Form (shorthand for users already registered) */}
-            {showLogin && (
-              <div className="mb-8">
-                <form onSubmit={handleEmailPasswordLogin} className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="email" className="text-slate-500 text-[11px] font-black uppercase tracking-widest ml-1">
-                      Email
-                    </Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      placeholder="name@example.com"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      className="bg-white border-slate-300 text-slate-900 placeholder:text-slate-400 text-[16px] h-14 rounded-2xl px-5"
-                      required
-                      autoComplete="email"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <div className="flex justify-between items-center px-1">
-                      <Label htmlFor="password" className="text-slate-500 text-[11px] font-black uppercase tracking-widest">
-                        Password
-                      </Label>
-                      <button
-                        type="button"
-                        onClick={handleForgotPassword}
-                        className="text-[11px] font-black text-emerald-500 uppercase tracking-widest"
-                      >
-                        Forgot?
-                      </button>
-                    </div>
-                    <div className="relative">
-                      <Input
-                        id="password"
-                        type={showLoginPassword ? "text" : "password"}
-                        placeholder="••••••••"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        className="bg-white border-slate-300 text-slate-900 placeholder:text-slate-400 text-[16px] h-14 rounded-2xl px-5 pr-12"
-                        required
-                        autoComplete="current-password"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowLoginPassword(!showLoginPassword)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 flex items-center justify-center rounded-xl text-slate-400 hover:text-emerald-500 hover:bg-emerald-50 transition-all active:scale-90"
-                        aria-label={showLoginPassword ? "Hide password" : "Show password"}
-                      >
-                        {showLoginPassword ? <EyeOff className="h-[18px] w-[18px]" /> : <Eye className="h-[18px] w-[18px]" />}
-                      </button>
-                    </div>
-                  </div>
-                  <Button
-                    type="submit"
-                    disabled={isLoading || !email.trim() || !password.trim()}
-                    className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black h-14 rounded-2xl shadow-xl shadow-emerald-600/20 active:scale-[0.98] uppercase tracking-widest text-xs mt-2"
-                  >
-                    {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Sign In'}
-                  </Button>
-                </form>
               </div>
-            )}
 
-            {/* Email/Password Signup Form */}
-            {!showLogin && (
-              <div className="mb-8">
-	                <form onSubmit={handleEmailPasswordSignup} className="space-y-4">
-	                  <div className="space-y-2">
-	                    <Label htmlFor="signup-name" className="text-slate-500 text-[11px] font-black uppercase tracking-widest ml-1">
-	                      {accountMode === 'brand' ? 'Your Name' : 'Name'}
-	                    </Label>
-	                    <Input
-	                      id="signup-name"
-	                      type="text"
-	                      placeholder="e.g. Pratyush Raj"
-	                      value={name}
-	                      onChange={(e) => setName(e.target.value)}
-	                      className="bg-white border-slate-300 text-slate-900 placeholder:text-slate-400 text-[16px] h-14 rounded-2xl px-5"
-	                      required
-	                      autoComplete="name"
-	                    />
-	                  </div>
-                    {accountMode === 'creator' && (
-                      <div className="space-y-2">
-                        <Label htmlFor="signup-instagram-handle" className="text-slate-500 text-[11px] font-black uppercase tracking-widest ml-1">
-                          Your Instagram username
-                        </Label>
-                        <Input
-                          id="signup-instagram-handle"
-                          type="text"
-                          placeholder="your.username"
-                          value={instagramHandle}
-                          onChange={(e) => setInstagramHandle(e.target.value)}
-                          className="bg-white border-slate-300 text-slate-900 placeholder:text-slate-400 text-[16px] h-14 rounded-2xl px-5"
-                          required
-                          autoComplete="username"
-                        />
-                        <p className="px-1 text-xs text-slate-500">
-                          Just your username, not the full URL
-                        </p>
-                      </div>
-                    )}
-                    {accountMode === 'brand' && (
-                      <>
-                        <div className="space-y-2">
-                          <Label htmlFor="signup-brand-name" className="text-slate-500 text-[11px] font-black uppercase tracking-widest ml-1">
-                            Brand Name
-                          </Label>
-                          <Input
-                            id="signup-brand-name"
-                            type="text"
-                            placeholder="e.g. Demo Brand Co"
-                            value={brandName}
-                            onChange={(e) => setBrandName(e.target.value)}
-                            className="bg-white border-slate-300 text-slate-900 placeholder:text-slate-400 text-[16px] h-14 rounded-2xl px-5"
-                            required
-                            autoComplete="organization"
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="signup-brand-industry" className="text-slate-500 text-[11px] font-black uppercase tracking-widest ml-1">
-                            Industry
-                          </Label>
-                          <SmartIndustrySelector
-                            value={brandIndustry}
-                            onChange={(value) => setBrandIndustry(String(value || ''))}
-                            placeholder="Select industry"
-                          />
-                        </div>
-                      </>
-                    )}
-	                  <div className="space-y-2">
-	                    <Label htmlFor="signup-email" className="text-slate-500 text-[11px] font-black uppercase tracking-widest ml-1">
-	                      {accountMode === 'brand' ? 'Work Email' : 'Email'}
-	                    </Label>
-	                    <Input
-	                      id="signup-email"
-	                      type="email"
-	                      placeholder="name@example.com"
-                      value={email}
-                      onChange={(e) => handleEmailChange(e.target.value)}
-                      className={`bg-white border-slate-300 text-slate-900 placeholder:text-slate-400 text-[16px] h-14 rounded-2xl px-5 ${emailError ? 'border-red-500/50' : ''}`}
-                      required
-                      autoComplete="email"
-                    />
-                    {emailError && (
-                      <p className="text-xs text-red-400 mt-1 font-bold">{emailError}</p>
-                    )}
-                  </div>
-	                  <div className="space-y-2">
-	                    <Label htmlFor="signup-password" className="text-slate-500 text-[11px] font-black uppercase tracking-widest ml-1">
-	                      Password
-	                    </Label>
-	                    <div className="relative">
-	                      <Input
-	                        id="signup-password"
-	                        type={showPassword ? 'text' : 'password'}
-	                        placeholder="Min. 6 characters"
-	                        value={password}
-	                        onChange={(e) => setPassword(e.target.value)}
-	                        className={cn(
-                            "bg-white border-slate-300 text-slate-900 placeholder:text-slate-400 text-[16px] h-14 rounded-2xl px-5 pr-12",
-                            password.length > 0 && password.length < 6 ? "border-red-500/50" : ""
-                          )}
-	                        required
-	                        autoComplete="new-password"
-	                        minLength={6}
-	                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-700 transition-colors"
-                      >
-                        {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-	                      </button>
-	                    </div>
-                      <div className="mt-2 flex items-center justify-between gap-3">
-                        <p className={cn("text-xs font-bold", password.length > 0 && password.length < 6 ? "text-red-400" : "text-slate-500")}>
-                          {passwordHelper}
-                        </p>
-                        {passwordStrength.strength > 0 && (
-                          <span
-                            className={cn(
-                              "shrink-0 rounded-full px-3 py-1 text-[10px] font-black uppercase tracking-widest",
-                              passwordStrength.strength <= 2 ? "bg-amber-100 text-amber-800" : "bg-emerald-100 text-emerald-800"
-                            )}
-                          >
-                            {passwordStrength.label || "OK"}
-                          </span>
-                        )}
-                      </div>
-		                  </div>
-	                  <Button
-	                    type="submit"
-	                    disabled={isLoading || !name.trim() || (accountMode === 'creator' && !instagramHandle.trim()) || (accountMode === 'brand' && !brandName.trim()) || !email.trim() || !password.trim() || password.length < 6 || !!emailError}
-	                    className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black h-14 rounded-2xl shadow-xl shadow-emerald-600/20 active:scale-[0.98] uppercase tracking-widest text-xs mt-2"
-	                  >
-	                    {isLoading ? <Loader2 className="w-5 h-5 animate-spin mr-2" /> : null}
-	                    {isLoading
-                        ? signupPhase === 'opening'
-                          ? 'Opening Onboarding...'
-                          : signupPhase === 'provisioning'
-                            ? 'Setting Up Workspace...'
-                            : 'Creating Account...'
-                        : accountMode === 'brand'
-                          ? 'Create Brand Console'
-                          : 'Create My Page'}
-	                  </Button>
-                    {!showLogin && accountMode === 'creator' && (
-                      <p className="text-center text-xs text-slate-500 mt-3">
-                        Takes 1 minute. No long forms.
-                      </p>
-                    )}
-	                </form>
-	              </div>
-            )}
-
-
-            <div className="text-center pt-6 border-t border-slate-200">
-              <button type="button"
-                onClick={() => setShowLogin(!showLogin)}
-                className="text-slate-600 hover:text-slate-900 font-medium text-[13px] transition-all group inline-flex items-center gap-2"
+              <Button
+                type="submit"
+                disabled={isLoading}
+                onClick={() => triggerHaptic?.()}
+                className="w-full bg-emerald-500 hover:bg-emerald-400 text-white font-black h-[64px] rounded-[22px] shadow-[0_20px_40px_rgba(16,185,129,0.2)] transition-all active:scale-[0.98] text-[15px] mt-4 relative overflow-hidden group border-none uppercase tracking-widest"
               >
-                {showLogin ? "Don't have an account?" : 'Already have an account?'}
-                <span className="text-emerald-500 font-bold group-hover:underline">{showLogin ? 'Start for free' : 'Sign in here'}</span>
+                {isLoading ? (
+                  <div className="flex items-center gap-2">
+                    <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+                    {signupPhase === 'creating' ? 'Creating...' : signupPhase === 'provisioning' ? 'Setting up...' : 'Opening...'}
+                  </div>
+                ) : showLogin ? 'Unlock Dashboard' : 'Create My Armour'}
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:animate-shine" />
+              </Button>
+            </form>
+
+            <div className="mt-8 text-center">
+              <button
+                type="button"
+                onClick={() => {
+                  triggerHaptic?.();
+                  setShowLogin(!showLogin);
+                }}
+                className="text-[11px] font-black uppercase tracking-[0.2em] text-white/30 hover:text-emerald-400 transition-colors"
+              >
+                {showLogin ? "Don't have an account? Create one" : "Already have an account? Sign in"}
               </button>
             </div>
-
-            {/* Back to Homepage */}
-            <div className="mt-8 text-center pt-6 border-t border-slate-200">
-              <Link to="/" className="text-slate-500 hover:text-emerald-500 text-xs font-bold uppercase tracking-widest inline-flex items-center gap-2 transition-colors">
-                <ArrowLeft className="w-3 h-3" /> Back to Home
-              </Link>
-            </div>
           </div>
+        </div>
 
-          <div className="mt-8 text-center px-4">
-            <p className="text-[10px] text-slate-600 font-bold uppercase tracking-[0.1em]">
-              By continuing, you agree to our <Link to="/terms-of-service" className="text-slate-400 hover:text-emerald-500 underline">Terms</Link> & <Link to="/privacy-policy" className="text-slate-400 hover:text-emerald-500 underline">Privacy</Link>
-            </p>
-          </div>
-        </motion.div>
-      </div>
+        <div className="mt-10 flex flex-col items-center gap-6">
+          <Link to="/" className="text-[10px] font-black uppercase tracking-[0.3em] text-white/20 hover:text-emerald-400 transition-colors flex items-center gap-2 group">
+            <ArrowLeft className="w-3 h-3 group-hover:-translate-x-1 transition-transform" />
+            Back to homepage
+          </Link>
+          
+          <p className="text-white/10 text-[9px] leading-relaxed font-black uppercase tracking-[0.2em] text-center max-w-[320px]">
+            By continuing, you agree to our{' '}
+            <a href="/terms-of-service" className="text-white/20 hover:text-emerald-400 transition-colors underline underline-offset-4">Terms</a>
+            {' '}&{' '}
+            <a href="/privacy-policy" className="text-white/20 hover:text-emerald-400 transition-colors underline underline-offset-4">Privacy</a>
+          </p>
+        </div>
+      </motion.div>
     </div>
   );
 };

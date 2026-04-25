@@ -4561,43 +4561,64 @@ const MobileDashboardDemo = ({
                                                     animate={{ y: 0, opacity: 1 }}
                                                     transition={{ delay: 0.15, duration: 0.5 }}
                                                     className={cn(
-                                                        "p-4 rounded-[28px] border overflow-hidden relative group",
-                                                        isDark ? "bg-white/5 border-white/10" : "bg-white/20 border-white/30"
+                                                        "p-4 rounded-[32px] border overflow-hidden relative group active:scale-[0.98] transition-all duration-300",
+                                                        isDark 
+                                                            ? "bg-[#0B1A14]/80 backdrop-blur-md border-emerald-500/10 hover:border-emerald-500/20 shadow-[0_8px_32px_rgba(16,185,129,0.05)]" 
+                                                            : "bg-white/60 backdrop-blur-md border-emerald-100 hover:border-emerald-200 shadow-sm"
                                                     )}
                                                 >
-                                                    <div className="absolute inset-0 bg-gradient-to-r from-orange-500/10 via-transparent to-transparent opacity-50" />
+                                                    {/* Background Glow */}
+                                                    <div className={cn(
+                                                        "absolute inset-0 bg-gradient-to-r transition-opacity duration-500",
+                                                        isDark ? "from-emerald-500/10 via-transparent to-transparent opacity-40 group-hover:opacity-60" : "from-emerald-500/5 via-transparent to-transparent opacity-30"
+                                                    )} />
+                                                    
                                                     <div className="relative z-10 flex items-center justify-between">
-                                                        <div className="flex items-center gap-3">
-                                                            <div className="w-12 h-12 rounded-2xl bg-orange-500/20 flex items-center justify-center text-orange-500 shadow-inner">
-                                                                <motion.div
-                                                                    animate={{ 
-                                                                        scale: [1, 1.2, 1],
-                                                                        filter: ["drop-shadow(0 0 0px #f97316)", "drop-shadow(0 0 8px #f97316)", "drop-shadow(0 0 0px #f97316)"]
-                                                                    }}
-                                                                    transition={{ duration: 2, repeat: Infinity }}
-                                                                >
-                                                                    <Flame className="w-6 h-6" fill="currentColor" />
-                                                                </motion.div>
+                                                        <div className="flex items-center gap-4">
+                                                            <div className="relative">
+                                                                <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 flex items-center justify-center text-emerald-500 shadow-inner overflow-hidden">
+                                                                    <motion.div
+                                                                        animate={{ 
+                                                                            scale: [1, 1.15, 1],
+                                                                            opacity: [0.8, 1, 0.8]
+                                                                        }}
+                                                                        transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                                                                    >
+                                                                        <Flame className="w-6 h-6" fill="currentColor" />
+                                                                    </motion.div>
+                                                                </div>
+                                                                {/* Pulsing ring around icon */}
+                                                                <div className="absolute -inset-1 rounded-2xl border border-emerald-500/20 animate-ping opacity-10" />
                                                             </div>
                                                             <div>
-                                                                <p className="text-[14px] font-black tracking-tight text-white">
-                                                                    {profileViewsToday > 0 
-                                                                        ? `${profileViewsToday} Brands viewed your profile` 
-                                                                        : "Your profile is active today"}
-                                                                </p>
-                                                                <p className="text-[11px] font-medium text-white/50">
+                                                                <div className="flex items-center gap-1.5 mb-0.5">
+                                                                    <p className={cn("text-[14px] font-black tracking-tight", isDark ? "text-white" : "text-slate-900")}>
+                                                                        {profileViewsToday > 0 
+                                                                            ? `${profileViewsToday} Brands viewed your profile` 
+                                                                            : "Profile is active today"}
+                                                                    </p>
+                                                                    {profileViewsToday > 2 && (
+                                                                        <span className="flex h-1.5 w-1.5 rounded-full bg-orange-500 shadow-[0_0_8px_#f97316]" />
+                                                                    )}
+                                                                </div>
+                                                                <p className={cn("text-[11px] font-bold", isDark ? "text-emerald-400/80" : "text-emerald-600/90")}>
                                                                     {profileViewsToday > 0 
                                                                         ? "Trending now in brand discovery" 
                                                                         : "Share your link to attract brands"}
                                                                 </p>
                                                             </div>
                                                         </div>
-                                                        {profileViewsToday > 0 && (
-                                                            <div className="flex items-center gap-1">
-                                                                <span className="flex h-2 w-2 rounded-full bg-orange-500 animate-pulse" />
-                                                                <span className="text-[10px] font-black text-orange-500 uppercase tracking-widest">Live</span>
+                                                        
+                                                        <div className="flex flex-col items-end gap-1.5">
+                                                            <div className={cn(
+                                                                "flex items-center gap-1.5 px-2.5 py-1 rounded-full border transition-colors",
+                                                                isDark ? "bg-emerald-500/10 border-emerald-500/20" : "bg-emerald-50 border-emerald-100"
+                                                            )}>
+                                                                <span className="flex h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                                                                <span className={cn("text-[9px] font-black uppercase tracking-widest", isDark ? "text-emerald-400" : "text-emerald-600")}>LIVE</span>
                                                             </div>
-                                                        )}
+                                                            <span className={cn("text-[10px] font-bold opacity-40", isDark ? "text-white" : "text-slate-900")}>TODAY</span>
+                                                        </div>
                                                     </div>
                                                 </motion.div>
                                             </div>

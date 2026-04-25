@@ -1,5 +1,4 @@
 
-
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -24,7 +23,12 @@ import {
   Target,
   PenTool,
   Sparkles,
-  User
+  User,
+  Star,
+  Flame,
+  Globe,
+  TrendingUp,
+  LayoutDashboard
 } from 'lucide-react';
 import { generateAIBios } from '@/utils/aiBioGenerator';
 import { CITY_OPTIONS } from '@/constants/cities';
@@ -43,6 +47,7 @@ import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { CREATOR_ASSETS_BUCKET } from '@/lib/constants/storage';
 import { getApiBaseUrl } from '@/lib/utils/api';
+import { triggerHaptic } from '@/lib/utils/haptics';
 
 type OnboardingStep = 'identity' | 'reach' | 'audience' | 'style' | 'collab' | 'videoSuccess' | 'profile' | 'payout' | 'logistics' | 'notifications' | 'finalizing';
 
@@ -101,9 +106,6 @@ const FOLLOWER_RANGES = [
   { id: '10k-50k', label: '10k–50k' },
   { id: '50k+', label: '50k+' }
 ];
-
-// CITY_OPTIONS is now imported from '@/constants/cities'
-
 
 const CITY_ALIASES: Record<string, string> = {
   bangalore: 'Bengaluru',
@@ -433,6 +435,7 @@ export default function CreatorOnboarding() {
 
   const handleBack = () => {
     if (isSubmitting || isUploading) return;
+    triggerHaptic?.();
 
     if (step === 'identity') return;
     if (step === 'videoSuccess') {
@@ -455,82 +458,88 @@ export default function CreatorOnboarding() {
   };
 
   const handleNext = async () => {
-    setIsSubmitting(true);
-    try {
-        if (step === 'identity') {
-        if (instagramHandle.length < 3) {
-          toast.error('Please enter your Instagram username');
-          return;
-        }
+    triggerHaptic?.();
+    
+    // Identity Check
+    if (step === 'identity') {
+      if (instagramHandle.length < 3) {
+        toast.error('Please enter your Instagram username');
+        return;
+      }
+      
+      // Optimistic transition
+      setStep('reach');
+      
+      // Save in background
+      updateProfileMutation.mutate({
+        id: profile!.id,
+        instagram_handle: instagramHandle.replace(/^@+/, '').trim().toLowerCase(),
+        username: instagramHandle.replace(/^@+/, '').trim().toLowerCase(),
+        bio: creatorTitle || null,
+      } as any);
+      return;
+    }
 
-        // Save progress for Step 1
-        await updateProfileMutation.mutateAsync({
-          id: profile!.id,
-          instagram_handle: instagramHandle.replace(/^@+/, '').trim().toLowerCase(),
-          username: instagramHandle.replace(/^@+/, '').trim().toLowerCase(),
-          bio: creatorTitle || null,
-        } as any);
+    if (step === 'reach') {
+      if (!followerCount) {
+        toast.error('Please enter your follower count');
+        return;
+      }
+      setStep('audience');
+      updateProfileMutation.mutate({
+        id: profile!.id,
+        instagram_followers: Number(followerCount) || 0,
+        follower_count_range: getFollowerRangeId(Number(followerCount)),
+        collab_region_label: baseCity || null,
+        top_cities: [topCity1, topCity2, topCity3].map(c => c.trim()).filter(Boolean),
+      } as any);
+      return;
+    }
 
-        setStep('reach');
-      } else if (step === 'reach') {
-        if (!followerCount) {
-          toast.error('Please enter your follower count');
-          return;
-        }
+    if (step === 'audience') {
+      if (!audienceGenderSplit) {
+        toast.error('Please select audience gender split');
+        return;
+      }
+      if (audienceAgeRange.length === 0) {
+        toast.error('Please select at least one age range');
+        return;
+      }
+      setStep('style');
+      updateProfileMutation.mutate({
+        id: profile!.id,
+        audience_gender_split: audienceGenderSplit,
+        audience_age_range: audienceAgeRange.join(', '),
+      } as any);
+      return;
+    }
 
-        // Save progress for Step 2
-        await updateProfileMutation.mutateAsync({
-          id: profile!.id,
-          instagram_followers: Number(followerCount) || 0,
-          follower_count_range: getFollowerRangeId(Number(followerCount)),
-          collab_region_label: baseCity || null,
-          top_cities: [topCity1, topCity2, topCity3].map(c => c.trim()).filter(Boolean),
-        } as any);
+    if (step === 'style') {
+      if (selectedNiches.length === 0) {
+        toast.error('Please select at least one niche');
+        return;
+      }
+      setStep('collab');
+      updateProfileMutation.mutate({
+        id: profile!.id,
+        content_niches: selectedNiches,
+        content_vibes: contentVibes,
+      } as any);
+      return;
+    }
 
-        setStep('audience');
-      } else if (step === 'audience') {
-        if (!audienceGenderSplit) {
-          toast.error('Please select audience gender split');
-          return;
-        }
-        if (audienceAgeRange.length === 0) {
-          toast.error('Please select at least one age range');
-          return;
-        }
-
-        // Save progress for Step 3
-        await updateProfileMutation.mutateAsync({
-          id: profile!.id,
-          audience_gender_split: audienceGenderSplit,
-          audience_age_range: audienceAgeRange.join(', '),
-        } as any);
-
-        setStep('style');
-      } else if (step === 'style') {
-        if (selectedNiches.length === 0) {
-          toast.error('Please select at least one niche');
-          return;
-        }
-
-        // Save progress for Step 4
-        await updateProfileMutation.mutateAsync({
-          id: profile!.id,
-          content_niches: selectedNiches,
-          content_vibes: contentVibes,
-        } as any);
-
-        setStep('collab');
-      } else if (step === 'collab') {
-        if (!videoUrl) {
-          toast.error('Please upload your discovery reel');
-          return;
-        }
-        if (!baseRate || isNaN(Number(baseRate))) {
-          toast.error('Please set your collab rate');
-          return;
-        }
-
-        // Save progress for Step 5
+    if (step === 'collab') {
+      if (!videoUrl) {
+        toast.error('Please upload your discovery reel');
+        return;
+      }
+      if (!baseRate || isNaN(Number(baseRate))) {
+        toast.error('Please set your collab rate');
+        return;
+      }
+      
+      setIsSubmitting(true);
+      try {
         await updateProfileMutation.mutateAsync({
           id: profile!.id,
           avg_rate_reel: Number(baseRate),
@@ -544,41 +553,31 @@ export default function CreatorOnboarding() {
             platform: 'internal'
           }] : [],
         } as any);
-
         setStep('videoSuccess');
-      } else if (step === 'payout') {
-        if (!upiId) {
-          toast.error('Please enter your UPI ID for payments');
-          return;
-        }
-        if (shippingAddress && !pincode) {
-          toast.error('Please enter your pincode');
-          return;
-        }
-        if (pincode && !/^\d{6}$/.test(pincode)) {
-          toast.error('Please enter a valid 6-digit pincode');
-          return;
-        }
-
-        // Save progress for Step 6
-        await updateProfileMutation.mutateAsync({
-          id: profile!.id,
-          payout_upi: upiId || null,
-          bank_upi: upiId || null,
-          phone: phone || null,
-          location: shippingAddress ? `${shippingAddress}${pincode ? ', ' + pincode : ''}` : null,
-          shipping_address: shippingAddress || null,
-          pincode: pincode || null,
-        } as any);
-
-        setStep('notifications');
+      } catch (err: any) {
+        toast.error('Failed to save video: ' + err.message);
+      } finally {
+        setIsSubmitting(false);
       }
+      return;
+    }
 
-      await refetchProfile?.();
-    } catch (err: any) {
-      toast.error('Failed to save progress: ' + (err.message || 'Unknown error'));
-    } finally {
-      setIsSubmitting(false);
+    if (step === 'payout') {
+      if (!upiId) {
+        toast.error('Please enter your UPI ID for payments');
+        return;
+      }
+      setStep('notifications');
+      updateProfileMutation.mutate({
+        id: profile!.id,
+        payout_upi: upiId || null,
+        bank_upi: upiId || null,
+        phone: phone || null,
+        location: shippingAddress ? `${shippingAddress}${pincode ? ', ' + pincode : ''}` : null,
+        shipping_address: shippingAddress || null,
+        pincode: pincode || null,
+      } as any);
+      return;
     }
   };
 
@@ -621,6 +620,8 @@ export default function CreatorOnboarding() {
 
       setVideoUrl(publicUrl);
       setUploadProgress(100);
+      triggerHaptic?.();
+      toast.success('Video uploaded successfully!');
     } catch (err: any) {
       toast.error('Upload failed: ' + err.message);
       setVideoFile(null);
@@ -631,6 +632,7 @@ export default function CreatorOnboarding() {
   };
 
   const handleFinish = async () => {
+    triggerHaptic?.();
     setIsSubmitting(true);
     try {
       const cleanHandle = instagramHandle.replace(/^@+/, '').trim().toLowerCase();
@@ -657,7 +659,6 @@ export default function CreatorOnboarding() {
         });
       }
 
-      // Map follower range strings to representative numbers for the database
       const followerCountMap: Record<string, number> = {
         '<1k': 500,
         '1k-10k': 5000,
@@ -709,6 +710,7 @@ export default function CreatorOnboarding() {
   };
 
   const toggleNiche = (id: string) => {
+    triggerHaptic?.();
     setSelectedNiches(prev => {
       const label = normalizeNicheValue(id);
       if (prev.includes(label)) return prev.filter(n => n !== label);
@@ -721,6 +723,7 @@ export default function CreatorOnboarding() {
   };
 
   const toggleVibe = (id: string) => {
+    triggerHaptic?.();
     setContentVibes(prev => {
       const label = normalizeVibeValue(id);
       if (prev.includes(label)) return prev.filter(v => v !== label);
@@ -788,7 +791,7 @@ export default function CreatorOnboarding() {
     if (suggestions.length === 0) return null;
 
     return (
-      <div className="absolute left-0 right-0 top-[calc(100%+0.5rem)] z-30 rounded-2xl border border-slate-200 bg-white p-2 shadow-2xl shadow-slate-200/80">
+      <div className="absolute left-0 right-0 top-[calc(100%+0.5rem)] z-30 rounded-2xl border border-white/10 bg-white/10 backdrop-blur-xl p-2 shadow-2xl shadow-black/40">
         <div className="max-h-56 overflow-y-auto">
           {suggestions.map((city) => (
             <button
@@ -798,10 +801,11 @@ export default function CreatorOnboarding() {
                 event.preventDefault();
                 setUniqueCityValue(city, value, setter);
                 setActiveCityField(null);
+                triggerHaptic?.();
               }}
               className={cn(
-                "flex w-full items-center justify-between rounded-xl px-3 py-2 text-left text-sm font-bold text-slate-700 transition-colors",
-                normalizeCityValue(value) === city ? "bg-emerald-50 text-emerald-700" : "hover:bg-slate-50"
+                "flex w-full items-center justify-between rounded-xl px-4 py-3 text-left text-sm font-bold text-white transition-colors",
+                normalizeCityValue(value) === city ? "bg-emerald-500 text-white" : "hover:bg-white/5"
               )}
             >
               <span>{city}</span>
@@ -814,60 +818,12 @@ export default function CreatorOnboarding() {
   };
 
   const toggleAudienceAge = (age: string) => {
+    triggerHaptic?.();
     setAudienceAgeRange((prev) => (
       prev.includes(age)
         ? prev.filter((value) => value !== age)
         : [...prev, age]
     ));
-  };
-
-  const handleInstagramAudienceImport = async () => {
-    const cleanHandle = instagramHandle.replace(/^@+/, '').trim();
-    if (!cleanHandle) {
-      toast.error('Enter your Instagram username first');
-      return;
-    }
-
-    try {
-      setIsSyncing(true);
-      const apiBaseUrl = getApiBaseUrl();
-      const { data: sessionData } = await supabase.auth.getSession();
-      const token = sessionData.session?.access_token;
-      if (!token) {
-        toast.error('Sign in again to import Instagram data');
-        return;
-      }
-
-      const response = await fetch(`${apiBaseUrl}/api/profile/instagram-sync`, {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          instagram_username: cleanHandle,
-        }),
-      });
-
-      const data = await response.json().catch(() => null);
-      if (!response.ok || !data?.success) {
-        toast.error('Could not import from Instagram right now');
-        return;
-      }
-
-      if (Number(data?.followers) > 0) {
-        setFollowerCount(String(data.followers));
-        setFollowersAutoFilled(true);
-      }
-
-      await refetchProfile?.();
-      toast.success('Imported your latest Instagram profile stats');
-    } catch (error) {
-      console.warn('Instagram audience import failed', error);
-      toast.error('Could not import from Instagram right now');
-    } finally {
-      setIsSyncing(false);
-    }
   };
 
   const canGoBack = step !== 'identity' && !isSubmitting && !isUploading;
@@ -880,45 +836,51 @@ export default function CreatorOnboarding() {
 
   if (sessionLoading || !profile) {
     return (
-      <OnboardingContainer theme="light">
+      <OnboardingContainer theme="dark">
         <div className="flex h-full items-center justify-center">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <Loader2 className="h-8 w-8 animate-spin text-emerald-500" />
         </div>
       </OnboardingContainer>
     );
   }
 
   return (
-    <OnboardingContainer theme="light" allowScroll>
-      <div className="mx-auto w-full max-w-xl flex-1 flex flex-col pt-6 pb-20 px-6">
+    <OnboardingContainer theme="dark" allowScroll>
+      {/* Premium Background Accents */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        <div className="absolute top-[-10%] left-[-20%] w-[60%] h-[60%] bg-emerald-500/5 rounded-full blur-[120px]" />
+        <div className="absolute bottom-[-10%] right-[-20%] w-[60%] h-[60%] bg-teal-500/5 rounded-full blur-[120px]" />
+      </div>
+
+      <div className="mx-auto w-full max-w-xl flex-1 flex flex-col pt-6 pb-20 px-6 relative z-10">
         {/* Progress Indicator */}
         <div className="mb-8 flex items-center gap-3">
-          <Button
+          <motion.button
+            whileTap={{ scale: 0.9 }}
             type="button"
-            variant="ghost"
             onClick={handleBack}
             disabled={!canGoBack}
             className={cn(
-              "h-10 w-10 rounded-full border border-slate-200 bg-white p-0 text-slate-500 transition-all",
-              canGoBack ? "shadow-sm hover:border-primary hover:text-primary" : "pointer-events-none opacity-0"
+              "h-12 w-12 rounded-2xl border border-white/10 bg-white/5 p-0 text-white transition-all flex items-center justify-center",
+              canGoBack ? "shadow-sm hover:border-emerald-500/50 hover:text-emerald-400" : "pointer-events-none opacity-0"
             )}
           >
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
+            <ArrowLeft className="h-5 w-5" />
+          </motion.button>
           <div className="min-w-0 flex-1">
-            <div className="flex items-center justify-between gap-3">
+            <div className="flex flex-col gap-2">
               <div className="flex gap-1.5">
                 {[0, 1, 2, 3, 4, 5, 6, 7].map((i) => (
                   <div
                     key={i}
                     className={cn(
-                      "h-1.5 rounded-full transition-all duration-300",
-                      i === currentStepIndex ? "w-8 bg-primary" : (i < currentStepIndex ? "w-4 bg-primary/40" : "w-4 bg-slate-100")
+                      "h-1.5 rounded-full transition-all duration-500",
+                      i === currentStepIndex ? "w-10 bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]" : (i < currentStepIndex ? "w-4 bg-emerald-500/40" : "w-4 bg-white/5")
                     )}
                   />
                 ))}
               </div>
-              <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Step {currentStepIndex + 1} of 8</span>
+              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white/20">Step {currentStepIndex + 1} of 8</span>
             </div>
           </div>
         </div>
@@ -926,77 +888,84 @@ export default function CreatorOnboarding() {
         <AnimatePresence mode="wait">
           {step === 'identity' && (
             <OnboardingSlide key="identity" slideKey="identity">
-              <div className="text-center mb-8">
-                <h1 className="text-3xl font-black tracking-tight text-slate-900 mb-2 italic">💸 Start earning from brand deals</h1>
-                <p className="text-emerald-600 font-bold text-xs bg-emerald-50 py-1.5 px-4 rounded-full inline-block tracking-tight">Top creators earned ₹50k+ this month</p>
+              <div className="text-center mb-10">
+                <motion.div 
+                  initial={{ scale: 0.8, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  className="w-16 h-16 bg-emerald-500/10 rounded-2xl flex items-center justify-center mb-6 mx-auto border border-emerald-500/20"
+                >
+                  <LayoutDashboard className="w-8 h-8 text-emerald-400" />
+                </motion.div>
+                <h1 className="text-3xl font-black tracking-tight text-white mb-3 uppercase italic">Secure the bag</h1>
+                <p className="text-emerald-400 font-bold text-[11px] bg-emerald-500/10 py-1.5 px-4 rounded-full inline-block tracking-[0.1em] uppercase border border-emerald-500/20">Top creators earned ₹50k+ this month</p>
               </div>
 
-              <div className="w-full space-y-6 text-left">
+              <div className="w-full space-y-8 text-left">
                 {/* Instagram Field */}
-                <div className="space-y-2.5">
-                  <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400 px-1 flex justify-between">
+                <div className="space-y-3 group">
+                  <Label className="text-[10px] font-black uppercase tracking-widest text-white/30 px-1 flex justify-between group-focus-within:text-emerald-400 transition-colors">
                     <span>Instagram Username</span>
-                    <span className="text-primary tracking-normal">Match with brands</span>
+                    <span className="text-emerald-500/60 lowercase tracking-normal font-medium">Verify account</span>
                   </Label>
                   <div className="relative">
-                    <div className="absolute left-5 top-1/2 -translate-y-1/2 text-xl font-bold text-slate-400">@</div>
+                    <div className="absolute left-6 top-1/2 -translate-y-1/2 text-xl font-bold text-white/20">@</div>
                     <Input
                       value={instagramHandle}
                       onChange={e => setInstagramHandle(e.target.value)}
                       placeholder="e.g. wowvidushi"
-                      className="h-14 pl-12 rounded-2xl border-2 border-slate-100 bg-slate-50 text-lg font-bold text-slate-900 focus:border-primary focus:bg-white transition-all shadow-none"
+                      className="h-[68px] pl-12 rounded-[24px] border-white/10 bg-white/5 text-lg font-bold text-white focus:border-emerald-500/50 focus:bg-white/10 transition-all shadow-none outline-none"
                     />
                   </div>
                 </div>
 
                 {/* Creator Title */}
-                <div className="space-y-2.5">
-                  <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400 px-1 flex justify-between items-center">
+                <div className="space-y-3 group">
+                  <Label className="text-[10px] font-black uppercase tracking-widest text-white/30 px-1 flex justify-between items-center group-focus-within:text-emerald-400 transition-colors">
                     <span>Professional Title</span>
                     <button 
                       type="button"
                       onClick={() => {
+                        triggerHaptic?.();
                         const bios = generateAIBios({
                           name: instagramHandle || 'Creator',
                           niches: selectedNiches,
                           vibes: contentVibes,
                           city: baseCity
                         });
-                        // Cycle through bios
                         const currentIndex = bios.indexOf(creatorTitle);
                         const nextIndex = (currentIndex + 1) % bios.length;
                         setCreatorTitle(bios[nextIndex]);
                         toast.success('AI Bio Generated ✨');
                       }}
-                      className="flex items-center gap-1.5 text-primary hover:text-primary/80 transition-colors"
+                      className="flex items-center gap-1.5 text-emerald-400 hover:text-emerald-300 transition-colors bg-emerald-500/10 px-3 py-1 rounded-full border border-emerald-500/20"
                     >
-                      <Sparkles className="w-3.5 h-3.5" />
-                      <span>AI Generate</span>
+                      <Sparkles className="w-3 h-3" />
+                      <span className="text-[9px] font-black uppercase tracking-widest">AI Magic</span>
                     </button>
                   </Label>
                   <Input
                     value={creatorTitle}
                     onChange={e => setCreatorTitle(e.target.value)}
                     placeholder="e.g. Tech Enthusiast & Reviewer"
-                    className="h-14 px-5 rounded-2xl border-2 border-slate-100 bg-slate-50 text-lg font-bold text-slate-900 focus:border-primary focus:bg-white transition-all shadow-none"
+                    className="h-[68px] px-6 rounded-[24px] border-white/10 bg-white/5 text-lg font-bold text-white focus:border-emerald-500/50 focus:bg-white/10 transition-all shadow-none outline-none"
                   />
                 </div>
               </div>
 
-              <div className="mt-auto pt-10 w-full space-y-4">
+              <div className="mt-auto pt-12 w-full space-y-6">
                 <Button
                   onClick={handleNext}
                   disabled={isSubmitting}
-                  className="w-full h-16 rounded-2xl bg-slate-900 text-white font-black italic text-lg shadow-xl shadow-slate-200 active:scale-95 transition-all flex items-center justify-center gap-2 group"
+                  className="w-full h-[72px] rounded-[26px] bg-emerald-500 hover:bg-emerald-400 text-white font-black italic text-xl shadow-[0_20px_40px_rgba(16,185,129,0.2)] active:scale-95 transition-all flex items-center justify-center gap-3 group border-none uppercase tracking-widest"
                 >
                   {isSubmitting ? (
-                    <Loader2 className="w-5 h-5 animate-spin" />
+                    <Loader2 className="w-6 h-6 animate-spin" />
                   ) : (
-                    <>Continue <span className="text-primary">→</span> Find brand deals</>
+                    <>Find brand deals <ArrowRight className="w-6 h-6 group-hover:translate-x-1 transition-transform" /></>
                   )}
                 </Button>
-                <div className="flex items-center justify-center gap-2 text-slate-400 font-bold text-[10px] uppercase tracking-widest">
-                  <ShieldCheck className="w-3.5 h-3.5" />
+                <div className="flex items-center justify-center gap-2 text-white/20 font-black text-[9px] uppercase tracking-[0.3em]">
+                  <ShieldCheck className="w-4 h-4 text-emerald-500/40" />
                   No spam • Only brand collaborations
                 </div>
               </div>
@@ -1005,23 +974,30 @@ export default function CreatorOnboarding() {
 
           {step === 'reach' && (
             <OnboardingSlide key="reach" slideKey="reach">
-              <div className="text-center mb-8">
-                <h1 className="text-3xl font-black tracking-tight text-slate-900 mb-2 italic">📊 Your Reach</h1>
-                <p className="text-slate-500 font-bold text-xs uppercase tracking-widest">Followers & Locations</p>
+              <div className="text-center mb-10">
+                <motion.div 
+                  initial={{ scale: 0.8, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  className="w-16 h-16 bg-emerald-500/10 rounded-2xl flex items-center justify-center mb-6 mx-auto border border-emerald-500/20"
+                >
+                  <TrendingUp className="w-8 h-8 text-emerald-400" />
+                </motion.div>
+                <h1 className="text-3xl font-black tracking-tight text-white mb-2 uppercase italic">Reach & Region</h1>
+                <p className="text-white/30 font-black text-[10px] uppercase tracking-[0.3em]">Followers & Locations</p>
               </div>
 
-              <div className="w-full space-y-6 text-left">
+              <div className="w-full space-y-8 text-left">
                 {/* Follower Count */}
-                <div className="space-y-2.5">
-                  <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400 px-1 flex justify-between">
-                    <span>Number of Followers</span>
-                    <span className="text-primary tracking-normal">
-                      {followersAutoFilled ? 'Auto-fetched from Instagram' : 'Auto-fetched if available'}
+                <div className="space-y-3 group">
+                  <Label className="text-[10px] font-black uppercase tracking-widest text-white/30 px-1 flex justify-between group-focus-within:text-emerald-400">
+                    <span>Follower Count</span>
+                    <span className="text-emerald-500/60 lowercase tracking-normal font-medium">
+                      {followersAutoFilled ? 'Verified from Instagram' : 'Auto-syncing...'}
                     </span>
                   </Label>
-                  <div className="relative group">
-                    <div className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors">
-                      <Users className="w-5 h-5" />
+                  <div className="relative">
+                    <div className="absolute left-6 top-1/2 -translate-y-1/2 text-white/20 group-focus-within:text-emerald-400 transition-colors">
+                      <Users className="w-6 h-6" />
                     </div>
                     <Input
                       type="number"
@@ -1031,31 +1007,25 @@ export default function CreatorOnboarding() {
                         setFollowersAutoFilled(false);
                       }}
                       placeholder="e.g. 15400"
-                      className="h-14 pl-12 rounded-2xl border-2 border-slate-100 bg-slate-50 text-lg font-bold text-slate-900 focus:border-primary focus:bg-white transition-all shadow-none"
+                      className="h-[68px] pl-14 rounded-[24px] border-white/10 bg-white/5 text-lg font-bold text-white focus:border-emerald-500/50 focus:bg-white/10 transition-all shadow-none outline-none"
                     />
                     {isSyncing && (
-                      <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-2">
-                        <Loader2 className="w-4 h-4 animate-spin text-primary" />
-                        <span className="text-[10px] font-black text-primary uppercase tracking-widest">Syncing...</span>
+                      <div className="absolute right-6 top-1/2 -translate-y-1/2 flex items-center gap-2">
+                        <Loader2 className="w-4 h-4 animate-spin text-emerald-400" />
                       </div>
                     )}
                   </div>
-                  <p className="px-1 text-[10px] font-medium leading-relaxed text-slate-400">
-                    {followersAutoFilled
-                      ? 'Fetched from your Instagram handle. You can still edit it manually if needed.'
-                      : 'We will try to fetch this from your Instagram handle. If it does not load, enter it manually.'}
-                  </p>
                 </div>
 
                 {/* Base Location */}
-                <div className="space-y-2.5">
-                  <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400 px-1 flex justify-between">
-                    <span>Your Base City</span>
-                    <span className="text-primary tracking-normal">For local brand deals</span>
+                <div className="space-y-3 group">
+                  <Label className="text-[10px] font-black uppercase tracking-widest text-white/30 px-1 flex justify-between group-focus-within:text-emerald-400">
+                    <span>Base City</span>
+                    <span className="text-emerald-500/60 lowercase tracking-normal font-medium">For local events</span>
                   </Label>
-                  <div className="relative group">
-                    <div className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors">
-                      <MapPin className="w-5 h-5" />
+                  <div className="relative">
+                    <div className="absolute left-6 top-1/2 -translate-y-1/2 text-white/20 group-focus-within:text-emerald-400 transition-colors">
+                      <MapPin className="w-6 h-6" />
                     </div>
                       <Input
                         value={baseCity}
@@ -1063,23 +1033,20 @@ export default function CreatorOnboarding() {
                       onFocus={() => setActiveCityField('baseCity')}
                       onBlur={e => {
                         setUniqueCityValue(e.target.value, baseCity, setBaseCity);
-                        window.setTimeout(() => setActiveCityField((current) => current === 'baseCity' ? null : current), 100);
+                        window.setTimeout(() => setActiveCityField((current) => current === 'baseCity' ? null : current), 200);
                       }}
                       placeholder="e.g. Mumbai"
                       autoComplete="off"
-                      className="h-14 pl-12 rounded-2xl border-2 border-slate-100 bg-slate-50 text-lg font-bold text-slate-900 focus:border-primary focus:bg-white transition-all shadow-none"
+                      className="h-[68px] pl-14 rounded-[24px] border-white/10 bg-white/5 text-lg font-bold text-white focus:border-emerald-500/50 focus:bg-white/10 transition-all shadow-none outline-none"
                     />
                     {renderCitySuggestions('baseCity', baseCity, setBaseCity)}
                   </div>
-                  <p className="px-1 text-[10px] font-medium leading-relaxed text-slate-400">
-                    Start typing and pick the city from the dropdown so brands can filter you correctly.
-                  </p>
                 </div>
 
                 {/* Top Cities */}
-                <div className="space-y-2.5">
-                  <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400 px-1">Audience Top 3 Cities</Label>
-                  <div className="grid grid-cols-3 gap-2">
+                <div className="space-y-3">
+                  <Label className="text-[10px] font-black uppercase tracking-widest text-white/30 px-1">Audience Top Cities</Label>
+                  <div className="grid grid-cols-3 gap-3">
                     <div className="relative">
                       <Input
                         value={topCity1}
@@ -1087,11 +1054,11 @@ export default function CreatorOnboarding() {
                         onFocus={() => setActiveCityField('topCity1')}
                         onBlur={e => {
                           setUniqueCityValue(e.target.value, topCity1, setTopCity1);
-                          window.setTimeout(() => setActiveCityField((current) => current === 'topCity1' ? null : current), 100);
+                          window.setTimeout(() => setActiveCityField((current) => current === 'topCity1' ? null : current), 200);
                         }}
                         placeholder="City 1"
                         autoComplete="off"
-                        className="h-14 px-4 rounded-2xl border-2 border-slate-100 bg-slate-50 text-xs font-bold text-slate-900 focus:border-primary focus:bg-white transition-all shadow-none"
+                        className="h-[60px] px-4 rounded-[20px] border-white/10 bg-white/5 text-[11px] font-black uppercase tracking-widest text-white focus:border-emerald-500/50 focus:bg-white/10 transition-all shadow-none outline-none"
                       />
                       {renderCitySuggestions('topCity1', topCity1, setTopCity1)}
                     </div>
@@ -1102,11 +1069,11 @@ export default function CreatorOnboarding() {
                         onFocus={() => setActiveCityField('topCity2')}
                         onBlur={e => {
                           setUniqueCityValue(e.target.value, topCity2, setTopCity2);
-                          window.setTimeout(() => setActiveCityField((current) => current === 'topCity2' ? null : current), 100);
+                          window.setTimeout(() => setActiveCityField((current) => current === 'topCity2' ? null : current), 200);
                         }}
                         placeholder="City 2"
                         autoComplete="off"
-                        className="h-14 px-4 rounded-2xl border-2 border-slate-100 bg-slate-50 text-xs font-bold text-slate-900 focus:border-primary focus:bg-white transition-all shadow-none"
+                        className="h-[60px] px-4 rounded-[20px] border-white/10 bg-white/5 text-[11px] font-black uppercase tracking-widest text-white focus:border-emerald-500/50 focus:bg-white/10 transition-all shadow-none outline-none"
                       />
                       {renderCitySuggestions('topCity2', topCity2, setTopCity2)}
                     </div>
@@ -1117,32 +1084,24 @@ export default function CreatorOnboarding() {
                         onFocus={() => setActiveCityField('topCity3')}
                         onBlur={e => {
                           setUniqueCityValue(e.target.value, topCity3, setTopCity3);
-                          window.setTimeout(() => setActiveCityField((current) => current === 'topCity3' ? null : current), 100);
+                          window.setTimeout(() => setActiveCityField((current) => current === 'topCity3' ? null : current), 200);
                         }}
                         placeholder="City 3"
                         autoComplete="off"
-                        className="h-14 px-4 rounded-2xl border-2 border-slate-100 bg-slate-50 text-xs font-bold text-slate-900 focus:border-primary focus:bg-white transition-all shadow-none"
+                        className="h-[60px] px-4 rounded-[20px] border-white/10 bg-white/5 text-[11px] font-black uppercase tracking-widest text-white focus:border-emerald-500/50 focus:bg-white/10 transition-all shadow-none outline-none"
                       />
                       {renderCitySuggestions('topCity3', topCity3, setTopCity3)}
                     </div>
                   </div>
-                  <p className="px-1 text-[10px] font-medium leading-relaxed text-slate-400">
-                    Use the suggested city names to avoid spelling mismatches in brand search.
-                  </p>
                 </div>
               </div>
 
-              <div className="mt-auto pt-10 w-full space-y-4">
+              <div className="mt-auto pt-12 w-full">
                 <Button
                   onClick={handleNext}
-                  disabled={isSubmitting}
-                  className="w-full h-16 rounded-2xl bg-slate-900 text-white font-black italic text-lg shadow-xl shadow-slate-200 active:scale-95 transition-all flex items-center justify-center gap-2"
+                  className="w-full h-[72px] rounded-[26px] bg-emerald-500 hover:bg-emerald-400 text-white font-black italic text-xl shadow-[0_20px_40px_rgba(16,185,129,0.2)] active:scale-95 transition-all flex items-center justify-center gap-3 border-none uppercase tracking-widest"
                 >
-                  {isSubmitting ? (
-                    <Loader2 className="w-5 h-5 animate-spin" />
-                  ) : (
-                    <>Continue <ArrowRight className="ml-2 w-5 h-5" /></>
-                  )}
+                  Continue <ArrowRight className="w-6 h-6" />
                 </Button>
               </div>
             </OnboardingSlide>
@@ -1150,99 +1109,86 @@ export default function CreatorOnboarding() {
 
           {step === 'audience' && (
             <OnboardingSlide key="audience" slideKey="audience">
-              <div className="space-y-8 text-left">
-                <div>
-                  <h1 className="text-3xl font-black tracking-tight text-slate-900">👥 Who follows you?</h1>
-                  <p className="mt-3 text-lg font-medium leading-relaxed text-slate-500">
-                    This helps brands match you with better deals
-                  </p>
+              <div className="text-center mb-10">
+                <motion.div 
+                  initial={{ scale: 0.8, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  className="w-16 h-16 bg-emerald-500/10 rounded-2xl flex items-center justify-center mb-6 mx-auto border border-emerald-500/20"
+                >
+                  <Users className="w-8 h-8 text-emerald-400" />
+                </motion.div>
+                <h1 className="text-3xl font-black tracking-tight text-white mb-2 uppercase italic">Demographics</h1>
+                <p className="text-white/30 font-black text-[10px] uppercase tracking-[0.3em]">Who follows you?</p>
+              </div>
+
+              <div className="w-full space-y-10 text-left">
+                <div className="space-y-4">
+                  <Label className="px-1 text-[10px] font-black uppercase tracking-[0.2em] text-white/30">Gender Split</Label>
+                  <div className="grid grid-cols-3 gap-3">
+                    {AUDIENCE_GENDER_OPTIONS.map((option) => {
+                      const isSelected = audienceGenderSplit === option.storedValue;
+                      return (
+                        <motion.button
+                          key={option.id}
+                          whileTap={{ scale: 0.95 }}
+                          type="button"
+                          onClick={() => { triggerHaptic?.(); setAudienceGenderSplit(option.storedValue); }}
+                          className={cn(
+                            "flex flex-col items-center justify-center rounded-[24px] border h-32 transition-all duration-300",
+                            isSelected
+                              ? "bg-emerald-500 border-emerald-400 shadow-[0_15px_30px_rgba(16,185,129,0.2)]"
+                              : "bg-white/5 border-white/10 text-white/40 hover:bg-white/10"
+                          )}
+                        >
+                          <div className={cn("mb-3", isSelected ? "text-white" : "text-white/20")}>
+                            {option.icon === 'Users' ? <Users className="h-7 w-7" /> : <User className="h-7 w-7" />}
+                          </div>
+                          <div className={cn("text-[10px] font-black uppercase tracking-widest", isSelected ? "text-white" : "text-white/40")}>
+                            {option.label}
+                          </div>
+                        </motion.button>
+                      );
+                    })}
+                  </div>
                 </div>
 
-                <div className="space-y-10">
-                  <div className="space-y-4">
-                    <Label className="px-1 text-[10px] font-black uppercase tracking-[0.35em] text-slate-400">Gender Split</Label>
-                    <div className="flex flex-wrap justify-center gap-3">
-                      {AUDIENCE_GENDER_OPTIONS.map((option) => {
-                        const isSelected = audienceGenderSplit === option.storedValue;
-                        const iconColor = option.id.includes('women')
-                          ? 'text-emerald-500'
-                          : option.id.includes('men')
-                            ? 'text-sky-500'
-                            : 'text-violet-500';
-
-                        return (
-                          <button
-                            key={option.id}
-                            type="button"
-                            onClick={() => setAudienceGenderSplit(option.storedValue)}
-                            className={cn(
-                              "flex min-h-[110px] min-w-[100px] flex-1 flex-col items-center justify-center rounded-[26px] border bg-white px-4 py-4 text-center transition-all duration-200 active:scale-[0.985]",
-                              isSelected
-                                ? "border-emerald-400 shadow-[0_16px_36px_rgba(34,197,94,0.12)]"
-                                : "border-slate-200 shadow-[0_8px_24px_rgba(15,23,42,0.05)]"
-                            )}
-                          >
-                            <div className={cn("mb-2", iconColor)}>
-                              {option.icon === 'Users' ? <Users className="h-6 w-6" /> : <User className="h-6 w-6" />}
+                <div className="space-y-4">
+                  <Label className="px-1 text-[10px] font-black uppercase tracking-[0.2em] text-white/30">Primary Age Range</Label>
+                  <div className="grid grid-cols-2 gap-3">
+                    {AGE_OPTIONS.map((age) => {
+                      const isSelected = audienceAgeRange.includes(age);
+                      return (
+                        <motion.button
+                          key={age}
+                          whileTap={{ scale: 0.95 }}
+                          type="button"
+                          onClick={() => toggleAudienceAge(age)}
+                          className={cn(
+                            "relative flex h-20 items-center justify-center rounded-[24px] border transition-all duration-300",
+                            isSelected
+                              ? "bg-emerald-500 border-emerald-400 text-white shadow-[0_15px_30px_rgba(16,185,129,0.2)]"
+                              : "bg-white/5 border-white/10 text-white/40 hover:bg-white/10"
+                          )}
+                        >
+                          <span className="text-xl font-black italic">{age}</span>
+                          {isSelected && (
+                            <div className="absolute right-3 top-3 bg-white/20 rounded-full p-1">
+                              <Check className="h-3 w-3 text-white" />
                             </div>
-                            <div className="text-[13px] font-black leading-tight tracking-tight text-slate-900">
-                              {option.label}
-                            </div>
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-
-                  <div className="space-y-4">
-                    <div className="space-y-2">
-                      <Label className="px-1 text-[10px] font-black uppercase tracking-[0.35em] text-slate-400">Primary Age Range</Label>
-                      <p className="px-1 text-base font-medium leading-relaxed text-slate-500">
-                        Select all age buckets that represent your audience.
-                      </p>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4">
-                      {AGE_OPTIONS.map((age) => {
-                        const isSelected = audienceAgeRange.includes(age);
-                        return (
-                          <button
-                            key={age}
-                            type="button"
-                            onClick={() => toggleAudienceAge(age)}
-                            className={cn(
-                              "relative flex h-20 items-center justify-center rounded-[24px] border bg-white px-4 text-[18px] font-black tracking-tight transition-all duration-200 active:scale-[0.98]",
-                              isSelected
-                                ? "border-emerald-400 text-slate-900 shadow-[0_16px_36px_rgba(34,197,94,0.12)]"
-                                : "border-slate-200 text-slate-800 shadow-[0_8px_24px_rgba(15,23,42,0.04)]"
-                            )}
-                          >
-                            {age}
-                            {isSelected && (
-                              <div className="absolute right-3 top-3 flex h-9 w-9 items-center justify-center rounded-full bg-emerald-500 text-white shadow-lg">
-                                <Check className="h-5 w-5" />
-                              </div>
-                            )}
-                          </button>
-                        );
-                      })}
-                    </div>
-
+                          )}
+                        </motion.button>
+                      );
+                    })}
                   </div>
                 </div>
               </div>
 
-              <div className="sticky bottom-4 mt-auto pt-8">
+              <div className="mt-auto pt-12 w-full">
                 <Button
                   onClick={handleNext}
-                  disabled={isSubmitting}
-                  className="h-16 w-full rounded-[24px] border border-emerald-300/20 bg-[linear-gradient(90deg,#22c55e_0%,#0ea5e9_100%)] text-base font-black text-white shadow-[0_22px_55px_rgba(14,165,233,0.18)] transition-all active:scale-[0.985] flex items-center justify-center gap-2"
+                  className="w-full h-[72px] rounded-[26px] bg-emerald-500 hover:bg-emerald-400 text-white font-black italic text-xl shadow-[0_20px_40px_rgba(16,185,129,0.2)] active:scale-95 transition-all flex items-center justify-center gap-3 border-none uppercase tracking-widest"
                 >
-                  {isSubmitting ? (
-                    <Loader2 className="w-5 h-5 animate-spin" />
-                  ) : (
-                    <>Save & Continue <ArrowRight className="ml-2 h-5 w-5" /></>
-                  )}
+                  Save & Continue <ArrowRight className="w-6 h-6" />
                 </Button>
               </div>
             </OnboardingSlide>
@@ -1250,31 +1196,36 @@ export default function CreatorOnboarding() {
 
           {step === 'style' && (
             <OnboardingSlide key="style" slideKey="style">
-              <div className="text-center mb-8">
-                <h1 className="text-3xl font-black tracking-tight text-slate-900 mb-2 italic">✨ Your Content Style</h1>
-                <p className="text-slate-500 font-bold text-xs uppercase tracking-widest">Niches & Visual Vibes</p>
+              <div className="text-center mb-10">
+                <motion.div 
+                  initial={{ scale: 0.8, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  className="w-16 h-16 bg-emerald-500/10 rounded-2xl flex items-center justify-center mb-6 mx-auto border border-emerald-500/20"
+                >
+                  <Flame className="w-8 h-8 text-emerald-400" />
+                </motion.div>
+                <h1 className="text-3xl font-black tracking-tight text-white mb-2 uppercase italic">Brand DNA</h1>
+                <p className="text-white/30 font-black text-[10px] uppercase tracking-[0.3em]">Niches & Vibes</p>
               </div>
 
-              <div className="w-full space-y-8 text-left">
+              <div className="w-full space-y-10 text-left">
                 {/* Niche Selection */}
-                <div className="space-y-3">
-                  <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400 px-1 flex justify-between">
-                    <span>Main Niches (max 3)</span>
-                  </Label>
-                  <div className="grid grid-cols-3 gap-2">
+                <div className="space-y-4">
+                  <Label className="text-[10px] font-black uppercase tracking-widest text-white/30 px-1">Main Niches (max 3)</Label>
+                  <div className="grid grid-cols-3 gap-2.5">
                     {NICHES.map(niche => (
                       <motion.button
                         key={niche.id}
                         whileTap={{ scale: 0.95 }}
                         onClick={() => toggleNiche(niche.label)}
                         className={cn(
-                          "h-14 rounded-xl border-2 flex flex-col items-center justify-center transition-all text-[9px] font-black uppercase tracking-tighter text-center px-1",
+                          "h-[72px] rounded-[22px] border transition-all text-[9px] font-black uppercase tracking-widest flex flex-col items-center justify-center px-1 gap-1.5",
                           selectedNiches.includes(niche.label)
-                            ? "bg-primary border-primary text-white shadow-lg shadow-primary/20"
-                            : "bg-white border-slate-100 text-slate-400"
+                            ? "bg-emerald-500 border-emerald-400 text-white shadow-[0_15px_30px_rgba(16,185,129,0.2)]"
+                            : "bg-white/5 border-white/10 text-white/30 hover:bg-white/10"
                         )}
                       >
-                        <span className="text-base mb-0.5">{niche.icon}</span>
+                        <span className="text-2xl">{niche.icon}</span>
                         {niche.label}
                       </motion.button>
                     ))}
@@ -1282,24 +1233,22 @@ export default function CreatorOnboarding() {
                 </div>
 
                 {/* Vibe Selection */}
-                <div className="space-y-3">
-                  <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400 px-1 flex justify-between">
-                    <span>Visual Vibe (max 3)</span>
-                  </Label>
-                  <div className="grid grid-cols-3 gap-2">
+                <div className="space-y-4">
+                  <Label className="text-[10px] font-black uppercase tracking-widest text-white/30 px-1">Visual Vibe (max 3)</Label>
+                  <div className="grid grid-cols-3 gap-2.5">
                     {VIBES.map(vibe => (
                       <motion.button
                         key={vibe.id}
                         whileTap={{ scale: 0.95 }}
                         onClick={() => toggleVibe(vibe.label)}
                         className={cn(
-                          "h-14 rounded-xl border-2 flex flex-col items-center justify-center transition-all text-[9px] font-black uppercase tracking-tighter text-center px-1",
+                          "h-[72px] rounded-[22px] border transition-all text-[9px] font-black uppercase tracking-widest flex flex-col items-center justify-center px-1 gap-1.5",
                           contentVibes.includes(vibe.label)
-                            ? "bg-slate-900 border-slate-900 text-white shadow-lg shadow-slate-900/20"
-                            : "bg-white border-slate-100 text-slate-400"
+                            ? "bg-emerald-500 border-emerald-400 text-white shadow-[0_15px_30px_rgba(16,185,129,0.2)]"
+                            : "bg-white/5 border-white/10 text-white/30 hover:bg-white/10"
                         )}
                       >
-                        <span className="text-base mb-0.5">{vibe.icon}</span>
+                        <span className="text-2xl">{vibe.icon}</span>
                         {vibe.label}
                       </motion.button>
                     ))}
@@ -1307,37 +1256,35 @@ export default function CreatorOnboarding() {
                 </div>
               </div>
 
-              <div className="mt-auto pt-10 w-full space-y-4">
+              <div className="mt-auto pt-12 w-full">
                 <Button
                   onClick={handleNext}
-                  disabled={isSubmitting}
-                  className="w-full h-16 rounded-2xl bg-slate-900 text-white font-black italic text-lg shadow-xl shadow-slate-200 active:scale-95 transition-all flex items-center justify-center gap-2 group"
+                  className="w-full h-[72px] rounded-[26px] bg-emerald-500 hover:bg-emerald-400 text-white font-black italic text-xl shadow-[0_20px_40px_rgba(16,185,129,0.2)] active:scale-95 transition-all flex items-center justify-center gap-3 border-none uppercase tracking-widest"
                 >
-                  {isSubmitting ? (
-                    <Loader2 className="w-5 h-5 animate-spin" />
-                  ) : (
-                    <>Continue <ArrowRight className="ml-2 w-5 h-5" /></>
-                  )}
+                  Continue <ArrowRight className="w-6 h-6" />
                 </Button>
-                <div className="flex items-center justify-center gap-2 text-slate-400 font-bold text-[10px] uppercase tracking-widest">
-                  <ShieldCheck className="w-3.5 h-3.5" />
-                  No spam • Only brand collaborations
-                </div>
               </div>
             </OnboardingSlide>
           )}
 
           {step === 'collab' && (
             <OnboardingSlide key="collab" slideKey="collab">
-              <div className="text-center mb-8">
-                <h1 className="text-3xl font-black tracking-tight text-slate-900 mb-2 italic">🚀 Build your Collab Page</h1>
-                <p className="text-slate-500 font-bold text-xs uppercase tracking-widest">Discovery video + Collaboration Rate</p>
+              <div className="text-center mb-10">
+                <motion.div 
+                  initial={{ scale: 0.8, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  className="w-16 h-16 bg-emerald-500/10 rounded-2xl flex items-center justify-center mb-6 mx-auto border border-emerald-500/20"
+                >
+                  <Star className="w-8 h-8 text-emerald-400" />
+                </motion.div>
+                <h1 className="text-3xl font-black tracking-tight text-white mb-2 uppercase italic">Collab Page</h1>
+                <p className="text-white/30 font-black text-[10px] uppercase tracking-[0.3em]">Discovery video & Rates</p>
               </div>
 
-              <div className="w-full space-y-8">
+              <div className="w-full space-y-10">
                 {/* Video Upload Section */}
-                <div className="space-y-3">
-                  <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400 px-1 block text-left">Primary Discovery Reel</Label>
+                <div className="space-y-4">
+                  <Label className="text-[10px] font-black uppercase tracking-widest text-white/30 px-1 block text-left">Primary Discovery Reel</Label>
                   <input
                     type="file"
                     ref={videoInputRef}
@@ -1346,81 +1293,95 @@ export default function CreatorOnboarding() {
                     className="hidden"
                   />
 
-                  <button
+                  <motion.button
+                    whileTap={{ scale: 0.98 }}
                     onClick={() => videoInputRef.current?.click()}
                     disabled={isUploading}
                     className={cn(
-                      "w-full h-56 rounded-[2.5rem] border-4 border-dashed flex flex-col items-center justify-center gap-4 transition-all relative overflow-hidden",
-                      isUploading ? "bg-slate-50 border-slate-200" : (videoUrl ? "border-emerald-500/20 bg-emerald-50/10" : "bg-primary/5 border-primary/20 hover:border-primary/40")
+                      "w-full h-64 rounded-[32px] border-2 border-dashed flex flex-col items-center justify-center gap-5 transition-all relative overflow-hidden",
+                      isUploading 
+                        ? "bg-white/5 border-emerald-500/20" 
+                        : (videoUrl 
+                            ? "border-emerald-500/50 bg-emerald-500/5 shadow-[0_15px_30px_rgba(16,185,129,0.1)]" 
+                            : "bg-white/5 border-white/10 hover:border-emerald-500/30 hover:bg-white/10")
                     )}
                   >
                     {isUploading ? (
-                      <div className="space-y-3 text-center z-10">
-                        <Loader2 className="w-10 h-10 text-primary animate-spin mx-auto" />
-                        <p className="text-[10px] font-black italic text-slate-900 uppercase tracking-widest">Uploading...</p>
+                      <div className="space-y-4 text-center z-10">
+                        <div className="relative w-12 h-12 mx-auto">
+                          <Loader2 className="w-12 h-12 text-emerald-500 animate-spin" />
+                        </div>
+                        <p className="text-[10px] font-black italic text-emerald-400 uppercase tracking-[0.2em]">Uploading {uploadProgress}%</p>
                       </div>
                     ) : videoUrl ? (
-                      <div className="relative w-full h-full">
+                      <div className="relative w-full h-full group">
                         <video src={videoUrl} className="w-full h-full object-cover" muted playsInline />
-                        <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-                          <CheckCircle2 className="w-12 h-12 text-white" />
+                        <div className="absolute inset-0 bg-emerald-950/40 backdrop-blur-[2px] flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                          <div className="bg-white text-emerald-600 rounded-full p-4 shadow-xl">
+                            <Upload className="w-6 h-6" />
+                          </div>
                         </div>
-                        <div className="absolute top-4 right-4 bg-white/20 backdrop-blur-md px-3 py-1 rounded-full text-[10px] font-black text-white uppercase tracking-widest">Change Video</div>
+                        <div className="absolute top-6 right-6 bg-emerald-500 text-white px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest shadow-lg">Change Reel</div>
+                        <div className="absolute bottom-6 left-6 flex items-center gap-2 bg-black/40 backdrop-blur-md px-4 py-1.5 rounded-full border border-white/10">
+                          <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                          <span className="text-[10px] font-black text-white uppercase tracking-widest">Video Ready</span>
+                        </div>
                       </div>
                     ) : (
                       <>
-                        <div className="w-14 h-14 rounded-2xl bg-primary text-white flex items-center justify-center shadow-lg shadow-primary/20">
-                          <Upload className="w-7 h-7" />
+                        <div className="w-16 h-16 rounded-[22px] bg-emerald-500 text-white flex items-center justify-center shadow-xl shadow-emerald-500/20">
+                          <Upload className="w-8 h-8" />
                         </div>
                         <div className="text-center">
-                          <p className="text-base font-black italic text-slate-900 uppercase">Tap to upload reel</p>
-                          <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">MP4 • Max 60sec • 50MB</p>
+                          <p className="text-lg font-black italic text-white uppercase tracking-tight">Tap to upload reel</p>
+                          <p className="text-[10px] text-white/30 font-black uppercase tracking-[0.2em] mt-1.5">MP4 • Max 60sec • 50MB</p>
                         </div>
                       </>
                     )}
-                  </button>
+                  </motion.button>
                 </div>
 
                 {/* Pricing Section */}
-                <div className="space-y-3">
-                  <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400 px-1 block text-left">Your Starting Rate (per Reel)</Label>
+                <div className="space-y-4 group">
+                  <Label className="text-[10px] font-black uppercase tracking-widest text-white/30 px-1 block text-left group-focus-within:text-emerald-400 transition-colors">Starting Rate (per Reel)</Label>
                   <div className="relative">
-                    <div className="absolute left-6 top-1/2 -translate-y-1/2 text-2xl font-black italic text-slate-400">₹</div>
+                    <div className="absolute left-7 top-1/2 -translate-y-1/2 text-3xl font-black italic text-emerald-500/40">₹</div>
                     <Input
                       type="number"
                       value={baseRate}
                       onChange={e => setBaseRate(e.target.value)}
                       placeholder="5,000"
-                      className="h-20 pl-14 text-3xl font-black italic bg-slate-50 border-2 border-slate-100 rounded-3xl text-slate-900 focus:bg-white focus:border-primary transition-all shadow-none"
+                      className="h-[84px] pl-16 text-3xl font-black italic bg-white/5 border-white/10 rounded-[28px] text-white focus:bg-white/10 focus:border-emerald-500/50 transition-all shadow-none outline-none"
                     />
                   </div>
-                  <div className="grid grid-cols-3 gap-2">
+                  <div className="grid grid-cols-3 gap-3">
                     {['2000', '5000', '10000'].map(val => (
-                      <button
+                      <motion.button
                         key={val}
-                        onClick={() => setBaseRate(val)}
+                        whileTap={{ scale: 0.95 }}
+                        onClick={() => { triggerHaptic?.(); setBaseRate(val); }}
                         className={cn(
-                          "h-10 rounded-xl border-2 font-black italic text-xs transition-all",
-                          baseRate === val ? "bg-primary border-primary text-white" : "bg-white border-slate-100 text-slate-400"
+                          "h-12 rounded-[18px] border font-black italic text-sm transition-all",
+                          baseRate === val ? "bg-emerald-500 border-emerald-400 text-white shadow-lg shadow-emerald-500/20" : "bg-white/5 border-white/10 text-white/30 hover:bg-white/10"
                         )}
                       >
                         ₹{Number(val).toLocaleString()}
-                      </button>
+                      </motion.button>
                     ))}
                   </div>
                 </div>
               </div>
 
-              <div className="mt-auto pt-10 w-full">
+              <div className="mt-auto pt-12 w-full">
                 <Button
                   onClick={handleNext}
-                  disabled={isSubmitting}
-                  className="w-full h-16 rounded-2xl bg-slate-900 text-white font-black italic text-lg shadow-xl shadow-slate-200 active:scale-95 transition-all flex items-center justify-center gap-2"
+                  disabled={isSubmitting || isUploading}
+                  className="w-full h-[72px] rounded-[26px] bg-emerald-500 hover:bg-emerald-400 text-white font-black italic text-xl shadow-[0_20px_40px_rgba(16,185,129,0.2)] active:scale-95 transition-all flex items-center justify-center gap-3 border-none uppercase tracking-widest"
                 >
                   {isSubmitting ? (
-                    <Loader2 className="w-5 h-5 animate-spin" />
+                    <Loader2 className="w-6 h-6 animate-spin" />
                   ) : (
-                    <>Continue <ArrowRight className="ml-2 w-5 h-5" /></>
+                    <>Continue <ArrowRight className="w-6 h-6" /></>
                   )}
                 </Button>
               </div>
@@ -1429,67 +1390,90 @@ export default function CreatorOnboarding() {
 
           {step === 'videoSuccess' && (
             <OnboardingSlide key="videoSuccess" slideKey="videoSuccess">
-              <div className="w-24 h-24 rounded-full bg-emerald-100 flex items-center justify-center mb-6 mx-auto">
-                <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: 'spring', damping: 12 }}>
-                  <Check className="w-12 h-12 text-emerald-600" />
-                </motion.div>
-              </div>
-              <h1 className="text-3xl font-black tracking-tight text-slate-900 mb-2 italic">🔥 Looks Great!</h1>
-              <p className="text-slate-600 font-medium mb-10 text-sm">Your Collab Page is live in the discovery feed.</p>
+              <div className="text-center pt-8">
+                <div className="w-24 h-24 rounded-[32px] bg-emerald-500/10 flex items-center justify-center mb-10 mx-auto border border-emerald-500/20">
+                  <motion.div 
+                    initial={{ scale: 0, rotate: -45 }} 
+                    animate={{ scale: 1, rotate: 0 }} 
+                    transition={{ type: 'spring', damping: 12 }}
+                  >
+                    <CheckCircle2 className="w-14 h-14 text-emerald-400" />
+                  </motion.div>
+                </div>
+                <h1 className="text-4xl font-black tracking-tight text-white mb-3 uppercase italic">Looks Fire! 🔥</h1>
+                <p className="text-white/40 font-bold mb-12 text-sm uppercase tracking-[0.2em]">Your Collab Page is ready</p>
 
-              <div className="w-[200px] aspect-[9/16] mx-auto rounded-3xl bg-slate-100 overflow-hidden relative shadow-2xl border-4 border-white mb-10">
-                {videoUrl && <video src={videoUrl} className="w-full h-full object-cover" autoPlay loop muted playsInline />}
-              </div>
-
-              <div className="mt-auto pt-10 w-full">
-                <Button
-                  onClick={() => setStep('profile')}
-                  className="w-full h-16 rounded-2xl bg-slate-900 text-white font-black italic text-lg shadow-xl shadow-slate-200 active:scale-95 transition-all"
+                <motion.div 
+                  initial={{ y: 20, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  transition={{ delay: 0.3 }}
+                  className="w-[220px] aspect-[9/16] mx-auto rounded-[36px] bg-white/5 overflow-hidden relative shadow-[0_40px_80px_rgba(0,0,0,0.5)] border-4 border-white/5"
                 >
-                  Amazing, Next <ArrowRight className="ml-2 w-5 h-5" />
-                </Button>
+                  {videoUrl && <video src={videoUrl} className="w-full h-full object-cover" autoPlay loop muted playsInline />}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent pointer-events-none" />
+                  <div className="absolute bottom-6 left-6 right-6 text-left">
+                    <p className="text-white font-black italic text-lg uppercase tracking-tight">@{instagramHandle}</p>
+                    <p className="text-emerald-400 font-black text-[10px] uppercase tracking-widest">₹{Number(baseRate).toLocaleString()} / Reel</p>
+                  </div>
+                </motion.div>
+
+                <div className="mt-auto pt-12 w-full">
+                  <Button
+                    onClick={() => { triggerHaptic?.(); setStep('profile'); }}
+                    className="w-full h-[72px] rounded-[26px] bg-emerald-500 hover:bg-emerald-400 text-white font-black italic text-xl shadow-[0_20px_40px_rgba(16,185,129,0.2)] active:scale-95 transition-all"
+                  >
+                    Next <ArrowRight className="ml-3 w-6 h-6" />
+                  </Button>
+                </div>
               </div>
             </OnboardingSlide>
           )}
 
           {step === 'profile' && (
             <OnboardingSlide key="profile" slideKey="profile">
-              <div className="w-20 h-20 rounded-3xl bg-primary/10 flex items-center justify-center mb-6 mx-auto">
-                <PenTool className="w-10 h-10 text-primary" />
+              <div className="text-center mb-10">
+                <motion.div 
+                  initial={{ scale: 0.8, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  className="w-16 h-16 bg-emerald-500/10 rounded-2xl flex items-center justify-center mb-6 mx-auto border border-emerald-500/20"
+                >
+                  <PenTool className="w-8 h-8 text-emerald-400" />
+                </motion.div>
+                <h1 className="text-3xl font-black tracking-tight text-white mb-2 uppercase italic">Details</h1>
+                <p className="text-white/30 font-black text-[10px] uppercase tracking-[0.3em]">Build trust with brands</p>
               </div>
-              <h1 className="text-3xl font-black tracking-tight text-slate-900 mb-2 italic">Complete your profile</h1>
-              <p className="text-slate-600 font-medium mb-10 text-sm italic">Add links to boost your brand trust.</p>
 
-              <div className="w-full space-y-6 text-left">
-                <div className="space-y-2.5">
-                  <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400 px-1">Reference Reel/Post Link</Label>
-                  <Input
-                    value={instagramLink}
-                    onChange={e => setInstagramLink(e.target.value)}
-                    placeholder="https://www.instagram.com/p/..."
-                    className="h-14 px-5 rounded-2xl border-2 border-slate-100 bg-slate-50 font-semibold text-slate-900 focus:border-primary focus:bg-white transition-all shadow-none"
-                  />
-                  <p className="text-[10px] text-slate-400 px-1">Share a link to your best performing content.</p>
+              <div className="w-full space-y-8 text-left">
+                <div className="space-y-3 group">
+                  <Label className="text-[10px] font-black uppercase tracking-widest text-white/30 px-1 group-focus-within:text-emerald-400">Reference Reel/Post Link</Label>
+                  <div className="relative">
+                    <div className="absolute left-6 top-1/2 -translate-y-1/2 text-emerald-500/40">
+                      <Instagram className="w-5 h-5" />
+                    </div>
+                    <Input
+                      value={instagramLink}
+                      onChange={e => setInstagramLink(e.target.value)}
+                      placeholder="https://www.instagram.com/p/..."
+                      className="h-[68px] pl-14 rounded-[24px] border-white/10 bg-white/5 font-semibold text-white focus:border-emerald-500/50 focus:bg-white/10 transition-all shadow-none outline-none"
+                    />
+                  </div>
+                  <p className="text-[10px] text-white/20 px-1 font-bold uppercase tracking-widest">Share a link to your best performing content.</p>
                 </div>
               </div>
 
-              <div className="mt-auto pt-10 w-full space-y-4">
+              <div className="mt-auto pt-12 w-full space-y-6">
                 <Button
                   onClick={isProfileFinalStep ? handleFinish : () => setStep('payout')}
-                  className="w-full h-16 rounded-2xl bg-slate-900 text-white font-black italic text-lg shadow-xl shadow-slate-200 active:scale-95 transition-all"
+                  className="w-full h-[72px] rounded-[26px] bg-emerald-500 hover:bg-emerald-400 text-white font-black italic text-xl shadow-[0_20px_40px_rgba(16,185,129,0.2)] active:scale-95 transition-all flex items-center justify-center gap-3 border-none uppercase tracking-widest"
                 >
                   {isProfileFinalStep ? (
-                    <>
-                      Finish Onboarding <ArrowRight className="ml-2 w-5 h-5" />
-                    </>
+                    <>Finish Onboarding <Check className="w-6 h-6" /></>
                   ) : (
-                    <>
-                      Continue <ArrowRight className="ml-2 w-5 h-5" />
-                    </>
+                    <>Continue <ArrowRight className="w-6 h-6" /></>
                   )}
                 </Button>
                 {!isProfileFinalStep && (
-                  <button onClick={() => setStep('payout')} className="w-full text-slate-400 font-black uppercase tracking-widest text-[10px] py-2">
+                  <button onClick={() => { triggerHaptic?.(); setStep('payout'); }} className="w-full text-white/20 font-black uppercase tracking-[0.3em] text-[10px] py-2 hover:text-emerald-400 transition-colors">
                     Skip for now
                   </button>
                 )}
@@ -1499,69 +1483,76 @@ export default function CreatorOnboarding() {
 
           {step === 'payout' && (
             <OnboardingSlide key="payout" slideKey="payout">
-              <div className="w-20 h-20 rounded-3xl bg-primary/10 flex items-center justify-center mb-6 mx-auto">
-                <CreditCard className="w-10 h-10 text-primary" />
+              <div className="text-center mb-10">
+                <motion.div 
+                  initial={{ scale: 0.8, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  className="w-16 h-16 bg-emerald-500/10 rounded-2xl flex items-center justify-center mb-6 mx-auto border border-emerald-500/20"
+                >
+                  <CreditCard className="w-8 h-8 text-emerald-400" />
+                </motion.div>
+                <h1 className="text-3xl font-black tracking-tight text-white mb-2 uppercase italic">Settlements</h1>
+                <p className="text-white/30 font-black text-[10px] uppercase tracking-[0.3em]">Payments & Logistics</p>
               </div>
-              <h1 className="text-3xl font-black tracking-tight text-slate-900 mb-2 italic">Payment & Logistics</h1>
-              <p className="text-slate-600 font-medium mb-10 text-sm italic">So brands can pay you and ship products.</p>
 
-              <div className="w-full space-y-6 text-left">
-                <div className="space-y-2.5">
-                  <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400 px-1">Your UPI ID (For Earnings)</Label>
+              <div className="w-full space-y-8 text-left overflow-y-auto max-h-[50vh] pr-2 scrollbar-none">
+                <div className="space-y-3 group">
+                  <Label className="text-[10px] font-black uppercase tracking-widest text-white/30 px-1 group-focus-within:text-emerald-400">UPI ID (For Earnings)</Label>
+                  <Input
+                    value={upiId}
+                    onChange={e => setUpiId(e.target.value)}
+                    placeholder="e.g. name@okhdfcbank"
+                    className="h-[68px] px-6 rounded-[24px] border-white/10 bg-white/5 font-bold text-white focus:border-emerald-500/50 focus:bg-white/10 transition-all shadow-none outline-none"
+                  />
+                </div>
+
+                <div className="space-y-3 group">
+                  <Label className="text-[10px] font-black uppercase tracking-widest text-white/30 px-1 group-focus-within:text-emerald-400">Contact (For Logistics)</Label>
                   <div className="relative">
+                    <div className="absolute left-6 top-1/2 -translate-y-1/2 text-white/20">
+                      <Phone className="w-5 h-5" />
+                    </div>
                     <Input
-                      value={upiId}
-                      onChange={e => setUpiId(e.target.value)}
-                      placeholder="e.g. name@okhdfcbank"
-                      className="h-14 px-5 rounded-2xl border-2 border-slate-100 bg-slate-50 font-bold text-slate-900 focus:border-primary focus:bg-white transition-all shadow-none"
+                      type="tel"
+                      value={phone}
+                      onChange={e => setPhone(e.target.value)}
+                      placeholder="e.g. +91 98765 43210"
+                      className="h-[68px] pl-14 rounded-[24px] border-white/10 bg-white/5 font-bold text-white focus:border-emerald-500/50 focus:bg-white/10 transition-all shadow-none outline-none"
                     />
                   </div>
                 </div>
 
-                <div className="space-y-2.5">
-                  <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400 px-1">Contact Number (For Logistics)</Label>
-                  <Input
-                    type="tel"
-                    value={phone}
-                    onChange={e => setPhone(e.target.value)}
-                    placeholder="e.g. +91 98765 43210"
-                    className="h-14 px-5 rounded-2xl border-2 border-slate-100 bg-slate-50 font-bold text-slate-900 focus:border-primary focus:bg-white transition-all shadow-none"
-                  />
-                  <p className="text-[10px] text-slate-400 px-1 font-medium leading-relaxed italic">Note: Avoid sharing personal numbers; providing an alternate number is recommended for brand communications.</p>
-                </div>
-
-                <div className="space-y-2.5">
-                  <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400 px-1">Delivery Address (For PR Packages)</Label>
+                <div className="space-y-3 group">
+                  <Label className="text-[10px] font-black uppercase tracking-widest text-white/30 px-1 group-focus-within:text-emerald-400">Delivery Address</Label>
                   <Textarea
                     value={shippingAddress}
                     onChange={e => setShippingAddress(e.target.value)}
                     placeholder="Building, Street, Area..."
-                    className="min-h-[80px] p-5 rounded-2xl border-2 border-slate-100 bg-slate-50 font-semibold text-slate-900 focus:border-primary focus:bg-white transition-all shadow-none resize-none"
+                    className="min-h-[100px] p-6 rounded-[28px] border-white/10 bg-white/5 font-semibold text-white focus:border-emerald-500/50 focus:bg-white/10 transition-all shadow-none resize-none outline-none"
                   />
-                  <p className="text-[10px] text-slate-400 px-1 font-medium leading-relaxed italic">If you have privacy concerns, feel free to provide an alternate delivery address for brand shipments.</p>
                 </div>
 
-                <div className="space-y-2.5">
-                  <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400 px-1">Pincode</Label>
+                <div className="space-y-3 group">
+                  <Label className="text-[10px] font-black uppercase tracking-widest text-white/30 px-1 group-focus-within:text-emerald-400">Pincode</Label>
                   <Input
                     value={pincode}
                     onChange={e => setPincode(e.target.value.replace(/\D/g, '').slice(0, 6))}
                     placeholder="6-digit Pincode"
-                    className="h-14 px-5 rounded-2xl border-2 border-slate-100 bg-slate-50 font-bold text-slate-900 focus:border-primary focus:bg-white transition-all shadow-none"
+                    className="h-[68px] px-6 rounded-[24px] border-white/10 bg-white/5 font-bold text-white focus:border-emerald-500/50 focus:bg-white/10 transition-all shadow-none outline-none"
                   />
                 </div>
               </div>
 
-              <div className="mt-auto pt-10 w-full">
+              <div className="mt-auto pt-12 w-full">
                 <Button
                   onClick={handleNext}
                   disabled={isSubmitting}
-                  className="w-full h-16 rounded-2xl bg-slate-900 text-white font-black italic text-lg shadow-xl shadow-slate-200 active:scale-95 transition-all flex items-center justify-center gap-2"
+                  className="w-full h-[72px] rounded-[26px] bg-emerald-500 hover:bg-emerald-400 text-white font-black italic text-xl shadow-[0_20px_40px_rgba(16,185,129,0.2)] active:scale-95 transition-all flex items-center justify-center gap-3 border-none uppercase tracking-widest"
                 >
                   {isSubmitting ? (
-                    <Loader2 className="w-5 h-5 animate-spin" />
+                    <Loader2 className="w-6 h-6 animate-spin" />
                   ) : (
-                    <>Save & Continue <ArrowRight className="ml-2 w-5 h-5" /></>
+                    <>Save & Continue <ArrowRight className="w-6 h-6" /></>
                   )}
                 </Button>
               </div>
@@ -1570,91 +1561,74 @@ export default function CreatorOnboarding() {
 
           {step === 'notifications' && (
             <OnboardingSlide key="notifications" slideKey="notifications">
-              <div className="w-20 h-20 rounded-3xl bg-primary/10 flex items-center justify-center mb-8 mx-auto">
-                <Bell className="w-10 h-10 text-primary" />
-              </div>
-              <h1 className="text-4xl font-black tracking-tight text-slate-900 mb-4 italic">Never miss a deal</h1>
-              <p className="text-slate-600 font-medium mb-12">Enable alerts to get notified instantly when a brand makes you an offer.</p>
+              <div className="text-center pt-8">
+                <motion.div 
+                  initial={{ scale: 0.8, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  className="w-20 h-20 rounded-[28px] bg-emerald-500/10 flex items-center justify-center mb-10 mx-auto border border-emerald-500/20"
+                >
+                  <Bell className="w-10 h-10 text-emerald-400" />
+                </motion.div>
+                <h1 className="text-4xl font-black tracking-tight text-white mb-4 uppercase italic">Stay Alert 🚀</h1>
+                <p className="text-white/40 font-bold mb-12 text-sm uppercase tracking-[0.2em] leading-relaxed px-4">Enable notifications to secure brand deals the second they drop.</p>
 
-              <div className="w-full mb-8 relative">
-                <div className="absolute -top-4 -right-2 z-10">
-                  <motion.div
-                    initial={{ rotate: 12, scale: 0 }}
-                    animate={{ rotate: -12, scale: 1 }}
-                    transition={{ type: 'spring', delay: 0.5 }}
-                    className="bg-yellow-400 text-black text-[10px] font-black px-3 py-1 rounded-full shadow-lg border-2 border-white uppercase tracking-widest"
+                <div className="w-full mb-12 relative px-2">
+                  <div className="absolute -top-6 -right-2 z-20">
+                    <motion.div
+                      initial={{ rotate: 15, scale: 0 }}
+                      animate={{ rotate: -10, scale: 1 }}
+                      transition={{ type: 'spring', delay: 0.5 }}
+                      className="bg-emerald-500 text-white text-[10px] font-black px-4 py-1.5 rounded-full shadow-2xl border-2 border-[#0B0F14] uppercase tracking-widest"
+                    >
+                      New Offer
+                    </motion.div>
+                  </div>
+
+                  <div className="p-8 rounded-[40px] border border-white/10 bg-white/5 backdrop-blur-xl shadow-2xl text-left relative overflow-hidden group">
+                    <div className="absolute top-0 right-0 w-40 h-40 bg-emerald-500/10 rounded-full -mr-20 -mt-20 blur-3xl" />
+
+                    <div className="flex items-center gap-6 relative z-10">
+                      <div className="w-20 h-20 rounded-[24px] bg-emerald-500 flex items-center justify-center shadow-xl shadow-emerald-500/20">
+                        <Zap className="w-10 h-10 text-white" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-[11px] font-black uppercase tracking-[0.3em] text-emerald-400 mb-1.5">Nike India 🇮🇳</p>
+                        <h3 className="font-black text-2xl text-white italic tracking-tight truncate">Winter Launch</h3>
+                      </div>
+                    </div>
+
+                    <div className="mt-8 flex items-center justify-between gap-4 relative z-10">
+                      <div className="flex flex-col">
+                        <span className="text-[10px] font-black uppercase tracking-[0.3em] text-white/20">Earnings Potential</span>
+                        <span className="text-3xl font-black text-white italic font-outfit">₹15,000</span>
+                      </div>
+                      <div className="h-12 w-12 rounded-[18px] bg-white/10 flex items-center justify-center border border-white/10">
+                        <ArrowUpRight className="w-6 h-6 text-emerald-400" />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mt-auto pt-8 w-full space-y-6">
+                  <Button
+                    onClick={async () => {
+                      triggerHaptic?.();
+                      await enableNotifications();
+                      handleFinish();
+                    }}
+                    disabled={isSubmitting}
+                    className="w-full h-[76px] rounded-[28px] bg-emerald-500 hover:bg-emerald-400 text-white font-black italic text-xl shadow-[0_25px_50px_rgba(16,185,129,0.3)] active:scale-95 transition-all border-none uppercase tracking-widest"
                   >
-                    New Offer
-                  </motion.div>
+                    {isSubmitting ? <Loader2 className="w-7 h-7 animate-spin" /> : "Enable & Finish"}
+                  </Button>
+                  <button
+                    onClick={handleFinish}
+                    disabled={isSubmitting}
+                    className="w-full text-white/20 font-black uppercase tracking-[0.3em] text-[10px] py-2 hover:text-emerald-400 transition-colors"
+                  >
+                    Skip for now
+                  </button>
                 </div>
-
-                <div className="p-6 rounded-[32px] border-2 border-slate-100 bg-white shadow-xl shadow-slate-100 text-left relative overflow-hidden group">
-                  <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -mr-16 -mt-16 blur-2xl group-hover:bg-primary/10 transition-colors" />
-
-                  <div className="flex items-center gap-5 relative z-10">
-                    <div className="w-16 h-16 rounded-2xl bg-slate-900 flex items-center justify-center shadow-lg transform group-hover:scale-105 transition-transform">
-                      <Zap className="w-8 h-8 text-primary fill-primary/20" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-[10px] font-black uppercase tracking-[0.2em] text-primary mb-1">Mellow Prints 🚀</p>
-                      <h3 className="font-black text-xl text-slate-900 italic tracking-tight truncate">Campaign Invitation</h3>
-                    </div>
-                  </div>
-
-                  <div className="mt-6 flex items-center justify-between gap-4 relative z-10">
-                    <div className="flex flex-col">
-                      <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Potential Earnings</span>
-                      <span className="text-2xl font-black text-slate-900 font-outfit">₹5,000.00</span>
-                    </div>
-                    <div className="h-10 px-4 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center">
-                      <ArrowRight className="w-5 h-5 text-slate-400" />
-                    </div>
-                  </div>
-
-                  <div className="mt-5 flex items-center justify-between gap-4 border-t border-slate-50 pt-5">
-                    <div className="flex items-center gap-3">
-                      <div className="flex -space-x-2">
-                        {[
-                          { label: 'MP', className: 'bg-emerald-500 text-white' },
-                          { label: 'SC', className: 'bg-sky-500 text-white' },
-                          { label: 'BL', className: 'bg-violet-500 text-white' },
-                        ].map((brand) => (
-                          <div
-                            key={brand.label}
-                            className={`flex h-7 w-7 items-center justify-center rounded-full border-2 border-white text-[9px] font-black uppercase shadow-sm ${brand.className}`}
-                          >
-                            {brand.label}
-                          </div>
-                        ))}
-                      </div>
-                      <div className="space-y-0.5">
-                        <p className="text-[10px] font-black uppercase tracking-[0.24em] text-slate-400">Brand activity</p>
-                        <p className="text-xs font-semibold text-slate-500">Mellow Prints, Skin Club, BlueLeaf</p>
-                      </div>
-                    </div>
-                    <p className="whitespace-nowrap text-[10px] font-bold uppercase tracking-wider text-slate-400">+12 active</p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="mt-auto pt-12 w-full space-y-4">
-                <Button
-                  onClick={async () => {
-                    await enableNotifications();
-                    handleFinish();
-                  }}
-                  disabled={isSubmitting}
-                  className="w-full h-16 rounded-2xl bg-primary text-white font-black italic text-lg shadow-xl shadow-primary/20 active:scale-95 transition-all"
-                >
-                  {isSubmitting ? <Loader2 className="w-6 h-6 animate-spin" /> : "Enable & Finish"}
-                </Button>
-                <button
-                  onClick={handleFinish}
-                  disabled={isSubmitting}
-                  className="w-full text-slate-400 font-bold text-sm py-2"
-                >
-                  Skip for now
-                </button>
               </div>
             </OnboardingSlide>
           )}

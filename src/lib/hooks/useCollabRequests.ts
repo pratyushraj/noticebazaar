@@ -84,40 +84,8 @@ export function useCollabRequests(creatorId: string | undefined) {
   const hookStartedAtRef = useRef<number>(Date.now());
   const lastRealtimeUpdateAtRef = useRef<number>(0);
 
-  // Realtime: surface new offers immediately.
-  useEffect(() => {
-    if (!creatorId) return;
-    let channel: any | null = null;
-
-    try {
-      channel = supabase
-        .channel(`collab-requests:${creatorId}`)
-        .on(
-          'postgres_changes',
-          {
-            event: '*',
-            schema: 'public',
-            table: 'collab_requests',
-            filter: `creator_id=eq.${creatorId}`,
-          },
-          () => {
-            lastRealtimeUpdateAtRef.current = Date.now();
-            queryClient.invalidateQueries({ queryKey: ['collab-requests'] });
-          },
-        )
-        .subscribe();
-    } catch {
-      channel = null;
-    }
-
-    return () => {
-      try {
-        if (channel) supabase.removeChannel(channel);
-      } catch {
-        // ignore
-      }
-    };
-  }, [creatorId, queryClient]);
+  // Realtime is handled centrally in CreatorDashboard for better UX/toasts
+  // but we keep the hook simple and focused on fetching.
 
   const result = useQuery({
     queryKey: ['collab-requests', creatorId],
