@@ -914,11 +914,10 @@ const CollabLinkLanding = () => {
             type: 'paid',
             category: creator.category || 'Lifestyle',
             description: 'High-performing Reel optimized for organic reach. Best for first-time brand discovery.',
-            deliverables: ['1 Reel (15-30s)', 'Organic reach focus', 'Basic editing', 'Payment secured before content delivery'],
+             deliverables: ['1 Reel (15-30s)', 'Organic reach focus', 'Basic editing'],
             quantities: { 'Instagram Reel': 1 },
-            deadlineDays: 3,
-            notes: 'Payment secured before content delivery.'
-          },
+             deadlineDays: 3,
+           },
           {
             id: 'standard',
             label: '⭐ Growth Campaign',
@@ -927,7 +926,7 @@ const CollabLinkLanding = () => {
             type: 'paid',
             category: creator.category || 'Lifestyle',
             description: 'Includes 30-day usage rights so brands can run ads and drive conversions.',
-            deliverables: ['1 Premium Reel (30-60s)', '30-day usage rights (for ads)', 'Script + hook optimization', '1 Story shoutout', 'Payment secured before content delivery'],
+             deliverables: ['1 Premium Reel (30-60s)', '30-day usage rights (for ads)', 'Script + hook optimization', '1 Story shoutout'],
             quantities: { 'Instagram Reel': 1, 'Instagram Stories': 2 },
             deadlineDays: 5,
             isPopular: true,
@@ -941,7 +940,7 @@ const CollabLinkLanding = () => {
             type: 'barter',
             category: creator.category || 'Lifestyle',
             description: 'Product unboxing or review with no paid usage rights. Best for authentic product proof.',
-            deliverables: ['Product unboxing / review', '1 Story mention', 'No paid usage rights', 'Payment secured before content delivery'],
+             deliverables: ['Product unboxing / review', '1 Story mention', 'No paid usage rights'],
             quantities: { 'Unboxing Video': 1, 'Story': 1 },
             deadlineDays: 14,
             notes: 'Product must be shipped before shoot. Honest review only.'

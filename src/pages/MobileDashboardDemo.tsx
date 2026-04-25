@@ -485,8 +485,88 @@ const DashboardLoadingStage = ({ isDark, tab = 'analytics' }: { isDark: boolean;
                             <div className="grid grid-cols-2 gap-3">
                                 <ShimmerSkeleton className="h-24 rounded-2xl" />
                                 <ShimmerSkeleton className="h-24 rounded-2xl" />
-                            </div>
-                        </motion.div>
+                                     </div>
+                                         {/* Quick Actions / Lifestyle Shield */}
+                                         <div className="px-5 space-y-4">
+                                             <div className={cn(
+                                                 "p-6 rounded-[32px] border relative overflow-hidden group",
+                                                 isDark ? "bg-[#0B1324] border-white/5 shadow-2xl" : "bg-white border-slate-200 shadow-xl shadow-slate-200/40"
+                                             )}>
+                                                 <div className="flex items-center gap-4 relative z-10">
+                                                     <div className="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center text-primary">
+                                                         <Shield className="w-6 h-6" />
+                                                     </div>
+                                                     <div className="flex-1 min-w-0">
+                                                         <p className={cn("text-[11px] font-black uppercase tracking-widest opacity-40 mb-0.5", textColor)}>Consumer Protection</p>
+                                                         <h3 className={cn("text-lg font-black tracking-tight italic uppercase", textColor)}>Lifestyle Shield</h3>
+                                                     </div>
+                                                 </div>
+                                                 <p className={cn("text-xs font-medium opacity-40 leading-relaxed mt-4 relative z-10", textColor)}>
+                                                     Got cheated by a brand or service? File a legal notice in minutes.
+                                                 </p>
+                                                 <div className="flex gap-3 mt-6 relative z-10">
+                                                     <button 
+                                                         onClick={() => { triggerHaptic(); setActiveTab('profile'); setActiveSettingsPage('consumer-complaints'); }}
+                                                         className="flex-1 bg-primary text-white font-black italic py-3 rounded-xl text-xs uppercase tracking-widest active:scale-95 transition-all shadow-lg shadow-primary/20"
+                                                     >
+                                                         File Notice
+                                                     </button>
+                                                     <button 
+                                                         onClick={() => {
+                                                             triggerHaptic();
+                                                             window.open(`https://wa.me/916207479248?text=I%20need%20help%20with%20a%20consumer%20complaint`, '_blank');
+                                                         }}
+                                                         className={cn(
+                                                             "px-5 py-3 rounded-xl border flex items-center justify-center transition-all active:scale-95",
+                                                             isDark ? "bg-white/5 border-white/10 text-white" : "bg-white border-slate-200 text-slate-900"
+                                                         )}
+                                                     >
+                                                         <MessageSquare className="w-4 h-4 text-emerald-500" />
+                                                     </button>
+                                                 </div>
+                                                 <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 blur-3xl rounded-full -mr-16 -mt-16 group-hover:bg-primary/10 transition-colors" />
+                                             </div>
+
+                                             <div className="grid grid-cols-2 gap-4">
+                                                 <button 
+                                                     onClick={() => {
+                                                         triggerHaptic();
+                                                         window.open(`https://wa.me/916207479248?text=I%20need%20help%20with%20a%20legal%20issue`, '_blank');
+                                                     }}
+                                                     className={cn(
+                                                         "p-5 rounded-[2.5rem] border flex flex-col gap-4 text-left group transition-all active:scale-95",
+                                                         isDark ? "bg-[#0F172A] border-white/5" : "bg-slate-50 border-slate-200"
+                                                     )}
+                                                 >
+                                                     <div className="w-10 h-10 bg-emerald-500/10 rounded-2xl flex items-center justify-center text-emerald-500 group-hover:scale-110 transition-transform">
+                                                         <Landmark className="w-5 h-5" />
+                                                     </div>
+                                                     <div>
+                                                         <p className={cn("text-[13px] font-black italic leading-tight mb-1", textColor)}>Contact Lawyer</p>
+                                                         <p className={cn("text-[10px] font-bold opacity-30 uppercase tracking-widest", textColor)}>Legal Support</p>
+                                                     </div>
+                                                 </button>
+                                                 <button 
+                                                     onClick={() => {
+                                                         triggerHaptic();
+                                                         window.open(`https://wa.me/916207479248?text=I%20need%20help%20with%20the%20app`, '_blank');
+                                                     }}
+                                                     className={cn(
+                                                         "p-5 rounded-[2.5rem] border flex flex-col gap-4 text-left group transition-all active:scale-95",
+                                                         isDark ? "bg-[#0F172A] border-white/5" : "bg-slate-50 border-slate-200"
+                                                     )}
+                                                 >
+                                                     <div className="w-10 h-10 bg-blue-500/10 rounded-2xl flex items-center justify-center text-blue-500 group-hover:scale-110 transition-transform">
+                                                         <Clock className="w-5 h-5" />
+                                                     </div>
+                                                     <div>
+                                                         <p className={cn("text-[13px] font-black italic leading-tight mb-1", textColor)}>24/7 Response</p>
+                                                         <p className={cn("text-[10px] font-bold opacity-30 uppercase tracking-widest", textColor)}>Fast Support</p>
+                                                     </div>
+                                                 </button>
+                                             </div>
+                                         </div>
+                                 </motion.div>
                     </div>
                 </>
             )}
@@ -693,32 +773,35 @@ const buildProfileFormData = (profile: any, userEmail?: string | null) => {
         payout_upi: profile?.payout_upi || profile?.bank_upi || profile?.upi_id || 'creator@okaxis',
         deal_templates: Array.isArray(profile?.deal_templates) && profile.deal_templates.length > 0 
             ? profile.deal_templates 
-            : [
-                { 
-                  id: 'basic', 
-                  name: '🚀 Starter Collab', 
-                  price: '3000', 
-                  description: 'High-performing Reel optimized for organic reach. Best for first-time brand discovery.',
-                  deliverables: ['1 Reel (15-30s)', 'Organic reach focus', 'Basic editing', 'Payment secured before content delivery'], 
-                  duration: '5 Days' 
-                },
-                { 
-                  id: 'standard', 
-                  name: '⭐ Growth Campaign', 
-                  price: profile?.avg_rate_reel || '5000', 
-                  description: 'Includes 30-day usage rights so brands can run ads and drive conversions.',
-                  deliverables: ['1 Premium Reel (30-60s)', '30-day usage rights (for ads)', 'Script + hook optimization', '1 Story shoutout', 'Payment secured before content delivery'], 
-                  duration: '7 Days' 
-                },
-                { 
-                  id: 'barter', 
-                  name: '🎁 Product Exchange', 
-                  price: '0', 
-                  description: 'Product unboxing or review with no paid usage rights. Best for authentic product proof.',
-                  deliverables: ['Product unboxing / review', '1 Story mention', 'No paid usage rights', 'Payment secured before content delivery'], 
-                  duration: '14 Days' 
-                }
-              ],
+            : (() => {
+                const baselineRate = Number(profile?.avg_rate_reel || profile?.suggested_reel_rate || 5000);
+                return [
+                  { 
+                    id: 'basic', 
+                    name: '🚀 Starter Collab', 
+                    price: String(baselineRate), 
+                    description: 'High-performing Reel optimized for organic reach. Best for first-time brand discovery.',
+                    deliverables: ['1 Reel (15-30s)', 'Organic reach focus', 'Basic editing'],
+                    duration: '5 Days' 
+                  },
+                  { 
+                    id: 'standard', 
+                    name: '⭐ Growth Campaign', 
+                    price: String(Math.round(baselineRate * 2)), 
+                    description: 'Includes 30-day usage rights so brands can run ads and drive conversions.',
+                    deliverables: ['1 Premium Reel (30-60s)', '30-day usage rights (for ads)', 'Script + hook optimization', '1 Story shoutout'],
+                    duration: '7 Days' 
+                  },
+                  { 
+                    id: 'barter', 
+                    name: '🎁 Product Exchange', 
+                    price: '0', 
+                    description: 'Product unboxing or review with no paid usage rights. Best for authentic product proof.',
+                    deliverables: ['Product unboxing / review', '1 Story mention', 'No paid usage rights'],
+                    duration: '14 Days' 
+                  }
+                ];
+              })(),
         // NEW: Audience Demographics
         audience_gender_split: profile?.audience_gender_split || '65% Female • 35% Male',
         top_cities: Array.isArray(profile?.top_cities) ? profile.top_cities : [],
@@ -3855,16 +3938,8 @@ const MobileDashboardDemo = ({
                                     <button 
                                         onClick={async () => {
                                             triggerHaptic();
-                                            toast.loading('Processing deletion request...');
-                                            // Simulate backend delay
-                                            setTimeout(() => {
-                                                toast.dismiss();
-                                                toast.success('Deletion request submitted.');
-                                                // Clear everything
-                                                localStorage.clear();
-                                                sessionStorage.clear();
-                                                window.location.href = '/delete-data'; // Redirect to info page
-                                            }, 2000);
+                                            setActiveSettingsPage(null);
+                                            navigate('/delete-account');
                                         }}
                                         className="w-full py-4 rounded-2xl bg-red-500 text-white font-black text-xs uppercase tracking-widest active:scale-95 transition-all shadow-lg shadow-red-500/20"
                                     >
@@ -4562,86 +4637,6 @@ const MobileDashboardDemo = ({
 
 
 
-                                        {/* Quick Actions / Lifestyle Shield */}
-                                        <div className="px-5 space-y-4">
-                                            <div className={cn(
-                                                "p-6 rounded-[32px] border relative overflow-hidden group",
-                                                isDark ? "bg-[#0B1324] border-white/5 shadow-2xl" : "bg-white border-slate-200 shadow-xl shadow-slate-200/40"
-                                            )}>
-                                                <div className="flex items-center gap-4 relative z-10">
-                                                    <div className="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center text-primary">
-                                                        <Shield className="w-6 h-6" />
-                                                    </div>
-                                                    <div className="flex-1 min-w-0">
-                                                        <p className={cn("text-[11px] font-black uppercase tracking-widest opacity-40 mb-0.5", textColor)}>Consumer Protection</p>
-                                                        <h3 className={cn("text-lg font-black tracking-tight italic uppercase", textColor)}>Lifestyle Shield</h3>
-                                                    </div>
-                                                </div>
-                                                <p className={cn("text-xs font-medium opacity-40 leading-relaxed mt-4 relative z-10", textColor)}>
-                                                    Got cheated by a brand or service? File a legal notice in minutes.
-                                                </p>
-                                                <div className="flex gap-3 mt-6 relative z-10">
-                                                    <button 
-                                                        onClick={() => { triggerHaptic(); setActiveTab('profile'); setActiveSettingsPage('consumer-complaints'); }}
-                                                        className="flex-1 bg-primary text-white font-black italic py-3 rounded-xl text-xs uppercase tracking-widest active:scale-95 transition-all shadow-lg shadow-primary/20"
-                                                    >
-                                                        File Notice
-                                                    </button>
-                                                    <button 
-                                                        onClick={() => {
-                                                            triggerHaptic();
-                                                            window.open(`https://wa.me/916207479248?text=I%20need%20help%20with%20a%20consumer%20complaint`, '_blank');
-                                                        }}
-                                                        className={cn(
-                                                            "px-5 py-3 rounded-xl border flex items-center justify-center transition-all active:scale-95",
-                                                            isDark ? "bg-white/5 border-white/10 text-white" : "bg-white border-slate-200 text-slate-900"
-                                                        )}
-                                                    >
-                                                        <MessageSquare className="w-4 h-4 text-emerald-500" />
-                                                    </button>
-                                                </div>
-                                                <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 blur-3xl rounded-full -mr-16 -mt-16 group-hover:bg-primary/10 transition-colors" />
-                                            </div>
-
-                                            <div className="grid grid-cols-2 gap-4">
-                                                <button 
-                                                    onClick={() => {
-                                                        triggerHaptic();
-                                                        window.open(`https://wa.me/916207479248?text=I%20need%20help%20with%20a%20legal%20issue`, '_blank');
-                                                    }}
-                                                    className={cn(
-                                                        "p-5 rounded-[2.5rem] border flex flex-col gap-4 text-left group transition-all active:scale-95",
-                                                        isDark ? "bg-[#0F172A] border-white/5" : "bg-slate-50 border-slate-200"
-                                                    )}
-                                                >
-                                                    <div className="w-10 h-10 bg-emerald-500/10 rounded-2xl flex items-center justify-center text-emerald-500 group-hover:scale-110 transition-transform">
-                                                        <Landmark className="w-5 h-5" />
-                                                    </div>
-                                                    <div>
-                                                        <p className={cn("text-[13px] font-black italic leading-tight mb-1", textColor)}>Contact Lawyer</p>
-                                                        <p className={cn("text-[10px] font-bold opacity-30 uppercase tracking-widest", textColor)}>Legal Support</p>
-                                                    </div>
-                                                </button>
-                                                <button 
-                                                    onClick={() => {
-                                                        triggerHaptic();
-                                                        window.open(`https://wa.me/916207479248?text=I%20need%20help%20with%20the%20app`, '_blank');
-                                                    }}
-                                                    className={cn(
-                                                        "p-5 rounded-[2.5rem] border flex flex-col gap-4 text-left group transition-all active:scale-95",
-                                                        isDark ? "bg-[#0F172A] border-white/5" : "bg-slate-50 border-slate-200"
-                                                    )}
-                                                >
-                                                    <div className="w-10 h-10 bg-blue-500/10 rounded-2xl flex items-center justify-center text-blue-500 group-hover:scale-110 transition-transform">
-                                                        <Clock className="w-5 h-5" />
-                                                    </div>
-                                                    <div>
-                                                        <p className={cn("text-[13px] font-black italic leading-tight mb-1", textColor)}>24/7 Response</p>
-                                                        <p className={cn("text-[10px] font-bold opacity-30 uppercase tracking-widest", textColor)}>Fast Support</p>
-                                                    </div>
-                                                </button>
-                                            </div>
-                                        </div>
 
                                         {/* Link & WhatsApp Section */}
                                         <div className={cn(
@@ -5617,10 +5612,9 @@ const MobileDashboardDemo = ({
                                                                             toast.message('Counter Offer', { description: 'Open offer details to counter.' });
                                                                         }}
                                                                         className={cn("w-full py-1 text-center text-[11px] font-black uppercase tracking-[0.2em] opacity-40 hover:opacity-100 transition-opacity", textColor)}
-                                                                    >
-                                                                        Send Counter Offer
-                                                                    </button>
-
+                                                                        >
+                                                                            Send Counter Offer
+                                                                        </button>
                                                                 </motion.div>
                                                             );
                                                         })}

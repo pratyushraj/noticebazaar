@@ -301,7 +301,6 @@ interface UpdateProfileVariables {
   // Creator readiness for brands
   open_to_collabs?: boolean | null;
   content_niches?: string[] | null;
-  content_vibes?: string[] | null;
   media_kit_url?: string | null;
   // NEW: Rate fields
   avg_rate_reel?: number | null;
@@ -378,9 +377,6 @@ interface UpdateProfileVariables {
   storefront_views?: number | null;
   profile_completion?: number | null;
   storefront_completion?: number | null;
-  follower_count_range?: string | null;
-  shipping_address?: string | null;
-  pincode?: string | null;
 }
 
 export const useUpdateProfile = () => {
@@ -424,9 +420,6 @@ export const useUpdateProfile = () => {
       facebook_followers,
       discovery_video_url,
       payout_upi,
-      follower_count_range,
-      shipping_address,
-      pincode,
       // NEW: Profile fields
       phone,
       location,
@@ -622,9 +615,6 @@ export const useUpdateProfile = () => {
         storefront_completion?: number | null;
         discovery_video_url?: string | null;
         payout_upi?: string | null;
-        follower_count_range?: string | null;
-        shipping_address?: string | null;
-        pincode?: string | null;
       } = {
         updated_at: new Date().toISOString(),
       };
@@ -728,15 +718,6 @@ export const useUpdateProfile = () => {
       }
       if (payout_upi !== undefined) {
         updateData.payout_upi = payout_upi;
-      }
-      if (follower_count_range !== undefined) {
-        updateData.follower_count_range = follower_count_range;
-      }
-      if (shipping_address !== undefined) {
-        updateData.shipping_address = shipping_address;
-      }
-      if (pincode !== undefined) {
-        updateData.pincode = pincode;
       }
       if (phone !== undefined) {
         // Only include phone if it's not null or empty (null is valid to clear the field)
@@ -1016,8 +997,6 @@ export const useUpdateProfile = () => {
             'twitter_followers',
             'facebook_followers',
             'open_to_collabs',
-            'content_niches',
-            'content_vibes',
             'media_kit_url',
             'avg_rate_reel',
             'learned_avg_rate_reel',
@@ -1059,9 +1038,6 @@ export const useUpdateProfile = () => {
             'avg_views',
             'followers_count',
             'audience_type',
-            'follower_count_range',
-            'shipping_address',
-            'pincode',
             'city',
             'language',
             'niche',
@@ -1222,8 +1198,15 @@ export const useUpdateProfile = () => {
       onSuccess: (_, variables) => {
         // Invalidate and refetch the specific profile query
         queryClient.invalidateQueries({ queryKey: ['profile', variables.id] });
-        // Also invalidate the general profiles query
+        // Also invalidate the general profiles query if the role might change (which it now can)
         queryClient.invalidateQueries({ queryKey: ['profiles'] });
+        // Invalidate the userProfile query in SessionContext to ensure it picks up the latest data
+        queryClient.invalidateQueries({ queryKey: ['userProfile'] });
+        // Also invalidate by ID pattern for SessionContext
+        queryClient.invalidateQueries({
+          queryKey: ['userProfile', variables.id],
+          exact: false
+        });
       },
       errorMessage: 'Failed to update profile',
     }

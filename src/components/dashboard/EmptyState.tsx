@@ -37,9 +37,13 @@ export const DashboardEmptyState: React.FC<EmptyStateProps> = ({
                         </div>
                     </div>
 
-                    <h3 className={cn("text-[24px] font-black tracking-tight mb-2 leading-none", textColor)}>Ready for Lift-off?</h3>
+                    <h3 className={cn("text-[24px] font-black tracking-tight mb-2 leading-none", textColor)}>
+                        {completionScore >= 100 ? "You're a Pro Creator! 🚀" : "Ready for Lift-off?"}
+                    </h3>
                     <p className={cn("text-[14px] font-bold opacity-40 mb-6 max-w-[280px] leading-relaxed", textColor)}>
-                        Your link is live, but adding more data makes you <span className={cn("font-black", isDark ? "text-primary" : "text-emerald-600")}>3.5x more likely</span> to get brand deals.
+                        {completionScore >= 100 
+                            ? "Your profile is fully optimized and ready to attract premium brand deals."
+                            : "Your link is live, but adding more data makes you 3.5x more likely to get brand deals."}
                     </p>
 
                     {/* Progress Bar */}

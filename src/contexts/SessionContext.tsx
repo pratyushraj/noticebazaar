@@ -413,7 +413,7 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
   }, [user?.id]); // Dependency for useCallback
 
   const { data: profileData, isLoading: isLoadingProfile, refetch: refetchProfileQuery } = useSupabaseQuery<Profile | null, Error>( // Destructure refetch
-    ['profile', user?.id], // Query key depends on user ID
+    ['userProfile', user?.id], // Query key depends on user ID
     profileQueryFn, // Pass memoized queryFn
     {
       enabled: !!user?.id, // Only enable query if user ID is available

@@ -2,7 +2,7 @@
 
 import React, { useEffect } from "react";
 import { motion, AnimatePresence, useMotionValue, useTransform, useSpring } from "framer-motion";
-import { Briefcase, Wallet, Shield, Link2, Calendar, Plus, Upload, Settings, LogOut, Bell, HelpCircle, BarChart3, ChevronRight, CalendarCheck, FileText, LayoutDashboard } from 'lucide-react';
+import { Briefcase, Wallet, Shield, Link2, Calendar, Plus, Upload, Settings, LogOut, Bell, HelpCircle, BarChart3, ChevronRight, CalendarCheck, FileText, LayoutDashboard, Scale, MessageSquare } from 'lucide-react';
 import { useNavigate, useLocation } from "react-router-dom";
 import { useSession } from "@/contexts/SessionContext";
 import { getInitials } from "@/lib/utils/avatar";
@@ -233,12 +233,7 @@ export default function PremiumDrawer({
   const userAvatar = profile?.avatar_url || generateAvatarUrl(profile?.first_name || null, profile?.last_name || null);
 
   const menuData: DrawerMenuData = {
-    main: [
-      { id: 'dashboard', label: 'Home', icon: LayoutDashboard, path: '/creator-dashboard' },
-      { id: 'deals', label: 'Collabs', icon: Briefcase, path: '/creator-dashboard?tab=deals' },
-      { id: 'payments', label: 'Payments', icon: Wallet, path: '/creator-dashboard?tab=payments' },
-      { id: 'collab', label: 'Collab Link', icon: Link2, path: '/creator-dashboard?tab=collab' },
-    ],
+    main: [],
     quickActions: [
       { id: 'upload-contract', label: 'Upload Contract', icon: Upload, path: '/contract-upload', variant: 'default' },
       { id: 'add-deal', label: 'Add New Deal', icon: Plus, path: '/contract-upload', variant: 'primary' },
@@ -247,6 +242,7 @@ export default function PremiumDrawer({
     lifestyleShield: [
       { id: 'consumer-complaints', label: 'Consumer Complaints', icon: Shield, path: '/lifestyle/consumer-complaints', variant: 'accent' },
       { id: 'my-complaints', label: 'My Complaints', icon: FileText, path: '/dashboard/consumer-complaints', variant: 'default' },
+      { id: 'contact-lawyer', label: 'Contact Lawyer', icon: Scale, path: 'https://wa.me/916207479248', variant: 'primary' },
     ],
     settings: [
       { id: 'profile', label: 'Account', icon: Settings, path: '/creator-profile?section=account' },
@@ -283,10 +279,14 @@ export default function PremiumDrawer({
 
   const handleItemClick = (item: DrawerMenuItem) => {
     if (item.path) {
-      if (onNavigate) {
-        onNavigate(item.path);
+      if (item.path.startsWith('http')) {
+        window.open(item.path, '_blank');
       } else {
-        navigate(item.path);
+        if (onNavigate) {
+          onNavigate(item.path);
+        } else {
+          navigate(item.path);
+        }
       }
     }
     onClose();
@@ -447,12 +447,7 @@ export default function PremiumDrawer({
 // ============================================================================
 
 export const DEFAULT_MENU_DATA: DrawerMenuData = {
-  main: [
-    { id: 'deals', label: 'Brand Deals', icon: Briefcase, tab: 'deals' },
-    { id: 'payments', label: 'Payments', icon: Wallet, tab: 'payments' },
-    { id: 'collab', label: 'Collab', icon: Link2, path: '/creator-dashboard' },
-    { id: 'calendar', label: 'Calendar', icon: Calendar, path: '/calendar' },
-  ],
+  main: [],
   quickActions: [
     { id: 'upload-contract', label: 'Upload Contract', icon: Upload, path: '/contract-upload', variant: 'default' },
     { id: 'add-deal', label: 'Add New Deal', icon: Plus, path: '/contract-upload', variant: 'primary' },

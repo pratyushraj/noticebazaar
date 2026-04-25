@@ -43,55 +43,62 @@ const FiverrPackageEditor: React.FC<FiverrPackageEditorProps> = ({
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
   useEffect(() => {
+    const reelRate = Math.max(0, Number(avg_rate_reel) || 0);
+    const growthRate = Math.round(reelRate * 2);
+
+    const syncTemplateWithRate = (template: DealTemplate): DealTemplate => {
+      const normalizedBudget = Number(
+        template.budget ?? (template as any).price ?? (template as any).rate ?? 0
+      ) || 0;
+
+      if (template.id === 'basic') {
+        return { ...template, budget: reelRate };
+      }
+
+      if (template.id === 'standard') {
+        return { ...template, budget: growthRate };
+      }
+
+      if (template.id === 'barter' || template.id === 'product_review') {
+        return { ...template, budget: 0, type: 'barter' };
+      }
+
+      return { ...template, budget: normalizedBudget };
+    };
+
     if (templates && templates.length > 0) {
       // Map old fields to new fields if necessary to avoid data loss
-      const mappedTemplates = templates.map(t => ({
-        ...t,
-        label: t.label || (
-          t.id === 'basic' ? '🚀 Starter Collab' :
-          t.id === 'standard' ? '⭐ Growth Campaign' :
-          (t.id === 'barter' || t.id === 'product_review') ? '🎁 Product Exchange' : (t as any).name || 'Package'
-        ),
-        budget: t.budget || (t as any).rate || 0,
-        description: t.description || (
-          t.id === 'basic' ? 'High-performing Reel optimized for organic reach. Best for first-time brand discovery.' :
-          t.id === 'standard' ? 'Includes 30-day usage rights so brands can run ads and drive conversions.' :
-          (t.id === 'barter' || t.id === 'product_review') ? 'Product unboxing or review with no paid usage rights. Best for authentic product proof.' : ''
-        ),
-        deadlineDays: t.deadlineDays || (t as any).turnaround_days || 7,
-        isPopular: t.id === 'standard' || t.isPopular || (t as any).is_default || false,
-        icon: t.icon || (t.id === 'basic' ? '🚀' : t.id === 'standard' ? '⭐' : '🎁'),
-        type: t.type || 'paid',
-        category: t.category || 'Creator Service',
-        deliverables: t.deliverables || (
-          t.id === 'basic' ? ['1 Reel (15-30s)', 'Organic reach focus', 'Basic editing', 'Payment secured before content delivery'] :
-          t.id === 'standard' ? ['1 Premium Reel (30-60s)', '30-day usage rights (for ads)', 'Script + hook optimization', '1 Story shoutout', 'Payment secured before content delivery'] :
-          (t.id === 'barter' || t.id === 'product_review') ? ['Product unboxing / review', '1 Story mention', 'No paid usage rights', 'Payment secured before content delivery'] : []
-        ),
-        quantities: t.quantities || {},
-      }));
+      const mappedTemplates = templates.map(t =>
+        syncTemplateWithRate({
+          ...t,
+          label: t.label || (
+            t.id === 'basic' ? '🚀 Starter Collab' :
+            t.id === 'standard' ? '⭐ Growth Campaign' :
+            (t.id === 'barter' || t.id === 'product_review') ? '🎁 Product Exchange' : (t as any).name || 'Package'
+          ),
+          description: t.description || (
+            t.id === 'basic' ? 'High-performing Reel optimized for organic reach. Best for first-time brand discovery.' :
+            t.id === 'standard' ? 'Includes 30-day usage rights so brands can run ads and drive conversions.' :
+            (t.id === 'barter' || t.id === 'product_review') ? 'Product unboxing or review with no paid usage rights. Best for authentic product proof.' : ''
+          ),
+          deadlineDays: t.deadlineDays || (t as any).turnaround_days || 7,
+          isPopular: t.id === 'standard' || t.isPopular || (t as any).is_default || false,
+          icon: t.icon || (t.id === 'basic' ? '🚀' : t.id === 'standard' ? '⭐' : '🎁'),
+          type: t.type || 'paid',
+          category: t.category || 'Creator Service',
+          deliverables: t.deliverables || (
+            t.id === 'basic' ? ['1 Reel (15-30s)', 'Organic reach focus', 'Basic editing'] :
+            t.id === 'standard' ? ['1 Premium Reel (30-60s)', '30-day usage rights (for ads)', 'Script + hook optimization', '1 Story shoutout'] :
+            (t.id === 'barter' || t.id === 'product_review') ? ['Product unboxing / review', '1 Story mention', 'No paid usage rights'] : []
+          ),
+          quantities: t.quantities || {},
+        })
+      );
 
-      // AUTO-UPDATE LOGIC: If the user changed their baseline rate, 
-      // we should update standard templates IF they haven't been customized to a specific weird amount.
-      // This solves the "wrong price" issue when changing baseline rate.
-      const prevReelRate = Number(localTemplates.find(t => t.id === 'basic' || t.id === 'Starter')?.budget) || 0;
-      const currentReelRate = Number(avg_rate_reel);
-      
-      if (currentReelRate !== prevReelRate && prevReelRate > 0) {
-        const updated = mappedTemplates.map(t => {
-          if (t.id === 'basic' && (t.budget === prevReelRate || t.budget === 0)) {
-             return { ...t, budget: currentReelRate };
-          }
-          if (t.id === 'standard' && (t.budget === prevReelRate * 2 || t.budget === 0)) {
-             return { ...t, budget: currentReelRate * 2 };
-          }
-          // Only update if they look like they were using the previous default logic
-          return t;
-        });
-        setLocalTemplates(updated);
-        onChange(updated);
-      } else {
-        setLocalTemplates(mappedTemplates);
+      setLocalTemplates(mappedTemplates);
+
+      if (JSON.stringify(mappedTemplates) !== JSON.stringify(templates)) {
+        onChange(mappedTemplates);
       }
     } else {
       // Generate defaults based on avg_rate_reel
@@ -105,7 +112,7 @@ const FiverrPackageEditor: React.FC<FiverrPackageEditorProps> = ({
           budget: reelRate,
           type: 'paid',
           category: 'Short-form',
-          deliverables: ['1 Reel (15-30s)', 'Organic reach focus', 'Basic editing', 'Payment secured before content delivery'],
+          deliverables: ['1 Reel (15-30s)', 'Organic reach focus', 'Basic editing'],
           quantities: { 'Reel': 1 },
           deadlineDays: 5,
         },
@@ -117,7 +124,7 @@ const FiverrPackageEditor: React.FC<FiverrPackageEditorProps> = ({
           budget: Math.round(reelRate * 2),
           type: 'paid',
           category: 'Premium',
-          deliverables: ['1 Premium Reel (30-60s)', '30-day usage rights (for ads)', 'Script + hook optimization', '1 Story shoutout', 'Payment secured before content delivery'],
+          deliverables: ['1 Premium Reel (30-60s)', '30-day usage rights (for ads)', 'Script + hook optimization', '1 Story shoutout'],
           quantities: { 'Reel': 1, 'Story': 1 },
           deadlineDays: 7,
           isPopular: true,
@@ -130,7 +137,7 @@ const FiverrPackageEditor: React.FC<FiverrPackageEditorProps> = ({
           budget: 0,
           type: 'barter',
           category: 'Unboxing',
-          deliverables: ['Product unboxing / review', '1 Story mention', 'No paid usage rights', 'Payment secured before content delivery'],
+          deliverables: ['Product unboxing / review', '1 Story mention', 'No paid usage rights'],
           quantities: { 'Unboxing Video': 1, 'Instagram Story': 1 },
           deadlineDays: 14,
         }

@@ -1,16 +1,15 @@
 
 
 import { supabase } from '@/integrations/supabase/client';
-import { 
-  ShieldCheck, 
-  ArrowLeft, 
-  Loader2, 
-  Eye, 
-  EyeOff, 
-  Mail, 
-  Lock, 
-  User, 
-  Shield
+import {
+  ShieldCheck,
+  ArrowLeft,
+  Loader2,
+  Eye,
+  EyeOff,
+  Mail,
+  Lock,
+  User,
 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useSession } from '@/contexts/SessionContext';
@@ -148,7 +147,7 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen bg-white text-slate-900 flex flex-col items-center justify-center font-outfit relative" 
+    <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(34,197,94,0.18),_transparent_28%),radial-gradient(circle_at_top_right,_rgba(45,212,191,0.15),_transparent_32%),linear-gradient(180deg,_#ecfdf5_0%,_#f0fdfa_45%,_#ffffff_100%)] text-slate-900 flex flex-col items-center justify-center font-outfit relative overflow-hidden"
       style={{
         minHeight: '100dvh',
         paddingTop: 'max(24px, env(safe-area-inset-top, 0px))',
@@ -157,6 +156,11 @@ const Login = () => {
         paddingRight: 'env(safe-area-inset-right, 0px)',
       }}
     >
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute -top-24 -left-16 h-72 w-72 rounded-full bg-emerald-400/20 blur-3xl" />
+        <div className="absolute top-16 -right-10 h-64 w-64 rounded-full bg-teal-300/20 blur-3xl" />
+        <div className="absolute bottom-0 left-1/2 h-56 w-80 -translate-x-1/2 rounded-full bg-emerald-200/25 blur-3xl" />
+      </div>
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
@@ -164,16 +168,16 @@ const Login = () => {
         className="w-full max-w-[420px] relative z-10 px-4"
       >
         <div 
-          className="p-8 md:p-10 rounded-[2.5rem] bg-white border border-slate-100"
+          className="p-8 md:p-10 rounded-[2.5rem] bg-white/92 border border-emerald-100 shadow-[0_30px_80px_rgba(16,185,129,0.12)] backdrop-blur-xl"
         >
           {/* Branding */}
           <div className="flex flex-col items-center mb-8">
-            <div className="w-12 h-12 bg-slate-900 rounded-2xl flex items-center justify-center mb-4 transition-transform hover:scale-105 duration-300">
+            <div className="w-14 h-14 bg-gradient-to-br from-emerald-500 to-teal-500 rounded-[20px] flex items-center justify-center mb-4 shadow-[0_18px_35px_rgba(16,185,129,0.28)] transition-transform hover:scale-105 duration-300">
               <ShieldCheck className="h-6 w-6 text-white" aria-hidden="true" />
             </div>
             
             <h1 className="text-xl font-black tracking-tight text-slate-900 mb-1">Creator Armour</h1>
-            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Secure Fintech Login</p>
+            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-emerald-600/80">Brand-safe access</p>
           </div>
 
           {/* Title */}
@@ -206,11 +210,11 @@ const Login = () => {
           <div className="mb-6">
             <form onSubmit={handleEmailPasswordLogin} className="space-y-5">
               <div className="space-y-2 group">
-                <Label htmlFor="identifier" className="text-slate-500 text-[12px] font-black uppercase tracking-widest ml-1 transition-colors group-focus-within:text-primary">
+                <Label htmlFor="identifier" className="text-slate-500 text-[12px] font-black uppercase tracking-widest ml-1 transition-colors group-focus-within:text-emerald-600">
                   Email or Username
                 </Label>
                 <div className="relative">
-                  <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors">
+                  <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-emerald-600 transition-colors">
                     <Mail className="w-5 h-5" />
                   </div>
                   <Input
@@ -219,7 +223,7 @@ const Login = () => {
                     placeholder="name@example.com"
                     value={identifier}
                     onChange={(e) => setIdentifier(e.target.value)}
-                    className="bg-white border-slate-200 text-slate-900 placeholder:text-slate-400 text-[16px] h-[60px] rounded-2xl border-2 focus:border-slate-900 focus:ring-4 focus:ring-slate-900/5 focus:bg-white pl-12 pr-5 transition-all outline-none"
+                    className="bg-white/90 border-emerald-100 text-slate-900 placeholder:text-slate-400 text-[16px] h-[60px] rounded-2xl border-2 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 focus:bg-white pl-12 pr-5 transition-all outline-none"
                     required
                     autoComplete="username"
                     aria-label="Email or Instagram username"
@@ -229,12 +233,12 @@ const Login = () => {
 
               <div className="space-y-2 group">
                 <div className="flex justify-between items-center px-1">
-                  <Label htmlFor="password" className="text-slate-500 text-[12px] font-black uppercase tracking-widest transition-colors group-focus-within:text-slate-900">
+                  <Label htmlFor="password" className="text-slate-500 text-[12px] font-black uppercase tracking-widest transition-colors group-focus-within:text-emerald-600">
                     Password
                   </Label>
                 </div>
                 <div className="relative">
-                  <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-slate-900 transition-colors">
+                  <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-emerald-600 transition-colors">
                     <Lock className="w-5 h-5" />
                   </div>
                   <Input
@@ -243,7 +247,7 @@ const Login = () => {
                     placeholder="••••••••"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="bg-white border-slate-200 text-slate-900 placeholder:text-slate-400 text-[16px] h-[60px] rounded-2xl border-2 focus:border-slate-900 focus:ring-4 focus:ring-slate-900/5 focus:bg-white pl-12 pr-12 transition-all outline-none"
+                    className="bg-white/90 border-emerald-100 text-slate-900 placeholder:text-slate-400 text-[16px] h-[60px] rounded-2xl border-2 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 focus:bg-white pl-12 pr-12 transition-all outline-none"
                     required
                     autoComplete="current-password"
                     aria-label="Password"
@@ -261,7 +265,7 @@ const Login = () => {
                   <button
                     type="button"
                     onClick={handleForgotPassword}
-                    className="text-[13px] font-bold text-slate-400 hover:text-slate-900 transition-colors"
+                    className="text-[13px] font-bold text-slate-400 hover:text-emerald-600 transition-colors"
                   >
                     Forgot password?
                   </button>
@@ -271,7 +275,7 @@ const Login = () => {
               <Button
                 type="submit"
                 disabled={isLoading || !identifier.trim() || !password.trim()}
-                className="w-full bg-slate-900 hover:bg-slate-800 text-white font-black h-[60px] rounded-2xl shadow-xl shadow-slate-900/10 transition-all active:scale-[0.98] text-[16px] mt-4 relative overflow-hidden group border-none"
+                className="w-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white font-black h-[60px] rounded-2xl shadow-[0_18px_35px_rgba(16,185,129,0.22)] transition-all active:scale-[0.98] text-[16px] mt-4 relative overflow-hidden group border-none"
               >
                 <AnimatePresence mode="wait">
                   {isLoading ? (
@@ -313,14 +317,14 @@ const Login = () => {
               <div className="grid grid-cols-2 gap-4">
                 <Link 
                   to="/signup?mode=creator" 
-                  className="flex flex-col items-center justify-center p-4 rounded-[2rem] bg-white border border-slate-100 hover:border-slate-300 hover:shadow-sm transition-all group active:scale-95"
+                  className="flex flex-col items-center justify-center p-4 rounded-[2rem] bg-white/85 border border-emerald-100 hover:border-emerald-300 hover:shadow-sm transition-all group active:scale-95"
                 >
                   <User className="w-6 h-6 text-slate-400 mb-2 group-hover:text-emerald-500 group-hover:scale-110 transition-all" />
                   <span className="text-[13px] font-black text-slate-900">I'm a Creator</span>
                 </Link>
                 <Link 
                   to="/signup?mode=brand" 
-                  className="flex flex-col items-center justify-center p-4 rounded-[2rem] bg-white border border-slate-100 hover:border-slate-300 hover:shadow-sm transition-all group active:scale-95"
+                  className="flex flex-col items-center justify-center p-4 rounded-[2rem] bg-white/85 border border-emerald-100 hover:border-emerald-300 hover:shadow-sm transition-all group active:scale-95"
                 >
                   <ShieldCheck className="w-6 h-6 text-slate-400 mb-2 group-hover:text-blue-500 group-hover:scale-110 transition-all" />
                   <span className="text-[13px] font-black text-slate-900">I'm a Brand</span>
@@ -332,7 +336,7 @@ const Login = () => {
 
         {/* Subtle Bottom Link */}
         <div className="mt-10 pt-6 border-t border-slate-50 flex flex-col items-center gap-6">
-          <Link to="/" className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400 hover:text-slate-900 transition-colors flex items-center gap-2 group">
+          <Link to="/" className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400 hover:text-emerald-600 transition-colors flex items-center gap-2 group">
             <ArrowLeft className="w-3 h-3 group-hover:-translate-x-1 transition-transform" />
             Back to homepage
           </Link>
@@ -344,9 +348,9 @@ const Login = () => {
       <div className="mt-8 text-center px-4 max-w-[320px]">
         <p className="text-slate-400 text-[10px] leading-relaxed font-bold uppercase tracking-widest">
           By continuing, you agree to our{' '}
-          <a href="/terms" className="text-slate-500 hover:text-primary transition-colors">Terms</a>
+          <a href="/terms-of-service" className="text-slate-500 hover:text-emerald-600 transition-colors">Terms</a>
           {' '}&{' '}
-          <a href="/privacy" className="text-slate-500 hover:text-primary transition-colors">Privacy</a>
+          <a href="/privacy-policy" className="text-slate-500 hover:text-emerald-600 transition-colors">Privacy</a>
         </p>
       </div>
     </div>

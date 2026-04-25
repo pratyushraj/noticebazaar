@@ -198,7 +198,7 @@ const fetchDealsForCreator = async (creatorId: string, creatorEmail?: string | n
       const sanitized = deals.filter((d) => {
         const brand = String((d as any)?.brand_name || '').trim();
         const amt = Number((d as any)?.deal_amount || 0);
-        return !!brand && Number.isFinite(amt) && amt > 0;
+        return !!brand && Number.isFinite(amt) && amt >= 0;
       });
 
       return { deals: sanitized, error: null };

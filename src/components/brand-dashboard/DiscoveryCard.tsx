@@ -108,10 +108,11 @@ export const DiscoveryCard: React.FC<DiscoveryCardProps> = ({
         return num.toString();
     };
 
+    const startsAtPrice = creator.starting_price || (creator as any).avg_rate_reel || (creator as any).suggested_reel_rate || 0;
     const stats = [
         { label: 'Avg Views', value: formatCount((creator as any).avg_reel_views_manual || 0), icon: <Eye className="w-3 h-3" /> },
         { label: 'Engage', value: ((creator as any).engagement_rate || 4.2).toFixed(1) + '%', icon: <TrendingUp className="w-3 h-3" /> },
-        { label: 'Starts at', value: `₹${(creator.starting_price || 5000).toLocaleString()}`, icon: <Zap className="w-3 h-3 text-emerald-400" /> },
+        { label: 'Starts at', value: startsAtPrice > 0 ? `₹${startsAtPrice.toLocaleString()}` : 'Barter', icon: <Zap className="w-3 h-3 text-emerald-400" /> },
     ];
 
     return (
@@ -240,7 +241,7 @@ export const DiscoveryCard: React.FC<DiscoveryCardProps> = ({
                         <div className="flex items-center gap-2 z-10">
                             <Zap className="w-5 h-5 fill-current" />
                             <span className="text-[16px] font-black uppercase tracking-tight italic">
-                                Send Offer ₹{(creator.starting_price || 5000).toLocaleString()}
+                                {startsAtPrice > 0 ? `Send Offer ₹${startsAtPrice.toLocaleString()}` : 'Send Barter Offer'}
                             </span>
                         </div>
                         <span className="text-[9px] font-bold opacity-70 z-10 uppercase tracking-widest mt-0.5">

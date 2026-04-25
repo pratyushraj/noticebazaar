@@ -53,8 +53,8 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
             exit={{ y: '100%' }}
             transition={{ type: 'spring', damping: 30, stiffness: 300 }}
             className={cn(
-              "fixed bottom-0 left-0 right-0 z-50 bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 text-foreground rounded-t-[24px] shadow-2xl",
-              "max-h-[90vh] overflow-hidden flex flex-col",
+              "fixed bottom-0 left-0 right-0 z-50 bg-white text-slate-900 rounded-t-[32px] shadow-[0_-10px_40px_rgba(0,0,0,0.1)]",
+              "max-h-[92vh] overflow-hidden flex flex-col border-t border-slate-100",
               "safe-area-inset-bottom",
               className
             )}
@@ -62,21 +62,21 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
               paddingBottom: 'env(safe-area-inset-bottom, 0px)',
             }}
           >
-            {/* Handle */}
-            <div className="flex items-center justify-center pt-3 pb-2">
-              <div className="w-12 h-1.5 bg-secondary/30 rounded-full" />
+            {/* Handle Bar */}
+            <div className="flex items-center justify-center pt-4 pb-2">
+              <div className="w-12 h-1.5 bg-slate-200 rounded-full" />
             </div>
 
             {/* Header */}
             {title && (
-              <div className="flex items-center justify-between px-6 pb-4">
-                <h2 className="text-xl font-bold">{title}</h2>
+              <div className="flex items-center justify-between px-6 pb-6 pt-2">
+                <h2 className="text-2xl font-black tracking-tight text-slate-900 uppercase italic">{title}</h2>
                 <button type="button"
                   onClick={onClose}
-                  className="w-8 h-8 rounded-full bg-secondary/50 hover:bg-secondary/20 flex items-center justify-center transition-colors active:scale-95"
+                  className="w-10 h-10 rounded-2xl bg-slate-100 hover:bg-slate-200 flex items-center justify-center transition-all active:scale-90"
                   aria-label="Close"
                 >
-                  <X className="w-5 h-5" />
+                  <X className="w-5 h-5 text-slate-600" />
                 </button>
               </div>
             )}

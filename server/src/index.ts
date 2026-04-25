@@ -67,10 +67,11 @@ import onboardingEmailsRouter from './routes/onboardingEmails.js';
 import brandDashboardRouter from './routes/brandDashboard.js';
 import { sendCollabRequestAcceptedEmail, sendCollabRequestCreatorNotificationEmail } from './services/collabRequestEmailService.js';
 import { createContractReadyToken } from './services/contractReadyTokenService.js';
-import swipeRouter from './routes/swipe.js';
-// Log router import for debugging
-console.log('[Server] Influencers router imported:', typeof influencersRouter, influencersRouter ? '✓' : '✗');
-import { authMiddleware } from './middleware/auth.js';
+ import swipeRouter from './routes/swipe.js';
+ import accountRouter from './routes/account.js';
+ // Log router import for debugging
+ console.log('[Server] Influencers router imported:', typeof influencersRouter, influencersRouter ? '✓' : '✗');
+ import { authMiddleware } from './middleware/auth.js';
 import { rateLimitMiddleware } from './middleware/rateLimit.js';
 import { errorHandler } from './middleware/errorHandler.js';
 
@@ -396,10 +397,11 @@ app.use('/api/cron', cronDealRemindersRouter); // Cron: deal reminders (protecte
 app.use('/api/cron', cronOnboardingEmailsRouter); // Cron: creator onboarding sequence (protected by CRON_SECRET)
 
 // Authentication Routes - Must be registered before catch-all and after other public routes
-console.log('[Server] Registering auth routes at /api/auth');
-app.use('/api/auth', authRouter);
+ console.log('[Server] Registering auth routes at /api/auth');
+ app.use('/api/auth', authRouter);
+ app.use('/api/account', authMiddleware, accountRouter);
 
-// API Routes (protected)
+ // API Routes (protected)
 app.use('/api/brand-reply-tokens', authMiddleware, rateLimitMiddleware, brandReplyTokensRouter);
 app.use('/api/conversations', authMiddleware, rateLimitMiddleware, conversationsRouter);
 app.use('/api/conversations', authMiddleware, rateLimitMiddleware, messagesRouter);

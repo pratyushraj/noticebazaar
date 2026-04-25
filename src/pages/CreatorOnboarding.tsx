@@ -469,7 +469,7 @@ export default function CreatorOnboarding() {
           instagram_handle: instagramHandle.replace(/^@+/, '').trim().toLowerCase(),
           username: instagramHandle.replace(/^@+/, '').trim().toLowerCase(),
           bio: creatorTitle || null,
-        });
+        } as any);
 
         setStep('reach');
       } else if (step === 'reach') {
@@ -485,7 +485,7 @@ export default function CreatorOnboarding() {
           follower_count_range: getFollowerRangeId(Number(followerCount)),
           collab_region_label: baseCity || null,
           top_cities: [topCity1, topCity2, topCity3].map(c => c.trim()).filter(Boolean),
-        });
+        } as any);
 
         setStep('audience');
       } else if (step === 'audience') {
@@ -503,7 +503,7 @@ export default function CreatorOnboarding() {
           id: profile!.id,
           audience_gender_split: audienceGenderSplit,
           audience_age_range: audienceAgeRange.join(', '),
-        });
+        } as any);
 
         setStep('style');
       } else if (step === 'style') {
@@ -517,7 +517,7 @@ export default function CreatorOnboarding() {
           id: profile!.id,
           content_niches: selectedNiches,
           content_vibes: contentVibes,
-        });
+        } as any);
 
         setStep('collab');
       } else if (step === 'collab') {
@@ -543,7 +543,7 @@ export default function CreatorOnboarding() {
             title: 'Primary Reel',
             platform: 'internal'
           }] : [],
-        });
+        } as any);
 
         setStep('videoSuccess');
       } else if (step === 'payout') {
@@ -569,7 +569,7 @@ export default function CreatorOnboarding() {
           location: shippingAddress ? `${shippingAddress}${pincode ? ', ' + pincode : ''}` : null,
           shipping_address: shippingAddress || null,
           pincode: pincode || null,
-        });
+        } as any);
 
         setStep('notifications');
       }
@@ -692,7 +692,7 @@ export default function CreatorOnboarding() {
         collab_past_work_items: portfolioItems,
         onboarding_complete: true,
         open_to_collabs: true,
-      });
+      } as any);
 
       if (typeof window !== 'undefined') {
         window.localStorage.removeItem(ONBOARDING_DRAFT_KEY);

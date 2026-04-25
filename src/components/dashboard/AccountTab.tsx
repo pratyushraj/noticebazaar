@@ -1,9 +1,10 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import {
     ShieldCheck, ChevronRight, Link2, Landmark, 
     Bell, User, Sun, Moon, LogOut, CheckCircle2,
-    ExternalLink, Trash2
+    ExternalLink, Trash2, MessageSquare
 } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { withCacheBuster } from '@/lib/utils/image';
@@ -37,6 +38,7 @@ export const AccountTab: React.FC<AccountTabProps> = ({
     setActiveTab,
     triggerHaptic
 }) => {
+    const navigate = useNavigate();
     const formatCompactNumber = (value: any) => {
         if (value === undefined || value === null || value === '') return '—';
         const num = Number(value);
@@ -210,6 +212,36 @@ export const AccountTab: React.FC<AccountTabProps> = ({
             </div>
 
             {/* Preferences */}
+            <div className="mb-10 relative z-10">
+                <h4 className={cn("text-xs font-bold uppercase tracking-[0.2em] mb-4 px-1", isDark ? "text-slate-400" : "text-slate-400")}>Legal Support</h4>
+                <motion.button 
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => {
+                        triggerHaptic();
+                        window.open(`https://wa.me/916207479248?text=I%20need%20help%20with%20a%20legal%20issue`, '_blank');
+                    }}
+                    className={cn(
+                        "w-full p-5 rounded-[2rem] border flex items-center justify-between transition-all relative overflow-hidden group",
+                        isDark ? "bg-[#0B1324] border-white/5" : "bg-white border-slate-200 shadow-sm"
+                    )}
+                >
+                    <div className="flex items-center gap-4 relative z-10">
+                        <div className={cn(
+                            "w-10 h-10 rounded-2xl flex items-center justify-center bg-emerald-500/10 text-emerald-500"
+                        )}>
+                            <MessageSquare className="w-5 h-5" />
+                        </div>
+                        <div className="text-left">
+                            <p className={cn("text-[15px] font-black", isDark ? "text-white" : "text-slate-900")}>Contact Lawyer</p>
+                            <p className={cn("text-xs font-medium opacity-40", textColor)}>Direct support via WhatsApp</p>
+                        </div>
+                    </div>
+                    <ChevronRight className={cn("w-5 h-5 opacity-20 group-hover:opacity-100 transition-opacity relative z-10", isDark ? "text-white" : "text-slate-400")} />
+                    <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/0 via-emerald-500/0 to-emerald-500/5 translate-x-[-100%] group-hover:translate-x-[0%] transition-transform duration-500" />
+                </motion.button>
+            </div>
+
+            {/* Preferences */}
             <div className="mb-12 relative z-10">
                 <h4 className={cn("text-xs font-bold uppercase tracking-[0.2em] mb-4 px-1", isDark ? "text-slate-400" : "text-slate-400")}>System & Privacy</h4>
                 <div className={cn(
@@ -301,7 +333,7 @@ export const AccountTab: React.FC<AccountTabProps> = ({
                 </button>
 
                 <button 
-                    onClick={() => { triggerHaptic(); setActiveSettingsPage('delete'); }}
+                    onClick={() => { triggerHaptic(); navigate('/delete-account'); }}
                     className={cn(
                         "text-[11px] font-black uppercase tracking-[0.2em] opacity-30 hover:opacity-100 transition-opacity flex items-center gap-2 py-2 px-4",
                         isDark ? "text-red-400" : "text-red-600"

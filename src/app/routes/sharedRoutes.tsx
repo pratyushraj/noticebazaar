@@ -1,9 +1,10 @@
-import { lazy } from "react";
-import { Route } from "react-router-dom";
-import ProtectedLayout from "@/components/ProtectedLayout";
-import { LazyRoute } from "./routeElements";
-
-const MessagesRoute = lazy(() => import("@/pages/MessagesRoute"));
+ import { lazy } from "react";
+ import { Route } from "react-router-dom";
+ import ProtectedLayout from "@/components/ProtectedLayout";
+ import { LazyRoute } from "./routeElements";
+ 
+ const MessagesRoute = lazy(() => import("@/pages/MessagesRoute"));
+ const DeleteAccount = lazy(() => import("@/pages/DeleteAccount"));
 
 export const SharedRoutes = () => (
   <>
@@ -18,15 +19,14 @@ export const SharedRoutes = () => (
       }
     />
     <Route
-      path="/messages/:conversationId"
+      path="/delete-account"
       element={
         <LazyRoute>
           <ProtectedLayout allowedRoles={["creator", "brand", "admin", "lawyer", "chartered_accountant", "client"]}>
-            <MessagesRoute />
+            <DeleteAccount />
           </ProtectedLayout>
         </LazyRoute>
       }
     />
   </>
 );
-
