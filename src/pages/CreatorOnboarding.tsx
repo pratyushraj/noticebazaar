@@ -986,9 +986,14 @@ export default function CreatorOnboarding() {
               <div className="mt-auto pt-10 w-full space-y-4">
                 <Button
                   onClick={handleNext}
+                  disabled={isSubmitting}
                   className="w-full h-16 rounded-2xl bg-slate-900 text-white font-black italic text-lg shadow-xl shadow-slate-200 active:scale-95 transition-all flex items-center justify-center gap-2 group"
                 >
-                  Continue <span className="text-primary">→</span> Find brand deals
+                  {isSubmitting ? (
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                  ) : (
+                    <>Continue <span className="text-primary">→</span> Find brand deals</>
+                  )}
                 </Button>
                 <div className="flex items-center justify-center gap-2 text-slate-400 font-bold text-[10px] uppercase tracking-widest">
                   <ShieldCheck className="w-3.5 h-3.5" />
@@ -1130,9 +1135,14 @@ export default function CreatorOnboarding() {
               <div className="mt-auto pt-10 w-full space-y-4">
                 <Button
                   onClick={handleNext}
-                  className="w-full h-16 rounded-2xl bg-slate-900 text-white font-black italic text-lg shadow-xl shadow-slate-200 active:scale-95 transition-all"
+                  disabled={isSubmitting}
+                  className="w-full h-16 rounded-2xl bg-slate-900 text-white font-black italic text-lg shadow-xl shadow-slate-200 active:scale-95 transition-all flex items-center justify-center gap-2"
                 >
-                  Continue <ArrowRight className="ml-2 w-5 h-5" />
+                  {isSubmitting ? (
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                  ) : (
+                    <>Continue <ArrowRight className="ml-2 w-5 h-5" /></>
+                  )}
                 </Button>
               </div>
             </OnboardingSlide>
@@ -1225,9 +1235,14 @@ export default function CreatorOnboarding() {
               <div className="sticky bottom-4 mt-auto pt-8">
                 <Button
                   onClick={handleNext}
-                  className="h-16 w-full rounded-[24px] border border-emerald-300/20 bg-[linear-gradient(90deg,#22c55e_0%,#0ea5e9_100%)] text-base font-black text-white shadow-[0_22px_55px_rgba(14,165,233,0.18)] transition-all active:scale-[0.985]"
+                  disabled={isSubmitting}
+                  className="h-16 w-full rounded-[24px] border border-emerald-300/20 bg-[linear-gradient(90deg,#22c55e_0%,#0ea5e9_100%)] text-base font-black text-white shadow-[0_22px_55px_rgba(14,165,233,0.18)] transition-all active:scale-[0.985] flex items-center justify-center gap-2"
                 >
-                  Save & Continue <ArrowRight className="ml-2 h-5 w-5" />
+                  {isSubmitting ? (
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                  ) : (
+                    <>Save & Continue <ArrowRight className="ml-2 h-5 w-5" /></>
+                  )}
                 </Button>
               </div>
             </OnboardingSlide>
@@ -1295,9 +1310,14 @@ export default function CreatorOnboarding() {
               <div className="mt-auto pt-10 w-full space-y-4">
                 <Button
                   onClick={handleNext}
+                  disabled={isSubmitting}
                   className="w-full h-16 rounded-2xl bg-slate-900 text-white font-black italic text-lg shadow-xl shadow-slate-200 active:scale-95 transition-all flex items-center justify-center gap-2 group"
                 >
-                  Continue <ArrowRight className="ml-2 w-5 h-5" />
+                  {isSubmitting ? (
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                  ) : (
+                    <>Continue <ArrowRight className="ml-2 w-5 h-5" /></>
+                  )}
                 </Button>
                 <div className="flex items-center justify-center gap-2 text-slate-400 font-bold text-[10px] uppercase tracking-widest">
                   <ShieldCheck className="w-3.5 h-3.5" />
@@ -1394,9 +1414,14 @@ export default function CreatorOnboarding() {
               <div className="mt-auto pt-10 w-full">
                 <Button
                   onClick={handleNext}
-                  className="w-full h-16 rounded-2xl bg-slate-900 text-white font-black italic text-lg shadow-xl shadow-slate-200 active:scale-95 transition-all"
+                  disabled={isSubmitting}
+                  className="w-full h-16 rounded-2xl bg-slate-900 text-white font-black italic text-lg shadow-xl shadow-slate-200 active:scale-95 transition-all flex items-center justify-center gap-2"
                 >
-                  Continue <ArrowRight className="ml-2 w-5 h-5" />
+                  {isSubmitting ? (
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                  ) : (
+                    <>Continue <ArrowRight className="ml-2 w-5 h-5" /></>
+                  )}
                 </Button>
               </div>
             </OnboardingSlide>
@@ -1530,9 +1555,14 @@ export default function CreatorOnboarding() {
               <div className="mt-auto pt-10 w-full">
                 <Button
                   onClick={handleNext}
-                  className="w-full h-16 rounded-2xl bg-slate-900 text-white font-black italic text-lg shadow-xl shadow-slate-200 active:scale-95 transition-all"
+                  disabled={isSubmitting}
+                  className="w-full h-16 rounded-2xl bg-slate-900 text-white font-black italic text-lg shadow-xl shadow-slate-200 active:scale-95 transition-all flex items-center justify-center gap-2"
                 >
-                  Save & Continue <ArrowRight className="ml-2 w-5 h-5" />
+                  {isSubmitting ? (
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                  ) : (
+                    <>Save & Continue <ArrowRight className="ml-2 w-5 h-5" /></>
+                  )}
                 </Button>
               </div>
             </OnboardingSlide>

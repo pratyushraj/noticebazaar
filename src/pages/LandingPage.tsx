@@ -289,7 +289,7 @@ const LandingPage = () => {
             <div className="w-8 h-8 bg-[#16A34A] rounded-xl flex items-center justify-center shadow-lg shadow-[#16A34A]/20 shrink-0">
               <ShieldCheck className="w-5 h-5 text-white" />
             </div>
-            <h1 className="text-[17px] font-black tracking-tight text-[#0F172A] whitespace-nowrap">
+            <h1 className="text-[16px] sm:text-[17px] font-black tracking-tight text-[#0F172A] whitespace-nowrap hidden min-[380px]:block">
               Creator Armour
             </h1>
           </Link>
@@ -300,7 +300,7 @@ const LandingPage = () => {
             <a href="#social-proof" className="text-[13px] font-bold text-[#0F172A] hover:text-[#16A34A] transition-colors whitespace-nowrap">Creators</a>
           </div>
 
-          <div className="flex items-center gap-2 md:gap-3 shrink-0">
+          <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
             <Link to="/login" className="hidden md:block px-3 py-2 text-[14px] font-bold text-[#0F172A] hover:text-[#16A34A] transition-colors rounded-full hover:bg-[#F8FAF9] whitespace-nowrap shrink-0">
               Log In
             </Link>
@@ -314,13 +314,13 @@ const LandingPage = () => {
             <Link
               to="/signup?mode=creator"
               onClick={() => triggerHaptic(HapticPatterns.success)}
-              className="bg-[#16A34A] hover:bg-[#15803D] text-white px-4 sm:px-5 py-2.5 sm:py-3 rounded-full text-[14px] sm:text-[15px] font-black shadow-lg shadow-[#16A34A]/25 hover:shadow-[#16A34A]/40 hover:-translate-y-0.5 transition-all whitespace-nowrap shrink-0 min-h-[44px]"
+              className="bg-[#16A34A] hover:bg-[#15803D] text-white px-3.5 sm:px-5 py-2 sm:py-3 rounded-full text-[13px] sm:text-[15px] font-black shadow-lg shadow-[#16A34A]/25 hover:shadow-[#16A34A]/40 hover:-translate-y-0.5 transition-all whitespace-nowrap shrink-0 min-h-[40px] sm:min-h-[44px] flex items-center justify-center"
             >
-              Create Collab Link
+              Create <span className="hidden min-[400px]:inline ml-1">Collab </span>Link
             </Link>
             {/* Mobile menu button */}
             <button type="button"
-              className="lg:hidden p-2 rounded-xl hover:bg-[#F8FAF9] transition-colors shrink-0"
+              className="lg:hidden p-1.5 sm:p-2 rounded-xl hover:bg-[#F8FAF9] transition-colors shrink-0"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               aria-label="Toggle menu"
             >

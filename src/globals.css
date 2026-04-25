@@ -10,6 +10,19 @@
    MOBILE NATIVE UI/UX ENHANCEMENTS
    ============================================ */
 
+/* Disable selection globally for a native app feel, except in inputs/textareas */
+body {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+  overscroll-behavior-y: none; /* Disable browser pull-to-refresh for custom implementation */
+}
+
+input, textarea, [contenteditable="true"], .selectable {
+  -webkit-user-select: text;
+  user-select: text;
+}
+
 /* Shimmer Animation for Skeleton Loaders (CSS-only, no framer-motion) */
 @keyframes shimmer {
   0% { background-position: 200% 0; }
@@ -107,10 +120,21 @@
 
 html,
 body {
-  height: auto;
-  min-height: 100dvh;
-  overflow-x: clip; /* clip is safer than hidden for sticky elements in some browsers, but let's use auto for body if needed */
-  /* Allow native overscroll physics */
+  height: 100%;
+  width: 100%;
+  position: fixed; /* Prevent body scroll entirely */
+  overflow: hidden;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Main scrollable container in the app */
+#root, .app-scroll-root {
+  height: 100%;
+  width: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
 }
 
 /* Calendar-specific fixes */

@@ -68,9 +68,77 @@ const CreatorDashboard = () => {
   const brandDeals = (dealsQuery.data ?? []) as any[];
   const isLoadingBrandDeals = dealsQuery.isLoading;
 
+  // Real-time Profile Views tracking (from collab_link_events)
+  const viewsQuery = useQuery({
+    queryKey: ['profile-views-today', user?.id],
+    queryFn: async () => {
+      if (!user?.id) return 0;
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      
+      const { count, error } = await supabase
+        .from('collab_link_events')
+        .select('*', { count: 'exact', head: true })
+        .eq('creator_id', user.id)
+        .eq('event_type', 'view')
+        .gte('created_at', today.toISOString());
+        
+      if (error) {
+        console.error('Error fetching profile views:', error);
+        return 0;
+      }
+      return count || 0;
+    },
+    enabled: !!user?.id && !isBrandSession && !isLoadingProfile,
+    refetchInterval: 60000, // Refresh every minute
+  });
+  const profileViewsToday = viewsQuery.data ?? 0;
+
   // Production safety: avoid partial render flicker on first load.
   // We only "release" the dashboard once both endpoints have settled (success or error).
   const isDashboardSettled = !!user?.id && !isLoadingCollab && !isLoadingBrandDeals && !isLoadingProfile;
+
+  // Realtime: Listen for new offers or deal updates to avoid manual refreshes
+  useEffect(() => {
+    if (!user?.id) return;
+
+    // Listen for ANY changes to this creator's data
+    const channel = supabase
+      .channel(`dashboard-realtime:${user.id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'collab_requests',
+          filter: `creator_id=eq.${user.id}`,
+        },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ['collab-requests'] });
+          // Also toast for visibility if the tab is active
+          if (document.visibilityState === 'visible') {
+            toast.info('New offer update received!');
+          }
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'brand_deals',
+          filter: `creator_id=eq.${user.id}`,
+        },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ['brand-deals'] });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user?.id, queryClient]);
 
   const handleRefresh = () => {
     queryClient.invalidateQueries({ queryKey: ['collab-requests'] });
@@ -134,6 +202,7 @@ const CreatorDashboard = () => {
       profile={profile}
       collabRequests={collabRequests}
       brandDeals={brandDeals}
+      profileViewsToday={profileViewsToday}
       isLoadingProfile={!user?.id || isLoadingProfile}
       // Hold skeleton until both offers+deals have resolved; prevents 0-count flicker and cross-tab ghosting.
       isLoadingDealsOverride={!user?.id || !isDashboardSettled}

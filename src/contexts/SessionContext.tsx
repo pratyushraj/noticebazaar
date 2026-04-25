@@ -72,7 +72,7 @@ const fetchRedirectProfile = async (userId: string): Promise<RedirectProfile | n
       .from('profiles')
       .select('role, onboarding_complete, profile_completion') as any)
       .eq('id', userId)
-      .single();
+      .maybeSingle();
 
     if (!fullResult.error) {
       return (fullResult.data as RedirectProfile | null) ?? null;
@@ -82,7 +82,7 @@ const fetchRedirectProfile = async (userId: string): Promise<RedirectProfile | n
       .from('profiles')
       .select('role, onboarding_complete') as any)
       .eq('id', userId)
-      .single();
+      .maybeSingle();
 
     if (fallbackResult.error) {
       throw fallbackResult.error;
@@ -169,7 +169,7 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
             .from('profiles')
             .select(fields.join(', ')) as any)
             .eq('id', user.id)
-            .single();
+            .maybeSingle();
 
           if (error) {
             throw error;
@@ -199,7 +199,7 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
         .from('profiles')
         .select('id, first_name, last_name, avatar_url, role, updated_at') as any)
         .eq('id', user.id)
-        .single();
+        .maybeSingle();
 
       if (coreError) {
         if ((coreError as any).code !== 'PGRST116') {
@@ -266,7 +266,7 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
           .from('profiles')
           .select('onboarding_complete')
           .eq('id', user.id)
-          .single();
+          .maybeSingle();
         if (onboardingData) {
           optionalFields.onboarding_complete = onboardingData.onboarding_complete;
         }
@@ -332,7 +332,7 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
 
         // Brand fields
         try {
-          const { data: brandData } = await supabase.from('profiles').select('business_name').eq('id', user.id).single();
+          const { data: brandData } = await supabase.from('profiles').select('business_name').eq('id', user.id).maybeSingle();
           if (brandData) brandFields.business_name = brandData.business_name;
         } catch (e) {}
       };

@@ -75,6 +75,8 @@ interface MobileDashboardProps {
     isLoadingDealsOverride?: boolean;
     /** Show skeleton loading for profile section */
     isLoadingProfile?: boolean;
+    /** Real profile views count from database */
+    profileViewsToday?: number;
 }
 
 // Minimal Status Badge for Deal Cards
@@ -849,10 +851,11 @@ const MobileDashboardDemo = ({
     onRefresh,
     onLogout,
     showDemoOffer = false,
-    isLoadingProfile = false,
-    isLoadingDealsOverride = false,
     offersError,
     dealsError,
+    isLoadingDealsOverride = false,
+    isLoadingProfile = false,
+    profileViewsToday = 0
 }: MobileDashboardProps) => {
     const navigate = useNavigate();
     const queryClient = useQueryClient();
@@ -971,6 +974,58 @@ const MobileDashboardDemo = ({
         if (totalFollowers < 500000) return { range: '₹15,000–₹45,000', label: '100k–500k' };
         return { range: '₹50,000+', label: '500k+' };
     })();
+
+    // Meta Theme Color Manager: Makes the browser status bar match the app's tab color
+    useEffect(() => {
+        if (typeof document === 'undefined') return;
+        
+        let themeColor = '#061318'; // Default dark
+        if (theme === 'light') {
+            themeColor = '#FAFAFA';
+        } else {
+            // Tab-specific colors for dark mode to make it feel like a unified native app
+            const tabColors: Record<string, string> = {
+                dashboard: '#03110C', // Deep emerald
+                deals: '#0B0F14',      // Charcoal
+                payments: '#081018',   // Deep blue
+                profile: '#0B0F14',    // Charcoal
+            };
+            themeColor = tabColors[activeTab] || '#061318';
+        }
+
+        // Update or create meta tag
+        let meta = document.querySelector('meta[name="theme-color"]');
+        if (!meta) {
+            meta = document.createElement('meta');
+            meta.setAttribute('name', 'theme-color');
+            document.head.appendChild(meta);
+        }
+        meta.setAttribute('content', themeColor);
+        
+        // Also update apple-mobile-web-app-status-bar-style if needed
+        let appleMeta = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
+        if (!appleMeta) {
+            appleMeta = document.createElement('meta');
+            appleMeta.setAttribute('name', 'apple-mobile-web-app-status-bar-style');
+            document.head.appendChild(appleMeta);
+        }
+        appleMeta.setAttribute('content', 'black-translucent');
+    }, [activeTab, theme]);
+
+    // Prevent context menu for a more native feel on mobile
+    useEffect(() => {
+        const preventContextMenu = (e: MouseEvent) => {
+            // Allow context menu on inputs and textareas
+            const target = e.target as HTMLElement;
+            if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable) {
+                return;
+            }
+            e.preventDefault();
+        };
+
+        window.addEventListener('contextmenu', preventContextMenu);
+        return () => window.removeEventListener('contextmenu', preventContextMenu);
+    }, []);
 
     useEffect(() => {
         const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
@@ -4349,15 +4404,15 @@ const MobileDashboardDemo = ({
                     >
                         <div className="flex items-center justify-between mb-1">
                             {/* Left: Sidebar Menu */}
-                            <button type="button" onClick={() => handleAction('menu')} aria-label="Open menu" className={cn("w-10 h-10 -ml-1 rounded-2xl border flex items-center justify-center transition-all active:scale-95", isDark ? 'border-border bg-card text-foreground/70' : 'border-border bg-secondary/80 text-muted-foreground shadow-sm')}>
-                                <Menu className="w-6 h-6" strokeWidth={1.5} />
+                            <button type="button" onClick={() => handleAction('menu')} aria-label="Open menu" className={cn("w-10 h-10 -ml-1 rounded-xl flex items-center justify-center transition-all active:scale-95", isDark ? 'bg-white/5 text-foreground/70' : 'bg-secondary/50 text-muted-foreground')}>
+                                <Menu className="w-5 h-5" strokeWidth={2} />
                             </button>
 
                             {/* Center: Wordmark */}
                             <div className="flex flex-col items-center gap-0">
                                 <div className="flex items-center gap-1.5 font-black text-[15px] tracking-tight">
-                                    <ShieldCheck className={cn("w-3.5 h-3.5", isDark ? "text-primary" : "text-primary")} strokeWidth={3} />
-                                    <span className={cn(isDark ? "text-white" : "text-slate-900")}>Creator Console</span>
+                                    <ShieldCheck className={cn("w-4 h-4", isDark ? "text-primary" : "text-primary")} strokeWidth={2.5} />
+                                    <span className={cn(isDark ? "text-white" : "text-slate-900")}>Creator Armour</span>
                                 </div>
                             </div>
 
@@ -4370,9 +4425,8 @@ const MobileDashboardDemo = ({
                                         triggerHaptic();
                                         setTheme((t) => (t === 'dark' ? 'light' : 'dark'));
                                     }}
-                                    className={cn(
-                                        "w-10 h-10 rounded-2xl border flex items-center justify-center transition-all active:scale-95 shadow-sm",
-                                        isDark ? 'border-border bg-card text-foreground/70' : 'border-border bg-white text-muted-foreground'
+                                        "w-10 h-10 rounded-xl flex items-center justify-center transition-all active:scale-95",
+                                        isDark ? 'bg-white/5 text-foreground/70' : 'bg-white text-muted-foreground border'
                                     )}
                                 >
                                     <AnimatePresence mode="wait" initial={false}>
@@ -4392,9 +4446,8 @@ const MobileDashboardDemo = ({
                                 <button 
                                     type="button" 
                                     onClick={() => handleAction('notifications')} 
-                                    className={cn(
-                                        'relative w-11 h-11 rounded-2xl border flex items-center justify-center transition-all active:scale-95 shadow-sm', 
-                                        isDark ? 'border-border bg-card text-foreground/70' : 'border-border bg-white text-muted-foreground'
+                                        'relative w-10 h-10 rounded-xl flex items-center justify-center transition-all active:scale-95', 
+                                        isDark ? 'bg-white/5 text-foreground/70' : 'bg-white text-muted-foreground border'
                                     )}
                                 >
                                     <Bell className="w-[22px] h-[22px]" />
@@ -4412,12 +4465,11 @@ const MobileDashboardDemo = ({
                                 <button 
                                     type="button" 
                                     onClick={() => setActiveTab('profile')} 
-                                    className={cn(
-                                        "w-11 h-11 rounded-2xl border p-0.5 overflow-hidden transition-all active:scale-95 shadow-sm", 
-                                        isDark ? 'border-border bg-card' : 'border-border bg-white'
+                                        "w-10 h-10 rounded-xl border p-0.5 overflow-hidden transition-all active:scale-95", 
+                                        isDark ? 'border-white/10 bg-white/5' : 'border-border bg-white'
                                     )}
                                 >
-                                    <div className="w-full h-full rounded-[14px] overflow-hidden">
+                                    <div className="w-full h-full rounded-[10px] overflow-hidden">
                                         <img
                                             src={avatarUrl}
                                             alt="avatar"
@@ -4497,6 +4549,54 @@ const MobileDashboardDemo = ({
                                                         ? "Your performance and incoming offers are ready for you below."
                                                         : "Let's get your creator profile live and ready to receive brand deals."}
                                                 </motion.p>
+                                            </div>
+
+                                            {/* Live Activity Insight (🔥 Brands Viewed) */}
+                                            <div className="px-6 pb-6 -mt-2">
+                                                <motion.div
+                                                    initial={{ y: 20, opacity: 0 }}
+                                                    animate={{ y: 0, opacity: 1 }}
+                                                    transition={{ delay: 0.15, duration: 0.5 }}
+                                                    className={cn(
+                                                        "p-4 rounded-[28px] border overflow-hidden relative group",
+                                                        isDark ? "bg-white/5 border-white/10" : "bg-white/20 border-white/30"
+                                                    )}
+                                                >
+                                                    <div className="absolute inset-0 bg-gradient-to-r from-orange-500/10 via-transparent to-transparent opacity-50" />
+                                                    <div className="relative z-10 flex items-center justify-between">
+                                                        <div className="flex items-center gap-3">
+                                                            <div className="w-12 h-12 rounded-2xl bg-orange-500/20 flex items-center justify-center text-orange-500 shadow-inner">
+                                                                <motion.div
+                                                                    animate={{ 
+                                                                        scale: [1, 1.2, 1],
+                                                                        filter: ["drop-shadow(0 0 0px #f97316)", "drop-shadow(0 0 8px #f97316)", "drop-shadow(0 0 0px #f97316)"]
+                                                                    }}
+                                                                    transition={{ duration: 2, repeat: Infinity }}
+                                                                >
+                                                                    <Flame className="w-6 h-6" fill="currentColor" />
+                                                                </motion.div>
+                                                            </div>
+                                                            <div>
+                                                                <p className="text-[14px] font-black tracking-tight text-white">
+                                                                    {profileViewsToday > 0 
+                                                                        ? `${profileViewsToday} Brands viewed your profile` 
+                                                                        : "Your profile is active today"}
+                                                                </p>
+                                                                <p className="text-[11px] font-medium text-white/50">
+                                                                    {profileViewsToday > 0 
+                                                                        ? "Trending now in brand discovery" 
+                                                                        : "Share your link to attract brands"}
+                                                                </p>
+                                                            </div>
+                                                        </div>
+                                                        {profileViewsToday > 0 && (
+                                                            <div className="flex items-center gap-1">
+                                                                <span className="flex h-2 w-2 rounded-full bg-orange-500 animate-pulse" />
+                                                                <span className="text-[10px] font-black text-orange-500 uppercase tracking-widest">Live</span>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </motion.div>
                                             </div>
                                         </div>
 
@@ -4824,16 +4924,17 @@ const MobileDashboardDemo = ({
                         <>
                             <div className="px-5 pb-6 pt-safe" style={{ paddingTop: 'max(env(safe-area-inset-top), 24px)' }}>
                                 <div className="flex items-center justify-between mb-8">
-                                    <button type="button" onClick={() => handleAction('menu')} aria-label="Open menu" className={cn("p-1.5 -ml-1.5 rounded-full transition-all active:scale-95", secondaryTextColor)}>
-                                        <Menu className="w-6 h-6" strokeWidth={1.5} />
+                                    <button type="button" onClick={() => handleAction('menu')} aria-label="Open menu" className={cn("w-10 h-10 -ml-1 rounded-xl flex items-center justify-center transition-all active:scale-95", isDark ? "bg-white/5" : "bg-slate-100")}>
+                                        <Menu className={cn("w-5 h-5", secondaryTextColor)} strokeWidth={2} />
                                     </button>
 
-                                    <div className="flex items-center gap-1.5 font-semibold text-[16px] tracking-tight">
-                                        <ShieldCheck className={cn("w-4 h-4", isDark ? "text-foreground" : "text-muted-foreground")} />
-                                        <span className={textColor}>CreatorArmour</span>
+                                    <div className="flex items-center gap-1.5 font-bold text-[16px] tracking-tight">
+                                        <ShieldCheck className={cn("w-4 h-4", isDark ? "text-primary" : "text-primary")} strokeWidth={2.5} />
+                                        <span className={textColor}>Creator Armour</span>
                                     </div>
 
-                                    <button type="button" onClick={() => setActiveTab('profile')} className={cn("w-11 h-11 rounded-full border overflow-hidden transition-all active:scale-95", borderColor)}>
+                                    <button type="button" onClick={() => setActiveTab('profile')} className={cn("w-10 h-10 rounded-xl border p-0.5 overflow-hidden transition-all active:scale-95 shadow-sm", isDark ? "border-white/10 bg-white/5" : "border-slate-200 bg-white")}>
+                                        <div className="w-full h-full rounded-[10px] overflow-hidden">
                                         <img
                                             src={avatarUrl}
                                             alt="avatar"
@@ -5711,44 +5812,112 @@ const MobileDashboardDemo = ({
                     }}
                 >
                     <div className="max-w-md md:max-w-2xl mx-auto flex items-center justify-between px-6 pt-3 gap-1">
-                        <motion.button whileTap={{ scale: 0.94 }} onClick={() => { if (scrollRef.current) scrollPositionsRef.current[activeTab] = scrollRef.current.scrollTop; triggerHaptic(); setActiveTab('dashboard'); }} className={cn("flex flex-col items-center justify-center gap-1 min-w-[64px] h-[54px] px-2 rounded-2xl transition-all", activeTab === 'dashboard' ? (isDark ? 'bg-white/5' : 'bg-white shadow-sm border border-[#E5E7EB]') : 'bg-transparent')}>
-                            <LayoutDashboard className={cn('w-[22px] h-[22px]', activeTab === 'dashboard' ? (isDark ? 'text-white' : 'text-[#111827]') : (isDark ? 'text-slate-500' : secondaryTextColor))} />
-                            <span className={cn('text-[10px] tracking-tight', activeTab === 'dashboard' ? (isDark ? 'text-white font-bold' : 'text-[#111827] font-bold') : cn('font-medium', isDark ? 'text-slate-500' : secondaryTextColor))}>Home</span>
+                        {/* Active Tab Background Indicator (Sliding) */}
+                        <div className="absolute inset-x-6 top-3 h-[54px] pointer-events-none">
+                            <motion.div 
+                                layoutId="activeTabIndicator"
+                                transition={{ type: 'spring', bounce: 0.2, duration: 0.6 }}
+                                className={cn(
+                                    "absolute h-full rounded-2xl border transition-colors",
+                                    isDark ? "bg-white/5 border-white/10" : "bg-white shadow-sm border-[#E5E7EB]"
+                                )}
+                                style={{ 
+                                    width: 'calc(20% - 4px)', // 5 tabs
+                                    left: activeTab === 'dashboard' ? '0%' 
+                                        : activeTab === 'deals' ? '20%'
+                                        : activeTab === 'discovery' ? '40%'
+                                        : activeTab === 'payments' ? '60%'
+                                        : '80%'
+                                }}
+                            />
+                        </div>
+
+                        <motion.button 
+                            whileTap={{ scale: 0.94 }} 
+                            onClick={() => { 
+                                if (scrollRef.current) scrollPositionsRef.current[activeTab] = scrollRef.current.scrollTop; 
+                                triggerHaptic(HapticPatterns.light); 
+                                setActiveTab('dashboard'); 
+                            }} 
+                            className={cn(
+                                "flex flex-col items-center justify-center gap-1 flex-1 h-[54px] z-10 transition-colors",
+                                activeTab === 'dashboard' ? (isDark ? 'text-white' : 'text-primary') : (isDark ? 'text-slate-500' : secondaryTextColor)
+                            )}
+                        >
+                            <LayoutDashboard className="w-[22px] h-[22px]" strokeWidth={activeTab === 'dashboard' ? 2.5 : 2} />
+                            <span className={cn('text-[10px] tracking-tight font-black uppercase', activeTab === 'dashboard' ? 'opacity-100' : 'opacity-40')}>Home</span>
                         </motion.button>
 
-                        <motion.button whileTap={{ scale: 0.94 }} onClick={() => { if (scrollRef.current) scrollPositionsRef.current[activeTab] = scrollRef.current.scrollTop; triggerHaptic(); setActiveTab('deals'); }} className={cn("flex flex-col items-center justify-center gap-1 min-w-[64px] h-[54px] px-2 rounded-2xl transition-all", activeTab === 'deals' ? (isDark ? 'bg-white/5' : 'bg-white shadow-sm border border-[#E5E7EB]') : 'bg-transparent')}>
-                            <Briefcase className={cn('w-[22px] h-[22px]', activeTab === 'deals' ? (isDark ? 'text-white' : 'text-[#111827]') : (isDark ? 'text-slate-500' : secondaryTextColor))} />
-                            <span className={cn('text-[10px] tracking-tight', activeTab === 'deals' ? (isDark ? 'text-white font-bold' : 'text-[#111827] font-bold') : cn('font-medium', isDark ? 'text-slate-500' : secondaryTextColor))}>Deals</span>
+                        <motion.button 
+                            whileTap={{ scale: 0.94 }} 
+                            onClick={() => { 
+                                if (scrollRef.current) scrollPositionsRef.current[activeTab] = scrollRef.current.scrollTop; 
+                                triggerHaptic(HapticPatterns.light); 
+                                setActiveTab('deals'); 
+                            }} 
+                            className={cn(
+                                "flex flex-col items-center justify-center gap-1 flex-1 h-[54px] z-10 transition-colors",
+                                activeTab === 'deals' ? (isDark ? 'text-white' : 'text-primary') : (isDark ? 'text-slate-500' : secondaryTextColor)
+                            )}
+                        >
+                            <Briefcase className="w-[22px] h-[22px]" strokeWidth={activeTab === 'deals' ? 2.5 : 2} />
+                            <span className={cn('text-[10px] tracking-tight font-black uppercase', activeTab === 'deals' ? 'opacity-100' : 'opacity-40')}>Deals</span>
                         </motion.button>
 
-                        <div className="relative">
+                        <div className="relative flex-1">
                             <motion.button 
                                 whileTap={{ scale: 0.94 }} 
                                 onClick={() => { 
-                                    triggerHaptic(); 
-                                    toast.info("Discovery is coming soon! Approach brands directly from here.", {
+                                    triggerHaptic(HapticPatterns.medium); 
+                                    toast.info("Discovery is coming soon!", {
+                                        description: "Find new brands directly from here.",
                                         icon: '🚀',
                                         style: { borderRadius: '20px', fontWeight: 'bold' }
                                     });
                                 }} 
-                                className={cn("flex flex-col items-center justify-center gap-1 min-w-[64px] h-[54px] px-2 rounded-2xl transition-all", activeTab === 'discovery' ? (isDark ? 'bg-white/5' : 'bg-white shadow-sm border border-[#E5E7EB]') : 'bg-transparent')}
+                                className={cn(
+                                    "flex flex-col items-center justify-center gap-1 w-full h-[54px] z-10 transition-colors",
+                                    activeTab === 'discovery' ? (isDark ? 'text-white' : 'text-primary') : (isDark ? 'text-slate-500' : secondaryTextColor)
+                                )}
                             >
-                                <Heart className={cn('w-[22px] h-[22px]', isDark ? 'text-slate-500' : secondaryTextColor)} />
-                                <span className={cn('text-[10px] tracking-tight font-medium', isDark ? 'text-slate-500' : secondaryTextColor)}>Discovery</span>
+                                <Heart className="w-[22px] h-[22px]" strokeWidth={2} />
+                                <span className={cn('text-[10px] tracking-tight font-black uppercase opacity-40')}>Find</span>
                             </motion.button>
                             <div className={cn("absolute -top-1 -right-1 px-1.5 py-0.5 rounded-full text-[7px] font-black uppercase tracking-tighter border shadow-sm", isDark ? "bg-primary/20 border-primary/30 text-primary" : "bg-emerald-500 border-emerald-600 text-white")}>
                                 Soon
                             </div>
                         </div>
 
-                        <motion.button whileTap={{ scale: 0.94 }} onClick={() => { if (scrollRef.current) scrollPositionsRef.current[activeTab] = scrollRef.current.scrollTop; triggerHaptic(); setActiveTab('payments'); }} className={cn("flex flex-col items-center justify-center gap-1 min-w-[64px] h-[54px] px-2 rounded-2xl transition-all", activeTab === 'payments' ? (isDark ? 'bg-white/5' : 'bg-white shadow-sm border border-[#E5E7EB]') : 'bg-transparent')}>
-                            <CreditCard className={cn('w-[22px] h-[22px]', activeTab === 'payments' ? (isDark ? 'text-white' : 'text-[#111827]') : (isDark ? 'text-slate-500' : secondaryTextColor))} />
-                            <span className={cn('text-[10px] tracking-tight', activeTab === 'payments' ? (isDark ? 'text-white font-bold' : 'text-[#111827] font-bold') : cn('font-medium', isDark ? 'text-slate-500' : secondaryTextColor))}>Payments</span>
+                        <motion.button 
+                            whileTap={{ scale: 0.94 }} 
+                            onClick={() => { 
+                                if (scrollRef.current) scrollPositionsRef.current[activeTab] = scrollRef.current.scrollTop; 
+                                triggerHaptic(HapticPatterns.light); 
+                                setActiveTab('payments'); 
+                            }} 
+                            className={cn(
+                                "flex flex-col items-center justify-center gap-1 flex-1 h-[54px] z-10 transition-colors",
+                                activeTab === 'payments' ? (isDark ? 'text-white' : 'text-primary') : (isDark ? 'text-slate-500' : secondaryTextColor)
+                            )}
+                        >
+                            <CreditCard className="w-[22px] h-[22px]" strokeWidth={activeTab === 'payments' ? 2.5 : 2} />
+                            <span className={cn('text-[10px] tracking-tight font-black uppercase', activeTab === 'payments' ? 'opacity-100' : 'opacity-40')}>Pay</span>
                         </motion.button>
 
-                        <motion.button whileTap={{ scale: 0.94 }} onClick={() => { if (scrollRef.current) scrollPositionsRef.current[activeTab] = scrollRef.current.scrollTop; triggerHaptic(); setActiveTab('profile'); }} className={cn("flex flex-col items-center justify-center gap-1 min-w-[64px] h-[54px] px-2 rounded-2xl transition-all", activeTab === 'profile' ? (isDark ? 'bg-white/5' : 'bg-white shadow-sm border border-[#E5E7EB]') : 'bg-transparent')}>
-                            <User className={cn('w-[22px] h-[22px]', activeTab === 'profile' ? (isDark ? 'text-white' : 'text-[#111827]') : (isDark ? 'text-slate-500' : secondaryTextColor))} />
-                            <span className={cn('text-[10px] tracking-tight', activeTab === 'profile' ? (isDark ? 'text-white font-bold' : 'text-[#111827] font-bold') : cn('font-medium', isDark ? 'text-slate-500' : secondaryTextColor))}>Account</span>
+                        <motion.button 
+                            whileTap={{ scale: 0.94 }} 
+                            onClick={() => { 
+                                if (scrollRef.current) scrollPositionsRef.current[activeTab] = scrollRef.current.scrollTop; 
+                                triggerHaptic(HapticPatterns.light); 
+                                setActiveTab('profile'); 
+                            }} 
+                            className={cn(
+                                "flex flex-col items-center justify-center gap-1 flex-1 h-[54px] z-10 transition-colors",
+                                activeTab === 'profile' ? (isDark ? 'text-white' : 'text-primary') : (isDark ? 'text-slate-500' : secondaryTextColor)
+                            )}
+                        >
+                            <User className="w-[22px] h-[22px]" strokeWidth={activeTab === 'profile' ? 2.5 : 2} />
+                            <span className={cn('text-[10px] tracking-tight font-black uppercase', activeTab === 'profile' ? 'opacity-100' : 'opacity-40')}>Me</span>
                         </motion.button>
                     </div>
                 </div>

@@ -3,6 +3,7 @@
 import { ReactNode, useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useSession } from '@/contexts/SessionContext';
+import { useSignOut } from '@/lib/hooks/useAuth';
 import AuthLoadingScreen from '@/components/AuthLoadingScreen';
 import FullScreenLoader from '@/components/FullScreenLoader';
 import { getCollabReadiness } from '@/lib/collab/readiness';
@@ -77,13 +78,14 @@ const inferRequestedRole = (
   return 'creator';
 };
 
-const ProtectedRoute = ({ children, allowedRoles, requiredRole }: ProtectedRouteProps) => {
-  const navigate = useNavigate();
-  const location = useLocation();
-  const { session, authStatus, profile, refetchProfile, user, isAuthInitializing } = useSession();
-  // Do not infer role from path/metadata for authorization decisions.
-  // `profiles.role` is the single source of truth.
-  const isLoading = authStatus === 'loading' || (session && !profile);
+  const ProtectedRoute = ({ children, allowedRoles, requiredRole }: ProtectedRouteProps) => {
+    const navigate = useNavigate();
+    const location = useLocation();
+    const { session, authStatus, profile, refetchProfile, user, isAuthInitializing } = useSession();
+    const signOutMutation = useSignOut();
+    // Do not infer role from path/metadata for authorization decisions.
+    // `profiles.role` is the single source of truth.
+    const isLoading = authStatus === 'loading';
 
   // Route guard logic
   useEffect(() => {
@@ -158,23 +160,35 @@ const ProtectedRoute = ({ children, allowedRoles, requiredRole }: ProtectedRoute
           <p className="text-emerald-100/50 text-[13px] font-medium mb-8 leading-relaxed">
             We're having trouble retrieving your profile data. This can happen during high traffic or temporary connectivity shifts.
           </p>
-          <div className="flex flex-col items-center gap-3">
-            <button 
-              onClick={() => {
-                triggerHaptic?.();
-                refetchProfile?.();
-              }} 
-              className="w-full max-w-[200px] px-6 py-3 bg-emerald-500 text-white rounded-xl text-[11px] font-black uppercase tracking-widest transition-all shadow-lg shadow-emerald-500/20 active:scale-95"
-            >
-              Retry Connection
-            </button>
-            <button 
-              onClick={() => window.location.reload()} 
-              className="text-[10px] text-emerald-500/40 hover:text-emerald-500/60 font-black uppercase tracking-widest transition-colors"
-            >
-              Force Reload Page
-            </button>
-          </div>
+         <div className="flex flex-col items-center gap-3">
+           <button 
+             onClick={() => {
+               triggerHaptic?.();
+               refetchProfile?.();
+             }} 
+             className="w-full max-w-[200px] px-6 py-3 bg-emerald-500 text-white rounded-xl text-[11px] font-black uppercase tracking-widest transition-all shadow-lg shadow-emerald-500/20 active:scale-95"
+           >
+             Retry Connection
+           </button>
+           <button 
+             onClick={() => {
+               triggerHaptic?.();
+               signOutMutation.mutateAsync(undefined).catch(() => {
+                 // If signOut fails, still force reload as fallback
+                 window.location.reload();
+               });
+             }} 
+             className="w-full max-w-[200px] px-6 py-3 bg-emerald-500/20 text-emerald-500 rounded-xl text-[11px] font-black uppercase tracking-widest border border-emerald-500/20 transition-all hover:bg-emerald-500/30 active:scale-95"
+           >
+             Sign In Again
+           </button>
+           <button 
+             onClick={() => window.location.reload()} 
+             className="text-[10px] text-emerald-500/40 hover:text-emerald-500/60 font-black uppercase tracking-widest transition-colors"
+           >
+             Force Reload Page
+           </button>
+         </div>
         </div>
       </div>
     );
