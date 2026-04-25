@@ -4447,6 +4447,7 @@ const MobileDashboardDemo = ({
                                 <button 
                                     type="button" 
                                     onClick={() => handleAction('notifications')} 
+                                    className={cn(
                                         'relative w-10 h-10 rounded-xl flex items-center justify-center transition-all active:scale-95', 
                                         isDark ? 'bg-white/5 text-foreground/70' : 'bg-white text-muted-foreground border'
                                     )}
@@ -4466,6 +4467,7 @@ const MobileDashboardDemo = ({
                                 <button 
                                     type="button" 
                                     onClick={() => setActiveTab('profile')} 
+                                    className={cn(
                                         "w-10 h-10 rounded-xl border p-0.5 overflow-hidden transition-all active:scale-95", 
                                         isDark ? 'border-white/10 bg-white/5' : 'border-border bg-white'
                                     )}
