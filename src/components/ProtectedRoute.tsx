@@ -52,9 +52,9 @@ function getTargetDashboard(profile: any): string {
   switch (profile?.role) {
     case 'admin': return '/admin-dashboard';
     case 'chartered_accountant': return '/ca-dashboard';
-    case 'brand': return '/brand-dashboard';
+    case 'brand': return profile?.onboarding_complete ? '/brand-dashboard' : '/brand-onboarding';
     case 'lawyer': return '/lawyer-dashboard';
-    // Keep onboarding optional; creators should still be able to access the dashboard.
+    case 'creator': return profile?.onboarding_complete ? '/creator-dashboard' : '/creator-onboarding';
     default: return '/creator-dashboard';
   }
 }

@@ -106,7 +106,8 @@ const getFallbackRedirectPath = (
   if (role === 'admin') return '/admin-dashboard';
   if (role === 'chartered_accountant') return '/ca-dashboard';
   if (role === 'lawyer') return '/lawyer-dashboard';
-  return '/creator-dashboard';
+  // Default to creator role and check onboarding status
+  return onboardingComplete ? '/creator-dashboard' : '/creator-onboarding';
 };
 
 const isRecoveryAuthFlow = (hash: string, event?: string) =>
