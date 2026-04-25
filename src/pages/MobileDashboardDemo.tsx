@@ -4425,6 +4425,7 @@ const MobileDashboardDemo = ({
                                         triggerHaptic();
                                         setTheme((t) => (t === 'dark' ? 'light' : 'dark'));
                                     }}
+                                    className={cn(
                                         "w-10 h-10 rounded-xl flex items-center justify-center transition-all active:scale-95",
                                         isDark ? 'bg-white/5 text-foreground/70' : 'bg-white text-muted-foreground border'
                                     )}
