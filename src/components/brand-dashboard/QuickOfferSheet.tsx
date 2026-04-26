@@ -12,6 +12,8 @@ import { cn } from '@/lib/utils';
 import { useSession } from '@/contexts/SessionContext';
 import type { DealTemplate } from '@/types';
 
+import { safeAvatarSrc } from '@/lib/utils/image';
+
 interface QuickOfferSheetProps {
     isOpen: boolean;
     onClose: (didSubmit?: boolean) => void;
@@ -267,7 +269,7 @@ export const QuickOfferSheet: React.FC<QuickOfferSheetProps> = ({
                         <div className="flex items-center gap-4 rounded-[28px] border border-slate-200 bg-white p-4 shadow-[0_10px_28px_rgba(15,23,42,0.06)]">
                             <div className="w-14 h-14 rounded-[18px] overflow-hidden border border-slate-200 bg-slate-50">
                                 <img 
-                                    src={creator.avatar_url || `https://ui-avatars.com/api/?name=${creatorName}`}
+                                    src={safeAvatarSrc(creator.avatar_url) || `https://ui-avatars.com/api/?name=${creatorName}`}
                                     alt={creatorUsername || creatorName}
                                     className="w-full h-full object-cover" 
                                 />

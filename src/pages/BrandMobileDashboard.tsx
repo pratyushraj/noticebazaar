@@ -23,6 +23,8 @@ import { DisputeEscalationModal } from '@/components/deals/DisputeEscalationModa
 import { BrandShippingAddressModal } from '@/components/deals/BrandShippingAddressModal';
 import { ConfirmPaymentPendingModal } from '@/components/deals/ConfirmPaymentPendingModal';
 
+import { safeAvatarSrc, withCacheBuster } from '@/lib/utils/image';
+
 type BrandTab = 'dashboard' | 'collabs' | 'creators' | 'profile' | 'payments';
 type BrandCollabTab = 'action_required' | 'active' | 'completed';
 
@@ -90,11 +92,7 @@ const hoursSince = (iso: string | Date | null | undefined) => {
 };
 
 const safeImageSrc = (url: string | null | undefined) => {
-  const s = typeof url === 'string' ? url : '';
-  if (!s) return undefined;
-  // Some product images might come from CDN links that contain instagram.com
-  // if (s.includes('cdninstagram.com')) return undefined;
-  return s;
+  return safeAvatarSrc(url);
 };
 
 const uniqBy = <T,>(items: T[], key: (item: T) => string) => {
@@ -142,8 +140,8 @@ const sameLocalMonth = (a: Date, b: Date) => a.getFullYear() === b.getFullYear()
 
 const normalizeStatus = (status: string | null | undefined) => String(status || '').trim().toLowerCase();
 
-const firstNameish = (profile: Profile | null | undefined) => {
-  const label = profile?.business_name || profile?.first_name || profile?.username || 'Creator';
+const firstNameish = (profile: Profile | null | undefined, fallbackName?: string) => {
+  const label = profile?.business_name || profile?.first_name || profile?.username || fallbackName || 'Creator';
   return String(label || 'Creator').trim() || 'Creator';
 };
 
@@ -1842,7 +1840,7 @@ const BrandMobileDashboard = ({
 	    const [showDisputeBox, setShowDisputeBox] = useState(false);
 	    const [disputeNotesDraft, setDisputeNotesDraft] = useState('');
 
-    const creatorName = firstNameish(offer?.profiles);
+    const creatorName = firstNameish(offer?.profiles, offer?.creator_name || offer?.creator_email);
     const creatorUsername = String(offer?.profiles?.username || '').trim();
     const deliverables = formatDeliverables(offer) || offer?.collab_type || 'Collaboration';
     const amount = Number(offer?.deal_amount || offer?.exact_budget || 0);
@@ -2465,7 +2463,7 @@ const BrandMobileDashboard = ({
 
                 <div className={cn('flex items-center gap-3 w-full border-t pt-4 mt-5', isDark ? 'border-border' : 'border-border')}>
                   <Avatar className={cn('w-11 h-11 border shadow-sm', isDark ? 'border-border' : 'border-border')}>
-                    <AvatarImage src={offer?.profiles?.avatar_url || offer?.profiles?.profile_image_url || ''} alt={creatorName || 'Creator'} />
+                    <AvatarImage src={safeAvatarSrc(offer?.profiles?.avatar_url || offer?.profiles?.profile_image_url || offer?.creator_avatar_url || offer?.creator_photo_url)} alt={creatorName || 'Creator'} />
                     <AvatarFallback className={cn(isDark ? 'bg-card text-foreground' : 'bg-background text-muted-foreground')}>
                       {(creatorName || 'C').slice(0, 1).toUpperCase()}
                     </AvatarFallback>
@@ -4209,7 +4207,7 @@ const BrandMobileDashboard = ({
 	                                {visibleCollabItems.slice(0, 3).map((item: any) => {
 	                                  const isPendingItem = activeCollabTab === 'action_required';
 	                                  const isCompletedItem = activeCollabTab === 'completed';
-	                                  const creatorName = firstNameish(item?.profiles) || 'Creator';
+	                                  const creatorName = firstNameish(item?.profiles, item?.creator_name || item?.creator_email) || 'Creator';
 	                                  const creatorMeta = item?.profiles?.username || item?.creator_email || item?.creator_name || 'Creator';
 	                                  const amount = Number(item?.deal_amount || item?.exact_budget || 0);
 	                                  const due = isPendingItem ? offerExpiryLabel(item) : deadlineLabel(item);
@@ -4286,7 +4284,7 @@ const BrandMobileDashboard = ({
                                       <div className="flex items-start justify-between gap-3 mb-3">
                                         <div className="flex items-center gap-3 min-w-0">
                                           <Avatar className={cn('w-11 h-11 border shadow-sm shrink-0', isDark ? 'border-border' : 'border-border')}>
-                                            <AvatarImage src={safeImageSrc(item?.profiles?.avatar_url || item?.profiles?.profile_image_url || '')} alt={creatorName} />
+                                            <AvatarImage src={safeImageSrc(item?.profiles?.avatar_url || item?.profiles?.profile_image_url || item?.creator_avatar_url || item?.creator_photo_url || '')} alt={creatorName} />
 	                                              <AvatarFallback className={cn(isDark ? 'bg-card text-foreground' : 'bg-background text-muted-foreground')}>
 	                                                {creatorName.slice(0, 1).toUpperCase()}
 	                                              </AvatarFallback>
@@ -4355,7 +4353,7 @@ const BrandMobileDashboard = ({
 		                                      <div className="flex items-start justify-between gap-3 mb-3.5">
 		                                        <div className="flex items-center gap-3 min-w-0">
 		                                          <Avatar className={cn('w-11 h-11 border shadow-sm shrink-0', isDark ? 'border-border' : 'border-border')}>
-		                                            <AvatarImage src={safeImageSrc(item?.profiles?.avatar_url || item?.profiles?.profile_image_url || '')} alt={creatorName} />
+		                                            <AvatarImage src={safeImageSrc(item?.profiles?.avatar_url || item?.profiles?.profile_image_url || item?.creator_avatar_url || item?.creator_photo_url || '')} alt={creatorName} />
 		                                            <AvatarFallback className={cn(isDark ? 'bg-card text-foreground' : 'bg-background text-muted-foreground')}>
 		                                              {creatorName.slice(0, 1).toUpperCase()}
 		                                            </AvatarFallback>
@@ -4726,7 +4724,7 @@ const BrandMobileDashboard = ({
 	                          const isCompletedItem = activeCollabTab === 'completed';
 		                          const due = isPendingItem ? offerExpiryLabel(item) : deadlineLabel(item);
 	                          const amount = Number(item?.deal_amount || item?.exact_budget || 0);
-	                          const creatorName = firstNameish(item?.profiles) || 'Creator';
+	                          const creatorName = firstNameish(item?.profiles, item?.creator_name || item?.creator_email) || 'Creator';
 	                          const creatorMeta = item?.profiles?.username || item?.creator_email || item?.creator_name || 'Creator';
 	                          if (isPendingItem) {
 	                            const sentIso = item?.created_at || item?.updated_at || null;
@@ -4808,7 +4806,7 @@ const BrandMobileDashboard = ({
                                       <div className="relative">
                                         <Avatar className={cn('w-14 h-14 rounded-2xl border-2 shadow-xl shrink-0 transition-transform duration-500 group-hover:scale-105', isDark ? 'border-white/10 ring-4 ring-white/5' : 'border-white ring-4 ring-slate-100')}>
                                           <AvatarImage 
-                                            src={safeImageSrc(item?.profiles?.instagram_profile_photo || item?.profiles?.avatar_url || item?.profiles?.profile_image_url || '')} 
+                                            src={safeImageSrc(item?.profiles?.instagram_profile_photo || item?.profiles?.avatar_url || item?.profiles?.profile_image_url || item?.creator_avatar_url || item?.creator_photo_url || '')} 
                                             alt={creatorName} 
                                             className="object-cover" 
                                           />
@@ -4920,7 +4918,7 @@ const BrandMobileDashboard = ({
                                   <div className="relative">
                                     <Avatar className={cn('w-12 h-12 rounded-2xl border-2 shadow-xl shrink-0 transition-transform duration-500 group-hover:scale-105', isDark ? 'border-white/10 ring-4 ring-white/5' : 'border-white ring-4 ring-slate-100')}>
                                       <AvatarImage 
-                                        src={safeImageSrc(item?.profiles?.instagram_profile_photo || item?.profiles?.avatar_url || item?.profiles?.profile_image_url || '')} 
+                                        src={safeImageSrc(item?.profiles?.instagram_profile_photo || item?.profiles?.avatar_url || item?.profiles?.profile_image_url || item?.creator_avatar_url || item?.creator_photo_url || '')} 
                                         alt={creatorName} 
                                         className="object-cover" 
                                       />

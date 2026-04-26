@@ -8,6 +8,8 @@ import {
 import { cn } from '@/lib/utils';
 import { triggerHaptic } from '@/lib/utils/haptics';
 
+import { safeAvatarSrc } from '@/lib/utils/image';
+
 interface CreatorProfile {
     id: string;
     username: string;
@@ -151,7 +153,7 @@ export const DiscoveryCard: React.FC<DiscoveryCardProps> = ({
                     />
                 ) : (
                     <img 
-                        src={creator.avatar_url || `https://ui-avatars.com/api/?name=${creator.first_name}&background=0D1117&color=fff`} 
+                        src={safeAvatarSrc(creator.avatar_url) || `https://ui-avatars.com/api/?name=${creator.first_name}&background=0D1117&color=fff`} 
                         className="w-full h-full object-cover"
                         alt={creator.first_name}
                     />

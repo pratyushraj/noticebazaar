@@ -21,9 +21,9 @@ export async function sendEscrowFundedEmailToCreator(deal: any, creator: any) {
     return { success: false, error: 'No creator email' };
   }
 
-  const subject = \`💰 \${brandName} has paid! Time to start creating\`;
+  const subject = `💰 ${brandName} has paid! Time to start creating`;
   
-  const content = \`
+  const content = `
     <tr>
       <td style="padding: 40px 30px; text-align: center; background-color: #f0fdf4;">
         <div style="font-size: 48px; margin-bottom: 16px;">🛡️</div>
@@ -38,10 +38,10 @@ export async function sendEscrowFundedEmailToCreator(deal: any, creator: any) {
     <tr>
       <td style="padding: 40px 30px;">
         <p style="margin: 0 0 20px 0; font-size: 16px; color: #374151; line-height: 1.6;">
-          Hi \${creatorName},
+          Hi ${creatorName},
         </p>
         <p style="margin: 0 0 24px 0; font-size: 16px; color: #4b5563; line-height: 1.6;">
-          Great news! <strong>\${brandName}</strong> has successfully submitted their payment for your collaboration. 
+          Great news! <strong>${brandName}</strong> has successfully submitted their payment for your collaboration. 
           The funds are now securely held in Escrow by Creator Armour.
         </p>
         
@@ -54,18 +54,18 @@ export async function sendEscrowFundedEmailToCreator(deal: any, creator: any) {
           </ul>
         </div>
         
-        \${getPrimaryCTA('View Deal Details', 'https://noticebazaar.com/creator-dashboard')}
+        ${getPrimaryCTA('View Deal Details', 'https://noticebazaar.com/creator-dashboard')}
       </td>
     </tr>
-  \`;
+  `;
 
-  const html = getEmailLayout({ content, backgroundStyle: 'green', preheaderText: \`\${brandName} has securely funded your escrow.\` });
+  const html = getEmailLayout({ content, backgroundStyle: 'green', preheaderText: `${brandName} has securely funded your escrow.` });
 
   try {
     const response = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: {
-        'Authorization': \`Bearer \${apiKey}\`,
+        'Authorization': `Bearer ${apiKey}`,
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
@@ -78,7 +78,7 @@ export async function sendEscrowFundedEmailToCreator(deal: any, creator: any) {
 
     const data = await response.json();
     if (!response.ok) {
-      throw new Error(\`Resend API error: \${JSON.stringify(data)}\`);
+      throw new Error(`Resend API error: ${JSON.stringify(data)}`);
     }
 
     return { success: true, data };
@@ -110,17 +110,17 @@ export async function sendContentDeliveredEmailToBrand(deal: any) {
           Content Ready for Review
         </h1>
         <p style="margin: 0; font-size: 16px; color: #15803d;">
-          \${creatorName} has delivered the work.
+          ${creatorName} has delivered the work.
         </p>
       </td>
     </tr>
     <tr>
       <td style="padding: 40px 30px;">
         <p style="margin: 0 0 20px 0; font-size: 16px; color: #374151; line-height: 1.6;">
-          Hi \${brandName},
+          Hi ${brandName},
         </p>
         <p style="margin: 0 0 24px 0; font-size: 16px; color: #4b5563; line-height: 1.6;">
-          <strong>\${creatorName}</strong> has just submitted their content for your collaboration!
+          <strong>${creatorName}</strong> has just submitted their content for your collaboration!
         </p>
         
         <div style="background-color: #fff7ed; border: 1px solid #fed7aa; border-radius: 8px; padding: 20px; margin-bottom: 30px;">
@@ -129,18 +129,18 @@ export async function sendContentDeliveredEmailToBrand(deal: any) {
           </p>
         </div>
         
-        \${getPrimaryCTA('Review Content Now', 'https://noticebazaar.com/brand-dashboard')}
+        ${getPrimaryCTA('Review Content Now', 'https://noticebazaar.com/brand-dashboard')}
       </td>
     </tr>
   `;
 
-  const html = getEmailLayout({ content, backgroundStyle: 'dark', preheaderText: \`\${creatorName} submitted content. Action required within 72 hours.\` });
+  const html = getEmailLayout({ content, backgroundStyle: 'dark', preheaderText: `${creatorName} submitted content. Action required within 72 hours.` });
 
   try {
     await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: {
-        'Authorization': \`Bearer \${apiKey}\`,
+        'Authorization': `Bearer ${apiKey}`,
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
@@ -186,7 +186,7 @@ export async function sendCreatorPaymentReleasedEmail(
     <tr>
       <td style="padding: 40px 30px;">
         <p style="margin: 0 0 20px 0; font-size: 16px; color: #374151; line-height: 1.6;">
-          Hi \${creatorName},
+          Hi ${creatorName},
         </p>
         <p style="margin: 0 0 24px 0; font-size: 16px; color: #4b5563; line-height: 1.6;">
           We have successfully released your payout for the collaboration. The funds should reflect in your registered bank account/UPI shortly.
@@ -196,11 +196,11 @@ export async function sendCreatorPaymentReleasedEmail(
           <table width="100%" cellpadding="0" cellspacing="0">
             <tr>
               <td style="padding-bottom: 8px; font-size: 14px; color: #64748b;">Amount Released:</td>
-              <td style="padding-bottom: 8px; font-size: 16px; font-weight: 700; color: #1e293b; text-align: right;">₹\${amount.toLocaleString()}</td>
+              <td style="padding-bottom: 8px; font-size: 16px; font-weight: 700; color: #1e293b; text-align: right;">₹${amount.toLocaleString()}</td>
             </tr>
             <tr>
               <td style="padding-bottom: 8px; font-size: 14px; color: #64748b;">Reference (UTR):</td>
-              <td style="padding-bottom: 8px; font-size: 14px; font-family: monospace; color: #1e293b; text-align: right;">\${utrNumber}</td>
+              <td style="padding-bottom: 8px; font-size: 14px; font-family: monospace; color: #1e293b; text-align: right;">${utrNumber}</td>
             </tr>
             <tr>
               <td style="font-size: 14px; color: #64748b;">Status:</td>
@@ -213,18 +213,18 @@ export async function sendCreatorPaymentReleasedEmail(
           Note: Depending on your bank, it may take 2-4 hours to reflect in your statement.
         </p>
         
-        \${getPrimaryCTA('View Payout History', 'https://noticebazaar.com/dashboard/payouts')}
+        ${getPrimaryCTA('View Payout History', 'https://noticebazaar.com/dashboard/payouts')}
       </td>
     </tr>
   `;
 
-  const html = getEmailLayout({ content, backgroundStyle: 'green', preheaderText: `Your payout of ₹\${amount.toLocaleString()} has been released.` });
+  const html = getEmailLayout({ content, backgroundStyle: 'green', preheaderText: `Your payout of ₹${amount.toLocaleString()} has been released.` });
 
   try {
     const response = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer \${process.env.RESEND_API_KEY}`,
+        'Authorization': `Bearer ${process.env.RESEND_API_KEY}`,
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({

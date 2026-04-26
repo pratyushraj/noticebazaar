@@ -18,7 +18,7 @@ async function fetchBrandDeals() {
   }
 
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 5000); // 5s — fail fast if backend is down
+  const timeoutId = setTimeout(() => controller.abort(), 15000); // 15s — more lenient for complex deal queries
   try {
     const res = await fetch(`${getApiBaseUrl()}/api/deals/mine`, {
       headers: { Authorization: `Bearer ${sessionData.session.access_token}` },

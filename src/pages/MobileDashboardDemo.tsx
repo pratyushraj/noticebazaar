@@ -4676,8 +4676,49 @@ const MobileDashboardDemo = ({
                                                                         )}
                                                                     </div>
                                                                     <div className="min-w-0 flex-1">
-                                                                        <p className={cn("font-black text-lg italic tracking-tight truncate", textColor)}>{req?.brand_name || 'Brand'}</p>
-                                                                        <p className="text-[12px] font-black uppercase tracking-[0.1em] text-primary">₹{amount.toLocaleString()}</p>
+                                                                        <div className="flex items-center gap-2 mb-0.5">
+                                                                            <p className={cn("font-black text-[17px] italic tracking-tight truncate", textColor)}>{req?.brand_name || 'Brand'}</p>
+                                                                            <div className={cn(
+                                                                                "px-2 py-0.5 rounded-md text-[8px] font-black uppercase tracking-widest border",
+                                                                                req?.collab_type === 'barter' 
+                                                                                    ? "bg-amber-500/10 border-amber-500/20 text-amber-500" 
+                                                                                    : req?.collab_type === 'hybrid'
+                                                                                        ? "bg-blue-500/10 border-blue-500/20 text-blue-500"
+                                                                                        : "bg-emerald-500/10 border-emerald-500/20 text-emerald-500"
+                                                                            )}>
+                                                                                {req?.collab_type || 'PAID'}
+                                                                            </div>
+                                                                        </div>
+                                                                        <div className="flex items-center gap-2">
+                                                                            {amount > 0 ? (
+                                                                                <p className="text-[14px] font-black tracking-tight text-primary">₹{amount.toLocaleString()}</p>
+                                                                            ) : (
+                                                                                <p className="text-[12px] font-black tracking-tight text-amber-500 uppercase italic">Value Based</p>
+                                                                            )}
+                                                                            <div className="w-1 h-1 rounded-full bg-slate-700" />
+                                                                            <p className={cn("text-[10px] font-bold opacity-40 truncate", textColor)}>
+                                                                                {req?.campaign_category || req?.campaign_goal || 'Custom Project'}
+                                                                            </p>
+                                                                        </div>
+                                                                        <div className="flex items-center gap-2 mt-1">
+                                                                            <div className="flex items-center gap-1 opacity-40">
+                                                                                <Clock className="w-2.5 h-2.5" />
+                                                                                <span className={cn("text-[9px] font-black uppercase tracking-wider", textColor)}>
+                                                                                    {(() => {
+                                                                                        if (!req?.deadline) return '7 Days Left';
+                                                                                        const diff = new Date(req.deadline).getTime() - new Date().getTime();
+                                                                                        const days = Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24)));
+                                                                                        return days === 0 ? 'Expires Today' : `${days} Day${days > 1 ? 's' : ''} Left`;
+                                                                                    })()}
+                                                                                </span>
+                                                                            </div>
+                                                                            <div className="flex items-center gap-1 opacity-20">
+                                                                                <div className="w-1 h-1 rounded-full bg-slate-700" />
+                                                                                <span className={cn("text-[9px] font-bold uppercase tracking-wider", textColor)}>
+                                                                                    {req?.deliverables?.length || 1} Item{(req?.deliverables?.length || 1) > 1 ? 's' : ''}
+                                                                                </span>
+                                                                            </div>
+                                                                        </div>
                                                                     </div>
                                                                     <div className="shrink-0">
                                                                         <div className="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center shadow-lg shadow-primary/25">

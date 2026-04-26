@@ -1,6 +1,6 @@
 // @ts-nocheck
 import { supabase } from '../lib/supabase.js';
-import { sendCreatorContentReviewedEmail } from './escrowEmailService.js';
+import { sendCreatorContentReviewedEmail } from './creatorNotificationService.js';
 
 /**
  * Automatically approve deals that have been in CONTENT_DELIVERED for more than 72 hours
@@ -26,7 +26,7 @@ export async function runAutoApprovalJob() {
       return { processed: 0 };
     }
 
-    console.log(\`[EscrowAutomation] Found \${staleDeals.length} stale deals. Processing...\`);
+    console.log(`[EscrowAutomation] Found ${staleDeals.length} stale deals. Processing...`);
 
     const results = [];
 
@@ -41,7 +41,7 @@ export async function runAutoApprovalJob() {
         .eq('id', deal.id);
 
       if (updateError) {
-        console.error(\`[EscrowAutomation] Failed to approve deal \${deal.id}:\`, updateError);
+        console.error(`[EscrowAutomation] Failed to approve deal ${deal.id}:`, updateError);
         continue;
       }
 
@@ -66,7 +66,7 @@ export async function runAutoApprovalJob() {
       results.push(deal.id);
     }
 
-    console.log(\`[EscrowAutomation] Successfully auto-approved \${results.length} deals.\`);
+    console.log(`[EscrowAutomation] Successfully auto-approved ${results.length} deals.`);
     return { processed: results.length, dealIds: results };
 
   } catch (err) {

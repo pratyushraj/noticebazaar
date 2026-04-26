@@ -1118,7 +1118,7 @@ router.get('/lookup-brand', async (req: Request, res: Response) => {
         success: true,
         data: {
           brand_name: brandProfile?.name || profileRow.business_name || null,
-          logo: brandProfile?.logo_url || profileRow.avatar_url || profileRow.profile_image_url || inferLogoFromEmail(email) || null,
+          logo: brandProfile?.logo_url || profileRow.avatar_url || profileRow.profile_image_url || null,
           instagram: null,
           website: brandProfile?.website_url || null
         }
@@ -1145,7 +1145,7 @@ router.get('/lookup-brand', async (req: Request, res: Response) => {
         success: true,
         data: {
           brand_name: brandProfile?.name || brandUser.brand_name || null,
-          logo: brandProfile?.logo_url || brandUser.brand_logo_url || inferLogoFromEmail(email) || null,
+          logo: brandProfile?.logo_url || brandUser.brand_logo_url || null,
           instagram: brandUser.instagram_handle || null,
           website: brandProfile?.website_url || null
         }
@@ -1167,27 +1167,16 @@ router.get('/lookup-brand', async (req: Request, res: Response) => {
         success: true,
         data: {
           brand_name: pastRequest.brand_name || null,
-          logo: pastRequest.brand_logo_url || inferLogoFromEmail(email) || null,
+          logo: pastRequest.brand_logo_url || null,
           instagram: pastRequest.brand_instagram || null
         }
       });
     }
 
-    // 3. Fallback: Infer from email prefix if no record found
-    const emailPrefix = email.split('@')[0];
-    const cleanPrefix = emailPrefix.replace(/[0-9]/g, '').replace(/[._-]/g, ' ').trim();
-    const inferredName = cleanPrefix.split(' ')
-      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-      .filter(word => word.length > 1)
-      .join(' ');
-
     return res.json({
-      success: true,
-      data: {
-        brand_name: inferredName || null,
-        logo: inferLogoFromEmail(email) || null,
-        inferred: true
-      }
+      success: false,
+      error: 'Brand not registered',
+      data: null
     });
   } catch (error: any) {
     console.error('[CollabRequests] Error in /lookup-brand:', error);

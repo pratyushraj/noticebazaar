@@ -20,6 +20,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { getApiBaseUrl } from '@/lib/utils/api';
 import { motion, AnimatePresence } from 'framer-motion';
+import { triggerHaptic } from '@/lib/utils/haptics';
 
 const getErrorMessage = (error: unknown, fallback = 'An error occurred. Please try again.') =>
   error instanceof Error ? error.message : fallback;

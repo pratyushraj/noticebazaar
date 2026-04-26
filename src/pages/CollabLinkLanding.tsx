@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useRef } from 'react'
+import React, { useState, useEffect, useMemo, useRef } from 'react'
 import { useParams, useNavigate, useSearchParams, useLocation } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { cn } from '@/lib/utils'
@@ -66,6 +66,8 @@ import {
   Link2,
   Briefcase,
   Upload,
+  Camera,
+  Star,
   Image as ImageIcon,
 } from 'lucide-react'
 import { toast } from 'sonner'
@@ -76,11 +78,12 @@ import { BreadcrumbSchema } from '@/components/seo/SchemaMarkup'
 import { getApiBaseUrl } from '@/lib/utils/api'
 import { getCollabReadiness } from '@/lib/collab/readiness'
 import { useSession } from '@/contexts/SessionContext'
-import { VerificationBadge } from '@/components/ui/VerificationBadge'
+
 import { useUpdateProfile } from '@/lib/hooks/useProfiles'
 import { useSignOut } from '@/lib/hooks/useAuth'
 import { supabase } from '@/integrations/supabase/client'
 import { normalizeLogoUrl } from '@/lib/deals/format'
+import { safeAvatarSrc } from '@/lib/utils/image'
 import type { PortfolioItem } from '@/types'
 
 // Generic JSON-LD injector for page-specific schema markup
@@ -328,6 +331,24 @@ const getPreferredPublicHandle = (...candidates: Array<string | null | undefined
   }
   return ''
 }
+
+const CAMPAIGN_GOALS = [
+  'App / Website Promotion',
+  'Product Review / Unboxing',
+  'Brand Awareness',
+  'Performance Campaign',
+  'Content Creation (UGC)',
+  'Event / Launch Promotion',
+  'Custom Collaboration',
+]
+
+const BARTER_OPTIONS = [
+  { id: 'product', label: '📦 Physical Product' },
+  { id: 'access', label: '🔓 Free Access / Subscription' },
+  { id: 'commission', label: '💸 Commission / Affiliate Earnings' },
+  { id: 'experience', label: '🎟️ Experience / Event Access' },
+  { id: 'custom', label: '✍️ Custom Offer' },
+]
 
 const DELIVERABLE_OPTIONS = [
   { label: 'Reel', value: 'Instagram Reel', icon: <span className="mr-1.5">🎬</span> },
@@ -685,7 +706,9 @@ const CollabLinkLanding = () => {
     const previousBodyHeight = body.style.height
     const previousBodyMinHeight = body.style.minHeight
     const previousBodyPosition = body.style.position
+    const hadLight = html.classList.contains('light')
     html.classList.remove('dark')
+    html.classList.add('light')
 
     // Safety check: ensure no prior screens left the document scroll-locked.
     html.style.overflow = ''
@@ -699,8 +722,9 @@ const CollabLinkLanding = () => {
     body.style.position = 'static'
 
     return () => {
-      // Restore dark if it was set before entering this page
+      // Restore classes if they were set before entering this page
       if (hadDark) html.classList.add('dark')
+      if (!hadLight) html.classList.remove('light')
       html.style.overflow = previousHtmlOverflow
       html.style.overflowY = previousHtmlOverflowY
       html.style.height = previousHtmlHeight
@@ -721,7 +745,24 @@ const CollabLinkLanding = () => {
   }, [username, navigate])
 
   // Form state
-  const [collabType, setCollabType] = useState<CollabType>('paid')
+  const [paymentType, setPaymentType] = useState<'paid' | 'barter'>('paid')
+  const [campaignGoal, setCampaignGoal] = useState<string>('')
+  const [barterTypes, setBarterTypes] = useState<string[]>([])
+  const [includesProduct, setIncludesProduct] = useState<boolean>(false)
+
+  const collabType: CollabType = paymentType === 'paid' ? (includesProduct ? 'hybrid' : 'paid') : 'barter'
+  const setCollabType = (type: string) => {
+    if (type === 'barter') {
+      setPaymentType('barter')
+      setIncludesProduct(true)
+    } else if (type === 'hybrid' || type === 'both') {
+      setPaymentType('paid')
+      setIncludesProduct(true)
+    } else {
+      setPaymentType('paid')
+      setIncludesProduct(false)
+    }
+  }
   const [brandName, setBrandName] = useState('')
   const [brandEmail, setBrandEmail] = useState('')
   const [brandInstagram, setBrandInstagram] = useState('')
@@ -744,6 +785,9 @@ const CollabLinkLanding = () => {
   const [campaignDescription, setCampaignDescription] = useState('')
   const [deliverables, setDeliverables] = useState<string[]>([])
   const [deliverableQuantities, setDeliverableQuantities] = useState<Record<string, number>>({})
+  const [contentQuantity, setContentQuantity] = useState<number | '3+'>(1)
+  const [contentDuration, setContentDuration] = useState<string>('30s')
+  const [contentRequirements, setContentRequirements] = useState<string[]>([])
   const [deadline, setDeadline] = useState('')
   const [hasStartedOffer, setHasStartedOffer] = useState(false)
   const [showMobileAudienceDetails, setShowMobileAudienceDetails] = useState(false)
@@ -795,6 +839,8 @@ const CollabLinkLanding = () => {
 
   const isStep1Ready = Boolean(
     collabType &&
+    campaignGoal &&
+    (paymentType === 'barter' ? barterTypes.length > 0 : true) &&
     (selectedTemplateId ? deliverables.length > 0 : campaignDescription.trim().length >= 10)
   )
   const isValidBrandEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(brandEmail)
@@ -980,13 +1026,8 @@ const CollabLinkLanding = () => {
           if (!brandName.trim() && json.data.brand_name) setBrandName(json.data.brand_name)
 
           const backendLogo = json.data.logo
-          console.log('[CollabLinkLanding] Backend returned logo:', backendLogo)
-          const inferredLogo = normalizeLogoUrl(undefined, json.data.brand_name || brandName)
-          const finalLogo =
-            backendLogo || (inferredLogo && !failedLogos.has(inferredLogo) ? inferredLogo : null)
-
-          if (!isLogoUserUploaded && finalLogo) {
-            setBrandLogoUrl(finalLogo)
+          if (!isLogoUserUploaded && backendLogo) {
+            setBrandLogoUrl(backendLogo)
           }
           if (!brandInstagram.trim() && json.data.instagram) setBrandInstagram(json.data.instagram)
 
@@ -1013,28 +1054,7 @@ const CollabLinkLanding = () => {
     failedLogos,
   ])
 
-  // --- NEW: AUTO-LOGO FROM BRAND NAME ---
-  useEffect(() => {
-    if (
-      isLogoUserUploaded ||
-      brandLogoUrl ||
-      brandName.trim().length < 3 ||
-      lookupStatus === 'loading'
-    )
-      return
 
-    const guessed = normalizeLogoUrl(undefined, brandName)
-    if (!guessed || failedLogos.has(guessed)) return
-
-    const timer = setTimeout(() => {
-      if (!brandLogoUrl && !isLogoUserUploaded) {
-        console.log('[CollabLinkLanding] Auto-guessing logo from name:', brandName)
-        setBrandLogoUrl(guessed)
-      }
-    }, 1500) // Slightly longer debounce to avoid flickers while typing
-
-    return () => clearTimeout(timer)
-  }, [brandName, brandLogoUrl, lookupStatus, failedLogos, isLogoUserUploaded])
 
   const jumpToOfferForm = (options?: { openCustom?: boolean }) => {
     setHasStartedOffer(true)
@@ -2054,9 +2074,20 @@ const CollabLinkLanding = () => {
     }
 
     if (currentStep === 1) {
-      if (!isStep1Ready) {
-        toast.error('Please select a collaboration type')
+      if (!collabType) {
+        toast.error('Please select collaboration type first')
         return
+      }
+      if (selectedTemplateId) {
+        if (deliverables.length === 0) {
+          toast.error('Please select at least one deliverable')
+          return
+        }
+      } else {
+        if (campaignDescription.trim().length < 10) {
+          toast.error('Please describe your idea (min 10 characters)')
+          return
+        }
       }
       setCurrentStep(2)
       scrollOfferFormIntoView()
@@ -2093,7 +2124,18 @@ const CollabLinkLanding = () => {
       newErrors.brandEmail = 'Enter a valid email'
     }
 
-    // Address is optional for initial offer
+    if (!campaignGoal) {
+      newErrors.campaignGoal = 'Please select a campaign goal'
+    }
+
+    if (paymentType === 'barter' && barterTypes.length === 0) {
+      newErrors.barterTypes = 'Please specify what you are offering'
+    }
+
+    // Conditional: Product Review requires Physical Product
+    if (campaignGoal === 'Product Review / Unboxing' && paymentType === 'barter' && !barterTypes.includes('product')) {
+      newErrors.barterTypes = 'Product Review requires a Physical Product'
+    }
 
     if (!campaignDescription.trim()) {
       newErrors.campaignDescription = 'Describe what you want'
@@ -2109,13 +2151,7 @@ const CollabLinkLanding = () => {
       newErrors.budget = 'Enter your budget'
     }
 
-    if (isHybridCollab(collabType)) {
-      if (!budgetRange && !exactBudget) {
-        newErrors.budget = 'Please specify paid budget details'
-      }
-    }
-
-    if (!String(barterProductImageUrl || '').trim()) {
+    if (isProductImageRequired && !String(barterProductImageUrl || '').trim()) {
       newErrors.barterProductImageUrl = 'Please upload a product image'
     }
 
@@ -2124,6 +2160,24 @@ const CollabLinkLanding = () => {
     }
 
     setErrors(newErrors)
+    
+    // Auto-scroll to first error
+    const errorKeys = Object.keys(newErrors)
+    if (errorKeys.length > 0) {
+      const firstErrorId = errorKeys[0] === 'budget' ? 'budget-input' : 
+                          errorKeys[0] === 'brandName' ? 'brand-name-input' :
+                          errorKeys[0] === 'brandEmail' ? 'brand-email-input' :
+                          errorKeys[0] === 'campaignGoal' ? 'campaign-goal-section' :
+                          errorKeys[0] === 'barterTypes' ? 'barter-types-section' :
+                          errorKeys[0] === 'campaignDescription' ? 'campaign-description-input' :
+                          errorKeys[0] === 'barterProductImageUrl' ? 'barter-product-image-upload' :
+                          errorKeys[0] === 'brandLogoUrl' ? 'brand-logo-upload' : null
+      
+      if (firstErrorId) {
+        document.getElementById(firstErrorId)?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      }
+    }
+
     return Object.keys(newErrors).length === 0
   }
 
@@ -2168,19 +2222,27 @@ const CollabLinkLanding = () => {
           collab_type: collabType,
           budget_range: budgetRange || null,
           exact_budget: exactBudget ? parseFloat(exactBudget) : null,
-          campaign_category: campaignCategory || null,
+          campaign_category: campaignGoal || campaignCategory || 'General',
           barter_value: barterValue ? parseFloat(barterValue) : null,
+          barter_description: paymentType === 'barter' 
+            ? `Barter Types: ${barterTypes.map(t => BARTER_OPTIONS.find(o => o.id === t)?.label || t).join(', ')}`
+            : null,
           barter_product_name: barterProductName || null,
           barter_product_category: barterProductCategory || null,
           barter_product_image_url: barterProductImageUrl
             ? String(barterProductImageUrl).trim()
             : null,
-          campaign_description: campaignDescription,
+          campaign_description: [
+            campaignDescription,
+            contentRequirements.length > 0 ? `\nRequirements: ${contentRequirements.map(r => ({ hook: 'Hook in first 3 sec', voiceover: 'Voiceover included', cta: 'Strong Call to Action', tag: 'Brand Tagging' } as Record<string,string>)[r] || r).join(', ')}` : '',
+            contentQuantity !== 1 ? `\nQuantity: ${contentQuantity}` : '',
+            contentDuration ? `\nDuration: ${contentDuration}` : '',
+          ].filter(Boolean).join(''),
           deliverables: selectedTemplate
             ? deliverables.map(
                 d => `${d}${deliverableQuantities[d] > 1 ? ` (x${deliverableQuantities[d]})` : ''}`
               )
-            : ['Custom collaboration deliverables'],
+            : deliverables.length > 0 ? deliverables : ['Custom collaboration deliverables'],
           usage_rights: false,
           deadline: deadline || null,
           offer_expires_at: null,
@@ -3016,7 +3078,7 @@ const CollabLinkLanding = () => {
                     <div className="w-full h-full rounded-[38px] overflow-hidden border-4 border-white bg-white">
                       <Avatar className="w-full h-full rounded-none">
                         <AvatarImage
-                          src={creator.profile_photo || ''}
+                          src={safeAvatarSrc(creator.profile_photo)}
                           alt={displayCreatorName}
                           className="w-full h-full object-cover"
                         />
@@ -3026,14 +3088,7 @@ const CollabLinkLanding = () => {
                       </Avatar>
                     </div>
                   </motion.div>
-                  <motion.div
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    transition={{ delay: 0.5, type: 'spring' }}
-                    className="absolute -bottom-2 -right-2 bg-white rounded-2xl p-1.5 shadow-xl border border-slate-100 z-20"
-                  >
-                    <VerificationBadge size="sm" />
-                  </motion.div>
+
                 </div>
 
                 <h1 className="text-4xl font-black text-slate-900 mb-2 tracking-tight text-center">
@@ -3411,111 +3466,463 @@ const CollabLinkLanding = () => {
                     {/* Step 1: Custom Description or Standard Selection */}
                     {currentStep === 1 && (
                       <div className="space-y-5">
-                        {!selectedTemplate ? (
-                          /* Custom Deal - Direct to Description */
-                          <div>
-                            <label
-                              htmlFor="custom-description-input"
-                              className={`block text-base font-black text-slate-800 mb-3 ${typeLabel}`}
-                            >
-                              Describe your custom collaboration idea
+                        {/* Section 1: The Mode (Primary Weight) */}
+                        <div className="bg-white rounded-3xl p-6 border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] space-y-5">
+                          <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 rounded-xl bg-slate-900 flex items-center justify-center text-white font-black text-xs">01</div>
+                            <label className="text-[16px] font-black text-slate-900 tracking-tight">
+                              Collaboration Type
                             </label>
-                            <Textarea
-                              id="custom-description-input"
-                              value={campaignDescription}
-                              onChange={e => setCampaignDescription(e.target.value)}
-                              placeholder="Tell the creator about your campaign, product, or custom collaboration vision..."
-                              className="min-h-[140px] rounded-2xl border-white bg-white px-4 py-3 font-semibold text-[15px] shadow-sm resize-none focus-visible:ring-2 focus-visible:ring-emerald-500/30 transition-all"
-                            />
-                            {errors.campaignDescription && (
-                              <p className="mt-2 text-[12px] font-bold text-destructive">
-                                {errors.campaignDescription}
-                              </p>
-                            )}
-                            <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-2xl">
-                              <p className="text-[12px] font-semibold text-blue-800">
-                                💡 <strong>Custom collaborations</strong> are perfect for unique
-                                campaigns, product launches, or creative partnerships that don't fit
-                                standard packages.
-                              </p>
+                          </div>
+                          
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setPaymentType('paid')
+                                triggerHaptic(HapticPatterns.selection)
+                              }}
+                              className={cn(
+                                'relative flex flex-col items-start p-5 rounded-2xl border-2 transition-all text-left group overflow-hidden',
+                                paymentType === 'paid'
+                                  ? 'border-slate-900 bg-slate-900 text-white shadow-xl scale-[1.01]'
+                                  : 'border-slate-100 bg-slate-50/50 hover:border-slate-200 text-slate-600 hover:bg-white'
+                              )}
+                            >
+                              <div className="flex items-center gap-3 mb-2">
+                                <div className={cn(
+                                  "p-2.5 rounded-xl transition-colors shadow-sm",
+                                  paymentType === 'paid' ? "bg-white/10 text-emerald-400" : "bg-white text-slate-400"
+                                )}>
+                                  <Wallet className="h-5 w-5" />
+                                </div>
+                                <span className="text-[15px] font-black tracking-tight">Paid Collaboration</span>
+                              </div>
+                              <p className={cn("text-[12px] font-medium leading-snug", paymentType === 'paid' ? 'text-white/70' : 'text-slate-500')}>Direct payment for your deliverables.</p>
+                              <div className={cn("mt-4 py-1.5 px-3 rounded-lg text-[10px] font-black uppercase tracking-widest flex items-center gap-1.5", paymentType === 'paid' ? 'bg-white/10 text-emerald-300' : 'bg-emerald-50 text-emerald-600')}>
+                                <ShieldCheck className="h-3.5 w-3.5" /> High creator interest
+                              </div>
+                            </button>
+
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setPaymentType('barter')
+                                triggerHaptic(HapticPatterns.selection)
+                              }}
+                              className={cn(
+                                'relative flex flex-col items-start p-5 rounded-2xl border-2 transition-all text-left group overflow-hidden',
+                                paymentType === 'barter'
+                                  ? 'border-slate-900 bg-slate-900 text-white shadow-xl scale-[1.01]'
+                                  : 'border-slate-200 bg-white hover:border-slate-300 text-slate-700'
+                              )}
+                            >
+                              <div className="flex items-center gap-3 mb-2">
+                                <div className={cn(
+                                  "p-2.5 rounded-xl transition-colors shadow-sm",
+                                  paymentType === 'barter' ? "bg-white/10 text-amber-400" : "bg-slate-50 text-slate-600"
+                                )}>
+                                  <Package className="h-5 w-5" />
+                                </div>
+                                <span className="text-[15px] font-black tracking-tight">Barter (No Cash)</span>
+                              </div>
+                              <p className={cn("text-[12px] font-medium leading-snug", paymentType === 'barter' ? 'text-white/70' : 'text-slate-500')}>Offer products or value in exchange.</p>
+                              <div className={cn("mt-4 py-1.5 px-3 rounded-lg text-[10px] font-black uppercase tracking-widest flex items-center gap-1.5", paymentType === 'barter' ? 'bg-white/10 text-amber-300' : 'bg-amber-50 text-amber-700')}>
+                                <Zap className="h-3.5 w-3.5" /> Value Based
+                              </div>
+                            </button>
+                          </div>
+
+                          {/* Nested Options within Mode Card - ONLY for Paid */}
+                          {paymentType === 'paid' && (
+                            <div className="pt-3 animate-in fade-in slide-in-from-top-1 duration-300">
+                              <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100 space-y-3">
+                                <div className="flex items-center justify-between">
+                                  <div className="flex items-center gap-2">
+                                    <Package className="h-4 w-4 text-slate-400" />
+                                    <span className="text-[13px] font-bold text-slate-800">Do you want to include a product?</span>
+                                  </div>
+                                </div>
+                                <div className="grid grid-cols-2 gap-2">
+                                  {[
+                                    { val: false, label: 'Cash Only', sub: 'Services only' },
+                                    { val: true, label: 'Cash + Product', sub: 'Item included' }
+                                  ].map(opt => (
+                                    <button
+                                      key={String(opt.val)}
+                                      type="button"
+                                      onClick={() => setIncludesProduct(opt.val)}
+                                      className={cn(
+                                        "flex flex-col items-center p-2 rounded-xl border-2 transition-all",
+                                        includesProduct === opt.val 
+                                          ? "bg-white border-slate-900 text-slate-900 shadow-sm" 
+                                          : "border-transparent text-slate-400 hover:text-slate-600"
+                                      )}
+                                    >
+                                      <span className="text-[11px] font-black uppercase tracking-wider">{opt.label}</span>
+                                      <span className="text-[9px] font-medium opacity-60">{opt.sub}</span>
+                                    </button>
+                                  ))}
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Section 2: The Goal (High Interaction Cards) */}
+                        <div id="campaign-goal-section" className="bg-white rounded-3xl p-6 border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.03)] space-y-5">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                              <div className="w-8 h-8 rounded-xl bg-slate-900 flex items-center justify-center text-white font-black text-xs">02</div>
+                              <label className="text-[16px] font-black text-slate-900 tracking-tight">
+                                Campaign Goal
+                              </label>
                             </div>
                           </div>
-                        ) : (
-                          /* Standard Deal - Collab Type */
-                          <div>
-                            <label
-                              className={`block text-base font-black text-slate-800 mb-3 ${typeLabel}`}
-                            >
-                              What type of collaboration?
-                            </label>
-                            <div className="grid grid-cols-3 gap-2">
-                              {[
-                                {
-                                  id: 'paid',
-                                  label: 'Paid',
-                                  icon: <Wallet className="h-5 w-5" />,
-                                  sub: 'Cash',
-                                },
-                                {
-                                  id: 'barter',
-                                  label: 'Free products',
-                                  icon: <Package className="h-5 w-5" />,
-                                  sub: 'Product',
-                                },
-                                {
-                                  id: 'hybrid',
-                                  label: 'Paid + Product',
-                                  icon: <Zap className="h-5 w-5" />,
-                                  sub: 'Both',
-                                },
-                              ].map(type => (
+                          
+                          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                            {[
+                              { id: 'App / Website Promotion', icon: <Rocket />, label: 'App / Website', sub: 'Promote installs or usage' },
+                              { id: 'Product Review / Unboxing', icon: <Package />, label: 'Product Review', sub: 'Unboxing & item review' },
+                              { id: 'Brand Awareness', icon: <Target />, label: 'Brand Awareness', sub: 'Reach new audiences' },
+                              { id: 'Performance Campaign', icon: <TrendingUp />, label: 'Sales / Leads', sub: 'Focus on conversions' },
+                              { id: 'Content Creation (UGC)', icon: <Camera />, label: 'Content for Ads', sub: 'High-quality UGC ads' },
+                              { id: 'Custom Collaboration', icon: <Sparkles />, label: 'Custom', sub: 'Tailored partnership' },
+                            ].map((goal) => (
+                              <button
+                                type="button"
+                                key={goal.id}
+                                onClick={() => {
+                                  setCampaignGoal(goal.id)
+                                  triggerHaptic(HapticPatterns.selection)
+                                }}
+                                className={cn(
+                                  'flex flex-col items-start p-4 rounded-2xl border-2 transition-all gap-1 text-left group relative overflow-hidden',
+                                  campaignGoal === goal.id
+                                    ? 'border-slate-900 bg-slate-900 text-white shadow-xl scale-[1.02]'
+                                    : 'border-slate-100 bg-slate-50/50 text-slate-600 hover:border-slate-200 hover:bg-white'
+                                )}
+                              >
+                                <div className={cn(
+                                  "p-2 rounded-xl transition-colors mb-2 shadow-sm",
+                                  campaignGoal === goal.id ? "bg-white/20 text-white" : "bg-white text-slate-400 group-hover:text-slate-600"
+                                )}>
+                                  {React.cloneElement(goal.icon as React.ReactElement, { className: "h-5 w-5" })}
+                                </div>
+                                <span className="text-[13px] font-black tracking-tight leading-tight">{goal.label}</span>
+                                <span className={cn(
+                                  "text-[10px] font-medium leading-tight",
+                                  campaignGoal === goal.id ? "text-white/60" : "text-slate-400"
+                                )}>{goal.sub}</span>
+                              </button>
+                            ))}
+                          </div>
+
+                          {/* SMART UX LAYER: Contextual Hint */}
+                          {campaignGoal && (
+                            <div className="animate-in fade-in slide-in-from-top-2 duration-300">
+                              {campaignGoal === 'Product Review / Unboxing' ? (
+                                <div className="p-4 rounded-2xl bg-amber-50 border border-amber-100 flex items-center gap-3">
+                                  <div className="p-2 bg-amber-100 rounded-lg text-amber-700">
+                                    <Package className="h-4 w-4" />
+                                  </div>
+                                  <p className="text-[12px] font-bold text-amber-900">
+                                    Physical product must be shipped before creator starts.
+                                  </p>
+                                </div>
+                              ) : (campaignGoal === 'App / Website Promotion' || campaignGoal === 'Performance Campaign') ? (
+                                <div className="p-4 rounded-2xl bg-blue-50 border border-blue-100 flex items-center gap-3">
+                                  <div className="p-2 bg-blue-100 rounded-lg text-blue-700">
+                                    <Rocket className="h-4 w-4" />
+                                  </div>
+                                  <p className="text-[12px] font-bold text-blue-900">
+                                    Digital-first campaign. No physical product required.
+                                  </p>
+                                </div>
+                              ) : null}
+                            </div>
+                          )}
+
+                          {errors.campaignGoal && (
+                            <p className="mt-2 text-[11px] font-bold text-destructive animate-pulse">
+                              {errors.campaignGoal}
+                            </p>
+                          )}
+                        </div>
+
+                        {/* Section 3: Barter Definition (Conditional Card) */}
+                        {paymentType === 'barter' && (
+                          <div id="barter-types-section" className="bg-slate-900 rounded-3xl p-6 border border-slate-800 shadow-xl space-y-5 animate-in zoom-in-95 duration-300">
+                            <div className="flex items-center gap-3">
+                              <div className="w-8 h-8 rounded-xl bg-emerald-500 flex items-center justify-center text-white font-black text-xs">!</div>
+                              <label className="text-[16px] font-black text-white tracking-tight">
+                                Value you are offering
+                              </label>
+                            </div>
+                            
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                              {BARTER_OPTIONS.map((option) => (
                                 <button
                                   type="button"
-                                  key={type.id}
-                                  onClick={() => setCollabType(type.id as CollabType)}
-                                  className={`flex flex-col items-center justify-center p-3 md:p-4 rounded-2xl border-2 transition-all group min-h-[90px] md:min-h-[100px] ${collabType === type.id ? 'border-slate-900 bg-slate-900 text-white shadow-xl' : 'border-slate-100 bg-white hover:border-slate-200 text-slate-600'}`}
+                                  key={option.id}
+                                  onClick={() => {
+                                    if (barterTypes.includes(option.id)) {
+                                      setBarterTypes(barterTypes.filter(t => t !== option.id))
+                                    } else {
+                                      setBarterTypes([...barterTypes, option.id])
+                                    }
+                                  }}
+                                  className={cn(
+                                    'flex items-center p-4 rounded-xl border-2 transition-all text-left group',
+                                    barterTypes.includes(option.id)
+                                      ? 'border-emerald-500 bg-emerald-500/10 text-white'
+                                      : 'border-slate-800 bg-slate-800/50 text-slate-400 hover:border-slate-700'
+                                  )}
                                 >
-                                  <div
-                                    className={`w-9 h-9 rounded-full flex items-center justify-center mb-1.5 ${collabType === type.id ? 'bg-white/20 text-white' : 'bg-slate-50 text-slate-400 group-hover:bg-slate-100'}`}
-                                  >
-                                    {type.icon}
+                                  <div className={cn(
+                                    "w-5 h-5 rounded-md border flex items-center justify-center mr-3 transition-colors",
+                                    barterTypes.includes(option.id) ? "bg-emerald-500 border-emerald-500" : "border-slate-600"
+                                  )}>
+                                    {barterTypes.includes(option.id) && <Check className="w-4 h-4 text-white" />}
                                   </div>
-                                  <p className="text-[12px] md:text-[13px] font-black uppercase tracking-tight leading-tight">
-                                    {type.label}
-                                  </p>
-                                  <p
-                                    className={`text-[10px] font-medium mt-0.5 ${collabType === type.id ? 'text-white/60' : 'text-slate-400'}`}
-                                  >
-                                    {type.sub}
-                                  </p>
+                                  <span className="text-[13px] font-bold">{option.label}</span>
                                 </button>
                               ))}
                             </div>
+                            
+                            {barterTypes.length === 0 && (
+                              <p className="text-[11px] font-bold text-slate-500 uppercase tracking-widest text-center pt-2">
+                                Choose at least one to continue
+                              </p>
+                            )}
                           </div>
                         )}
-                        {/* Content Selection */}
-                        <div className="bg-slate-50 rounded-[24px] md:rounded-[32px] p-4 md:p-6 border border-slate-200 shadow-inner">
-                          <label
-                            className={`block text-base font-black text-slate-800 mb-3 ${typeLabel} flex items-center gap-2`}
-                          >
+
+                        {/* Section 4: The Brief (The Centerpiece) */}
+                        <div className="bg-white rounded-3xl p-6 border border-slate-100 shadow-[0_8px_40px_rgba(0,0,0,0.05)] space-y-5">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                              <div className="w-8 h-8 rounded-xl bg-slate-900 flex items-center justify-center text-white font-black text-xs">03</div>
+                              <label className="text-[16px] font-black text-slate-900 tracking-tight">
+                                Campaign Brief
+                              </label>
+                            </div>
+                            <button 
+                              type="button"
+                              onClick={() => {
+                                triggerHaptic(HapticPatterns.success);
+                                const base = campaignDescription.trim();
+                                const isReel = deliverables.some(d => d.toLowerCase().includes('reel'));
+                                const enhanced = `1 ${isReel ? 'Instagram Reel' : 'Video'} showcasing the product naturally with brand mention and tagging.\n\n• Length: ${contentDuration}\n• Key Highlights: Show product usage, tag @brand_handle\n• Style: Engaging and authentic\n• CTA: Link in bio / Check out now\n• No competitors in video`;
+                                setCampaignDescription(enhanced);
+                                toast.success("Brief professionally structured!");
+                              }}
+                              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-50 text-emerald-700 text-[10px] font-black uppercase tracking-tight hover:bg-emerald-100 transition-colors border border-emerald-100"
+                            >
+                              <Sparkles className="h-3 w-3" /> Improve my brief
+                            </button>
+                          </div>
+
+                          <div className="relative group">
+                            <Textarea
+                              id="campaign-description-input"
+                              value={campaignDescription}
+                              onChange={e => setCampaignDescription(e.target.value)}
+                              placeholder="Example:&#10;• 1 Instagram Reel (30–45 sec)&#10;• Show product usage naturally&#10;• Mention brand name in first 5 sec&#10;• Tag @brand_handle"
+                              className="min-h-[180px] rounded-2xl border-slate-100 bg-slate-50/50 px-5 py-5 font-semibold text-[15px] text-slate-900 placeholder:text-slate-400 shadow-inner resize-none focus-visible:ring-4 focus-visible:ring-emerald-500/10 focus-visible:border-emerald-500 transition-all leading-relaxed"
+                            />
+                            <div className="absolute bottom-5 right-5 opacity-20 pointer-events-none">
+                              <PenLine className="h-6 w-6 text-slate-900" />
+                            </div>
+                          </div>
+                          
+                          {errors.campaignDescription && (
+                            <p className="mt-2 text-[11px] font-bold text-destructive">
+                              {errors.campaignDescription}
+                            </p>
+                          )}
+                        </div>
+
+                        {/* Section 5: Content Details (Quantities & Specifics) */}
+                        <div className="bg-slate-50 rounded-[32px] p-6 border border-slate-200 shadow-inner space-y-6">
+                          <label className="block text-base font-black text-slate-800 flex items-center gap-2">
                             <Clapperboard className="h-5 w-5 text-slate-900" />
-                            What content?
+                            What content do you need?
                           </label>
-                          <div className="grid grid-cols-2 gap-2">
+                          
+                          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                             {DELIVERABLE_OPTIONS.slice(0, 6).map(option => {
                               const isSelected = deliverables.includes(option.value)
                               return (
                                 <button
                                   type="button"
                                   key={option.value}
-                                  onClick={() => handleDeliverableToggle(option.value)}
-                                  className={`flex items-center justify-center gap-2 px-3 py-3.5 rounded-xl text-[13px] font-black transition-all border-2 min-h-[48px] ${isSelected ? 'bg-slate-900 border-slate-900 text-white shadow-lg' : 'bg-white border-white text-slate-500 hover:border-slate-200 shadow-sm'}`}
+                                  onClick={() => {
+                                    handleDeliverableToggle(option.value);
+                                    triggerHaptic(HapticPatterns.selection);
+                                  }}
+                                  className={cn(
+                                    "flex flex-col items-center justify-center gap-2 p-4 rounded-2xl text-[12px] font-black transition-all border-2",
+                                    isSelected 
+                                      ? 'bg-slate-900 border-slate-900 text-white shadow-lg scale-[1.02]' 
+                                      : 'bg-white border-white text-slate-500 hover:border-slate-200 shadow-sm'
+                                  )}
                                 >
-                                  {option.icon}
+                                  {React.cloneElement(option.icon as React.ReactElement, { className: "h-5 w-5" })}
                                   {option.label}
                                 </button>
                               )
                             })}
+                          </div>
+
+                          {/* Granular Settings for selected deliverables (e.g., Reel) */}
+                          {deliverables.length > 0 && (
+                            <div className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
+                              <div className="p-5 rounded-2xl bg-white border border-slate-100 shadow-sm space-y-5">
+                                <div className="space-y-3">
+                                  <div className="flex items-center justify-between">
+                                    <span className="text-[11px] font-black uppercase tracking-widest text-slate-400">Content Quantity</span>
+                                    <span className="text-[10px] font-bold text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">Recommended: 1-2</span>
+                                  </div>
+                                  <div className="flex gap-2">
+                                    {([1, 2, '3+'] as (number | '3+')[]).map(num => (
+                                      <button 
+                                        key={String(num)}
+                                        type="button"
+                                        onClick={() => { setContentQuantity(num); triggerHaptic(HapticPatterns.selection); }}
+                                        className={cn(
+                                          "flex-1 h-11 rounded-xl border font-bold text-sm transition-all active:scale-95",
+                                          contentQuantity === num
+                                            ? 'bg-slate-900 border-slate-900 text-white shadow-md'
+                                            : 'bg-slate-50 border-slate-100 text-slate-900 hover:border-slate-900'
+                                        )}
+                                      >
+                                        {num}
+                                      </button>
+                                    ))}
+                                  </div>
+                                </div>
+
+                                {deliverables.some(d => d.toLowerCase().includes('reel') || d.toLowerCase().includes('video')) && (
+                                  <div className="space-y-3">
+                                    <span className="text-[11px] font-black uppercase tracking-widest text-slate-400">Duration</span>
+                                    <div className="flex gap-2">
+                                      {['15s', '30s', '60s'].map(dur => (
+                                        <button 
+                                          key={dur}
+                                          type="button"
+                                          onClick={() => { setContentDuration(dur); triggerHaptic(HapticPatterns.selection); }}
+                                          className={cn(
+                                            "flex-1 h-11 rounded-xl border font-bold text-sm transition-all active:scale-95",
+                                            contentDuration === dur
+                                              ? 'bg-slate-900 border-slate-900 text-white shadow-md'
+                                              : 'bg-slate-50 border-slate-100 text-slate-900 hover:border-slate-900'
+                                          )}
+                                        >
+                                          {dur}
+                                        </button>
+                                      ))}
+                                    </div>
+                                  </div>
+                                )}
+
+                                <div className="space-y-3">
+                                  <span className="text-[11px] font-black uppercase tracking-widest text-slate-400">Requirements</span>
+                                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                    {[
+                                      { id: 'hook', label: 'Hook in first 3 sec' },
+                                      { id: 'voiceover', label: 'Voiceover included' },
+                                      { id: 'cta', label: 'Strong Call to Action' },
+                                      { id: 'tag', label: 'Brand Tagging' },
+                                    ].map(req => {
+                                      const isChecked = contentRequirements.includes(req.id)
+                                      return (
+                                        <button
+                                          key={req.id}
+                                          type="button"
+                                          onClick={() => {
+                                            setContentRequirements(prev =>
+                                              prev.includes(req.id) ? prev.filter(r => r !== req.id) : [...prev, req.id]
+                                            )
+                                            triggerHaptic(HapticPatterns.selection)
+                                          }}
+                                          className={cn(
+                                            "flex items-center gap-3 p-3 rounded-xl border text-left transition-all",
+                                            isChecked
+                                              ? 'border-emerald-300 bg-emerald-50 text-slate-900'
+                                              : 'border-slate-100 bg-slate-50/50 text-slate-600 hover:bg-slate-100'
+                                          )}
+                                        >
+                                          <div className={cn(
+                                            "w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all flex-shrink-0",
+                                            isChecked ? 'bg-emerald-500 border-emerald-500' : 'border-slate-200 bg-white'
+                                          )}>
+                                            {isChecked && <Check className="h-3.5 w-3.5 text-white" />}
+                                          </div>
+                                          <span className="text-[12px] font-bold">{req.label}</span>
+                                        </button>
+                                      )
+                                    })}
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Section 6: Deal Strength Indicator (The Intelligent Score) */}
+                        <div className="bg-white rounded-3xl p-6 border border-slate-100 shadow-sm space-y-4">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <span className="text-[13px] font-black text-slate-900 tracking-tight">Deal Strength:</span>
+                              <div className="flex gap-0.5">
+                                {[1, 2, 3, 4, 5].map(star => (
+                                  <Star 
+                                    key={star} 
+                                    className={cn(
+                                      "h-4 w-4 transition-all duration-500", 
+                                      star <= (paymentType === 'paid' ? 4 : 3) ? "fill-amber-400 text-amber-400" : "text-slate-200"
+                                    )} 
+                                  />
+                                ))}
+                              </div>
+                              <span className={cn(
+                                "text-[12px] font-black ml-1",
+                                paymentType === 'paid' ? "text-emerald-600" : "text-amber-600"
+                              )}>
+                                {paymentType === 'paid' ? 'STRONG OFFER' : 'FAIR VALUE'}
+                              </span>
+                            </div>
+                          </div>
+
+                          <div className="space-y-3">
+                            <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden flex shadow-inner">
+                              <div className={cn(
+                                "h-full transition-all duration-1000 ease-out",
+                                paymentType === 'paid' ? "bg-emerald-500 w-[85%]" : "bg-amber-500 w-[60%]"
+                              )} />
+                            </div>
+                            
+                            <div className="grid grid-cols-2 gap-x-4 gap-y-2 pt-2 border-t border-slate-50">
+                              {[
+                                { cond: true, label: 'Clear deliverables' },
+                                { cond: paymentType === 'paid', label: 'Cash payment' },
+                                { cond: includesProduct, label: 'Product included' },
+                                { cond: campaignDescription.length > 50, label: 'Detailed brief' },
+                              ].map((item, idx) => (
+                                <div key={idx} className={cn(
+                                  "flex items-center gap-2 text-[11px] font-bold transition-all",
+                                  item.cond ? "text-slate-700" : "text-slate-300"
+                                )}>
+                                  {item.cond ? (
+                                    <CheckCircle2 className="h-3 w-3 text-emerald-500" />
+                                  ) : (
+                                    <div className="w-3 h-3 rounded-full border border-slate-200" />
+                                  )}
+                                  {item.label}
+                                </div>
+                              ))}
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -3590,8 +3997,16 @@ const CollabLinkLanding = () => {
                                 value={brandEmail}
                                 onChange={e => setBrandEmail(e.target.value)}
                                 placeholder="your@company.com"
-                                className="h-14 px-4 rounded-xl border-white bg-white font-bold text-base shadow-sm focus-visible:ring-2 focus-visible:ring-emerald-500/30 transition-all"
+                                className={cn(
+                                  "h-14 px-4 rounded-xl border-white bg-white font-bold text-base text-slate-900 placeholder:text-slate-500 shadow-sm focus-visible:ring-2 focus-visible:ring-emerald-500/30 transition-all",
+                                  errors.brandEmail && "border-destructive ring-1 ring-destructive"
+                                )}
                               />
+                              {errors.brandEmail && (
+                                <p className="mt-1 text-[11px] font-bold text-destructive">
+                                  {errors.brandEmail}
+                                </p>
+                              )}
                               <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-2">
                                 {lookupStatus === 'loading' && (
                                   <Loader2 className="h-4 w-4 animate-spin text-slate-400" />
@@ -3602,6 +4017,12 @@ const CollabLinkLanding = () => {
                                   </div>
                                 )}
                               </div>
+                            </div>
+
+                            {/* Privacy Trust Badge */}
+                            <div className="flex items-center gap-2 px-1">
+                              <svg className="h-3 w-3 text-slate-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
+                              <p className="text-[11px] font-bold text-slate-400">Your contact is shared only after creator accepts</p>
                             </div>
 
                             {lookupStatus === 'found' && lookupData && (
@@ -3620,8 +4041,16 @@ const CollabLinkLanding = () => {
                                 value={brandName}
                                 onChange={e => setBrandName(e.target.value)}
                                 placeholder="Brand or company name"
-                                className="h-14 px-4 rounded-xl border-white bg-white font-bold text-base shadow-sm focus-visible:ring-2 focus-visible:ring-emerald-500/30 transition-all"
+                                className={cn(
+                                  "h-14 px-4 rounded-xl border-white bg-white font-bold text-base text-slate-900 placeholder:text-slate-500 shadow-sm focus-visible:ring-2 focus-visible:ring-emerald-500/30 transition-all",
+                                  errors.brandName && "border-destructive ring-1 ring-destructive"
+                                )}
                               />
+                              {errors.brandName && (
+                                <p className="mt-1 text-[11px] font-bold text-destructive">
+                                  {errors.brandName}
+                                </p>
+                              )}
                             </div>
 
                             <label htmlFor="brand-instagram-input" className="sr-only">
@@ -3632,7 +4061,7 @@ const CollabLinkLanding = () => {
                               value={brandInstagram}
                               onChange={e => setBrandInstagram(e.target.value)}
                               placeholder="@brand_instagram (optional)"
-                              className="h-12 px-4 rounded-xl border-white bg-white font-semibold text-[14px] shadow-sm focus-visible:ring-2 focus-visible:ring-emerald-500/30 transition-all"
+                              className="h-12 px-4 rounded-xl border-white bg-white font-semibold text-[14px] text-slate-900 placeholder:text-slate-500 shadow-sm focus-visible:ring-2 focus-visible:ring-emerald-500/30 transition-all"
                             />
 
                             {(useBrandProfile || lookupStatus === 'found') && (
@@ -3654,7 +4083,7 @@ const CollabLinkLanding = () => {
                               </Button>
                             )}
                             {/* Brand Logo Upload */}
-                            <div className="pt-2">
+                            <div id="brand-logo-upload" className="pt-2">
                               <div className="flex items-center justify-between mb-2">
                                 <p className="text-[11px] font-black uppercase tracking-widest text-slate-500">
                                   Brand Logo
@@ -3758,25 +4187,10 @@ const CollabLinkLanding = () => {
                           </div>
                         </div>
 
-                        <div className="bg-slate-50 rounded-[24px] md:rounded-[32px] p-4 md:p-6 border border-slate-200 shadow-inner space-y-3">
-                          <label
-                            htmlFor="campaign-description-input"
-                            className={`block text-base font-black text-slate-800 mb-1 ${typeLabel}`}
-                          >
-                            What do you want promoted?
-                          </label>
-                          <Textarea
-                            id="campaign-description-input"
-                            value={campaignDescription}
-                            onChange={e => setCampaignDescription(e.target.value)}
-                            placeholder="Tell the creator about your campaign, product, or vision..."
-                            className="min-h-[120px] rounded-2xl border-white bg-white px-4 py-3 font-semibold text-[15px] shadow-sm resize-none focus-visible:ring-2 focus-visible:ring-emerald-500/30 transition-all"
-                          />
-                        </div>
 
                         {/* Product image / product details */}
                         {isProductImageRequired && (
-                          <div className="bg-slate-50 rounded-[32px] p-6 border border-slate-200 shadow-inner space-y-4">
+                          <div id="barter-product-image-upload" className="bg-slate-50 rounded-[32px] p-6 border border-slate-200 shadow-inner space-y-4">
                             {(collabType === 'barter' || collabType === 'hybrid') && (
                               <>
                                 <label
@@ -3791,7 +4205,7 @@ const CollabLinkLanding = () => {
                                   value={barterProductName}
                                   onChange={e => setBarterProductName(e.target.value)}
                                   placeholder="Product name you'll send"
-                                  className="h-12 px-4 rounded-xl border-white bg-white font-bold text-[14px] shadow-sm focus-visible:ring-2 focus-visible:ring-emerald-500/30"
+                                  className="h-12 px-4 rounded-xl border-white bg-white font-bold text-[14px] text-slate-900 placeholder:text-slate-500 shadow-sm focus-visible:ring-2 focus-visible:ring-emerald-500/30"
                                 />
                               </>
                             )}
@@ -3899,7 +4313,7 @@ const CollabLinkLanding = () => {
                                   value={exactBudget}
                                   onChange={e => setExactBudget(e.target.value)}
                                   placeholder="Plus cash amount"
-                                  className="h-14 pl-10 pr-6 rounded-2xl border-white bg-white font-black text-[15px] shadow-sm focus-visible:ring-2 focus-visible:ring-emerald-500/30 transition-all"
+                                  className="h-14 pl-10 pr-6 rounded-2xl border-white bg-white font-black text-[15px] text-slate-900 placeholder:text-slate-500 shadow-sm focus-visible:ring-2 focus-visible:ring-emerald-500/30 transition-all"
                                 />
                               </div>
                             )}
@@ -3926,7 +4340,7 @@ const CollabLinkLanding = () => {
                                   value={exactBudget}
                                   onChange={e => setExactBudget(e.target.value)}
                                   placeholder="Amount (e.g. 5000)"
-                                  className="h-14 pl-10 pr-6 rounded-2xl border-white bg-white font-black text-[15px] shadow-sm focus-visible:ring-2 focus-visible:ring-emerald-500/30 transition-all"
+                                  className="h-14 pl-10 pr-6 rounded-2xl border-white bg-white font-black text-[15px] text-slate-900 placeholder:text-slate-500 shadow-sm focus-visible:ring-2 focus-visible:ring-emerald-500/30 transition-all"
                                 />
                               </div>
                               <div className="flex items-center gap-2 flex-wrap">
@@ -3946,9 +4360,7 @@ const CollabLinkLanding = () => {
                                         'px-3 py-1.5 rounded-lg border text-[11px] font-black transition-all active:scale-95',
                                         exactBudget === String(amt)
                                           ? 'bg-slate-900 border-slate-900 text-white shadow-md scale-105'
-                                          : matchesPackage
-                                            ? 'bg-emerald-50 border-emerald-200 text-emerald-700 hover:border-emerald-300'
-                                            : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300'
+                                          : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300'
                                       )}
                                     >
                                       ₹{amt.toLocaleString('en-IN')}
@@ -3963,6 +4375,13 @@ const CollabLinkLanding = () => {
                                     Matches '{selectedTemplate.label}' package price
                                   </p>
                                 )}
+                              {/* Budget Guidance Hint */}
+                              {exactBudget && Number(exactBudget) > 0 && Number(exactBudget) < 3000 && (
+                                <div className="flex items-start gap-2 p-3 rounded-xl bg-amber-50 border border-amber-100 animate-in fade-in slide-in-from-top-1 duration-200">
+                                  <svg className="h-3.5 w-3.5 text-amber-600 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                  <p className="text-[11px] font-bold text-amber-800">Creators are 4x more likely to accept offers above ₹3,000 — consider increasing your budget for better results.</p>
+                                </div>
+                              )}
                             </div>
                           </div>
                         )}
@@ -3982,7 +4401,7 @@ const CollabLinkLanding = () => {
                                 type="date"
                                 value={deadline}
                                 onChange={e => setDeadline(e.target.value)}
-                                className="h-14 rounded-2xl border-white bg-white px-4 font-bold text-[15px] shadow-sm focus-visible:ring-2 focus-visible:ring-emerald-500/30"
+                                className="h-14 rounded-2xl border-white bg-white px-4 font-bold text-[15px] text-slate-900 placeholder:text-slate-500 shadow-sm focus-visible:ring-2 focus-visible:ring-emerald-500/30"
                               />
                               <div className="flex items-center gap-2 flex-wrap">
                                 {[
@@ -4005,6 +4424,10 @@ const CollabLinkLanding = () => {
                                   </button>
                                 ))}
                               </div>
+                              <div className="flex items-center gap-1.5 mt-1">
+                                <svg className="h-3 w-3 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                <p className="text-[11px] font-bold text-emerald-700">Recommended: 5–7 days for best response rate</p>
+                              </div>
                             </div>
                           </div>
                         </div>
@@ -4025,24 +4448,47 @@ const CollabLinkLanding = () => {
                     <div className="fixed bottom-0 left-0 right-0 z-50 p-4 bg-gradient-to-t from-white via-white/95 to-transparent md:hidden border-t border-slate-100/50 backdrop-blur-sm">
                       <div className="max-w-lg mx-auto">
                         {currentStep < 2 ? (
-                          <Button
-                            onClick={() => {
-                              let canProceed = false
-                              if (currentStep === 1 && isStep1Ready) canProceed = true
+                          <>
+                            <Button
+                              onClick={() => {
+                                let canProceed = false
+                                if (currentStep === 1) {
+                                  if (!collabType) {
+                                    toast.error('Please select collaboration type first')
+                                    return
+                                  }
+                                  if (selectedTemplateId) {
+                                    if (deliverables.length === 0) {
+                                      toast.error('Please select at least one deliverable')
+                                      return
+                                    }
+                                  } else {
+                                    if (campaignDescription.trim().length < 10) {
+                                      toast.error('Please describe your idea (min 10 characters)')
+                                      return
+                                    }
+                                  }
+                                  canProceed = true
+                                }
 
-                              if (canProceed) {
-                                setCurrentStep(currentStep + 1)
-                                triggerHaptic(HapticPatterns.success)
-                                window.scrollTo({ top: 0, behavior: 'smooth' })
-                              } else {
-                                toast.error(`Please select collaboration type first`)
-                              }
-                            }}
-                            className="h-14 w-full rounded-2xl bg-slate-900 border-2 border-slate-900 text-white hover:bg-slate-800 hover:border-slate-800 font-black text-base shadow-xl active:scale-[0.98] transition-all"
-                          >
-                            Continue to Details
-                            <ArrowRight className="ml-2 h-5 w-5" />
-                          </Button>
+                                if (canProceed) {
+                                  setCurrentStep(currentStep + 1)
+                                  triggerHaptic(HapticPatterns.success)
+                                  window.scrollTo({ top: 0, behavior: 'smooth' })
+                                }
+                              }}
+                              className="h-14 w-full rounded-2xl bg-slate-900 border-2 border-slate-900 text-white hover:bg-slate-800 hover:border-slate-800 font-black text-base shadow-xl active:scale-[0.98] transition-all"
+                            >
+                              Continue to Details
+                              <ArrowRight className="ml-2 h-5 w-5" />
+                            </Button>
+                            <p className="text-center text-[11px] font-bold text-slate-400 tracking-wide">
+                              You're creating a{' '}
+                              <span className={paymentType === 'paid' ? 'text-emerald-600' : 'text-amber-600'}>
+                                {paymentType === 'paid' ? (includesProduct ? 'Paid + Product' : 'Paid') : 'Barter'} collaboration
+                              </span>
+                            </p>
+                          </>
                         ) : (
                           <div className="flex flex-col gap-2.5">
                             {!(selectedTemplate && currentStep === 2) && (
@@ -4122,14 +4568,29 @@ const CollabLinkLanding = () => {
                           <Button
                             onClick={() => {
                               let canProceed = false
-                              if (currentStep === 1 && isStep1Ready) canProceed = true
+                              if (currentStep === 1) {
+                                if (!collabType) {
+                                  toast.error('Please select collaboration type first')
+                                  return
+                                }
+                                if (selectedTemplateId) {
+                                  if (deliverables.length === 0) {
+                                    toast.error('Please select at least one deliverable')
+                                    return
+                                  }
+                                } else {
+                                  if (campaignDescription.trim().length < 10) {
+                                    toast.error('Please describe your idea (min 10 characters)')
+                                    return
+                                  }
+                                }
+                                canProceed = true
+                              }
 
                               if (canProceed) {
                                 setCurrentStep(currentStep + 1)
                                 triggerHaptic(HapticPatterns.success)
                                 scrollOfferFormIntoView()
-                              } else {
-                                toast.error(`Please select collaboration type first`)
                               }
                             }}
                             className="h-14 rounded-full bg-[#0FA47F] border-2 border-[#0FA47F] text-white hover:bg-emerald-600 hover:border-emerald-600 font-black text-xs uppercase tracking-widest transition-all shadow-[0_14px_34px_rgba(15,164,127,0.22)] flex-1 active:scale-98"
