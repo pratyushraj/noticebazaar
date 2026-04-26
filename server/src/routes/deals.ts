@@ -1950,13 +1950,13 @@ router.post('/:id/cancel-unpaid', authMiddleware, async (req: AuthenticatedReque
  */
 router.post('/:id/create-payment-link', authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
   try {
-    let dealId = req.params.id;
+    const dealId = req.params.id;
     const userId = req.user?.id;
     const role = String(req.user?.role || '').toLowerCase();
 
     if (!userId) return res.status(401).json({ success: false, error: 'Authentication required' });
 
-    let { deal, error: dealError } = await fetchDealForBrandMutation(dealId);
+    const { deal, error: dealError } = await fetchDealForBrandMutation(dealId);
 
     if (dealError || !deal) return res.status(404).json({ success: false, error: 'Deal not found' });
 
@@ -1980,14 +1980,22 @@ router.post('/:id/create-payment-link', authMiddleware, async (req: Authenticate
 
     const breakdown = calculatePaymentBreakdown(dealAmount);
 
+    const razorpayKeyId = process.env.RAZORPAY_KEY_ID;
+    const razorpayKeySecret = process.env.RAZORPAY_KEY_SECRET;
+    if (!razorpayKeyId || !razorpayKeySecret) {
+      return res.status(500).json({
+        success: false,
+        error: 'Razorpay is not configured on this server. Set RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET.',
+      });
+    }
+
     let paymentLinkUrl = '';
     
     try {
-      // Lazy load Razorpay to prevent crashes if missing
       const Razorpay = (await import('razorpay')).default;
       const rzp = new Razorpay({
-        key_id: process.env.RAZORPAY_KEY_ID || 'rzp_test_fallback',
-        key_secret: process.env.RAZORPAY_KEY_SECRET || 'fallback_secret',
+        key_id: razorpayKeyId,
+        key_secret: razorpayKeySecret,
       });
       
       const linkParams = {
@@ -1995,8 +2003,11 @@ router.post('/:id/create-payment-link', authMiddleware, async (req: Authenticate
         currency: 'INR',
         accept_partial: false,
         description: `Payment for Deal #${dealId}`,
-        reference_id: `deal_${dealId}_${Date.now()}`,
-        expire_by: Math.floor(Date.now() / 1000) + 15 * 60, // Link expires in 15 minutes
+        // Razorpay caps reference_id at 40 characters.
+        reference_id: `deal_${dealId.replace(/-/g, '').slice(0, 16)}_${String(Date.now()).slice(-6)}`,
+        // Razorpay requires expire_by to be at least 15 minutes in the future.
+        // Add a small buffer so the request does not fail at the boundary.
+        expire_by: Math.floor(Date.now() / 1000) + 20 * 60,
         notes: {
           deal_id: dealId,
           creator_id: (deal as any).creator_id,
@@ -2008,22 +2019,22 @@ router.post('/:id/create-payment-link', authMiddleware, async (req: Authenticate
       paymentLinkUrl = rzpLink.short_url;
       
       // Store generated payment link ID in DB
-      await supabase.from('brand_deals').update({ 
+      const { error: updateError } = await supabase.from('brand_deals').update({
         payment_id: rzpLink.id,
         amount_paid: breakdown.brandTotal,
         creator_amount: breakdown.creatorPayout,
         platform_fee: breakdown.platformFee
       }).eq('id', dealId);
+      if (updateError) {
+        console.error('[Razorpay] Failed to persist payment link metadata:', updateError);
+      }
 
     } catch (rzpError: any) {
-      console.warn('[Razorpay] Payment link creation failed or SDK missing:', rzpError.message);
-      // Fallback for MVP: return dummy URL or fail gracefully
-      paymentLinkUrl = `https://rzp.io/i/demo_${dealId}`;
-      await supabase.from('brand_deals').update({ 
-        amount_paid: breakdown.brandTotal,
-        creator_amount: breakdown.creatorPayout,
-        platform_fee: breakdown.platformFee
-      }).eq('id', dealId);
+      console.error('[Razorpay] Payment link creation failed:', rzpError);
+      return res.status(502).json({
+        success: false,
+        error: rzpError?.message || 'Failed to create Razorpay payment link.',
+      });
     }
 
     return res.json({ 

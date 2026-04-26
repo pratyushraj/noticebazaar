@@ -73,11 +73,12 @@ export function ConfirmPaymentPendingModal({ dealId, dealAmount, creatorName, on
       }
 
       // Redirect to payment page; webhook handles status update to CONTENT_MAKING.
-      window.location.href = url;
       toast.success("Redirecting to payment page...");
       onSuccess();
-    } catch (err: any) {
-      toast.error(err?.message || "Something went wrong. Please try again.");
+      window.location.assign(url);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Something went wrong. Please try again.";
+      toast.error(message);
     } finally {
       setIsLoading(false);
     }
