@@ -257,7 +257,7 @@ VITE_SENTRY_DSN=your-sentry-dsn
 **Why:** Creators want trust. Domain = Trust.
 
 **Steps:**
-1. [ ] Purchase domain (e.g., noticebazaar.com)
+1. [ ] Purchase domain (e.g., creatorarmour.com)
 2. [ ] Configure DNS:
    - [ ] A record pointing to hosting
    - [ ] CNAME for www subdomain

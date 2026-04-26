@@ -1,6 +1,6 @@
 # 🚀 Deploy Frontend to Render (Static Site)
 
-Deploy your NoticeBazaar frontend to Render as a Static Site.
+Deploy your CreatorArmour frontend to Render as a Static Site.
 
 ## Quick Deploy Steps
 
@@ -12,11 +12,11 @@ Deploy your NoticeBazaar frontend to Render as a Static Site.
 
 2. **Create New Static Site:**
    - Click "New +" → "Static Site"
-   - Connect your GitHub repository: `noticebazaar`
+   - Connect your GitHub repository: `creatorarmour`
    - Select the repository
 
 3. **Configure Static Site:**
-   - **Name:** `noticebazaar-frontend`
+   - **Name:** `creatorarmour-frontend`
    - **Branch:** `main`
    - **Root Directory:** (leave empty - root of repo)
    - **Build Command:** `corepack enable && corepack prepare pnpm@latest --activate && pnpm install && pnpm run build`
@@ -28,18 +28,18 @@ Deploy your NoticeBazaar frontend to Render as a Static Site.
    ```
    VITE_SUPABASE_URL=https://ooaxtwmqrvfzdqzoijcj.supabase.co
    VITE_SUPABASE_ANON_KEY=your-anon-key-here
-   VITE_API_BASE_URL=https://noticebazaar-api.onrender.com
+   VITE_API_BASE_URL=https://creatorarmour-api.onrender.com
    NODE_ENV=production
    ```
 
 5. **Deploy:**
    - Click "Create Static Site"
    - Render will automatically build and deploy
-   - You'll get a URL like: `https://noticebazaar-frontend.onrender.com`
+   - You'll get a URL like: `https://creatorarmour-frontend.onrender.com`
 
 6. **Configure Custom Domain (Optional):**
    - Go to Settings → Custom Domains
-   - Add: `noticebazaar.com` or `www.noticebazaar.com`
+   - Add: `creatorarmour.com` or `www.creatorarmour.com`
    - Follow DNS instructions shown
    - Wait 5-15 minutes for DNS propagation
 
@@ -59,7 +59,7 @@ Deploy your NoticeBazaar frontend to Render as a Static Site.
 
 2. **Then, create frontend static site (separately):**
    - In Render Dashboard, click "New +" → "Static Site"
-   - Connect the same GitHub repository: `noticebazaar`
+   - Connect the same GitHub repository: `creatorarmour`
    - Configure as shown in Option 1 above
    - Add frontend environment variables
    - Deploy!
@@ -81,17 +81,17 @@ Deploy your NoticeBazaar frontend to Render as a Static Site.
 
 ### Test Your Frontend:
 ```bash
-curl https://noticebazaar-frontend.onrender.com
+curl https://creatorarmour-frontend.onrender.com
 ```
 
 Should return your HTML page.
 
 ### Update Supabase Redirect URLs:
 1. Go to Supabase Dashboard → Authentication → URL Configuration
-2. Add to **Site URL**: `https://noticebazaar-frontend.onrender.com`
+2. Add to **Site URL**: `https://creatorarmour-frontend.onrender.com`
 3. Add to **Redirect URLs**: 
-   - `https://noticebazaar-frontend.onrender.com/**`
-   - `https://noticebazaar-frontend.onrender.com/auth/callback`
+   - `https://creatorarmour-frontend.onrender.com/**`
+   - `https://creatorarmour-frontend.onrender.com/auth/callback`
 
 ---
 

@@ -65,7 +65,7 @@ const BrandLandingPage = () => {
   return (
     <>
       <SEOHead
-        title="Creator Armour for Brands"
+        title="CreatorArmour for Brands"
         description="Discover creators, send structured offers, and manage collaborations in one premium workflow."
         keywords={['brand collaboration platform', 'creator discovery', 'influencer marketing india', 'send offers to creators']}
         canonical="https://creatorarmour.com/brands"
@@ -87,7 +87,7 @@ const BrandLandingPage = () => {
               </div>
               <div>
                 <p className="text-[11px] font-black uppercase tracking-[0.18em] text-emerald-300/80">Brand mode</p>
-                <h1 className="text-lg font-black tracking-tight">Creator Armour</h1>
+                <h1 className="text-lg font-black tracking-tight">CreatorArmour</h1>
               </div>
             </Link>
 

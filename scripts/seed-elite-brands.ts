@@ -18,8 +18,8 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
 const ELITE_BRANDS = [
   {
-    email: 'brand-demo@noticebazaar.com',
-    business_name: 'NoticeBazaar Demo',
+    email: 'brand-demo@creatorarmour.com',
+    business_name: 'CreatorArmour Demo',
     industry: 'Marketplace',
     location: 'Pan India',
     bio: 'The premium hub for creator-brand connections in India. Currently sourcing top-tier creative talent for 2026 campaigns.',

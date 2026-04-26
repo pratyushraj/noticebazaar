@@ -42,19 +42,19 @@ export async function sendEscrowFundedEmailToCreator(deal: any, creator: any) {
         </p>
         <p style="margin: 0 0 24px 0; font-size: 16px; color: #4b5563; line-height: 1.6;">
           Great news! <strong>${brandName}</strong> has successfully submitted their payment for your collaboration. 
-          The funds are now securely held in Escrow by Creator Armour.
+          The funds are now securely held in Escrow by CreatorArmour.
         </p>
         
         <div style="background-color: #f8fafc; border-left: 4px solid #10b981; border-radius: 8px; padding: 20px; margin-bottom: 30px;">
           <h3 style="margin: 0 0 12px 0; font-size: 16px; color: #1e293b;">Next Steps:</h3>
           <ul style="margin: 0; padding-left: 20px; color: #475569; font-size: 15px; line-height: 1.6;">
             <li style="margin-bottom: 8px;">Create the content according to the agreed brief.</li>
-            <li style="margin-bottom: 8px;">Submit the content link on your Creator Armour dashboard.</li>
+            <li style="margin-bottom: 8px;">Submit the content link on your CreatorArmour dashboard.</li>
             <li>Once the brand approves, the funds will be released to your bank account.</li>
           </ul>
         </div>
         
-        ${getPrimaryCTA('View Deal Details', 'https://noticebazaar.com/creator-dashboard')}
+        ${getPrimaryCTA('View Deal Details', 'https://creatorarmour.com/creator-dashboard')}
       </td>
     </tr>
   `;
@@ -69,7 +69,7 @@ export async function sendEscrowFundedEmailToCreator(deal: any, creator: any) {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        from: 'Creator Armour Escrow <escrow@creatorarmour.com>',
+        from: 'CreatorArmour Escrow <escrow@creatorarmour.com>',
         to: creatorEmail,
         subject,
         html,
@@ -129,7 +129,7 @@ export async function sendContentDeliveredEmailToBrand(deal: any) {
           </p>
         </div>
         
-        ${getPrimaryCTA('Review Content Now', 'https://noticebazaar.com/brand-dashboard')}
+        ${getPrimaryCTA('Review Content Now', 'https://creatorarmour.com/brand-dashboard')}
       </td>
     </tr>
   `;
@@ -144,7 +144,7 @@ export async function sendContentDeliveredEmailToBrand(deal: any) {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        from: 'Creator Armour Approvals <approvals@creatorarmour.com>',
+        from: 'CreatorArmour Approvals <approvals@creatorarmour.com>',
         to: brandEmail,
         subject,
         html,
@@ -213,7 +213,7 @@ export async function sendCreatorPaymentReleasedEmail(
           Note: Depending on your bank, it may take 2-4 hours to reflect in your statement.
         </p>
         
-        ${getPrimaryCTA('View Payout History', 'https://noticebazaar.com/dashboard/payouts')}
+        ${getPrimaryCTA('View Payout History', 'https://creatorarmour.com/dashboard/payouts')}
       </td>
     </tr>
   `;
@@ -228,7 +228,7 @@ export async function sendCreatorPaymentReleasedEmail(
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        from: 'Creator Armour Payouts <payouts@creatorarmour.com>',
+        from: 'CreatorArmour Payouts <payouts@creatorarmour.com>',
         to: creatorEmail,
         subject,
         html,

@@ -1,6 +1,6 @@
-# Fly.io configuration for NoticeBazaar API Server
+# Fly.io configuration for CreatorArmour API Server
 
-app = "noticebazaar-api"
+app = "creatorarmour-api"
 primary_region = "iad"  # Washington, D.C. (US East) - close to your users
 
 [build]

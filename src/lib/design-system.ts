@@ -1,5 +1,5 @@
 /**
- * Creator Armour Design System
+ * CreatorArmour Design System
  * 
  * Consistent design tokens for premium UI across all dashboard pages
  */

@@ -83,7 +83,7 @@ https://ooaxtwmqrvfzdqzoijcj.supabase.co/auth/v1/callback
 1. Go to [Google Cloud Console](https://console.cloud.google.com/)
 2. Select project: **CreatorArmour**
 3. Navigate to **APIs & Services** → **Credentials**
-4. Find your OAuth 2.0 Client ID (should be "Creator Armour - Web")
+4. Find your OAuth 2.0 Client ID (should be "CreatorArmour - Web")
 5. Click to edit
 6. Verify:
    - **Authorized JavaScript origins**:

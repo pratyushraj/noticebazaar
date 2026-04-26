@@ -1,4 +1,4 @@
-# Netlify Configuration for NoticeBazaar Frontend
+# Netlify Configuration for CreatorArmour Frontend
 
 [build]
   # Build command - use pnpm since project uses pnpm

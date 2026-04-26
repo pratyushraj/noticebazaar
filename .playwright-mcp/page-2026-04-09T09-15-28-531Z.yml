@@ -16,7 +16,7 @@
         - generic [ref=e13]:
           - generic [ref=e14]:
             - img [ref=e16]
-            - heading "Creator Armour" [level=1] [ref=e19]
+            - heading "CreatorArmour" [level=1] [ref=e19]
           - heading "Protect and scale your creator business" [level=2] [ref=e20]:
             - text: Protect and scale
             - text: your creator business

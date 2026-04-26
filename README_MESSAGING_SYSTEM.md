@@ -1,6 +1,6 @@
-# NoticeBazaar Messaging System - Complete Implementation
+# CreatorArmour Messaging System - Complete Implementation
 
-This document describes the complete messaging, advisor dashboard, payments, protection, and contract analysis implementation for NoticeBazaar.
+This document describes the complete messaging, advisor dashboard, payments, protection, and contract analysis implementation for CreatorArmour.
 
 ## 📋 Table of Contents
 
@@ -180,7 +180,7 @@ const channel = supabase
 **File**: `server/src/services/pdfGenerator.ts`
 
 - Uses Puppeteer to generate PDF from HTML template
-- Matches NoticeBazaar design (purple gradient, glass cards)
+- Matches CreatorArmour design (purple gradient, glass cards)
 - Includes protection score, issues, recommendations
 
 ### Tax Inference
@@ -263,7 +263,7 @@ Set in your hosting platform:
 
 ## 📝 Postman Collection
 
-See `postman/NoticeBazaar_API.postman_collection.json` for:
+See `postman/CreatorArmour_API.postman_collection.json` for:
 - All API endpoints
 - Sample requests/responses
 - Authentication setup
@@ -303,5 +303,5 @@ See `postman/NoticeBazaar_API.postman_collection.json` for:
 
 ## 📄 License
 
-Copyright © 2025 NoticeBazaar. All rights reserved.
+Copyright © 2025 CreatorArmour. All rights reserved.
 

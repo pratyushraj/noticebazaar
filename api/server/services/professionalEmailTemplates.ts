@@ -1,5 +1,5 @@
 // @ts-nocheck
-// Professional Email Templates for Creator Armour
+// Professional Email Templates for CreatorArmour
 // Stripe/Upwork-style clean, minimal, professional design
 
 interface EmailLayoutProps {
@@ -46,7 +46,7 @@ function getEmailLayout({ content, showFooter = true, backgroundStyle = 'purple'
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <title>Creator Armour</title>
+  <title>CreatorArmour</title>
   <!--[if mso]>
   <style type="text/css">
     body, table, td {font-family: Arial, sans-serif !important;}
@@ -296,7 +296,7 @@ function getTrustLine(): string {
   return `
     <tr>
       <td style="padding: 0 32px 24px 32px; text-align: center;">
-        <p style="margin: 0 0 4px 0; font-size: 14px; font-weight: 600; color: #2d3748;">Protected by Creator Armour</p>
+        <p style="margin: 0 0 4px 0; font-size: 14px; font-weight: 600; color: #2d3748;">Protected by CreatorArmour</p>
         <p style="margin: 0; color: #718096; font-size: 13px; line-height: 1.5;">
           Building authentic brand-creator partnerships with contracts, delivery tracking, and professional dispute handling.
         </p>
@@ -341,13 +341,13 @@ function getEmailFooter(): string {
           <a href="mailto:${supportEmail}" style="color: #667eea; text-decoration: none; font-weight: 500;">Need help? Contact us</a> — we’re here to help before any issue becomes a dispute.
         </p>
         <p style="margin: 12px 0 0 0; font-size: 16px; font-weight: 700; color: #2d3748; line-height: 1.5;">
-          Secured by Creator Armour
+          Secured by CreatorArmour
         </p>
         <p style="margin: 0; font-size: 13px; color: #718096; line-height: 1.5;">
           Building authentic brand-creator partnerships with trust and transparency
         </p>
         <p style="margin: 8px 0 0 0; font-size: 12px; color: #a0aec0; line-height: 1.5;">
-          Creator Armour, C 1107, Amarpali Princely Estate, Noida Sector 76, 201306, India
+          CreatorArmour, C 1107, Amarpali Princely Estate, Noida Sector 76, 201306, India
         </p>
       </td>
     </tr>

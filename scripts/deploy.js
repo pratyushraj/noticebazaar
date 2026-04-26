@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * Creator Armour Deployment Script
+ * CreatorArmour Deployment Script
  *
  * This script handles deployment to various environments with proper
  * build optimization, security checks, and monitoring setup.

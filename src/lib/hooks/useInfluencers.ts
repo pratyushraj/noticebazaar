@@ -2,7 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { fetchWithTimeout } from '@/lib/utils/api';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://noticebazaar-api.onrender.com';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://creatorarmour-api.onrender.com';
 
 export interface Influencer {
   id: string;

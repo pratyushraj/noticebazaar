@@ -5,9 +5,9 @@ Based on your current Supabase Dashboard, here's what to change:
 ## Step 1: Update Site URL
 
 **Current**: `http://localhost:3000`  
-**Change to**: `https://noticebazaar.com`
+**Change to**: `https://creatorarmour.com`
 
-1. In the **Site URL** field, replace `http://localhost:3000` with `https://noticebazaar.com`
+1. In the **Site URL** field, replace `http://localhost:3000` with `https://creatorarmour.com`
 2. Click **Save changes** (green button)
 
 ## Step 2: Add Redirect URLs
@@ -17,7 +17,7 @@ Based on your current Supabase Dashboard, here's what to change:
 **Add these URLs** (click "Add URL" for each):
 
 1. `http://localhost:32100/**` (for local development)
-2. `https://noticebazaar.com/**` (for production)
+2. `https://creatorarmour.com/**` (for production)
 3. `https://*.vercel.app/**` (if using Vercel - allows any preview URL)
 4. `https://*.netlify.app/**` (if using Netlify)
 
@@ -25,11 +25,11 @@ Based on your current Supabase Dashboard, here's what to change:
 
 ## Final Configuration Should Look Like:
 
-**Site URL**: `https://noticebazaar.com`
+**Site URL**: `https://creatorarmour.com`
 
 **Redirect URLs**:
 - ✅ `http://localhost:32100/**`
-- ✅ `https://noticebazaar.com/**`
+- ✅ `https://creatorarmour.com/**`
 - ✅ `https://*.vercel.app/**` (if using Vercel)
 - ✅ `http://localhost:8080` (optional - keep if you use this port)
 

@@ -207,7 +207,7 @@
                 - generic [ref=e329]: Work email
                 - textbox "Work email" [ref=e330]:
                   - /placeholder: your@email.com
-                  - text: brand-demo@noticebazaar.com
+                  - text: brand-demo@creatorarmour.com
                 - generic [ref=e331]: Brand Instagram
                 - textbox "Brand Instagram" [ref=e332]:
                   - /placeholder: Brand Instagram (optional)

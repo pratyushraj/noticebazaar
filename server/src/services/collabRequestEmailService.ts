@@ -270,7 +270,7 @@ function getEmailTemplate(
           ` : ''}
           <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
             <p style="color: #9ca3af; font-size: 11px; margin: 0; text-transform: uppercase; letter-spacing: 0.5px; line-height: 1.4;">
-              Actions on Creator Armour are recorded, timestamped, and legally enforceable.
+              Actions on CreatorArmour are recorded, timestamped, and legally enforceable.
             </p>
             <p style="color: #9ca3af; font-size: 11px; margin: 8px 0 0 0;">
               This is an automated email from CreatorArmour. Please do not reply to this email.
@@ -453,11 +453,11 @@ function getBarterAcceptedEmailHtml(
       ${getCTATrustLine('Shipping details unlock only after signing to protect both parties.')}
 
       <p style="color: #6b7280; font-size: 13px; line-height: 1.5; margin: 24px 0 20px 0; padding: 16px; background: #f3f4f6; border-radius: 8px; border: 1px solid #e5e7eb;">
-        This collaboration is legally protected by Creator Armour. All actions are timestamped and recorded for transparency.
+        This collaboration is legally protected by CreatorArmour. All actions are timestamped and recorded for transparency.
       </p>
 
       <div style="margin-top: 28px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
-        <p style="color: #9ca3af; font-size: 12px; margin: 0;">This is an automated email from Creator Armour. Please do not reply to this email.</p>
+        <p style="color: #9ca3af; font-size: 12px; margin: 0;">This is an automated email from CreatorArmour. Please do not reply to this email.</p>
         <p style="color: #6b7280; font-size: 12px; margin: 8px 0 0 0;"><a href="mailto:support@creatorarmour.com" style="color: #667eea; text-decoration: none;">Need help? Contact us</a> — we’re here before any issue becomes a dispute.</p>
         <p style="color: #9ca3af; font-size: 12px; margin: 8px 0 0 0;">
           <a href="${barterProtectionUrl}" style="color: #667eea; text-decoration: none;">Learn how barter protection works</a>
@@ -511,12 +511,12 @@ WHAT HAPPENS NEXT
 
 Review & Sign Contract: ${contractReadyLink}
 
-This collaboration is legally protected by Creator Armour. All actions are timestamped and recorded for transparency.
+This collaboration is legally protected by CreatorArmour. All actions are timestamped and recorded for transparency.
 
 Need help? Contact us: support@creatorarmour.com — we're here before any issue becomes a dispute.
 
 ---
-This is an automated email from Creator Armour. Please do not reply to this email.
+This is an automated email from CreatorArmour. Please do not reply to this email.
   `.trim();
 }
 
@@ -594,7 +594,7 @@ function getPaidAcceptedEmailHtml(
           <li>Review and sign the contract</li>
           <li>After signing, you'll receive a copy of the agreement</li>
           <li>Creator delivers content as per timeline</li>
-          <li>Payment tracked through Creator Armour.</li>
+          <li>Payment tracked through CreatorArmour.</li>
         </ol>
       </div>
 
@@ -608,11 +608,11 @@ function getPaidAcceptedEmailHtml(
       ${getCTATrustLine('Payment terms and delivery security unlock after signing.')}
 
       <p style="color: #6b7280; font-size: 13px; line-height: 1.5; margin: 24px 0 20px 0; padding: 16px; background: #f3f4f6; border-radius: 8px; border: 1px solid #e5e7eb;">
-        This collaboration is legally protected by Creator Armour. All actions are timestamped and recorded for transparency.
+        This collaboration is legally protected by CreatorArmour. All actions are timestamped and recorded for transparency.
       </p>
 
       <div style="margin-top: 28px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
-        <p style="color: #9ca3af; font-size: 12px; margin: 0;">This is an automated email from Creator Armour. Please do not reply to this email.</p>
+        <p style="color: #9ca3af; font-size: 12px; margin: 0;">This is an automated email from CreatorArmour. Please do not reply to this email.</p>
         <p style="color: #6b7280; font-size: 12px; margin: 8px 0 0 0;"><a href="mailto:support@creatorarmour.com" style="color: #667eea; text-decoration: none;">Need help? Contact us</a> — we’re here before any issue becomes a dispute.</p>
         <p style="color: #9ca3af; font-size: 12px; margin: 8px 0 0 0;">
           <a href="${barterProtectionUrl}" style="color: #667eea; text-decoration: none;">Learn how barter protection works</a>
@@ -899,7 +899,7 @@ export async function sendCollabAcceptMagicLinkEmail(
   </p>
   <p style="margin: 0; font-size: 14px; color: #6b7280;">If you didn't request this, you can ignore this email.</p>
   <p style="margin: 12px 0 0 0; font-size: 12px; color: #6b7280;"><a href="mailto:support@creatorarmour.com" style="color: #667eea; text-decoration: none;">Need help? Contact us</a> — we're here before any issue becomes a dispute.</p>
-  <p style="margin: 24px 0 0; font-size: 12px; color: #9ca3af;">Creator Armour – Contracts and payments protected.</p>
+  <p style="margin: 24px 0 0; font-size: 12px; color: #9ca3af;">CreatorArmour – Contracts and payments protected.</p>
 </body>
 </html>`;
   return sendEmail(creatorEmail, subject, html);
@@ -963,14 +963,14 @@ export async function sendCollabDraftResumeEmail(
 <html>
 <head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
 <body style="font-family: system-ui, -apple-system, sans-serif; line-height: 1.5; color: #1f2937; max-width: 480px; margin: 0 auto; padding: 24px;">
-  <p style="margin: 0 0 16px;">You started a collaboration request with <strong>${creatorName}</strong> on Creator Armour.</p>
+  <p style="margin: 0 0 16px;">You started a collaboration request with <strong>${creatorName}</strong> on CreatorArmour.</p>
   <p style="margin: 0 0 24px;">Click the button below to continue where you left off. This link expires in 7 days.</p>
   <p style="margin: 0 0 24px;">
     <a href="${resumeUrl}" style="display: inline-block; padding: 12px 24px; background: linear-gradient(to right, #8B5CF6, #6366F1); color: #fff; text-decoration: none; border-radius: 8px; font-weight: 600;">Continue request</a>
   </p>
   <p style="margin: 0; font-size: 14px; color: #6b7280;">If you didn't request this, you can ignore this email.</p>
   <p style="margin: 12px 0 0 0; font-size: 12px; color: #6b7280;"><a href="mailto:support@creatorarmour.com" style="color: #667eea; text-decoration: none;">Need help? Contact us</a> — we're here before any issue becomes a dispute.</p>
-  <p style="margin: 24px 0 0; font-size: 12px; color: #9ca3af;">Creator Armour – Contracts and payments protected.</p>
+  <p style="margin: 24px 0 0; font-size: 12px; color: #9ca3af;">CreatorArmour – Contracts and payments protected.</p>
 </body>
 </html>`;
   return sendEmail(brandEmail, subject, html);

@@ -16,9 +16,9 @@ Updated OAuth redirect URLs to use hash prefix:
 Make sure these URLs are in your Supabase **Redirect URLs** list:
 
 ```
-https://noticebazaar.com/#/**
-https://www.noticebazaar.com/#/**
-https://noticebazaar-frontend.onrender.com/#/**
+https://creatorarmour.com/#/**
+https://www.creatorarmour.com/#/**
+https://creatorarmour-frontend.onrender.com/#/**
 http://localhost:8080/#/**
 http://localhost:5173/#/**
 ```
@@ -27,8 +27,8 @@ http://localhost:5173/#/**
 
 ## ✅ After Fix
 
-1. **Google Login** will redirect to: `https://noticebazaar.com/#/`
-2. **Google Signup** will redirect to: `https://noticebazaar.com/#/creator-onboarding`
+1. **Google Login** will redirect to: `https://creatorarmour.com/#/`
+2. **Google Signup** will redirect to: `https://creatorarmour.com/#/creator-onboarding`
 3. **OAuth callbacks** will work correctly with HashRouter
 
 ## 🧪 Test
@@ -52,8 +52,8 @@ When you switch to BrowserRouter (after configuring Render redirects):
 
 2. Update Supabase Redirect URLs to:
    ```
-   https://noticebazaar.com/**
-   https://www.noticebazaar.com/**
+   https://creatorarmour.com/**
+   https://www.creatorarmour.com/**
    ```
 
 ---

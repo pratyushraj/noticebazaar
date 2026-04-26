@@ -20,7 +20,7 @@ async function fetchJSON(endpoint, options = {}) {
 }
 
 async function sendDeal() {
-    const brandEmail = 'brand-demo@noticebazaar.com';
+    const brandEmail = 'brand-demo@creatorarmour.com';
     const creatorEmail = 'notice104@yopmail.com';
 
     const authData = await fetchJSON('/auth/v1/admin/users');

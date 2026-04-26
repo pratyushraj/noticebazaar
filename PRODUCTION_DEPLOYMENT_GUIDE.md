@@ -1,6 +1,6 @@
 # 🚀 Production Deployment Guide
 
-Complete guide for deploying NoticeBazaar to production.
+Complete guide for deploying CreatorArmour to production.
 
 ## 📋 Pre-Deployment Checklist
 
@@ -212,16 +212,16 @@ Add your production URL to Supabase:
 2. **Deploy to Server**
    ```bash
    # Copy dist folder to server
-   scp -r dist/* user@server:/var/www/noticebazaar/
+   scp -r dist/* user@server:/var/www/creatorarmour/
    ```
 
 3. **Nginx Configuration**
    ```nginx
    server {
        listen 80;
-       server_name noticebazaar.com;
+       server_name creatorarmour.com;
        
-       root /var/www/noticebazaar;
+       root /var/www/creatorarmour;
        index index.html;
        
        location / {

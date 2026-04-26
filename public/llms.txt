@@ -1,6 +1,6 @@
-Creator Armour
+CreatorArmour
 
-Creator Armour is a creator collaboration platform for structured brand deals.
+CreatorArmour is a creator collaboration platform for structured brand deals.
 Creators publish a collab link with packages, prices, and deal preferences.
 Brands can review creator details, choose a package, and submit collaboration offers.
 
@@ -21,7 +21,7 @@ Core capabilities:
 - Creator-focused business tooling
 
 Brand:
-- Primary brand name: Creator Armour
+- Primary brand name: CreatorArmour
 - Alternate spelling: CreatorArmour
 
 Official social profiles:

@@ -99,7 +99,7 @@ All existing code continues to work:
 
 The build command could not be executed due to system restrictions. Please run:
 ```bash
-cd ~/Documents/noticebazaar
+cd ~/Documents/creatorarmour
 npm run build
 ```
 

@@ -12,7 +12,7 @@ Since local Supabase isn't running, apply directly to your remote project:
 
 1. **Open Supabase Dashboard:**
    - Go to: https://supabase.com/dashboard
-   - Select your NoticeBazaar project
+   - Select your CreatorArmour project
 
 2. **Open SQL Editor:**
    - Click "SQL Editor" in left sidebar

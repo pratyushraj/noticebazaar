@@ -135,7 +135,7 @@ replacement = """<div className="w-full shrink-0 z-10">
       <div className="mt-16 text-center pb-12 border-t border-slate-100/80 pt-10">
         <div className="flex items-center justify-center gap-2 mb-3">
           <ShieldCheck className="w-4 h-4 text-emerald-400/60" />
-          <span className="text-[10px] font-black uppercase tracking-[0.2em] text-emerald-400/60">Secured by Creator Armour</span>
+          <span className="text-[10px] font-black uppercase tracking-[0.2em] text-emerald-400/60">Secured by CreatorArmour</span>
         </div>
         <p className="text-[12px] font-medium text-slate-400/80 max-w-[240px] mx-auto leading-relaxed">
           By sending an offer, you agree to our standard terms and creator's specific rules.

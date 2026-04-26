@@ -7,7 +7,7 @@
    - Click **"New +"** → **"Blueprint"**
 
 2. **Connect Repository:**
-   - Connect GitHub repository: `noticebazaar`
+   - Connect GitHub repository: `creatorarmour`
    - Render will auto-detect `render.yaml`
 
 3. **Add Environment Variables:**
@@ -19,7 +19,7 @@
      LLM_PROVIDER=groq
      LLM_API_KEY=your-groq-api-key-here
      LLM_MODEL=llama-3.1-8b-instant
-     FRONTEND_URL=https://noticebazaar-frontend.onrender.com
+     FRONTEND_URL=https://creatorarmour-frontend.onrender.com
      NODE_ENV=production
      PORT=10000
      PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
@@ -31,14 +31,14 @@
    - Click **"New +"** → **"Static Site"**
    - Connect same repository
    - Configure:
-     - **Name:** `noticebazaar-frontend`
+     - **Name:** `creatorarmour-frontend`
      - **Build Command:** `corepack enable && corepack prepare pnpm@latest --activate && pnpm install && pnpm run build`
      - **Publish Directory:** `dist`
    - Add environment variables:
      ```
      VITE_SUPABASE_URL=https://ooaxtwmqrvfzdqzoijcj.supabase.co
      VITE_SUPABASE_ANON_KEY=YOUR_SUPABASE_ANON_KEY
-     VITE_API_BASE_URL=https://noticebazaar-api.onrender.com
+     VITE_API_BASE_URL=https://creatorarmour-api.onrender.com
      NODE_ENV=production
      ```
 
@@ -54,17 +54,17 @@ See `DEPLOY_RENDER_NOW.md` for detailed step-by-step instructions.
 
 1. **Update Supabase Redirect URLs:**
    - Go to Supabase Dashboard → Authentication → URL Configuration
-   - Add: `https://noticebazaar-frontend.onrender.com/**`
+   - Add: `https://creatorarmour-frontend.onrender.com/**`
 
 2. **Test:**
-   - Backend: `curl https://noticebazaar-api.onrender.com/health`
-   - Frontend: Visit `https://noticebazaar-frontend.onrender.com`
+   - Backend: `curl https://creatorarmour-api.onrender.com/health`
+   - Frontend: Visit `https://creatorarmour-frontend.onrender.com`
 
 ---
 
 ## 📝 Environment Variables Reference
 
-**Backend (`noticebazaar-api`):**
+**Backend (`creatorarmour-api`):**
 - SUPABASE_URL
 - SUPABASE_SERVICE_ROLE_KEY
 - LLM_PROVIDER
@@ -75,7 +75,7 @@ See `DEPLOY_RENDER_NOW.md` for detailed step-by-step instructions.
 - PORT=10000
 - PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
 
-**Frontend (`noticebazaar-frontend`):**
+**Frontend (`creatorarmour-frontend`):**
 - VITE_SUPABASE_URL
 - VITE_SUPABASE_ANON_KEY
 - VITE_API_BASE_URL
@@ -85,7 +85,7 @@ See `DEPLOY_RENDER_NOW.md` for detailed step-by-step instructions.
 
 ## 🎯 URLs After Deployment
 
-- **Backend:** `https://noticebazaar-api.onrender.com`
-- **Frontend:** `https://noticebazaar-frontend.onrender.com`
-- **Health Check:** `https://noticebazaar-api.onrender.com/health`
+- **Backend:** `https://creatorarmour-api.onrender.com`
+- **Frontend:** `https://creatorarmour-frontend.onrender.com`
+- **Health Check:** `https://creatorarmour-api.onrender.com/health`
 

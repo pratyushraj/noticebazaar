@@ -41,9 +41,9 @@ export const ArticleSchema: React.FC<ArticleSchemaProps> = ({
   image = 'https://creatorarmour.com/og-preview.png',
   datePublished,
   dateModified,
-  author = { name: 'Creator Armour', type: 'Organization' },
+  author = { name: 'CreatorArmour', type: 'Organization' },
   publisher = {
-    name: 'Creator Armour',
+    name: 'CreatorArmour',
     logo: 'https://creatorarmour.com/logo.png',
   },
 }) => {

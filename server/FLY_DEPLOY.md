@@ -115,7 +115,7 @@ flyctl open
 
 1. Add domain:
    ```bash
-   flyctl certs add api.noticebazaar.com
+   flyctl certs add api.creatorarmour.com
    ```
 
 2. Follow DNS instructions shown

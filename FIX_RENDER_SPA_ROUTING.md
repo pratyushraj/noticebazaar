@@ -13,7 +13,7 @@
 ### Step 1: Go to Render Dashboard
 
 1. Visit: https://dashboard.render.com
-2. Click on your static site: `noticebazaar-frontend`
+2. Click on your static site: `creatorarmour-frontend`
 3. Go to **Settings** tab
 
 ### Step 2: Configure Redirects
@@ -44,7 +44,7 @@ Look for one of these options:
 After configuring:
 1. Go to **Manual Deploy** → **Clear build cache & deploy**
 2. Wait for deployment
-3. Test: `https://noticebazaar-frontend.onrender.com/creator-dashboard`
+3. Test: `https://creatorarmour-frontend.onrender.com/creator-dashboard`
 
 ## Alternative: Quick Fix with HashRouter
 

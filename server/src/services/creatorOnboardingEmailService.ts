@@ -25,7 +25,7 @@ export async function sendWelcomeActivationEmail(data: CreatorOnboardingData) {
           <span style="font-size: 30px; color: #ffffff;">🛡️</span>
         </div>
         <h1 style="margin: 0 0 8px 0; font-size: 24px; font-weight: 700; color: #ffffff !important; line-height: 1.3;">
-          Welcome to Creator Armour
+          Welcome to CreatorArmour
         </h1>
         <p style="margin: 0; font-size: 14px; color: #ffffff !important; opacity: 0.95;">
           Your collaboration workspace is ready.
@@ -36,7 +36,7 @@ export async function sendWelcomeActivationEmail(data: CreatorOnboardingData) {
       <td style="padding: 32px 32px 10px 32px;">
         <p style="margin: 0 0 16px 0; font-size: 16px; font-weight: 600; color: #111827;">Hello ${data.creatorName || 'there'},</p>
         <p style="margin: 0 0 20px 0; font-size: 14px; color: #4b5563; line-height: 1.7;">
-          Creator Armour helps you receive brand offers, protect deals with contracts, and manage collaborations in one place. Setting up your link only takes 2 minutes.
+          CreatorArmour helps you receive brand offers, protect deals with contracts, and manage collaborations in one place. Setting up your link only takes 2 minutes.
         </p>
       </td>
     </tr>
@@ -101,7 +101,7 @@ export async function sendWelcomeActivationEmail(data: CreatorOnboardingData) {
 
     return sendResendEmail({
         to: data.creatorEmail,
-        subject: 'Welcome to Creator Armour 🛡️',
+        subject: 'Welcome to CreatorArmour 🛡️',
         html: getEmailLayout({ content: emailContent, backgroundStyle: 'purple' })
     });
 }

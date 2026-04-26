@@ -62,10 +62,10 @@ export default async function handler(
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>NoticeBazaar Dashboard Preview</title>
-  <meta name="description" content="Preview the NoticeBazaar Creator Dashboard - Manage deals, payments, and content protection" />
-  <meta property="og:title" content="NoticeBazaar Creator Dashboard Preview" />
-  <meta property="og:description" content="Preview the NoticeBazaar Creator Dashboard" />
+  <title>CreatorArmour Dashboard Preview</title>
+  <meta name="description" content="Preview the CreatorArmour Creator Dashboard - Manage deals, payments, and content protection" />
+  <meta property="og:title" content="CreatorArmour Creator Dashboard Preview" />
+  <meta property="og:description" content="Preview the CreatorArmour Creator Dashboard" />
   <meta property="og:type" content="website" />
   <meta name="robots" content="index, follow" />
   <style>
@@ -99,9 +99,9 @@ export default async function handler(
     } else {
       // Inject meta tags for better SEO/crawling
       const metaTags = `
-    <meta name="description" content="Preview the NoticeBazaar Creator Dashboard - Manage deals, payments, and content protection" />
-    <meta property="og:title" content="NoticeBazaar Creator Dashboard Preview" />
-    <meta property="og:description" content="Preview the NoticeBazaar Creator Dashboard" />
+    <meta name="description" content="Preview the CreatorArmour Creator Dashboard - Manage deals, payments, and content protection" />
+    <meta property="og:title" content="CreatorArmour Creator Dashboard Preview" />
+    <meta property="og:description" content="Preview the CreatorArmour Creator Dashboard" />
     <meta property="og:type" content="website" />
     <meta name="robots" content="index, follow" />
     `;

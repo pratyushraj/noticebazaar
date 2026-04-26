@@ -1,10 +1,10 @@
 #!/bin/bash
-# NoticeBazaar API Deployment Script
+# CreatorArmour API Deployment Script
 # Deploys the API server to Vercel
 
 set -e
 
-echo "🚀 Deploying NoticeBazaar API Server..."
+echo "🚀 Deploying CreatorArmour API Server..."
 echo ""
 
 # Check if we're in the server directory
@@ -37,7 +37,7 @@ echo ""
 echo "Required variables:"
 echo "  - SUPABASE_URL"
 echo "  - SUPABASE_SERVICE_ROLE_KEY"
-echo "  - FRONTEND_URL (optional, defaults to https://noticebazaar.com)"
+echo "  - FRONTEND_URL (optional, defaults to https://creatorarmour.com)"
 echo ""
 
 read -p "Have you set these in Vercel Dashboard? (y/n) " -n 1 -r
@@ -74,9 +74,9 @@ echo "✅ Deployment complete!"
 echo ""
 echo "📝 Next steps:"
 echo "   1. Go to Vercel Dashboard → Project → Settings → Domains"
-echo "   2. Add custom domain: api.noticebazaar.com"
+echo "   2. Add custom domain: api.creatorarmour.com"
 echo "   3. Add the DNS record Vercel provides"
 echo "   4. Wait for DNS propagation (5-10 minutes)"
-echo "   5. Test: curl https://api.noticebazaar.com/health"
+echo "   5. Test: curl https://api.creatorarmour.com/health"
 echo ""
 

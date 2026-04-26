@@ -162,7 +162,7 @@ async function sendInvoice(invoice: any, supabase: any): Promise<InvoiceResult> 
   const { queueEmail } = await import('../lib/queue');
   await queueEmail({
     to: recipient.email,
-    subject: `Invoice #${invoice.invoice_number || invoice.id} from Creator Armour`,
+    subject: `Invoice #${invoice.invoice_number || invoice.id} from CreatorArmour`,
     template: 'invoice',
     data: {
       invoiceNumber: invoice.invoice_number || invoice.id,

@@ -1,4 +1,4 @@
-# Creator Armour Domain-Based Architecture Refactor Plan
+# CreatorArmour Domain-Based Architecture Refactor Plan
 
 **Version:** 1.0.0  
 **Date:** March 31, 2026  
@@ -26,7 +26,7 @@
 
 ## 1. Executive Summary
 
-This document outlines a gradual, non-breaking refactor of the Creator Armour codebase from a feature-based structure to a domain-driven architecture. The refactor will be executed in phases over multiple sprints, ensuring continuous product functionality.
+This document outlines a gradual, non-breaking refactor of the CreatorArmour codebase from a feature-based structure to a domain-driven architecture. The refactor will be executed in phases over multiple sprints, ensuring continuous product functionality.
 
 ### Goals
 - Reduce component complexity and improve maintainability
@@ -48,7 +48,7 @@ This document outlines a gradual, non-breaking refactor of the Creator Armour co
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                     Creator Armour Domains                       │
+│                     CreatorArmour Domains                       │
 ├─────────────────────────────────────────────────────────────────┤
 │                                                                  │
 │  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐             │

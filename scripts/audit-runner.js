@@ -8,7 +8,7 @@ CREATOR_PASS="kickurass"
 BRAND_EMAIL="mellowprints0707@yopmail.com"
 BRAND_PASS="kickurass"
 AUDIT_LOG="/home/node/.openclaw/workspace/memory/audit-log.md"
-PROJECT_DIR="/home/node/noticebazaar"
+PROJECT_DIR="/home/node/creatorarmour"
 
 echo "=== CreatorArmour Audit Run: $(date) ===" >> "$AUDIT_LOG"
 

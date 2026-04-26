@@ -72,7 +72,7 @@ export async function sendBrandSigningConfirmationEmail(
       ? dealData.contractUrl 
       : `${process.env.FRONTEND_URL || 'https://creatorarmour.com'}/creator-contracts/${dealData.dealId}`;
 
-    const emailSubject = `Agreement Signed Successfully — Creator Armour`;
+    const emailSubject = `Agreement Signed Successfully — CreatorArmour`;
     
     // Format deliverables as bullet list
     const deliverablesBullets = dealData.deliverables

@@ -7,7 +7,7 @@
    - Contract attachments view and download
    - Quick reply templates for legal advisors
    - Real-time message updates
-   - Matches NoticeBazaar purple gradient design
+   - Matches CreatorArmour purple gradient design
 
 2. **Added Lawyer Role to System**
    - Updated `src/types/index.ts` to include `'lawyer'` role
@@ -116,7 +116,7 @@ ON CONFLICT (id) DO UPDATE SET
 
 ## 🎨 Design
 
-The Lawyer Dashboard matches the existing NoticeBazaar design:
+The Lawyer Dashboard matches the existing CreatorArmour design:
 - Purple gradient background (`from-purple-900 via-purple-800 to-indigo-900`)
 - Glass morphism cards
 - Scale icon for legal advisor branding

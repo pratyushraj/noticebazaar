@@ -28,7 +28,7 @@ if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY) {
 }
 
 // Demo BRAND account credentials
-const DEMO_EMAIL = 'brand-demo@noticebazaar.com';
+const DEMO_EMAIL = 'brand-demo@creatorarmour.com';
 const DEMO_PASSWORD = 'BrandDemo123!@#';
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY, {

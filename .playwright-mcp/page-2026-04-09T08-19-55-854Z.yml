@@ -6,7 +6,7 @@
           - img [ref=e52]
         - generic [ref=e55]:
           - generic [ref=e56]: Demo credentials filled
-          - generic [ref=e57]: Sign in to preview Creator Armour.
+          - generic [ref=e57]: Sign in to preview CreatorArmour.
   - generic [ref=e3]:
     - link "Skip to main content" [ref=e4] [cursor=pointer]:
       - /url: "#main-content"
@@ -14,7 +14,7 @@
       - generic [ref=e6]:
         - generic [ref=e7]:
           - img [ref=e9]
-          - heading "Creator Armour" [level=1] [ref=e12]
+          - heading "CreatorArmour" [level=1] [ref=e12]
         - generic [ref=e13]:
           - heading "Sign In" [level=2] [ref=e14]
           - paragraph [ref=e15]: Sign in to see your brand offers and active deals.
@@ -23,7 +23,7 @@
             - text: Email
             - textbox "Email" [ref=e31]:
               - /placeholder: name@example.com
-              - text: brand-demo@noticebazaar.com
+              - text: brand-demo@creatorarmour.com
           - generic [ref=e32]:
             - generic [ref=e33]:
               - generic [ref=e34]: Password
@@ -47,7 +47,7 @@
           - img [ref=e22]
           - text: Exit To Homepage
       - paragraph [ref=e25]:
-        - text: Protected by Creator Armour Shield. By signing in, you agree to our
+        - text: Protected by CreatorArmour Shield. By signing in, you agree to our
         - link "Terms" [ref=e26] [cursor=pointer]:
           - /url: /terms
         - text: "&"

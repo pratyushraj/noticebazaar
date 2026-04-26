@@ -971,7 +971,7 @@ router.patch('/:dealId/delivery-details', async (req: AuthenticatedRequest, res:
         const productDeliveryTerms = [
           `1. Product Delivery: The brand must dispatch the barter product to the creator within ${BARTER_DISPATCH_DAYS} days of contract signing. A tracking ID must be shared with the creator when applicable.`,
           `2. Product Condition: The product must match the description and agreed value. The creator may reject damaged or incorrect items.`,
-          `3. Delivery Confirmation: The creator confirms receipt inside the Creator Armour dashboard. The content timeline starts only after this confirmation.`,
+          `3. Delivery Confirmation: The creator confirms receipt inside the CreatorArmour dashboard. The content timeline starts only after this confirmation.`,
           `4. Non-Delivery: If the product is not delivered within the agreed timeline, the creator may cancel the collaboration and the brand loses collaboration rights under this agreement.`,
           `5. No Product, No Content: The creator is not obligated to deliver content until the product has been received and confirmed.`,
           `Delivery address: ${delivery_address.trim()}. Contact (masked): ${maskedPhone}.`,
@@ -2045,6 +2045,96 @@ router.post('/:id/create-payment-link', authMiddleware, async (req: Authenticate
     });
   } catch (error: any) {
     console.error('[Deals] create-payment-link error:', error);
+    return res.status(500).json({ success: false, error: error?.message || 'Internal server error' });
+  }
+});
+
+/**
+ * POST /api/deals/:id/create-payment-order
+ * Creates a Razorpay order for in-app checkout modal flow.
+ */
+router.post('/:id/create-payment-order', authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const dealId = req.params.id;
+    const userId = req.user?.id;
+    const role = String(req.user?.role || '').toLowerCase();
+
+    if (!userId) return res.status(401).json({ success: false, error: 'Authentication required' });
+
+    const { deal, error: dealError } = await fetchDealForBrandMutation(dealId);
+    if (dealError || !deal) return res.status(404).json({ success: false, error: 'Deal not found' });
+
+    const dealBrandId = String((deal as any).brand_id || '');
+    const dealBrandEmail = String((deal as any).brand_email || '').toLowerCase();
+    const userEmail = String(req.user?.email || '').toLowerCase();
+    const isOwner = (dealBrandId && dealBrandId === userId) || (dealBrandEmail && userEmail && dealBrandEmail === userEmail);
+    if (role !== 'brand' && role !== 'admin' && !isOwner) {
+      return res.status(403).json({ success: false, error: 'Brand access required' });
+    }
+
+    const current = normalizeStatus((deal as any).status);
+    if (current !== 'PAYMENT_PENDING') {
+      return res.status(409).json({ success: false, error: 'Payment can only be initiated from PAYMENT_PENDING state.' });
+    }
+
+    const dealAmount = Number((deal as any).deal_amount || 0);
+    if (dealAmount <= 0) return res.status(400).json({ success: false, error: 'Deal has no valid amount.' });
+
+    const breakdown = calculatePaymentBreakdown(dealAmount);
+    const razorpayKeyId = process.env.RAZORPAY_KEY_ID;
+    const razorpayKeySecret = process.env.RAZORPAY_KEY_SECRET;
+    if (!razorpayKeyId || !razorpayKeySecret) {
+      return res.status(500).json({
+        success: false,
+        error: 'Razorpay is not configured on this server. Set RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET.',
+      });
+    }
+
+    try {
+      const Razorpay = (await import('razorpay')).default;
+      const rzp = new Razorpay({
+        key_id: razorpayKeyId,
+        key_secret: razorpayKeySecret,
+      });
+
+      const order = await rzp.orders.create({
+        amount: breakdown.amountPaise,
+        currency: 'INR',
+        receipt: `deal_${dealId.replace(/-/g, '').slice(0, 20)}`,
+        notes: {
+          deal_id: dealId,
+          creator_id: (deal as any).creator_id,
+          brand_id: userId,
+        },
+      });
+
+      const { error: updateError } = await supabase.from('brand_deals').update({
+        payment_id: order.id,
+        amount_paid: breakdown.brandTotal,
+        creator_amount: breakdown.creatorPayout,
+        platform_fee: breakdown.platformFee,
+      }).eq('id', dealId);
+      if (updateError) {
+        console.error('[Razorpay] Failed to persist order metadata:', updateError);
+      }
+
+      return res.json({
+        success: true,
+        order_id: order.id,
+        amount: breakdown.brandTotal,
+        breakdown,
+        key_id: razorpayKeyId,
+        currency: 'INR',
+      });
+    } catch (rzpError: any) {
+      console.error('[Razorpay] Order creation failed:', rzpError);
+      return res.status(502).json({
+        success: false,
+        error: rzpError?.error?.description || rzpError?.message || 'Failed to create Razorpay order.',
+      });
+    }
+  } catch (error: any) {
+    console.error('[Deals] create-payment-order error:', error);
     return res.status(500).json({ success: false, error: error?.message || 'Internal server error' });
   }
 });

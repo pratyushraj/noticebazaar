@@ -8,7 +8,7 @@
  * - FAQ schema at bottom
  * - Internal links to:
  *   - Free contract tool (/contract-upload or /contract-analyzer)
- *   - Creator Armour homepage (/)
+ *   - CreatorArmour homepage (/)
  *   - Collab link page (if applicable)
  */
 
@@ -285,7 +285,7 @@ export const blogPosts: BlogPost[] = [
         },
         {
           heading: 'One-Tap Decisions and Structured Counters',
-          content: 'The best setup is: see the full offer (brand, budget, deliverables, deadline), then in one move choose Accept, Counter, or Decline. Accept should mean “yes, let’s do it” and kick off the contract—no extra “review” step. Counter should open a clear form: your amount or product value, deliverables, timeline, and a short note. Everything in one place keeps negotiations fast and clear, and makes it easier for brands to say yes. Tools like Creator Armour’s collab link and counter-offer flow are built for this: one page, one decision, no endless DMs.',
+          content: 'The best setup is: see the full offer (brand, budget, deliverables, deadline), then in one move choose Accept, Counter, or Decline. Accept should mean “yes, let’s do it” and kick off the contract—no extra “review” step. Counter should open a clear form: your amount or product value, deliverables, timeline, and a short note. Everything in one place keeps negotiations fast and clear, and makes it easier for brands to say yes. Tools like CreatorArmour’s collab link and counter-offer flow are built for this: one page, one decision, no endless DMs.',
         },
       ],
       conclusion: 'Every offer is a small negotiation. Accept when it’s right, counter when it’s close, decline when it’s not—and do it all in a structured way so you and the brand are on the same page. Use your collab link so brands send real offers, not vague DMs, and counter with clear numbers and terms so you rarely leave money or good opportunities on the table.',
@@ -329,7 +329,7 @@ export const blogPosts: BlogPost[] = [
     summary: 'Most collabs still start in DMs and break when terms matter most. Here is why structured deal flow wins for both creators and brands.',
     keywords: ['creator economy', 'brand collaboration', 'contracts', 'payment tracking', 'collab workflow', 'India'],
     content: {
-      introduction: 'Most brand-creator deals still begin in DMs, then become messy when timelines, deliverables, and payments need clarity. Creator Armour is built to turn that chaos into a professional, protected workflow.',
+      introduction: 'Most brand-creator deals still begin in DMs, then become messy when timelines, deliverables, and payments need clarity. CreatorArmour is built to turn that chaos into a professional, protected workflow.',
       sections: [
         {
           heading: 'The Real Problem with DM-First Collaboration',
@@ -397,7 +397,7 @@ export const blogPosts: BlogPost[] = [
       sections: [
         {
           heading: '1. Ditch the PDF. Use a Live Link.',
-          content: 'PDFs are outdated the moment you export them. Your follower count changes, your engagement rate shifts, and that viral video from yesterday isn\'t in there. By the time a brand opens your PDF attached to an email, the file might be compressed, flagged as spam, or just annoying to read on a phone. Moving your media kit to a live link (like a Notion page, a link-in-bio tool, or your Creator Armour collab page) means you can update it instantly, track who views it, and make it interactive.',
+          content: 'PDFs are outdated the moment you export them. Your follower count changes, your engagement rate shifts, and that viral video from yesterday isn\'t in there. By the time a brand opens your PDF attached to an email, the file might be compressed, flagged as spam, or just annoying to read on a phone. Moving your media kit to a live link (like a Notion page, a link-in-bio tool, or your CreatorArmour collab page) means you can update it instantly, track who views it, and make it interactive.',
         },
         {
           heading: '2. The "3-Second Rule" Structure',
@@ -427,7 +427,7 @@ export const blogPosts: BlogPost[] = [
         },
         {
           heading: '5. The Call to Action',
-          content: 'Every media kit needs a clear next step. Don\'t just say "Email me." Give them a frictionless way to submit an offer or book a call. Integrating your Creator Armour link at the bottom of your media kit allows the brand to submit a structured offer directly into your dashboard, kicking off the contract and payment workflow instantly.',
+          content: 'Every media kit needs a clear next step. Don\'t just say "Email me." Give them a frictionless way to submit an offer or book a call. Integrating your CreatorArmour link at the bottom of your media kit allows the brand to submit a structured offer directly into your dashboard, kicking off the contract and payment workflow instantly.',
         }
       ],
       conclusion: 'Your media kit isn\'t a scrapbook; it\'s a sales document. Keep it concise, metric-driven, and easy to act upon. The easier you make it for a brand to understand your value and submit an offer, the more closed deals you\'ll see in your pipeline.',
@@ -469,7 +469,7 @@ export const blogPosts: BlogPost[] = [
       sections: [
         {
           heading: 'Instagram Rate Benchmarks (India 2026)',
-          content: 'Based on data from over 2,000 Indian creator-brand deals on Creator Armour, here are the average rates by follower tier:',
+          content: 'Based on data from over 2,000 Indian creator-brand deals on CreatorArmour, here are the average rates by follower tier:',
           subsections: [
             { heading: 'Nano (1K–10K followers)', content: '₹500–₹2,000 per reel. Best for barter deals and building a portfolio. Brands love nano creators for authentic, high-engagement content.' },
             { heading: 'Micro (10K–50K followers)', content: '₹2,000–₹10,000 per reel. This is the sweet spot for most Indian brands. High engagement, affordable rates, genuine audience trust.' },
@@ -516,7 +516,7 @@ export const blogPosts: BlogPost[] = [
         },
         {
           heading: 'Step 2: Build a Collab Link (Your Digital Business Card)',
-          content: 'A collab link is a professional page where brands can see your rates, packages, past work, and send you structured offers — without DMs getting lost. Creator Armour gives you one for free.',
+          content: 'A collab link is a professional page where brands can see your rates, packages, past work, and send you structured offers — without DMs getting lost. CreatorArmour gives you one for free.',
         },
         {
           heading: 'Step 3: How to Pitch Brands (With Templates)',

@@ -7,7 +7,7 @@
       - main [ref=e119]:
         - main [ref=e121]:
           - generic [ref=e122]:
-            - paragraph [ref=e123]: Creator Armour
+            - paragraph [ref=e123]: CreatorArmour
             - paragraph [ref=e124]: Good afternoon, Test
             - heading "Your Offer Inbox" [level=1] [ref=e125]
             - paragraph [ref=e126]: Share your link. Brand offers appear here.
@@ -64,4 +64,4 @@
                 - generic [ref=e175]:
                   - paragraph [ref=e176]: Payment
                   - paragraph [ref=e177]: We only ask for your UPI when payment is about to be made.
-      - generic [ref=e178]: © 2026 Creator Armour
+      - generic [ref=e178]: © 2026 CreatorArmour

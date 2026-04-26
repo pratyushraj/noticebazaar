@@ -65,7 +65,7 @@ const WelcomeScreen = ({ onNext, userName }: WelcomeScreenProps) => {
           transition={{ delay: 0.4 }}
           className="text-xl text-secondary max-w-lg mx-auto"
         >
-          Let's set up your Creator Armour account in just 2 minutes
+          Let's set up your CreatorArmour account in just 2 minutes
         </motion.p>
       </div>
 

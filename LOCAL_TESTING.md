@@ -22,9 +22,9 @@
    - Upload a contract
    - Should work perfectly ✅
 
-### Option 2: Test on noticebazaar.com with Local API (Requires Tunnel)
+### Option 2: Test on creatorarmour.com with Local API (Requires Tunnel)
 
-Browsers block `noticebazaar.com` → `localhost:3001` due to CORS.
+Browsers block `creatorarmour.com` → `localhost:3001` due to CORS.
 
 **Solution: Use a tunnel to expose localhost:3001**
 
@@ -44,7 +44,7 @@ Browsers block `noticebazaar.com` → `localhost:3001` due to CORS.
    You'll get a URL like: `https://random-name.trycloudflare.com`
 
 3. **Update Frontend:**
-   - Add `?localApi=true` to your URL on noticebazaar.com
+   - Add `?localApi=true` to your URL on creatorarmour.com
    - Or set in browser console: `localStorage.setItem('useLocalApi', 'true')`
    - Update the tunnel URL in `ContractUploadFlow.tsx` temporarily
 
@@ -68,11 +68,11 @@ Browsers block `noticebazaar.com` → `localhost:3001` due to CORS.
 ### Option 3: Use Render API (Production)
 
 The Render API is already deployed at:
-- `https://noticebazaar-api.onrender.com`
+- `https://creatorarmour-api.onrender.com`
 
 Just update your frontend environment variable:
 ```env
-VITE_API_BASE_URL=https://noticebazaar-api.onrender.com
+VITE_API_BASE_URL=https://creatorarmour-api.onrender.com
 ```
 
 ## Quick Test Commands
@@ -91,9 +91,9 @@ curl -H "Authorization: Bearer YOUR_TOKEN" \
 ## Current API Status
 
 - ✅ Server running on port 3001
-- ✅ CORS configured for noticebazaar.com
+- ✅ CORS configured for creatorarmour.com
 - ✅ Health endpoint working
-- ⚠️ Browser blocks noticebazaar.com → localhost:3001 (CORS security)
+- ⚠️ Browser blocks creatorarmour.com → localhost:3001 (CORS security)
 
 ## Recommended: Test Locally First
 

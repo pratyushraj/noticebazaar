@@ -278,7 +278,7 @@ export async function sendCreatorCollabCompletedEmail(
         </p>
         <p style="margin: 0 0 24px 0; font-size: 15px; color: #4a5568; line-height: 1.6;">
           Congratulations! Your collaboration with <strong>${brandName}</strong> is now officially complete. 
-          Thank you for being a professional partner on Creator Armour.
+          Thank you for being a professional partner on CreatorArmour.
         </p>
         <p style="margin: 0 0 24px 0; font-size: 15px; color: #718096; font-style: italic;">
           No further action is required from you at this stage.

@@ -39,11 +39,11 @@ PORT=10000
 ### Step 4: Deploy
 - Click **"Create Web Service"**
 - Render will build and deploy automatically
-- You'll get a URL like: `https://noticebazaar-api.onrender.com`
+- You'll get a URL like: `https://creatorarmour-api.onrender.com`
 
 ### Step 5: Test
 ```bash
-curl https://noticebazaar-api.onrender.com/health
+curl https://creatorarmour-api.onrender.com/health
 ```
 
 Should return:
@@ -79,7 +79,7 @@ curl -X POST https://api.render.com/v1/services \
   -H "Content-Type: application/json" \
   -d '{
     "type": "web_service",
-    "name": "noticebazaar-api",
+    "name": "creatorarmour-api",
     "repo": "https://github.com/your-username/creatorarmour",
     "branch": "main",
     "rootDir": "server",
@@ -94,7 +94,7 @@ However, the dashboard method is much easier and recommended.
 ## Custom Domain Setup (Optional)
 
 1. Go to your service → **Settings** → **Custom Domains**
-2. Add: `api.noticebazaar.com`
+2. Add: `api.creatorarmour.com`
 3. Follow DNS instructions shown
 4. Wait 5-15 minutes for DNS propagation
 
@@ -103,12 +103,12 @@ However, the dashboard method is much easier and recommended.
 Once deployed, update your frontend environment variable:
 
 ```env
-VITE_API_BASE_URL=https://noticebazaar-api.onrender.com
+VITE_API_BASE_URL=https://creatorarmour-api.onrender.com
 ```
 
 Or if using custom domain:
 ```env
-VITE_API_BASE_URL=https://api.noticebazaar.com
+VITE_API_BASE_URL=https://api.creatorarmour.com
 ```
 
 ## Render Free Tier Notes

@@ -1,5 +1,5 @@
 const fs = require('fs');
-const content = fs.readFileSync('/Users/pratyushraj/Desktop/noticebazaar/src/pages/MobileDashboardDemo.tsx', 'utf8');
+const content = fs.readFileSync('/Users/pratyushraj/Desktop/creatorarmour/src/pages/MobileDashboardDemo.tsx', 'utf8');
 const lines = content.split('\n');
 
 const start = 3346 - 1;

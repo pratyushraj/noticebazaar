@@ -1,4 +1,4 @@
-# NoticeBazaar Demo Checklist
+# CreatorArmour Demo Checklist
 
 **Purpose:** Comprehensive checklist for investor demos and presentations  
 **Last Updated:** December 2024  

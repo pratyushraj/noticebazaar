@@ -5,7 +5,7 @@
 After running the seed script (`npm run seed`), use these credentials to log in:
 
 ```
-Email: test@noticebazaar.com
+Email: test@creatorarmour.com
 Password: Test123!@#
 ```
 

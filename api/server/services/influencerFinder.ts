@@ -1,5 +1,5 @@
 // @ts-nocheck
-// Creator Armour Influencer Finder Agent
+// CreatorArmour Influencer Finder Agent
 // Production-ready service for discovering, classifying, and organizing influencers
 // Only uses public data in compliance with platform policies
 
@@ -516,7 +516,7 @@ async function searchViaGoogle(hashtags: string[], keywords: string[], limit: nu
 async function classifyCreatorWithAI(profile: InfluencerProfile): Promise<InfluencerClassification> {
   log.info(`Classifying @${profile.instagram_handle}`);
 
-  const prompt = `You are an AI assistant helping Creator Armour find relevant Indian influencers.
+  const prompt = `You are an AI assistant helping CreatorArmour find relevant Indian influencers.
 
 Analyze this Instagram profile and classify it:
 
@@ -533,10 +533,10 @@ Profile Details:
 Your tasks:
 1. Classify the niche (fitness, fashion, beauty, tech, lifestyle, UGC, food, travel, comedy, education, etc.)
 2. Determine if they are India-based (check bio, location, content language)
-3. Check if they are in a relevant niche for Creator Armour (fashion, beauty, fitness, lifestyle, tech, UGC)
+3. Check if they are in a relevant niche for CreatorArmour (fashion, beauty, fitness, lifestyle, tech, UGC)
 4. Assess if they are active (posting regularly in last 30 days)
 5. Calculate a Fit Score (1-10) based on:
-   - Relevance to Creator Armour (contracts, payments, creator protection)
+   - Relevance to CreatorArmour (contracts, payments, creator protection)
    - Engagement quality (not just follower count)
    - Content quality indicators
    - Professionalism (has website, email, etc.)

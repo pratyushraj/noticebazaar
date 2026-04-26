@@ -2375,7 +2375,7 @@ const MobileDashboardDemo = ({
     const handleShareStorefront = async () => {
         try {
             const shareData = {
-                title: 'Creator Armour Link',
+                title: 'CreatorArmour Link',
                 text: 'Check out my official creator link!',
                 url: `https://creatorarmour.com/${username}`
             };
@@ -4452,7 +4452,7 @@ const MobileDashboardDemo = ({
                             <div className="flex flex-col items-center gap-0">
                                 <div className="flex items-center gap-1.5 font-black text-[15px] tracking-tight">
                                     <ShieldCheck className={cn("w-4 h-4", isDark ? "text-primary" : "text-primary")} strokeWidth={2.5} />
-                                    <span className={cn(isDark ? "text-white" : "text-slate-900")}>Creator Armour</span>
+                                    <span className={cn(isDark ? "text-white" : "text-slate-900")}>CreatorArmour</span>
                                 </div>
                             </div>
 
@@ -5030,7 +5030,7 @@ const MobileDashboardDemo = ({
 
                                     <div className="flex items-center gap-1.5 font-bold text-[16px] tracking-tight">
                                         <ShieldCheck className={cn("w-4 h-4", isDark ? "text-primary" : "text-primary")} strokeWidth={2.5} />
-                                        <span className={textColor}>Creator Armour</span>
+                                        <span className={textColor}>CreatorArmour</span>
                                     </div>
 
                                     <button type="button" onClick={() => setActiveTab('profile')} className={cn("w-10 h-10 rounded-xl border p-0.5 overflow-hidden transition-all active:scale-95 shadow-sm", isDark ? "border-white/10 bg-white/5" : "border-slate-200 bg-white")}>
@@ -7075,7 +7075,7 @@ const MobileDashboardDemo = ({
                                                         <ShieldCheck className="w-5 h-5 text-white" strokeWidth={2.5} />
                                                     </div>
                                                     <div className="flex-1 min-w-0">
-                                                        <p className={cn("font-black text-[14px] leading-tight", isDark ? "text-primary" : "text-emerald-700")}>Protected by Creator Armour</p>
+                                                        <p className={cn("font-black text-[14px] leading-tight", isDark ? "text-primary" : "text-emerald-700")}>Protected by CreatorArmour</p>
                                                         <p className={cn("text-[11px] font-semibold mt-0.5", isDark ? "text-primary/70" : "text-emerald-600")}>Contract + rights + dispute support</p>
                                                     </div>
                                                 </div>
@@ -7684,7 +7684,7 @@ const MobileDashboardDemo = ({
 
                     <div className={cn("flex items-center gap-2 text-[10px] font-bold opacity-40 border-t px-6 py-5", isDark ? "border-border/5" : "border-border")}>
                         <ShieldCheck className="w-3.5 h-3.5 text-primary" />
-                        <span>Aadhar Verified · Secure E-signature by Creator Armour</span>
+                        <span>Aadhar Verified · Secure E-signature by CreatorArmour</span>
                     </div>
                 </DialogContent>
             </Dialog>
@@ -7959,7 +7959,7 @@ const MobileDashboardDemo = ({
                                             <ShieldCheck className="w-5 h-5 text-white" strokeWidth={2.5} />
                                         </div>
                                         <div>
-                                            <p className={cn("text-[14px] font-black leading-tight", isDark ? "text-emerald-400" : "text-emerald-700")}>Creator Armour Protected</p>
+                                            <p className={cn("text-[14px] font-black leading-tight", isDark ? "text-emerald-400" : "text-emerald-700")}>CreatorArmour Protected</p>
                                             <p className={cn("text-[11px] font-semibold opacity-60", textColor)}>Content Rights Agreement</p>
                                         </div>
                                     </div>

@@ -1,5 +1,5 @@
 #!/bin/bash
-SCRIPT="/home/node/noticebazaar/scripts/audit-night.cjs"
+SCRIPT="/home/node/creatorarmour/scripts/audit-night.cjs"
 LOG="/home/node/.openclaw/workspace/memory/audit-log.md"
 CYCLE=1
 

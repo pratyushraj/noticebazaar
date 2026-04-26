@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Render API Deployment Script
-# Uses Render API to deploy the noticebazaar-api service
+# Uses Render API to deploy the creatorarmour-api service
 
 set -e
 
@@ -21,7 +21,7 @@ echo ""
 echo "📝 Next steps:"
 echo "1. Go to https://dashboard.render.com"
 echo "2. Create a new Web Service"
-echo "3. Connect your GitHub repo: noticebazaar"
+echo "3. Connect your GitHub repo: creatorarmour"
 echo "4. Set Root Directory: server"
 echo "5. Set Build Command: npm install && npm run build"
 echo "6. Set Start Command: npm start"

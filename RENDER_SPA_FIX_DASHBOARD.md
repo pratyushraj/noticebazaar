@@ -10,7 +10,7 @@ Render static sites need to be configured in the dashboard to handle SPA routing
 ### Step 1: Go to Render Dashboard
 
 1. Visit: https://dashboard.render.com
-2. Click on your static site: `noticebazaar-frontend`
+2. Click on your static site: `creatorarmour-frontend`
 3. Go to **Settings** → **Redirects & Rewrites**
 
 ### Step 2: Add Redirect Rule
@@ -59,7 +59,7 @@ This uses hash-based routing (`#/creator-dashboard`) which doesn't require serve
 ## Verify Configuration
 
 After configuring, test:
-- Direct URL: `https://noticebazaar-frontend.onrender.com/creator-dashboard`
+- Direct URL: `https://creatorarmour-frontend.onrender.com/creator-dashboard`
 - Should load without 404 error
 - React Router should handle the route
 

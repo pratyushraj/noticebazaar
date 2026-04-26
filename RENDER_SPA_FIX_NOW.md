@@ -8,7 +8,7 @@ Getting 404 on `/login` and other routes because Render isn't serving `index.htm
 ### Step 1: Go to Render Dashboard
 
 1. Visit: https://dashboard.render.com
-2. Click on your static site: **`noticebazaar-frontend`**
+2. Click on your static site: **`creatorarmour-frontend`**
 3. Go to **Settings** tab
 
 ### Step 2: Enable SPA Mode (EASIEST)
@@ -41,7 +41,7 @@ After configuring:
 1. Go to **Manual Deploy** tab
 2. Click **"Clear build cache & deploy"**
 3. Wait for deployment to complete (2-5 minutes)
-4. Test: `https://noticebazaar-frontend.onrender.com/login`
+4. Test: `https://creatorarmour-frontend.onrender.com/login`
 
 ---
 

@@ -74,7 +74,7 @@ const DesignSystem = () => {
 
         {/* ── HEADER ─────────────────────────────────────── */}
         <header className="text-center">
-          <h1 className="text-3xl font-semibold tracking-tight text-foreground">Creator Armour Design System</h1>
+          <h1 className="text-3xl font-semibold tracking-tight text-foreground">CreatorArmour Design System</h1>
           <p className="mt-2 text-sm text-muted-foreground">One accent color · Rounded-2xl cards · Soft shadows · Minimal borders</p>
         </header>
 
@@ -427,7 +427,7 @@ const DesignSystem = () => {
             <div className="rounded-2xl border border-border bg-card p-4">
               <p className="text-xs font-medium text-muted-foreground mb-3">Top bar</p>
               <div className="flex items-center justify-between">
-                <p className="text-sm font-semibold text-foreground">Creator Armour</p>
+                <p className="text-sm font-semibold text-foreground">CreatorArmour</p>
                 <div className="flex items-center gap-1">
                   {['Home', 'Deals', 'Payments'].map((item, i) => (
                     <div

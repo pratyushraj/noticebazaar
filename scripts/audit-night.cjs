@@ -176,8 +176,8 @@ const brandAudit = async (browser) => {
 const apiAudit = () => {
   log('== API AUDIT ==');
   const endpoints = [
-    ['health', 'https://noticebazaar-api.onrender.com/health'],
-    ['api-root', 'https://noticebazaar-api.onrender.com/api/'],
+    ['health', 'https://creatorarmour-api.onrender.com/health'],
+    ['api-root', 'https://creatorarmour-api.onrender.com/api/'],
   ];
   for (const [name, url] of endpoints) {
     try {

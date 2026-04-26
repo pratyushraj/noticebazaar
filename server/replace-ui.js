@@ -124,7 +124,7 @@ const replacement = `$1
       <div className="mt-14 text-center pb-8 border-t border-slate-100/60 pt-8">
         <div className="flex items-center justify-center gap-1.5 mb-2.5">
           <ShieldCheck className="w-3.5 h-3.5 text-emerald-400/60" />
-          <span className="text-[9px] font-black uppercase tracking-[0.2em] text-emerald-400/60">Secured by Creator Armour</span>
+          <span className="text-[9px] font-black uppercase tracking-[0.2em] text-emerald-400/60">Secured by CreatorArmour</span>
         </div>
         <p className="text-[11px] font-medium text-slate-400/60 max-w-[200px] mx-auto leading-relaxed">
           By sending an offer, you agree to our standard terms and creator's specific rules.

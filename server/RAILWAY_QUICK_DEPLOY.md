@@ -32,7 +32,7 @@ Since you have a Railway API token, here are the options:
 
 5. **Configure Custom Domain:**
    - Settings → Networking → Add Custom Domain
-   - Enter: `api.noticebazaar.com`
+   - Enter: `api.creatorarmour.com`
    - Add DNS record as shown
    - Wait 5-15 minutes
 

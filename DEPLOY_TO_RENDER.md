@@ -1,4 +1,4 @@
-# 🚀 Deploy NoticeBazaar to Render
+# 🚀 Deploy CreatorArmour to Render
 
 Complete guide to deploy both frontend and backend to Render.
 
@@ -20,11 +20,11 @@ Complete guide to deploy both frontend and backend to Render.
 
 2. **Create New Web Service:**
    - Click "New +" → "Web Service"
-   - Connect your GitHub repository: `noticebazaar`
+   - Connect your GitHub repository: `creatorarmour`
    - Select the repository
 
 3. **Configure Backend:**
-   - **Name:** `noticebazaar-api`
+   - **Name:** `creatorarmour-api`
    - **Region:** Choose closest to you
    - **Branch:** `main`
    - **Root Directory:** `server`
@@ -41,7 +41,7 @@ Complete guide to deploy both frontend and backend to Render.
    LLM_PROVIDER=groq
    LLM_API_KEY=your-groq-api-key-here
    LLM_MODEL=llama-3.1-8b-instant
-   FRONTEND_URL=https://noticebazaar-frontend.onrender.com
+   FRONTEND_URL=https://creatorarmour-frontend.onrender.com
    NODE_ENV=production
    PORT=10000
    PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
@@ -50,7 +50,7 @@ Complete guide to deploy both frontend and backend to Render.
 5. **Deploy:**
    - Click "Create Web Service"
    - Render will build and deploy
-   - You'll get a URL like: `https://noticebazaar-api.onrender.com`
+   - You'll get a URL like: `https://creatorarmour-api.onrender.com`
 
 6. **Set Health Check:**
    - Go to Settings → Health Check Path
@@ -62,11 +62,11 @@ Complete guide to deploy both frontend and backend to Render.
 
 1. **Create New Static Site:**
    - In Render Dashboard, click "New +" → "Static Site"
-   - Connect your GitHub repository: `noticebazaar`
+   - Connect your GitHub repository: `creatorarmour`
    - Select the repository
 
 2. **Configure Frontend:**
-   - **Name:** `noticebazaar-frontend`
+   - **Name:** `creatorarmour-frontend`
    - **Branch:** `main`
    - **Root Directory:** (leave empty - root of repo)
    - **Build Command:** `corepack enable && corepack prepare pnpm@latest --activate && pnpm install && pnpm run build`
@@ -78,14 +78,14 @@ Complete guide to deploy both frontend and backend to Render.
    ```
    VITE_SUPABASE_URL=https://ooaxtwmqrvfzdqzoijcj.supabase.co
    VITE_SUPABASE_ANON_KEY=YOUR_SUPABASE_ANON_KEY
-   VITE_API_BASE_URL=https://noticebazaar-api.onrender.com
+   VITE_API_BASE_URL=https://creatorarmour-api.onrender.com
    NODE_ENV=production
    ```
 
 4. **Deploy:**
    - Click "Create Static Site"
    - Render will build and deploy
-   - You'll get a URL like: `https://noticebazaar-frontend.onrender.com`
+   - You'll get a URL like: `https://creatorarmour-frontend.onrender.com`
 
 5. **SPA Routing:**
    - The `public/_redirects` file is already configured
@@ -101,11 +101,11 @@ Complete guide to deploy both frontend and backend to Render.
    - Go to Authentication → URL Configuration
 
 2. **Update URLs:**
-   - **Site URL:** `https://noticebazaar-frontend.onrender.com`
+   - **Site URL:** `https://creatorarmour-frontend.onrender.com`
    - **Redirect URLs:** Add:
      ```
-     https://noticebazaar-frontend.onrender.com/**
-     https://noticebazaar-frontend.onrender.com/auth/callback
+     https://creatorarmour-frontend.onrender.com/**
+     https://creatorarmour-frontend.onrender.com/auth/callback
      http://localhost:8080/**
      ```
 
@@ -117,12 +117,12 @@ Complete guide to deploy both frontend and backend to Render.
 
 ### Test Backend:
 ```bash
-curl https://noticebazaar-api.onrender.com/health
+curl https://creatorarmour-api.onrender.com/health
 ```
 Should return: `{"status":"ok",...}`
 
 ### Test Frontend:
-1. Visit: `https://noticebazaar-frontend.onrender.com`
+1. Visit: `https://creatorarmour-frontend.onrender.com`
 2. Try `/login` route - should work with BrowserRouter!
 3. Test authentication flow
 4. Test contract upload

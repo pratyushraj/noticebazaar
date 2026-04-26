@@ -1,4 +1,4 @@
-# NoticeBazaar Dashboard UI Refactoring Summary
+# CreatorArmour Dashboard UI Refactoring Summary
 
 ## Issues Found & Fixed
 

@@ -7,7 +7,7 @@
 
 ## Overview
 
-This report tracks the enforcement of design system tokens across the NoticeBazaar codebase, identifying hardcoded values and ensuring everything uses design system tokens.
+This report tracks the enforcement of design system tokens across the CreatorArmour codebase, identifying hardcoded values and ensuring everything uses design system tokens.
 
 ---
 

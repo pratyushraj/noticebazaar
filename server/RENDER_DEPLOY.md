@@ -36,11 +36,11 @@ Render's free tier supports web services, making it a perfect alternative to Rai
 5. **Deploy:**
    - Click "Create Web Service"
    - Render will automatically build and deploy
-   - You'll get a URL like: `https://noticebazaar-api.onrender.com`
+   - You'll get a URL like: `https://creatorarmour-api.onrender.com`
 
 6. **Configure Custom Domain (Optional):**
    - Go to Settings → Custom Domains
-   - Add: `api.noticebazaar.com`
+   - Add: `api.creatorarmour.com`
    - Follow DNS instructions shown
    - Wait 5-15 minutes for DNS propagation
 
@@ -58,7 +58,7 @@ Render's free tier supports web services, making it a perfect alternative to Rai
 
 ### Test Your API:
 ```bash
-curl https://noticebazaar-api.onrender.com/health
+curl https://creatorarmour-api.onrender.com/health
 ```
 
 Should return:
@@ -74,11 +74,11 @@ Should return:
 ### Update Frontend:
 Once your API is deployed, update your frontend environment variable:
 ```
-VITE_API_BASE_URL=https://noticebazaar-api.onrender.com
+VITE_API_BASE_URL=https://creatorarmour-api.onrender.com
 ```
 Or if you set up custom domain:
 ```
-VITE_API_BASE_URL=https://api.noticebazaar.com
+VITE_API_BASE_URL=https://api.creatorarmour.com
 ```
 
 ## Render Free Tier Limits

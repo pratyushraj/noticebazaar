@@ -233,7 +233,7 @@ const corsOptions = {
       'http://127.0.0.1:5173',
       'https://www.creatorarmour.com',
       'https://creatorarmour.com',
-      'https://api.noticebazaar.com'
+      'https://api.creatorarmour.com'
     ].map(o => o.toLowerCase());
 
     if (allowedOrigins.includes(normalizedOrigin)) {

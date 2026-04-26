@@ -82,7 +82,7 @@ export async function sendBrandSigningConfirmationEmail(
       ? dealData.contractUrl
       : `${process.env.FRONTEND_URL || 'https://creatorarmour.com'}/creator-contracts/${dealData.dealId}`;
 
-    const emailSubject = `Agreement Signed Successfully — Creator Armour`;
+    const emailSubject = `Agreement Signed Successfully — CreatorArmour`;
 
     // Format deliverables as bullet list
     const deliverablesBullets = dealData.deliverables
@@ -526,7 +526,7 @@ export async function sendBrandSigningConfirmationEmail(
           </div>
 
           <p style="color: #4b5563; font-size: 15px; line-height: 1.6; margin-bottom: 24px;">
-            This action creates a permanent record on the Creator Armour digital ledger, complete with a unique Audit ID and timestamp for your protection.
+            This action creates a permanent record on the CreatorArmour digital ledger, complete with a unique Audit ID and timestamp for your protection.
           </p>
           
           <div style="text-align: center;">
@@ -755,7 +755,7 @@ export async function sendBrandSigningConfirmationEmail(
             ${getPrimaryCTA('Sign to Stay Protected', dealLink)}
           </div>
           
-          ${getCTATrustLine('This action creates a permanent record on the Creator Armour digital ledger, complete with a unique Audit ID and timestamp.')}
+          ${getCTATrustLine('This action creates a permanent record on the CreatorArmour digital ledger, complete with a unique Audit ID and timestamp.')}
         </td>
       </tr>
     `;

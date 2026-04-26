@@ -43,14 +43,14 @@ const FeatureCell = ({ value, isPopular }: { value: string | boolean, isPopular:
 };
 
 const PricingComparison = () => {
-  const whatsappMessage = encodeURIComponent("Hi Creator Armour, I need help choosing the right subscription plan for my business.");
+  const whatsappMessage = encodeURIComponent("Hi CreatorArmour, I need help choosing the right subscription plan for my business.");
   const whatsappLink = `https://wa.me/919205376316?text=${whatsappMessage}`;
 
   return (
     <div className="container mx-auto px-6 py-12 nb-screen-height bg-background">
       <SEOHead
-        title="Creator Armour Pricing — Plans for Every Creator"
-        description="Compare Creator Armour plans. Free deal page, essential protection, and growth features for Indian influencers and creators."
+        title="CreatorArmour Pricing — Plans for Every Creator"
+        description="Compare CreatorArmour plans. Free deal page, essential protection, and growth features for Indian influencers and creators."
         keywords={['creator armour pricing', 'influencer tools pricing', 'brand deal platform cost']}
         canonicalUrl="https://creatorarmour.com/pricing-comparison"
       />

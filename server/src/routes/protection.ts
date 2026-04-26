@@ -82,7 +82,7 @@ router.post('/analyze', async (req: AuthenticatedRequest, res) => {
     if (!isAllowedContractUrl(contract_url)) {
       return res.status(400).json({
         ok: false,
-        error: 'Invalid contract URL. Please upload via Creator Armour and try again.'
+        error: 'Invalid contract URL. Please upload via CreatorArmour and try again.'
       });
     }
 

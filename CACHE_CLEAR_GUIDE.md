@@ -111,7 +111,7 @@ Add this to your browser's address bar after the URL:
 
 Example:
 ```
-https://noticebazaar.com/client-dashboard?v=2&nocache=true
+https://creatorarmour.com/client-dashboard?v=2&nocache=true
 ```
 
 This forces the browser to fetch fresh files.

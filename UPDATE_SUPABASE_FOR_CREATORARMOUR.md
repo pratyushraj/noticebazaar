@@ -2,7 +2,7 @@
 
 ## ⚠️ CRITICAL: Fix Google OAuth 400 Error
 
-The error occurs because Supabase is still configured with `noticebazaar.com` but your app now uses `creatorarmour.com`.
+The error occurs because Supabase is still configured with `creatorarmour.com` but your app now uses `creatorarmour.com`.
 
 ## Step 1: Update Supabase Dashboard Settings
 
@@ -12,7 +12,7 @@ The error occurs because Supabase is still configured with `noticebazaar.com` bu
 2. Navigate to: **Authentication** → **URL Configuration**
 3. Update **Site URL** from:
    ```
-   https://noticebazaar.com
+   https://creatorarmour.com
    ```
    To:
    ```
@@ -24,9 +24,9 @@ The error occurs because Supabase is still configured with `noticebazaar.com` bu
 In the same **URL Configuration** page, update the **Redirect URLs** list:
 
 **Remove old URLs:**
-- `https://noticebazaar.com/**`
-- `https://noticebazaar.com/#/creator-dashboard`
-- `https://noticebazaar.com/#/creator-onboarding`
+- `https://creatorarmour.com/**`
+- `https://creatorarmour.com/#/creator-dashboard`
+- `https://creatorarmour.com/#/creator-onboarding`
 
 **Add new URLs:**
 ```
@@ -53,10 +53,10 @@ If you have a Google OAuth app configured:
 1. Go to: https://console.cloud.google.com/apis/credentials
 2. Find your OAuth 2.0 Client ID
 3. Update **Authorized JavaScript origins**:
-   - Remove: `https://noticebazaar.com`
+   - Remove: `https://creatorarmour.com`
    - Add: `https://creatorarmour.com`
 4. Update **Authorized redirect URIs**:
-   - Remove: `https://ooaxtwmqrvfzdqzoijcj.supabase.co/auth/v1/callback` (if it had noticebazaar.com in the config)
+   - Remove: `https://ooaxtwmqrvfzdqzoijcj.supabase.co/auth/v1/callback` (if it had creatorarmour.com in the config)
    - Ensure: `https://ooaxtwmqrvfzdqzoijcj.supabase.co/auth/v1/callback` is present
 
 ## Step 3: Verify Configuration
@@ -70,7 +70,7 @@ After updating:
 ## Why This Fixes the Error
 
 The 400 error occurs because:
-- Supabase JWT token has `site_url: "https://noticebazaar.com"`
+- Supabase JWT token has `site_url: "https://creatorarmour.com"`
 - Your app is trying to redirect to `localhost:8080` or `creatorarmour.com`
 - Google OAuth sees this mismatch and rejects the request
 

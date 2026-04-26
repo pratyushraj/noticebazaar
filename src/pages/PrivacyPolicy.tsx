@@ -23,7 +23,7 @@ const PrivacyPolicy = () => {
 
         <div className="prose dark:prose-invert max-w-none space-y-6 text-muted-foreground">
           <p>
-            Creator Armour ("we," "our," or "us") is committed to protecting your privacy. This Privacy Policy explains how your personal information is collected, used, and disclosed by Creator Armour. This policy applies to our website, dashboards, and escrow services.
+            CreatorArmour ("we," "our," or "us") is committed to protecting your privacy. This Privacy Policy explains how your personal information is collected, used, and disclosed by CreatorArmour. This policy applies to our website, dashboards, and escrow services.
           </p>
 
           <h2 className="text-2xl font-bold text-foreground">1. Information We Collect</h2>

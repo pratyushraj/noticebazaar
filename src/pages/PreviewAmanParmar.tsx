@@ -224,7 +224,7 @@ const PreviewAmanParmar = () => {
       </section>
 
       <footer className="border-t border-border py-5 text-center text-xs text-muted-foreground">
-        Preview hosted via Creator Armour
+        Preview hosted via CreatorArmour
       </footer>
     </main>
   );

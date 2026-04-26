@@ -26,7 +26,7 @@
 
 ### 5. ✅ URL Validation Security - Sync Script
 - **Added**: `isValidExternalUrl()` function
-- **Blocks**: localhost, 127.0.0.1, noticebazaar.com, noticebazaar.vercel.app, supabase.co
+- **Blocks**: localhost, 127.0.0.1, creatorarmour.com, creatorarmour.vercel.app, supabase.co
 - **Applied**: To all three scrapers (influencer.in, Winkl, Collabstr)
 - **Logs**: Warning when internal/blocked URLs detected
 - **Logs**: Warning when apply_url is missing

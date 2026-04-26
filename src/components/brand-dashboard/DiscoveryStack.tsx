@@ -229,20 +229,29 @@ export const DiscoveryStack: React.FC<DiscoveryStackProps> = ({
 
     if (isLoading) {
         return (
-            <div className="flex flex-col items-center justify-center gap-4" style={{ height: 'calc(100vh - 220px)' }}>
-                <div className="relative">
-                    <Loader2 className="w-12 h-12 animate-spin text-primary opacity-20" />
-                    <motion.div 
-                        animate={{ scale: [1, 1.2, 1] }}
-                        transition={{ repeat: Infinity, duration: 2 }}
-                        className="absolute inset-0 flex items-center justify-center"
-                    >
-                        <Sparkles className="w-5 h-5 text-primary" />
-                    </motion.div>
+            <div className="relative flex flex-col gap-6" style={{ height: 'calc(100vh - 190px)' }}>
+                {/* Header Skeleton */}
+                <div className="flex items-center justify-between px-1 mb-2">
+                    <div className="flex flex-col gap-2">
+                        <div className="h-8 w-48 bg-white/5 animate-pulse rounded-lg" />
+                        <div className="h-3 w-32 bg-white/5 animate-pulse rounded-lg" />
+                    </div>
+                    <div className="w-11 h-11 rounded-2xl bg-white/5 animate-pulse" />
                 </div>
-                <p className={cn("text-sm font-bold uppercase tracking-widest opacity-40", isDark ? "text-white" : "text-slate-900")}>
-                    Curating Talent...
-                </p>
+
+                {/* Card Skeleton */}
+                <div className="relative flex-1">
+                    <div className={cn(
+                        "absolute inset-0 w-full h-full rounded-[2.5rem] border overflow-hidden flex flex-col",
+                        isDark ? "bg-[#0B1220] border-white/10" : "bg-white border-slate-200"
+                    )}>
+                        <div className="h-[68%] w-full bg-white/5 animate-pulse" />
+                        <div className="flex-1 p-5 flex flex-col gap-4">
+                            <div className="h-12 w-full bg-white/5 animate-pulse rounded-[1.75rem]" />
+                            <div className="h-14 w-full bg-white/5 animate-pulse rounded-[1.75rem]" />
+                        </div>
+                    </div>
+                </div>
             </div>
         );
     }

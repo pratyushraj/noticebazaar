@@ -2,7 +2,7 @@
 # Run influencer discovery on Render
 # Usage: ./run-discovery-render.sh [AUTH_TOKEN]
 
-RENDER_API_URL="${RENDER_API_URL:-https://noticebazaar-api.onrender.com}"
+RENDER_API_URL="${RENDER_API_URL:-https://creatorarmour-api.onrender.com}"
 AUTH_TOKEN="${1:-${TEST_AUTH_TOKEN}}"
 
 if [ -z "$AUTH_TOKEN" ]; then

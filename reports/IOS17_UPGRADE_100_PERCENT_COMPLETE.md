@@ -117,7 +117,7 @@
 
 ## 🚀 PRODUCTION READY
 
-The entire NoticeBazaar frontend now features:
+The entire CreatorArmour frontend now features:
 - ✅ Premium iOS 17 + visionOS design language
 - ✅ Consistent design system usage
 - ✅ Smooth animations and micro-interactions

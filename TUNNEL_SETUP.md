@@ -23,7 +23,7 @@ Copy the URL (e.g., `https://random-name.trycloudflare.com`)
 
 ### Step 3: Set Tunnel URL in Browser
 
-On `noticebazaar.com`, open browser console (F12) and run:
+On `creatorarmour.com`, open browser console (F12) and run:
 ```javascript
 localStorage.setItem('tunnelUrl', 'https://YOUR-TUNNEL-URL.trycloudflare.com');
 localStorage.setItem('useLocalApi', 'true');
@@ -33,13 +33,13 @@ Replace `YOUR-TUNNEL-URL` with your actual tunnel URL.
 
 ### Step 4: Refresh the Page
 
-Refresh `noticebazaar.com` and try uploading a contract. It will now use your local API via the tunnel!
+Refresh `creatorarmour.com` and try uploading a contract. It will now use your local API via the tunnel!
 
 ## Alternative: Use URL Parameter
 
 You can also add the tunnel URL as a parameter:
 ```
-https://noticebazaar.com/upload?localApi=true&tunnelUrl=https://YOUR-TUNNEL-URL.trycloudflare.com
+https://creatorarmour.com/upload?localApi=true&tunnelUrl=https://YOUR-TUNNEL-URL.trycloudflare.com
 ```
 
 ## Stopping the Tunnel
@@ -51,7 +51,7 @@ Press `Ctrl+C` in the terminal where cloudflared is running.
 - The tunnel URL changes each time you restart cloudflared
 - Keep the terminal open while testing
 - The tunnel is free and requires no signup
-- It works from any domain (noticebazaar.com, localhost, etc.)
+- It works from any domain (creatorarmour.com, localhost, etc.)
 
 ## Troubleshooting
 

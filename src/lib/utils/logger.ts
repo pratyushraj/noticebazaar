@@ -1,5 +1,5 @@
 /**
- * Centralized logging utility for Creator Armour
+ * Centralized logging utility for CreatorArmour
  * Provides consistent logging across the application with environment-aware output
  */
 

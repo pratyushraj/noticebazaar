@@ -34,7 +34,7 @@ const getPersonalizedEmailTemplate = (companyType: string, firstName: string) =>
       subject = `Your Legal Health Report — Factory, Import/Export & Tax Compliance Status`;
       bodyHtml = `
         <p style="font-size: 16px;">Hi ${firstName},</p>
-        <p style="font-size: 16px;">Thank you for using <strong>NoticeBazaar’s Free Legal Health Check</strong>. Our compliance experts analyzed your manufacturing/import unit for potential risks related to:</p>
+        <p style="font-size: 16px;">Thank you for using <strong>CreatorArmour’s Free Legal Health Check</strong>. Our compliance experts analyzed your manufacturing/import unit for potential risks related to:</p>
         <ul style="padding-left: 20px; font-size: 16px;">
           <li><strong>Factory License, Pollution NOC, and Labour Law filings</strong></li>
           <li><strong>GST, TDS, and IEC compliance</strong></li>
@@ -92,7 +92,7 @@ const getPersonalizedEmailTemplate = (companyType: string, firstName: string) =>
       subject = `Your NGO Legal Check Report – Make Sure You’re 100% Compliant`;
       bodyHtml = `
         <p style="font-size: 16px;">Hi ${firstName},</p>
-        <p style="font-size: 16px;">Thank you for requesting your <strong>Free Legal Check</strong> with <strong>NoticeBazaar</strong>. We noticed your organization is an <strong>NGO / Non-Profit</strong>, so our team has tailored a quick checklist specifically for your sector.</p>
+        <p style="font-size: 16px;">Thank you for requesting your <strong>Free Legal Check</strong> with <strong>CreatorArmour</strong>. We noticed your organization is an <strong>NGO / Non-Profit</strong>, so our team has tailored a quick checklist specifically for your sector.</p>
         <p style="font-size: 16px;">Here are a few areas most NGOs miss (and risk penalties or funding issues later):</p>
         <ul style="padding-left: 20px; font-size: 16px;">
           <li>✅ FCRA registration & renewal compliance</li>
@@ -109,7 +109,7 @@ const getPersonalizedEmailTemplate = (companyType: string, firstName: string) =>
       subject = `Your Legal Health Check Results — Let’s Personalize It`;
       bodyHtml = `
         <p style="font-size: 16px;">Hi ${firstName},</p>
-        <p style="font-size: 16px;">Thank you for completing your <strong>Free Legal Health Check</strong> with <strong>NoticeBazaar</strong>. We noticed that your business doesn’t fit neatly into one of our predefined categories — and that’s perfectly fine. Every business has unique legal and compliance needs, and we’d love to tailor your report accordingly.</p>
+        <p style="font-size: 16px;">Thank you for completing your <strong>Free Legal Health Check</strong> with <strong>CreatorArmour</strong>. We noticed that your business doesn’t fit neatly into one of our predefined categories — and that’s perfectly fine. Every business has unique legal and compliance needs, and we’d love to tailor your report accordingly.</p>
         <p style="font-size: 16px;">To personalize your <strong>Legal Health Report</strong>, please reply with a few quick details:</p>
         <ul style="padding-left: 20px; font-size: 16px;">
           <li>✅ What type of business or activity do you operate?</li>
@@ -125,7 +125,7 @@ const getPersonalizedEmailTemplate = (companyType: string, firstName: string) =>
       subject = `✅ We’ve received your Legal Health Check request`;
       bodyHtml = `
         <p style="font-size: 16px;">Hi ${firstName},</p>
-        <p style="font-size: 16px;">Thank you for completing your Free Legal Health Check with NoticeBazaar. 🎯</p>
+        <p style="font-size: 16px;">Thank you for completing your Free Legal Health Check with CreatorArmour. 🎯</p>
         <p style="font-size: 16px;">Our legal team has received your details and will begin reviewing your company’s compliance across five key pillars:</p>
         <ol style="padding-left: 20px; font-size: 16px;">
           <li><strong>Compliance</strong> — GST, UDYAM, and Company Filings</li>
@@ -153,14 +153,14 @@ const getPersonalizedEmailTemplate = (companyType: string, firstName: string) =>
         </a>
       </p>
       
-      <p style="margin-top: 30px; border-top: 1px solid #eee; padding-top: 20px;">Thank you for trusting NoticeBazaar.</p>
+      <p style="margin-top: 30px; border-top: 1px solid #eee; padding-top: 20px;">Thank you for trusting CreatorArmour.</p>
       <p>We’re here to help you stay compliant and grow confidently.</p>
 
       <p style="margin-top: 20px; font-size: 14px; color: #666;">
         Warm regards,<br>
-        <strong>Team NoticeBazaar</strong><br>
-        <a href="mailto:support@noticebazaar.com" style="color: #3B82F6;">📩 support@noticebazaar.com</a><br>
-        <a href="https://www.noticebazaar.com" style="color: #3B82F6;">🌐 www.noticebazaar.com</a>
+        <strong>Team CreatorArmour</strong><br>
+        <a href="mailto:support@creatorarmour.com" style="color: #3B82F6;">📩 support@creatorarmour.com</a><br>
+        <a href="https://www.creatorarmour.com" style="color: #3B82F6;">🌐 www.creatorarmour.com</a>
       </p>
     </div>
   `;
@@ -222,7 +222,7 @@ serve(async (req) => {
     };
 
     // --- Email 1: Internal Notification to Legal Team ---
-    const recipientEmailInternal = 'noticebazaar.legal@gmail.com';
+    const recipientEmailInternal = 'creatorarmour.legal@gmail.com';
     const subjectInternal = `🔥 HIGH PRIORITY LEAD: Legal Health Check from ${fullName} (${companyName || 'N/A'})`;
     
     const htmlContentInternal = `

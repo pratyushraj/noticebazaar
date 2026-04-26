@@ -19,7 +19,7 @@ We've implemented automatic origin detection that uses the current request origi
 3. Navigate to **Authentication** → **URL Configuration**
 4. Add the following to **Redirect URLs**:
    - `http://localhost:32100/**` (for local development)
-   - `https://noticebazaar.com/**` (for production)
+   - `https://creatorarmour.com/**` (for production)
    - `https://*.vercel.app/**` (if using Vercel)
    - Add any other domains where your app is hosted
 
@@ -27,7 +27,7 @@ We've implemented automatic origin detection that uses the current request origi
 
 1. Go to **Edge Functions** → **Secrets** in Supabase Dashboard
 2. Add/Update the `FRONTEND_URL` secret:
-   - For production: `https://noticebazaar.com`
+   - For production: `https://creatorarmour.com`
    - For local development: `http://localhost:32100` (optional, will auto-detect)
 
 **Note:** The Edge Function now automatically detects the request origin, so `FRONTEND_URL` is only used as a fallback.
@@ -57,8 +57,8 @@ No additional configuration needed on the client side.
    - Magic links will redirect to `http://localhost:32100`
 
 2. **Production**:
-   - Access app at `https://noticebazaar.com`
-   - Magic links will redirect to `https://noticebazaar.com`
+   - Access app at `https://creatorarmour.com`
+   - Magic links will redirect to `https://creatorarmour.com`
 
 3. **Mobile**:
    - Access app via its domain

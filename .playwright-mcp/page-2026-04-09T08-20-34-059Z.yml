@@ -14,7 +14,7 @@
               - generic [ref=e15]:
                 - img [ref=e17]
                 - generic [ref=e20]:
-                  - paragraph [ref=e21]: Install Creator Armour
+                  - paragraph [ref=e21]: Install CreatorArmour
                   - paragraph [ref=e22]: Add to home screen for faster access
               - button "Install" [ref=e23] [cursor=pointer]
             - generic [ref=e26]:
@@ -69,7 +69,7 @@
                 - generic [ref=e96]: "0"
               - generic [ref=e97]:
                 - img [ref=e99]
-                - generic [ref=e102]: Creator Armour protection active
+                - generic [ref=e102]: CreatorArmour protection active
             - generic [ref=e104]:
               - generic:
                 - img
@@ -108,4 +108,4 @@
             - button "Account" [ref=e153] [cursor=pointer]:
               - img [ref=e154]
               - generic [ref=e157]: Account
-      - generic [ref=e158]: © 2026 Creator Armour
+      - generic [ref=e158]: © 2026 CreatorArmour

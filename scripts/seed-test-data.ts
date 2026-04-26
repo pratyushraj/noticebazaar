@@ -1,7 +1,7 @@
 /**
  * Seed Script for Test Data
  * 
- * This script creates a test user account with sample data for testing the NoticeBazaar dashboard.
+ * This script creates a test user account with sample data for testing the CreatorArmour dashboard.
  * 
  * Usage:
  *   npx tsx scripts/seed-test-data.ts
@@ -37,7 +37,7 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY, {
 });
 
 // Test account credentials
-const TEST_EMAIL = 'test@noticebazaar.com';
+const TEST_EMAIL = 'test@creatorarmour.com';
 const TEST_PASSWORD = 'Test123!@#';
 const TEST_USER = {
   firstName: 'Test',
@@ -48,7 +48,7 @@ const TEST_USER = {
   gstin: '29ABCDE1234F1Z5',
   phone: '+919876543210',
   location: 'Mumbai, Maharashtra',
-  bio: 'Test creator account for NoticeBazaar dashboard testing',
+  bio: 'Test creator account for CreatorArmour dashboard testing',
 };
 
 // Sample brand deals data

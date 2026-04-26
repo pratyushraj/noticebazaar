@@ -50,7 +50,7 @@ This will:
 2. Select your project
 3. Go to **Settings** → **Networking**
 4. Click **Add Custom Domain**
-5. Enter: `api.noticebazaar.com`
+5. Enter: `api.creatorarmour.com`
 6. Railway will show you DNS records to add
 7. Add the CNAME record to your DNS provider
 8. Wait for DNS propagation (5-15 minutes)
@@ -58,7 +58,7 @@ This will:
 ## Step 6: Verify Deployment
 
 ```bash
-curl https://api.noticebazaar.com/health
+curl https://api.creatorarmour.com/health
 ```
 
 Should return:

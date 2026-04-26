@@ -1,4 +1,4 @@
-# NoticeBazaar iOS 17 UI Redesign - PR Summary
+# CreatorArmour iOS 17 UI Redesign - PR Summary
 
 ## 🎯 Overview
 

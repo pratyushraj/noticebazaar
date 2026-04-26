@@ -64,7 +64,7 @@ export async function sendBrandSigningReminderEmail(
   <p style="margin: 0; font-size: 14px; color: #6b7280;">
     If you have questions or need help, reply to this email or contact <a href="mailto:${SUPPORT_EMAIL}" style="color: #667eea;">${SUPPORT_EMAIL}</a>. We’re here to help before any issue becomes a dispute.
   </p>
-  <p style="margin: 24px 0 0; font-size: 12px; color: #9ca3af;">Creator Armour – Contracts and payments protected.</p>
+  <p style="margin: 24px 0 0; font-size: 12px; color: #9ca3af;">CreatorArmour – Contracts and payments protected.</p>
 </body>
 </html>`;
   return sendEmail(brandEmail, subject, html);
@@ -94,7 +94,7 @@ export async function sendDealPendingReminderToBrand(
   <p style="margin: 0; font-size: 14px; color: #6b7280;">
     Need help? Contact <a href="mailto:${SUPPORT_EMAIL}" style="color: #667eea;">${SUPPORT_EMAIL}</a> — we’re here before any issue becomes a dispute.
   </p>
-  <p style="margin: 24px 0 0; font-size: 12px; color: #9ca3af;">Creator Armour – Contracts and payments protected.</p>
+  <p style="margin: 24px 0 0; font-size: 12px; color: #9ca3af;">CreatorArmour – Contracts and payments protected.</p>
 </body>
 </html>`;
   return sendEmail(brandEmail, subject, html);
@@ -123,7 +123,7 @@ export async function sendDealPendingReminderToCreator(
   <p style="margin: 0; font-size: 14px; color: #6b7280;">
     Need help? Contact <a href="mailto:${SUPPORT_EMAIL}" style="color: #667eea;">${SUPPORT_EMAIL}</a> — we’re here before any issue becomes a dispute.
   </p>
-  <p style="margin: 24px 0 0; font-size: 12px; color: #9ca3af;">Creator Armour – Contracts and payments protected.</p>
+  <p style="margin: 24px 0 0; font-size: 12px; color: #9ca3af;">CreatorArmour – Contracts and payments protected.</p>
 </body>
 </html>`;
   return sendEmail(creatorEmail, subject, html);

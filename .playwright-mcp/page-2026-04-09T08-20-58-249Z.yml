@@ -71,4 +71,4 @@
               - button "Send First Offer" [ref=e100] [cursor=pointer]:
                 - img
                 - text: Send First Offer
-      - generic [ref=e101]: © 2026 Creator Armour
+      - generic [ref=e101]: © 2026 CreatorArmour

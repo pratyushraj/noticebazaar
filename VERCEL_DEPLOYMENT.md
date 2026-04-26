@@ -1,4 +1,4 @@
-# 🚀 Vercel Deployment Guide for NoticeBazaar
+# 🚀 Vercel Deployment Guide for CreatorArmour
 
 This guide will help you deploy both the frontend and backend to Vercel.
 
@@ -50,7 +50,7 @@ vercel --prod
 ```
 VITE_SUPABASE_URL=https://ooaxtwmqrvfzdqzoijcj.supabase.co
 VITE_SUPABASE_ANON_KEY=YOUR_SUPABASE_ANON_KEY
-VITE_API_BASE_URL=https://noticebazaar-api.onrender.com
+VITE_API_BASE_URL=https://creatorarmour-api.onrender.com
 NODE_ENV=production
 ```
 
@@ -61,7 +61,7 @@ NODE_ENV=production
 
 1. Vercel Dashboard → Project → **Settings** → **Domains**
 2. Click **Add Domain**
-3. Enter your domain (e.g., `noticebazaar.com`)
+3. Enter your domain (e.g., `creatorarmour.com`)
 4. Follow DNS setup instructions
 
 ---

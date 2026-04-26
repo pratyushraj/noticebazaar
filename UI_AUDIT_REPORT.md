@@ -1,4 +1,4 @@
-# NoticeBazaar UI Audit Report
+# CreatorArmour UI Audit Report
 ## Comprehensive iOS 17 Style Review & Fix Plan
 
 **Date:** 2025-11-26  

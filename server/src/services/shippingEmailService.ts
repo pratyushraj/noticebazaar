@@ -205,7 +205,7 @@ export async function sendCreatorDeliveryConfirmedEmail(
         </p>
         
         <p style="margin: 0 0 24px 0; font-size: 15px; color: #4a5568; line-height: 1.6;">
-          Please ensure all content is submitted through the Creator Armour dashboard before the deadline to maintain your standing and protection.
+          Please ensure all content is submitted through the CreatorArmour dashboard before the deadline to maintain your standing and protection.
         </p>
         
         ${getPrimaryCTA('View Timeline & Deliverables', `${process.env.FRONTEND_URL || 'https://creatorarmour.com'}/creator-contracts/${dealId}`)}

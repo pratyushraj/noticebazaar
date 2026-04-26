@@ -36,11 +36,11 @@ const toNumber = (value: any) => {
   return Number.isFinite(n) ? n : undefined;
 };
 
-const DEMO_BRAND_EMAIL = getArg('brand-email') || 'brand-demo@noticebazaar.com';
+const DEMO_BRAND_EMAIL = getArg('brand-email') || 'brand-demo@creatorarmour.com';
 const TARGET_CREATOR_EMAIL = getArg('to') || 'notice2@yopmail.com';
 const OFFER_AMOUNT = toNumber(getArg('amount')) ?? 1200;
 const DEADLINE_DAYS = toNumber(getArg('deadline-days')) ?? 10;
-const PUSH_API_BASE_URL = (process.env.PUSH_API_BASE_URL || process.env.API_BASE_URL || 'https://noticebazaar-api.onrender.com').replace(/\/$/, '');
+const PUSH_API_BASE_URL = (process.env.PUSH_API_BASE_URL || process.env.API_BASE_URL || 'https://creatorarmour-api.onrender.com').replace(/\/$/, '');
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY, {
   auth: { autoRefreshToken: false, persistSession: false },

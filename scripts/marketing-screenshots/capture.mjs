@@ -1,6 +1,6 @@
 /**
  * Marketing Screenshot Capture Script
- * Automatically navigates the Creator Armour web app and captures marketing-ready screenshots
+ * Automatically navigates the CreatorArmour web app and captures marketing-ready screenshots
  *
  * Usage:
  *   node scripts/marketing-screenshots/capture.mjs
@@ -138,7 +138,7 @@ async function captureBrandDiscovery(page, viewports) {
 // ─── Main ─────────────────────────────────────────────────────────────────────
 
 export async function runCapture(authToken) {
-  console.log('🎬 Creator Armour — Marketing Screenshot Capture');
+  console.log('🎬 CreatorArmour — Marketing Screenshot Capture');
   console.log('═'.repeat(50));
   console.log(`Base URL: ${baseUrl}`);
   console.log(`Output:   ${outputDir}/\n`);

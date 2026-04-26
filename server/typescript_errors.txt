@@ -512,7 +512,7 @@ src/routes/contractReadyTokens.ts(371,39): error TS2339: Property 'first_name' d
 src/routes/contractReadyTokens.ts(372,44): error TS2339: Property 'first_name' does not exist on type 'SelectQueryError<"column 'address' does not exist on 'profiles'.">'.
 src/routes/contractReadyTokens.ts(373,39): error TS2339: Property 'last_name' does not exist on type 'SelectQueryError<"column 'address' does not exist on 'profiles'.">'.
 src/routes/contractReadyTokens.ts(374,44): error TS2339: Property 'last_name' does not exist on type 'SelectQueryError<"column 'address' does not exist on 'profiles'.">'.
-src/routes/contractReadyTokens.ts(473,41): error TS2345: Argument of type 'import("/Users/pratyushraj/Documents/noticebazaar/server/src/services/contractSigningService").SignatureRecord' is not assignable to parameter of type 'import("/Users/pratyushraj/Documents/noticebazaar/server/src/routes/contractSignedEmailService").SignatureRecord'.
+src/routes/contractReadyTokens.ts(473,41): error TS2345: Argument of type 'import("/Users/pratyushraj/Documents/creatorarmour/server/src/services/contractSigningService").SignatureRecord' is not assignable to parameter of type 'import("/Users/pratyushraj/Documents/creatorarmour/server/src/routes/contractSignedEmailService").SignatureRecord'.
   Property 'signed_at' is optional in type 'SignatureRecord' but required in type 'SignatureRecord'.
 src/routes/contractReadyTokens.ts(552,15): error TS2769: No overload matches this call.
   Overload 1 of 2, '(relation: "profiles" | "brands" | "contracts" | "organizations" | "brand_deals" | "brand_reply_tokens" | "conversations" | "legal_notices" | "deal_details_tokens" | "cases" | "categories" | ... 53 more ... | "influencers"): PostgrestQueryBuilder<...>', gave the following error.

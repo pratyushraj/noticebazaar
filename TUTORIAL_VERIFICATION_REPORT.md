@@ -85,7 +85,7 @@
 ### **Step 9: Success** ✅
 - Position: Center
 - Celebration: Confetti animation
-- Action: "Start Using NoticeBazaar"
+- Action: "Start Using CreatorArmour"
 
 ---
 

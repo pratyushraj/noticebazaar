@@ -18,7 +18,7 @@ async function fetchJSON(endpoint) {
 }
 
 async function check() {
-  const brandEmail = 'brand-demo@noticebazaar.com';
+  const brandEmail = 'brand-demo@creatorarmour.com';
   
   console.log('--- collab_requests ---');
   const reqs = await fetchJSON(`collab_requests?brand_email=eq.${brandEmail}&select=*&limit=1`);

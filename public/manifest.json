@@ -1,5 +1,5 @@
 {
-  "name": "Creator Armour",
+  "name": "CreatorArmour",
   "short_name": "CreatorArmour",
   "description": "Close brand deals without Instagram DMs. Share a creator collab link, list packages, and receive structured brand offers.",
   "start_url": "/",
@@ -21,5 +21,15 @@
       "purpose": "any maskable"
     }
   ],
-  "categories": ["business", "productivity", "finance"]
+  "categories": ["business", "productivity", "finance"],
+  "service_worker": {
+    "src": "/sw.js",
+    "scope": "/",
+    "type": "classic"
+  },
+  "serviceworker": {
+    "src": "/sw.js",
+    "scope": "/",
+    "type": "classic"
+  }
 }

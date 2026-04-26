@@ -1,7 +1,7 @@
 {
   "name": "creatorarmour-server",
   "version": "1.0.0",
-  "description": "Creator Armour Backend API Server",
+  "description": "CreatorArmour Backend API Server",
   "type": "module",
   "main": "dist/index.js",
   "scripts": {

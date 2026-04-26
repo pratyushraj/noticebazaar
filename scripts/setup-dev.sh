@@ -1,9 +1,9 @@
 #!/bin/bash
-# NoticeBazaar Development Setup Script
+# CreatorArmour Development Setup Script
 
 set -e
 
-echo "🚀 Setting up NoticeBazaar Development Environment..."
+echo "🚀 Setting up CreatorArmour Development Environment..."
 echo ""
 
 # Check Node.js

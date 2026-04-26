@@ -123,7 +123,7 @@ export async function sendCreatorProductShippedEmail(
       ${trackingBlock}
     </div>
     <p style="color: #6b7280; font-size: 14px;">
-      When you receive the product, confirm in your Creator Armour dashboard so your deliverables timeline can start.
+      When you receive the product, confirm in your CreatorArmour dashboard so your deliverables timeline can start.
     </p>
   `;
 

@@ -475,7 +475,7 @@ function DealDetailPageContent() {
         });
       } catch (e) {
         console.warn('Local API failed, trying production...', e);
-        resp = await fetch(`https://noticebazaar-api.onrender.com/api/otp/send-creator`, {
+        resp = await fetch(`https://creatorarmour-api.onrender.com/api/otp/send-creator`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -536,7 +536,7 @@ function DealDetailPageContent() {
         });
       } catch (e) {
         console.warn('Local API failed, trying production...', e);
-        resp = await fetch(`https://noticebazaar-api.onrender.com/api/otp/verify-creator`, {
+        resp = await fetch(`https://creatorarmour-api.onrender.com/api/otp/verify-creator`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -589,9 +589,9 @@ function DealDetailPageContent() {
       let apiBaseUrl =
         import.meta.env.VITE_API_BASE_URL ||
         (typeof window !== 'undefined' && window.location.origin.includes('creatorarmour.com')
-          ? 'https://api.noticebazaar.com'
+          ? 'https://api.creatorarmour.com'
           : typeof window !== 'undefined' && window.location.origin.includes('creatorarmour.com')
-            ? 'https://api.noticebazaar.com'
+            ? 'https://api.creatorarmour.com'
             : getApiBaseUrl());
 
       // If localhost, try it first, then fallback to production
@@ -621,17 +621,17 @@ function DealDetailPageContent() {
             } else {
               // If localhost returns an error, try production API
               console.warn('[DealDetailPage] Localhost API returned error, trying production API...');
-              apiBaseUrl = 'https://noticebazaar-api.onrender.com';
+              apiBaseUrl = 'https://creatorarmour-api.onrender.com';
             }
           } else {
             // If localhost returns non-ok status, try production API
             console.warn('[DealDetailPage] Localhost API unavailable (status:', resp.status, '), trying production API...');
-            apiBaseUrl = 'https://noticebazaar-api.onrender.com';
+            apiBaseUrl = 'https://creatorarmour-api.onrender.com';
           }
         } catch (localhostError) {
           console.warn('[DealDetailPage] Localhost API unavailable, trying production API...');
           // Fallback to production API
-          apiBaseUrl = 'https://noticebazaar-api.onrender.com';
+          apiBaseUrl = 'https://creatorarmour-api.onrender.com';
         }
       }
 
@@ -1471,7 +1471,7 @@ function DealDetailPageContent() {
       setIsCancellingUnpaidDeal(true);
       const apiBaseUrl = import.meta.env.VITE_API_BASE_URL ||
         (typeof window !== 'undefined' && window.location.origin.includes('creatorarmour.com')
-          ? 'https://api.noticebazaar.com'
+          ? 'https://api.creatorarmour.com'
           : getApiBaseUrl());
 
       const response = await fetch(`${apiBaseUrl}/api/deals/${deal.id}/cancel-unpaid`, {
@@ -1653,9 +1653,9 @@ function DealDetailPageContent() {
           let apiBaseUrl =
             import.meta.env.VITE_API_BASE_URL ||
             (typeof window !== 'undefined' && window.location.origin.includes('creatorarmour.com')
-              ? 'https://api.noticebazaar.com'
+              ? 'https://api.creatorarmour.com'
               : typeof window !== 'undefined' && window.location.origin.includes('creatorarmour.com')
-                ? 'https://api.noticebazaar.com'
+                ? 'https://api.creatorarmour.com'
                 : getApiBaseUrl());
 
           const downloadUrl = `${apiBaseUrl}/api/protection/contracts/${deal.id}/download-docx`;
@@ -1737,8 +1737,8 @@ function DealDetailPageContent() {
           import.meta.env.VITE_API_BASE_URL ||
           (typeof window !== 'undefined' &&
             window.location.origin.includes('creatorarmour.com')
-            ? 'https://api.noticebazaar.com'
-            : 'https://noticebazaar-api.onrender.com');
+            ? 'https://api.creatorarmour.com'
+            : 'https://creatorarmour-api.onrender.com');
 
         const formData = new FormData();
         formData.append('file', file);
@@ -2003,7 +2003,7 @@ Best regards`;
             apiBaseUrl.includes('localhost')
           ) {
             console.warn('[DealDetailPage] Localhost API unavailable, trying production API...');
-            apiBaseUrl = 'https://noticebazaar-api.onrender.com';
+            apiBaseUrl = 'https://creatorarmour-api.onrender.com';
             response = await fetch(`${apiBaseUrl}/api/deal-details-tokens/deal/${deal.id}`, {
               headers: {
                 Authorization: `Bearer ${session.access_token}`,
@@ -2518,7 +2518,7 @@ Best regards`;
                 try {
                   const apiBaseUrl = import.meta.env.VITE_API_BASE_URL ||
                     (typeof window !== 'undefined' && window.location.origin.includes('creatorarmour.com')
-                      ? 'https://api.noticebazaar.com'
+                      ? 'https://api.creatorarmour.com'
                       : getApiBaseUrl());
 
                   const verifyResponse = await fetch(`${apiBaseUrl}/api/brand-response/${deal.id}`, {
@@ -2613,7 +2613,7 @@ ${link}`;
                   try {
                     const apiBaseUrl = import.meta.env.VITE_API_BASE_URL ||
                       (typeof window !== 'undefined' && window.location.origin.includes('creatorarmour.com')
-                        ? 'https://api.noticebazaar.com'
+                        ? 'https://api.creatorarmour.com'
                         : getApiBaseUrl());
 
                     await fetch(`${apiBaseUrl}/api/deals/log-reminder`, {
@@ -2816,7 +2816,7 @@ ${link}`;
                       <div className="text-sm font-medium text-info mb-2">Brand's Message:</div>
                       <div className="text-foreground/90 whitespace-pre-wrap">{responseMessage}</div>
                       <p className="text-xs text-foreground/50 mt-1 italic">
-                        This response was submitted via your secure Creator Armour link and is saved for records.
+                        This response was submitted via your secure CreatorArmour link and is saved for records.
                       </p>
                     </div>
                   )}
@@ -3205,7 +3205,7 @@ ${link}`;
                         <div className="bg-card border border-border rounded-xl p-3 mb-2 flex items-center justify-between group cursor-help"
                           onClick={() => {
                             triggerHaptic(HapticPatterns.success);
-                            toast.info("Audit Record CA-" + deal?.id?.slice(0, 8).toUpperCase() + " verified by Creator Armour ledger.", {
+                            toast.info("Audit Record CA-" + deal?.id?.slice(0, 8).toUpperCase() + " verified by CreatorArmour ledger.", {
                               description: "All signatures and timestamps are cryptographically hashed."
                             });
                           }}
@@ -3262,7 +3262,7 @@ ${link}`;
 
                         <div className="pt-2 border-t border-border/5 mt-2">
                           <p className="text-[10px] text-foreground/30 text-center uppercase tracking-tight font-medium">
-                            Actions on Creator Armour are recorded, timestamped, and legally enforceable.
+                            Actions on CreatorArmour are recorded, timestamped, and legally enforceable.
                           </p>
                         </div>
                       </>
@@ -4772,7 +4772,7 @@ ${link}`;
 
           <div className="flex items-center gap-2 text-[11px] text-neutral-400 border-t border-border px-6 py-4">
             <Lock className="w-3.5 h-3.5" />
-            <span>Secure Enterprise-grade E-signature powered by Creator Armour Armor</span>
+            <span>Secure Enterprise-grade E-signature powered by CreatorArmour Armor</span>
           </div>
         </DialogContent>
       </Dialog>

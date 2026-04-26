@@ -21,13 +21,13 @@ cloudflared tunnel --url http://localhost:3001 2>&1 | while IFS= read -r line; d
       echo ""
       echo "📋 Next steps:"
       echo "1. Copy this URL: $TUNNEL_URL"
-      echo "2. On noticebazaar.com, open browser console (F12)"
+      echo "2. On creatorarmour.com, open browser console (F12)"
       echo "3. Run: localStorage.setItem('tunnelUrl', '$TUNNEL_URL');"
       echo "4. Run: localStorage.setItem('useLocalApi', 'true');"
       echo "5. Refresh the page and test!"
       echo ""
       echo "Or use this URL directly:"
-      echo "https://noticebazaar.com/upload?localApi=true&tunnelUrl=$TUNNEL_URL"
+      echo "https://creatorarmour.com/upload?localApi=true&tunnelUrl=$TUNNEL_URL"
       echo ""
     fi
   fi

@@ -1,7 +1,7 @@
 # Mobile Native UI/UX Refactor Summary
 
 ## Overview
-Complete refactor of the NoticeBazaar mobile UI/UX to feel like a native Android/iOS app with premium interactions, animations, and performance optimizations.
+Complete refactor of the CreatorArmour mobile UI/UX to feel like a native Android/iOS app with premium interactions, animations, and performance optimizations.
 
 ## ✅ Completed Enhancements
 

@@ -22,7 +22,7 @@ async function fetchJSON(endpoint, options = {}) {
 }
 
 async function fix() {
-  const brandEmail = 'brand-demo@noticebazaar.com';
+  const brandEmail = 'brand-demo@creatorarmour.com';
   const brandId = '1507ee4e-21e2-40a7-859f-de85f6a9f177';
   
   console.log('Updating collab_requests...');

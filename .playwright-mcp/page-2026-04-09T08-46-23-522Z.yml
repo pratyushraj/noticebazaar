@@ -6,10 +6,10 @@
     - generic [ref=e7]:
       - navigation [ref=e8]:
         - generic [ref=e9]:
-          - link "Creator Armour" [ref=e10] [cursor=pointer]:
+          - link "CreatorArmour" [ref=e10] [cursor=pointer]:
             - /url: /
             - img [ref=e12]
-            - heading "Creator Armour" [level=1] [ref=e15]
+            - heading "CreatorArmour" [level=1] [ref=e15]
           - generic [ref=e16]:
             - link "How it Works" [ref=e17] [cursor=pointer]:
               - /url: "#how-it-works"
@@ -33,7 +33,7 @@
             - heading "Close Brand Deals Without Instagram DMs" [level=1] [ref=e33]:
               - text: Close Brand Deals
               - generic [ref=e34]: Without Instagram DMs
-            - paragraph [ref=e35]: Creator Armour gives creators a professional collaboration page where brands send structured offers, choose packages, and close deals without messy messages.
+            - paragraph [ref=e35]: CreatorArmour gives creators a professional collaboration page where brands send structured offers, choose packages, and close deals without messy messages.
             - generic [ref=e36]:
               - link "I'm a Creator" [ref=e37] [cursor=pointer]:
                 - /url: /signup?mode=creator
@@ -222,7 +222,7 @@
               - img [ref=e253]
               - generic [ref=e256]: Your Collab Link
             - heading "Add your link to your Instagram bio." [level=2] [ref=e257]
-            - paragraph [ref=e258]: Stop losing deals in the noise. Let brands send structured collaboration offers directly through your personal Creator Armour page.
+            - paragraph [ref=e258]: Stop losing deals in the noise. Let brands send structured collaboration offers directly through your personal CreatorArmour page.
             - paragraph [ref=e260]: creatorarmour.com/priyasharma
           - generic [ref=e263]:
             - generic [ref=e265]:
@@ -326,19 +326,19 @@
         - generic [ref=e370]:
           - generic [ref=e371]:
             - generic [ref=e372]:
-              - link "Creator Armour" [ref=e373] [cursor=pointer]:
+              - link "CreatorArmour" [ref=e373] [cursor=pointer]:
                 - /url: /
                 - img [ref=e375]
-                - heading "Creator Armour" [level=3] [ref=e378]
+                - heading "CreatorArmour" [level=3] [ref=e378]
               - paragraph [ref=e379]: Close brand deals without Instagram DMs.
               - generic [ref=e380]:
-                - link "Creator Armour Instagram" [ref=e381] [cursor=pointer]:
+                - link "CreatorArmour Instagram" [ref=e381] [cursor=pointer]:
                   - /url: https://instagram.com/creatorarmour
                   - img [ref=e382]
-                - link "Creator Armour X" [ref=e385] [cursor=pointer]:
+                - link "CreatorArmour X" [ref=e385] [cursor=pointer]:
                   - /url: https://x.com/creatorarmour
                   - img [ref=e386]
-                - link "Creator Armour LinkedIn" [ref=e388] [cursor=pointer]:
+                - link "CreatorArmour LinkedIn" [ref=e388] [cursor=pointer]:
                   - /url: https://www.linkedin.com/company/creatorarmour
                   - img [ref=e389]
             - generic [ref=e393]:
@@ -385,9 +385,9 @@
                     - /url: /privacy-policy
                   - link "Terms" [ref=e421] [cursor=pointer]:
                     - /url: /terms-of-service
-          - paragraph [ref=e423]: 50+ creators already using Creator Armour to collaborate professionally with brands.
+          - paragraph [ref=e423]: 50+ creators already using CreatorArmour to collaborate professionally with brands.
           - generic [ref=e424]:
-            - paragraph [ref=e425]: © 2026 Creator Armour
+            - paragraph [ref=e425]: © 2026 CreatorArmour
             - paragraph [ref=e426]: Made for creators
             - generic [ref=e427]:
               - link "Privacy" [ref=e428] [cursor=pointer]:

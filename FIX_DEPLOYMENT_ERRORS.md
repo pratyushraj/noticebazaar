@@ -52,11 +52,11 @@ if (origin.includes('netlify.app')) {
 
 1. **Go to Render Dashboard:**
    - Visit: https://dashboard.render.com
-   - Select `noticebazaar-api` service
+   - Select `creatorarmour-api` service
 
 2. **Add Environment Variable:**
    ```
-   FRONTEND_URL=https://noticebazaar-frontend.onrender.com
+   FRONTEND_URL=https://creatorarmour-frontend.onrender.com
    ```
    (Or your actual frontend URL)
 
@@ -90,10 +90,10 @@ if (origin.includes('netlify.app')) {
 
 Test API from browser console:
 ```javascript
-fetch('https://noticebazaar-api.onrender.com/health', {
+fetch('https://creatorarmour-api.onrender.com/health', {
   method: 'GET',
   headers: {
-    'Origin': 'https://noticebazaar-frontend.onrender.com'
+    'Origin': 'https://creatorarmour-frontend.onrender.com'
   }
 })
 .then(r => r.json())

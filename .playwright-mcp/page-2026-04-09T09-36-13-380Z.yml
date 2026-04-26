@@ -44,7 +44,7 @@
                 - generic [ref=e104]: "0"
               - generic [ref=e105]:
                 - img [ref=e107]
-                - generic [ref=e110]: Creator Armour protection active
+                - generic [ref=e110]: CreatorArmour protection active
             - generic [ref=e112]:
               - heading "No offers yet 👀" [level=2] [ref=e113]
               - paragraph [ref=e114]: Start by sharing your link
@@ -79,4 +79,4 @@
             - button "Profile" [ref=e157] [cursor=pointer]:
               - img [ref=e158]
               - generic [ref=e161]: Profile
-      - generic [ref=e162]: © 2026 Creator Armour
+      - generic [ref=e162]: © 2026 CreatorArmour

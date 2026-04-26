@@ -6,7 +6,7 @@
 - [x] Uses `paddingTop: 'max(16px, env(safe-area-inset-top, 0px))'`
 - [x] Sticky positioning with `top-0`
 - [x] Minimum height of 64px for touch targets
-- [x] "NoticeBazaar" text visible on all devices
+- [x] "CreatorArmour" text visible on all devices
 - [x] Hamburger menu accessible
 
 ### 2. Hero Section
@@ -43,7 +43,7 @@
 1. Open Safari on iPhone
 2. Navigate to the site
 3. **Verify:**
-   - "NoticeBazaar" header text is fully visible (not hidden behind notch)
+   - "CreatorArmour" header text is fully visible (not hidden behind notch)
    - Hamburger menu (☰) is accessible and not cut off
    - Hero section "Protect Your Content" text is fully visible
    - No horizontal scrolling

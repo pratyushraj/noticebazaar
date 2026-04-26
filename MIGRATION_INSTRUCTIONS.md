@@ -8,7 +8,7 @@
 
 1. **Go to your Supabase Dashboard:**
    - Navigate to: https://supabase.com/dashboard
-   - Select your NoticeBazaar project
+   - Select your CreatorArmour project
 
 2. **Open SQL Editor:**
    - Click on "SQL Editor" in the left sidebar

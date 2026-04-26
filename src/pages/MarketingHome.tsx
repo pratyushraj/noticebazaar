@@ -115,7 +115,7 @@ const caseStudies = [
     audience: '150K followers',
     result: '₹4.8 lakh recovered',
     timeline: 'Paid within 14 days',
-    summary: 'A delayed brand payout had been stuck for 3 months. Creator Armour helped formalize the trail and push legal notice action.',
+    summary: 'A delayed brand payout had been stuck for 3 months. CreatorArmour helped formalize the trail and push legal notice action.',
   },
   {
     creator: 'Aryan K.',
@@ -446,7 +446,7 @@ const MarketingHome = () => {
         <div className="container mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <span className="font-bold text-lg text-foreground uppercase font-black tracking-tighter">
-              Creator Armour
+              CreatorArmour
             </span>
           </div>
 
@@ -504,7 +504,7 @@ const MarketingHome = () => {
               Stop losing money to vague brand deals.
             </h1>
             <p className="mt-5 text-muted-foreground max-w-2xl text-lg md:text-xl">
-              Creator Armour gives you a professional workflow for contracts, payout tracking, proof collection, and escalation so a deal does not fall apart the moment a brand goes silent.
+              CreatorArmour gives you a professional workflow for contracts, payout tracking, proof collection, and escalation so a deal does not fall apart the moment a brand goes silent.
             </p>
 
             <ul className="mt-6 space-y-3 max-w-2xl">
@@ -576,7 +576,7 @@ const MarketingHome = () => {
                 <div className="grid sm:grid-cols-[0.95fr_1.05fr] gap-4">
                   <img
                     src="/mobile_team_and_cases.png"
-                    alt="Creator Armour creator dashboard on mobile"
+                    alt="CreatorArmour creator dashboard on mobile"
                     className="rounded-[1.75rem] shadow-[0_40px_120px_rgba(2,6,23,0.55)] w-full h-full object-cover border border-border"
                     loading="lazy"
                     data-aos="zoom-in"
@@ -610,7 +610,7 @@ const MarketingHome = () => {
             <div className="max-w-3xl">
               <p className="section-kicker">How it works</p>
               <h2 className="mt-3 text-3xl md:text-4xl font-bold text-foreground">A cleaner path from incoming brief to paid deal.</h2>
-              <p className="mt-3 text-lg text-muted-foreground">This is the workflow Creator Armour is built for: collect the right facts early, protect the contract, and keep a usable proof trail if payment slips.</p>
+              <p className="mt-3 text-lg text-muted-foreground">This is the workflow CreatorArmour is built for: collect the right facts early, protect the contract, and keep a usable proof trail if payment slips.</p>
             </div>
             <div className="mt-8 grid gap-4 lg:grid-cols-3">
               {processSteps.map(({ step, title, description, icon: Icon }) => (
@@ -636,7 +636,7 @@ const MarketingHome = () => {
           <div className="text-center mb-12">
             <p className="section-kicker justify-center">Why creators use it</p>
             <h2 className="text-3xl md:text-4xl font-bold mt-3">Everything you need to stay protected</h2>
-            <p className="text-gray-400 mt-3 max-w-2xl mx-auto text-lg">Creator Armour is strongest when used before the fight starts: clean briefs, clear contracts, proof trails, and escalation when payment slips.</p>
+            <p className="text-gray-400 mt-3 max-w-2xl mx-auto text-lg">CreatorArmour is strongest when used before the fight starts: clean briefs, clear contracts, proof trails, and escalation when payment slips.</p>
           </div>
           <div className="grid lg:grid-cols-[1.1fr_0.9fr] gap-6 items-stretch">
             <Link to="/pricing-comparison" id="for-creators" className="card p-8 rounded-[1.5rem] shadow-lg border border-info/30 hover:border-info/50 transition-all duration-300 hover:scale-[1.01] flex flex-col justify-between">
@@ -688,7 +688,7 @@ const MarketingHome = () => {
               />
             </div>
             <div className="space-y-6">
-              <h2 className="text-4xl font-extrabold leading-tight">What creators manage inside Creator Armour</h2>
+              <h2 className="text-4xl font-extrabold leading-tight">What creators manage inside CreatorArmour</h2>
               <p className="text-gray-300 text-lg">
                 Monitor deals, recover payments, and take legal action when brands don't pay. Every tool is built for Indian creators.
               </p>
@@ -780,7 +780,7 @@ const MarketingHome = () => {
             </div>
           </div>
           <div className="text-center mt-8">
-            <h3 className="text-2xl font-bold text-green-400">Creator Armour solutions:</h3>
+            <h3 className="text-2xl font-bold text-green-400">CreatorArmour solutions:</h3>
             <p className="text-gray-300 mt-2 text-lg">We turn your legal headaches into peace of mind.</p>
           </div>
         </section>
@@ -792,13 +792,13 @@ const MarketingHome = () => {
               <div className="max-w-3xl">
                 <p className="section-kicker">Why this beats DMs</p>
                 <h2 className="mt-3 text-3xl md:text-4xl font-bold text-foreground">Instagram DMs are where deals start. They should not be where they stay.</h2>
-                <p className="mt-3 text-lg text-muted-foreground">Creator Armour works best when it replaces vague chat-based deal management with clearer terms, better proof, and a recovery-ready workflow.</p>
+                <p className="mt-3 text-lg text-muted-foreground">CreatorArmour works best when it replaces vague chat-based deal management with clearer terms, better proof, and a recovery-ready workflow.</p>
               </div>
               <div className="mt-8 overflow-hidden rounded-[1.5rem] border border-border">
                 <div className="grid grid-cols-[0.85fr_1fr_1fr] bg-secondary/[0.04] text-sm font-bold text-foreground">
                   <div className="p-4">What matters</div>
                   <div className="border-l border-border p-4 text-muted-foreground">Instagram DMs</div>
-                  <div className="border-l border-border p-4 text-info">Creator Armour</div>
+                  <div className="border-l border-border p-4 text-info">CreatorArmour</div>
                 </div>
                 {comparisonRows.map((row, index) => (
                   <div key={row.label} className={cn("grid grid-cols-[0.85fr_1fr_1fr]", index !== comparisonRows.length - 1 && "border-t border-border")}>
@@ -907,7 +907,7 @@ const MarketingHome = () => {
             <div className="space-y-6">
               <h2 className="text-4xl font-extrabold leading-tight">Your WhatsApp is Now a <span className="gradient-text">Legal Evidence Vault</span></h2>
               <p className="text-gray-300 text-lg">
-                Forward any message, image, or document to your dedicated Creator Armour WhatsApp number. It's automatically saved, timestamped, and ready as evidence for any dispute.
+                Forward any message, image, or document to your dedicated CreatorArmour WhatsApp number. It's automatically saved, timestamped, and ready as evidence for any dispute.
               </p>
               <ul className="space-y-3">
                 <ListItem Icon={Check}>Auto-save all communications.</ListItem>
@@ -916,7 +916,7 @@ const MarketingHome = () => {
                 <ListItem Icon={Check}>Accessible by your legal team.</ListItem>
               </ul>
               <div className="mt-6">
-                <a href="https://wa.me/919205376316?text=Hi%20Creator Armour,%20I%20want%20to%20know%20more%20about%20the%20WhatsApp%20Legal%20Vault" target="_blank" rel="noopener" className="bg-green-500/95 hover:bg-green-600 px-5 py-3 rounded-lg text-lg font-semibold inline-flex items-center gap-2">
+                <a href="https://wa.me/919205376316?text=Hi%20CreatorArmour,%20I%20want%20to%20know%20more%20about%20the%20WhatsApp%20Legal%20Vault" target="_blank" rel="noopener" className="bg-green-500/95 hover:bg-green-600 px-5 py-3 rounded-lg text-lg font-semibold inline-flex items-center gap-2">
                   <MessageSquare className="h-5 w-5" /> Learn More on WhatsApp
                 </a>
               </div>
@@ -939,7 +939,7 @@ const MarketingHome = () => {
             <div className="max-w-3xl">
               <p className="section-kicker">Who this is built with</p>
               <h2 className="mt-3 text-3xl font-bold text-foreground">Software handles the workflow. Real specialists support the hard parts.</h2>
-              <p className="mt-3 text-lg text-muted-foreground">Creator Armour is not positioned as generic creator SaaS. The trust model is a product workflow backed by legal and compliance specialists when the situation needs real judgment.</p>
+              <p className="mt-3 text-lg text-muted-foreground">CreatorArmour is not positioned as generic creator SaaS. The trust model is a product workflow backed by legal and compliance specialists when the situation needs real judgment.</p>
             </div>
             <div className="mt-8 grid gap-4 md:grid-cols-3">
               {trustPeople.map((person) => (
@@ -975,7 +975,7 @@ const MarketingHome = () => {
               <AlertTriangle className="h-4 w-4 mr-2" /> Legal Disclaimer
             </p>
             <p className="text-xs leading-relaxed">
-              Creator Armour is a technology platform providing administrative and legal support services. We are not a law firm and do not provide direct legal representation. Legal advice is provided solely by the independent professionals in our network. Use of this platform does not create an attorney-client relationship.
+              CreatorArmour is a technology platform providing administrative and legal support services. We are not a law firm and do not provide direct legal representation. Legal advice is provided solely by the independent professionals in our network. Use of this platform does not create an attorney-client relationship.
             </p>
           </div>
 
@@ -984,7 +984,7 @@ const MarketingHome = () => {
 
             {/* Column 1 & 2 (Span 2 on desktop): Company Info & Newsletter */}
             <div className="md:col-span-2 space-y-6">
-              <div className="font-bold text-foreground text-xl">Creator Armour</div>
+              <div className="font-bold text-foreground text-xl">CreatorArmour</div>
               <p className="text-gray-500 text-sm max-w-xs">
                 India's first subscription-based legal and CA team for content creators and influencers. Expert contract review, payment recovery, and tax compliance.
               </p>
@@ -1080,7 +1080,7 @@ const MarketingHome = () => {
 
           {/* Copyright */}
           <div className="mt-8 text-gray-500 text-center border-t border-border/5 pt-4">
-            © 2025 Creator Armour. All rights reserved.
+            © 2025 CreatorArmour. All rights reserved.
           </div>
         </div>
       </footer>
@@ -1096,7 +1096,7 @@ const MarketingHome = () => {
       </div>
 
       {/* Floating WhatsApp CTA (bottom-right) */}
-      <a href="https://wa.me/919205376316?text=Hi%20Creator Armour,%20I%20need%20help" target="_blank" rel="noopener" className="fixed bottom-6 right-6 bg-green-500 p-3 rounded-full shadow-xl z-50 hidden md:flex items-center gap-2 transition-all duration-300 hover:scale-105">
+      <a href="https://wa.me/919205376316?text=Hi%20CreatorArmour,%20I%20need%20help" target="_blank" rel="noopener" className="fixed bottom-6 right-6 bg-green-500 p-3 rounded-full shadow-xl z-50 hidden md:flex items-center gap-2 transition-all duration-300 hover:scale-105">
         <MessageSquare className="h-6 w-6 text-foreground" />
         <span className="text-foreground font-semibold hidden sm:inline">Chat on WhatsApp Now</span>
       </a>

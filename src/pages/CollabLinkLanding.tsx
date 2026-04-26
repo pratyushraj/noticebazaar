@@ -1670,7 +1670,7 @@ const CollabLinkLanding = () => {
       const fallbackApiBaseUrl = /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/i.test(
         primaryApiBaseUrl
       )
-        ? 'https://noticebazaar-api.onrender.com'
+        ? 'https://creatorarmour-api.onrender.com'
         : null
       const candidateApiBaseUrls = [primaryApiBaseUrl, fallbackApiBaseUrl].filter(
         (value, index, all): value is string => Boolean(value) && all.indexOf(value) === index
@@ -2377,7 +2377,7 @@ const CollabLinkLanding = () => {
     username
   )
   const creatorHandle = normalizedHandle ? `@${normalizedHandle}` : ''
-  const metaTitle = `${creatorName}${creatorHandle ? ` (${creatorHandle})` : ''} Collab Link | Creator Armour`
+  const metaTitle = `${creatorName}${creatorHandle ? ` (${creatorHandle})` : ''} Collab Link | CreatorArmour`
   // const platformNames = platforms.map(p => p.name).join(', ');
   const followerCount = creator.platforms.reduce((sum, p) => sum + (p.followers || 0), 0)
   const trustStats = creator.trust_stats
@@ -2439,7 +2439,7 @@ const CollabLinkLanding = () => {
       ? `${followerCount >= 1000 ? `${(followerCount / 1000).toFixed(1)}K` : followerCount} followers`
       : ''
   const metaDescription =
-    `Book ${creatorName}${creatorHandle ? ` (${creatorHandle})` : ''}${creator.category ? `, ${creator.category} creator` : ''}${followerText ? ` • ${followerText}` : ''}. Share paid, barter, or hybrid briefs with contract-first protection via Creator Armour.`.substring(
+    `Book ${creatorName}${creatorHandle ? ` (${creatorHandle})` : ''}${creator.category ? `, ${creator.category} creator` : ''}${followerText ? ` • ${followerText}` : ''}. Share paid, barter, or hybrid briefs with contract-first protection via CreatorArmour.`.substring(
       0,
       158
     )
@@ -2598,7 +2598,7 @@ const CollabLinkLanding = () => {
     creator.collab_engagement_confidence_note?.trim() || 'Above-average engagement for creator size'
   const recentActivityNoteRaw =
     creator.past_brand_count === 0
-      ? 'New Creator on Creator Armour'
+      ? 'New Creator on CreatorArmour'
       : creator.collab_recent_activity_note?.trim() || 'Posting consistently'
   const recentActivityNote = withNeutralPrefix(recentActivityNoteRaw, 'Currently ')
   const campaignSlotNoteRaw =
@@ -2807,7 +2807,7 @@ const CollabLinkLanding = () => {
         {
           '@type': 'Organization',
           '@id': orgId,
-          name: 'Creator Armour',
+          name: 'CreatorArmour',
           alternateName: 'CreatorArmour',
           url: 'https://creatorarmour.com',
           logo: 'https://creatorarmour.com/logo.png',
@@ -2863,7 +2863,7 @@ const CollabLinkLanding = () => {
     return (
       <>
         <SEOHead
-          title={`Offer Sent to ${creatorName} | Creator Armour`}
+          title={`Offer Sent to ${creatorName} | CreatorArmour`}
           description={`Your offer for ${creatorName} has been sent. The creator has been notified and can now accept, counter, or decline.`}
           keywords={['creator offer sent', creatorName, creatorHandle].filter(Boolean)}
           image={pageImage}
@@ -2907,7 +2907,7 @@ const CollabLinkLanding = () => {
                   <p className="mt-2 text-lg font-black capitalize text-slate-900">
                     {successType || collabType}
                   </p>
-                  <p className="text-sm text-slate-500">Shared through Creator Armour</p>
+                  <p className="text-sm text-slate-500">Shared through CreatorArmour</p>
                 </div>
                 <div className="rounded-3xl border border-slate-200 bg-slate-50 p-4">
                   <p className="text-[11px] font-black uppercase tracking-[0.22em] text-slate-400">
@@ -3018,7 +3018,7 @@ const CollabLinkLanding = () => {
 
       <BreadcrumbSchema
         items={[
-          { name: 'Creator Armour', url: 'https://creatorarmour.com' },
+          { name: 'CreatorArmour', url: 'https://creatorarmour.com' },
           { name: creatorHandle || creatorName, url: canonicalUrl },
         ]}
       />
@@ -3328,7 +3328,7 @@ const CollabLinkLanding = () => {
                         <ShieldCheck className="w-4 h-4 text-emerald-500" />
                       </div>
                       <span className="text-[10px] font-black uppercase tracking-[0.25em] text-slate-400">
-                        Secured by Creator Armour
+                        Secured by CreatorArmour
                       </span>
                     </div>
                     <p className="text-[11px] font-bold text-slate-400 max-w-[280px] mx-auto leading-relaxed">
@@ -4807,7 +4807,7 @@ const CollabLinkLanding = () => {
               <p className="text-center text-[10px] font-semibold text-slate-500 mt-1.5">
                 {showSubmittingTrust
                   ? 'Your offer is being processed securely'
-                  : '50+ brands have collaborated through Creator Armour'}
+                  : '50+ brands have collaborated through CreatorArmour'}
               </p>
               {showSubmittingTrust && (
                 <div className="mt-2 space-y-1.5 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2">

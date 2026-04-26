@@ -94,8 +94,8 @@ const Careers = () => {
   return (
     <div className="container mx-auto px-6 py-12 nb-screen-height bg-background">
       <SEOHead
-        title="Careers at Creator Armour — Join the Team"
-        description="Join Creator Armour and help build the future of creator-brand collaborations in India. Open positions in engineering, design, and growth."
+        title="Careers at CreatorArmour — Join the Team"
+        description="Join CreatorArmour and help build the future of creator-brand collaborations in India. Open positions in engineering, design, and growth."
         canonicalUrl="https://creatorarmour.com/careers"
       />
       <Button variant="outline" asChild className="mb-8 text-primary border-border hover:bg-accent hover:text-foreground">

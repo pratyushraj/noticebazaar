@@ -6,7 +6,7 @@ Based on your Render dashboard, here's how to enable SPA routing for clean URLs.
 
 ### Step 1: Go to Redirects/Rewrites
 
-1. In your Render dashboard for `noticebazaar-frontend`
+1. In your Render dashboard for `creatorarmour-frontend`
 2. Click **"Settings"** (already selected)
 3. Under **"MANAGE"** section in the left sidebar
 4. Click **"Redirects/Rewrites"**
@@ -75,7 +75,7 @@ If you don't see the option or it doesn't work:
 
 ## 📝 Current Status
 
-- ✅ Custom domains configured: `noticebazaar.com` and `www.noticebazaar.com`
+- ✅ Custom domains configured: `creatorarmour.com` and `www.creatorarmour.com`
 - ✅ Domain verified (green checkmark)
 - ⏳ Certificate pending (will auto-generate)
 - ⏳ Need to configure SPA routing in Redirects/Rewrites
@@ -91,5 +91,5 @@ If you don't see the option or it doesn't work:
 4. **Switch to BrowserRouter** in code
 5. **Push and test**
 
-Your custom domains are already set up! Once SPA routing is configured, you'll have clean URLs on `noticebazaar.com`.
+Your custom domains are already set up! Once SPA routing is configured, you'll have clean URLs on `creatorarmour.com`.
 

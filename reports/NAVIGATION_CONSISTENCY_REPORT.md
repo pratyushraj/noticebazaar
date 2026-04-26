@@ -7,7 +7,7 @@
 
 ## Overview
 
-This report tracks the consistency of navigation components across all NoticeBazaar pages, focusing on PremiumDrawer integration, headers, spacing, padding, z-index, and safe-area handling.
+This report tracks the consistency of navigation components across all CreatorArmour pages, focusing on PremiumDrawer integration, headers, spacing, padding, z-index, and safe-area handling.
 
 ---
 

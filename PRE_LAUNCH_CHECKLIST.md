@@ -1,4 +1,4 @@
-# Creator Armour — Pre-Launch Checklist
+# CreatorArmour — Pre-Launch Checklist
 
 ## ✅ Code: Already Done
 - Terms of Service: `/terms-of-service` ✅ linked in footer
@@ -10,7 +10,7 @@
 ## ⚠️ Configuration Needed (not code) — These block email sending
 
 ### 1. RESEND_API_KEY (Critical — no emails without this)
-**Where:** Render dashboard → noticebazaar-api service → Environment Variables
+**Where:** Render dashboard → creatorarmour-api service → Environment Variables
 **Value:** Your Resend API key from resend.com
 **Impact:** Transactional emails silently fail (no crash, just don't send)
 **Files affected:** All `*EmailService.ts` files in `api/server/services/`

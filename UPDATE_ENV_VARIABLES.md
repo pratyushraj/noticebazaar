@@ -2,7 +2,7 @@
 
 ## Quick Setup for Production API Subdomain
 
-After deploying the API to `api.noticebazaar.com`, update your frontend environment variables.
+After deploying the API to `api.creatorarmour.com`, update your frontend environment variables.
 
 ## 📝 Steps
 
@@ -12,7 +12,7 @@ After deploying the API to `api.noticebazaar.com`, update your frontend environm
 
 2. Add or update:
    ```
-   VITE_API_BASE_URL = https://api.noticebazaar.com
+   VITE_API_BASE_URL = https://api.creatorarmour.com
    ```
 
 3. Set for **Production** environment (and optionally Preview/Development)
@@ -40,7 +40,7 @@ Create `.env.production` file:
 
 ```env
 # Production - uses API subdomain
-VITE_API_BASE_URL=https://api.noticebazaar.com
+VITE_API_BASE_URL=https://api.creatorarmour.com
 
 # Your other variables...
 VITE_SUPABASE_URL=https://your-project.supabase.co
@@ -60,21 +60,21 @@ After updating environment variables:
 2. **Test contract upload** on production domain
 3. **Check browser console** - should see:
    ```
-   [ContractUploadFlow] Calling API: https://api.noticebazaar.com/api/protection/analyze
+   [ContractUploadFlow] Calling API: https://api.creatorarmour.com/api/protection/analyze
    ```
 
 ## 🔍 How It Works
 
 The frontend code automatically:
 - Uses `VITE_API_BASE_URL` if set
-- Falls back to `https://api.noticebazaar.com` if on production domain
+- Falls back to `https://api.creatorarmour.com` if on production domain
 - Falls back to `http://localhost:3001` for local development
 
 ## 📋 Environment Variable Priority
 
 1. `VITE_API_BASE_URL` (explicitly set)
 2. Auto-detect from `window.location.origin`:
-   - If `noticebazaar.com` → `https://api.noticebazaar.com`
+   - If `creatorarmour.com` → `https://api.creatorarmour.com`
    - Otherwise → `http://localhost:3001`
 
 ## 🐛 Troubleshooting
@@ -86,8 +86,8 @@ The frontend code automatically:
 - Check build logs to ensure variable is included
 
 ### CORS errors
-- Ensure API server CORS includes `https://noticebazaar.com`
-- Verify API is running on `api.noticebazaar.com`
+- Ensure API server CORS includes `https://creatorarmour.com`
+- Verify API is running on `api.creatorarmour.com`
 - Check browser console for exact error message
 
 ### Environment variable not working

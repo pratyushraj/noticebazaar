@@ -73,7 +73,7 @@ export default function BrandOnboarding() {
   }, [sessionLoading, profile, navigate]);
 
   useEffect(() => {
-    document.title = 'Set Up Your Brand | Creator Armour';
+    document.title = 'Set Up Your Brand | CreatorArmour';
   }, []);
 
   const handleLogoFile = (file: File) => {
@@ -170,7 +170,7 @@ export default function BrandOnboarding() {
       });
 
       await refetchProfile?.();
-      toast.success('You\'re all set! Welcome to Creator Armour.');
+      toast.success('You\'re all set! Welcome to CreatorArmour.');
       navigate('/brand-dashboard', { replace: true });
     } catch (err: any) {
       toast.error(err?.message || 'Something went wrong. Please try again.');
@@ -335,7 +335,7 @@ export default function BrandOnboarding() {
                       </div>
                       <div>
                         <p className="text-[15px] font-bold text-slate-900">{brandName || 'Your Brand'}</p>
-                        <p className="text-[12px] text-emerald-600 font-medium">{industry || 'Industry'} · Verified on Creator Armour</p>
+                        <p className="text-[12px] text-emerald-600 font-medium">{industry || 'Industry'} · Verified on CreatorArmour</p>
                       </div>
                     </div>
                   </div>

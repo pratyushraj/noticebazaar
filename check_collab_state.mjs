@@ -30,7 +30,7 @@ async function check() {
   console.log('notice104 user:', notice104?.id, notice104?.email);
 
   // Get brand-demo user
-  const demoBrand = (authData.users || []).find(u => u.email === 'brand-demo@noticebazaar.com');
+  const demoBrand = (authData.users || []).find(u => u.email === 'brand-demo@creatorarmour.com');
   console.log('demo brand user:', demoBrand?.id, demoBrand?.email);
 
   if (notice104) {
@@ -45,11 +45,11 @@ async function check() {
 
   if (demoBrand) {
     // Check collab_requests sent by demo brand
-    const reqs = await fetchJSON(`collab_requests?brand_email=eq.brand-demo@noticebazaar.com&select=id,status,creator_id,brand_name,created_at&order=created_at.desc`);
+    const reqs = await fetchJSON(`collab_requests?brand_email=eq.brand-demo@creatorarmour.com&select=id,status,creator_id,brand_name,created_at&order=created_at.desc`);
     console.log('\nCollab requests by demo brand:', JSON.stringify(reqs, null, 2));
 
     // Check brand_deals from demo brand
-    const deals = await fetchJSON(`brand_deals?brand_email=eq.brand-demo@noticebazaar.com&select=id,status,creator_id,deal_amount,created_at&order=created_at.desc`);
+    const deals = await fetchJSON(`brand_deals?brand_email=eq.brand-demo@creatorarmour.com&select=id,status,creator_id,deal_amount,created_at&order=created_at.desc`);
     console.log('\nBrand deals from demo brand:', JSON.stringify(deals, null, 2));
   }
 }

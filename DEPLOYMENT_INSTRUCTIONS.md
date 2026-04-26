@@ -31,7 +31,7 @@ vercel --prod --yes
 ```
 SUPABASE_URL = https://your-project.supabase.co
 SUPABASE_SERVICE_ROLE_KEY = your-service-role-key
-FRONTEND_URL = https://noticebazaar.com
+FRONTEND_URL = https://creatorarmour.com
 NODE_ENV = production
 ```
 
@@ -41,12 +41,12 @@ NODE_ENV = production
 
 1. In Vercel Dashboard → Your Project → **Settings** → **Domains**
 2. Click **Add Domain**
-3. Enter: `api.noticebazaar.com`
+3. Enter: `api.creatorarmour.com`
 4. Vercel will show you a DNS record (CNAME) to add
 
 ### Step 4: Configure DNS
 
-1. Go to your domain registrar (where you manage noticebazaar.com)
+1. Go to your domain registrar (where you manage creatorarmour.com)
 2. Add a CNAME record:
    ```
    Type: CNAME
@@ -61,7 +61,7 @@ NODE_ENV = production
 Once DNS propagates, test the API:
 
 ```bash
-curl https://api.noticebazaar.com/health
+curl https://api.creatorarmour.com/health
 ```
 
 Should return: `{"status":"ok","timestamp":"..."}`
@@ -70,11 +70,11 @@ Should return: `{"status":"ok","timestamp":"..."}`
 
 1. **Set Frontend Environment Variable:**
    - Go to Vercel Dashboard → Frontend Project → Settings → Environment Variables
-   - Add: `VITE_API_BASE_URL = https://api.noticebazaar.com`
+   - Add: `VITE_API_BASE_URL = https://api.creatorarmour.com`
    - Redeploy frontend
 
 2. **Test Contract Upload:**
-   - Open `https://noticebazaar.com`
+   - Open `https://creatorarmour.com`
    - Try uploading a contract
    - Check browser console for API calls
 
@@ -91,12 +91,12 @@ Should return: `{"status":"ok","timestamp":"..."}`
 ### DNS Not Resolving
 - Wait longer (can take up to 24 hours)
 - Verify CNAME record is correct
-- Use `nslookup api.noticebazaar.com` to check
+- Use `nslookup api.creatorarmour.com` to check
 
 ### API Not Responding
 - Check Vercel deployment logs
 - Verify environment variables
-- Test health endpoint: `curl https://api.noticebazaar.com/health`
+- Test health endpoint: `curl https://api.creatorarmour.com/health`
 
 ## 📝 Quick Deploy Command
 

@@ -29,7 +29,7 @@ async function sendCollabPushViaRender(params: {
   deliverables: string[];
   deadline?: string;
 }): Promise<void> {
-  const renderUrl = 'https://noticebazaar-api.onrender.com/api/push/notify-collab';
+  const renderUrl = 'https://creatorarmour-api.onrender.com/api/push/notify-collab';
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
   try {
     const resp = await fetch(renderUrl, {

@@ -17,7 +17,7 @@ export default function CreatorLinkReady() {
   const hasAutoCopiedLinkRef = useRef(false);
 
   useEffect(() => {
-    document.title = "Share Your Collab Link | Creator Armour";
+    document.title = "Share Your Collab Link | CreatorArmour";
   }, []);
 
   // Guard: must be signed in creator.

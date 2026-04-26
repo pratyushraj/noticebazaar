@@ -1,4 +1,4 @@
-# Running NoticeBazaar Locally
+# Running CreatorArmour Locally
 
 ## 🚀 Quick Start
 

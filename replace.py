@@ -13,9 +13,9 @@ def process_directory(directory):
             original_content = content
             
             # Replace case variations
-            content = content.replace("NoticeBazaar", "Creator Armour")
-            content = content.replace("Noticebazaar", "Creator Armour")
-            content = content.replace("noticebazaar", "creatorarmour")
+            content = content.replace("CreatorArmour", "CreatorArmour")
+            content = content.replace("CreatorArmour", "CreatorArmour")
+            content = content.replace("creatorarmour", "creatorarmour")
             content = content.replace("NOTICEBAZAAR", "CREATOR ARMOUR")
             
             if content != original_content:
@@ -23,5 +23,5 @@ def process_directory(directory):
                     f.write(content)
                 print(f"Updated {filepath}")
 
-process_directory('/Users/pratyushraj/Documents/noticebazaar/src')
-process_directory('/Users/pratyushraj/Documents/noticebazaar/server')
+process_directory('/Users/pratyushraj/Documents/creatorarmour/src')
+process_directory('/Users/pratyushraj/Documents/creatorarmour/server')

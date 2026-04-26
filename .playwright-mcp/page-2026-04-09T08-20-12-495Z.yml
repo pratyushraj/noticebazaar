@@ -29,4 +29,4 @@
               - button "Active (0)" [ref=e99] [cursor=pointer]
               - button "All (0)" [ref=e100] [cursor=pointer]
             - img [ref=e102]
-      - generic [ref=e104]: © 2026 Creator Armour
+      - generic [ref=e104]: © 2026 CreatorArmour

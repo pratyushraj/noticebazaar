@@ -78,7 +78,7 @@ export async function sendEmailOTP(
             </ul>
             <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
               <p style="color: #9ca3af; font-size: 11px; margin: 0; text-transform: uppercase; letter-spacing: 0.5px; line-height: 1.4;">
-                Actions on Creator Armour are recorded, timestamped, and legally enforceable.
+                Actions on CreatorArmour are recorded, timestamped, and legally enforceable.
               </p>
               <p style="color: #9ca3af; font-size: 11px; margin: 8px 0 0 0;">
                 This is an automated email from CreatorArmour. Please do not reply to this email.

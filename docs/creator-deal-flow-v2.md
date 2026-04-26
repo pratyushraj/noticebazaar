@@ -1,5 +1,5 @@
 # Creator Deal Flow — Redesign Spec v2
-## Creator Armour
+## CreatorArmour
 
 ---
 

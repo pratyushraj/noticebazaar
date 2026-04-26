@@ -62,7 +62,7 @@
                 - generic [ref=e97]: "0"
               - generic [ref=e98]:
                 - img [ref=e100]
-                - generic [ref=e103]: Creator Armour protection active
+                - generic [ref=e103]: CreatorArmour protection active
             - generic [ref=e104]:
               - generic [ref=e108]:
                 - generic [ref=e109]:
@@ -139,4 +139,4 @@
             - button "Profile" [ref=e215] [cursor=pointer]:
               - img [ref=e216]
               - generic [ref=e219]: Profile
-      - generic [ref=e220]: © 2026 Creator Armour
+      - generic [ref=e220]: © 2026 CreatorArmour

@@ -148,7 +148,7 @@ const AddToHomeScreen: React.FC = () => {
               
               <div className="min-w-0 flex-1">
                 <p className="text-emerald-400 font-black text-[10px] uppercase tracking-[0.2em] mb-0.5">Premium Experience</p>
-                <h3 className="text-white font-black italic text-[16px] leading-tight">Creator Armour App</h3>
+                <h3 className="text-white font-black italic text-[16px] leading-tight">CreatorArmour App</h3>
                 <p className="text-white/40 text-[11px] font-bold leading-tight mt-1 truncate">
                   {isAndroid ? 'Install for 2x faster deal alerts' : 'Add to home screen for native workflow'}
                 </p>

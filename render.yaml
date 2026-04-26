@@ -1,7 +1,7 @@
 services:
   # API Backend Service
   - type: web
-    name: noticebazaar-api
+    name: creatorarmour-api
     env: node
     plan: free
     rootDir: server

@@ -666,7 +666,7 @@ const CollabRequestBriefPage = () => {
                 )}
                 <div className="flex items-center gap-2">
                   <span className="text-foreground/30">✉️</span>
-                  <span className="text-foreground/50 truncate">{request.brand_email ?? 'Contact via Creator Armour'}</span>
+                  <span className="text-foreground/50 truncate">{request.brand_email ?? 'Contact via CreatorArmour'}</span>
                 </div>
                 {brandInstagramHandle && (
                   <div className="flex items-center gap-2">

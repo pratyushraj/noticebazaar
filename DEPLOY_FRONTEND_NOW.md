@@ -11,7 +11,7 @@ Since your API is already working, let's deploy the frontend separately as a Sta
 
 1. **Go to Render Dashboard:**
    - Visit: https://dashboard.render.com
-   - You should see your existing `noticebazaar-api` service
+   - You should see your existing `creatorarmour-api` service
 
 2. **Create New Static Site:**
    - Click **"New +"** button (top right)
@@ -19,13 +19,13 @@ Since your API is already working, let's deploy the frontend separately as a Sta
 
 3. **Connect Repository:**
    - Click **"Connect GitHub"** (if not already connected)
-   - Select repository: `noticebazaar`
+   - Select repository: `creatorarmour`
    - Click **"Connect"**
 
 4. **Configure Static Site:**
    
    **Basic Settings:**
-   - **Name:** `noticebazaar-frontend`
+   - **Name:** `creatorarmour-frontend`
    - **Branch:** `main`
    - **Root Directory:** (leave empty - uses repo root)
    - **Build Command:** `corepack enable && corepack prepare pnpm@latest --activate && pnpm install && pnpm run build`
@@ -48,7 +48,7 @@ Since your API is already working, let's deploy the frontend separately as a Sta
    
    ```
    Key: VITE_API_BASE_URL
-   Value: https://noticebazaar-api.onrender.com
+   Value: https://creatorarmour-api.onrender.com
    ```
    
    ```
@@ -62,7 +62,7 @@ Since your API is already working, let's deploy the frontend separately as a Sta
      - Clone your repo
      - Install dependencies
      - Build your frontend
-     - Deploy to a URL like: `https://noticebazaar-frontend.onrender.com`
+     - Deploy to a URL like: `https://creatorarmour-frontend.onrender.com`
 
 ### 3. Wait for Build (2-5 minutes)
 
@@ -73,7 +73,7 @@ Since your API is already working, let's deploy the frontend separately as a Sta
 ### 4. Test Your Frontend
 
 ```bash
-curl https://noticebazaar-frontend.onrender.com
+curl https://creatorarmour-frontend.onrender.com
 ```
 
 Should return your HTML page.
@@ -81,14 +81,14 @@ Should return your HTML page.
 ### 5. Update Supabase Redirect URLs
 
 1. Go to Supabase Dashboard → Authentication → URL Configuration
-2. Add to **Site URL**: `https://noticebazaar-frontend.onrender.com`
+2. Add to **Site URL**: `https://creatorarmour-frontend.onrender.com`
 3. Add to **Redirect URLs**: 
-   - `https://noticebazaar-frontend.onrender.com/**`
-   - `https://noticebazaar-frontend.onrender.com/auth/callback`
+   - `https://creatorarmour-frontend.onrender.com/**`
+   - `https://creatorarmour-frontend.onrender.com/auth/callback`
 
 ### 6. Test Authentication
 
-1. Visit: `https://noticebazaar-frontend.onrender.com`
+1. Visit: `https://creatorarmour-frontend.onrender.com`
 2. Try signing in
 3. Verify it connects to your API
 
@@ -114,8 +114,8 @@ Should return your HTML page.
 
 ## What You'll Have
 
-✅ **API:** `https://noticebazaar-api.onrender.com` (already working)  
-✅ **Frontend:** `https://noticebazaar-frontend.onrender.com` (newly deployed)  
+✅ **API:** `https://creatorarmour-api.onrender.com` (already working)  
+✅ **Frontend:** `https://creatorarmour-frontend.onrender.com` (newly deployed)  
 ✅ **Both services auto-deploy on git push**  
 ✅ **Free tier for both**  
 

@@ -126,12 +126,12 @@ export const SuccessStep: React.FC<SuccessStepProps> = ({
 
         {/* Title */}
         <h1 className="text-3xl font-bold leading-tight mb-4 text-muted-foreground dark:text-foreground">
-          Your Creator Armour workspace is ready
+          Your CreatorArmour workspace is ready
         </h1>
 
         {/* Subtitle */}
         <p className="text-xl font-semibold text-muted-foreground dark:text-foreground/80 mb-6">
-          Welcome to Creator Armour, {userName}.
+          Welcome to CreatorArmour, {userName}.
         </p>
 
         {/* Share your collab link — prominent after onboarding */}

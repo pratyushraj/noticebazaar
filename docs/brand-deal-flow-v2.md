@@ -1,5 +1,5 @@
 # Brand Deal Flow — Redesign Spec v2
-## Creator Armour
+## CreatorArmour
 
 ---
 
@@ -25,7 +25,7 @@
 - Creator profile header (name, followers, niche badge)
 - Creator's collaboration packages (Pre-built service cards: Reel × 1, Story Pack × 3, etc.)
 - Each package shows: deliverable type, quantity, price, deadline
-- Trust badges: "Legally binding · Secure · Creator Armour protected"
+- Trust badges: "Legally binding · Secure · CreatorArmour protected"
 
 **Primary action:** Tap a package to select it
 
@@ -335,10 +335,10 @@
 **This step happens OFF-platform.**
 
 **What brand does:**
-- Pays creator via UPI / bank transfer / Google Pay — outside Creator Armour
+- Pays creator via UPI / bank transfer / Google Pay — outside CreatorArmour
 - No platform involvement in the actual money transfer
 
-**What brand sees on Creator Armour:**
+**What brand sees on CreatorArmour:**
 - Payment guidance card:
   - "Pay ₹[X] to [Creator Name]"
   - UPI: [creator's UPI] (tap to copy)
@@ -411,10 +411,10 @@
 
 **What creator sees:**
 - Deal marked as "Completed"
-- Creator Armour can prompt creator to "Share your work" on their profile
+- CreatorArmour can prompt creator to "Share your work" on their profile
 
 **Notifications sent:**
-- ✅ Both: "Deal completed! Thank you for using Creator Armour."
+- ✅ Both: "Deal completed! Thank you for using CreatorArmour."
 - Optional: "Share your collaboration" prompt (public link)
 
 **Post-completion:**

@@ -59,9 +59,9 @@ function isValidExternalUrl(url: string | undefined): boolean {
       'localhost',
       '127.0.0.1',
       '0.0.0.0',
-      'noticebazaar.com',
-      'noticebazaar.vercel.app',
-      'noticebazaar.netlify.app',
+      'creatorarmour.com',
+      'creatorarmour.vercel.app',
+      'creatorarmour.netlify.app',
       'supabase.co' // Block Supabase admin URLs
     ];
     const hostname = parsed.hostname.toLowerCase();

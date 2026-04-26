@@ -13,7 +13,7 @@
 
 ### Header Navigation ✅
 - [x] Tab moves to avatar button
-- [x] Tab moves to "NoticeBazaar" title
+- [x] Tab moves to "CreatorArmour" title
 - [x] Tab moves to AppsGridMenu button
 - [x] Tab moves to Refresh button
 - [x] Tab moves to Notification dropdown

@@ -2,7 +2,7 @@
 
 **Branch:** `ultra-polish/20251202/run-1`  
 **Status:** ✅ **COMPLETED** (Core + High-Impact Steps)  
-**PR Ready:** https://github.com/pratyushraj/noticebazaar/pull/new/ultra-polish/20251202/run-1
+**PR Ready:** https://github.com/pratyushraj/creatorarmour/pull/new/ultra-polish/20251202/run-1
 
 ---
 
@@ -139,7 +139,7 @@ git diff main..HEAD
 ## 🔗 PR Creation
 
 **Create PR:**
-https://github.com/pratyushraj/noticebazaar/pull/new/ultra-polish/20251202/run-1
+https://github.com/pratyushraj/creatorarmour/pull/new/ultra-polish/20251202/run-1
 
 **PR Description:**
 ```markdown

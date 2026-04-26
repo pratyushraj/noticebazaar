@@ -311,7 +311,7 @@ export async function generateEscrowReceipt(dealId: string): Promise<{ success: 
       doc.on('end', () => resolve(Buffer.concat(chunks)));
       
       // Branding
-      doc.fontSize(24).fillColor('#10b981').text('Creator Armour', 50, 50);
+      doc.fontSize(24).fillColor('#10b981').text('CreatorArmour', 50, 50);
       doc.fontSize(10).fillColor('#64748b').text('Official Payment Receipt', 50, 80);
       
       // Right side details
@@ -349,11 +349,11 @@ export async function generateEscrowReceipt(dealId: string): Promise<{ success: 
 
       // Security Note
       doc.rect(50, 500, 500, 80).stroke('#10b981');
-      doc.fontSize(10).fillColor('#166534').text('🛡️ Creator Armour Escrow Protection', 70, 520);
+      doc.fontSize(10).fillColor('#166534').text('🛡️ CreatorArmour Escrow Protection', 70, 520);
       doc.fontSize(9).fillColor('#15803d').text('This payment is securely held in our escrow account. Funds will only be released to the creator after you approve the delivered content or after the 72-hour review period expires.', 70, 540, { width: 460 });
 
       doc.fontSize(8).fillColor('#94a3b8').text('This is a computer-generated receipt and does not require a physical signature.', 50, 750, { align: 'center', width: 500 });
-      doc.text('Creator Armour by NoticeBazaar', 50, 765, { align: 'center', width: 500 });
+      doc.text('CreatorArmour by CreatorArmour', 50, 765, { align: 'center', width: 500 });
 
       doc.end();
     });

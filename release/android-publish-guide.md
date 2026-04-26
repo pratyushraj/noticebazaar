@@ -44,7 +44,7 @@ android {
     compileSdkVersion 34
     
     defaultConfig {
-        applicationId "com.noticebazaar.app"
+        applicationId "com.creatorarmour.app"
         minSdkVersion 24
         targetSdkVersion 34
         versionCode 1
@@ -58,7 +58,7 @@ android {
 ```xml
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <application
-        android:label="NoticeBazaar"
+        android:label="CreatorArmour"
         android:icon="@mipmap/ic_launcher"
         android:theme="@style/AppTheme">
         <activity
@@ -93,8 +93,8 @@ android {
 
 ```bash
 # Generate keystore (first time only)
-keytool -genkey -v -keystore noticebazaar-release.keystore \
-  -alias noticebazaar -keyalg RSA -keysize 2048 -validity 10000
+keytool -genkey -v -keystore creatorarmour-release.keystore \
+  -alias creatorarmour -keyalg RSA -keysize 2048 -validity 10000
 
 # Build release AAB
 cd android
@@ -139,12 +139,12 @@ cd android
 
 ### App Information
 
-- **App Name:** NoticeBazaar
+- **App Name:** CreatorArmour
 - **Short Description:** (80 characters max)
 - **Full Description:** (4000 characters max)
 - **App Category:** Business / Finance
 - **Content Rating:** Everyone
-- **Privacy Policy URL:** https://noticebazaar.com/privacy-policy
+- **Privacy Policy URL:** https://creatorarmour.com/privacy-policy
 
 ### Store Listing Details
 

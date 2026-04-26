@@ -1,11 +1,11 @@
 # 🚀 API Server Deployment Guide
 
-Deploy the Creator Armour API server to `api.noticebazaar.com` subdomain.
+Deploy the CreatorArmour API server to `api.creatorarmour.com` subdomain.
 
 ## 📋 Prerequisites
 
 1. Domain: `creatorarmour.com` (already configured)
-2. DNS access to add A/CNAME record for `api.noticebazaar.com`
+2. DNS access to add A/CNAME record for `api.creatorarmour.com`
 3. Environment variables ready (see below)
 
 ## 🔧 Environment Variables
@@ -45,7 +45,7 @@ STORAGE_BUCKET=creator-assets
 
 3. **Configure Domain:**
    - Go to Vercel Dashboard → Project → Settings → Domains
-   - Add `api.noticebazaar.com`
+   - Add `api.creatorarmour.com`
    - Add DNS record (Vercel will show you the exact record)
 
 4. **Set Environment Variables:**
@@ -55,7 +55,7 @@ STORAGE_BUCKET=creator-assets
 
 5. **Verify:**
    ```bash
-   curl https://api.noticebazaar.com/health
+   curl https://api.creatorarmour.com/health
    ```
 
 **Vercel Configuration:**
@@ -85,7 +85,7 @@ STORAGE_BUCKET=creator-assets
 
 3. **Configure Domain:**
    - Railway Dashboard → Project → Settings → Domains
-   - Add custom domain: `api.noticebazaar.com`
+   - Add custom domain: `api.creatorarmour.com`
    - Railway will provide DNS records to add
 
 4. **Set Environment Variables:**
@@ -94,7 +94,7 @@ STORAGE_BUCKET=creator-assets
 
 5. **Verify:**
    ```bash
-   curl https://api.noticebazaar.com/health
+   curl https://api.creatorarmour.com/health
    ```
 
 ---
@@ -119,12 +119,12 @@ STORAGE_BUCKET=creator-assets
 
 4. **Configure Custom Domain:**
    - Render Dashboard → Settings → Custom Domains
-   - Add `api.noticebazaar.com`
+   - Add `api.creatorarmour.com`
    - Render will provide DNS records
 
 5. **Verify:**
    ```bash
-   curl https://api.noticebazaar.com/health
+   curl https://api.creatorarmour.com/health
    ```
 
 ---
@@ -145,12 +145,12 @@ STORAGE_BUCKET=creator-assets
 
 3. **Add Domain:**
    - Settings → Domains → Add Domain
-   - Add `api.noticebazaar.com`
+   - Add `api.creatorarmour.com`
    - Add DNS A record pointing to provided IP
 
 4. **Verify:**
    ```bash
-   curl https://api.noticebazaar.com/health
+   curl https://api.creatorarmour.com/health
    ```
 
 ---
@@ -175,7 +175,7 @@ STORAGE_BUCKET=creator-assets
    
    ```ini
    [Unit]
-   Description=Creator Armour API Server
+   Description=CreatorArmour API Server
    After=network.target
 
    [Service]
@@ -204,7 +204,7 @@ STORAGE_BUCKET=creator-assets
    ```nginx
    server {
        listen 80;
-       server_name api.noticebazaar.com;
+       server_name api.creatorarmour.com;
 
        location / {
            proxy_pass http://localhost:3001;
@@ -222,7 +222,7 @@ STORAGE_BUCKET=creator-assets
 
 5. **Setup SSL (Let's Encrypt):**
    ```bash
-   sudo certbot --nginx -d api.noticebazaar.com
+   sudo certbot --nginx -d api.creatorarmour.com
    ```
 
 ---
@@ -255,13 +255,13 @@ After deployment, verify:
 
 1. **Health Check:**
    ```bash
-   curl https://api.noticebazaar.com/health
+   curl https://api.creatorarmour.com/health
    # Should return: {"status":"ok","timestamp":"..."}
    ```
 
 2. **API Endpoint:**
    ```bash
-   curl -X POST https://api.noticebazaar.com/api/protection/analyze \
+   curl -X POST https://api.creatorarmour.com/api/protection/analyze \
      -H "Content-Type: application/json" \
      -H "Authorization: Bearer YOUR_TOKEN" \
      -d '{"contract_url":"..."}'
@@ -270,7 +270,7 @@ After deployment, verify:
 3. **CORS Check:**
    - Open browser console on `creatorarmour.com`
    - Try uploading a contract
-   - Should connect to `api.noticebazaar.com` without CORS errors
+   - Should connect to `api.creatorarmour.com` without CORS errors
 
 ---
 
@@ -299,7 +299,7 @@ After deployment:
 
 1. Update frontend environment variable:
    ```env
-   VITE_API_BASE_URL=https://api.noticebazaar.com
+   VITE_API_BASE_URL=https://api.creatorarmour.com
    ```
 
 2. Rebuild and redeploy frontend

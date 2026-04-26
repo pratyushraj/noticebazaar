@@ -3,7 +3,7 @@
 ## Pre-Test Checklist
 
 1. **Verify Deployment:**
-   - Frontend URL: `https://noticebazaar-frontend.onrender.com`
+   - Frontend URL: `https://creatorarmour-frontend.onrender.com`
    - Check Render dashboard to ensure latest deployment is complete
    - Latest commit should include: "Fix: Keep OAuth hash until onAuthStateChange processes tokens"
 
@@ -18,7 +18,7 @@
 
 1. **Navigate to Login Page:**
    ```
-   https://noticebazaar.com/#/login
+   https://creatorarmour.com/#/login
    ```
 
 2. **Click "Sign in with Google"**
@@ -49,7 +49,7 @@
 
 1. **Navigate to Login Page:**
    ```
-   https://noticebazaar.com/#/login
+   https://creatorarmour.com/#/login
    ```
 
 2. **Click "Sign in with Google"**
@@ -65,7 +65,7 @@
 
 1. **Navigate to Login Page:**
    ```
-   https://noticebazaar.com/#/login
+   https://creatorarmour.com/#/login
    ```
 
 2. **Click "Sign in with GitHub"**

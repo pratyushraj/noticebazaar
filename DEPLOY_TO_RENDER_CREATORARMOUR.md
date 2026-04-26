@@ -1,6 +1,6 @@
 # 🚀 Deploy CreatorArmour to Render
 
-Quick deployment guide for CreatorArmour (rebranded from NoticeBazaar).
+Quick deployment guide for CreatorArmour (rebranded from CreatorArmour).
 
 ## ✅ Changes Pushed
 
@@ -17,7 +17,7 @@ All changes have been committed and pushed to GitHub:
 ### If you already have a service on Render:
 
 1. **Go to Render Dashboard:** https://dashboard.render.com
-2. **Find your API service** (likely named `noticebazaar-api`)
+2. **Find your API service** (likely named `creatorarmour-api`)
 3. **Click "Manual Deploy"** → **"Deploy latest commit"**
 4. **Verify environment variables** (see below)
 
@@ -25,9 +25,9 @@ All changes have been committed and pushed to GitHub:
 
 1. **Go to Render Dashboard:** https://dashboard.render.com
 2. **Click "New +"** → **"Web Service"**
-3. **Connect GitHub repository:** `noticebazaar`
+3. **Connect GitHub repository:** `creatorarmour`
 4. **Configure:**
-   - **Name:** `creatorarmour-api` (or keep `noticebazaar-api`)
+   - **Name:** `creatorarmour-api` (or keep `creatorarmour-api`)
    - **Region:** Choose closest to you
    - **Branch:** `main`
    - **Root Directory:** `server`
@@ -58,14 +58,14 @@ All changes have been committed and pushed to GitHub:
 
 ### If you already have a service on Render:
 
-1. **Find your frontend service** (likely `noticebazaar-frontend`)
+1. **Find your frontend service** (likely `creatorarmour-frontend`)
 2. **Click "Manual Deploy"** → **"Deploy latest commit"**
 3. **Update environment variables** (see below)
 
 ### If creating a new service:
 
 1. **Click "New +"** → **"Static Site"**
-2. **Connect GitHub repository:** `noticebazaar`
+2. **Connect GitHub repository:** `creatorarmour`
 3. **Configure:**
    - **Name:** `creatorarmour-frontend` (or keep existing name)
    - **Branch:** `main`

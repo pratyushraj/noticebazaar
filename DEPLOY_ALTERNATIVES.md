@@ -33,7 +33,7 @@ railway up
 
 ### Configure Domain:
 - Railway Dashboard → Project → Settings → Domains
-- Add custom domain: `api.noticebazaar.com`
+- Add custom domain: `api.creatorarmour.com`
 - Update DNS records as shown
 
 ### Environment Variables:
@@ -53,7 +53,7 @@ Add these in Railway Dashboard:
 5. Build command: `npm install && npm run build`
 6. Start command: `npm start`
 7. Add environment variables
-8. Configure custom domain: `api.noticebazaar.com`
+8. Configure custom domain: `api.creatorarmour.com`
 
 ## Option 5: Wait for Limit Reset
 - Vercel free tier limit resets after 24 hours

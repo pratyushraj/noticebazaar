@@ -652,7 +652,7 @@ router.post('/:token', async (req: Request, res: Response) => {
       }
 
       const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
-      fetch('https://noticebazaar-api.onrender.com/api/push/notify-generic', {
+      fetch('https://creatorarmour-api.onrender.com/api/push/notify-generic', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

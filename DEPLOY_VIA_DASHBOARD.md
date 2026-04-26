@@ -19,7 +19,7 @@ git push
    - Login if needed
 
 2. **Select Your Project:**
-   - Find "noticebazaar" project
+   - Find "creatorarmour" project
    - Click on it
 
 3. **Redeploy Latest:**
@@ -38,7 +38,7 @@ git push
 ```
 VITE_SUPABASE_URL=https://ooaxtwmqrvfzdqzoijcj.supabase.co
 VITE_SUPABASE_ANON_KEY=YOUR_SUPABASE_ANON_KEY
-VITE_API_BASE_URL=https://noticebazaar-api.onrender.com
+VITE_API_BASE_URL=https://creatorarmour-api.onrender.com
 NODE_ENV=production
 ```
 

@@ -41,9 +41,9 @@ npx cap sync ios
 
 ```xml
 <key>CFBundleDisplayName</key>
-<string>NoticeBazaar</string>
+<string>CreatorArmour</string>
 <key>CFBundleIdentifier</key>
-<string>com.noticebazaar.app</string>
+<string>com.creatorarmour.app</string>
 <key>CFBundleVersion</key>
 <string>1</string>
 <key>CFBundleShortVersionString</key>
@@ -131,19 +131,19 @@ npx cap sync ios
 1. Go to App Store Connect
 2. Create new app
 3. Fill in:
-   - **App Name:** NoticeBazaar
+   - **App Name:** CreatorArmour
    - **Primary Language:** English
-   - **Bundle ID:** com.noticebazaar.app
-   - **SKU:** noticebazaar-001
+   - **Bundle ID:** com.creatorarmour.app
+   - **SKU:** creatorarmour-001
 
 ### App Store Listing Details
 
 - **Subtitle:** (30 characters max)
 - **Description:** (4000 characters max)
 - **Keywords:** (100 characters max, comma-separated)
-- **Support URL:** https://noticebazaar.com/support
+- **Support URL:** https://creatorarmour.com/support
 - **Marketing URL:** (optional)
-- **Privacy Policy URL:** https://noticebazaar.com/privacy-policy
+- **Privacy Policy URL:** https://creatorarmour.com/privacy-policy
 - **Category:** Business / Finance
 - **Content Rights:** You own all content
 

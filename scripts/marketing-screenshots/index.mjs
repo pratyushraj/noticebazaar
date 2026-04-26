@@ -19,7 +19,7 @@ const outputDir = resolve(SCREENSHOT_CONFIG.outputDir);
 
 async function main() {
   console.log(`
-🎬 Creator Armour — Marketing Screenshots
+🎬 CreatorArmour — Marketing Screenshots
 ══════════════════════════════════════════
 `);
 

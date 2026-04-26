@@ -29,7 +29,7 @@ Make sure `SUPABASE_SERVICE_ROLE_KEY` is set correctly:
 2. **Click "Deploy" button** at the bottom to trigger deployment
 3. **Wait for build to complete** (check Deployments tab)
 4. **Test the API** using Railway's provided domain
-5. **Add custom domain** `api.noticebazaar.com` in Settings → Networking
+5. **Add custom domain** `api.creatorarmour.com` in Settings → Networking
 
 ## After Deployment
 

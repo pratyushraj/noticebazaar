@@ -143,6 +143,7 @@ export const DiscoveryCard: React.FC<DiscoveryCardProps> = ({
                         playsInline
                         autoPlay
                         preload="auto"
+                        fetchpriority="high"
                         onError={(e) => {
                             console.error("[DiscoveryCard] Video failed to load:", creator.discovery_video_url);
                             const video = e.currentTarget;
@@ -156,6 +157,7 @@ export const DiscoveryCard: React.FC<DiscoveryCardProps> = ({
                         src={safeAvatarSrc(creator.avatar_url) || `https://ui-avatars.com/api/?name=${creator.first_name}&background=0D1117&color=fff`} 
                         className="w-full h-full object-cover"
                         alt={creator.first_name}
+                        fetchpriority="high"
                     />
                 )}
 

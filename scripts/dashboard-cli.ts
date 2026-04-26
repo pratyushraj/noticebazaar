@@ -352,11 +352,11 @@ function usage() {
 Dashboard CLI
 
 Examples:
-  npm run dashboard:cli -- brand-summary --email brand-demo@noticebazaar.com --password 'BrandDemo123!@#'
-  npm run dashboard:cli -- brand-requests --email brand-demo@noticebazaar.com --password 'BrandDemo123!@#'
-  npm run dashboard:cli -- brand-deals --email brand-demo@noticebazaar.com --password 'BrandDemo123!@#'
-  npm run dashboard:cli -- brand-complete --email brand-demo@noticebazaar.com --password 'BrandDemo123!@#' --deal-id <deal-id>
-  npm run dashboard:cli -- brand-save-profile --email brand-demo@noticebazaar.com --password 'BrandDemo123!@#' --name "Demo Brand" --website https://brand.com --industry Fashion --location "Mumbai, India" --description "Creator-first campaigns"
+  npm run dashboard:cli -- brand-summary --email brand-demo@creatorarmour.com --password 'BrandDemo123!@#'
+  npm run dashboard:cli -- brand-requests --email brand-demo@creatorarmour.com --password 'BrandDemo123!@#'
+  npm run dashboard:cli -- brand-deals --email brand-demo@creatorarmour.com --password 'BrandDemo123!@#'
+  npm run dashboard:cli -- brand-complete --email brand-demo@creatorarmour.com --password 'BrandDemo123!@#' --deal-id <deal-id>
+  npm run dashboard:cli -- brand-save-profile --email brand-demo@creatorarmour.com --password 'BrandDemo123!@#' --name "Demo Brand" --website https://brand.com --industry Fashion --location "Mumbai, India" --description "Creator-first campaigns"
 
   npm run dashboard:cli -- creator-summary --email notice104@yopmail.com --password 'kickurass'
   npm run dashboard:cli -- creator-requests --email notice104@yopmail.com --password 'kickurass'

@@ -2,17 +2,17 @@
 
 ## Quick Demo Account
 
-**Email:** `demo@noticebazaar.com`  
+**Email:** `demo@creatorarmour.com`  
 **Password:** `Demo123!@#`
 
 ## Quick Brand Demo Account (Brand Dashboard)
 
-**Email:** `brand-demo@noticebazaar.com`  
+**Email:** `brand-demo@creatorarmour.com`  
 **Password:** `BrandDemo123!@#`
 
 ## Test Account (from seed script)
 
-**Email:** `test@noticebazaar.com`  
+**Email:** `test@creatorarmour.com`  
 **Password:** `Test123!@#`
 
 ## How to Create Demo User
@@ -51,7 +51,7 @@ npx tsx scripts/create-brand-demo-user.ts
 1. Go to **Supabase Dashboard** → **Authentication** → **Users**
 2. Click **"Add user"** → **"Create new user"**
 3. Fill in:
-   - **Email:** `demo@noticebazaar.com`
+   - **Email:** `demo@creatorarmour.com`
    - **Password:** `Demo123!@#`
    - **Auto Confirm User:** ✅ (checked)
 4. Click **"Create user"**
@@ -100,7 +100,7 @@ BEGIN
     gen_random_uuid(),
     'authenticated',
     'authenticated',
-    'demo@noticebazaar.com',
+    'demo@creatorarmour.com',
     crypt('Demo123!@#', gen_salt('bf')),
     NOW(),
     NOW(),
@@ -155,7 +155,7 @@ END $$;
 
 After creating the account, you can log in at:
 - **URL:** `/login`
-- **Email:** `demo@noticebazaar.com` (or `test@noticebazaar.com`)
+- **Email:** `demo@creatorarmour.com` (or `test@creatorarmour.com`)
 - **Password:** `Demo123!@#` (or `Test123!@#`)
 
 ## Troubleshooting

@@ -1,7 +1,7 @@
 # Fix Supabase OAuth Redirect URL
 
 ## Problem
-Supabase is redirecting to `https://noticebazaar.com/#/login` instead of `https://noticebazaar.com/#/creator-dashboard` after OAuth.
+Supabase is redirecting to `https://creatorarmour.com/#/login` instead of `https://creatorarmour.com/#/creator-dashboard` after OAuth.
 
 ## Solution: Update Supabase Dashboard Settings
 
@@ -12,17 +12,17 @@ Supabase is redirecting to `https://noticebazaar.com/#/login` instead of `https:
 ### Step 2: Update Site URL
 **Current (WRONG):**
 ```
-https://noticebazaar.com/#/login
+https://creatorarmour.com/#/login
 ```
 
 **Should be:**
 ```
-https://noticebazaar.com
+https://creatorarmour.com
 ```
 
 **OR:**
 ```
-https://noticebazaar.com/
+https://creatorarmour.com/
 ```
 
 ⚠️ **Important:** The Site URL should NOT include the hash route (`/#/login`). It should be just the domain.
@@ -31,10 +31,10 @@ https://noticebazaar.com/
 Add these URLs to the **Redirect URLs** list:
 
 ```
-https://noticebazaar.com/**
-https://noticebazaar.com/#/creator-dashboard
-https://noticebazaar.com/#/creator-onboarding
-https://noticebazaar.com/#/login
+https://creatorarmour.com/**
+https://creatorarmour.com/#/creator-dashboard
+https://creatorarmour.com/#/creator-onboarding
+https://creatorarmour.com/#/login
 http://localhost:8080/**
 http://localhost:8080/#/creator-dashboard
 ```
@@ -57,8 +57,8 @@ redirectTo: `${window.location.origin}/#/creator-dashboard`
 ```
 
 This should work IF:
-1. Site URL is set to `https://noticebazaar.com` (not `/#/login`)
-2. `https://noticebazaar.com/**` is in the Redirect URLs list
+1. Site URL is set to `https://creatorarmour.com` (not `/#/login`)
+2. `https://creatorarmour.com/**` is in the Redirect URLs list
 
 ## After Updating
 

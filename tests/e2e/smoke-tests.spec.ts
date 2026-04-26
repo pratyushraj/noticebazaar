@@ -1,7 +1,7 @@
 /**
  * Playwright Smoke Tests
  * 
- * Top 5 user actions for NoticeBazaar
+ * Top 5 user actions for CreatorArmour
  * Tests critical user flows for demo day
  */
 
@@ -9,7 +9,7 @@ import { test, expect } from '@playwright/test';
 
 const BASE_URL = process.env.PLAYWRIGHT_TEST_BASE_URL || 'http://localhost:8080';
 
-test.describe('NoticeBazaar Smoke Tests', () => {
+test.describe('CreatorArmour Smoke Tests', () => {
   test.beforeEach(async ({ page }) => {
     // Set mobile viewport for some tests
     await page.setViewportSize({ width: 390, height: 844 });
@@ -27,7 +27,7 @@ test.describe('NoticeBazaar Smoke Tests', () => {
     const submitButton = page.locator('button[type="submit"]').first();
     
     if (await emailInput.isVisible()) {
-      await emailInput.fill('demo@noticebazaar.com');
+      await emailInput.fill('demo@creatorarmour.com');
       await passwordInput.fill('demo123');
       await submitButton.click();
       

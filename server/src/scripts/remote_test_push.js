@@ -10,7 +10,7 @@ if (!process.env.VAPID_PUBLIC_KEY || !process.env.VAPID_PRIVATE_KEY) {
 
 const supabase = createClient(process.env.SUPABASE_URL || "https://ooaxtwmqrvfzdqzoijcj.supabase.co", process.env.SUPABASE_SERVICE_ROLE_KEY);
 async function run() {
-    const email = 'brand-demo@noticebazaar.com';
+    const email = 'brand-demo@creatorarmour.com';
     console.log('Sending test push to:', email);
     const { data: user } = await supabase.from('profiles').select('id').eq('email', email).maybeSingle();
     if (!user) {

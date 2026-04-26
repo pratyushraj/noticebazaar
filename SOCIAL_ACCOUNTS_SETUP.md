@@ -54,7 +54,7 @@ Add these to your Supabase project secrets (Settings > Edge Functions > Secrets)
 5. Get Client ID and Client Secret
 
 ### Frontend URL
-- `FRONTEND_URL` - Your frontend URL (e.g., `https://noticebazaar.com` or `http://localhost:32100`)
+- `FRONTEND_URL` - Your frontend URL (e.g., `https://creatorarmour.com` or `http://localhost:32100`)
 
 ## Database Migration
 

@@ -2,7 +2,7 @@
 # Overnight Audit Daemon for CreatorArmour
 # Runs audit every 30 minutes, logs everything
 
-AUDIT_SCRIPT="/home/node/noticebazaar/scripts/audit.cjs"
+AUDIT_SCRIPT="/home/node/creatorarmour/scripts/audit.cjs"
 LOG="/home/node/.openclaw/workspace/memory/audit-log.md"
 ITER=1
 

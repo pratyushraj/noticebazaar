@@ -4,7 +4,7 @@
 # Tests both local and deployed backend
 
 echo "=========================================="
-echo "Testing NoticeBazaar Backend API"
+echo "Testing CreatorArmour Backend API"
 echo "=========================================="
 echo ""
 
@@ -25,11 +25,11 @@ echo "----------------------------------------"
 echo ""
 
 # Test Deployed Backend
-echo "2. Testing DEPLOYED Backend (https://noticebazaar-api.onrender.com)..."
+echo "2. Testing DEPLOYED Backend (https://creatorarmour-api.onrender.com)..."
 echo "   (Note: Render free tier may take 30-60 seconds to wake up)"
 echo ""
 
-DEPLOYED_RESPONSE=$(curl -s -m 60 https://noticebazaar-api.onrender.com/health 2>&1)
+DEPLOYED_RESPONSE=$(curl -s -m 60 https://creatorarmour-api.onrender.com/health 2>&1)
 
 if [ $? -eq 0 ] && echo "$DEPLOYED_RESPONSE" | grep -q "status"; then
     echo "✅ Deployed backend is responding"

@@ -13,7 +13,7 @@ This guide will help you configure the optional Supabase settings to ensure redi
    - In the **Redirect URLs** section, click **Add URL**
    - Add each of the following (one at a time):
      - `http://localhost:32100/**` (for local development)
-     - `https://noticebazaar.com/**` (for production)
+     - `https://creatorarmour.com/**` (for production)
      - `https://*.vercel.app/**` (if using Vercel - allows any Vercel preview URL)
      - `https://*.netlify.app/**` (if using Netlify)
    - Click **Save** after adding each URL
@@ -28,7 +28,7 @@ This guide will help you configure the optional Supabase settings to ensure redi
 2. **Add FRONTEND_URL Secret**:
    - Click **Add Secret** or **New Secret**
    - **Name**: `FRONTEND_URL`
-   - **Value**: `https://noticebazaar.com` (or your production domain)
+   - **Value**: `https://creatorarmour.com` (or your production domain)
    - Click **Save**
 
 **Note**: This is optional since the code now auto-detects the origin, but it's good to have as a fallback.
@@ -37,7 +37,7 @@ This guide will help you configure the optional Supabase settings to ensure redi
 
 1. **Go to Authentication** → **URL Configuration**
 2. **Check Site URL**:
-   - The **Site URL** should be set to your production domain: `https://noticebazaar.com`
+   - The **Site URL** should be set to your production domain: `https://creatorarmour.com`
    - If not, update it to match your production domain
    - This is used as a fallback for redirects
 

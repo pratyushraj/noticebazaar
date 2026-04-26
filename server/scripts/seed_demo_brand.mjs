@@ -13,7 +13,7 @@ if (!SUPABASE_URL || !SERVICE_ROLE_KEY) {
   process.exit(1);
 }
 
-const DEMO_BRAND_EMAIL = 'brand-demo@noticebazaar.com';
+const DEMO_BRAND_EMAIL = 'brand-demo@creatorarmour.com';
 const DEFAULT_INDUSTRY = 'Consumer';
 
 const supabase = createClient(SUPABASE_URL, SERVICE_ROLE_KEY, {

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import type { MutableRefObject, ReactNode } from 'react';
+import type { MouseEvent, MutableRefObject, ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { AlertTriangle, Bell, Briefcase, Camera, Check, Clock, ChevronRight, CreditCard, FileText, Handshake, Landmark, LayoutDashboard, Loader2, Lock, Mail, Menu, Moon, MoreHorizontal, Plus, RefreshCw, Search, Send, Settings, Shield, ShieldCheck, Sparkles, Sun, User, Zap } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
@@ -641,6 +641,7 @@ const BrandMobileDashboard = ({
   const [budgetDraft, setBudgetDraft] = useState('');
   const [selectedOffer, setSelectedOffer] = useState<any | null>(null);
   const [selectedDealPage, setSelectedDealPage] = useState<any | null>(null);
+  const [overlayDeal, setOverlayDeal] = useState<any | null>(null);
   const [isMarkingComplete, setIsMarkingComplete] = useState(false);
   const [isGeneratingContract, setIsGeneratingContract] = useState(false);
   const [isOpeningContract, setIsOpeningContract] = useState(false);
@@ -660,6 +661,43 @@ const BrandMobileDashboard = ({
   const [showDisputeEscalationModal, setShowDisputeEscalationModal] = useState(false);
   const [showConfirmPaymentModal, setShowConfirmPaymentModal] = useState(false);
   const [showBrandShippingModal, setShowBrandShippingModal] = useState(false);
+
+  const handleBrandDealPrimaryAction = (
+    event: MouseEvent<HTMLButtonElement> | undefined,
+    item: BrandDeal | null | undefined,
+    ui: ReturnType<typeof brandDealCardUi> | null | undefined,
+  ) => {
+    event?.preventDefault();
+    event?.stopPropagation();
+
+    if (ui?.ctaDisabled) return;
+
+    triggerHaptic(HapticPatterns.light);
+
+    const action = ui?.ctaAction;
+
+    if (action === 'confirm_payment') {
+      setOverlayDeal(item);
+      setShowConfirmPaymentModal(true);
+      return;
+    }
+
+    if (action === 'escalate_dispute') {
+      setOverlayDeal(item);
+      setShowDisputeEscalationModal(true);
+      return;
+    }
+
+    if (action === 'provide_shipping_address') {
+      setOverlayDeal(item);
+      setShowBrandShippingModal(true);
+      return;
+    }
+
+    if (activeCollabTab === 'active') setSelectedDealPage(item);
+    else setSelectedOffer(item);
+  };
+
   const resolveDealProductImageUrl = (dealLike: any) =>
     String(
       dealLike?.barter_product_image_url ||
@@ -714,7 +752,11 @@ const BrandMobileDashboard = ({
       const updated = findDeal(selectedDealPage.id);
       if (updated && updated !== selectedDealPage) setSelectedDealPage(updated);
     }
-  }, [deals, selectedOffer?.id, selectedDealPage?.id]);
+    if (overlayDeal?.id) {
+      const updated = findDeal(overlayDeal.id);
+      if (updated && updated !== overlayDeal) setOverlayDeal(updated);
+    }
+  }, [deals, selectedOffer?.id, selectedDealPage?.id, overlayDeal?.id]);
 
 		  const brandName = useMemo(() => {
 		    const name = profile?.business_name || profile?.first_name || profile?.full_name || 'Brand';
@@ -3310,7 +3352,7 @@ const BrandMobileDashboard = ({
                   <ShieldCheck className="w-6 h-6 text-foreground" strokeWidth={2.5} />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className={cn('font-black text-[15px] leading-tight', isDark ? 'text-primary' : 'text-primary')}>Protected by Creator Armour</p>
+                  <p className={cn('font-black text-[15px] leading-tight', isDark ? 'text-primary' : 'text-primary')}>Protected by CreatorArmour</p>
                   <p className={cn('text-[12px] font-semibold mt-1', isDark ? 'text-primary/70' : 'text-primary/80')}>Contract + rights + dispute support</p>
                 </div>
               </div>
@@ -3605,7 +3647,7 @@ const BrandMobileDashboard = ({
 
               <div className="flex items-center gap-2 text-[11px] text-neutral-400 border-t border-border px-6 py-4">
                 <Lock className="w-3.5 h-3.5" />
-                <span>Secure OTP-based e-signature powered by Creator Armour</span>
+                <span>Secure OTP-based e-signature powered by CreatorArmour</span>
               </div>
               </motion.div>
             </div>
@@ -3617,6 +3659,8 @@ const BrandMobileDashboard = ({
   };
 
   const renderGlobalOverlays = () => {
+    const activeOverlayDeal = selectedDealPage || overlayDeal;
+
     return (
       <>
         <AnimatePresence>
@@ -3626,14 +3670,18 @@ const BrandMobileDashboard = ({
         {renderBrandSigningPortal()}
 
         {/* Dispute escalation modal */}
-        {showDisputeEscalationModal && selectedDealPage && (
+        {showDisputeEscalationModal && activeOverlayDeal && (
           <DisputeEscalationModal
-            dealId={String(selectedDealPage.id || '')}
-            brandName={selectedDealPage.brand_name || profile?.business_name || 'Creator'}
-            onClose={() => setShowDisputeEscalationModal(false)}
+            dealId={String(activeOverlayDeal.id || '')}
+            brandName={activeOverlayDeal.brand_name || profile?.business_name || 'Creator'}
+            onClose={() => {
+              setShowDisputeEscalationModal(false);
+              setOverlayDeal(null);
+            }}
             onSuccess={(_resolution: any, newStatus: string) => {
               setShowDisputeEscalationModal(false);
-              setSelectedDealPage((prev: any) => (prev?.id === selectedDealPage.id
+              setOverlayDeal(null);
+              setSelectedDealPage((prev: any) => (prev?.id === activeOverlayDeal.id
                 ? { ...prev, status: newStatus, updated_at: new Date().toISOString() }
                 : prev));
               onRefresh?.();
@@ -3642,30 +3690,30 @@ const BrandMobileDashboard = ({
         )}
 
         {/* Confirm payment pending modal */}
-        {showConfirmPaymentModal && selectedDealPage && (
+        {showConfirmPaymentModal && activeOverlayDeal && (
           <ConfirmPaymentPendingModal
-            dealId={String(selectedDealPage.id || '')}
-            dealAmount={Number(selectedDealPage.deal_amount || 0) || undefined}
-            creatorName={selectedDealPage.creator_name || selectedDealPage.creator_username || 'Creator'}
-            onClose={() => setShowConfirmPaymentModal(false)}
-            onSuccess={() => {
+            dealId={String(activeOverlayDeal.id || '')}
+            dealAmount={Number(activeOverlayDeal.deal_amount || 0) || undefined}
+            creatorName={activeOverlayDeal.creator_name || activeOverlayDeal.creator_username || 'Creator'}
+            onClose={() => {
               setShowConfirmPaymentModal(false);
-              setSelectedDealPage((prev: any) => (prev?.id === selectedDealPage.id
-                ? { ...prev, status: 'CONTENT_MAKING', updated_at: new Date().toISOString() }
-                : prev));
-              onRefresh?.();
+              setOverlayDeal(null);
             }}
           />
         )}
 
         {/* Brand shipping address modal */}
-        {showBrandShippingModal && selectedDealPage && (
+        {showBrandShippingModal && activeOverlayDeal && (
           <BrandShippingAddressModal
-            dealId={String(selectedDealPage.id || '')}
-            creatorName={selectedDealPage.creator_name || selectedDealPage.creator_username || 'Creator'}
-            onClose={() => setShowBrandShippingModal(false)}
+            dealId={String(activeOverlayDeal.id || '')}
+            creatorName={activeOverlayDeal.creator_name || activeOverlayDeal.creator_username || 'Creator'}
+            onClose={() => {
+              setShowBrandShippingModal(false);
+              setOverlayDeal(null);
+            }}
             onSuccess={() => {
               setShowBrandShippingModal(false);
+              setOverlayDeal(null);
               onRefresh?.();
             }}
           />
@@ -3907,7 +3955,7 @@ const BrandMobileDashboard = ({
                     }}
                     className={cn('w-10 h-10 rounded-2xl border overflow-hidden transition-all active:scale-95', borderColor, isDark ? 'bg-card' : 'bg-secondary/80 shadow-sm')}
                   >
-                    <img alt={brandName} src={brandLogo} loading="lazy" className="w-full h-full object-cover" />
+                    <img alt={brandName} src={brandLogo} loading="eager" fetchpriority="high" className="w-full h-full object-cover" />
                   </button>
                 </div>
               </div>
@@ -4477,36 +4525,12 @@ const BrandMobileDashboard = ({
 
 		                                      <button
 					                                type="button"
-					                                onClick={() => {
-					                                  triggerHaptic(HapticPatterns.light);
-                                            const action = (ui as any).ctaAction;
-                                            
-                                            if (action === 'confirm_payment') {
-                                              setSelectedDealPage(item);
-                                              setShowConfirmPaymentModal(true);
-                                              return;
-                                            }
-                                            
-                                            if (action === 'escalate_dispute') {
-                                              setSelectedDealPage(item);
-                                              setShowDisputeEscalationModal(true);
-                                              return;
-                                            }
-
-                                            if (action === 'provide_shipping_address') {
-                                              setSelectedDealPage(item);
-                                              setShowBrandShippingModal(true);
-                                              return;
-                                            }
-
-					                                  if (activeCollabTab === 'active') setSelectedDealPage(item);
-					                                  else setSelectedOffer(item);
-				                                }}
-				                                disabled={Boolean((ui as any)?.ctaDisabled)}
+					                                onClick={(e) => handleBrandDealPrimaryAction(e, item, ui)}
+				                                disabled={Boolean(ui?.ctaDisabled)}
 				                                className={cn(
 				                                  'mt-4 h-12 w-full rounded-2xl text-[13px] font-black transition active:scale-[0.98]',
-				                                  dealPrimaryCtaButtonClass((ui as any)?.ctaTone || (ui.needsAction ? 'action' : 'view')),
-				                                  Boolean((ui as any)?.ctaDisabled) && 'opacity-60 cursor-not-allowed active:scale-100'
+				                                  dealPrimaryCtaButtonClass(ui?.ctaTone || (ui.needsAction ? 'action' : 'view')),
+				                                  Boolean(ui?.ctaDisabled) && 'opacity-60 cursor-not-allowed active:scale-100'
 				                                )}
 				                              >
 				                                {ui.primaryActionLabel}
@@ -5084,16 +5108,12 @@ const BrandMobileDashboard = ({
 
 					                              <button
 					                                type="button"
-					                                onClick={(e) => {
-				                                  triggerHaptic(HapticPatterns.light);
-				                                  if (activeCollabTab === 'active') setSelectedDealPage(item);
-				                                  else setSelectedOffer(item);
-				                                }}
-				                                disabled={Boolean((ui as any)?.ctaDisabled)}
+					                                onClick={(e) => handleBrandDealPrimaryAction(e, item, ui)}
+				                                disabled={Boolean(ui?.ctaDisabled)}
 			                                className={cn(
 			                                  'mt-4 h-12 w-full rounded-2xl text-[13px] font-black transition active:scale-[0.98]',
-				                                  dealPrimaryCtaButtonClass((ui as any)?.ctaTone || (ui.needsAction ? 'action' : 'view')),
-				                                  Boolean((ui as any)?.ctaDisabled) && 'opacity-60 cursor-not-allowed active:scale-100'
+				                                  dealPrimaryCtaButtonClass(ui?.ctaTone || (ui.needsAction ? 'action' : 'view')),
+				                                  Boolean(ui?.ctaDisabled) && 'opacity-60 cursor-not-allowed active:scale-100'
 			                                )}
 			                              >
 			                                {ui.primaryActionLabel}

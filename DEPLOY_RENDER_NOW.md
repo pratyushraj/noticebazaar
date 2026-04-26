@@ -1,6 +1,6 @@
-# 🚀 Deploy NoticeBazaar to Render - Step by Step
+# 🚀 Deploy CreatorArmour to Render - Step by Step
 
-This guide will help you deploy both backend and frontend to Render so noticebazaar.com is live.
+This guide will help you deploy both backend and frontend to Render so creatorarmour.com is live.
 
 ## 📋 Prerequisites
 
@@ -21,13 +21,13 @@ This guide will help you deploy both backend and frontend to Render so noticebaz
 2. **Create New Web Service:**
    - Click **"New +"** button (top right)
    - Select **"Web Service"**
-   - Connect your GitHub repository: `noticebazaar`
+   - Connect your GitHub repository: `creatorarmour`
    - Click **"Connect"** if not already connected
 
 3. **Configure Backend Service:**
    
    **Basic Settings:**
-   - **Name:** `noticebazaar-api`
+   - **Name:** `creatorarmour-api`
    - **Region:** Choose closest to you (e.g., Oregon)
    - **Branch:** `main`
    - **Root Directory:** `server`
@@ -61,7 +61,7 @@ This guide will help you deploy both backend and frontend to Render so noticebaz
    ```
    
    ```
-   FRONTEND_URL=https://noticebazaar-frontend.onrender.com
+   FRONTEND_URL=https://creatorarmour-frontend.onrender.com
    ```
    
    ```
@@ -86,7 +86,7 @@ This guide will help you deploy both backend and frontend to Render so noticebaz
      - Clone your repo
      - Install dependencies
      - Build your backend
-     - Deploy to a URL like: `https://noticebazaar-api.onrender.com`
+     - Deploy to a URL like: `https://creatorarmour-api.onrender.com`
 
 7. **Wait for Build (2-5 minutes):**
    - Watch the build logs in real-time
@@ -99,13 +99,13 @@ This guide will help you deploy both backend and frontend to Render so noticebaz
 
 1. **Create New Static Site:**
    - In Render Dashboard, click **"New +"** → **"Static Site"**
-   - Connect your GitHub repository: `noticebazaar` (if not already connected)
+   - Connect your GitHub repository: `creatorarmour` (if not already connected)
    - Select the repository
 
 2. **Configure Frontend:**
    
    **Basic Settings:**
-   - **Name:** `noticebazaar-frontend`
+   - **Name:** `creatorarmour-frontend`
    - **Branch:** `main`
    - **Root Directory:** (leave empty - uses repo root)
    - **Build Command:** `corepack enable && corepack prepare pnpm@latest --activate && pnpm install && pnpm run build`
@@ -125,7 +125,7 @@ This guide will help you deploy both backend and frontend to Render so noticebaz
    ```
    
    ```
-   VITE_API_BASE_URL=https://noticebazaar-api.onrender.com
+   VITE_API_BASE_URL=https://creatorarmour-api.onrender.com
    ```
    
    ```
@@ -135,7 +135,7 @@ This guide will help you deploy both backend and frontend to Render so noticebaz
 4. **Deploy:**
    - Click **"Create Static Site"**
    - Render will automatically build and deploy
-   - You'll get a URL like: `https://noticebazaar-frontend.onrender.com`
+   - You'll get a URL like: `https://creatorarmour-frontend.onrender.com`
 
 5. **Wait for Build (3-5 minutes):**
    - Watch the build logs
@@ -150,11 +150,11 @@ This guide will help you deploy both backend and frontend to Render so noticebaz
    - Go to **Authentication** → **URL Configuration**
 
 2. **Update URLs:**
-   - **Site URL:** `https://noticebazaar-frontend.onrender.com`
+   - **Site URL:** `https://creatorarmour-frontend.onrender.com`
    - **Redirect URLs:** Add these (one per line):
      ```
-     https://noticebazaar-frontend.onrender.com/**
-     https://noticebazaar-frontend.onrender.com/auth/callback
+     https://creatorarmour-frontend.onrender.com/**
+     https://creatorarmour-frontend.onrender.com/auth/callback
      http://localhost:8080/**
      ```
 
@@ -166,7 +166,7 @@ This guide will help you deploy both backend and frontend to Render so noticebaz
 
 ### Test Backend:
 ```bash
-curl https://noticebazaar-api.onrender.com/health
+curl https://creatorarmour-api.onrender.com/health
 ```
 
 Should return:
@@ -175,44 +175,44 @@ Should return:
 ```
 
 ### Test Frontend:
-1. Visit: `https://noticebazaar-frontend.onrender.com`
+1. Visit: `https://creatorarmour-frontend.onrender.com`
 2. Test authentication flow
 3. Test contract upload
 4. Check browser console for any errors
 
 ---
 
-## 🌐 Step 5: Add Custom Domain (Optional - for noticebazaar.com)
+## 🌐 Step 5: Add Custom Domain (Optional - for creatorarmour.com)
 
 ### For Frontend:
 
 1. **In Render Dashboard:**
-   - Go to your `noticebazaar-frontend` service
+   - Go to your `creatorarmour-frontend` service
    - Click **"Settings"** → **"Custom Domains"**
    - Click **"Add Custom Domain"**
-   - Enter: `noticebazaar.com` or `www.noticebazaar.com`
+   - Enter: `creatorarmour.com` or `www.creatorarmour.com`
    - Render will show you DNS records to add
 
 2. **Add DNS Records:**
-   - Go to your domain registrar (where you manage noticebazaar.com)
+   - Go to your domain registrar (where you manage creatorarmour.com)
    - Add the CNAME or A record as shown by Render
    - Wait 5-15 minutes for DNS propagation
 
 3. **Update Environment Variables:**
-   - Update `FRONTEND_URL` in backend to: `https://noticebazaar.com`
-   - Update Supabase redirect URLs to include: `https://noticebazaar.com/**`
+   - Update `FRONTEND_URL` in backend to: `https://creatorarmour.com`
+   - Update Supabase redirect URLs to include: `https://creatorarmour.com/**`
 
-### For Backend (api.noticebazaar.com):
+### For Backend (api.creatorarmour.com):
 
 1. **In Render Dashboard:**
-   - Go to your `noticebazaar-api` service
+   - Go to your `creatorarmour-api` service
    - Click **"Settings"** → **"Custom Domains"**
    - Click **"Add Custom Domain"**
-   - Enter: `api.noticebazaar.com`
+   - Enter: `api.creatorarmour.com`
    - Add DNS record as shown
 
 2. **Update Frontend Environment Variable:**
-   - Update `VITE_API_BASE_URL` to: `https://api.noticebazaar.com`
+   - Update `VITE_API_BASE_URL` to: `https://api.creatorarmour.com`
    - Redeploy frontend
 
 ---
@@ -271,8 +271,8 @@ Should return:
 ## 🎉 Success!
 
 Once all steps are complete:
-- ✅ Backend: `https://noticebazaar-api.onrender.com`
-- ✅ Frontend: `https://noticebazaar-frontend.onrender.com`
+- ✅ Backend: `https://creatorarmour-api.onrender.com`
+- ✅ Frontend: `https://creatorarmour-frontend.onrender.com`
 - ✅ Both services auto-deploy on git push
 - ✅ Free tier available for both
 

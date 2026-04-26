@@ -44,7 +44,7 @@ test.describe('Messaging Flow', () => {
 
     // Login advisor
     await advisorPage.goto('http://localhost:5173/login');
-    await advisorPage.fill('input[type="email"]', 'prateek.sharma@noticebazaar.com');
+    await advisorPage.fill('input[type="email"]', 'prateek.sharma@creatorarmour.com');
     await advisorPage.fill('input[type="password"]', 'advisor123');
     await advisorPage.click('button[type="submit"]');
 

@@ -1,6 +1,6 @@
-# Creator Armour Influencer Finder Agent
+# CreatorArmour Influencer Finder Agent
 
-An automated system that legally discovers, filters, and organizes relevant Indian influencers for Creator Armour outreach.
+An automated system that legally discovers, filters, and organizes relevant Indian influencers for CreatorArmour outreach.
 
 ## ⚠️ IMPORTANT: Legal Compliance & Data Privacy
 
@@ -29,7 +29,7 @@ The Influencer Finder Agent is designed to:
 - Search public Instagram profiles based on hashtags and keywords
 - Extract ONLY public data (bio, follower count, link-in-bio, website, category)
 - Classify creator niche using AI (fitness, fashion, tech, lifestyle, UGC, etc.)
-- Assign a Fit Score (1–10) based on relevance to Creator Armour
+- Assign a Fit Score (1–10) based on relevance to CreatorArmour
 - Filter and organize influencers for outreach
 - Generate personalized outreach messages
 - Track outreach status and follow-ups
@@ -205,7 +205,7 @@ Content-Type: application/json
   "success": true,
   "influencer_handle": "johndoe",
   "message": {
-    "message": "Hey John, loved your recent fitness post! We're building Creator Armour — a platform that protects creators with contracts and payments. Would you like early access as a Founding Creator? 🚀",
+    "message": "Hey John, loved your recent fitness post! We're building CreatorArmour — a platform that protects creators with contracts and payments. Would you like early access as a Founding Creator? 🚀",
     "template_type": "default",
     "personalized": true,
     "content_type": "fitness post"
@@ -311,7 +311,7 @@ The system uses AI to classify each influencer:
 2. **Location Detection**: Determines if India-based from bio/location signals
 3. **Activity Assessment**: Checks if posting regularly (last 30 days)
 4. **Fit Score Calculation** (1-10):
-   - Relevance to Creator Armour (contracts, payments, creator protection)
+   - Relevance to CreatorArmour (contracts, payments, creator protection)
    - Engagement quality (not just follower count)
    - Content quality indicators
    - Professionalism (has website, email, etc.)
@@ -410,17 +410,17 @@ All data collection is logged in `data_source_log`:
 
 ### Default Template
 ```
-Hey {Name}, loved your recent {niche} content! We're building Creator Armour — a platform that protects creators with contracts and payments. Would you like early access as a Founding Creator? 🚀
+Hey {Name}, loved your recent {niche} content! We're building CreatorArmour — a platform that protects creators with contracts and payments. Would you like early access as a Founding Creator? 🚀
 ```
 
 ### Founding Creator Template
 ```
-Hey {Name}! Your {niche} content is 🔥 We're launching Creator Armour — the platform that protects creators with smart contracts and secure payments. We'd love to have you as a Founding Creator with exclusive benefits. Interested?
+Hey {Name}! Your {niche} content is 🔥 We're launching CreatorArmour — the platform that protects creators with smart contracts and secure payments. We'd love to have you as a Founding Creator with exclusive benefits. Interested?
 ```
 
 ### Follow-up Template
 ```
-Hey {Name}, just following up on my message about Creator Armour. We're helping creators protect their work and get paid fairly. Would love to chat if you're interested!
+Hey {Name}, just following up on my message about CreatorArmour. We're helping creators protect their work and get paid fairly. Would love to chat if you're interested!
 ```
 
 ## 🐛 Troubleshooting
@@ -452,4 +452,4 @@ Hey {Name}, just following up on my message about Creator Armour. We're helping 
 
 ## 📄 License
 
-Part of Creator Armour platform.
+Part of CreatorArmour platform.

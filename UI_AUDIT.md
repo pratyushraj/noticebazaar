@@ -1,4 +1,4 @@
-# UI Audit Report - NoticeBazaar
+# UI Audit Report - CreatorArmour
 
 **Audit Date:** 2026-03-22  
 **Auditor:** UI Audit Agent  
@@ -13,7 +13,7 @@
 
 ## Executive Summary
 
-The NoticeBazaar UI has several inconsistencies that affect visual coherence and user experience. While individual components are well-built, there's no unified design system governing spacing, colors, typography, and border radius values. This audit identifies **20 high-priority issues** and provides recommended design system values for standardization.
+The CreatorArmour UI has several inconsistencies that affect visual coherence and user experience. While individual components are well-built, there's no unified design system governing spacing, colors, typography, and border radius values. This audit identifies **20 high-priority issues** and provides recommended design system values for standardization.
 
 ---
 
@@ -747,7 +747,7 @@ const cardVariants = cva(
 
 ## Conclusion
 
-The NoticeBazaar UI has solid foundations but lacks a unified design system. Implementing the recommended changes will improve:
+The CreatorArmour UI has solid foundations but lacks a unified design system. Implementing the recommended changes will improve:
 - **Visual consistency** across all pages
 - **Accessibility** for keyboard navigation
 - **Maintainability** with standardized tokens

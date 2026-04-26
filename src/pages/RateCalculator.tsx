@@ -318,7 +318,7 @@ const RateCalculator = () => {
 
   const handleShareWhatsApp = () => {
     const rate = getDisplayRate();
-    const message = `Check out my content rate: ${currencySymbols[currency]}${rate.toLocaleString('en-IN')}\n\nCalculated using Creator Armour Rate Calculator`;
+    const message = `Check out my content rate: ${currencySymbols[currency]}${rate.toLocaleString('en-IN')}\n\nCalculated using CreatorArmour Rate Calculator`;
     const url = `https://wa.me/?text=${encodeURIComponent(message)}`;
     window.open(url, '_blank', 'noopener,noreferrer');
     toast.success('Opening WhatsApp...');

@@ -170,7 +170,7 @@ Follow `FINAL_QA_CHECKLIST.md` for comprehensive manual testing.
 
 ### Database Validation
 
-- ✅ **Security:** No internal URLs (localhost, noticebazaar.com)
+- ✅ **Security:** No internal URLs (localhost, creatorarmour.com)
 - ✅ **Data Integrity:** No orphaned opportunities
 - ✅ **Status:** No expired opportunities marked as open
 - ✅ **Completeness:** Required fields present

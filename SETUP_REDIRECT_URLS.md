@@ -18,10 +18,10 @@ supabase secrets list --project-ref ooaxtwmqrvfzdqzoijcj
    - Click **URL Configuration** tab
 3. **Add Redirect URLs** (click "Add URL" for each):
    - `http://localhost:32100/**`
-   - `https://noticebazaar.com/**`
+   - `https://creatorarmour.com/**`
    - `https://*.vercel.app/**` (if using Vercel)
 4. **Set Site URL**:
-   - In the same page, set **Site URL** to: `https://noticebazaar.com`
+   - In the same page, set **Site URL** to: `https://creatorarmour.com`
 5. **Click Save**
 
 ## 🎯 Why This Matters

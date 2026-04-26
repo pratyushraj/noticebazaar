@@ -38,7 +38,7 @@ Go to **Site Settings → Environment Variables** and ensure you have:
 ```
 VITE_SUPABASE_URL=https://ooaxtwmqrvfzdqzoijcj.supabase.co
 VITE_SUPABASE_ANON_KEY=your-anon-key-here
-VITE_API_BASE_URL=https://noticebazaar-api.onrender.com
+VITE_API_BASE_URL=https://creatorarmour-api.onrender.com
 NODE_ENV=production
 ```
 

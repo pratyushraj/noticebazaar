@@ -11,7 +11,7 @@ const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const supabase = createClient(SUPABASE_URL!, SUPABASE_SERVICE_KEY!);
 
 async function resetPassword() {
-  const email = 'test_brand@noticebazaar.com';
+  const email = 'test_brand@creatorarmour.com';
   const { data: users, error: listError } = await supabase.auth.admin.listUsers();
   const user = users?.users.find(u => u.email === email);
   

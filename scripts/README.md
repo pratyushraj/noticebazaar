@@ -1,6 +1,6 @@
 # Seed Script for Test Data
 
-This script creates a test user account with sample data for testing the NoticeBazaar dashboard.
+This script creates a test user account with sample data for testing the CreatorArmour dashboard.
 
 ## Prerequisites
 
@@ -50,7 +50,7 @@ npx tsx scripts/seed-test-data.ts
 The script will create:
 
 1. **Test User Account**
-   - Email: `test@noticebazaar.com`
+   - Email: `test@creatorarmour.com`
    - Password: `Test123!@#`
    - Auto-confirmed email (no verification needed)
 
@@ -73,7 +73,7 @@ The script will create:
 After running the script, you can log in with:
 
 ```
-Email: test@noticebazaar.com
+Email: test@creatorarmour.com
 Password: Test123!@#
 ```
 

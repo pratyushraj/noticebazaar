@@ -26,7 +26,7 @@ tsx scripts/validate-opportunities-db.ts
 
 **Check:**
 - [ ] Validation script passes
-- [ ] No invalid apply URLs (localhost/noticebazaar)
+- [ ] No invalid apply URLs (localhost/creatorarmour)
 - [ ] No expired opportunities marked as open
 - [ ] All opportunities have brand_id
 - [ ] Warnings logged for missing apply_url (expected)
@@ -117,7 +117,7 @@ tsx scripts/validate-opportunities-db.ts
 ### URL Validation
 Run sync script and check logs:
 - [ ] No localhost URLs in database
-- [ ] No noticebazaar.com URLs in database
+- [ ] No creatorarmour.com URLs in database
 - [ ] No 127.0.0.1 URLs in database
 - [ ] Warnings logged for invalid URLs (if any)
 
@@ -127,7 +127,7 @@ Run sync script and check logs:
 SELECT id, title, apply_url 
 FROM opportunities 
 WHERE apply_url LIKE '%localhost%' 
-   OR apply_url LIKE '%noticebazaar%'
+   OR apply_url LIKE '%creatorarmour%'
    OR apply_url LIKE '%127.0.0.1%';
 ```
 **Expected:** 0 rows

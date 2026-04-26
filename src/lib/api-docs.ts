@@ -1,7 +1,7 @@
 /**
- * Creator Armour API Documentation
+ * CreatorArmour API Documentation
  *
- * This file contains comprehensive API documentation for the Creator Armour platform.
+ * This file contains comprehensive API documentation for the CreatorArmour platform.
  * All endpoints are organized by category and include request/response examples.
  */
 
@@ -477,7 +477,7 @@ export const generateAPIDocs = (format: 'json' | 'markdown' = 'json') => {
 };
 
 const generateMarkdownDocs = () => {
-  let markdown = '# Creator Armour API Documentation\n\n';
+  let markdown = '# CreatorArmour API Documentation\n\n';
 
   Object.entries(apiDocumentation).forEach(([sectionKey, section]) => {
     markdown += `## ${section.title}\n\n${section.description}\n\n`;

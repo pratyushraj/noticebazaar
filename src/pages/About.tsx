@@ -9,8 +9,8 @@ const About = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 text-foreground">
       <SEOHead
-        title="About Creator Armour — Protecting Indian Creators"
-        description="Creator Armour helps Indian creators close brand deals professionally. Contracts, payments, and collaboration — all in one platform."
+        title="About CreatorArmour — Protecting Indian Creators"
+        description="CreatorArmour helps Indian creators close brand deals professionally. Contracts, payments, and collaboration — all in one platform."
         keywords={['about creator armour', 'creator platform india', 'influencer protection']}
         canonicalUrl="https://creatorarmour.com/about"
       />

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Start NoticeBazaar development servers
+# Start CreatorArmour development servers
 # Run this from your own Terminal app (not from an AI/sandboxed shell)
 
 GREEN='\033[0;32m'
@@ -9,10 +9,10 @@ RED='\033[0;31m'
 YELLOW='\033[1;33m'
 NC='\033[0m'
 
-PROJECT_ROOT="/Users/pratyushraj/Desktop/noticebazaar"
+PROJECT_ROOT="/Users/pratyushraj/Desktop/creatorarmour"
 cd "$PROJECT_ROOT" || { echo -e "${RED}❌ Project not found at $PROJECT_ROOT${NC}"; exit 1; }
 
-echo -e "${BLUE}🚀 Starting NoticeBazaar...${NC}"
+echo -e "${BLUE}🚀 Starting CreatorArmour...${NC}"
 
 # Kill anything on 8080 and 3001
 echo -e "${BLUE}🧹 Cleaning up ports 8080 and 3001...${NC}"

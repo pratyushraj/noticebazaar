@@ -51,14 +51,14 @@ export function getApiBaseUrl(): string {
       } else if (isProduction) {
         // Production: use dedicated API domain to avoid route drift
         // between frontend serverless handlers and backend API routes.
-        apiUrl = 'https://noticebazaar-api.onrender.com';
+        apiUrl = 'https://creatorarmour-api.onrender.com';
       } else if (isLocalhost) {
         // Localhost default: prefer local API for developer experience.
         // To force production API, set localStorage.useProdApi = 'true' (or ?prodApi=true).
         let useProdApi = false;
         try { useProdApi = localStorage.getItem('useProdApi') === 'true'; } catch { /* ignore */ }
         useProdApi = useProdApi || urlParams.get('prodApi') === 'true';
-        apiUrl = useProdApi ? 'https://noticebazaar-api.onrender.com' : 'http://127.0.0.1:3001';
+        apiUrl = useProdApi ? 'https://creatorarmour-api.onrender.com' : 'http://127.0.0.1:3001';
       } else if (isLocalNetwork) {
         // Use the same IP but port 3001 for the API
         apiUrl = origin.replace(/:\d+$/, '') + ':3001';
@@ -112,7 +112,7 @@ export function getApiBaseUrl(): string {
       if (localhostPattern.test(cleanedUrl) || pointsToFrontendOrigin) {
         // Never allow localhost or same-origin API on public frontend hosts.
         // Route directly to production API domain.
-        cleanedUrl = 'https://noticebazaar-api.onrender.com';
+        cleanedUrl = 'https://creatorarmour-api.onrender.com';
       }
     }
   }

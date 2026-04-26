@@ -13,7 +13,7 @@
       - generic [ref=e11]:
         - generic [ref=e12]:
           - img [ref=e14]
-          - heading "Creator Armour" [level=1] [ref=e17]
+          - heading "CreatorArmour" [level=1] [ref=e17]
         - generic [ref=e18]:
           - heading "Sign In" [level=2] [ref=e19]
           - paragraph [ref=e20]: Sign in to see your brand offers and active deals.
@@ -46,7 +46,7 @@
           - img [ref=e44]
           - text: Exit To Homepage
       - paragraph [ref=e47]:
-        - text: Protected by Creator Armour Shield. By signing in, you agree to our
+        - text: Protected by CreatorArmour Shield. By signing in, you agree to our
         - link "Terms" [ref=e48] [cursor=pointer]:
           - /url: /terms
         - text: "&"

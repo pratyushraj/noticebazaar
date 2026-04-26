@@ -51,13 +51,13 @@ FRONTEND_URL=https://creatorarmour.com
 ### 7. Wait for Deployment
 - Build takes ~2-5 minutes
 - Watch the logs in real-time
-- You'll see: "Your service is live at https://noticebazaar-api.onrender.com"
+- You'll see: "Your service is live at https://creatorarmour-api.onrender.com"
 
 ## After Deployment
 
 ### Test Your API:
 ```bash
-curl https://noticebazaar-api.onrender.com/health
+curl https://creatorarmour-api.onrender.com/health
 ```
 
 Expected response:
@@ -73,18 +73,18 @@ Expected response:
 ### Update Frontend:
 Add to your frontend environment variables:
 ```env
-VITE_API_BASE_URL=https://noticebazaar-api.onrender.com
+VITE_API_BASE_URL=https://creatorarmour-api.onrender.com
 ```
 
 Or if you set up a custom domain:
 ```env
-VITE_API_BASE_URL=https://api.noticebazaar.com
+VITE_API_BASE_URL=https://api.creatorarmour.com
 ```
 
 ## Custom Domain (Optional)
 
 1. Go to your service → **Settings** → **Custom Domains**
-2. Add: `api.noticebazaar.com`
+2. Add: `api.creatorarmour.com`
 3. Follow DNS instructions
 4. Wait 5-15 minutes for DNS propagation
 

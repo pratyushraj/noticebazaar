@@ -94,7 +94,7 @@ export const useRazorpayCheckout = () => {
 
       // 2. Create Subscription via Edge Function
       const userIdShort = user.id.slice(-8);
-      const receiptId = `NB_SUB_${userIdShort}_${Date.now()}`;
+      const receiptId = `CA_SUB_${userIdShort}_${Date.now()}`;
 
       const subscriptionResult = await createSubscriptionMutation.mutateAsync({
         plan_id: planId,

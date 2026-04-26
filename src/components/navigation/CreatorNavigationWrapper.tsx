@@ -80,7 +80,7 @@ export const CreatorNavigationWrapper: React.FC<CreatorNavigationWrapperProps> =
     if (location.pathname === '/creator-dashboard') return 'Dashboard';
     if (location.pathname.startsWith('/creator-contracts')) return 'Brand Deals';
     if (location.pathname.startsWith('/creator-payments')) return 'Payments';
-    return 'Creator Armour';
+    return 'CreatorArmour';
   })();
 
   const isCreator = profile?.role === 'creator';

@@ -1,7 +1,7 @@
 {
   "info": {
-    "name": "NoticeBazaar API",
-    "description": "Complete API collection for NoticeBazaar messaging, payments, and protection",
+    "name": "CreatorArmour API",
+    "description": "Complete API collection for CreatorArmour messaging, payments, and protection",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "auth": {

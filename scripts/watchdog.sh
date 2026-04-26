@@ -5,7 +5,7 @@
 VITE_PID=""
 CLOUDFLARED_PID=""
 CURRENT_TUNNEL=""
-AUDIT_SCRIPT="/home/node/noticebazaar/scripts/audit-night.cjs"
+AUDIT_SCRIPT="/home/node/creatorarmour/scripts/audit-night.cjs"
 LOG="/home/node/.openclaw/workspace/memory/audit-log.md"
 
 log() {
@@ -13,7 +13,7 @@ log() {
 }
 
 start_vite() {
-    cd /home/node/noticebazaar
+    cd /home/node/creatorarmour
     pnpm dev --host 0.0.0.0 --port 8080 > /tmp/vite.log 2>&1 &
     VITE_PID=$!
     log "Started Vite (PID: $VITE_PID)"
@@ -28,7 +28,7 @@ start_vite() {
 start_cloudflared() {
     pkill -f cloudflared 2>/dev/null
     sleep 2
-    /home/node/noticebazaar/cloudflared tunnel --no-autoupdate --url http://localhost:8080 > /tmp/cloudflared.log 2>&1 &
+    /home/node/creatorarmour/cloudflared tunnel --no-autoupdate --url http://localhost:8080 > /tmp/cloudflared.log 2>&1 &
     CLOUDFLARED_PID=$!
     log "Started cloudflared (PID: $CLOUDFLARED_PID)"
     sleep 12

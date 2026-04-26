@@ -28,4 +28,4 @@ const getBaseRate = (niche, platform, followers) => {
 
 ## 4. Metadata Strategy (Dynamic SEO)
 - `<title>`: "Influencer Rate Calculator for ${niche} creators on ${platform}"
-- `<meta name="description">`: "Get an accurate rate for ${niche} collaborations on ${platform}. Stop guessing your worth and start pricing like a pro with Creator Armour."
+- `<meta name="description">`: "Get an accurate rate for ${niche} collaborations on ${platform}. Stop guessing your worth and start pricing like a pro with CreatorArmour."

@@ -6,7 +6,7 @@ Currently using HashRouter for compatibility. To enable clean URLs (`/login` ins
 
 1. **Go to Render Dashboard:**
    - Visit: https://dashboard.render.com
-   - Open `noticebazaar-frontend` service
+   - Open `creatorarmour-frontend` service
    - Click **Settings** (left sidebar)
 
 2. **Configure Redirects:**

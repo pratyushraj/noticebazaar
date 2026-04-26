@@ -6,7 +6,7 @@
 ✅ **Health Endpoint**: Working  
 ✅ **LLM Configured**: Groq API key set  
 ✅ **Supabase Connected**: Initialized successfully  
-✅ **JWT Token Obtained**: test@noticebazaar.com  
+✅ **JWT Token Obtained**: test@creatorarmour.com  
 
 ⚠️ **Issue**: API endpoints are timing out
 

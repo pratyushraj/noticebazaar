@@ -53,7 +53,7 @@ const OnboardingSuccess = ({ userName }: OnboardingSuccessProps) => {
           Your Deal Workspace Is Ready
         </h1>
         <p className="text-xl text-secondary">
-          Welcome to Creator Armour, {userName || 'Creator'}.
+          Welcome to CreatorArmour, {userName || 'Creator'}.
         </p>
       </motion.div>
 

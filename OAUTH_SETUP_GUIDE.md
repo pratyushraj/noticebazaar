@@ -1,4 +1,4 @@
-# OAuth Setup Guide for NoticeBazaar
+# OAuth Setup Guide for CreatorArmour
 
 ## Current Issues
 
@@ -27,7 +27,7 @@
 4. Click **Create Credentials** > **OAuth client ID**
 5. If prompted, configure the OAuth consent screen:
    - **User Type**: External (unless you have a Google Workspace)
-   - **App name**: NoticeBazaar
+   - **App name**: CreatorArmour
    - **User support email**: Your email
    - **Developer contact**: Your email
    - Click **Save and Continue**
@@ -36,7 +36,7 @@
    - Click **Save and Continue**
 6. Back to **Credentials**, select **OAuth client ID**
 7. **Application type**: Web application
-8. **Name**: NoticeBazaar Web Client
+8. **Name**: CreatorArmour Web Client
 9. **Authorized redirect URIs**: Add this EXACT URL:
    ```
    https://[your-supabase-project-id].supabase.co/auth/v1/callback
@@ -66,12 +66,12 @@
 1. In Supabase Dashboard, go to **Authentication** > **URL Configuration**
 2. Add the following **Site URL**:
    ```
-   https://www.noticebazaar.com
+   https://www.creatorarmour.com
    ```
 3. Add the following **Redirect URLs** (one per line):
    ```
-   https://www.noticebazaar.com/creator-onboarding
-   https://www.noticebazaar.com/*
+   https://www.creatorarmour.com/creator-onboarding
+   https://www.creatorarmour.com/*
    http://localhost:32100/creator-onboarding
    http://localhost:8080/creator-onboarding
    ```
@@ -81,8 +81,8 @@
 1. Go to https://github.com/settings/developers
 2. Click **New OAuth App**
 3. Fill in:
-   - **Application name**: NoticeBazaar
-   - **Homepage URL**: `https://www.noticebazaar.com`
+   - **Application name**: CreatorArmour
+   - **Homepage URL**: `https://www.creatorarmour.com`
    - **Authorization callback URL**: 
      ```
      https://[your-supabase-project-id].supabase.co/auth/v1/callback

@@ -1,11 +1,11 @@
 #!/bin/bash
 
-# NoticeBazaar Vercel Deployment Script
+# CreatorArmour Vercel Deployment Script
 # This script helps deploy the frontend to Vercel
 
 set -e
 
-echo "🚀 NoticeBazaar Vercel Deployment"
+echo "🚀 CreatorArmour Vercel Deployment"
 echo "=================================="
 echo ""
 

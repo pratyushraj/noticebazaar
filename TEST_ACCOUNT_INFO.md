@@ -2,7 +2,7 @@
 
 ## Quick Login
 
-**Email:** `test@noticebazaar.com`  
+**Email:** `test@creatorarmour.com`  
 **Password:** `Test123!@#`
 
 ## Account Details
@@ -38,7 +38,7 @@ The script will:
 
 1. **Create User:**
    - Go to **Authentication** → **Users** → **Add user**
-   - Email: `test@noticebazaar.com`
+   - Email: `test@creatorarmour.com`
    - Password: `Test123!@#`
    - ✅ Auto Confirm User
    - Click **Create user**
@@ -64,15 +64,15 @@ The script will:
        "gstin": "29ABCDE1234F1Z5",
        "phone": "+919876543210",
        "location": "Mumbai, Maharashtra",
-       "bio": "Test creator account for NoticeBazaar dashboard testing"
+       "bio": "Test creator account for CreatorArmour dashboard testing"
      }
      ```
 
 ## Login URL
 
 After creating the account, log in at:
-- **URL:** `/login` or `https://www.noticebazaar.com/login`
-- **Email:** `test@noticebazaar.com`
+- **URL:** `/login` or `https://www.creatorarmour.com/login`
+- **Email:** `test@creatorarmour.com`
 - **Password:** `Test123!@#`
 
 ## What You'll See

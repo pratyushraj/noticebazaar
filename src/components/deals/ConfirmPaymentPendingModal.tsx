@@ -10,10 +10,8 @@ interface Props {
   dealAmount?: number;
   creatorName?: string;
   onClose: () => void;
-  onSuccess: () => void;
 }
 
-// Client-side fee breakdown (mirrors server/src/lib/payment.ts)
 const PLATFORM_FEE_PCT = 0.10;
 const GST_PCT = 0.18;
 
@@ -26,7 +24,18 @@ function computeBreakdown(dealAmountRupees: number) {
   return { dealAmount: deal, platformFee, gstOnFee, brandTotal, creatorPayout };
 }
 
-export function ConfirmPaymentPendingModal({ dealId, dealAmount, creatorName, onClose, onSuccess }: Props) {
+const loadRazorpayScript = () =>
+  new Promise<void>((resolve, reject) => {
+    if (document.getElementById('razorpay-checkout-js')) return resolve();
+    const script = document.createElement('script');
+    script.id = 'razorpay-checkout-js';
+    script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+    script.onload = () => resolve();
+    script.onerror = () => reject(new Error('Failed to load Razorpay checkout.'));
+    document.body.appendChild(script);
+  });
+
+export function ConfirmPaymentPendingModal({ dealId, dealAmount, creatorName, onClose }: Props) {
   const { session } = useSession();
   const [isLoading, setIsLoading] = useState(false);
 
@@ -45,9 +54,9 @@ export function ConfirmPaymentPendingModal({ dealId, dealAmount, creatorName, on
 
     setIsLoading(true);
     try {
-      const apiUrl = `${getApiBaseUrl()}/api/deals/${dealId}/create-payment-link`;
-      console.log('[ConfirmPayment] Fetching from:', apiUrl);
-      
+      await loadRazorpayScript();
+
+      const apiUrl = `${getApiBaseUrl()}/api/deals/${dealId}/create-payment-order`;
       const res = await fetch(apiUrl, {
         method: "POST",
         headers: {
@@ -57,25 +66,50 @@ export function ConfirmPaymentPendingModal({ dealId, dealAmount, creatorName, on
         body: JSON.stringify({}),
       });
 
-      console.log('[ConfirmPayment] Response status:', res.status);
       const data = await res.json().catch(() => ({}));
-      console.log('[ConfirmPayment] Response data:', data);
-
       if (!res.ok || !data.success) {
-        toast.error(data.error || "Failed to create payment link. Please try again.");
+        toast.error(data.error || "Failed to create payment order. Please try again.");
         return;
       }
 
-      const url = data.short_url;
-      if (!url) {
-        toast.error("Payment link not available. Please try again.");
+      if (!data.order_id || !data.key_id) {
+        toast.error("Payment checkout details are incomplete. Please try again.");
         return;
       }
 
-      // Redirect to payment page; webhook handles status update to CONTENT_MAKING.
-      toast.success("Redirecting to payment page...");
-      onSuccess();
-      window.location.assign(url);
+      const options = {
+        key: data.key_id,
+        amount: data?.breakdown?.amountPaise,
+        currency: data.currency || 'INR',
+        name: 'CreatorArmour',
+        description: creatorName ? `Escrow payment for ${creatorName}` : 'Escrow payment',
+        order_id: data.order_id,
+        prefill: {
+          name: creatorName || 'Brand User',
+          email: session.user?.email || '',
+          contact: '',
+        },
+        theme: { color: '#10b981' },
+        handler: () => {
+          toast.success('Payment submitted. We will update the deal once Razorpay confirms it.');
+          onClose();
+        },
+      };
+
+      const RazorpayCtor = (window as unknown as { Razorpay?: new (options: typeof options) => { on: (event: string, cb: (payload: unknown) => void) => void; open: () => void } }).Razorpay;
+      if (!RazorpayCtor) {
+        toast.error('Razorpay checkout failed to load.');
+        return;
+      }
+
+      const rzp = new RazorpayCtor(options);
+      rzp.on('payment.failed', (response: unknown) => {
+        const description = typeof response === 'object' && response && 'error' in response
+          ? String((response as { error?: { description?: string } }).error?.description || '')
+          : '';
+        toast.error(description || 'Payment failed. Please try again.');
+      });
+      rzp.open();
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "Something went wrong. Please try again.";
       toast.error(message);
@@ -92,7 +126,6 @@ export function ConfirmPaymentPendingModal({ dealId, dealAmount, creatorName, on
         aria-modal
         aria-label="Confirm payment"
       >
-        {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-white/10">
           <div className="flex items-center gap-2">
             <IndianRupee className="h-5 w-5 text-emerald-400" />
@@ -104,15 +137,13 @@ export function ConfirmPaymentPendingModal({ dealId, dealAmount, creatorName, on
         </div>
 
         <div className="p-5 space-y-5">
-          {/* Escrow notice */}
           <div className="flex items-start gap-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 px-4 py-3">
             <Shield className="h-4 w-4 text-emerald-400 mt-0.5 shrink-0" />
             <p className="text-sm text-emerald-300 font-medium leading-relaxed">
-              Payment is securely held in escrow and released only after you approve the creator's content.
+              Payment stays inside the app through Razorpay Checkout and is released only after content approval.
             </p>
           </div>
 
-          {/* Breakdown */}
           {breakdown ? (
             <div className="rounded-xl bg-white/5 border border-white/10 p-4 space-y-3">
               <div className="flex justify-between text-sm text-white/70">

@@ -31,7 +31,7 @@ if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY) {
 }
 
 // Demo account credentials
-const DEMO_EMAIL = 'demo@noticebazaar.com';
+const DEMO_EMAIL = 'demo@creatorarmour.com';
 const DEMO_PASSWORD = 'Demo123!@#';
 
 // Create Supabase client with service role key (bypasses RLS)

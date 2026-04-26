@@ -36,7 +36,7 @@ async function sendGenericPushViaRender(params: {
   url: string;
   data?: any;
 }): Promise<void> {
-  const renderUrl = 'https://noticebazaar-api.onrender.com/api/push/notify-generic';
+  const renderUrl = 'https://creatorarmour-api.onrender.com/api/push/notify-generic';
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
   try {
     const resp = await fetch(renderUrl, {
@@ -1263,7 +1263,7 @@ router.patch('/:dealId/delivery-details', async (req: AuthenticatedRequest, res:
         const productDeliveryTerms = [
           `1. Product Delivery: The brand must dispatch the barter product to the creator within ${BARTER_DISPATCH_DAYS} days of contract signing. A tracking ID must be shared with the creator when applicable.`,
           `2. Product Condition: The product must match the description and agreed value. The creator may reject damaged or incorrect items.`,
-          `3. Delivery Confirmation: The creator confirms receipt inside the Creator Armour dashboard. The content timeline starts only after this confirmation.`,
+          `3. Delivery Confirmation: The creator confirms receipt inside the CreatorArmour dashboard. The content timeline starts only after this confirmation.`,
           `4. Non-Delivery: If the product is not delivered within the agreed timeline, the creator may cancel the collaboration and the brand loses collaboration rights under this agreement.`,
           `5. No Product, No Content: The creator is not obligated to deliver content until the product has been received and confirmed.`,
           `Delivery address: ${delivery_address.trim()}. Contact (masked): ${maskedPhone}.`,

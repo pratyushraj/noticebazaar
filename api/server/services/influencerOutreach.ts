@@ -74,7 +74,7 @@ function getDefaultTemplate(influencer: InfluencerResult): string {
   const name = influencer.creator_name.split(' ')[0]; // First name only
   const niche = influencer.niche || 'content';
   
-  return `Hey ${name}, loved your recent ${niche} content! We're building Creator Armour — a platform that protects creators with contracts and payments. Would you like early access as a Founding Creator? 🚀`;
+  return `Hey ${name}, loved your recent ${niche} content! We're building CreatorArmour — a platform that protects creators with contracts and payments. Would you like early access as a Founding Creator? 🚀`;
 }
 
 /**
@@ -84,7 +84,7 @@ function getFoundingCreatorTemplate(influencer: InfluencerResult): string {
   const name = influencer.creator_name.split(' ')[0];
   const niche = influencer.niche || 'content';
   
-  return `Hey ${name}! Your ${niche} content is 🔥 We're launching Creator Armour — the platform that protects creators with smart contracts and secure payments. We'd love to have you as a Founding Creator with exclusive benefits. Interested?`;
+  return `Hey ${name}! Your ${niche} content is 🔥 We're launching CreatorArmour — the platform that protects creators with smart contracts and secure payments. We'd love to have you as a Founding Creator with exclusive benefits. Interested?`;
 }
 
 /**
@@ -93,7 +93,7 @@ function getFoundingCreatorTemplate(influencer: InfluencerResult): string {
 function getFollowUpTemplate(influencer: InfluencerResult): string {
   const name = influencer.creator_name.split(' ')[0];
   
-  return `Hey ${name}, just following up on my message about Creator Armour. We're helping creators protect their work and get paid fairly. Would love to chat if you're interested!`;
+  return `Hey ${name}, just following up on my message about CreatorArmour. We're helping creators protect their work and get paid fairly. Would love to chat if you're interested!`;
 }
 
 // ============================================================================
@@ -150,7 +150,7 @@ async function personalizeMessageWithAI(
   baseMessage: string,
   template: MessageTemplate
 ): Promise<OutreachMessage> {
-  const prompt = `You are helping Creator Armour reach out to influencers.
+  const prompt = `You are helping CreatorArmour reach out to influencers.
 
 Influencer Details:
 - Name: ${influencer.creator_name}
@@ -167,7 +167,7 @@ ${baseMessage}
 Personalize this message (max 200 characters) to:
 1. Mention their specific content type if possible
 2. Keep it friendly and authentic
-3. Maintain the core message about Creator Armour
+3. Maintain the core message about CreatorArmour
 4. Include a clear call-to-action
 
 Return ONLY a valid JSON object:
