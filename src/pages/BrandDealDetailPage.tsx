@@ -16,6 +16,7 @@ import { cn } from '@/lib/utils';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
+import { isBarterLikeCollab } from '@/lib/deals/collabType';
 
 const BrandDealDetailPage: React.FC = () => {
   const { dealId } = useParams<{ dealId: string }>();
@@ -81,6 +82,10 @@ const BrandDealDetailPage: React.FC = () => {
   const contentLink = directContentLink || loggedContentLink;
   const contentNotes = directContentNotes || loggedContentNotes;
   const brandApprovalStatus = String((deal as any)?.brand_approval_status || '').trim().toLowerCase();
+  
+  const requiresShipping = isBarterLikeCollab(deal);
+  const shippingStatus = String((deal as any)?.shipping_status || '').trim().toLowerCase();
+  const isAwaitingShipment = requiresShipping && shippingStatus !== 'shipped' && shippingStatus !== 'delivered' && shippingStatus !== 'received';
 
   useEffect(() => {
     let cancelled = false;
@@ -193,10 +198,11 @@ const BrandDealDetailPage: React.FC = () => {
   const nextStepLabel = useMemo(() => {
     if (canReviewContent) return 'Review the creator content';
     if (canReleasePayment) return 'Mark payment as sent';
+    if (isAwaitingShipment) return 'Ship the product to creator';
     if (brandApprovalStatus === 'changes_requested') return 'Waiting for creator revision';
     if (brandApprovalStatus === 'approved' && paymentMarkedSent) return 'Waiting for creator confirmation';
     return 'Track this deal';
-  }, [brandApprovalStatus, canReleasePayment, canReviewContent, paymentMarkedSent]);
+  }, [brandApprovalStatus, canReleasePayment, canReviewContent, paymentMarkedSent, isAwaitingShipment]);
 
   const getStageColor = (status: string | null) => {
     if (!status) return 'bg-slate-500/20 text-slate-400';
@@ -324,11 +330,13 @@ const BrandDealDetailPage: React.FC = () => {
                 ? 'Check the submitted post. Approve it if it looks good, or request one clear change with feedback.'
                 : canReleasePayment
                   ? 'Add a payment reference (UTR or transaction ID) so the creator knows the payment is on the way. They will be notified automatically.'
-                  : brandApprovalStatus === 'changes_requested'
-                    ? 'The creator has been notified and will re-submit with revisions. You will get an email when the updated link is ready.'
-                    : brandApprovalStatus === 'approved' && paymentMarkedSent
-                      ? 'Waiting for the creator to confirm the payment has arrived in their account.'
-                      : 'Monitor this collaboration. Content and payment updates will appear here.'}
+                  : isAwaitingShipment
+                    ? 'The creator is waiting for the product to start working. Ship it and update the tracking details.'
+                    : brandApprovalStatus === 'changes_requested'
+                      ? 'The creator has been notified and will re-submit with revisions. You will get an email when the updated link is ready.'
+                      : brandApprovalStatus === 'approved' && paymentMarkedSent
+                        ? 'Waiting for the creator to confirm the payment has arrived in their account.'
+                        : 'Monitor this collaboration. Content and payment updates will appear here.'}
             </p>
             {canReleasePayment && (
               <p className="text-xs text-white/40 border border-white/10 rounded-lg px-3 py-2 mt-2">
@@ -364,7 +372,11 @@ const BrandDealDetailPage: React.FC = () => {
                     {contentLink}
                   </a>
                 ) : (
-                  <p className="text-sm text-white/60">The creator has not shared a live post link yet.</p>
+                  <p className="text-sm text-white/60">
+                    {isAwaitingShipment 
+                      ? 'The creator is waiting for the product to start working.' 
+                      : 'The creator has not shared a live post link yet.'}
+                  </p>
                 )}
               </div>
 

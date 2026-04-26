@@ -22,6 +22,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { DealStage, getDealStageFromStatus, STAGE_TO_PROGRESS, STAGE_TO_STATUS, useUpdateDealProgress } from '@/lib/hooks/useBrandDeals';
 import { useUpdateProfile } from '@/lib/hooks/useProfiles';
 import { dealPrimaryCtaButtonClass, getDealPrimaryCta } from '@/lib/deals/primaryCta';
+import { isBarterLikeCollab } from '@/lib/deals/collabType';
 import FiverrPackageEditor from '@/components/profile/FiverrPackageEditor';
 import { useInstagramSync } from '@/lib/hooks/useInstagramSync';
 import { safeAvatarSrc, withCacheBuster } from '@/lib/utils/image';
@@ -176,12 +177,6 @@ const inferCreatorRequiresPayment = (deal: any) => {
     return kind === 'paid' || kind === 'both' || kind === 'hybrid' || kind === 'paid_barter' || (kind !== 'barter' && amount > 0);
 };
 
-const inferCreatorRequiresShipping = (deal: any) => {
-    if (typeof deal?.requires_shipping === 'boolean') return Boolean(deal.requires_shipping);
-    if (typeof deal?.shipping_required === 'boolean') return Boolean(deal.shipping_required);
-    const kind = String(deal?.collab_type || deal?.deal_type || deal?.raw?.collab_type || '').trim().toLowerCase();
-    return kind === 'barter' || kind === 'both' || kind === 'hybrid' || kind === 'paid_barter';
-};
 
 const resolveCreatorDealProductImage = (item: any) => {
     const candidates = [
@@ -302,12 +297,13 @@ const getCreatorDealCardUX = (deal: any) => {
     const isCompleted = rawStatus.includes('completed') || rawStatus === 'paid';
     const isRevisionRequested = rawStatus.includes('revision_requested') || rawStatus.includes('changes_requested') || rawStatus.includes('brand_revision_requested');
     const isRevisionDone = rawStatus.includes('revision_done') || rawStatus.includes('revision_submitted');
-    const requiresShipping = inferCreatorRequiresShipping(deal);
+    const requiresShipping = isBarterLikeCollab(deal);
+    const shippingStatus = String(deal?.shipping_status || deal?.raw?.shipping_status || '').trim().toLowerCase();
     const isAwaitingShipment =
         requiresShipping &&
-        (rawStatus.includes('awaiting_product_shipment') ||
-            rawStatus.includes('awaiting_product') ||
-            rawStatus.includes('product_shipment_pending'));
+        shippingStatus !== 'shipped' &&
+        shippingStatus !== 'delivered' &&
+        shippingStatus !== 'received';
     const isDelivered =
         rawStatus.includes('content_delivered') ||
         rawStatus.includes('draft_review') ||
@@ -1279,7 +1275,7 @@ const MobileDashboardDemo = ({
 
     const selectedDealStatus = normalizeDealStatus(selectedItem);
     const selectedRequiresPayment = selectedType === 'deal' && !!selectedItem ? inferCreatorRequiresPayment(selectedItem) : false;
-    const selectedRequiresShipping = selectedType === 'deal' && !!selectedItem ? inferCreatorRequiresShipping(selectedItem) : false;
+    const selectedRequiresShipping = selectedType === 'deal' && !!selectedItem ? isBarterLikeCollab(selectedItem) : false;
     const selectedShippingStatus = String(selectedItem?.shipping_status || '').trim().toLowerCase() || 'pending';
     const selectedShippingDelivered = selectedShippingStatus === 'delivered' || selectedShippingStatus === 'received';
 

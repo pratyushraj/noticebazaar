@@ -1,3 +1,5 @@
+import { isBarterLikeCollab } from './collabType';
+
 export type DealRole = 'brand' | 'creator';
 
 export type CanonicalDealStatus =
@@ -149,18 +151,7 @@ export const getCanonicalDealStatus = (deal: any): CanonicalDealStatus => {
 export const getDealPrimaryCta = (params: { role: DealRole; deal: any }): DealPrimaryCta => {
   const { role, deal } = params;
   const status = getCanonicalDealStatus(deal);
-  const requiresShipping =
-    typeof deal?.requires_shipping === 'boolean'
-      ? Boolean(deal.requires_shipping)
-      : typeof deal?.shipping_required === 'boolean'
-        ? Boolean(deal.shipping_required)
-        : String(deal?.collab_type || deal?.deal_type || deal?.raw?.collab_type || '')
-          .trim()
-          .toLowerCase()
-          .includes('barter') ||
-          ['both', 'hybrid', 'paid_barter'].includes(
-            String(deal?.collab_type || deal?.deal_type || deal?.raw?.collab_type || '').trim().toLowerCase(),
-          );
+  const requiresShipping = isBarterLikeCollab(deal);
   const shippingStatus = String(deal?.shipping_status || deal?.raw?.shipping_status || '').trim().toLowerCase();
   const hasReceivedShipment = shippingStatus === 'delivered' || shippingStatus === 'received';
   const signatureSources = [
@@ -207,6 +198,9 @@ export const getDealPrimaryCta = (params: { role: DealRole; deal: any }): DealPr
       return { status, label: 'View Collaboration', disabled: false, tone: 'view', action: 'view_collaboration' };
     }
     if (status === 'CONTENT_MAKING') {
+      if (requiresShipping && shippingStatus !== 'shipped' && shippingStatus !== 'delivered' && shippingStatus !== 'received') {
+        return { status, label: 'Ship Product', disabled: false, tone: 'action', action: 'track_progress' };
+      }
       return { status, label: 'Track Progress', disabled: false, tone: 'view', action: 'track_progress' };
     }
     if (status === 'CONTENT_DELIVERED') {

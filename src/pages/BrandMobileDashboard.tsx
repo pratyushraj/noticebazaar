@@ -16,6 +16,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { buttons as dsButtons } from '@/lib/design-system';
 import { dealPrimaryCtaButtonClass, getDealPrimaryCta } from '@/lib/deals/primaryCta';
 import { CREATOR_ASSETS_BUCKET } from '@/lib/constants/storage';
+import { isBarterLikeCollab } from '@/lib/deals/collabType';
 import { BrandSettingsPanel } from '@/pages/BrandSettings';
 import { toast } from 'sonner';
 import { DiscoveryStack } from '@/components/brand-dashboard/DiscoveryStack';
@@ -479,7 +480,7 @@ const brandDealCardUi = (row: BrandDeal | null | undefined) => {
           : s === 'REVISION_REQUESTED'
             ? 'Waiting for creator revision'
             : s === 'CONTENT_MAKING'
-              ? 'Creator working on deliverables'
+              ? (primaryActionLabel === 'Ship Product' ? 'Awaiting product shipment' : 'Creator working on deliverables')
               : s === 'FULLY_EXECUTED'
                 ? 'Contract signed — creator can start work'
                 : s === 'AWAITING_CREATOR_SIGNATURE' || s === 'SENT'
@@ -1911,11 +1912,7 @@ const BrandMobileDashboard = ({
     const requiresPayment = typeof offer?.requires_payment === 'boolean'
       ? Boolean(offer.requires_payment)
       : (collabKind === 'paid' || collabKind === 'both' || collabKind === 'hybrid' || collabKind === 'paid_barter' || (collabKind !== 'barter' && amount > 0));
-    const requiresShipping = typeof offer?.requires_shipping === 'boolean'
-      ? Boolean(offer.requires_shipping)
-      : typeof offer?.shipping_required === 'boolean'
-        ? Boolean(offer.shipping_required)
-        : (collabKind === 'barter' || collabKind === 'both' || collabKind === 'hybrid' || collabKind === 'paid_barter');
+    const requiresShipping = isBarterLikeCollab(offer);
     const shippingStatus = String(offer?.shipping_status || '').trim().toLowerCase();
     const shippingDelivered = shippingStatus === 'delivered' || shippingStatus === 'received';
     const trackingNumber = String(offer?.tracking_number || '').trim();
@@ -2899,7 +2896,9 @@ const BrandMobileDashboard = ({
                               {normalizedDealStatus === 'CONTENT_MAKING'
                                 ? waitingRevision
                                   ? 'Waiting for creator to submit the updated links.'
-                                  : 'Waiting for creator to deliver the content links.'
+                                  : requiresShipping && !shippingDelivered
+                                    ? 'Awaiting product shipment from your side.'
+                                    : 'Waiting for creator to deliver the content links.'
                                 : canReview
                                   ? 'Open the links, then approve, request a revision, or raise an issue.'
                                   : waitingRevision

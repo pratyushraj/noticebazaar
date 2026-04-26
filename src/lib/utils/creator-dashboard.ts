@@ -1,4 +1,5 @@
 import { DealStage, getDealStageFromStatus } from '@/lib/hooks/useBrandDeals';
+import { isBarterLikeCollab } from '@/lib/deals/collabType';
 
 export const normalizeDealStatus = (deal: any) =>
     String(deal?.status ?? deal?.raw?.status ?? '')
@@ -29,12 +30,6 @@ export const inferCreatorRequiresPayment = (deal: any) => {
     return kind === 'paid' || kind === 'both' || kind === 'hybrid' || kind === 'paid_barter' || (kind !== 'barter' && amount > 0);
 };
 
-export const inferCreatorRequiresShipping = (deal: any) => {
-    if (typeof deal?.requires_shipping === 'boolean') return Boolean(deal.requires_shipping);
-    if (typeof deal?.shipping_required === 'boolean') return Boolean(deal.shipping_required);
-    const kind = String(deal?.collab_type || deal?.deal_type || deal?.raw?.collab_type || '').trim().toLowerCase();
-    return kind === 'barter' || kind === 'both' || kind === 'hybrid' || kind === 'paid_barter';
-};
 
 export const getCreatorDealCardUX = (deal: any) => {
     const rawStatus = normalizeDealStatus(deal);
@@ -42,7 +37,7 @@ export const getCreatorDealCardUX = (deal: any) => {
     const isCompleted = rawStatus.includes('completed') || rawStatus === 'paid';
     const isRevisionRequested = rawStatus.includes('revision_requested') || rawStatus.includes('changes_requested') || rawStatus.includes('brand_revision_requested');
     const isRevisionDone = rawStatus.includes('revision_done') || rawStatus.includes('revision_submitted');
-    const requiresShipping = inferCreatorRequiresShipping(deal);
+    const requiresShipping = isBarterLikeCollab(deal);
     const isAwaitingShipment =
         requiresShipping &&
         (rawStatus.includes('awaiting_product_shipment') ||

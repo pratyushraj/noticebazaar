@@ -30,6 +30,7 @@ import { useUpdateDealProgress, DealStage, STAGE_TO_PROGRESS, useDeleteBrandDeal
 import { triggerHaptic, HapticPatterns } from '@/lib/utils/haptics';
 import { DealProgressTracker } from '@/components/deals/DealProgressTracker';
 import { InvoiceGeneratorModal } from '@/components/deals/CreatorInvoiceGenerator';
+import { isBarterLikeCollab } from '@/lib/deals/collabType';
 
 import { motion } from 'framer-motion';
 import { NativeLoadingSheet } from '@/components/mobile/NativeLoadingSheet';
@@ -94,6 +95,7 @@ type GuidedDealState =
   | 'OFFER_ACCEPTED'
   | 'CONTRACT_SENT'
   | 'CONTRACT_SIGNED'
+  | 'AWAITING_PRODUCT'
   | 'CONTENT_IN_PROGRESS'
   | 'REVISION_REQUESTED'
   | 'CONTENT_SUBMITTED'
@@ -114,6 +116,8 @@ const getSimpleStatusLabel = (state: GuidedDealState) => {
       return 'Sign the agreement';
     case 'CONTRACT_SIGNED':
       return 'Make your content';
+    case 'AWAITING_PRODUCT':
+      return 'Waiting for Product';
     case 'CONTENT_IN_PROGRESS':
       return 'Share your post link';
     case 'REVISION_REQUESTED':
@@ -1212,7 +1216,14 @@ function DealDetailPageContent() {
     if (deal?.content_submitted_at && approvalStatus !== 'approved') return 'CONTENT_SUBMITTED';
     if (isPaidDrafting) return 'CONTENT_IN_PROGRESS';
     if (statusLower.includes('content') || statusLower.includes('live') || statusLower.includes('active')) return 'CONTENT_IN_PROGRESS';
-    if (executionStatus === 'signed' || executionStatus === 'completed' || bothSigned) return 'CONTRACT_SIGNED';
+    if (executionStatus === 'signed' || executionStatus === 'completed' || bothSigned) {
+      const shippingStatus = String((deal as any)?.shipping_status || '').trim().toLowerCase();
+      const hasReceived = shippingStatus === 'delivered' || shippingStatus === 'received';
+      if (isBarterLikeCollab(deal) && !hasReceived) {
+        return 'AWAITING_PRODUCT';
+      }
+      return 'CONTRACT_SIGNED';
+    }
     if (statusLower.includes('contract_ready') || statusLower.includes('signed_by_brand') || responseStatus === 'accepted_verified' || !!contractDocxUrl) return 'CONTRACT_SENT';
     if (isBarterDeliveryPending) return 'OFFER_ACCEPTED';
     return 'OFFER_SENT';
