@@ -4196,61 +4196,64 @@ const BrandMobileDashboard = ({
                                     <Send className="w-4 h-4 mr-2" /> Find creators
                                   </Button>
                                 )}
-	                                {activeCollabTab === 'action_required' && (
+                                {activeCollabTab === 'action_required' && (
                                   <Button type="button" onClick={() => openCreateOfferSheet()} className={cn('mt-4 rounded-2xl', isDark ? 'bg-primary hover:bg-primary text-foreground' : 'bg-primary hover:bg-primary text-foreground')}>
-	                                    <Send className="w-4 h-4 mr-2" /> Send new offer
-	                                  </Button>
-	                                )}
-	                              </div>
-	                            ) : (
-	                              <div className="p-4 space-y-3">
-	                                {visibleCollabItems.slice(0, 3).map((item: any) => {
-	                                  const isPendingItem = activeCollabTab === 'action_required';
-	                                  const isCompletedItem = activeCollabTab === 'completed';
-	                                  const creatorName = firstNameish(item?.profiles, item?.creator_name || item?.creator_email) || 'Creator';
-	                                  const creatorMeta = item?.profiles?.username || item?.creator_email || item?.creator_name || 'Creator';
-	                                  const amount = Number(item?.deal_amount || item?.exact_budget || 0);
-	                                  const due = isPendingItem ? offerExpiryLabel(item) : deadlineLabel(item);
-	                                  if (isPendingItem) {
-	                                    const sentIso = item?.created_at || item?.updated_at || null;
-	                                    const sentSince = sentIso ? timeSince(sentIso) : '';
-	                                    const sentHours = sentIso ? hoursSince(sentIso) : null;
-	                                    const exp = offerExpiryLabel(item);
-	                                    const isCountered = normalizeStatus(item?.status) === 'countered';
-	                                    const isNoResponse = !isCountered && sentHours !== null && sentHours >= 24;
-	                                    const statusLabel = isCountered ? 'CREATOR COUNTERED' : isNoResponse ? 'NO RESPONSE YET' : 'AWAITING RESPONSE';
+                                    <Send className="w-4 h-4 mr-2" /> Send new offer
+                                  </Button>
+                                )}
+                              </div>
+                            ) : (
+                              <div className="p-4 space-y-3">
+                                {visibleCollabItems.slice(0, 3).map((item: any, idx: number) => {
+                                  const itemKey = `collab-home-${item.id || idx}-${item.updated_at || ''}`;
+                                  const isPendingItem = activeCollabTab === 'action_required';
+                                  const isCompletedItem = activeCollabTab === 'completed';
+                                  const creatorName = item?.profiles?.business_name || item?.profiles?.first_name || item?.creator_name || item?.creator_email || 'Creator';
+                                  const creatorMeta = item?.profiles?.username || item?.creator_name || item?.creator_email || 'Creator';
+                                  const creatorAvatar = item?.profiles?.avatar_url || item?.profiles?.profile_image_url || item?.creator_avatar_url || item?.creator_photo_url || '';
+                                  const amount = Number(item?.deal_amount || item?.exact_budget || 0);
+                                  const due = isPendingItem ? offerExpiryLabel(item) : deadlineLabel(item);
 
-	                                    const urgencyParts: string[] = [];
-	                                    if (sentSince) urgencyParts.push(`Sent ${sentSince}`);
-	                                    if (exp?.text) urgencyParts.push(exp.text);
-	                                    else if (isNoResponse) urgencyParts.push('No response');
-	                                    const urgencyText = urgencyParts.join(' • ');
+                                  if (isPendingItem) {
+                                    const sentIso = item?.created_at || item?.updated_at || null;
+                                    const sentSince = sentIso ? timeSince(sentIso) : '';
+                                    const sentHours = sentIso ? hoursSince(sentIso) : null;
+                                    const exp = offerExpiryLabel(item);
+                                    const isCountered = normalizeStatus(item?.status) === 'countered';
+                                    const isNoResponse = !isCountered && sentHours !== null && sentHours >= 24;
+                                    const statusLabel = isCountered ? 'CREATOR COUNTERED' : isNoResponse ? 'NO RESPONSE YET' : 'AWAITING RESPONSE';
 
-	                                    const statusTone = isCountered
-	                                      ? (isDark ? 'bg-warning/10 text-warning border-warning/25' : 'bg-warning text-warning border-warning')
-	                                      : isNoResponse
-	                                        ? (isDark ? 'bg-warning/10 text-warning border-warning/25' : 'bg-warning text-warning border-warning')
-	                                        : (isDark ? 'bg-card text-foreground/70 border-border' : 'bg-card text-muted-foreground border-border');
+                                    const urgencyParts: string[] = [];
+                                    if (sentSince) urgencyParts.push(`Sent ${sentSince}`);
+                                    if (exp?.text) urgencyParts.push(exp.text);
+                                    else if (isNoResponse) urgencyParts.push('No response');
+                                    const urgencyText = urgencyParts.join(' • ');
 
-	                                    const urgencyTone =
-	                                      exp?.tone === 'danger'
-	                                        ? (isDark ? 'bg-rose-500/10 text-rose-200 border-rose-300/30' : 'bg-rose-50 text-rose-800 border-rose-200')
-	                                        : exp?.tone === 'warn'
-	                                          ? (isDark ? 'bg-warning/10 text-warning border-warning/30' : 'bg-warning text-warning border-warning')
-	                                          : isNoResponse
-	                                            ? (isDark ? 'bg-warning/10 text-warning border-warning/25' : 'bg-warning text-warning border-warning')
-	                                            : (isDark ? 'bg-card text-foreground/70 border-border' : 'bg-card text-muted-foreground border-border');
+                                    const statusTone = isCountered
+                                      ? (isDark ? 'bg-warning/10 text-warning border-warning/25' : 'bg-warning text-warning border-warning')
+                                      : isNoResponse
+                                        ? (isDark ? 'bg-warning/10 text-warning border-warning/25' : 'bg-warning text-warning border-warning')
+                                        : (isDark ? 'bg-card text-foreground/70 border-border' : 'bg-card text-muted-foreground border-border');
 
-	                                    const attentionBorder =
-	                                      exp?.tone === 'danger'
-	                                        ? (isDark ? 'border-rose-500/30' : 'border-rose-200')
-	                                        : exp?.tone === 'warn' || isNoResponse
-	                                          ? (isDark ? 'border-warning/25' : 'border-warning')
-	                                          : '';
+                                    const urgencyTone =
+                                      exp?.tone === 'danger'
+                                        ? (isDark ? 'bg-rose-500/10 text-rose-200 border-rose-300/30' : 'bg-rose-50 text-rose-800 border-rose-200')
+                                        : exp?.tone === 'warn'
+                                          ? (isDark ? 'bg-warning/10 text-warning border-warning/30' : 'bg-warning text-warning border-warning')
+                                          : isNoResponse
+                                            ? (isDark ? 'bg-warning/10 text-warning border-warning/25' : 'bg-warning text-warning border-warning')
+                                            : (isDark ? 'bg-card text-foreground/70 border-border' : 'bg-card text-muted-foreground border-border');
 
-	                                    return (
+                                    const attentionBorder =
+                                      exp?.tone === 'danger'
+                                        ? (isDark ? 'border-rose-500/30' : 'border-rose-200')
+                                        : exp?.tone === 'warn' || isNoResponse
+                                          ? (isDark ? 'border-warning/25' : 'border-warning')
+                                          : '';
+
+                                    return (
 	                                      <motion.div
-	                                        key={item.id}
+	                                        key={itemKey}
 	                                        whileTap={{ scale: 0.99 }}
 	                                        role="button"
 	                                        tabIndex={0}
@@ -4284,7 +4287,7 @@ const BrandMobileDashboard = ({
                                       <div className="flex items-start justify-between gap-3 mb-3">
                                         <div className="flex items-center gap-3 min-w-0">
                                           <Avatar className={cn('w-11 h-11 border shadow-sm shrink-0', isDark ? 'border-border' : 'border-border')}>
-                                            <AvatarImage src={safeImageSrc(item?.profiles?.avatar_url || item?.profiles?.profile_image_url || item?.creator_avatar_url || item?.creator_photo_url || '')} alt={creatorName} />
+                                            <AvatarImage src={safeImageSrc(creatorAvatar)} alt={creatorName} />
 	                                              <AvatarFallback className={cn(isDark ? 'bg-card text-foreground' : 'bg-background text-muted-foreground')}>
 	                                                {creatorName.slice(0, 1).toUpperCase()}
 	                                              </AvatarFallback>
@@ -4341,7 +4344,7 @@ const BrandMobileDashboard = ({
 			                                  const ui = brandDealCardUi(item);
 		                                  return (
 		                                    <motion.div
-		                                      key={item.id}
+		                                      key={itemKey}
 		                                      whileTap={{ scale: 0.985 }}
 		                                      className={cn(
 		                                        'w-full rounded-3xl border transition-all duration-300 group active:scale-[0.99] relative text-left backdrop-blur-xl overflow-hidden',
@@ -4719,13 +4722,15 @@ const BrandMobileDashboard = ({
                       </div>
                     ) : (
 	                      <div className="p-4 space-y-4 pb-44">
-	                        {visibleCollabItems.slice(0, 20).map((item: any) => {
+	                        {visibleCollabItems.slice(0, 20).map((item: any, idx: number) => {
+	                          const itemKey = `collab-list-${item.id || idx}-${item.updated_at || ''}`;
 	                          const isPendingItem = activeCollabTab === 'action_required';
 	                          const isCompletedItem = activeCollabTab === 'completed';
 		                          const due = isPendingItem ? offerExpiryLabel(item) : deadlineLabel(item);
 	                          const amount = Number(item?.deal_amount || item?.exact_budget || 0);
-	                          const creatorName = firstNameish(item?.profiles, item?.creator_name || item?.creator_email) || 'Creator';
-	                          const creatorMeta = item?.profiles?.username || item?.creator_email || item?.creator_name || 'Creator';
+	                          const creatorName = item?.profiles?.business_name || item?.profiles?.first_name || item?.creator_name || item?.creator_email || 'Creator';
+	                          const creatorMeta = item?.profiles?.username || item?.creator_name || item?.creator_email || 'Creator';
+	                          const creatorAvatar = item?.profiles?.avatar_url || item?.profiles?.profile_image_url || item?.creator_avatar_url || item?.creator_photo_url || '';
 	                          if (isPendingItem) {
 	                            const sentIso = item?.created_at || item?.updated_at || null;
 	                            const sentSince = sentIso ? timeSince(sentIso) : '';
@@ -4769,7 +4774,7 @@ const BrandMobileDashboard = ({
 
 	                            return (
 	                              <motion.div
-	                                key={item.id}
+	                                key={itemKey}
 	                                whileTap={{ scale: 0.985 }}
 	                                className={cn(
 	                                  'w-full p-5 rounded-[2.5rem] border transition-all duration-500 backdrop-blur-2xl relative overflow-hidden group',
@@ -4806,7 +4811,7 @@ const BrandMobileDashboard = ({
                                       <div className="relative">
                                         <Avatar className={cn('w-14 h-14 rounded-2xl border-2 shadow-xl shrink-0 transition-transform duration-500 group-hover:scale-105', isDark ? 'border-white/10 ring-4 ring-white/5' : 'border-white ring-4 ring-slate-100')}>
                                           <AvatarImage 
-                                            src={safeImageSrc(item?.profiles?.instagram_profile_photo || item?.profiles?.avatar_url || item?.profiles?.profile_image_url || item?.creator_avatar_url || item?.creator_photo_url || '')} 
+                                            src={safeImageSrc(item?.profiles?.instagram_profile_photo || creatorAvatar)} 
                                             alt={creatorName} 
                                             className="object-cover" 
                                           />

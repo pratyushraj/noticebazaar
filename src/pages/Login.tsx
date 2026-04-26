@@ -20,12 +20,20 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { getApiBaseUrl } from '@/lib/utils/api';
 import { motion, AnimatePresence } from 'framer-motion';
-import { triggerHaptic } from '@/lib/utils/haptics';
+import { triggerHaptic, HapticPatterns } from '@/lib/utils/haptics';
 
 const getErrorMessage = (error: unknown, fallback = 'An error occurred. Please try again.') =>
   error instanceof Error ? error.message : fallback;
 
 const Login = () => {
+  const safeHaptic = (pattern = HapticPatterns.light) => {
+    try {
+      triggerHaptic(pattern);
+    } catch (e) {
+      // ignore
+    }
+  };
+
   const navigate = useNavigate();
   const { session, loading, profile } = useSession();
   const [identifier, setIdentifier] = useState('');
@@ -251,7 +259,7 @@ const Login = () => {
                     <button
                       type="button"
                       onClick={() => {
-                        triggerHaptic?.();
+                        safeHaptic();
                         setShowPassword(!showPassword);
                       }}
                       className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center rounded-xl text-white/20 hover:text-white transition-all active:scale-90"
@@ -263,7 +271,7 @@ const Login = () => {
                     <button
                       type="button"
                       onClick={() => {
-                        triggerHaptic?.();
+                        safeHaptic();
                         handleForgotPassword();
                       }}
                       className="text-[11px] font-black uppercase tracking-widest text-white/20 hover:text-emerald-400 transition-colors"
@@ -276,7 +284,7 @@ const Login = () => {
                 <Button
                   type="submit"
                   disabled={isLoading || !identifier.trim() || !password.trim()}
-                  onClick={() => triggerHaptic?.()}
+                  onClick={() => safeHaptic()}
                   className="w-full bg-emerald-500 hover:bg-emerald-400 text-white font-black h-[64px] rounded-[22px] shadow-[0_20px_40px_rgba(16,185,129,0.2)] transition-all active:scale-[0.98] text-[15px] mt-2 relative overflow-hidden group border-none uppercase tracking-widest"
                 >
                   {isLoading ? (
@@ -299,7 +307,7 @@ const Login = () => {
               <div className="grid grid-cols-2 gap-4">
                 <Link 
                   to="/signup?mode=creator" 
-                  onClick={() => triggerHaptic?.()}
+                  onClick={() => safeHaptic()}
                   className="flex flex-col items-center justify-center p-5 rounded-[30px] bg-white/5 border border-white/5 hover:bg-white/10 hover:border-emerald-500/30 transition-all group active:scale-95"
                 >
                   <User className="w-6 h-6 text-white/20 mb-2 group-hover:text-emerald-400 group-hover:scale-110 transition-all" />
@@ -307,7 +315,7 @@ const Login = () => {
                 </Link>
                 <Link 
                   to="/signup?mode=brand" 
-                  onClick={() => triggerHaptic?.()}
+                  onClick={() => safeHaptic()}
                   className="flex flex-col items-center justify-center p-5 rounded-[30px] bg-white/5 border border-white/5 hover:bg-white/10 hover:border-blue-500/30 transition-all group active:scale-95"
                 >
                   <ShieldCheck className="w-6 h-6 text-white/20 mb-2 group-hover:text-blue-400 group-hover:scale-110 transition-all" />

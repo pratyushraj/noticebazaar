@@ -138,7 +138,18 @@ router.get('/requests', async (req: AuthenticatedRequest, res: Response) => {
           };
         });
         const byId = buildProfilesById(transformedProfs);
-        rows = rows.map((r) => ({ ...r, profiles: byId.get(String(r.creator_id)) || null }));
+        rows = rows.map((r) => {
+          const profile = byId.get(String(r.creator_id)) || null;
+          // If we have a profile, ensure we have at least a username or first_name
+          // This helps the frontend display something better than "Creator"
+          return { 
+            ...r, 
+            profiles: profile,
+            // Denormalize some fields for easier frontend access if needed
+            creator_name: profile ? (profile.business_name || `${profile.first_name || ""} ${profile.last_name || ""}`.trim() || profile.username) : r.creator_name,
+            creator_avatar_url: profile ? (profile.avatar_url || profile.instagram_profile_photo) : r.creator_avatar_url
+          };
+        });
       }
     }
 
@@ -1086,7 +1097,15 @@ router.get('/deals', async (req: AuthenticatedRequest, res: Response) => {
         .in('id' as any, creatorIds as any[]);
       if (!profErr) {
         const byId = buildProfilesById(profs);
-        rows = rows.map((r) => ({ ...r, profiles: byId.get(String(r.creator_id)) || null }));
+        rows = rows.map((r) => {
+          const profile = byId.get(String(r.creator_id)) || null;
+          return { 
+            ...r, 
+            profiles: profile,
+            creator_name: profile ? (profile.business_name || `${profile.first_name || ""} ${profile.last_name || ""}`.trim() || profile.username) : (r as any).creator_name,
+            creator_avatar_url: profile ? (profile.avatar_url || profile.instagram_profile_photo) : (r as any).creator_avatar_url
+          };
+        });
       }
     }
 
