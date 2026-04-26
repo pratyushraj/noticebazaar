@@ -4208,9 +4208,9 @@ const BrandMobileDashboard = ({
                                   const itemKey = `collab-home-${item.id || idx}-${item.updated_at || ''}`;
                                   const isPendingItem = activeCollabTab === 'action_required';
                                   const isCompletedItem = activeCollabTab === 'completed';
-                                  const creatorName = item?.profiles?.business_name || item?.profiles?.first_name || item?.creator_name || item?.creator_email || 'Creator';
+                                  const creatorName = firstNameish(item?.profiles, item?.creator_name || item?.creator_email);
                                   const creatorMeta = item?.profiles?.username || item?.creator_name || item?.creator_email || 'Creator';
-                                  const creatorAvatar = item?.profiles?.avatar_url || item?.profiles?.profile_image_url || item?.creator_avatar_url || item?.creator_photo_url || '';
+                                  const creatorAvatar = item?.profiles?.avatar_url || item?.profiles?.profile_image_url || item?.profiles?.instagram_profile_photo || item?.creator_avatar_url || item?.creator_photo_url || '';
                                   const amount = Number(item?.deal_amount || item?.exact_budget || 0);
                                   const due = isPendingItem ? offerExpiryLabel(item) : deadlineLabel(item);
 
@@ -4728,9 +4728,9 @@ const BrandMobileDashboard = ({
 	                          const isCompletedItem = activeCollabTab === 'completed';
 		                          const due = isPendingItem ? offerExpiryLabel(item) : deadlineLabel(item);
 	                          const amount = Number(item?.deal_amount || item?.exact_budget || 0);
-	                          const creatorName = item?.profiles?.business_name || item?.profiles?.first_name || item?.creator_name || item?.creator_email || 'Creator';
+	                          const creatorName = firstNameish(item?.profiles, item?.creator_name || item?.creator_email);
 	                          const creatorMeta = item?.profiles?.username || item?.creator_name || item?.creator_email || 'Creator';
-	                          const creatorAvatar = item?.profiles?.avatar_url || item?.profiles?.profile_image_url || item?.creator_avatar_url || item?.creator_photo_url || '';
+	                          const creatorAvatar = item?.profiles?.avatar_url || item?.profiles?.profile_image_url || item?.profiles?.instagram_profile_photo || item?.creator_avatar_url || item?.creator_photo_url || '';
 	                          if (isPendingItem) {
 	                            const sentIso = item?.created_at || item?.updated_at || null;
 	                            const sentSince = sentIso ? timeSince(sentIso) : '';

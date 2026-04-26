@@ -310,6 +310,37 @@ export async function signContractAsBrand(
       } else {
         console.log(`[ContractSigningService] Deal status updated to ${newStatus}`);
 
+        // ── PAYMENT_PENDING auto-transition ──────────────────────────────────────
+        // If fully executed and paid, move to PAYMENT_PENDING
+        if (newStatus === 'FULLY_EXECUTED') {
+           const { data: freshDeal } = await supabase
+             .from('brand_deals')
+             .select('collab_type, deal_type, deal_amount')
+             .eq('id', request.dealId)
+             .maybeSingle();
+           
+           if (freshDeal) {
+             const normalizeCollabKind = (raw: any) => String(raw || '').trim().toLowerCase();
+             const kind = normalizeCollabKind(freshDeal.collab_type || freshDeal.deal_type);
+             const requiresPayment = (kind === 'paid' || kind === 'both' || kind === 'hybrid' || kind === 'paid_barter') || Number(freshDeal.deal_amount || 0) > 0;
+             
+             if (requiresPayment) {
+                console.log(`[ContractSigningService] Transitioning deal ${request.dealId} to PAYMENT_PENDING`);
+                await supabase
+                  .from('brand_deals')
+                  .update({ status: 'PAYMENT_PENDING', updated_at: new Date().toISOString() } as any)
+                  .eq('id', request.dealId);
+
+                await supabase.from('deal_action_logs').insert({
+                  deal_id: request.dealId,
+                  user_id: null,
+                  event: 'PAYMENT_PENDING_STARTED',
+                  metadata: { reason: 'Paid deal fully executed; awaiting brand payment confirmation.' },
+                });
+             }
+           }
+        }
+
         // Trigger learned rate update if deal is fully executed
         if (newStatus === 'FULLY_EXECUTED' && qualifiesForRateLearning(deal)) {
           console.log(`[ContractSigningService] Deal qualifies for rate learning, updating creator ${deal.creator_id}`);
@@ -645,6 +676,37 @@ export async function signContractAsCreator(
         .eq('id', request.dealId);
 
       console.log(`[ContractSigningService] Deal status updated to ${newStatus}`);
+
+      // ── PAYMENT_PENDING auto-transition ──────────────────────────────────────
+      // If fully executed and paid, move to PAYMENT_PENDING
+      if (newStatus === 'FULLY_EXECUTED') {
+         const { data: freshDeal } = await supabase
+           .from('brand_deals')
+           .select('collab_type, deal_type, deal_amount')
+           .eq('id', request.dealId)
+           .maybeSingle();
+         
+         if (freshDeal) {
+           const normalizeCollabKind = (raw: any) => String(raw || '').trim().toLowerCase();
+           const kind = normalizeCollabKind(freshDeal.collab_type || freshDeal.deal_type);
+           const requiresPayment = (kind === 'paid' || kind === 'both' || kind === 'hybrid' || kind === 'paid_barter') || Number(freshDeal.deal_amount || 0) > 0;
+           
+           if (requiresPayment) {
+              console.log(`[ContractSigningService] Transitioning deal ${request.dealId} to PAYMENT_PENDING (creator signed)`);
+              await supabase
+                .from('brand_deals')
+                .update({ status: 'PAYMENT_PENDING', updated_at: new Date().toISOString() } as any)
+                .eq('id', request.dealId);
+
+              await supabase.from('deal_action_logs').insert({
+                deal_id: request.dealId,
+                user_id: request.creatorId,
+                event: 'PAYMENT_PENDING_STARTED',
+                metadata: { reason: 'Paid deal fully executed; awaiting brand payment confirmation.' },
+              });
+           }
+         }
+      }
 
       // Trigger learned rate update if deal is fully executed
       if (newStatus === 'FULLY_EXECUTED' && qualifiesForRateLearning(deal)) {

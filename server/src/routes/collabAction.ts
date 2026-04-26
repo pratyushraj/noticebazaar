@@ -114,7 +114,8 @@ router.post('/confirm', async (req, res) => {
             deal_amount: request.collab_type === 'paid' || request.collab_type === 'both' ? request.exact_budget : request.barter_value,
             currency: 'INR',
             deliverables: request.deliverables,
-            status: 'contract_ready',
+            status: request.collab_type === 'barter' ? 'contract_ready' : 'PAYMENT_PENDING',
+            progress_percentage: request.collab_type === 'barter' ? 20 : 10,
             platform: 'instagram',
             collab_request_id: request.id
         };

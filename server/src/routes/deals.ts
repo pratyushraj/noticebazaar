@@ -196,37 +196,98 @@ const fetchDealsForCreator = async (creatorId: string, creatorEmail?: string | n
         return d;
       });
 
-      // Hardening: ensure creator dashboard never receives deals with 0/invalid amount.
-      // Some legacy barter/hybrid conversions wrote `deal_amount=0` when the request had no budget/value.
-      const needsAmountFix = deals.filter((d) => {
-        const amt = Number((d as any)?.deal_amount || 0);
-        const collabLike = String((d as any)?.collab_type || (d as any)?.deal_type || '').toLowerCase();
-        return (!Number.isFinite(amt) || amt <= 0) && !!String((d as any)?.collab_request_id || '').trim() && (collabLike.includes('barter') || collabLike.includes('hybrid') || collabLike.includes('both'));
-      });
+      // Hardening: Recover missing collab links and fetch product photos.
+      // Many deals have null collab_request_id or are missing product images because they are not stored in brand_deals table.
+      const dealsToEnrich = deals.filter((d: any) => 
+        d.collab_request_id || 
+        (d.created_via === 'collab_request' && d.status !== 'Completed')
+      );
 
-      if (needsAmountFix.length > 0) {
-        const ids = Array.from(new Set(needsAmountFix.map((d) => String((d as any).collab_request_id)).filter(Boolean)));
+      if (dealsToEnrich.length > 0) {
+        const linkedIds = dealsToEnrich.map((d: any) => d.collab_request_id).filter(Boolean);
+        
         try {
-          const { data: requests } = await (supabase as any)
-            .from('collab_requests')
-            .select('id, exact_budget, barter_value, collab_type')
-            .in('id', ids);
+          // Fetch requests for linked deals
+          let requests: any[] = [];
+          if (linkedIds.length > 0) {
+            const { data } = await supabase
+              .from('collab_requests')
+              .select('id, exact_budget, barter_value, barter_product_image_url, brand_name, brand_logo_url')
+              .in('id', linkedIds);
+            if (data) requests = data;
+          }
 
-          const byId = new Map<string, any>();
-          for (const r of (requests || []) as any[]) byId.set(String(r.id), r);
+          // Recovery: for deals without ID, try matching by brand name
+          const missingLinkDeals = dealsToEnrich.filter((d: any) => !d.collab_request_id);
+          console.log(`[Deals] Enrichment: ${dealsToEnrich.length} deals to check, ${missingLinkDeals.length} missing link ID`);
+          if (missingLinkDeals.length > 0) {
+             const brandNames = Array.from(new Set(missingLinkDeals.map((d: any) => d.brand_name))).filter(Boolean);
+             console.log(`[Deals] Enrichment: Searching requests for brands: ${brandNames.join(', ')}`);
+             const { data: recovered, error: recoveredErr } = await supabase
+               .from('collab_requests')
+               .select('id, exact_budget, barter_value, barter_product_image_url, brand_name, brand_logo_url')
+               .eq('creator_id', creatorId)
+               .in('brand_name', brandNames)
+               .order('created_at', { ascending: false });
+             
+             if (recoveredErr) console.error('[Deals] Enrichment: Recover error:', recoveredErr);
+             if (recovered) {
+               console.log(`[Deals] Enrichment: Found ${recovered.length} potential matching requests`);
+               requests = [...requests, ...recovered];
+             }
+          }
+
+          const requestMap = new Map<string, any>();
+          const brandMap = new Map<string, any>();
+          
+          for (const r of requests) {
+            requestMap.set(String(r.id), r);
+            const brandKey = String(r.brand_name || '').trim().toLowerCase();
+            if (brandKey) {
+              const existing = brandMap.get(brandKey);
+              // Prioritize the request that has a product image
+              if (!existing || (!existing.barter_product_image_url && r.barter_product_image_url)) {
+                brandMap.set(brandKey, r);
+              }
+            }
+          }
 
           for (const d of deals) {
-            const id = String((d as any)?.collab_request_id || '').trim();
-            if (!id) continue;
-            const r = byId.get(id);
-            if (!r) continue;
-            const exact = r.exact_budget != null ? Number(r.exact_budget) : null;
-            const barter = r.barter_value != null ? Number(r.barter_value) : null;
-            const computed = exact && exact > 0 ? exact : barter && barter > 0 ? barter : null;
-            if (computed && computed > 0) (d as any).deal_amount = computed;
+            const normalizedDealBrand = String(d.brand_name || '').trim().toLowerCase();
+            const r = requestMap.get(String((d as any).collab_request_id)) || brandMap.get(normalizedDealBrand);
+            if (!r) {
+              console.log(`[Deals] No request found for deal ${d.id} (Brand: ${d.brand_name}, Normalized: ${normalizedDealBrand})`);
+              continue;
+            }
+
+            console.log(`[Deals] Found request ${r.id} for deal ${d.id} (Brand: ${d.brand_name}). Image: ${r.barter_product_image_url}`);
+
+            // Fix amount if missing
+            const amt = Number(d.deal_amount || 0);
+            if (amt <= 0) {
+              const exact = r.exact_budget != null ? Number(r.exact_budget) : null;
+              const barter = r.barter_value != null ? Number(r.barter_value) : null;
+              const computed = (exact && exact > 0) ? exact : (barter && barter > 0) ? barter : null;
+              if (computed && computed > 0) (d as any).deal_amount = computed;
+            }
+
+            // Backfill product image
+            if (!(d as any).barter_product_image_url && r.barter_product_image_url) {
+              (d as any).barter_product_image_url = r.barter_product_image_url;
+              console.log(`[Deals] Backfilled image for deal ${d.id}: ${r.barter_product_image_url}`);
+            }
+            
+            // Backfill request id if recovered
+            if (!(d as any).collab_request_id) {
+              (d as any).collab_request_id = r.id;
+              console.log(`[Deals] Backfilled request id for deal ${d.id}: ${r.id}`);
+            }
+            if (!d.brand_logo_url && r.brand_logo_url) {
+              d.brand_logo_url = r.brand_logo_url;
+            }
           }
-        } catch {
-          // ignore lookup failures; we'll filter invalid items below.
+        } catch (enrichError) {
+          console.warn('[Deals] Failed to enrich deals with request data:', enrichError);
         }
       }
 
@@ -1889,17 +1950,25 @@ router.post('/:id/cancel-unpaid', authMiddleware, async (req: AuthenticatedReque
  */
 router.post('/:id/create-payment-link', authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
   try {
-    const dealId = req.params.id;
+    let dealId = req.params.id;
     const userId = req.user?.id;
     const role = String(req.user?.role || '').toLowerCase();
 
     if (!userId) return res.status(401).json({ success: false, error: 'Authentication required' });
-    if (role !== 'brand' && role !== 'admin') {
+
+    let { deal, error: dealError } = await fetchDealForBrandMutation(dealId);
+
+    if (dealError || !deal) return res.status(404).json({ success: false, error: 'Deal not found' });
+
+    // Authorization: allow if role=brand/admin, OR if the user is the brand who owns this deal
+    // (checked by brand_id or brand_email, to handle older records created without brand_id).
+    const dealBrandId = String((deal as any).brand_id || '');
+    const dealBrandEmail = String((deal as any).brand_email || '').toLowerCase();
+    const userEmail = String(req.user?.email || '').toLowerCase();
+    const isOwner = (dealBrandId && dealBrandId === userId) || (dealBrandEmail && userEmail && dealBrandEmail === userEmail);
+    if (role !== 'brand' && role !== 'admin' && !isOwner) {
       return res.status(403).json({ success: false, error: 'Brand access required' });
     }
-
-    const { deal, error: dealError } = await fetchDealForBrandMutation(dealId);
-    if (dealError || !deal) return res.status(404).json({ success: false, error: 'Deal not found' });
     
     const current = normalizeStatus((deal as any).status);
     if (current !== 'PAYMENT_PENDING') {
@@ -2486,7 +2555,12 @@ router.patch('/:id/review-content', authMiddleware, async (req: AuthenticatedReq
       // Email Creator
       const { data: creator } = await supabase.from('creators').select('email, first_name, username').eq('id', userId).single();
       if (creator) {
-        await sendCreatorContentReviewedEmail(creator, { brandName: deal.brand_name, isApproved: true, feedback: feedback || 'Looks good! Proceeding to payment.' });
+        await sendCreatorContentReviewedEmail(creator, { 
+          brandName: deal.brand_name, 
+          isApproved: true, 
+          feedback: feedback || 'Looks good! Proceeding to payment.',
+          dealId: dealId
+        });
       }
     } else if (status === 'changes_requested') {
       await notifyCreatorForDealEvent('revision_requested', {
@@ -2499,7 +2573,12 @@ router.patch('/:id/review-content', authMiddleware, async (req: AuthenticatedReq
       // Email Creator
       const { data: creator } = await supabase.from('creators').select('email, first_name, username').eq('id', userId).single();
       if (creator) {
-        await sendCreatorContentReviewedEmail(creator, { brandName: deal.brand_name, isApproved: false, feedback: feedback || 'Please review the brief and make necessary adjustments.' });
+        await sendCreatorContentReviewedEmail(creator, { 
+          brandName: deal.brand_name, 
+          isApproved: false, 
+          feedback: feedback || 'Please review the brief and make necessary adjustments.',
+          dealId: dealId
+        });
       }
     }
 

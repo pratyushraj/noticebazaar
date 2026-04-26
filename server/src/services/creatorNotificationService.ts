@@ -180,26 +180,37 @@ export async function sendCreatorDeliverableSubmittedEmail(
 }
 
 /**
- * 10. Brand Viewed Content
- * Trigger: Brand opens submission
+ * 10. Brand Reviewed Content (Approved or Changes Requested)
+ * Trigger: Brand approves or requests changes
  */
 export async function sendCreatorContentReviewedEmail(
-  creatorEmail: string,
-  creatorName: string,
-  brandName: string,
-  dealId: string
+  creator: { email: string; first_name?: string; username?: string },
+  options: { brandName: string; isApproved: boolean; feedback?: string; dealId?: string }
 ): Promise<{ success: boolean; emailId?: string; error?: string }> {
-  const dashboardLink = `${process.env.FRONTEND_URL || 'https://creatorarmour.com'}/creator-contracts/${dealId}`;
+  const { email: creatorEmail, first_name: firstName, username } = creator;
+  const { brandName, isApproved, feedback, dealId } = options;
+  const creatorName = firstName || username || 'Creator';
+  
+  const dashboardLink = dealId 
+    ? `${process.env.FRONTEND_URL || 'https://creatorarmour.com'}/creator-contracts/${dealId}`
+    : `${process.env.FRONTEND_URL || 'https://creatorarmour.com'}/creator-dashboard`;
+
+  const statusTitle = isApproved ? '✅ Submission Approved' : '🔄 Revisions Requested';
+  const statusColor = isApproved ? '#10b981' : '#f59e0b';
+  const signalType = isApproved ? 'happened' : 'action';
+  const signalMessage = isApproved 
+    ? `Great news! ${brandName} has approved your content.` 
+    : `${brandName} has requested some changes to your content.`;
 
   const mainContent = `
     <tr>
-      <td style="background-color: #f0f9ff; padding: 40px 30px; text-align: center;">
-        <h1 style="color: #0369a1; margin: 0; font-size: 24px;">👀 Submission Reviewed</h1>
+      <td style="background-color: ${statusColor}; padding: 40px 30px; text-align: center;">
+        <h1 style="color: #ffffff; margin: 0; font-size: 24px;">${statusTitle}</h1>
       </td>
     </tr>
     ${getEmailSignal({
-    type: 'happened',
-    message: 'Brand has reviewed your submission.'
+    type: signalType,
+    message: signalMessage
   })}
     <tr>
       <td style="padding: 40px 30px;">
@@ -207,21 +218,35 @@ export async function sendCreatorContentReviewedEmail(
           Hi ${getFirstName(creatorName)},
         </p>
         <p style="margin: 0 0 24px 0; font-size: 15px; color: #4a5568; line-height: 1.6;">
-          <strong>${brandName}</strong> has just reviewed your content submission.
+          <strong>${brandName}</strong> has reviewed your content submission.
         </p>
-        <p style="margin: 0; font-size: 15px; color: #4a5568; line-height: 1.6;">
-          We will notify you if they request any revisions or when they mark the deliverable as complete.
-        </p>
-        <p style="margin: 24px 0 0 0; font-size: 14px; color: #718096; font-style: italic; line-height: 1.6;">
-          No further action is required from you at this stage.
-        </p>
-        ${getPrimaryCTA('Check Latest Status', dashboardLink)}
+        
+        <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px; margin-bottom: 24px;">
+          <p style="margin: 0 0 8px 0; font-size: 13px; color: #718096; font-weight: bold; text-transform: uppercase;">Brand Feedback:</p>
+          <p style="margin: 0; font-size: 15px; color: #1e293b; font-style: italic; line-height: 1.5;">
+            "${feedback || (isApproved ? 'Looks great! No changes needed.' : 'Please see the dashboard for detailed revision notes.')}"
+          </p>
+        </div>
+
+        ${isApproved ? `
+          <p style="margin: 0 0 24px 0; font-size: 15px; color: #4a5568; line-height: 1.6;">
+            Your payment is now scheduled for release. You can track the payout status in your dashboard.
+          </p>
+        ` : `
+          <p style="margin: 0 0 24px 0; font-size: 15px; color: #4a5568; line-height: 1.6;">
+            Please review the feedback and submit your revised content through the dashboard as soon as possible.
+          </p>
+        `}
+        
+        ${getPrimaryCTA(isApproved ? 'View Payout Status' : 'Review & Resubmit', dashboardLink)}
       </td>
     </tr>
   `;
 
   const html = getEmailLayout({ content: mainContent, showFooter: true });
-  const subject = `Brand has reviewed your submission`;
+  const subject = isApproved 
+    ? `Content Approved: ${brandName} ✅` 
+    : `Action Required: Revisions for ${brandName} 🔄`;
 
   return sendEmail(creatorEmail, subject, html);
 }

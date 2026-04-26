@@ -16,6 +16,15 @@ body {
   -webkit-user-select: none;
   user-select: none;
   overscroll-behavior-y: none; /* Disable browser pull-to-refresh for custom implementation */
+  .animate-loading-bar {
+    animation: loading-slide 1.5s ease-in-out infinite;
+  }
+}
+
+@keyframes loading-slide {
+  0% { transform: translateX(-100%); }
+  50% { transform: translateX(150%); }
+  100% { transform: translateX(-100%); }
 }
 
 input, textarea, [contenteditable="true"], .selectable {

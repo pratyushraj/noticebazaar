@@ -150,14 +150,18 @@ router.post('/payouts/:id/release', authMiddleware, adminOnly, async (req: Authe
     try {
       const { data: creatorInfo } = await supabase
         .from('profiles')
-        .select('email, display_name')
+        .select('email, first_name, last_name, username')
         .eq('id', deal.creator_id)
         .single();
         
       if (creatorInfo?.email) {
+        const creatorName = creatorInfo.first_name 
+          ? `${creatorInfo.first_name} ${creatorInfo.last_name || ''}`.trim() 
+          : (creatorInfo.username || 'Creator');
+
         await sendCreatorPaymentReleasedEmail(
           creatorInfo.email,
-          creatorInfo.display_name || 'Creator',
+          creatorName,
           Number(deal.creator_amount || 0),
           utr_number
         );

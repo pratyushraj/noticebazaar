@@ -1,12 +1,9 @@
-import { useState, useEffect } from "react";
-import { IndianRupee, X, Shield, Clock } from "lucide-react";
+import { useState } from "react";
+import { IndianRupee, X, Shield, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { getApiBaseUrl } from "@/lib/utils/api";
 import { useSession } from "@/contexts/SessionContext";
-import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 
 interface Props {
   dealId: string;
@@ -16,48 +13,69 @@ interface Props {
   onSuccess: () => void;
 }
 
+// Client-side fee breakdown (mirrors server/src/lib/payment.ts)
+const PLATFORM_FEE_PCT = 0.10;
+const GST_PCT = 0.18;
+
+function computeBreakdown(dealAmountRupees: number) {
+  const deal = Math.round(dealAmountRupees);
+  const platformFee = Math.round(deal * PLATFORM_FEE_PCT);
+  const gstOnFee = Math.round(platformFee * GST_PCT);
+  const brandTotal = deal + platformFee + gstOnFee;
+  const creatorPayout = deal;
+  return { dealAmount: deal, platformFee, gstOnFee, brandTotal, creatorPayout };
+}
+
 export function ConfirmPaymentPendingModal({ dealId, dealAmount, creatorName, onClose, onSuccess }: Props) {
   const { session } = useSession();
-  const queryClient = useQueryClient();
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [breakdown, setBreakdown] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
-  // Fetch breakdown on mount
-  useEffect(() => {
-    if (!dealId || !session?.access_token) return;
-    
-    fetch(`${getApiBaseUrl()}/api/deals/${dealId}/create-payment-link`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${session.access_token}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({}), // We just use it to fetch the breakdown + link
-    })
-      .then(res => res.json())
-      .then(data => {
-        if (data.success && data.breakdown) {
-          setBreakdown(data);
-        } else {
-          toast.error(data.error || "Failed to prepare payment");
-        }
-      })
-      .catch(err => {
-        console.error(err);
-      });
-  }, [dealId, session]);
+  const amount = Number(dealAmount || 0);
+  const breakdown = amount > 0 ? computeBreakdown(amount) : null;
 
-  const handlePayNow = () => {
-    if (!breakdown?.short_url) {
-      toast.error("Payment link not ready. Please try again.");
+  const handlePayNow = async () => {
+    if (!session?.access_token) {
+      toast.error("Session expired. Please refresh and try again.");
       return;
     }
-    
-    // In MVP, we just open the Razorpay short link in a new tab.
-    // The webhook will handle the status update to CONTENT_MAKING.
-    window.open(breakdown.short_url, "_blank");
-    toast.info("Payment opened in new tab. Deal will update automatically once paid.");
-    onClose();
+    if (!dealId) {
+      toast.error("Deal details unavailable.");
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const res = await fetch(`${getApiBaseUrl()}/api/deals/${dealId}/create-payment-link`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({}),
+      });
+
+      const data = await res.json().catch(() => ({}));
+
+      if (!res.ok || !data.success) {
+        toast.error(data.error || "Failed to create payment link. Please try again.");
+        return;
+      }
+
+      const url = data.short_url;
+      if (!url) {
+        toast.error("Payment link not available. Please try again.");
+        return;
+      }
+
+      // Open Razorpay in new tab; webhook handles status update to CONTENT_MAKING.
+      window.open(url, "_blank");
+      toast.success("Payment page opened! Deal will update automatically once paid.");
+      onSuccess();
+    } catch (err: any) {
+      toast.error(err?.message || "Something went wrong. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -69,78 +87,75 @@ export function ConfirmPaymentPendingModal({ dealId, dealAmount, creatorName, on
         aria-label="Confirm payment"
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-white/8">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-white/10">
           <div className="flex items-center gap-2">
             <IndianRupee className="h-5 w-5 text-emerald-400" />
             <span className="font-bold text-white text-base">Confirm Payment</span>
           </div>
-          <button onClick={onClose} className="text-white/40 hover:text-white/80 transition-colors">
+          <button onClick={onClose} className="text-white/40 hover:text-white/80 transition-colors" aria-label="Close">
             <X className="h-5 w-5" />
           </button>
         </div>
 
         <div className="p-5 space-y-5">
-          {/* Info cards */}
-          <div className="grid grid-cols-2 gap-3">
-            <div className="rounded-xl bg-emerald-500/8 border border-emerald-500/20 p-3">
-              <div className="flex items-center gap-1.5 text-emerald-400 text-xs font-medium mb-1">
-                <Shield className="h-3.5 w-3.5" />
-                Deal amount
-              </div>
-              <div className="text-white font-bold text-lg">
-                {dealAmount ? `₹${dealAmount.toLocaleString("en-IN")}` : "—"}
-              </div>
-            </div>
-            <div className="rounded-xl bg-blue-500/8 border border-blue-500/20 p-3">
-              <div className="flex items-center gap-1.5 text-blue-400 text-xs font-medium mb-1">
-                <Clock className="h-3.5 w-3.5" />
-                Creator
-              </div>
-              <div className="text-white font-semibold text-sm truncate">
-                {creatorName || "—"}
-              </div>
-            </div>
+          {/* Escrow notice */}
+          <div className="flex items-start gap-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 px-4 py-3">
+            <Shield className="h-4 w-4 text-emerald-400 mt-0.5 shrink-0" />
+            <p className="text-sm text-emerald-300 font-medium leading-relaxed">
+              Payment is securely held in escrow and released only after you approve the creator's content.
+            </p>
           </div>
-
-          <p className="text-sm text-white/55 leading-relaxed">
-            <span className="text-emerald-400 font-semibold flex items-center gap-1.5 mb-2"><Shield className="w-4 h-4" /> Payments are securely held and released after approval</span>
-            By proceeding, you will pay the total amount via Razorpay. The creator will be notified and can start delivering content immediately.
-          </p>
 
           {/* Breakdown */}
           {breakdown ? (
             <div className="rounded-xl bg-white/5 border border-white/10 p-4 space-y-3">
               <div className="flex justify-between text-sm text-white/70">
                 <span>Deal amount</span>
-                <span>₹{breakdown.breakdown.dealAmount.toLocaleString("en-IN")}</span>
+                <span>₹{breakdown.dealAmount.toLocaleString("en-IN")}</span>
               </div>
               <div className="flex justify-between text-sm text-white/70">
-                <span>Platform fee</span>
-                <span>₹{breakdown.breakdown.platformFee.toLocaleString("en-IN")}</span>
+                <span>Platform fee (10%)</span>
+                <span>₹{breakdown.platformFee.toLocaleString("en-IN")}</span>
               </div>
               <div className="flex justify-between text-sm text-white/70">
                 <span>GST (18% on fee)</span>
-                <span>₹{breakdown.breakdown.gstOnFee.toLocaleString("en-IN")}</span>
+                <span>₹{breakdown.gstOnFee.toLocaleString("en-IN")}</span>
               </div>
               <div className="border-t border-white/10 pt-3 flex justify-between font-bold text-white text-base">
                 <span>Total Payable</span>
-                <span>₹{breakdown.breakdown.brandTotal.toLocaleString("en-IN")}</span>
+                <span>₹{breakdown.brandTotal.toLocaleString("en-IN")}</span>
               </div>
+              <p className="text-xs text-white/40 pt-1">
+                Creator receives ₹{breakdown.creatorPayout.toLocaleString("en-IN")} after content approval.
+              </p>
             </div>
           ) : (
-            <div className="h-32 flex items-center justify-center border border-white/5 rounded-xl bg-white/2">
-              <span className="h-5 w-5 border-2 border-emerald-500/30 border-t-emerald-500 rounded-full animate-spin" />
+            <div className="rounded-xl bg-white/5 border border-white/10 p-4 text-center text-white/50 text-sm">
+              No deal amount set. Please contact support.
             </div>
           )}
 
           <Button
             type="button"
             onClick={handlePayNow}
-            disabled={!breakdown?.short_url}
-            className="w-full h-12 font-bold bg-emerald-600 hover:bg-emerald-500 text-white disabled:opacity-40"
+            disabled={isLoading || !breakdown}
+            className="w-full h-12 font-bold bg-emerald-600 hover:bg-emerald-500 text-white disabled:opacity-40 flex items-center justify-center gap-2"
           >
-            {breakdown ? `Pay ₹${breakdown.breakdown.brandTotal.toLocaleString("en-IN")} via Razorpay` : "Preparing secure payment..."}
+            {isLoading ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Opening payment…
+              </>
+            ) : breakdown ? (
+              `Pay ₹${breakdown.brandTotal.toLocaleString("en-IN")} via Razorpay`
+            ) : (
+              "Amount not available"
+            )}
           </Button>
+
+          <p className="text-center text-xs text-white/30">
+            Payment processed securely by Razorpay
+          </p>
         </div>
       </div>
     </div>

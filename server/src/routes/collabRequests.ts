@@ -2199,7 +2199,7 @@ router.post('/:username/submit', async (req: Request, res: Response) => {
     }
 
     insertData.barter_description = basePayload.barter_description || null;
-    insertData.barter_value = basePayload.barter_value ?? null;
+    insertData.barter_value = basePayload.barter_value || null;
     insertData.barter_product_image_url = normalizedProductImage;
 
     const requestOptionalFields = new Set([
@@ -2941,8 +2941,8 @@ router.post('/accept/confirm', async (req: AuthenticatedRequest, res: Response) 
       due_date: request.deadline || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
       payment_expected_date: request.deadline || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
       platform: 'Other',
-      status: isBarter ? 'Drafting' : 'content_making',
-      progress_percentage: isBarter ? 15 : 85,
+      status: isBarter ? 'Drafting' : 'CONTRACT_READY',
+      progress_percentage: isBarter ? 15 : 20,
       deal_type: isBarter ? 'barter' : 'paid',
       collab_type: normalizeCollabTypeForApi(request.collab_type) || request.collab_type,
       shipping_required: (request as any).shipping_required === true || (request as any).shipping_required === 'true',
@@ -2951,7 +2951,7 @@ router.post('/accept/confirm', async (req: AuthenticatedRequest, res: Response) 
       brand_phone: request.brand_phone,
       barter_product_image_url: normalizedProductImage,
       form_data: persistedFormData,
-      // collab_request_id: request.id, // Column currently missing in production DB
+      collab_request_id: request.id,
     };
     const { data: deal, error: dealError } = await supabase
       .from('brand_deals')
@@ -3281,6 +3281,7 @@ router.patch('/:id/accept', async (req: AuthenticatedRequest, res: Response) => 
       'barter_product_image_url',
       'form_data',
       'progress_percentage',
+      'collab_request_id',
     ]);
 
     const extractMissingColumn = (message: string): string | null => {
@@ -3333,8 +3334,8 @@ router.patch('/:id/accept', async (req: AuthenticatedRequest, res: Response) => 
       const { error: paidStageError } = await supabase
         .from('brand_deals')
         .update({
-          status: 'content_making',
-          progress_percentage: 85,
+          status: 'PAYMENT_PENDING',
+          progress_percentage: 10,
           updated_at: new Date().toISOString(),
         })
         .eq('id', deal.id);

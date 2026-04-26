@@ -87,7 +87,7 @@ router.get('/requests', async (req: AuthenticatedRequest, res: Response) => {
     if (creatorIds.length > 0) {
       const { data: profs, error: profErr } = await supabase
         .from('profiles')
-        .select('id, username, first_name, last_name, business_name, avatar_url, instagram_profile_photo, bank_account_name, bank_upi, payout_upi, upi_verified_at')
+        .select('*')
         .in('id' as any, creatorIds as any[]);
       if (!profErr) {
         let transformedProfs = profs || [];
@@ -146,8 +146,8 @@ router.get('/requests', async (req: AuthenticatedRequest, res: Response) => {
             ...r, 
             profiles: profile,
             // Denormalize some fields for easier frontend access if needed
-            creator_name: profile ? (profile.business_name || `${profile.first_name || ""} ${profile.last_name || ""}`.trim() || profile.username) : r.creator_name,
-            creator_avatar_url: profile ? (profile.avatar_url || profile.instagram_profile_photo) : r.creator_avatar_url
+            creator_name: String(profile ? (profile.business_name || `${profile.first_name || ""} ${profile.last_name || ""}`.trim() || profile.username || r.creator_name || 'Creator') : (r.creator_name || 'Creator')).trim() || 'Creator',
+            creator_avatar_url: String(profile ? (profile.avatar_url || profile.instagram_profile_photo || r.creator_avatar_url || '') : (r.creator_avatar_url || '')).trim()
           };
         });
       }
@@ -1093,7 +1093,7 @@ router.get('/deals', async (req: AuthenticatedRequest, res: Response) => {
 	    if (creatorIds.length > 0) {
 	      const { data: profs, error: profErr } = await supabase
 	        .from('profiles')
-        .select('id, username, first_name, last_name, business_name, avatar_url, bank_account_name, bank_upi, payout_upi, upi_verified_at')
+        .select('*')
         .in('id' as any, creatorIds as any[]);
       if (!profErr) {
         const byId = buildProfilesById(profs);
@@ -1102,8 +1102,8 @@ router.get('/deals', async (req: AuthenticatedRequest, res: Response) => {
           return { 
             ...r, 
             profiles: profile,
-            creator_name: profile ? (profile.business_name || `${profile.first_name || ""} ${profile.last_name || ""}`.trim() || profile.username) : (r as any).creator_name,
-            creator_avatar_url: profile ? (profile.avatar_url || profile.instagram_profile_photo) : (r as any).creator_avatar_url
+            creator_name: String(profile ? (profile.business_name || `${profile.first_name || ""} ${profile.last_name || ""}`.trim() || profile.username || (r as any).creator_name || 'Creator') : ((r as any).creator_name || 'Creator')).trim() || 'Creator',
+            creator_avatar_url: String(profile ? (profile.avatar_url || profile.instagram_profile_photo || (r as any).creator_avatar_url || '') : ((r as any).creator_avatar_url || '')).trim()
           };
         });
       }

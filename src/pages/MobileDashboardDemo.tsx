@@ -88,6 +88,7 @@ const StatusBadge = ({ status }: { status: string }) => {
         'pending': { bg: 'bg-background dark:bg-secondary/50', text: 'text-muted-foreground dark:text-muted-foreground', label: 'AWAITING REVIEW' },
         'negotiating': { bg: 'bg-background dark:bg-secondary/50', text: 'text-muted-foreground dark:text-muted-foreground', label: 'IN NEGOTIATION' },
         'active': { bg: 'bg-background dark:bg-secondary/50', text: 'text-muted-foreground dark:text-muted-foreground', label: 'ACTIVE' },
+        'payment_pending': { bg: 'bg-yellow-100 dark:bg-yellow-900/30', text: 'text-yellow-700 dark:text-yellow-400', label: 'WAITING FOR PAYMENT' },
         'payment_released': { bg: 'bg-green-100 dark:bg-green-900/30', text: 'text-green-700 dark:text-green-400', label: '💰 PAID' },
         'completed': { bg: 'bg-green-100 dark:bg-green-900/30', text: 'text-green-700 dark:text-green-400', label: 'COMPLETED' },
     };
@@ -95,6 +96,7 @@ const StatusBadge = ({ status }: { status: string }) => {
         const s = String(status || '').toLowerCase();
         if (s.includes('payment_released') || s.includes('paid_out')) return 'payment_released';
         if (s.includes('complete') || s.includes('closed') || s.includes('paid')) return 'completed';
+        if (s.includes('payment_pending')) return 'payment_pending';
         if (s.includes('active') || s.includes('sign') || s.includes('execut') || s.includes('making') || s.includes('deliver') || s.includes('ship')) return 'active';
         if (s.includes('neg')) return 'negotiating';
         return 'pending';
@@ -318,6 +320,7 @@ const getCreatorDealCardUX = (deal: any) => {
     const isPaymentReleased = rawStatus.includes('payment_released');
     const isMaking = rawStatus.includes('content_making') || rawStatus.includes('drafting');
     const isFullyExecuted = rawStatus.includes('fully_executed') || rawStatus === 'signed';
+    const isPaymentPending = rawStatus.includes('payment_pending');
     const isContractPending = rawStatus.includes('contract_ready') || rawStatus === 'sent' || rawStatus.includes('signed_pending_creator') || rawStatus.includes('signed_by_brand') || rawStatus.includes('needs signature');
 
     const dueDate = parseDealDate(deal?.due_date || deal?.deadline || deal?.raw?.deadline || deal?.raw?.due_date);
@@ -329,6 +332,7 @@ const getCreatorDealCardUX = (deal: any) => {
     else if (isApproved) progressStep = 5;
     else if (isDelivered || isRevisionRequested) progressStep = 4;
     else if (isMaking) progressStep = 3;
+    else if (isPaymentPending) progressStep = 2.5;
     else if (isFullyExecuted) progressStep = 2;
     else if (isContractPending) progressStep = 1;
 
@@ -377,6 +381,10 @@ const getCreatorDealCardUX = (deal: any) => {
         stagePill = 'AWAITING PRODUCT';
         nextStep = 'Waiting for product shipment from brand';
         cta = 'Waiting';
+    } else if (isPaymentPending) {
+        stagePill = 'WAITING FOR PAYMENT';
+        nextStep = 'Waiting for brand to fund escrow';
+        cta = 'Pending Payment';
     } else if (isFullyExecuted) {
         stagePill = 'COLLAB STARTED';
         nextStep = 'Start creating content';
@@ -591,6 +599,7 @@ const getCreatorPaymentListUX = (deal: any) => {
     if (isPaymentReleased) return { label: 'PAYMENT RELEASED', sublabel: 'Waiting to close the deal', tone: 'success' as const };
     if (isApproved) return { label: 'APPROVED', sublabel: 'Payment pending', tone: 'warning' as const };
     if (isAwaitingApproval) return { label: 'PENDING APPROVAL', sublabel: 'Waiting for brand approval', tone: 'warning' as const };
+    if (rawStatus.includes('payment_pending')) return { label: 'WAITING FOR PAYMENT', sublabel: 'Brand is funding the escrow', tone: 'warning' as const };
     if (isContractPending) return { label: 'CONTRACT PENDING', sublabel: 'Sign to start collaboration', tone: 'neutral' as const };
     if (ux.isRevisionRequested) return { label: 'REVISION', sublabel: 'Fix requested before approval', tone: 'warning' as const };
     return { label: 'PENDING', sublabel: 'Released after approval', tone: 'info' as const };
@@ -3532,7 +3541,7 @@ const MobileDashboardDemo = ({
                                             </div>
                                             <div className="grid grid-cols-3 gap-2 relative">
                                                 {[0, 1, 2].map((idx) => (
-                                                    <div key={idx} className="relative">
+                                                    <div key={ux.id || idx} className="relative">
                                                         <input 
                                                             className={cn(
                                                                 "h-12 w-full px-3 rounded-2xl border font-black text-[11px] outline-none transition-all focus:ring-2 focus:ring-primary/20",
@@ -5298,7 +5307,7 @@ const MobileDashboardDemo = ({
 
                                                     return (
                                                         <motion.div
-                                                            key={idx}
+                                                            key={deal.id || idx}
                                                             whileTap={{ scale: 0.98 }}
                                                             onTap={() => {
                                                                 triggerHaptic();
@@ -5445,7 +5454,7 @@ const MobileDashboardDemo = ({
                                                             const productImage = resolveCreatorDealProductImage(deal);
                                                             return (
                                                         <motion.div
-                                                            key={idx}
+                                                            key={item.id || idx}
                                                             whileTap={{ scale: 0.985 }}
                                                             onTap={() => {
                                                                 triggerHaptic();

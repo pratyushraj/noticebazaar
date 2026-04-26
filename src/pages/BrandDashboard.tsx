@@ -6,6 +6,10 @@ import { Loader2 } from 'lucide-react';
 import { useSignOut } from '@/lib/hooks/useAuth';
 import BrandMobileDashboard from '@/pages/BrandMobileDashboard';
 import type { BrandDeal } from '@/types';
+import { supabase } from '@/integrations/supabase/client';
+
+import { toast } from 'sonner';
+import { triggerHaptic } from '@/lib/utils/haptics';
 
 type BrandDashboardStats = {
   totalSent: number;
@@ -76,6 +80,65 @@ const BrandDashboard: React.FC = () => {
   useEffect(() => {
     void loadBrandDashboard();
   }, [loadBrandDashboard]);
+
+  // Real-time: Listen for updates to deals or requests
+  useEffect(() => {
+    if (!user?.id || !isBrandUser) return;
+
+    console.log('[BrandDashboard] Setting up real-time subscription for brand:', user.id);
+
+    const channel = supabase
+      .channel(`brand-dashboard-realtime:${user.id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'collab_requests',
+          filter: `brand_id=eq.${user.id}`,
+        },
+        (payload) => {
+          console.log('[Realtime] Brand collab request update:', payload);
+          void loadBrandDashboard();
+          
+          if (document.visibilityState === 'visible') {
+            triggerHaptic();
+            if (payload.eventType === 'INSERT') {
+              toast.success('New response received!');
+            } else {
+              toast.info('Collaboration updated');
+            }
+          }
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'brand_deals',
+          filter: `brand_id=eq.${user.id}`,
+        },
+        (payload) => {
+          console.log('[Realtime] Brand deal update:', payload);
+          void loadBrandDashboard();
+          
+          if (document.visibilityState === 'visible') {
+            triggerHaptic();
+            toast.info('Deal status updated');
+          }
+        }
+      )
+      .subscribe((status) => {
+        if (status === 'SUBSCRIBED') {
+          console.log('[Realtime] Brand dashboard is now LIVE');
+        }
+      });
+
+    return () => {
+      void supabase.removeChannel(channel);
+    };
+  }, [user?.id, isBrandUser, loadBrandDashboard]);
 
   const stats: BrandDashboardStats = useMemo(() => {
     const totalSent = (requests || []).length;
