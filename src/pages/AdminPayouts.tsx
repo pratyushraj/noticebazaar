@@ -5,7 +5,27 @@ import { useSession } from '@/contexts/SessionContext';
 import { toast } from 'sonner';
 import { Clock, CheckCircle2, AlertTriangle, ShieldCheck, IndianRupee, ShieldAlert, ArrowRight, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { formatDistanceToNow, isPast } from 'date-fns';
+// Removed date-fns to prevent build blockers
+const isPast = (date: Date | string | number) => new Date(date).getTime() < Date.now();
+
+const formatDistanceToNow = (date: Date | string | number, options?: { addSuffix?: boolean }) => {
+  const diff = Date.now() - new Date(date).getTime();
+  const seconds = Math.floor(Math.abs(diff) / 1000);
+  const minutes = Math.floor(seconds / 60);
+  const hours = Math.floor(minutes / 60);
+  const days = Math.floor(hours / 24);
+
+  let result = '';
+  if (days > 0) result = `${days} day${days > 1 ? 's' : ''}`;
+  else if (hours > 0) result = `${hours} hour${hours > 1 ? 's' : ''}`;
+  else if (minutes > 0) result = `${minutes} minute${minutes > 1 ? 's' : ''}`;
+  else result = 'just now';
+
+  if (options?.addSuffix) {
+    return diff > 0 ? `${result} ago` : `in ${result}`;
+  }
+  return result;
+};
 import { Input } from '@/components/ui/input';
 
 export default function AdminPayouts() {
