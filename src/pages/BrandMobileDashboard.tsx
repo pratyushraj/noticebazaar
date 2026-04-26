@@ -488,7 +488,7 @@ const brandDealCardUi = (row: BrandDeal | null | undefined) => {
           : (s === 'FULLY_EXECUTED' || s === 'PAYMENT_PENDING' || s === 'AWAITING_BRAND_ADDRESS') ? 2
             : 1;
 
-  return { status: s, human, stageBadge, needsAction, primaryActionLabel, statusLine, step, ctaTone: primaryCta.tone, ctaDisabled: primaryCta.disabled };
+  return { status: s, human, stageBadge, needsAction, primaryActionLabel, statusLine, step, ctaTone: primaryCta.tone, ctaDisabled: primaryCta.disabled, ctaAction: primaryCta.action };
 };
 
 const BrandMobileDashboard = ({
@@ -3616,11 +3616,69 @@ const BrandMobileDashboard = ({
     );
   };
 
+  const renderGlobalOverlays = () => {
+    return (
+      <>
+        <AnimatePresence>
+          {selectedOffer && <OfferDetailsSheet key={selectedOffer?.id || 'offer'} offer={selectedOffer} />}
+        </AnimatePresence>
+
+        {renderBrandSigningPortal()}
+
+        {/* Dispute escalation modal */}
+        {showDisputeEscalationModal && selectedDealPage && (
+          <DisputeEscalationModal
+            dealId={String(selectedDealPage.id || '')}
+            brandName={selectedDealPage.brand_name || profile?.business_name || 'Creator'}
+            onClose={() => setShowDisputeEscalationModal(false)}
+            onSuccess={(_resolution: any, newStatus: string) => {
+              setShowDisputeEscalationModal(false);
+              setSelectedDealPage((prev: any) => (prev?.id === selectedDealPage.id
+                ? { ...prev, status: newStatus, updated_at: new Date().toISOString() }
+                : prev));
+              onRefresh?.();
+            }}
+          />
+        )}
+
+        {/* Confirm payment pending modal */}
+        {showConfirmPaymentModal && selectedDealPage && (
+          <ConfirmPaymentPendingModal
+            dealId={String(selectedDealPage.id || '')}
+            dealAmount={Number(selectedDealPage.deal_amount || 0) || undefined}
+            creatorName={selectedDealPage.creator_name || selectedDealPage.creator_username || 'Creator'}
+            onClose={() => setShowConfirmPaymentModal(false)}
+            onSuccess={() => {
+              setShowConfirmPaymentModal(false);
+              setSelectedDealPage((prev: any) => (prev?.id === selectedDealPage.id
+                ? { ...prev, status: 'CONTENT_MAKING', updated_at: new Date().toISOString() }
+                : prev));
+              onRefresh?.();
+            }}
+          />
+        )}
+
+        {/* Brand shipping address modal */}
+        {showBrandShippingModal && selectedDealPage && (
+          <BrandShippingAddressModal
+            dealId={String(selectedDealPage.id || '')}
+            creatorName={selectedDealPage.creator_name || selectedDealPage.creator_username || 'Creator'}
+            onClose={() => setShowBrandShippingModal(false)}
+            onSuccess={() => {
+              setShowBrandShippingModal(false);
+              onRefresh?.();
+            }}
+          />
+        )}
+      </>
+    );
+  };
+
   if (selectedDealPage) {
     return (
       <>
-        {renderBrandSigningPortal()}
         <BrandDealDetailScreen offer={selectedDealPage} />
+        {renderGlobalOverlays()}
       </>
     );
   }
@@ -4421,6 +4479,26 @@ const BrandMobileDashboard = ({
 					                                type="button"
 					                                onClick={() => {
 					                                  triggerHaptic(HapticPatterns.light);
+                                            const action = (ui as any).ctaAction;
+                                            
+                                            if (action === 'confirm_payment') {
+                                              setSelectedDealPage(item);
+                                              setShowConfirmPaymentModal(true);
+                                              return;
+                                            }
+                                            
+                                            if (action === 'escalate_dispute') {
+                                              setSelectedDealPage(item);
+                                              setShowDisputeEscalationModal(true);
+                                              return;
+                                            }
+
+                                            if (action === 'provide_shipping_address') {
+                                              setSelectedDealPage(item);
+                                              setShowBrandShippingModal(true);
+                                              return;
+                                            }
+
 					                                  if (activeCollabTab === 'active') setSelectedDealPage(item);
 					                                  else setSelectedOffer(item);
 				                                }}
@@ -5298,59 +5376,9 @@ const BrandMobileDashboard = ({
 	        ]}
 	      </AnimatePresence>
 
-	      <AnimatePresence>
-	        {selectedOffer && <OfferDetailsSheet key={selectedOffer?.id || 'offer'} offer={selectedOffer} />}
-	      </AnimatePresence>
-
-		        {renderBrandSigningPortal()}
-
-        {/* Dispute escalation modal */}
-        {showDisputeEscalationModal && selectedDealPage && (
-          <DisputeEscalationModal
-            dealId={String(selectedDealPage.id || '')}
-            brandName={selectedDealPage.brand_name || profile?.business_name || 'Creator'}
-            onClose={() => setShowDisputeEscalationModal(false)}
-            onSuccess={(_resolution: any, newStatus: string) => {
-              setShowDisputeEscalationModal(false);
-              setSelectedDealPage((prev: any) => prev?.id === selectedDealPage.id
-                ? { ...prev, status: newStatus, updated_at: new Date().toISOString() }
-                : prev);
-              onRefresh?.();
-            }}
-          />
-        )}
-
-        {/* Confirm payment pending modal */}
-        {showConfirmPaymentModal && selectedDealPage && (
-          <ConfirmPaymentPendingModal
-            dealId={String(selectedDealPage.id || '')}
-            dealAmount={Number(selectedDealPage.deal_amount || 0) || undefined}
-            creatorName={selectedDealPage.creator_name || selectedDealPage.creator_username || 'Creator'}
-            onClose={() => setShowConfirmPaymentModal(false)}
-            onSuccess={() => {
-              setShowConfirmPaymentModal(false);
-              setSelectedDealPage((prev: any) => prev?.id === selectedDealPage.id
-                ? { ...prev, status: 'CONTENT_MAKING', updated_at: new Date().toISOString() }
-                : prev);
-              onRefresh?.();
-            }}
-          />
-        )}
-
-        {/* Brand shipping address modal */}
-        {showBrandShippingModal && selectedDealPage && (
-          <BrandShippingAddressModal
-            dealId={String(selectedDealPage.id || '')}
-            creatorName={selectedDealPage.creator_name || selectedDealPage.creator_username || 'Creator'}
-            onClose={() => setShowBrandShippingModal(false)}
-            onSuccess={() => {
-              setShowBrandShippingModal(false);
-              onRefresh?.();
-            }}
-          />
-        )}
-	    </div>
-	  );
+        {renderGlobalOverlays()}
+      </div>
+    );
 };
 
 export default BrandMobileDashboard;

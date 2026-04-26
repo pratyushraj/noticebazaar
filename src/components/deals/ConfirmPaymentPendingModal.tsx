@@ -45,7 +45,10 @@ export function ConfirmPaymentPendingModal({ dealId, dealAmount, creatorName, on
 
     setIsLoading(true);
     try {
-      const res = await fetch(`${getApiBaseUrl()}/api/deals/${dealId}/create-payment-link`, {
+      const apiUrl = `${getApiBaseUrl()}/api/deals/${dealId}/create-payment-link`;
+      console.log('[ConfirmPayment] Fetching from:', apiUrl);
+      
+      const res = await fetch(apiUrl, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${session.access_token}`,
@@ -54,7 +57,9 @@ export function ConfirmPaymentPendingModal({ dealId, dealAmount, creatorName, on
         body: JSON.stringify({}),
       });
 
+      console.log('[ConfirmPayment] Response status:', res.status);
       const data = await res.json().catch(() => ({}));
+      console.log('[ConfirmPayment] Response data:', data);
 
       if (!res.ok || !data.success) {
         toast.error(data.error || "Failed to create payment link. Please try again.");
@@ -67,9 +72,9 @@ export function ConfirmPaymentPendingModal({ dealId, dealAmount, creatorName, on
         return;
       }
 
-      // Open Razorpay in new tab; webhook handles status update to CONTENT_MAKING.
-      window.open(url, "_blank");
-      toast.success("Payment page opened! Deal will update automatically once paid.");
+      // Redirect to payment page; webhook handles status update to CONTENT_MAKING.
+      window.location.href = url;
+      toast.success("Redirecting to payment page...");
       onSuccess();
     } catch (err: any) {
       toast.error(err?.message || "Something went wrong. Please try again.");

@@ -75,13 +75,13 @@ export function getApiBaseUrl(): string {
   // Cleanup: No trailing slashes
   let cleanedUrl = (apiUrl || '').replace(/\/$/, '');
 
-  // Local dev safety: prefer 127.0.0.1 explicitly when a local API is selected.
-  // On this machine, localhost:3001 can resolve/flap differently from 127.0.0.1:3001,
-  // which breaks profile loading in fresh sessions like incognito windows.
+  // Local dev safety: On this machine, localhost:3001 can resolve/flap differently from 127.0.0.1:3001.
+  // We prefer 127.0.0.1 for stability, but ONLY if we are not already on a 'localhost' hostname
+  // to avoid cross-origin IPv4/IPv6 mismatch issues.
   if (typeof window !== 'undefined' && localhostPattern.test(cleanedUrl)) {
     try {
       const parsed = new URL(cleanedUrl);
-      if (parsed.hostname === 'localhost') {
+      if (parsed.hostname === 'localhost' && window.location.hostname !== 'localhost') {
         parsed.hostname = '127.0.0.1';
         cleanedUrl = parsed.toString().replace(/\/$/, '');
       }
