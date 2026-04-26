@@ -87,7 +87,7 @@ router.get('/requests', async (req: AuthenticatedRequest, res: Response) => {
     if (creatorIds.length > 0) {
       const { data: profs, error: profErr } = await supabase
         .from('profiles')
-        .select('id, username, first_name, last_name, business_name, avatar_url, instagram_profile_photo, bank_account_name, bank_upi')
+        .select('id, username, first_name, last_name, business_name, avatar_url, instagram_profile_photo, bank_account_name, bank_upi, payout_upi, upi_verified_at')
         .in('id' as any, creatorIds as any[]);
       if (!profErr) {
         let transformedProfs = profs || [];
@@ -1082,7 +1082,7 @@ router.get('/deals', async (req: AuthenticatedRequest, res: Response) => {
 	    if (creatorIds.length > 0) {
 	      const { data: profs, error: profErr } = await supabase
 	        .from('profiles')
-        .select('id, username, first_name, last_name, business_name, avatar_url, bank_account_name, bank_upi')
+        .select('id, username, first_name, last_name, business_name, avatar_url, bank_account_name, bank_upi, payout_upi, upi_verified_at')
         .in('id' as any, creatorIds as any[]);
       if (!profErr) {
         const byId = buildProfilesById(profs);

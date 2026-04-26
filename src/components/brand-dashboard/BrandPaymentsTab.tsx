@@ -219,7 +219,7 @@ const BrandPaymentsTab: React.FC<BrandPaymentsTabProps> = ({
                             {creatorName}
                           </p>
                           <p className={cn('text-[11px] font-medium', isDark ? 'text-slate-500' : 'text-slate-400')}>
-                            In progress
+                            {deal.status === 'CONTENT_MAKING' ? '✅ Payment successful ⏳ Waiting for creator' : 'In progress'}
                           </p>
                         </div>
                       </div>

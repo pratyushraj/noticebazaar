@@ -181,9 +181,14 @@ const AdminCases = () => {
     <>
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold text-foreground">Manage Client Cases</h1>
-        <Button onClick={() => handleOpenDialog()} className="bg-primary text-primary-foreground hover:bg-primary/90">
-          <PlusCircle className="mr-2 h-4 w-4" /> Add New Case
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={() => window.location.href = '/admin-payouts'} className="text-primary border-border hover:bg-accent">
+            Manage Payouts
+          </Button>
+          <Button onClick={() => handleOpenDialog()} className="bg-primary text-primary-foreground hover:bg-primary/90">
+            <PlusCircle className="mr-2 h-4 w-4" /> Add New Case
+          </Button>
+        </div>
       </div>
 
       <section className="bg-card p-6 rounded-lg shadow-sm border border-border">

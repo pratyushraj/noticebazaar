@@ -16,6 +16,12 @@ export interface PlatformMetrics {
         deliverablesSubmittedAfterReminder: number;
         lateSubmissionRateAfterReminder: number;
     };
+    escrow: {
+        totalVolumeLocked: number;
+        payoutVolumePending: number;
+        averageApprovalVelocityHours: number;
+        ghostingRate: number;
+    };
 }
 
 /**
@@ -25,12 +31,12 @@ export async function getPlatformMetrics(): Promise<PlatformMetrics> {
     const metrics: PlatformMetrics = {
         timeToCreatorSignature: { averageHours: 0, medianHours: 0, totalSigned: 0 },
         shipmentToReceipt: { averageDays: 0, totalConfirmed: 0 },
-        remindersEfficiency: { totalRemindersSent: 0, deliverablesSubmittedAfterReminder: 0, lateSubmissionRateAfterReminder: 0 }
+        remindersEfficiency: { totalRemindersSent: 0, deliverablesSubmittedAfterReminder: 0, lateSubmissionRateAfterReminder: 0 },
+        escrow: { totalVolumeLocked: 0, payoutVolumePending: 0, averageApprovalVelocityHours: 0, ghostingRate: 0 }
     };
 
     try {
         // 1. Time to Creator Signature
-        // Strategy: Join BRAND_SIGNED and CREATOR_SIGNED events for the same deal
         const { data: signatureEvents, error: sigError } = await supabase
             .from('deal_action_logs')
             .select('deal_id, event, created_at')
@@ -39,13 +45,11 @@ export async function getPlatformMetrics(): Promise<PlatformMetrics> {
 
         if (!sigError && signatureEvents) {
             const dealPairs: Record<string, { brandSigned?: Date; creatorSigned?: Date }> = {};
-
             signatureEvents.forEach(evt => {
                 if (!dealPairs[evt.deal_id]) dealPairs[evt.deal_id] = {};
                 if (evt.event === 'BRAND_SIGNED') dealPairs[evt.deal_id].brandSigned = new Date(evt.created_at);
                 if (evt.event === 'CREATOR_SIGNED') dealPairs[evt.deal_id].creatorSigned = new Date(evt.created_at);
             });
-
             const deltas: number[] = [];
             Object.values(dealPairs).forEach(pair => {
                 if (pair.brandSigned && pair.creatorSigned) {
@@ -53,17 +57,15 @@ export async function getPlatformMetrics(): Promise<PlatformMetrics> {
                     if (deltaInHours > 0) deltas.push(deltaInHours);
                 }
             });
-
             if (deltas.length > 0) {
                 metrics.timeToCreatorSignature.averageHours = deltas.reduce((a, b) => a + b, 0) / deltas.length;
                 metrics.timeToCreatorSignature.totalSigned = deltas.length;
-
                 const sorted = [...deltas].sort((a, b) => a - b);
                 metrics.timeToCreatorSignature.medianHours = sorted[Math.floor(sorted.length / 2)];
             }
         }
 
-        // 2. Time from Shipment to Receipt (Barter)
+        // 2. Time from Shipment to Receipt
         const { data: shippingEvents, error: shipError } = await supabase
             .from('deal_action_logs')
             .select('deal_id, event, created_at')
@@ -77,7 +79,6 @@ export async function getPlatformMetrics(): Promise<PlatformMetrics> {
                 if (evt.event === 'shipping_marked_shipped') dealPairs[evt.deal_id].shipped = new Date(evt.created_at);
                 if (evt.event === 'shipping_confirmed_delivered') dealPairs[evt.deal_id].delivered = new Date(evt.created_at);
             });
-
             const deltas: number[] = [];
             Object.values(dealPairs).forEach(pair => {
                 if (pair.shipped && pair.delivered) {
@@ -85,7 +86,6 @@ export async function getPlatformMetrics(): Promise<PlatformMetrics> {
                     if (deltaInDays > 0) deltas.push(deltaInDays);
                 }
             });
-
             if (deltas.length > 0) {
                 metrics.shipmentToReceipt.averageDays = deltas.reduce((a, b) => a + b, 0) / deltas.length;
                 metrics.shipmentToReceipt.totalConfirmed = deltas.length;
@@ -100,13 +100,6 @@ export async function getPlatformMetrics(): Promise<PlatformMetrics> {
 
         if (!remError && reminderEvents) {
             metrics.remindersEfficiency.totalRemindersSent = reminderEvents.length;
-
-            // Check how many of these deals had a submission after the reminder
-            // Deliverable submission isn't explicitly logged in deal_action_logs yet, 
-            // but 'SIGNED_CONTRACT_UPLOADED' is a proxy for some deals, 
-            // however better to track 'CONTENT_SUBMITTED' which we should add.
-
-            // For now, let's just count deals that moved to Content Delivered status after a reminder
             const { data: submissions, error: subError } = await supabase
                 .from('brand_deals')
                 .select('id, updated_at, status, due_date')
@@ -115,20 +108,15 @@ export async function getPlatformMetrics(): Promise<PlatformMetrics> {
             if (!subError && submissions) {
                 let afterReminder = 0;
                 let lateAfterReminder = 0;
-
                 submissions.forEach(deal => {
                     const reminder = reminderEvents.find(r => r.deal_id === deal.id);
                     if (reminder) {
                         const reminderDate = new Date(reminder.created_at);
                         const statusUpper = (deal.status || '').toUpperCase();
-
-                        // If deal reached a terminal delivery state
                         if (statusUpper.includes('DELIVERED') || statusUpper.includes('COMPLETED')) {
                             const updatedDate = new Date(deal.updated_at);
                             if (updatedDate > reminderDate) {
                                 afterReminder++;
-
-                                // Was it late relative to its own due_date?
                                 if (deal.due_date && updatedDate > new Date(deal.due_date)) {
                                     lateAfterReminder++;
                                 }
@@ -136,11 +124,74 @@ export async function getPlatformMetrics(): Promise<PlatformMetrics> {
                         }
                     }
                 });
-
                 metrics.remindersEfficiency.deliverablesSubmittedAfterReminder = afterReminder;
                 metrics.remindersEfficiency.lateSubmissionRateAfterReminder =
                     afterReminder > 0 ? (lateAfterReminder / afterReminder) * 100 : 0;
             }
+        }
+
+        // 4. Escrow Health Metrics
+        const { data: escrowDeals, error: escrowError } = await supabase
+            .from('brand_deals')
+            .select('status, deal_amount, updated_at, created_at')
+            .not('status', 'in', '("DRAFT", "CANCELLED", "COMPLETED")');
+
+        if (!escrowError && escrowDeals) {
+            let tvl = 0;
+            let pendingPayout = 0;
+            
+            escrowDeals.forEach(deal => {
+                const status = (deal.status || '').toUpperCase();
+                const amount = Number(deal.deal_amount || 0);
+                if (['CONTENT_MAKING', 'CONTENT_DELIVERED', 'REVISION_REQUESTED', 'REVISION_DONE', 'CONTENT_APPROVED'].includes(status)) {
+                    tvl += amount;
+                }
+                if (status === 'CONTENT_APPROVED') {
+                    pendingPayout += amount;
+                }
+            });
+            metrics.escrow.totalVolumeLocked = tvl;
+            metrics.escrow.payoutVolumePending = pendingPayout;
+        }
+
+        // 5. Velocity & Ghosting
+        const { data: escrowEvents, error: eventError } = await supabase
+            .from('deal_action_logs')
+            .select('deal_id, event, created_at')
+            .in('event', ['PAYMENT_CAPTURED', 'CONTENT_APPROVED', 'CONTENT_DELIVERED'])
+            .order('created_at', { ascending: true });
+
+        if (!eventError && escrowEvents) {
+            const dealPairs: Record<string, { captured?: Date; approved?: Date; delivered?: Date }> = {};
+            escrowEvents.forEach(evt => {
+                if (!dealPairs[evt.deal_id]) dealPairs[evt.deal_id] = {};
+                if (evt.event === 'PAYMENT_CAPTURED') dealPairs[evt.deal_id].captured = new Date(evt.created_at);
+                if (evt.event === 'CONTENT_APPROVED') dealPairs[evt.deal_id].approved = new Date(evt.created_at);
+                if (evt.event === 'CONTENT_DELIVERED') dealPairs[evt.deal_id].delivered = new Date(evt.created_at);
+            });
+
+            const velocityDeltas: number[] = [];
+            let ghostCount = 0;
+            let totalDelivered = 0;
+
+            Object.values(dealPairs).forEach(pair => {
+                if (pair.captured && pair.approved) {
+                    const hours = (pair.approved.getTime() - pair.captured.getTime()) / (1000 * 60 * 60);
+                    if (hours > 0) velocityDeltas.push(hours);
+                }
+                if (pair.delivered) {
+                    totalDelivered++;
+                    const now = new Date();
+                    const hoursSinceDelivery = (now.getTime() - pair.delivered.getTime()) / (1000 * 60 * 60);
+                    if (hoursSinceDelivery > 72 && !pair.approved) {
+                        ghostCount++;
+                    }
+                }
+            });
+            if (velocityDeltas.length > 0) {
+                metrics.escrow.averageApprovalVelocityHours = velocityDeltas.reduce((a, b) => a + b, 0) / velocityDeltas.length;
+            }
+            metrics.escrow.ghostingRate = totalDelivered > 0 ? (ghostCount / totalDelivered) * 100 : 0;
         }
 
     } catch (err) {

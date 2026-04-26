@@ -4,10 +4,14 @@ export type CanonicalDealStatus =
   | 'CONTRACT_READY'
   | 'SENT'
   | 'FULLY_EXECUTED'
+  | 'PAYMENT_PENDING'
+  | 'AWAITING_BRAND_ADDRESS'
   | 'CONTENT_MAKING'
   | 'CONTENT_DELIVERED'
   | 'REVISION_REQUESTED'
   | 'DISPUTED'
+  | 'DISPUTE_ARBITRATION'
+  | 'DISPUTE_PARTIAL_REFUND'
   | 'COMPLETED'
   | 'CANCELLED'
   | 'UNKNOWN';
@@ -19,10 +23,13 @@ export type DealPrimaryCtaAction =
   | 'view_contract'
   | 'view_collaboration'
   | 'start_working'
+  | 'confirm_payment'
+  | 'provide_shipping_address'
   | 'track_progress'
   | 'mark_delivered'
   | 'review_content'
   | 'upload_revision'
+  | 'escalate_dispute'
   | 'view_summary'
   | 'view_issue'
   | 'view_details'
@@ -93,6 +100,12 @@ export const getCanonicalDealStatus = (deal: any): CanonicalDealStatus => {
   }
 
   if (lower.includes('content_making') || lower.includes('content making')) return 'CONTENT_MAKING';
+
+  // New enforcement statuses
+  if (lower === 'payment_pending') return 'PAYMENT_PENDING';
+  if (lower === 'awaiting_brand_address') return 'AWAITING_BRAND_ADDRESS';
+  if (lower === 'dispute_arbitration') return 'DISPUTE_ARBITRATION';
+  if (lower === 'dispute_partial_refund') return 'DISPUTE_PARTIAL_REFUND';
 
   // Contract step
   if (
@@ -166,7 +179,21 @@ export const getDealPrimaryCta = (params: { role: DealRole; deal: any }): DealPr
   // Brand
   if (role === 'brand') {
     if (status === 'DISPUTED') {
-      return { status, label: 'View Issue', disabled: false, tone: 'view', action: 'view_issue' };
+      return { status, label: 'Escalate Dispute', disabled: false, tone: 'action', action: 'escalate_dispute' };
+    }
+    if (status === 'DISPUTE_ARBITRATION') {
+      return { status, label: 'Under Arbitration', disabled: true, tone: 'waiting', action: 'none' };
+    }
+    if (status === 'DISPUTE_PARTIAL_REFUND') {
+      return { status, label: 'Partial Refund Initiated', disabled: true, tone: 'waiting', action: 'none' };
+    }
+    // ── Payment pending gate: brand must confirm payment ──────────────────────
+    if (status === 'PAYMENT_PENDING') {
+      return { status, label: 'Confirm Payment', disabled: false, tone: 'action', action: 'confirm_payment' };
+    }
+    // ── Shipping address gate: brand must provide address ─────────────────────
+    if (status === 'AWAITING_BRAND_ADDRESS') {
+      return { status, label: 'Provide Shipping Address', disabled: false, tone: 'action', action: 'provide_shipping_address' };
     }
     if (status === 'CONTRACT_READY' || status === 'SENT') {
       // If the brand already signed, this is no longer an "action required" step for the brand.
@@ -201,7 +228,24 @@ export const getDealPrimaryCta = (params: { role: DealRole; deal: any }): DealPr
   // Shipping deals: never show "Mark as Delivered" until the product shipment is received.
   // (Some legacy states incorrectly set status=CONTENT_MAKING for barter/shipping deals.)
   if (requiresShipping && !hasReceivedShipment) {
+    // If the brand hasn't provided their address yet, show a specific gate message
+    if (status === 'AWAITING_BRAND_ADDRESS' || status === 'FULLY_EXECUTED') {
+      return { status, label: 'Waiting for Brand Address', disabled: true, tone: 'waiting', action: 'none' };
+    }
     return { status, label: 'Waiting for Product', disabled: true, tone: 'waiting', action: 'none' };
+  }
+
+  // ── Payment pending gate (creator side) ───────────────────────────────────
+  if (status === 'PAYMENT_PENDING') {
+    return { status, label: 'Waiting for Payment Confirmation', disabled: true, tone: 'waiting', action: 'none' };
+  }
+
+  // ── Dispute escalation statuses (creator side) ────────────────────────────
+  if (status === 'DISPUTE_ARBITRATION') {
+    return { status, label: 'Under Arbitration', disabled: true, tone: 'waiting', action: 'none' };
+  }
+  if (status === 'DISPUTE_PARTIAL_REFUND') {
+    return { status, label: 'Partial Refund Pending', disabled: true, tone: 'waiting', action: 'none' };
   }
 
   if (status === 'CONTRACT_READY' || status === 'SENT') {

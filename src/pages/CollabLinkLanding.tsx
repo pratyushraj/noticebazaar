@@ -3051,20 +3051,19 @@ const CollabLinkLanding = () => {
                 <div className="flex justify-center flex-wrap gap-3 mt-2">
                   <motion.div
                     whileHover={{ y: -2 }}
-                    className="flex items-center gap-2.5 px-5 py-2.5 rounded-2xl border border-white bg-white/60 backdrop-blur-md shadow-[0_4px_12px_rgba(0,0,0,0.03)] border-b-slate-200/50 transition-all"
+                    className="flex items-center gap-2 px-4 py-2 rounded-2xl border border-white bg-white/60 backdrop-blur-md shadow-[0_4px_12px_rgba(0,0,0,0.03)] border-b-slate-200/50 transition-all whitespace-nowrap"
                   >
                     <div className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.4)]" />
-                    <span className="text-[10px] font-black tracking-[0.1em] text-slate-700 uppercase">
-                      Typical Collab:{' '}
-                      {creator.collab_deal_preference === 'barter_only' ? 'Barter' : 'Paid'}
+                    <span className="text-[10px] md:text-[11px] font-black tracking-[0.06em] text-slate-700 uppercase leading-none">
+                      Typical collab: {creator.collab_deal_preference === 'barter_only' ? 'Barter' : 'Paid'}
                     </span>
                   </motion.div>
                   <motion.div
                     whileHover={{ y: -2 }}
-                    className="flex items-center gap-2.5 px-5 py-2.5 rounded-2xl border border-amber-100 bg-amber-50/60 backdrop-blur-md shadow-[0_4px_12px_rgba(245,158,11,0.05)] border-b-amber-200/50 transition-all"
+                    className="flex items-center gap-2 px-4 py-2 rounded-2xl border border-amber-100 bg-amber-50/60 backdrop-blur-md shadow-[0_4px_12px_rgba(245,158,11,0.05)] border-b-amber-200/50 transition-all whitespace-nowrap"
                   >
                     <Sparkles className="w-3.5 h-3.5 text-amber-500 fill-amber-500/20" />
-                    <span className="text-[10px] font-black tracking-[0.1em] text-amber-700 uppercase">
+                    <span className="text-[10px] md:text-[11px] font-black tracking-[0.06em] text-amber-700 uppercase leading-none">
                       Fast Response
                     </span>
                   </motion.div>
@@ -3323,18 +3322,6 @@ const CollabLinkLanding = () => {
                       >
                         Choose a Service
                       </Button>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setShowCustomFlow(true)
-                          setCurrentStep(1)
-                          setSelectedTemplateId(null)
-                          triggerHaptic(HapticPatterns.success)
-                        }}
-                        className="w-full text-center text-[11px] font-black uppercase tracking-[0.14em] text-slate-500 hover:text-slate-900"
-                      >
-                        Need something custom? Create a custom deal
-                      </button>
                     </div>
                   </div>
                 )}

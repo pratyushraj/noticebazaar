@@ -150,7 +150,7 @@ export default function DealDeliveryDetailsPage() {
     return () => clearTimeout(timer);
   }, [pincode]);
 
-  // Redirect if not barter or not owner
+  // Redirect if not relevant or not owner
   useEffect(() => {
     if (isLoadingDeal || !dealId) return;
     if (!profile?.id) return;
@@ -159,13 +159,10 @@ export default function DealDeliveryDetailsPage() {
       navigate("/creator-dashboard", { replace: true });
       return;
     }
-    // Route guard: paid deals skip delivery — redirect to deal page (no delivery UI)
-    if (dealType === "paid") {
-      navigate(`/deal/${dealId}`, { replace: true });
-      return;
-    }
-    if (dealType !== "barter") {
-      toast.error("Delivery details are only for deals with free products as payment");
+    const requiresShipping = (deal as any)?.shipping_required;
+    // Only barter deals and paid deals with explicit shipping_required should see this page.
+    // Pure paid/service deals without shipping_required skip to the deal page.
+    if (!requiresShipping && dealType !== "barter") {
       navigate(`/deal/${dealId}`, { replace: true });
       return;
     }
@@ -266,7 +263,7 @@ export default function DealDeliveryDetailsPage() {
     );
   }
 
-  if (dealType !== "barter") {
+  if ((deal as any)?.shipping_required === false && dealType !== "barter") {
     return null;
   }
 

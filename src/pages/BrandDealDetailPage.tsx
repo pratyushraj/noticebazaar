@@ -74,7 +74,8 @@ const BrandDealDetailPage: React.FC = () => {
   const normalizedStatus = String(deal?.status || '').trim().toUpperCase().replaceAll(' ', '_');
   const canReviewContent = normalizedStatus === 'CONTENT_DELIVERED' || normalizedStatus === 'REVISION_DONE';
   const paymentMarkedSent = Boolean((deal as any)?.payment_released_at) || normalizedStatus === 'PAYMENT_RELEASED';
-  const canReleasePayment = normalizedStatus === 'CONTENT_APPROVED' && !paymentMarkedSent;
+  const isEscrowDeal = Boolean(deal?.payment_id || (deal as any)?.payment_status === 'captured' || (deal as any)?.amount_paid > 0);
+  const canReleasePayment = normalizedStatus === 'CONTENT_APPROVED' && !paymentMarkedSent && !isEscrowDeal;
   const directContentLink = String((deal as any)?.content_submission_url || (deal as any)?.content_url || '').trim();
   const directContentNotes = String((deal as any)?.content_notes || '').trim();
   const contentLink = directContentLink || loggedContentLink;
@@ -481,6 +482,32 @@ const BrandDealDetailPage: React.FC = () => {
                 </div>
               </div>
 
+              {/* Escrow Receipt Link */}
+              {(deal as any).escrow_receipt_url && (
+                <a
+                  href={(deal as any).escrow_receipt_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2 p-3 rounded-xl border border-emerald-500/20 bg-emerald-500/5 text-emerald-400 hover:bg-emerald-500/10 transition-colors text-sm font-medium"
+                >
+                  <FileText className="h-4 w-4" />
+                  View Escrow Payment Receipt
+                  <ExternalLink className="h-3 w-3 ml-auto" />
+                </a>
+              )}
+
+              {canReviewContent && (
+                <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-4 space-y-2">
+                  <div className="flex items-center gap-2 text-amber-400">
+                    <Clock className="h-4 w-4" />
+                    <p className="text-sm font-bold uppercase tracking-tight">Review Period Active</p>
+                  </div>
+                  <p className="text-xs text-amber-100/70 leading-relaxed">
+                    You have <strong>72 hours</strong> to review this content. If no action is taken, the funds held in escrow will be <strong>automatically released</strong> to the creator to ensure fair payment.
+                  </p>
+                </div>
+              )}
+
               {canReleasePayment && (
                 <div className="rounded-xl border border-white/10 bg-white/[0.03] p-3 space-y-3">
                   <p className="text-xs text-white/40 bg-white/[0.03] rounded-lg px-3 py-2 mb-1">
@@ -521,6 +548,18 @@ const BrandDealDetailPage: React.FC = () => {
                     <Send className="h-4 w-4 mr-2" />
                     {isReleasingPayment ? 'Marking Payment...' : 'Mark Payment Sent'}
                   </Button>
+                </div>
+              )}
+
+              {normalizedStatus === 'CONTENT_APPROVED' && isEscrowDeal && !paymentMarkedSent && (
+                <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/10 p-4 space-y-2">
+                  <div className="flex items-center gap-2 text-emerald-400">
+                    <ShieldCheck className="h-4 w-4" />
+                    <p className="text-sm font-bold uppercase tracking-tight">Payout Processing</p>
+                  </div>
+                  <p className="text-xs text-emerald-100/70 leading-relaxed">
+                    Funds are securely held in escrow. Since you have approved the content, our finance team is now processing the payout to the creator. No further action is required from your side.
+                  </p>
                 </div>
               )}
 

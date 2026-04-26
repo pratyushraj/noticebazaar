@@ -42,6 +42,7 @@ import attachmentsRouter from './routes/attachments.js';
 import paymentsRouter from './routes/payments.js';
 import protectionRouter, { viewContractHandler, downloadContractDocxHandler } from './routes/protection.js';
 import adminRouter from './routes/admin.js';
+import razorpayWebhooksRouter from './routes/razorpayWebhooks.js';
 import brandResponseRouter from './routes/brandResponse.js';
 import brandReplyTokensRouter from './routes/brandReplyTokens.js';
 import dealDetailsTokensRouter from './routes/dealDetailsTokens.js';
@@ -281,6 +282,9 @@ app.use((req: express.Request, res: express.Response, next: express.NextFunction
   });
   next();
 });
+
+// Webhook for Razorpay MUST be mounted before express.json()
+app.use('/api/webhooks/razorpay', razorpayWebhooksRouter);
 
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));

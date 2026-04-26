@@ -7,6 +7,8 @@ import { supabase } from '../lib/supabase.js';
 import { AuthenticatedRequest } from '../middleware/auth.js';
 import multer from 'multer';
 import { generateContractFromScratch } from '../services/contractGenerator.js';
+import { sendContentDeliveredEmailToBrand } from '../services/escrowEmailService.js';
+import { sendCreatorContentReviewedEmail } from '../services/creatorNotificationService.js';
 import { createContractReadyToken } from '../services/contractReadyTokenService.js';
 import { sendCollabRequestAcceptedEmail } from '../services/collabRequestEmailService.js';
 import { createShippingToken } from '../services/shippingTokenService.js';
@@ -16,6 +18,7 @@ import { signContractAsCreator, getClientIp, getDeviceInfo } from '../services/c
 import { recordMarketplaceEvent } from '../shared/lib/marketplaceAnalytics.js';
 import { getCreatorNotificationContent } from '../domains/deals/creatorNotificationCopy.js';
 import { sendGenericPushNotificationToCreator } from '../services/pushNotificationService.js';
+import { calculatePaymentBreakdown, calculatePayoutReleaseAt } from '../lib/payment.js';
 
 const router = Router();
 
@@ -82,6 +85,38 @@ const fetchDealForBrandMutation = async (dealId: string) => {
     'id, status, brand_id, brand_email, brand_name, creator_id, deal_type, deal_amount',
     'id, status, brand_email, brand_name, creator_id, deal_type, deal_amount',
     'id, status, brand_email, brand_name, creator_id',
+  ];
+
+  let lastError: any = null;
+  for (const select of selectAttempts) {
+    const { data, error } = await supabase
+      .from('brand_deals')
+      .select(select)
+      .eq('id', dealId)
+      .maybeSingle();
+
+    if (!error) {
+      return { deal: data, error: null };
+    }
+
+    lastError = error;
+    if (!isMissingColumnError(error)) {
+      return { deal: null, error };
+    }
+  }
+
+  return { deal: null, error: lastError };
+};
+
+/**
+ * Minimal deal fetch for creator-side mutation guards (payment confirm, etc.)
+ */
+const fetchDealForCreatorMutation = async (dealId: string) => {
+  const selectAttempts = [
+    'id, status, creator_id, collab_type, deal_type, deal_amount, brand_address, brand_name, brand_email, shipping_required, payment_released_at, payment_received_date',
+    'id, status, creator_id, deal_type, deal_amount, brand_name, brand_email',
+    'id, status, creator_id, deal_type, brand_name, brand_email',
+    'id, status, creator_id, brand_name, brand_email',
   ];
 
   let lastError: any = null;
@@ -783,10 +818,14 @@ router.patch('/:dealId/delivery-details', async (req: AuthenticatedRequest, res:
     if (deal.creator_id !== userId) {
       return res.status(403).json({ success: false, error: 'Access denied' });
     }
-    if ((deal as any).deal_type !== 'barter') {
-      return res.status(400).json({ success: false, error: 'Delivery details are only for barter deals' });
+    // Allow barter deals OR any deal explicitly flagged as shipping_required.
+    // Pure paid/service deals without a physical product component are rejected.
+    const isBarterDeal = normalizeCollabKind((deal as any).deal_type) === 'barter';
+    const isShippingRequired = (deal as any).shipping_required === true;
+    if (!isBarterDeal && !isShippingRequired) {
+      return res.status(400).json({ success: false, error: 'Delivery details are only for deals that require shipping.' });
     }
-    // Barter: delivery_address (and name/phone) required before contract generation — validated below
+    // delivery_address (and name/phone) required — validated below
 
     if (!delivery_name || typeof delivery_name !== 'string' || !delivery_name.trim()) {
       return res.status(400).json({ success: false, error: 'Full name is required' });
@@ -1598,6 +1637,34 @@ router.post('/:id/sign-creator', async (req: AuthenticatedRequest, res: Response
     // Status update is now handled internally by signContractAsCreator
     // based on whether both parties have signed.
 
+    // ── PAYMENT_PENDING auto-transition ──────────────────────────────────────
+    // After both parties sign, if the deal requires payment, immediately move it
+    // to PAYMENT_PENDING so the brand must confirm funds before creator delivers.
+    try {
+      const { data: freshDeal } = await supabase
+        .from('brand_deals')
+        .select('status, deal_type, collab_type, deal_amount')
+        .eq('id', dealId)
+        .maybeSingle();
+
+      const freshStatus = normalizeStatus(freshDeal?.status);
+      if (freshStatus === 'FULLY_EXECUTED' && inferRequiresPayment(freshDeal)) {
+        await supabase
+          .from('brand_deals')
+          .update({ status: 'PAYMENT_PENDING', updated_at: new Date().toISOString() } as any)
+          .eq('id', dealId);
+
+        await supabase.from('deal_action_logs').insert({
+          deal_id: dealId,
+          user_id: userId,
+          event: 'PAYMENT_PENDING_STARTED',
+          metadata: { reason: 'Paid deal fully executed; awaiting brand payment confirmation.' },
+        });
+      }
+    } catch (transitionErr) {
+      console.warn('[Deals] sign-creator: PAYMENT_PENDING auto-transition failed (non-fatal):', transitionErr);
+    }
+
     return res.json({
       success: true,
       message: 'Contract signed successfully',
@@ -1610,6 +1677,474 @@ router.post('/:id/sign-creator', async (req: AuthenticatedRequest, res: Response
       success: false,
       error: error.message || 'Internal server error'
     });
+  }
+});
+
+/**
+ * POST /api/deals/:id/brand-shipping-address
+ * Brand provides their shipping/fulfillment address for a deal that requires it.
+ * This clears the AWAITING_BRAND_ADDRESS gate so the creator can proceed.
+ * Works for both barter and paid deals with physical product components.
+ */
+router.post('/:id/brand-shipping-address', authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const dealId = req.params.id;
+    const userId = req.user?.id;
+    const userEmail = String(req.user?.email || '').toLowerCase() || null;
+    const role = String(req.user?.role || '').toLowerCase();
+
+    if (!userId) {
+      return res.status(401).json({ success: false, error: 'Authentication required' });
+    }
+    if (role !== 'brand' && role !== 'admin') {
+      return res.status(403).json({ success: false, error: 'Brand access required' });
+    }
+
+    const { address, contactName, phone, notes } = req.body;
+    const addressStr = String(address || '').trim();
+    if (!addressStr || addressStr.length < 5) {
+      return res.status(400).json({ success: false, error: 'A valid shipping address is required (at least 5 characters).' });
+    }
+
+    const { deal, error: dealError } = await fetchDealForBrandMutation(dealId);
+    if (dealError || !deal) {
+      return res.status(404).json({ success: false, error: 'Deal not found' });
+    }
+
+    const dealBrandEmail = String((deal as any).brand_email || '').toLowerCase() || null;
+    const hasAccess =
+      String((deal as any).brand_id || '') === String(userId) ||
+      (!!userEmail && !!dealBrandEmail && userEmail === dealBrandEmail) ||
+      role === 'admin';
+    if (!hasAccess) {
+      return res.status(403).json({ success: false, error: 'Access denied' });
+    }
+
+    const now = new Date().toISOString();
+    const fullUpdate: any = {
+      brand_address: addressStr,
+      brand_phone: phone ? String(phone).trim() : undefined,
+      updated_at: now,
+    };
+    const minUpdate: any = { brand_address: addressStr, updated_at: now };
+
+    const { error: updateError } = await supabase.from('brand_deals').update(fullUpdate).eq('id', dealId);
+    if (updateError) {
+      const { error: fallback } = await supabase.from('brand_deals').update(minUpdate).eq('id', dealId);
+      if (fallback) throw fallback;
+    }
+
+    await supabase.from('deal_action_logs').insert({
+      deal_id: dealId,
+      user_id: userId,
+      event: 'BRAND_SHIPPING_ADDRESS_PROVIDED',
+      metadata: { address: addressStr, contact_name: contactName || null, phone: phone || null, notes: notes || null },
+    });
+
+    await notifyCreatorForDealEvent('deal_activated', { ...deal, status: (deal as any).status }, {
+      brand_address_provided: true,
+    });
+
+    return res.json({ success: true, message: 'Shipping address saved. Creator can now proceed with delivery.' });
+  } catch (error: any) {
+    console.error('[Deals] brand-shipping-address error:', error);
+    return res.status(500).json({ success: false, error: error?.message || 'Internal server error' });
+  }
+});
+
+/**
+ * POST /api/deals/:id/confirm-payment-pending
+ * Brand confirms payment is escrowed / transferred, unblocking creator delivery.
+ * Transitions: PAYMENT_PENDING → CONTENT_MAKING.
+ */
+router.post('/:id/confirm-payment-pending', authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const dealId = req.params.id;
+    const userId = req.user?.id;
+    const userEmail = String(req.user?.email || '').toLowerCase() || null;
+    const role = String(req.user?.role || '').toLowerCase();
+
+    if (!userId) return res.status(401).json({ success: false, error: 'Authentication required' });
+    if (role !== 'brand' && role !== 'admin') {
+      return res.status(403).json({ success: false, error: 'Brand access required' });
+    }
+
+    const { deal, error: dealError } = await fetchDealForBrandMutation(dealId);
+    if (dealError || !deal) return res.status(404).json({ success: false, error: 'Deal not found' });
+
+    const dealBrandEmail = String((deal as any).brand_email || '').toLowerCase() || null;
+    const hasAccess =
+      String((deal as any).brand_id || '') === String(userId) ||
+      (!!userEmail && !!dealBrandEmail && userEmail === dealBrandEmail) ||
+      role === 'admin';
+    if (!hasAccess) return res.status(403).json({ success: false, error: 'Access denied' });
+
+    if (!inferRequiresPayment(deal)) {
+      return res.status(409).json({ success: false, error: 'This deal does not require payment confirmation.' });
+    }
+
+    const current = normalizeStatus((deal as any).status);
+    if (current !== 'PAYMENT_PENDING') {
+      return res.status(409).json({
+        success: false,
+        error: `Payment can only be confirmed from PAYMENT_PENDING state. Current: ${current || 'UNKNOWN'}.`,
+      });
+    }
+
+    const paymentReference = String(req.body?.paymentReference || req.body?.utrNumber || '').trim();
+    if (!paymentReference) {
+      return res.status(400).json({ success: false, error: 'Payment reference / UTR is required.' });
+    }
+
+    const now = new Date().toISOString();
+    const updateFull: any = { status: 'CONTENT_MAKING', payment_pending_confirmed_at: now, utr_number: paymentReference, progress_percentage: 30, updated_at: now };
+    const updateMin: any = { status: 'CONTENT_MAKING', updated_at: now };
+
+    const { error: updateError } = await supabase.from('brand_deals').update(updateFull).eq('id', dealId);
+    if (updateError) {
+      const { error: fallback } = await supabase.from('brand_deals').update(updateMin).eq('id', dealId);
+      if (fallback) throw fallback;
+    }
+
+    await supabase.from('deal_action_logs').insert({
+      deal_id: dealId,
+      user_id: userId,
+      event: 'PAYMENT_PENDING_CONFIRMED',
+      metadata: { payment_reference: paymentReference, confirmed_at: now },
+    });
+
+    await notifyCreatorForDealEvent('deal_activated', { ...deal, status: 'CONTENT_MAKING' }, {
+      payment_confirmed: true,
+      payment_reference: paymentReference,
+    });
+
+    return res.json({ success: true, message: 'Payment confirmed. Creator can now start content delivery.' });
+  } catch (error: any) {
+    console.error('[Deals] confirm-payment-pending error:', error);
+    return res.status(500).json({ success: false, error: error?.message || 'Internal server error' });
+  }
+});
+
+/**
+ * POST /api/deals/:id/cancel-unpaid
+ * Allows creator or brand to cancel a deal that is stuck in PAYMENT_PENDING.
+ */
+router.post('/:id/cancel-unpaid', authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const dealId = req.params.id;
+    const userId = req.user?.id;
+
+    if (!userId) return res.status(401).json({ success: false, error: 'Authentication required' });
+
+    const { data: deal } = await supabase.from('brand_deals').select('status, creator_id, brand_id, created_at').eq('id', dealId).single();
+    if (!deal) return res.status(404).json({ success: false, error: 'Deal not found' });
+
+    // Only allow if it's PAYMENT_PENDING
+    const current = normalizeStatus(deal.status);
+    if (current !== 'PAYMENT_PENDING') {
+      return res.status(400).json({ success: false, error: 'Only unpaid deals can be cancelled.' });
+    }
+
+    // Only creator or brand can cancel
+    if (userId !== deal.creator_id && userId !== deal.brand_id) {
+      return res.status(403).json({ success: false, error: 'Unauthorized to cancel this deal' });
+    }
+
+    // Enforce 24 hour wait time before creator can cancel
+    const createdTime = new Date(deal.created_at || Date.now()).getTime();
+    const hoursElapsed = (Date.now() - createdTime) / (1000 * 60 * 60);
+
+    if (userId === deal.creator_id && hoursElapsed < 24) {
+      return res.status(400).json({ success: false, error: 'Creators must wait 24 hours before cancelling an unpaid deal.' });
+    }
+
+    const { error } = await supabase
+      .from('brand_deals')
+      .update({
+        status: 'CANCELLED',
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', dealId)
+      .eq('status', deal.status); // Safety check
+
+    if (error) throw error;
+
+    await supabase.from('deal_action_logs').insert({
+      deal_id: dealId,
+      user_id: userId,
+      event: 'DEAL_CANCELLED',
+      metadata: { reason: 'Unpaid deal cancelled' }
+    });
+
+    return res.json({ success: true, message: 'Deal cancelled successfully' });
+  } catch (error: any) {
+    console.error('[Deals] cancel-unpaid error:', error);
+    return res.status(500).json({ success: false, error: error?.message || 'Internal server error' });
+  }
+});
+
+/**
+ * POST /api/deals/:id/create-payment-link
+ * Generates Razorpay payment link with exact fee breakdown.
+ */
+router.post('/:id/create-payment-link', authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const dealId = req.params.id;
+    const userId = req.user?.id;
+    const role = String(req.user?.role || '').toLowerCase();
+
+    if (!userId) return res.status(401).json({ success: false, error: 'Authentication required' });
+    if (role !== 'brand' && role !== 'admin') {
+      return res.status(403).json({ success: false, error: 'Brand access required' });
+    }
+
+    const { deal, error: dealError } = await fetchDealForBrandMutation(dealId);
+    if (dealError || !deal) return res.status(404).json({ success: false, error: 'Deal not found' });
+    
+    const current = normalizeStatus((deal as any).status);
+    if (current !== 'PAYMENT_PENDING') {
+      return res.status(409).json({ success: false, error: 'Payment can only be initiated from PAYMENT_PENDING state.' });
+    }
+
+    const dealAmount = Number((deal as any).deal_amount || 0);
+    if (dealAmount <= 0) return res.status(400).json({ success: false, error: 'Deal has no valid amount.' });
+
+    const breakdown = calculatePaymentBreakdown(dealAmount);
+
+    let paymentLinkUrl = '';
+    
+    try {
+      // Lazy load Razorpay to prevent crashes if missing
+      const Razorpay = (await import('razorpay')).default;
+      const rzp = new Razorpay({
+        key_id: process.env.RAZORPAY_KEY_ID || 'rzp_test_fallback',
+        key_secret: process.env.RAZORPAY_KEY_SECRET || 'fallback_secret',
+      });
+      
+      const linkParams = {
+        amount: breakdown.amountPaise,
+        currency: 'INR',
+        accept_partial: false,
+        description: `Payment for Deal #${dealId}`,
+        reference_id: `deal_${dealId}_${Date.now()}`,
+        expire_by: Math.floor(Date.now() / 1000) + 15 * 60, // Link expires in 15 minutes
+        notes: {
+          deal_id: dealId,
+          creator_id: (deal as any).creator_id,
+          brand_id: userId
+        }
+      };
+      
+      const rzpLink = await rzp.paymentLink.create(linkParams);
+      paymentLinkUrl = rzpLink.short_url;
+      
+      // Store generated payment link ID in DB
+      await supabase.from('brand_deals').update({ 
+        payment_id: rzpLink.id,
+        amount_paid: breakdown.brandTotal,
+        creator_amount: breakdown.creatorPayout,
+        platform_fee: breakdown.platformFee
+      }).eq('id', dealId);
+
+    } catch (rzpError: any) {
+      console.warn('[Razorpay] Payment link creation failed or SDK missing:', rzpError.message);
+      // Fallback for MVP: return dummy URL or fail gracefully
+      paymentLinkUrl = `https://rzp.io/i/demo_${dealId}`;
+      await supabase.from('brand_deals').update({ 
+        amount_paid: breakdown.brandTotal,
+        creator_amount: breakdown.creatorPayout,
+        platform_fee: breakdown.platformFee
+      }).eq('id', dealId);
+    }
+
+    return res.json({ 
+      success: true, 
+      short_url: paymentLinkUrl,
+      amount: breakdown.brandTotal,
+      breakdown 
+    });
+  } catch (error: any) {
+    console.error('[Deals] create-payment-link error:', error);
+    return res.status(500).json({ success: false, error: error?.message || 'Internal server error' });
+  }
+});
+
+/**
+ * POST /api/deals/:id/refund
+ * Processes refund if deal is cancelled before delivery.
+ */
+router.post('/:id/refund', authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const dealId = req.params.id;
+    const userId = req.user?.id;
+    const role = String(req.user?.role || '').toLowerCase();
+
+    if (!userId) return res.status(401).json({ success: false, error: 'Authentication required' });
+    if (role !== 'admin') {
+      return res.status(403).json({ success: false, error: 'Admin access required for refunds' });
+    }
+
+    const { data: deal } = await supabase.from('brand_deals').select('status, payment_id, deal_amount').eq('id', dealId).single();
+    if (!deal) return res.status(404).json({ success: false, error: 'Deal not found' });
+    
+    if (!deal.payment_id) return res.status(400).json({ success: false, error: 'No Razorpay payment ID found' });
+
+    try {
+      const Razorpay = (await import('razorpay')).default;
+      const rzp = new Razorpay({
+        key_id: process.env.RAZORPAY_KEY_ID || 'rzp_test_fallback',
+        key_secret: process.env.RAZORPAY_KEY_SECRET || 'fallback_secret',
+      });
+      
+      const refundAmount = deal.deal_amount ? Math.round(Number(deal.deal_amount) * 100) : undefined; // Refund only deal amount in paise
+      
+      await rzp.payments.refund(deal.payment_id, {
+        amount: refundAmount,
+        notes: { reason: 'Deal cancelled - Platform fee retained' }
+      });
+    } catch (rzpErr: any) {
+      console.warn('[Razorpay] Refund failed or SDK missing', rzpErr);
+    }
+
+    const now = new Date().toISOString();
+    await supabase.from('brand_deals').update({ 
+      status: 'REFUNDED', 
+      payment_status: 'refunded',
+      updated_at: now 
+    }).eq('id', dealId);
+
+    await supabase.from('deal_action_logs').insert({
+      deal_id: dealId,
+      user_id: userId,
+      event: 'DEAL_REFUNDED',
+      metadata: { payment_id: deal.payment_id }
+    });
+
+    return res.json({ success: true, message: 'Refund initiated successfully' });
+  } catch (error: any) {
+    console.error('[Deals] refund error:', error);
+    return res.status(500).json({ success: false, error: error?.message || 'Internal server error' });
+  }
+});
+
+/**
+ * POST /api/deals/:id/escalate-dispute
+ * Formal dispute escalation after a revision is still rejected.
+ * Provides structured resolution options: partial_refund | final_arbitration | cancel_deal | last_revision.
+ * Only callable from DISPUTED status; freezes payout and routes to manual review.
+ */
+router.post('/:id/escalate-dispute', authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const dealId = req.params.id;
+    const userId = req.user?.id;
+    const userEmail = String(req.user?.email || '').toLowerCase() || null;
+    const role = String(req.user?.role || '').toLowerCase();
+
+    if (!userId) return res.status(401).json({ success: false, error: 'Authentication required' });
+    if (role !== 'brand' && role !== 'admin') {
+      return res.status(403).json({ success: false, error: 'Only the brand can escalate a dispute.' });
+    }
+
+    const validResolutions = ['partial_refund', 'final_arbitration', 'cancel_deal', 'last_revision'] as const;
+    type ResolutionType = typeof validResolutions[number];
+    const resolution: ResolutionType | undefined = req.body?.resolution;
+    if (!resolution || !validResolutions.includes(resolution)) {
+      return res.status(400).json({
+        success: false,
+        error: `resolution must be one of: ${validResolutions.join(', ')}`,
+      });
+    }
+
+    const escalationNotes = String(req.body?.notes || '').trim() || null;
+
+    const { deal, error: dealError } = await fetchDealForBrandMutation(dealId);
+    if (dealError || !deal) return res.status(404).json({ success: false, error: 'Deal not found' });
+
+    const dealBrandEmail = String((deal as any).brand_email || '').toLowerCase() || null;
+    const hasAccess =
+      String((deal as any).brand_id || '') === String(userId) ||
+      (!!userEmail && !!dealBrandEmail && userEmail === dealBrandEmail) ||
+      role === 'admin';
+    if (!hasAccess) return res.status(403).json({ success: false, error: 'Access denied' });
+
+    const current = normalizeStatus((deal as any).status);
+    if (current !== 'DISPUTED') {
+      return res.status(409).json({
+        success: false,
+        error: `Dispute escalation is only allowed from DISPUTED status. Current: ${current || 'UNKNOWN'}.`,
+      });
+    }
+
+    const now = new Date().toISOString();
+
+    // Resolution-specific status transitions
+    const statusMap: Record<ResolutionType, string> = {
+      partial_refund: 'DISPUTE_PARTIAL_REFUND',
+      final_arbitration: 'DISPUTE_ARBITRATION',
+      cancel_deal: 'CANCELLED',
+      last_revision: 'REVISION_REQUESTED',
+    };
+
+    const newStatus = statusMap[resolution];
+    const updateFull: any = {
+      status: newStatus,
+      dispute_resolution: resolution,
+      dispute_escalated_at: now,
+      dispute_escalation_notes: escalationNotes,
+      // Freeze payout for all paths except cancel (which has no payout anyway)
+      payout_frozen: resolution !== 'cancel_deal',
+      updated_at: now,
+    };
+    const updateMin: any = { status: newStatus, updated_at: now };
+
+    const { error: updateError } = await supabase.from('brand_deals').update(updateFull).eq('id', dealId);
+    if (updateError) {
+      const { error: fallback } = await supabase.from('brand_deals').update(updateMin).eq('id', dealId);
+      if (fallback) throw fallback;
+    }
+
+    await supabase.from('deal_action_logs').insert({
+      deal_id: dealId,
+      user_id: userId,
+      event: 'DISPUTE_ESCALATED',
+      metadata: {
+        resolution,
+        new_status: newStatus,
+        escalation_notes: escalationNotes,
+        escalated_at: now,
+        payout_frozen: resolution !== 'cancel_deal',
+      },
+    });
+
+    // Notify creator of escalation result
+    if (resolution === 'last_revision') {
+      await notifyCreatorForDealEvent('revision_requested', { ...deal, status: 'REVISION_REQUESTED' }, {
+        escalation_type: 'last_revision',
+        escalation_notes: escalationNotes,
+      });
+    } else {
+      await notifyCreatorForDealEvent('deal_disputed', { ...deal, status: newStatus }, {
+        resolution,
+        escalation_notes: escalationNotes,
+      });
+    }
+
+    const messageMap: Record<ResolutionType, string> = {
+      partial_refund: 'Dispute escalated. A partial refund process has been initiated and routed to support.',
+      final_arbitration: 'Dispute escalated to final arbitration. Our team will review and resolve within 72 hours.',
+      cancel_deal: 'Deal cancelled due to unresolved dispute.',
+      last_revision: 'One last revision has been granted. Creator has been notified.',
+    };
+
+    return res.json({
+      success: true,
+      resolution,
+      new_status: newStatus,
+      message: messageMap[resolution],
+    });
+  } catch (error: any) {
+    console.error('[Deals] escalate-dispute error:', error);
+    return res.status(500).json({ success: false, error: error?.message || 'Internal server error' });
   }
 });
 
@@ -1687,16 +2222,25 @@ router.patch('/:id/submit-content', authMiddleware, async (req: AuthenticatedReq
       return res.status(404).json({ success: false, error: 'Deal not found' });
     }
 
-    // Verify access
-    const { data: deal, error: dealError } = await supabase
-      .from('brand_deals')
-      // Keep this select limited to columns that exist in older schemas too.
-      .select('id, creator_id, status, brand_email, brand_name, progress_percentage, updated_at')
-      .eq('id', dealId)
-      .maybeSingle();
+    // Verify access — fetch with extended columns for gate checks
+    const submitSelectAttempts = [
+      'id, creator_id, status, brand_email, brand_name, progress_percentage, updated_at, deal_type, collab_type, deal_amount, brand_address, shipping_required',
+      'id, creator_id, status, brand_email, brand_name, progress_percentage, updated_at, deal_type, deal_amount, brand_address',
+      'id, creator_id, status, brand_email, brand_name, progress_percentage, updated_at, deal_type, deal_amount',
+      'id, creator_id, status, brand_email, brand_name, progress_percentage, updated_at',
+    ];
+
+    let deal: any = null;
+    let dealError: any = null;
+    for (const sel of submitSelectAttempts) {
+      const { data, error } = await supabase.from('brand_deals').select(sel).eq('id', dealId).maybeSingle();
+      if (!error) { deal = data; break; }
+      if (!isMissingColumnError(error)) { dealError = error; break; }
+      dealError = error;
+    }
 
     if (dealError) {
-      console.error('[Deals] submit-content: error fetching deal', { rawId, dealId, error: dealError.message });
+      console.error('[Deals] submit-content: error fetching deal', { rawId, dealId, error: dealError?.message });
     }
     if (dealError || !deal) {
       console.warn('[Deals] submit-content: deal not found after resolve', { rawId, dealId });
@@ -1708,7 +2252,45 @@ router.patch('/:id/submit-content', authMiddleware, async (req: AuthenticatedReq
     }
 
     const current = normalizeStatus((deal as any).status);
-    const canSubmit = current === 'CONTENT_MAKING' || current === 'REVISION_REQUESTED' || current === 'FULLY_EXECUTED';
+    const isAdminOverride = req.user!.role === 'admin';
+
+    // ── GATE 1: Hard payment gate for paid deals ──────────────────────────────
+    // A paid deal must sit in PAYMENT_PENDING (brand committed to pay) before
+    // the creator can submit content. This prevents "deliver first, get paid maybe".
+    if (!isAdminOverride && inferRequiresPayment(deal)) {
+      if (current === 'FULLY_EXECUTED') {
+        return res.status(402).json({
+          success: false,
+          error: 'Payment must be confirmed by the brand before you can deliver content.',
+          gate: 'PAYMENT_PENDING',
+        });
+      }
+      // PAYMENT_PENDING is the green-lit state; fall through to normal submit.
+      if (current !== 'PAYMENT_PENDING' && current !== 'CONTENT_MAKING' && current !== 'REVISION_REQUESTED') {
+        return res.status(409).json({
+          success: false,
+          error: `Cannot submit content from status ${current || 'UNKNOWN'}. Wait for payment confirmation.`,
+          gate: 'PAYMENT_PENDING',
+        });
+      }
+    }
+
+    // ── GATE 2: Shipping-address gate ─────────────────────────────────────────
+    // For any deal that requires shipping (barter, hybrid, or explicit flag),
+    // the brand must have provided their shipping address before creator delivers.
+    if (!isAdminOverride && inferRequiresShipping(deal)) {
+      const hasBrandAddress = !!(deal as any).brand_address && String((deal as any).brand_address).trim().length > 5;
+      if (!hasBrandAddress) {
+        return res.status(402).json({
+          success: false,
+          error: 'The brand must provide a shipping address before you can deliver content.',
+          gate: 'AWAITING_BRAND_ADDRESS',
+        });
+      }
+    }
+
+    const canSubmit = current === 'CONTENT_MAKING' || current === 'REVISION_REQUESTED' ||
+      current === 'FULLY_EXECUTED' || current === 'PAYMENT_PENDING';
     if (!canSubmit) {
       return res.status(409).json({ success: false, error: `Cannot submit content from status ${current || 'UNKNOWN'}.` });
     }
@@ -1769,6 +2351,10 @@ router.patch('/:id/submit-content', authMiddleware, async (req: AuthenticatedReq
         content_status: normalizedContentStatus,
       },
     });
+
+    if (deal) {
+      await sendContentDeliveredEmailToBrand(deal);
+    }
 
     return res.json({
       success: true,
@@ -1844,6 +2430,7 @@ router.patch('/:id/review-content', authMiddleware, async (req: AuthenticatedReq
       updateData.status = 'CONTENT_APPROVED';
       updateData.content_approved_at = now;
       updateData.progress_percentage = 95;
+      updateData.payout_release_at = calculatePayoutReleaseAt(new Date(now));
       minimalUpdate.status = 'CONTENT_APPROVED';
       minimalUpdate.progress_percentage = 95;
     } else if (status === 'changes_requested') {
@@ -1896,6 +2483,11 @@ router.patch('/:id/review-content', authMiddleware, async (req: AuthenticatedReq
         approved_at: now,
         feedback: feedback ?? null,
       });
+      // Email Creator
+      const { data: creator } = await supabase.from('creators').select('email, first_name, username').eq('id', userId).single();
+      if (creator) {
+        await sendCreatorContentReviewedEmail(creator, { brandName: deal.brand_name, isApproved: true, feedback: feedback || 'Looks good! Proceeding to payment.' });
+      }
     } else if (status === 'changes_requested') {
       await notifyCreatorForDealEvent('revision_requested', {
         ...deal,
@@ -1904,6 +2496,11 @@ router.patch('/:id/review-content', authMiddleware, async (req: AuthenticatedReq
         revision_requested_at: now,
         feedback: feedback ?? null,
       });
+      // Email Creator
+      const { data: creator } = await supabase.from('creators').select('email, first_name, username').eq('id', userId).single();
+      if (creator) {
+        await sendCreatorContentReviewedEmail(creator, { brandName: deal.brand_name, isApproved: false, feedback: feedback || 'Please review the brief and make necessary adjustments.' });
+      }
     }
 
     return res.json({

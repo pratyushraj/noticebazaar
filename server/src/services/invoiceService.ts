@@ -285,3 +285,100 @@ async function generateInvoicePDF(data: InvoiceData): Promise<Buffer> {
     }
   });
 }
+
+/**
+ * Generate a Payment Receipt for Escrow Funding
+ */
+export async function generateEscrowReceipt(dealId: string): Promise<{ success: boolean; url?: string }> {
+  try {
+    const { data: deal, error: dealError } = await supabase
+      .from('brand_deals')
+      .select('*, creator:creator_id(display_name, email)')
+      .eq('id', dealId)
+      .single();
+
+    if (dealError || !deal) throw new Error('Deal not found');
+
+    // Generate receipt number
+    const receiptNumber = `REC-ESC-${dealId.substring(0, 6).toUpperCase()}-${Date.now().toString().slice(-4)}`;
+    
+    const PDFDocument = (await import('pdfkit')).default;
+    const doc = new PDFDocument({ size: 'A4', margin: 50 });
+    const chunks: Buffer[] = [];
+
+    doc.on('data', (chunk) => chunks.push(chunk));
+    const pdfBuffer = await new Promise<Buffer>((resolve) => {
+      doc.on('end', () => resolve(Buffer.concat(chunks)));
+      
+      // Branding
+      doc.fontSize(24).fillColor('#10b981').text('Creator Armour', 50, 50);
+      doc.fontSize(10).fillColor('#64748b').text('Official Payment Receipt', 50, 80);
+      
+      // Right side details
+      doc.fontSize(10).fillColor('#1e293b').text(`Receipt No: ${receiptNumber}`, 400, 50, { align: 'right' });
+      doc.text(`Date: ${new Date().toLocaleDateString('en-IN')}`, 400, 65, { align: 'right' });
+      doc.text(`Status: SECURED IN ESCROW`, 400, 80, { align: 'right', color: '#10b981' });
+
+      doc.moveTo(50, 110).lineTo(550, 110).stroke('#e2e8f0');
+
+      // Brand Info
+      doc.fontSize(12).fillColor('#64748b').text('BILLED TO:', 50, 140);
+      doc.fontSize(14).fillColor('#1e293b').text(deal.brand_name || 'Brand Partner', 50, 160);
+      
+      // Collaboration Info
+      doc.fontSize(12).fillColor('#64748b').text('COLLABORATION WITH:', 300, 140);
+      doc.fontSize(14).fillColor('#1e293b').text(deal.creator?.display_name || 'Creator', 300, 160);
+
+      doc.rect(50, 200, 500, 100).fill('#f8fafc');
+      doc.fillColor('#1e293b').fontSize(12).text('Collaboration Details', 70, 220);
+      doc.fontSize(10).fillColor('#475569').text(deal.deliverables || 'Content Creation Services', 70, 245, { width: 460 });
+
+      // Financials
+      doc.moveTo(50, 320).lineTo(550, 320).stroke('#e2e8f0');
+      doc.fontSize(12).fillColor('#1e293b').text('Transaction Summary', 50, 340);
+      
+      const y = 370;
+      doc.fontSize(10).fillColor('#64748b').text('Escrow Deposit Amount:', 50, y);
+      doc.fontSize(14).fillColor('#1e293b').text(`₹${Number(deal.deal_amount).toLocaleString('en-IN')}`, 400, y, { align: 'right' });
+
+      doc.fontSize(10).fillColor('#64748b').text('Platform Fees:', 50, y + 25);
+      doc.text('Included', 400, y + 25, { align: 'right' });
+
+      doc.fontSize(12).fillColor('#10b981').text('Total Paid:', 50, y + 60);
+      doc.fontSize(16).text(`₹${Number(deal.deal_amount).toLocaleString('en-IN')}`, 400, y + 60, { align: 'right' });
+
+      // Security Note
+      doc.rect(50, 500, 500, 80).stroke('#10b981');
+      doc.fontSize(10).fillColor('#166534').text('🛡️ Creator Armour Escrow Protection', 70, 520);
+      doc.fontSize(9).fillColor('#15803d').text('This payment is securely held in our escrow account. Funds will only be released to the creator after you approve the delivered content or after the 72-hour review period expires.', 70, 540, { width: 460 });
+
+      doc.fontSize(8).fillColor('#94a3b8').text('This is a computer-generated receipt and does not require a physical signature.', 50, 750, { align: 'center', width: 500 });
+      doc.text('Creator Armour by NoticeBazaar', 50, 765, { align: 'center', width: 500 });
+
+      doc.end();
+    });
+
+    const fileName = `receipt-${dealId}-${Date.now()}.pdf`;
+    const filePath = `escrow-receipts/${fileName}`;
+    
+    const { error: uploadError } = await supabase.storage
+      .from('creator-assets')
+      .upload(filePath, pdfBuffer, { contentType: 'application/pdf' });
+
+    if (uploadError) throw uploadError;
+
+    const { data: urlData } = supabase.storage.from('creator-assets').getPublicUrl(filePath);
+    
+    // Save to deal record
+    await supabase.from('brand_deals').update({
+      escrow_receipt_url: urlData.publicUrl,
+      updated_at: new Date().toISOString()
+    } as any).eq('id', dealId);
+
+    return { success: true, url: urlData.publicUrl };
+
+  } catch (err) {
+    console.error('[InvoiceService] Escrow receipt failed:', err);
+    return { success: false };
+  }
+}

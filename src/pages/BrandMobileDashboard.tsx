@@ -19,6 +19,9 @@ import { CREATOR_ASSETS_BUCKET } from '@/lib/constants/storage';
 import { BrandSettingsPanel } from '@/pages/BrandSettings';
 import { toast } from 'sonner';
 import { DiscoveryStack } from '@/components/brand-dashboard/DiscoveryStack';
+import { DisputeEscalationModal } from '@/components/deals/DisputeEscalationModal';
+import { BrandShippingAddressModal } from '@/components/deals/BrandShippingAddressModal';
+import { ConfirmPaymentPendingModal } from '@/components/deals/ConfirmPaymentPendingModal';
 
 type BrandTab = 'dashboard' | 'collabs' | 'creators' | 'profile' | 'payments';
 type BrandCollabTab = 'action_required' | 'active' | 'completed';
@@ -238,6 +241,11 @@ const effectiveDealStatus = (row: BrandDeal | null | undefined) => {
   // prefer that over signature-derived "fully executed". Signatures indicate the
   // contract is binding, but the deal lifecycle continues beyond signing.
   if (lower.includes('dispute') || lower.includes('disputed')) return 'DISPUTED';
+  if (lower === 'dispute_arbitration') return 'DISPUTE_ARBITRATION';
+  if (lower === 'dispute_partial_refund') return 'DISPUTE_PARTIAL_REFUND';
+  // New enforcement gate statuses
+  if (lower === 'payment_pending') return 'PAYMENT_PENDING';
+  if (lower === 'awaiting_brand_address') return 'AWAITING_BRAND_ADDRESS';
   if (lower.includes('content_making') || lower.includes('content making')) return 'CONTENT_MAKING';
   if (
     lower.includes('content_delivered') ||
@@ -394,6 +402,10 @@ const dealStageLabel = (row: BrandDeal | null | undefined) => {
   const s = effectiveDealStatus(row);
   if (!s) return 'In progress';
   if (s === 'DISPUTED') return 'Issue raised';
+  if (s === 'DISPUTE_ARBITRATION') return 'Under arbitration';
+  if (s === 'DISPUTE_PARTIAL_REFUND') return 'Partial refund pending';
+  if (s === 'PAYMENT_PENDING') return 'Awaiting payment confirmation';
+  if (s === 'AWAITING_BRAND_ADDRESS') return 'Brand address required';
   if (s === 'CONTRACT_READY' || s === 'AWAITING_BRAND_SIGNATURE') return 'Signature required';
   if (s === 'SENT' || s === 'AWAITING_CREATOR_SIGNATURE') return 'Waiting for creator signature';
   if (s === 'FULLY_EXECUTED') return 'Collaboration started';
@@ -434,8 +446,11 @@ const brandDealCardUi = (row: BrandDeal | null | undefined) => {
   const human = dealStageLabel({ status: s });
   const stageBadge =
     s === 'DISPUTED' ? 'ISSUE'
+      : (s === 'DISPUTE_ARBITRATION' || s === 'DISPUTE_PARTIAL_REFUND') ? 'DISPUTE'
       : (s === 'CONTENT_DELIVERED' || s === 'REVISION_DONE') ? 'REVIEW'
         : s === 'CONTENT_MAKING' ? 'CREATE'
+          : s === 'PAYMENT_PENDING' ? 'PAY'
+          : s === 'AWAITING_BRAND_ADDRESS' ? 'ADDRESS'
           : s === 'FULLY_EXECUTED' ? 'SIGNED'
             : 'CONTRACT';
 
@@ -445,7 +460,15 @@ const brandDealCardUi = (row: BrandDeal | null | undefined) => {
 
   const statusLine =
     s === 'DISPUTED'
-      ? 'Issue raised — view details'
+      ? 'Issue raised — escalate or resolve'
+      : s === 'DISPUTE_ARBITRATION'
+        ? 'Under arbitration — awaiting team review'
+      : s === 'DISPUTE_PARTIAL_REFUND'
+        ? 'Partial refund in progress'
+      : s === 'PAYMENT_PENDING'
+        ? 'Confirm payment to unblock creator delivery'
+      : s === 'AWAITING_BRAND_ADDRESS'
+        ? 'Provide your shipping address to proceed'
       : s === 'COMPLETED'
         ? 'Deal completed'
         : (s === 'CONTENT_DELIVERED' || s === 'REVISION_DONE')
@@ -462,9 +485,9 @@ const brandDealCardUi = (row: BrandDeal | null | undefined) => {
 
   const step =
     s === 'COMPLETED' ? 5
-      : (s === 'CONTENT_DELIVERED' || s === 'REVISION_DONE' || s === 'DISPUTED') ? 4
+      : (s === 'CONTENT_DELIVERED' || s === 'REVISION_DONE' || s === 'DISPUTED' || s === 'DISPUTE_ARBITRATION' || s === 'DISPUTE_PARTIAL_REFUND') ? 4
         : (s === 'CONTENT_MAKING' || s === 'REVISION_REQUESTED') ? 3
-          : s === 'FULLY_EXECUTED' ? 2
+          : (s === 'FULLY_EXECUTED' || s === 'PAYMENT_PENDING' || s === 'AWAITING_BRAND_ADDRESS') ? 2
             : 1;
 
   return { status: s, human, stageBadge, needsAction, primaryActionLabel, statusLine, step, ctaTone: primaryCta.tone, ctaDisabled: primaryCta.disabled };
@@ -634,6 +657,11 @@ const BrandMobileDashboard = ({
   const [isVerifyingBrandOTP, setIsVerifyingBrandOTP] = useState(false);
   const [isSigningBrandContract, setIsSigningBrandContract] = useState(false);
   const [brandSigningInitError, setBrandSigningInitError] = useState<string | null>(null);
+
+  // ── New enforcement modal states ────────────────────────────────────────────
+  const [showDisputeEscalationModal, setShowDisputeEscalationModal] = useState(false);
+  const [showConfirmPaymentModal, setShowConfirmPaymentModal] = useState(false);
+  const [showBrandShippingModal, setShowBrandShippingModal] = useState(false);
   const resolveDealProductImageUrl = (dealLike: any) =>
     String(
       dealLike?.barter_product_image_url ||
@@ -1854,7 +1882,8 @@ const BrandMobileDashboard = ({
 
 			  const normalizedDealStatus = effectiveDealStatus(offer);
 			  const canReviewContent = normalizedDealStatus === 'CONTENT_DELIVERED' || normalizedDealStatus === 'REVISION_DONE';
-    const canReleasePayment = requiresPayment && normalizedDealStatus === 'CONTENT_APPROVED';
+    const isEscrowDeal = Boolean(offer?.payment_id || (offer as any)?.payment_status === 'captured' || (offer as any)?.amount_paid > 0);
+    const canReleasePayment = requiresPayment && normalizedDealStatus === 'CONTENT_APPROVED' && !isEscrowDeal;
     const contentApprovedForCompletion =
       normalizedDealStatus === 'CONTENT_APPROVED' ||
       normalizedDealStatus === 'PAYMENT_RELEASED' ||
@@ -2103,6 +2132,22 @@ const BrandMobileDashboard = ({
 	      if (cta.action === 'view_issue') {
 	        scrollToRef(contentSectionRef);
 	        toast.message('This deal has an issue raised. Review the notes below.');
+	        return;
+	      }
+
+	      // ── New enforcement CTA actions ────────────────────────────────────────────
+	      if (cta.action === 'escalate_dispute') {
+	        setShowDisputeEscalationModal(true);
+	        return;
+	      }
+
+	      if (cta.action === 'confirm_payment') {
+	        setShowConfirmPaymentModal(true);
+	        return;
+	      }
+
+	      if (cta.action === 'provide_shipping_address') {
+	        setShowBrandShippingModal(true);
 	        return;
 	      }
 	    };
@@ -2457,6 +2502,21 @@ const BrandMobileDashboard = ({
               </div>
             </DealCard>
           </div>
+
+          {/* Escrow Protection Warning (72h rule) */}
+          {(dealUi.stepIndex === 3 || dealUi.stepIndex === 4) && (
+            <div className="mb-6">
+              <div className={cn('rounded-2xl border p-4 space-y-2', isDark ? 'bg-amber-500/10 border-amber-500/20' : 'bg-amber-50 border-amber-200')}>
+                <div className="flex items-center gap-2 text-amber-500">
+                  <Clock className="w-4 h-4" />
+                  <p className="text-[12px] font-black uppercase tracking-tight">Review Period Active</p>
+                </div>
+                <p className={cn('text-[11px] font-semibold leading-relaxed', isDark ? 'text-amber-100/70' : 'text-amber-700/80')}>
+                  You have <strong>72 hours</strong> to review the submitted content. If no action is taken, the funds held in escrow will be <strong>automatically released</strong> to the creator to ensure fair payment.
+                </p>
+              </div>
+            </div>
+          )}
 
           {/* Quick info */}
           <div className="mb-6 grid grid-cols-2 gap-3">
@@ -2967,6 +3027,39 @@ const BrandMobileDashboard = ({
                                     View payment proof
                                   </a>
                                 )}
+                              </div>
+                            )}
+
+                             {/* Escrow Receipt Link */}
+                             {(offer as any).escrow_receipt_url && (
+                               <div className="mt-3">
+                                 <a
+                                   href={(offer as any).escrow_receipt_url}
+                                   target="_blank"
+                                   rel="noopener noreferrer"
+                                   className={cn(
+                                     'flex items-center gap-2 p-3.5 rounded-xl border transition-colors text-[13px] font-bold',
+                                     isDark 
+                                       ? 'border-emerald-500/20 bg-emerald-500/5 text-emerald-400 hover:bg-emerald-500/10' 
+                                       : 'border-emerald-500/20 bg-emerald-50/50 text-emerald-600 hover:bg-emerald-50'
+                                   )}
+                                 >
+                                   <FileText className="w-4 h-4" />
+                                   View Escrow Payment Receipt
+                                   <ExternalLink className="w-3 h-3 ml-auto opacity-50" />
+                                 </a>
+                               </div>
+                             )}
+
+                            {isEscrowDeal && normalizedDealStatus === 'CONTENT_APPROVED' && (
+                              <div className={cn('rounded-xl border p-4 space-y-2', isDark ? 'bg-emerald-500/10 border-emerald-500/20' : 'bg-emerald-50 border-emerald-200')}>
+                                <div className="flex items-center gap-2 text-emerald-500">
+                                  <ShieldCheck className="w-4 h-4" />
+                                  <p className="text-[12px] font-black uppercase tracking-tight">Payout Processing</p>
+                                </div>
+                                <p className={cn('text-[11px] font-semibold leading-relaxed', isDark ? 'text-emerald-100/70' : 'text-emerald-700/80')}>
+                                  Funds are securely held in escrow. Since you have approved the content, our finance team is now processing the payout to the creator.
+                                </p>
                               </div>
                             )}
 
@@ -5207,6 +5300,52 @@ const BrandMobileDashboard = ({
 	      </AnimatePresence>
 
 		        {renderBrandSigningPortal()}
+
+        {/* Dispute escalation modal */}
+        {showDisputeEscalationModal && selectedDealPage && (
+          <DisputeEscalationModal
+            dealId={String(selectedDealPage.id || '')}
+            brandName={selectedDealPage.brand_name || profile?.business_name || 'Creator'}
+            onClose={() => setShowDisputeEscalationModal(false)}
+            onSuccess={(_resolution: any, newStatus: string) => {
+              setShowDisputeEscalationModal(false);
+              setSelectedDealPage((prev: any) => prev?.id === selectedDealPage.id
+                ? { ...prev, status: newStatus, updated_at: new Date().toISOString() }
+                : prev);
+              onRefresh?.();
+            }}
+          />
+        )}
+
+        {/* Confirm payment pending modal */}
+        {showConfirmPaymentModal && selectedDealPage && (
+          <ConfirmPaymentPendingModal
+            dealId={String(selectedDealPage.id || '')}
+            dealAmount={Number(selectedDealPage.deal_amount || 0) || undefined}
+            creatorName={selectedDealPage.creator_name || selectedDealPage.creator_username || 'Creator'}
+            onClose={() => setShowConfirmPaymentModal(false)}
+            onSuccess={() => {
+              setShowConfirmPaymentModal(false);
+              setSelectedDealPage((prev: any) => prev?.id === selectedDealPage.id
+                ? { ...prev, status: 'CONTENT_MAKING', updated_at: new Date().toISOString() }
+                : prev);
+              onRefresh?.();
+            }}
+          />
+        )}
+
+        {/* Brand shipping address modal */}
+        {showBrandShippingModal && selectedDealPage && (
+          <BrandShippingAddressModal
+            dealId={String(selectedDealPage.id || '')}
+            creatorName={selectedDealPage.creator_name || selectedDealPage.creator_username || 'Creator'}
+            onClose={() => setShowBrandShippingModal(false)}
+            onSuccess={() => {
+              setShowBrandShippingModal(false);
+              onRefresh?.();
+            }}
+          />
+        )}
 	    </div>
 	  );
 };

@@ -5,7 +5,7 @@
 interface EmailLayoutProps {
   content: string;
   showFooter?: boolean;
-  backgroundStyle?: 'purple' | 'dark';
+  backgroundStyle?: 'green' | 'dark';
   preheaderText?: string;
 }
 
@@ -34,12 +34,12 @@ interface CollaborationRequestCardProps {
 export function getEmailLayout({
   content,
   showFooter = true,
-  backgroundStyle = 'purple',
+  backgroundStyle = 'green',
   preheaderText = 'Secure collaboration update from Creator Armour.',
 }: EmailLayoutProps): string {
   const backgroundGradient = backgroundStyle === 'dark'
     ? 'linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%)'
-    : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+    : 'linear-gradient(135deg, #10b981 0%, #059669 100%)';
 
   const boxShadow = backgroundStyle === 'dark'
     ? '0 20px 60px rgba(0, 0, 0, 0.4)'
@@ -96,7 +96,7 @@ export function getEmailLayout({
 export function getEmailHeader(brandName: string, creatorProfile?: CreatorProfileProps): string {
   return `
     <tr>
-      <td style="background-color: #667eea; padding: 50px 30px; text-align: center;">
+      <td style="background-color: #10b981; padding: 50px 30px; text-align: center;">
         <h1 style="margin: 0 0 8px 0; font-size: 24px; font-weight: 600; color: #ffffff !important; line-height: 1.3;">
           <span style="color: #ffffff;">New Collaboration Opportunity</span>
         </h1>
@@ -153,7 +153,7 @@ export function getSuccessHeader(): string {
  */
 export function getCollaborationRequestCard(props: CollaborationRequestCardProps): string {
   const deliverablesList = props.deliverables.length > 0
-    ? props.deliverables.map(d => `<li style="color: #4a5568; font-size: 14px; line-height: 1.6; padding: 4px 0; padding-left: 20px; position: relative;"><span style="position: absolute; left: 0; color: #667eea; font-weight: bold;">✓</span>${d}</li>`).join('')
+    ? props.deliverables.map(d => `<li style="color: #4a5568; font-size: 14px; line-height: 1.6; padding: 4px 0; padding-left: 20px; position: relative;"><span style="position: absolute; left: 0; color: #10b981; font-weight: bold;">✓</span>${d}</li>`).join('')
     : '<li style="color: #a0aec0; font-size: 14px; padding: 4px 0; padding-left: 20px;">No deliverables specified</li>';
 
   return `
@@ -163,7 +163,7 @@ export function getCollaborationRequestCard(props: CollaborationRequestCardProps
           <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin-bottom: 20px;">
             <tr>
               <td style="width: 20px; padding-right: 12px; vertical-align: middle;">
-                <div style="width: 20px; height: 20px; background-color: #2563eb; border-radius: 4px; text-align: center; line-height: 20px;">
+                <div style="width: 20px; height: 20px; background-color: #16a34a; border-radius: 4px; text-align: center; line-height: 20px;">
                   <span style="color: white; font-weight: bold; font-size: 12px;">✓</span>
                 </div>
               </td>
@@ -194,7 +194,7 @@ export function getCollaborationRequestCard(props: CollaborationRequestCardProps
             <tr>
               <td style="padding: 12px 0; color: #2d3748; font-size: 14px; vertical-align: top; font-weight: 600; border-bottom: 1px solid #e2e8f0;"><strong>Website:</strong></td>
               <td style="padding: 12px 0; border-bottom: 1px solid #e2e8f0;">
-                <a href="${props.brandWebsite.startsWith('http') ? props.brandWebsite : `https://${props.brandWebsite}`}" style="color: #667eea; text-decoration: none; font-size: 14px;">${props.brandWebsite.replace(/^https?:\/\//, '')}</a>
+                <a href="${props.brandWebsite.startsWith('http') ? props.brandWebsite : `https://${props.brandWebsite}`}" style="color: #10b981; text-decoration: none; font-size: 14px;">${props.brandWebsite.replace(/^https?:\/\//, '')}</a>
               </td>
             </tr>
             ` : ''}
@@ -215,7 +215,7 @@ export function getCollaborationRequestCard(props: CollaborationRequestCardProps
             <tr>
               <td style="padding: 12px 0; color: #2d3748; font-size: 14px; width: 35%; vertical-align: top; font-weight: 600; border-bottom: 1px solid #e2e8f0;"><strong>Budget:</strong></td>
               <td style="padding: 12px 0; border-bottom: 1px solid #e2e8f0;">
-                <span style="display: inline-block; background-color: #667eea; color: #ffffff !important; padding: 4px 12px; border-radius: 6px; font-weight: 600; font-size: 14px;"><span style="color: #ffffff;">${props.budget}</span></span>
+                <span style="display: inline-block; background-color: #10b981; color: #ffffff !important; padding: 4px 12px; border-radius: 6px; font-weight: 600; font-size: 14px;"><span style="color: #ffffff;">${props.budget}</span></span>
               </td>
             </tr>
             ${props.timeline ? `
@@ -248,8 +248,8 @@ export function getPrimaryCTA(text: string, url: string): string {
       <td style="padding: 30px 32px 20px 32px; text-align: center;">
         <table role="presentation" cellspacing="0" cellpadding="0" border="0" align="center">
           <tr>
-            <td style="background-color: #667eea; border-radius: 8px;">
-              <a href="${url}" style="display: inline-block; min-width: 220px; background-color: #667eea; color: #ffffff !important; text-decoration: none; padding: 14px 24px; border-radius: 8px; font-weight: 600; font-size: 16px; line-height: 1.5; mso-hide: all;" target="_blank" rel="noopener noreferrer">
+            <td style="background-color: #10b981; border-radius: 8px;">
+              <a href="${url}" style="display: inline-block; min-width: 220px; background-color: #10b981; color: #ffffff !important; text-decoration: none; padding: 14px 24px; border-radius: 8px; font-weight: 600; font-size: 16px; line-height: 1.5; mso-hide: all;" target="_blank" rel="noopener noreferrer">
                 <span style="color: #ffffff;">${text}</span>
               </a>
             </td>
@@ -274,7 +274,7 @@ export function getSecondaryActions(
     actions.push({ text: 'Accept', url: acceptUrl, bgColor: '#48bb78', textColor: '#ffffff', borderColor: '#48bb78' });
   }
   if (counterUrl) {
-    actions.push({ text: 'Adjust Terms', url: counterUrl, bgColor: '#ffffff', textColor: '#667eea', borderColor: '#667eea' });
+    actions.push({ text: 'Adjust Terms', url: counterUrl, bgColor: '#ffffff', textColor: '#10b981', borderColor: '#10b981' });
   }
   if (declineUrl) {
     actions.push({ text: 'Decline', url: declineUrl, bgColor: '#ffffff', textColor: '#e53e3e', borderColor: '#e53e3e' });
@@ -285,7 +285,7 @@ export function getSecondaryActions(
   if (actions.length === 0) {
     actions.push(
       { text: 'Accept', url: baseUrl, bgColor: '#48bb78', textColor: '#ffffff', borderColor: '#48bb78' },
-      { text: 'Adjust Terms', url: baseUrl, bgColor: '#ffffff', textColor: '#667eea', borderColor: '#667eea' },
+      { text: 'Adjust Terms', url: baseUrl, bgColor: '#ffffff', textColor: '#10b981', borderColor: '#10b981' },
       { text: 'Decline', url: baseUrl, bgColor: '#ffffff', textColor: '#e53e3e', borderColor: '#e53e3e' }
     );
   }
@@ -479,11 +479,11 @@ export function getEmailFooter(): string {
   return `
     <tr>
       <td style="padding: 28px 24px; border-top: 1px solid #e2e8f0; background-color: #f8fafc; text-align: center;">
-        <p style="margin: 0 0 14px 0; padding: 12px; background: #eef2ff; border: 1px solid #c7d2fe; border-radius: 8px; font-size: 12px; color: #3730a3; line-height: 1.5;">
+        <p style="margin: 0 0 14px 0; padding: 12px; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; font-size: 12px; color: #166534; line-height: 1.5;">
           <strong>Records & Compliance:</strong> Key actions are timestamped and logged for verification and dispute support.
         </p>
         <p style="margin: 0 0 8px 0; font-size: 14px; color: #4a5568; line-height: 1.5;">
-          <a href="mailto:${supportEmail}" style="color: #4f46e5; text-decoration: none; font-weight: 600;">Need help? Contact support</a>
+          <a href="mailto:${supportEmail}" style="color: #16a34a; text-decoration: none; font-weight: 600;">Need help? Contact support</a>
           <span style="color: #64748b;"> — we can help before issues escalate.</span>
         </p>
         <p style="margin: 12px 0 0 0; font-size: 13px; font-weight: 700; color: #1f2937; line-height: 1.5;">

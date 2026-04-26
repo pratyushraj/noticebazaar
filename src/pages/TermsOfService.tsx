@@ -23,49 +23,51 @@ const TermsOfService = () => {
 
         <div className="prose dark:prose-invert max-w-none space-y-6 text-muted-foreground">
           <p>
-            Welcome to CreatorArmour. These Terms of Service ("Terms") govern your access to and use of the CreatorArmour website, client portal, and subscription services (collectively, the "Service"). By accessing or using the Service, you agree to be bound by these Terms.
+            Welcome to Creator Armour. These Terms of Service ("Terms") govern your access to and use of the Creator Armour platform, dashboards, and escrow services (collectively, the "Service"). By accessing or using the Service, you agree to be bound by these Terms.
           </p>
 
           <h2 className="text-2xl font-bold text-foreground">1. Service Description</h2>
           <p>
-            CreatorArmour provides a technology platform connecting small and medium enterprises (SMEs) with independent, licensed legal advocates and chartered accountants on a subscription basis. We facilitate communication, document management, and compliance tracking.
+            Creator Armour is an escrow-protected collaboration platform that facilitates secure transactions between Brands and Content Creators. We provide tools for contract generation, shipping tracking, content review, and secure payment holding.
           </p>
           <ul className="list-disc list-inside ml-4 space-y-2">
-            <li><strong>Disclaimer:</strong> CreatorArmour is a technology platform and is NOT a law firm or accounting firm. Legal and financial advice is provided solely by the independent professionals in our network.</li>
-            <li><strong>No Attorney-Client Relationship:</strong> Use of the platform does not automatically create an attorney-client relationship with CreatorArmour itself. That relationship is formed directly between you and the assigned advocate/CA.</li>
+            <li><strong>Escrow Protection:</strong> Funds deposited by Brands are held securely in escrow until content is delivered and approved by the Brand.</li>
+            <li><strong>72-Hour Review Window:</strong> Once a Creator delivers content, Brands have exactly 72 hours to review and request revisions. If no action is taken within 72 hours, the platform automatically approves the content and initiates the payout release process.</li>
+            <li><strong>Creator Armour's Role:</strong> We act as a neutral technology provider and escrow agent. We are not a party to the individual collaboration agreements between Brands and Creators.</li>
           </ul>
 
-          <h2 className="text-2xl font-bold text-foreground">2. Subscription and Payment</h2>
+          <h2 className="text-2xl font-bold text-foreground">2. Payments and Payouts</h2>
           <p>
-            Access to the Service requires a valid, active subscription plan. All fees are billed monthly or annually, as selected, and are non-refundable, subject to our Refund Policy.
+            All payments are processed securely through our authorized payment partners. 
           </p>
           <ul className="list-disc list-inside ml-4 space-y-2">
-            <li><strong>Billing:</strong> Subscriptions automatically renew unless cancelled prior to the next billing date.</li>
-            <li><strong>Fair Use:</strong> Unlimited services (e.g., formal notices in the Strategic Partner plan) are subject to a fair use policy to prevent abuse and ensure quality service for all clients.</li>
+            <li><strong>Fund Collection:</strong> Brands must fund the escrow in full before a collaboration is considered active.</li>
+            <li><strong>Payout Release:</strong> Funds are released to the Creator's verified UPI ID or Bank Account only after the Brand confirms approval or the 72-hour window expires.</li>
+            <li><strong>Disputes:</strong> In the event of a dispute, Creator Armour reserves the right to hold funds until a resolution is reached or provide mediation services.</li>
           </ul>
 
-          <h2 className="text-2xl font-bold text-foreground">3. Client Responsibilities</h2>
+          <h2 className="text-2xl font-bold text-foreground">3. User Responsibilities</h2>
           <p>You agree to:</p>
           <ul className="list-disc list-inside ml-4 space-y-2">
-            <li>Provide accurate and complete information during onboarding and throughout the service period.</li>
-            <li>Maintain the confidentiality of your login credentials.</li>
-            <li>Use the Service only for lawful business purposes in India.</li>
+            <li>Provide accurate UPI and Bank details for payouts.</li>
+            <li>Submit original, non-infringing content as per the agreed deliverables.</li>
+            <li>Maintain professional communication throughout the collaboration.</li>
           </ul>
 
           <h2 className="text-2xl font-bold text-foreground">4. Termination</h2>
           <p>
-            We may terminate or suspend your access to the Service immediately, without prior notice or liability, if you breach these Terms, including failure to pay subscription fees or misuse of the platform.
+            We may terminate or suspend your access to the Service immediately if you violate these terms, attempt to bypass the escrow system, or engage in fraudulent activities.
           </p>
 
           <h2 className="text-2xl font-bold text-foreground">5. Governing Law</h2>
           <p>
-            These Terms shall be governed by and construed in accordance with the laws of India, without regard to its conflict of law provisions. Any disputes arising under these Terms shall be subject to the exclusive jurisdiction of the courts located in New Delhi, India.
+            These Terms shall be governed by the laws of India. Any disputes shall be subject to the exclusive jurisdiction of the courts located in Mumbai, India.
           </p>
 
           <h2 className="text-2xl font-bold text-foreground">6. Contact Information</h2>
           <p>For any questions regarding these Terms, please contact us:</p>
           <p className="font-semibold">
-            Email: <a href="mailto:support@creatorarmour.com" className="text-primary hover:underline">support@creatorarmour.com</a>
+            Email: <a href="mailto:hello@creatorarmour.com" className="text-primary hover:underline">hello@creatorarmour.com</a>
           </p>
         </div>
       </Card>

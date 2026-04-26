@@ -66,6 +66,10 @@ export default function BrandOnboarding() {
       navigate('/creator-dashboard', { replace: true });
       return;
     }
+    if (profile.onboarding_complete) {
+      navigate('/brand-dashboard', { replace: true });
+      return;
+    }
   }, [sessionLoading, profile, navigate]);
 
   useEffect(() => {

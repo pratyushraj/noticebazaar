@@ -13,6 +13,7 @@ const AdminActivityLog = lazy(() => import("@/pages/AdminActivityLog"));
 const AdminProfile = lazy(() => import("@/pages/AdminProfile"));
 const AdminInfluencers = lazy(() => import("@/pages/AdminInfluencers"));
 const AdminDiscovery = lazy(() => import("@/pages/AdminDiscovery"));
+const AdminPayouts = lazy(() => import("@/pages/AdminPayouts"));
 
 export const AdminRoutes = () => (
   <>
@@ -35,6 +36,7 @@ export const AdminRoutes = () => (
     <Route path="/admin-profile" element={<LazyRoute><ProtectedLayout allowedRoles={["admin"]}><AdminProfile /></ProtectedLayout></LazyRoute>} />
     <Route path="/admin-influencers" element={<LazyRoute><ProtectedLayout allowedRoles={["admin"]}><AdminInfluencers /></ProtectedLayout></LazyRoute>} />
     <Route path="/admin-discovery" element={<LazyRoute><ProtectedLayout allowedRoles={["admin"]}><AdminDiscovery /></ProtectedLayout></LazyRoute>} />
+    <Route path="/admin-payouts" element={<LazyRoute><ProtectedLayout allowedRoles={["admin"]}><AdminPayouts /></ProtectedLayout></LazyRoute>} />
   </>
 );
 

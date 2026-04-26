@@ -235,6 +235,7 @@ function DealDetailPageContent() {
   const [isDownloading, setIsDownloading] = useState(false);
   const [reportIssueMessage, setReportIssueMessage] = useState('');
   const [showInvoiceGenerator, setShowInvoiceGenerator] = useState(false);
+  const [isCancellingUnpaidDeal, setIsCancellingUnpaidDeal] = useState(false);
 
   // Deal progress update
   const updateDealProgress = useUpdateDealProgress();
@@ -1311,10 +1312,20 @@ function DealDetailPageContent() {
           explanation: 'The brand will review your post and either approve it or ask for changes. You will be notified here.',
         };
       case 'APPROVED':
-      case 'PAYMENT_PENDING':
         return {
           title: 'Waiting for payment',
           explanation: 'Your content is approved. The brand sends payment next.',
+        };
+      case 'PAYMENT_PENDING':
+        return {
+          title: 'Waiting for payment',
+          explanation: 'Your content is approved. The brand sends payment next. If they take too long, you can cancel this deal.',
+          actionLabel: isCancellingUnpaidDeal ? 'Cancelling...' : 'Cancel Unpaid Deal',
+          action: () => {
+            if (window.confirm("Are you sure you want to cancel this unpaid deal? This action cannot be undone.")) {
+              handleCancelUnpaidDeal();
+            }
+          }
         };
       case 'PAID':
         return {
@@ -1452,6 +1463,38 @@ function DealDetailPageContent() {
       setIsSubmittingContentLink(false);
     }
   }, [contentLinkInput, contentNoteInput, deal?.id, guidedDealState, refreshAll, session?.access_token]);
+
+  const handleCancelUnpaidDeal = useCallback(async () => {
+    if (!deal?.id || !session?.access_token) return;
+    
+    try {
+      setIsCancellingUnpaidDeal(true);
+      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL ||
+        (typeof window !== 'undefined' && window.location.origin.includes('creatorarmour.com')
+          ? 'https://api.noticebazaar.com'
+          : getApiBaseUrl());
+
+      const response = await fetch(`${apiBaseUrl}/api/deals/${deal.id}/cancel-unpaid`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
+      });
+
+      const data = await response.json();
+      if (!response.ok || !data.success) {
+        throw new Error(data.error || 'Failed to cancel deal');
+      }
+
+      toast.success('Deal cancelled successfully');
+      refreshAll();
+    } catch (error: any) {
+      console.error('[DealDetailPage] Error cancelling deal:', error);
+      toast.error(error.message || 'Failed to cancel deal');
+    } finally {
+      setIsCancellingUnpaidDeal(false);
+    }
+  }, [deal?.id, session?.access_token, refreshAll]);
 
   // ALL HANDLERS MUST BE DEFINED BEFORE EARLY RETURNS
   // Handlers (must be useCallback and defined before early returns)

@@ -28,6 +28,8 @@ import { safeAvatarSrc, withCacheBuster } from '@/lib/utils/image';
 
 import DealSearchFilter from '@/components/dashboard/DealSearchFilter';
 import { generateAIBios } from '@/utils/aiBioGenerator';
+import { UpiIdInput } from '@/components/ui/UpiIdInput';
+import { validateUpiId } from '@/lib/utils/upiValidation';
 import { CITY_OPTIONS } from '@/constants/cities';
 import EnhancedEmptyStates from '@/components/dashboard/EnhancedEmptyStates';
 
@@ -2142,7 +2144,16 @@ const MobileDashboardDemo = ({
                 { media_kit_url: profileFormData.media_kit_url || null },
                 { avg_rate_reel: Number(profileFormData.avg_rate_reel) || null },
                 { bank_account_name: profileFormData.bank_account_name?.trim() || null },
-                { payout_upi: profileFormData.payout_upi?.trim() || null },
+                { payout_upi: (() => {
+                    const raw = profileFormData.payout_upi?.trim() || null;
+                    if (!raw) return null;
+                    const result = validateUpiId(raw);
+                    if (!result.valid) {
+                      toast.warning(`UPI ID not saved: ${result.error}`);
+                      return profileFormData.payout_upi;
+                    }
+                    return result.normalised;
+                  })() },
                 { open_to_collabs: profileFormData.open_to_collabs },
                 { story_price: Number(profileFormData.story_price) || null },
                 { instagram_followers: Number(profileFormData.instagram_followers) || 0 },
@@ -3167,20 +3178,40 @@ const MobileDashboardDemo = ({
                                         <div className={cn("w-10 h-10 rounded-2xl flex items-center justify-center shrink-0", isDark ? "bg-blue-500/15" : "bg-blue-50")}>
                                             <Landmark className="w-5 h-5 text-blue-500" />
                                         </div>
-                                        <div className="flex-1 min-w-0">
-                                            <p className={cn("text-[10px] font-black uppercase tracking-widest mb-1 opacity-50", textColor)}>Payout UPI ID</p>
-                                            {isEditMode ? (
-                                                <input
-                                                    className={cn("w-full bg-transparent outline-none font-black text-[15px] p-0 border-none focus:ring-0 text-blue-500", !isDark && "text-blue-600")}
-                                                    value={profileFormData.payout_upi || ''}
-                                                    placeholder="yourname@upi"
-                                                    onChange={e => setProfileFormData((p: any) => ({ ...p, payout_upi: e.target.value }))}
-                                                />
-                                            ) : (
-                                                <p className={cn("font-black text-[15px] truncate text-blue-500", !isDark && "text-blue-600")}>
-                                                    {profileFormData.payout_upi || <span className="opacity-20 font-bold italic">Not set</span>}
-                                                </p>
-                                            )}
+                                     <div className="flex-1 min-w-0">
+                                            <p className={cn("text-[10px] font-black uppercase tracking-widest mb-2 opacity-50", textColor)}>Payout UPI ID</p>
+                                            <UpiIdInput
+                                              value={profileFormData.payout_upi || ''}
+                                              isVerified={!!profileFormData.upi_verified_at}
+                                              readOnly={!isEditMode}
+                                              isDark={isDark}
+                                              onChange={(normalisedUpi) => {
+                                                setProfileFormData((p: any) => ({
+                                                  ...p,
+                                                  payout_upi: normalisedUpi,
+                                                  // Clear verified status if UPI changes
+                                                  upi_verified_at: null,
+                                                }));
+                                              }}
+                                              onVerified={(normalisedUpi) => {
+                                                const now = new Date().toISOString();
+                                                setProfileFormData((p: any) => ({
+                                                  ...p,
+                                                  payout_upi: normalisedUpi,
+                                                  upi_verified_at: now,
+                                                }));
+                                                // Persist verification immediately
+                                                if (session?.user?.id) {
+                                                  (supabase as any)
+                                                    .from('profiles')
+                                                    .update({ payout_upi: normalisedUpi, upi_verified_at: now })
+                                                    .eq('id', session.user.id)
+                                                    .then(({ error }: any) => {
+                                                      if (error) console.warn('[UPI verify] Failed to persist:', error.message);
+                                                    });
+                                                }
+                                              }}
+                                            />
                                         </div>
                                     </div>
                                 </div>
@@ -4553,75 +4584,6 @@ const MobileDashboardDemo = ({
                                                         : "Let's get your creator profile live and ready to receive brand deals."}
                                                 </motion.p>
                                             </div>
-
-                                            {/* Live Activity Insight (🔥 Brands Viewed) */}
-                                            <div className="px-6 pb-6 -mt-2">
-                                                <motion.div
-                                                    initial={{ y: 20, opacity: 0 }}
-                                                    animate={{ y: 0, opacity: 1 }}
-                                                    transition={{ delay: 0.15, duration: 0.5 }}
-                                                    className={cn(
-                                                        "p-4 rounded-[32px] border overflow-hidden relative group active:scale-[0.98] transition-all duration-300",
-                                                        isDark 
-                                                            ? "bg-[#0B1A14]/80 backdrop-blur-md border-emerald-500/10 hover:border-emerald-500/20 shadow-[0_8px_32px_rgba(16,185,129,0.05)]" 
-                                                            : "bg-white/60 backdrop-blur-md border-emerald-100 hover:border-emerald-200 shadow-sm"
-                                                    )}
-                                                >
-                                                    {/* Background Glow */}
-                                                    <div className={cn(
-                                                        "absolute inset-0 bg-gradient-to-r transition-opacity duration-500",
-                                                        isDark ? "from-emerald-500/10 via-transparent to-transparent opacity-40 group-hover:opacity-60" : "from-emerald-500/5 via-transparent to-transparent opacity-30"
-                                                    )} />
-                                                    
-                                                    <div className="relative z-10 flex items-center justify-between">
-                                                        <div className="flex items-center gap-4">
-                                                            <div className="relative">
-                                                                <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 flex items-center justify-center text-emerald-500 shadow-inner overflow-hidden">
-                                                                    <motion.div
-                                                                        animate={{ 
-                                                                            scale: [1, 1.15, 1],
-                                                                            opacity: [0.8, 1, 0.8]
-                                                                        }}
-                                                                        transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-                                                                    >
-                                                                        <Flame className="w-6 h-6" fill="currentColor" />
-                                                                    </motion.div>
-                                                                </div>
-                                                                {/* Pulsing ring around icon */}
-                                                                <div className="absolute -inset-1 rounded-2xl border border-emerald-500/20 animate-ping opacity-10" />
-                                                            </div>
-                                                            <div>
-                                                                <div className="flex items-center gap-1.5 mb-0.5">
-                                                                    <p className={cn("text-[14px] font-black tracking-tight", isDark ? "text-white" : "text-slate-900")}>
-                                                                        {profileViewsToday > 0 
-                                                                            ? `${profileViewsToday} Brands viewed your profile` 
-                                                                            : "Profile is active today"}
-                                                                    </p>
-                                                                    {profileViewsToday > 2 && (
-                                                                        <span className="flex h-1.5 w-1.5 rounded-full bg-orange-500 shadow-[0_0_8px_#f97316]" />
-                                                                    )}
-                                                                </div>
-                                                                <p className={cn("text-[11px] font-bold", isDark ? "text-emerald-400/80" : "text-emerald-600/90")}>
-                                                                    {profileViewsToday > 0 
-                                                                        ? "Trending now in brand discovery" 
-                                                                        : "Share your link to attract brands"}
-                                                                </p>
-                                                            </div>
-                                                        </div>
-                                                        
-                                                        <div className="flex flex-col items-end gap-1.5">
-                                                            <div className={cn(
-                                                                "flex items-center gap-1.5 px-2.5 py-1 rounded-full border transition-colors",
-                                                                isDark ? "bg-emerald-500/10 border-emerald-500/20" : "bg-emerald-50 border-emerald-100"
-                                                            )}>
-                                                                <span className="flex h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                                                                <span className={cn("text-[9px] font-black uppercase tracking-widest", isDark ? "text-emerald-400" : "text-emerald-600")}>LIVE</span>
-                                                            </div>
-                                                            <span className={cn("text-[10px] font-bold opacity-40", isDark ? "text-white" : "text-slate-900")}>TODAY</span>
-                                                        </div>
-                                                    </div>
-                                                </motion.div>
-                                            </div>
                                         </div>
 
                                         {/* Total Earnings Section - Only after 1 deal completes */}
@@ -4806,6 +4768,70 @@ const MobileDashboardDemo = ({
                                                 <MessageCircle className="w-5 h-5 fill-current" />
                                                 Share on WhatsApp
                                             </button>
+                                        </div>
+                                        
+                                        {/* Activity Status Card */}
+                                        <div className={cn(
+                                            "mx-5 p-5 rounded-[32px] border relative overflow-hidden",
+                                            isDark 
+                                                ? "bg-[#061D15] border-emerald-500/10 shadow-[0_20px_40px_rgba(16,185,129,0.05)]" 
+                                                : "bg-emerald-50 border-emerald-100 shadow-sm"
+                                        )}>
+                                            <div className="flex items-center gap-5 relative z-10">
+                                                <div className={cn(
+                                                    "w-14 h-14 rounded-2xl flex items-center justify-center shrink-0",
+                                                    isDark ? "bg-emerald-500/10" : "bg-emerald-500/20"
+                                                )}>
+                                                    <Flame className="w-7 h-7 text-emerald-500" />
+                                                </div>
+                                                
+                                                <div className="flex-1 min-w-0">
+                                                    <div className="flex items-center justify-between mb-1">
+                                                        <h3 className={cn(
+                                                            "font-black text-[17px] tracking-tight italic uppercase",
+                                                            isDark ? "text-white" : "text-emerald-950"
+                                                        )}>
+                                                            Profile is active today
+                                                        </h3>
+                                                        <div className={cn(
+                                                            "flex items-center gap-1.5 px-3 py-1 rounded-full border text-[9px] font-black uppercase tracking-widest",
+                                                            isDark 
+                                                                ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400" 
+                                                                : "bg-emerald-500 border-emerald-500 text-white"
+                                                        )}>
+                                                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                                                            LIVE
+                                                        </div>
+                                                    </div>
+                                                    <p className={cn(
+                                                        "text-[13px] font-bold leading-tight",
+                                                        isDark ? "text-emerald-400/60" : "text-emerald-700/70"
+                                                    )}>
+                                                        Share your link to attract brands
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            
+                                            <div className="mt-4 flex items-center justify-between">
+                                                <div className="flex items-center gap-2">
+                                                    <div className="flex -space-x-2">
+                                                        {[1, 2, 3].map((i) => (
+                                                            <div key={i} className="w-6 h-6 rounded-full border-2 border-[#061D15] bg-emerald-900 flex items-center justify-center overflow-hidden">
+                                                                <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${i + 10}`} alt="viewer" />
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                    <span className="text-[10px] font-black uppercase tracking-widest text-emerald-500/40">
+                                                        {profileViewsToday > 0 ? `${profileViewsToday} Views Today` : 'New profile views'}
+                                                    </span>
+                                                </div>
+                                                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-emerald-500/20">
+                                                    TODAY
+                                                </span>
+                                            </div>
+
+                                            {/* Decorative Background Blur */}
+                                            <div className="absolute -bottom-10 -right-10 w-32 h-32 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
                                         </div>
 
                                         {/* Preview Card */}
@@ -6869,6 +6895,37 @@ const MobileDashboardDemo = ({
                                                     </div>
                                                 </div>
 
+                                                {/* Escrow Status & Receipt */}
+                                                {selectedRequiresPayment && (
+                                                    <div className={cn("rounded-2xl border p-4 mb-6", isDark ? "bg-emerald-500/5 border-emerald-500/20" : "bg-emerald-50 border-emerald-200 shadow-sm shadow-emerald-500/5")}>
+                                                        <div className="flex items-center justify-between gap-3 mb-3">
+                                                            <div className="flex items-center gap-2">
+                                                                <ShieldCheck className="w-4 h-4 text-emerald-500" />
+                                                                <p className={cn("text-[13px] font-black", isDark ? "text-emerald-300" : "text-emerald-700")}>Escrow Protection Active</p>
+                                                            </div>
+                                                            <span className={cn("px-2 py-0.5 rounded-full text-[9px] font-black bg-emerald-500 text-white")}>SECURED</span>
+                                                        </div>
+                                                        <p className={cn("text-[11px] font-semibold mb-3 leading-relaxed", isDark ? "text-emerald-200/60" : "text-emerald-700/80")}>
+                                                            The brand has deposited funds into our secure escrow. Your payment is guaranteed upon content approval.
+                                                        </p>
+                                                        {selectedItem.escrow_receipt_url && (
+                                                            <a 
+                                                                href={selectedItem.escrow_receipt_url} 
+                                                                target="_blank" 
+                                                                rel="noopener noreferrer"
+                                                                className={cn(
+                                                                    "flex items-center gap-2 py-2.5 px-3 rounded-xl border text-[12px] font-bold transition-all active:scale-[0.98]",
+                                                                    isDark ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400" : "bg-white border-emerald-200 text-emerald-700 shadow-sm"
+                                                                )}
+                                                            >
+                                                                <FileText className="w-3.5 h-3.5" />
+                                                                View Brand's Escrow Receipt
+                                                                <ExternalLink className="w-3 h-3 ml-auto opacity-50" />
+                                                            </a>
+                                                        )}
+                                                    </div>
+                                                )}
+
                                                 {/* ── CONTRACT DETAILS ── */}
                                                 <div ref={contractSectionRef} className="mb-6 scroll-mt-24">
                                                     <h4 className={cn("text-[13px] font-black uppercase tracking-wider mb-3 opacity-50", textColor)}>Contract Details</h4>
@@ -6976,7 +7033,7 @@ const MobileDashboardDemo = ({
                                                 <div className="mt-3 grid grid-cols-1 sm:grid-cols-3 gap-2 relative z-10">
                                                     {[
                                                         'Contract auto-generated',
-                                                        'Content rights secured',
+                                                        '72h Auto-release Guarantee',
                                                         'Dispute protection included',
                                                     ].map((t) => (
                                                         <div key={t} className="flex items-center gap-2">

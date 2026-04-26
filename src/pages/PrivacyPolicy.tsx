@@ -23,50 +23,47 @@ const PrivacyPolicy = () => {
 
         <div className="prose dark:prose-invert max-w-none space-y-6 text-muted-foreground">
           <p>
-            CreatorArmour ("we," "our," or "us") is committed to protecting your privacy. This Privacy Policy explains how your personal information is collected, used, and disclosed by CreatorArmour. This policy applies to our website, client portal, and related services.
+            Creator Armour ("we," "our," or "us") is committed to protecting your privacy. This Privacy Policy explains how your personal information is collected, used, and disclosed by Creator Armour. This policy applies to our website, dashboards, and escrow services.
           </p>
 
           <h2 className="text-2xl font-bold text-foreground">1. Information We Collect</h2>
-          <p>We collect information that identifies, relates to, describes, or is capable of being associated with you ("Personal Data").</p>
+          <p>We collect information necessary to facilitate secure collaborations and payments.</p>
           <ul className="list-disc list-inside ml-4 space-y-2">
-            <li><strong>Identity Data:</strong> Name, email address, phone number, and login data.</li>
-            <li><strong>Business Data:</strong> Business name, GSTIN, business entity type, and incorporation documents.</li>
-            <li><strong>Financial Data:</strong> Subscription details, payment history, and billing information (processed securely by third-party payment gateways like Razorpay).</li>
-            <li><strong>Case Data:</strong> Documents, consultation notes, messages, and activity logs related to your legal and financial matters.</li>
+            <li><strong>Identity Data:</strong> Name, email address, social media handles (Instagram/YouTube), and profile photos.</li>
+            <li><strong>Financial Data:</strong> UPI IDs, Bank Account details (for payouts), and transaction history. Payment card/bank data is processed securely by Razorpay.</li>
+            <li><strong>Collaboration Data:</strong> Contracts, campaign briefs, tracking numbers, content URLs, and communication logs.</li>
+            <li><strong>Verification Data:</strong> Documents used to verify creator identity or brand authenticity.</li>
           </ul>
 
           <h2 className="text-2xl font-bold text-foreground">2. How We Use Your Information</h2>
-          <p>We use your Personal Data for the following purposes:</p>
+          <p>We use your data for the following purposes:</p>
           <ul className="list-disc list-inside ml-4 space-y-2">
-            <li>To provide and manage the subscription legal and CA services.</li>
-            <li>To communicate with you regarding your cases, compliance deadlines, and consultations.</li>
-            <li>To ensure the security and integrity of our client portal (ISO 27001 standards).</li>
-            <li>For billing, account management, and internal reporting.</li>
+            <li>To verify identity and prevent fraud in the escrow system.</li>
+            <li>To facilitate contract generation between Brands and Creators.</li>
+            <li>To process payouts and maintain a record of transactions for tax and compliance.</li>
+            <li>To notify users of deal updates, shipping progress, and payment status.</li>
           </ul>
 
-          <h2 className="text-2xl font-bold text-foreground">3. Data Security and Storage</h2>
+          <h2 className="text-2xl font-bold text-foreground">3. Data Security</h2>
           <p>
-            We take the security of your sensitive legal and financial documents seriously.
-            <Lock className="h-4 w-4 inline mx-1 text-secondary" /> All data is stored on secure, compliant servers (Supabase) with end-to-end encryption for communications. Access to case data is strictly limited to your assigned legal and CA advisors.
+            <Lock className="h-4 w-4 inline mx-1 text-secondary" /> We use industry-standard encryption and secure cloud infrastructure (Supabase) to protect your financial and collaboration data. Your payout details are encrypted and only accessible to authorized payment systems.
           </p>
 
           <h2 className="text-2xl font-bold text-foreground">4. Disclosure of Information</h2>
-          <p>We do not sell your Personal Data. We may share your information only with:</p>
+          <p>We share data only when necessary for service delivery:</p>
           <ul className="list-disc list-inside ml-4 space-y-2">
-            <li>Your dedicated legal advocates and chartered accountants for service delivery.</li>
-            <li>Third-party service providers (e.g., payment processors, cloud hosting) under strict confidentiality agreements.</li>
-            <li>When required by law or legal process.</li>
+            <li><strong>With Collaboration Partners:</strong> Brands see Creator identity/social data; Creators see Brand contact/shipping data.</li>
+            <li><strong>With Payment Partners:</strong> Transaction data is shared with Razorpay for payment processing.</li>
+            <li><strong>Legal Requirements:</strong> If required by law to prevent fraud or comply with a court order.</li>
           </ul>
 
           <h2 className="text-2xl font-bold text-foreground">5. Your Rights</h2>
-          <p>You have the right to access, correct, or request deletion of your Personal Data, subject to legal and regulatory retention requirements (especially concerning legal case files).</p>
+          <p>You have the right to access, update, or request deletion of your account and personal data at any time through your dashboard settings.</p>
 
           <h2 className="text-2xl font-bold text-foreground">6. Contact Us</h2>
-          <p>If you have any questions about this Privacy Policy or our data practices, please contact us:</p>
+          <p>For privacy-related inquiries, contact us at:</p>
           <p className="font-semibold">
-            Email: <a href="mailto:support@creatorarmour.com" className="text-primary hover:underline">support@creatorarmour.com</a>
-            <br />
-            Phone: <a href="tel:+919205376316" className="text-primary hover:underline">+91 92053 76316</a>
+            Email: <a href="mailto:hello@creatorarmour.com" className="text-primary hover:underline">hello@creatorarmour.com</a>
           </p>
         </div>
       </Card>

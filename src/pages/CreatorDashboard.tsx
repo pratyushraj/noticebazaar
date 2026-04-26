@@ -1,5 +1,5 @@
-
-
+import { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import MobileDashboardDemo from '@/pages/MobileDashboardDemo';
 import { useSession } from '@/contexts/SessionContext';
 import { useCollabRequests } from '@/lib/hooks/useCollabRequests';
@@ -7,6 +7,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { getApiBaseUrl } from '@/lib/utils/api';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { triggerHaptic } from '@/lib/utils/haptics';
 
 async function fetchBrandDeals() {
   const { data: sessionData } = await supabase.auth.getSession();
@@ -48,6 +49,7 @@ async function fetchBrandDeals() {
 }
 
 const CreatorDashboard = () => {
+  const navigate = useNavigate();
   const { user, profile, loading: isLoadingProfile } = useSession();
   const queryClient = useQueryClient();
 
@@ -97,6 +99,17 @@ const CreatorDashboard = () => {
   // Production safety: avoid partial render flicker on first load.
   // We only "release" the dashboard once both endpoints have settled (success or error).
   const isDashboardSettled = !!user?.id && !isLoadingCollab && !isLoadingBrandDeals && !isLoadingProfile;
+
+  // Onboarding enforcement: Ensure creators complete onboarding before accessing the full dashboard
+  useEffect(() => {
+    if (isLoadingProfile || !profile) return;
+    
+    // Only enforce for creator role
+    if (profile.role === 'creator' && !profile.onboarding_complete) {
+      console.log('[CreatorDashboard] Redirecting to onboarding (incomplete profile)');
+      navigate('/creator-onboarding', { replace: true });
+    }
+  }, [profile, isLoadingProfile, navigate]);
 
   // Realtime: Listen for new offers or deal updates to avoid manual refreshes
   useEffect(() => {
