@@ -45,42 +45,61 @@ router.post('/webhook', async (req: Request, res: Response) => {
       }
 
       // Check current deal state for idempotency (Double Webhook Issue)
-      const { data: deal } = await supabase
+      const selectFields = 'id, payment_status, status, creator_id, brand_name, creator_email, payment_id, amount_paid';
+      const { data: deal, error: fetchError } = await supabase
         .from('brand_deals')
-        .select('payment_status, status, creator_id, brand_name, creator_email')
+        .select(selectFields)
         .eq('id', dealId)
         .single();
         
-      if (deal && deal.payment_status === 'captured') {
+      if (fetchError) {
+        console.warn('[Razorpay] Webhook select notice (might be missing columns):', fetchError.message);
+        // Fallback: try minimal select if extended fails
+        const { data: minimal } = await supabase.from('brand_deals').select('id, status').eq('id', dealId).single();
+        if (!minimal) {
+          console.error('[Razorpay] Webhook failed: deal not found', dealId);
+          return res.status(200).send('Deal not found');
+        }
+      }
+
+      console.log(`[Razorpay] Processing webhook for deal ${dealId}. Current status: ${deal?.status}`);
+
+      if (deal && (deal.payment_status === 'captured' || (deal.status || '').toLowerCase() === 'content_making')) {
         console.log(`[Razorpay] Webhook already processed for deal ${dealId}`);
         return res.status(200).send('Already processed');
       }
 
-      // Update deal status to CONTENT_MAKING (Race condition fix: only if PAYMENT_PENDING)
+      // Update deal status to content_making (Race condition fix: only if PAYMENT_PENDING)
       const now = new Date().toISOString();
-      const updateData = {
-        status: 'CONTENT_MAKING',
-        payment_id: payment.id,
-        payment_status: 'captured',
-        amount_paid: payment.amount / 100, // stored in INR
+      const updateData: any = {
+        status: 'content_making',
         updated_at: now
       };
       
-      const { error } = await supabase
+      // Only include escrow columns if they exist in the schema
+      // (Hardening: prevent webhook crash if migrations haven't run)
+      if ('payment_id' in (deal || {})) updateData.payment_id = payment.id;
+      if ('payment_status' in (deal || {})) updateData.payment_status = 'captured';
+      if ('amount_paid' in (deal || {})) updateData.amount_paid = payment.amount / 100;
+      
+      console.log(`[Razorpay] Updating deal ${dealId} with:`, updateData);
+      const { error: updateError } = await supabase
         .from('brand_deals')
         .update(updateData)
         .eq('id', dealId)
-        .eq('status', 'PAYMENT_PENDING'); // Safety check
+        .or('status.eq.PAYMENT_PENDING,status.eq.payment_pending,status.eq.signed,status.eq.SIGNED'); 
         
-      if (error) {
-        console.error('[Razorpay] Failed to update deal:', error);
+      if (updateError) {
+        console.error('[Razorpay] Failed to update deal status:', updateError);
+      } else {
+        console.log(`[Razorpay] Successfully updated deal ${dealId} to content_making`);
       }
       
       // Log action
       await supabase.from('deal_action_logs').insert({
         deal_id: dealId,
         event: 'PAYMENT_CAPTURED',
-        metadata: { payment_id: payment.id, amount: payment.amount }
+        metadata: { payment_id: payment.id, amount: payment.amount, via: 'webhook' }
       });
 
       // Send Email to Creator
@@ -104,13 +123,15 @@ router.post('/webhook', async (req: Request, res: Response) => {
       
       if (dealId) {
         // Missing Failed Payment State Fix
+        const updateData: any = {
+          status: 'PAYMENT_FAILED',
+          updated_at: new Date().toISOString()
+        };
+        if ('payment_status' in (deal || {})) updateData.payment_status = 'failed';
+
         await supabase
           .from('brand_deals')
-          .update({
-            status: 'PAYMENT_FAILED',
-            payment_status: 'failed',
-            updated_at: new Date().toISOString()
-          })
+          .update(updateData)
           .eq('id', dealId);
 
         await supabase.from('deal_action_logs').insert({

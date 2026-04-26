@@ -54,6 +54,10 @@ export default defineConfig(() => ({
     hmr: {
       overlay: false,
     },
+    headers: {
+      'Permissions-Policy': 'accelerometer=(self "https://api.razorpay.com"), gyroscope=(self "https://api.razorpay.com"), magnetometer=(self "https://api.razorpay.com"), payment=(self)',
+      'Cross-Origin-Resource-Policy': 'cross-origin'
+    },
     // Proxy /api/* and /supabase-proxy/* to the local Express backend.
     // This means the frontend can call /api/... relative URLs in development
     // and they'll be transparently forwarded to port 3001.

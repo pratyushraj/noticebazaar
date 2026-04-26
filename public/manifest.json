@@ -22,14 +22,5 @@
     }
   ],
   "categories": ["business", "productivity", "finance"],
-  "service_worker": {
-    "src": "/sw.js",
-    "scope": "/",
-    "type": "classic"
-  },
-  "serviceworker": {
-    "src": "/sw.js",
-    "scope": "/",
-    "type": "classic"
-  }
+  "categories": ["business", "productivity", "finance"]
 }

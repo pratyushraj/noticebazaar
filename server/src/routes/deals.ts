@@ -79,6 +79,9 @@ const inferRequiresShipping = (deal: any) => {
 
 const fetchDealForBrandMutation = async (dealId: string) => {
   const selectAttempts = [
+    'id, status, brand_id, brand_email, brand_name, creator_id, collab_type, deal_type, deal_amount, progress_percentage, shipping_required, payment_id, payment_status, amount_paid, creator_amount, platform_fee',
+    'id, status, brand_id, brand_email, brand_name, creator_id, collab_type, deal_type, deal_amount, progress_percentage, shipping_required, payment_id, payment_status',
+    'id, status, brand_id, brand_email, brand_name, creator_id, collab_type, deal_type, deal_amount, shipping_required, payment_id',
     'id, status, brand_id, brand_email, brand_name, creator_id, collab_type, deal_type, deal_amount, progress_percentage, shipping_required',
     'id, status, brand_id, brand_email, brand_name, creator_id, collab_type, deal_type, deal_amount, shipping_required',
     'id, status, brand_id, brand_email, brand_name, creator_id, deal_type, deal_amount, shipping_required',
@@ -2108,12 +2111,17 @@ router.post('/:id/create-payment-order', authMiddleware, async (req: Authenticat
         },
       });
 
-      const { error: updateError } = await supabase.from('brand_deals').update({
-        payment_id: order.id,
-        amount_paid: breakdown.brandTotal,
-        creator_amount: breakdown.creatorPayout,
-        platform_fee: breakdown.platformFee,
-      }).eq('id', dealId);
+      const updateData: any = {
+        updated_at: new Date().toISOString()
+      };
+      
+      // Hardening: only update columns if they exist in the schema
+      if ('payment_id' in (deal || {})) updateData.payment_id = order.id;
+      if ('amount_paid' in (deal || {})) updateData.amount_paid = breakdown.brandTotal;
+      if ('creator_amount' in (deal || {})) updateData.creator_amount = breakdown.creatorPayout;
+      if ('platform_fee' in (deal || {})) updateData.platform_fee = breakdown.platformFee;
+
+      const { error: updateError } = await supabase.from('brand_deals').update(updateData).eq('id', dealId);
       if (updateError) {
         console.error('[Razorpay] Failed to persist order metadata:', updateError);
       }
@@ -2136,6 +2144,119 @@ router.post('/:id/create-payment-order', authMiddleware, async (req: Authenticat
   } catch (error: any) {
     console.error('[Deals] create-payment-order error:', error);
     return res.status(500).json({ success: false, error: error?.message || 'Internal server error' });
+  }
+});
+
+/**
+ * POST /api/deals/:id/verify-payment
+ * Manually checks Razorpay for payment status in case webhooks fail.
+ */
+router.post('/:id/verify-payment', authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const dealId = req.params.id;
+    const userId = req.user?.id;
+    if (!userId) return res.status(401).json({ success: false, error: 'Authentication required' });
+
+    // 1. Fetch deal
+    const { data: deal, error } = await supabase
+      .from('brand_deals')
+      .select('status, payment_id, brand_id, brand_email')
+      .eq('id', dealId)
+      .single();
+
+    if (error || !deal) return res.status(404).json({ success: false, error: 'Deal not found' });
+
+    // 2. Check permission (Brand or Admin)
+    const userEmail = String(req.user?.email || '').toLowerCase();
+    const dealBrandEmail = String(deal.brand_email || '').toLowerCase();
+    const isOwner = deal.brand_id === userId || (dealBrandEmail && userEmail && dealBrandEmail === userEmail);
+    if (!isOwner && req.user?.role !== 'admin') {
+      return res.status(403).json({ success: false, error: 'Access denied' });
+    }
+
+    // 3. If already captured/content_making, skip expensive Razorpay call
+    const current = String(deal.status || '').toLowerCase();
+    if (current === 'content_making' || current === 'content-making') {
+       return res.json({ success: true, status: 'content_making', message: 'Payment already confirmed' });
+    }
+
+    // 4. Query Razorpay API
+    try {
+      const Razorpay = (await import('razorpay')).default;
+      const rzp = new Razorpay({
+        key_id: process.env.RAZORPAY_KEY_ID || 'rzp_test_fallback',
+        key_secret: process.env.RAZORPAY_KEY_SECRET || 'fallback_secret',
+      });
+
+      let isPaid = false;
+      let orderId = deal.payment_id;
+
+      // Case A: We have a payment_id (order_id)
+      if (orderId) {
+        const order = await rzp.orders.fetch(orderId);
+        if (order.status === 'paid') {
+          isPaid = true;
+        }
+      }
+
+      // Case B: No payment_id or order not marked paid yet, search by notes
+      if (!isPaid) {
+        console.log(`[Razorpay] Searching for payments/orders by deal_id: ${dealId}`);
+        
+        // Try searching payments first
+        const payments = await rzp.payments.all({ 'notes[deal_id]': dealId } as any);
+        const capturedPayment = (payments.items || []).find((p: any) => p.status === 'captured' || p.status === 'authorized');
+        
+        if (capturedPayment) {
+          isPaid = true;
+          orderId = capturedPayment.order_id || orderId;
+        } else {
+          // If no payment found, try searching orders
+          const orders = await rzp.orders.all({ 'notes[deal_id]': dealId } as any);
+          const paidOrder = (orders.items || []).find((o: any) => o.status === 'paid');
+          if (paidOrder) {
+            isPaid = true;
+            orderId = paidOrder.id;
+          }
+        }
+      }
+      
+      if (isPaid) {
+        // Success! Update manually.
+        const now = new Date().toISOString();
+        const updateData: any = {
+          status: 'content_making',
+          updated_at: now
+        };
+        
+        // Save the IDs for future reference
+        if ('payment_id' in (deal || {})) updateData.payment_id = orderId;
+        if ('payment_status' in (deal || {})) updateData.payment_status = 'captured';
+
+        await supabase.from('brand_deals').update(updateData).eq('id', dealId);
+
+        await supabase.from('deal_action_logs').insert({
+          deal_id: dealId,
+          user_id: userId,
+          event: 'PAYMENT_VERIFIED_MANUAL',
+          metadata: { order_id: orderId, source: 'manual_verification' }
+        });
+
+        return res.json({ success: true, status: 'content_making', message: 'Payment verified and deal updated!' });
+      } else {
+        return res.json({ 
+          success: true, 
+          status: deal.status, 
+          message: 'No captured payment found on Razorpay for this deal yet. If you just paid, please wait 2-3 minutes.' 
+        });
+      }
+    } catch (rzpErr: any) {
+      console.error('[Razorpay] Manual verification failed:', rzpErr);
+      return res.status(502).json({ success: false, error: 'Failed to communicate with Razorpay' });
+    }
+  } catch (err: any) {
+    console.error('[Deals] verify-payment error:', err);
+    return res.status(500).json({ success: false, error: 'Internal server error' });
   }
 });
 

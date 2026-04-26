@@ -16,12 +16,18 @@ const PLATFORM_FEE_PCT = 0.10;
 const GST_PCT = 0.18;
 
 function computeBreakdown(dealAmountRupees: number) {
-  const deal = Math.round(dealAmountRupees);
-  const platformFee = Math.round(deal * PLATFORM_FEE_PCT);
-  const gstOnFee = Math.round(platformFee * GST_PCT);
-  const brandTotal = deal + platformFee + gstOnFee;
-  const creatorPayout = deal;
-  return { dealAmount: deal, platformFee, gstOnFee, brandTotal, creatorPayout };
+  const dealPaise = Math.round(dealAmountRupees * 100);
+  const platformFeePaise = Math.round(dealPaise * PLATFORM_FEE_PCT);
+  const gstOnFeePaise = Math.round(platformFeePaise * GST_PCT);
+  const brandTotalPaise = dealPaise + platformFeePaise + gstOnFeePaise;
+  
+  return { 
+    dealAmount: dealPaise / 100, 
+    platformFee: platformFeePaise / 100, 
+    gstOnFee: gstOnFeePaise / 100, 
+    brandTotal: brandTotalPaise / 100, 
+    creatorPayout: dealPaise / 100 
+  };
 }
 
 const loadRazorpayScript = () =>
@@ -148,22 +154,22 @@ export function ConfirmPaymentPendingModal({ dealId, dealAmount, creatorName, on
             <div className="rounded-xl bg-white/5 border border-white/10 p-4 space-y-3">
               <div className="flex justify-between text-sm text-white/70">
                 <span>Deal amount</span>
-                <span>₹{breakdown.dealAmount.toLocaleString("en-IN")}</span>
+                <span>₹{breakdown.dealAmount.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
               </div>
               <div className="flex justify-between text-sm text-white/70">
                 <span>Platform fee (10%)</span>
-                <span>₹{breakdown.platformFee.toLocaleString("en-IN")}</span>
+                <span>₹{breakdown.platformFee.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
               </div>
               <div className="flex justify-between text-sm text-white/70">
                 <span>GST (18% on fee)</span>
-                <span>₹{breakdown.gstOnFee.toLocaleString("en-IN")}</span>
+                <span>₹{breakdown.gstOnFee.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
               </div>
               <div className="border-t border-white/10 pt-3 flex justify-between font-bold text-white text-base">
                 <span>Total Payable</span>
-                <span>₹{breakdown.brandTotal.toLocaleString("en-IN")}</span>
+                <span>₹{breakdown.brandTotal.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
               </div>
               <p className="text-xs text-white/40 pt-1">
-                Creator receives ₹{breakdown.creatorPayout.toLocaleString("en-IN")} after content approval.
+                Creator receives ₹{breakdown.creatorPayout.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} after content approval.
               </p>
             </div>
           ) : (
@@ -184,11 +190,44 @@ export function ConfirmPaymentPendingModal({ dealId, dealAmount, creatorName, on
                 Opening payment…
               </>
             ) : breakdown ? (
-              `Pay ₹${breakdown.brandTotal.toLocaleString("en-IN")} via Razorpay`
+              `Pay ₹${breakdown.brandTotal.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} via Razorpay`
             ) : (
               "Amount not available"
             )}
           </Button>
+
+          <button
+            type="button"
+            onClick={async () => {
+              if (isLoading) return;
+              setIsLoading(true);
+              try {
+                const res = await fetch(`${getApiBaseUrl()}/api/deals/${dealId}/verify-payment`, {
+                  method: 'POST',
+                  headers: { Authorization: `Bearer ${session?.access_token}` }
+                });
+                const data = await res.json();
+                if (data.success) {
+                  toast.success(data.message || "Payment verified!");
+                  if (data.status === 'content_making') {
+                    onClose();
+                    // Optional: refresh page or trigger parent update
+                    window.location.reload();
+                  }
+                } else {
+                  toast.error(data.error || "Could not verify payment status.");
+                }
+              } catch (err) {
+                toast.error("Failed to verify payment. Please try again later.");
+              } finally {
+                setIsLoading(false);
+              }
+            }}
+            disabled={isLoading}
+            className="w-full text-xs text-white/40 hover:text-white/60 transition-colors py-2"
+          >
+            I have already made the payment. Verify status.
+          </button>
 
           <p className="text-center text-xs text-white/30">
             Payment processed securely by Razorpay

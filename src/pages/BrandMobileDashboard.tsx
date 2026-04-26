@@ -52,7 +52,12 @@ type BrandMobileDashboardProps = {
 const formatCompactINR = (n: number | string | null | undefined) => {
   const num = Number(n);
   const safe = Number.isFinite(num) ? num : 0;
-  return `₹${safe.toLocaleString('en-IN')}`;
+  // If the amount is small or has non-zero decimals, show precise values
+  const hasDecimals = safe % 1 !== 0;
+  if (safe < 100 || hasDecimals) {
+    return `₹${safe.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  }
+  return `₹${safe.toLocaleString('en-IN', { maximumFractionDigits: 0 })}`;
 };
 
 const formatCompactCount = (n: number | string | null | undefined) => {

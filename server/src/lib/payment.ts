@@ -40,30 +40,30 @@ export interface PaymentBreakdown {
 
 /**
  * Calculate exact payment breakdown for a deal.
- * All rupee values rounded to nearest rupee.
+ * Performs all calculations in PAISE to ensure precision for small amounts.
  */
 export function calculatePaymentBreakdown(dealAmountRupees: number): PaymentBreakdown {
-  const deal        = Math.round(dealAmountRupees);
-  const platformFee = Math.round(deal * PLATFORM_FEE_PCT);
-  const gstOnFee    = Math.round(platformFee * GST_PCT);
-  const brandTotal  = deal + platformFee + gstOnFee;
+  const dealPaise        = Math.round(dealAmountRupees * 100);
+  const platformFeePaise = Math.round(dealPaise * PLATFORM_FEE_PCT);
+  const gstOnFeePaise    = Math.round(platformFeePaise * GST_PCT);
+  const brandTotalPaise  = dealPaise + platformFeePaise + gstOnFeePaise;
 
-  // Razorpay MDR is charged on the total collected amount
-  const mdr         = Math.round(brandTotal * RAZORPAY_MDR_PCT);
-  const mdrGst      = Math.round(mdr * RAZORPAY_MDR_GST);
-  const platformNet = platformFee + gstOnFee - mdr - mdrGst;
+  // Razorpay MDR is charged on the total collected amount (in Paise)
+  const mdrPaise         = Math.round(brandTotalPaise * RAZORPAY_MDR_PCT);
+  const mdrGstPaise      = Math.round(mdrPaise * RAZORPAY_MDR_GST);
+  const platformNetPaise = platformFeePaise + gstOnFeePaise - mdrPaise - mdrGstPaise;
 
   return {
-    dealAmount:            deal,
-    platformFee,
-    gstOnFee,
-    brandTotal,
-    razorpayChargeAmount:  brandTotal,
-    razorpayMdr:           mdr,
-    razorpayMdrGst:        mdrGst,
-    creatorPayout:         deal,           // creator always gets full deal amount
-    platformNet,
-    amountPaise:           brandTotal * 100,
+    dealAmount:            dealPaise / 100,
+    platformFee:           platformFeePaise / 100,
+    gstOnFee:              gstOnFeePaise / 100,
+    brandTotal:            brandTotalPaise / 100,
+    razorpayChargeAmount:  brandTotalPaise / 100,
+    razorpayMdr:           mdrPaise / 100,
+    razorpayMdrGst:        mdrGstPaise / 100,
+    creatorPayout:         dealPaise / 100, 
+    platformNet:           platformNetPaise / 100,
+    amountPaise:           brandTotalPaise,
   };
 }
 

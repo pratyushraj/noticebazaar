@@ -52,10 +52,12 @@ const BrandDashboard: React.FC = () => {
     try {
       const apiBase = getApiBaseUrl();
       const headers = { Authorization: `Bearer ${session.access_token}` };
-
+      
+      // Use cache-busting to ensure we always get fresh data
+      const timestamp = Date.now();
       const [dealsRes, requestsRes] = await Promise.all([
-        fetch(`${apiBase}/api/brand-dashboard/deals`, { headers }),
-        fetch(`${apiBase}/api/brand-dashboard/requests`, { headers }),
+        fetch(`${apiBase}/api/brand-dashboard/deals?t=${timestamp}`, { headers }),
+        fetch(`${apiBase}/api/brand-dashboard/requests?t=${timestamp}`, { headers }),
       ]);
 
       const [dealsJson, requestsJson] = await Promise.all([
@@ -63,11 +65,19 @@ const BrandDashboard: React.FC = () => {
         requestsRes.json().catch(() => ({})),
       ]);
 
-      if (!dealsRes.ok || !(dealsJson as any)?.success) setDeals([]);
-      else setDeals((((dealsJson as any).deals as BrandDeal[]) || []) as BrandDeal[]);
+      if (!dealsRes.ok || !(dealsJson as any)?.success) {
+        console.warn('[BrandDashboard] Deals fetch unsuccessful:', dealsJson);
+        setDeals([]);
+      } else {
+        setDeals((((dealsJson as any).deals as BrandDeal[]) || []) as BrandDeal[]);
+      }
 
-      if (!requestsRes.ok || !(requestsJson as any)?.success) setRequests([]);
-      else setRequests((((requestsJson as any).requests as any[]) || []) as any[]);
+      if (!requestsRes.ok || !(requestsJson as any)?.success) {
+        console.warn('[BrandDashboard] Requests fetch unsuccessful:', requestsJson);
+        setRequests([]);
+      } else {
+        setRequests((((requestsJson as any).requests as any[]) || []) as any[]);
+      }
     } catch (err) {
       console.error('[BrandDashboard] Failed to load dashboard:', err);
       setDeals([]);
@@ -75,7 +85,7 @@ const BrandDashboard: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [isBrandUser, session?.access_token]);
+  }, [isBrandUser, session?.access_token, sessionLoading]);
 
   useEffect(() => {
     void loadBrandDashboard();
@@ -87,18 +97,21 @@ const BrandDashboard: React.FC = () => {
 
     console.log('[BrandDashboard] Setting up real-time subscription for brand:', user.id);
 
+    // We remove the filter `brand_id=eq.${user.id}` because:
+    // 1. Supabase RLS already restricts events to rows the user can see.
+    // 2. Some deals might be linked via brand_email instead of brand_id initially.
+    // 3. Filters are case-sensitive and column-name-sensitive; removing them is more robust.
     const channel = supabase
-      .channel(`brand-dashboard-realtime:${user.id}`)
+      .channel(`brand-dashboard-all-updates:${user.id}`)
       .on(
         'postgres_changes',
         {
           event: '*',
           schema: 'public',
-          table: 'collab_requests',
-          filter: `brand_id=eq.${user.id}`,
+          table: 'collab_requests'
         },
         (payload) => {
-          console.log('[Realtime] Brand collab request update:', payload);
+          console.log('[Realtime] Brand collab request event received:', payload.eventType, payload.new?.id);
           void loadBrandDashboard();
           
           if (document.visibilityState === 'visible') {
@@ -116,11 +129,10 @@ const BrandDashboard: React.FC = () => {
         {
           event: '*',
           schema: 'public',
-          table: 'brand_deals',
-          filter: `brand_id=eq.${user.id}`,
+          table: 'brand_deals'
         },
         (payload) => {
-          console.log('[Realtime] Brand deal update:', payload);
+          console.log('[Realtime] Brand deal event received:', payload.eventType, payload.new?.id);
           void loadBrandDashboard();
           
           if (document.visibilityState === 'visible') {
@@ -129,13 +141,20 @@ const BrandDashboard: React.FC = () => {
           }
         }
       )
-      .subscribe((status) => {
+      .subscribe((status, err) => {
         if (status === 'SUBSCRIBED') {
-          console.log('[Realtime] Brand dashboard is now LIVE');
+          console.log('[Realtime] Brand dashboard is now LIVE and listening for ALL accessible updates');
+        }
+        if (status === 'CHANNEL_ERROR') {
+          console.error('[Realtime] Brand dashboard channel error:', err);
+        }
+        if (status === 'TIMED_OUT') {
+          console.warn('[Realtime] Brand dashboard subscription timed out');
         }
       });
 
     return () => {
+      console.log('[BrandDashboard] Cleaning up real-time subscription');
       void supabase.removeChannel(channel);
     };
   }, [user?.id, isBrandUser, loadBrandDashboard]);

@@ -40,6 +40,33 @@ const isAnyMissingColumnError = (err: any) => {
   );
 };
 
+// Automatically link records that were created using only an email address
+// to the actual brand account when they log in. This ensures real-time
+// subscriptions and RLS work correctly.
+const linkOrphanedRecords = async (userId: string, email: string | null) => {
+  if (!email) return;
+  const brandEmail = String(email).toLowerCase().trim();
+  
+  try {
+    // 1. Collab Requests
+    await supabase
+      .from('collab_requests')
+      .update({ brand_id: userId } as any)
+      .eq('brand_email', brandEmail)
+      .is('brand_id', null);
+      
+    // 2. Brand Deals
+    await supabase
+      .from('brand_deals')
+      .update({ brand_id: userId } as any)
+      .eq('brand_email', brandEmail)
+      .is('brand_id', null);
+  } catch (err) {
+    // Non-fatal; might happen if columns are missing in some environments
+    console.warn('[BrandDashboard] Record linking notice (potentially missing columns):', err?.message || err);
+  }
+};
+
 const requireBrand = async (req: AuthenticatedRequest, res: Response): Promise<{ ok: true; id: string; email: string | null } | { ok: false }> => {
   const userId = req.user?.id;
   if (!userId) {
@@ -57,6 +84,9 @@ router.get('/requests', async (req: AuthenticatedRequest, res: Response) => {
   try {
     const brand = await requireBrand(req, res);
     if (!brand.ok) return;
+
+    // Link any orphaned requests to this brand ID
+    await linkOrphanedRecords(brand.id, brand.email);
 
     const run = async (canUseBrandId: boolean) => {
       // Use `*` so brand dashboards always receive full campaign + brand metadata as the schema evolves,
@@ -538,6 +568,9 @@ router.get('/deals', async (req: AuthenticatedRequest, res: Response) => {
   try {
     const brand = await requireBrand(req, res);
     if (!brand.ok) return;
+
+    // Link any orphaned deals to this brand ID
+    await linkOrphanedRecords(brand.id, brand.email);
 
     // Schema evolves over time across environments. Keep the brand dashboard resilient by
     // progressively falling back when optional columns are missing.

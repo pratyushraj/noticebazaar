@@ -13,6 +13,13 @@
     content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=0" />
   <meta name="theme-color" content="#061318" />
 
+  <!-- Performance: Preconnect to critical domains -->
+  <link rel="preconnect" href="https://checkout.razorpay.com" crossorigin />
+  <link rel="preconnect" href="https://api.razorpay.com" crossorigin />
+  <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="modulepreload" href="/src/main.tsx" />
+
   <!-- Performance: Preload critical assets -->
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
