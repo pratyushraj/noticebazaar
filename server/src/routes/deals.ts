@@ -79,11 +79,11 @@ const inferRequiresShipping = (deal: any) => {
 
 const fetchDealForBrandMutation = async (dealId: string) => {
   const selectAttempts = [
-    'id, status, brand_id, brand_email, brand_name, creator_id, collab_type, deal_type, deal_amount, progress_percentage, shipping_required, payment_id, payment_status, amount_paid, creator_amount, platform_fee',
-    'id, status, brand_id, brand_email, brand_name, creator_id, collab_type, deal_type, deal_amount, progress_percentage, shipping_required, payment_id, payment_status',
-    'id, status, brand_id, brand_email, brand_name, creator_id, collab_type, deal_type, deal_amount, shipping_required, payment_id',
-    'id, status, brand_id, brand_email, brand_name, creator_id, collab_type, deal_type, deal_amount, progress_percentage, shipping_required',
-    'id, status, brand_id, brand_email, brand_name, creator_id, collab_type, deal_type, deal_amount, shipping_required',
+    'id, status, brand_id, brand_email, brand_name, creator_id, deal_type, deal_amount, progress_percentage, shipping_required, payment_id, payment_status, amount_paid, creator_amount, platform_fee',
+    'id, status, brand_id, brand_email, brand_name, creator_id, deal_type, deal_amount, progress_percentage, shipping_required, payment_id, payment_status',
+    'id, status, brand_id, brand_email, brand_name, creator_id, deal_type, deal_amount, shipping_required, payment_id',
+    'id, status, brand_id, brand_email, brand_name, creator_id, deal_type, deal_amount, progress_percentage, shipping_required',
+    'id, status, brand_id, brand_email, brand_name, creator_id, deal_type, deal_amount, shipping_required',
     'id, status, brand_id, brand_email, brand_name, creator_id, deal_type, deal_amount, shipping_required',
     'id, status, brand_id, brand_email, brand_name, creator_id, deal_type, deal_amount',
     'id, status, brand_email, brand_name, creator_id, deal_type, deal_amount',
@@ -116,7 +116,7 @@ const fetchDealForBrandMutation = async (dealId: string) => {
  */
 const fetchDealForCreatorMutation = async (dealId: string) => {
   const selectAttempts = [
-    'id, status, creator_id, collab_type, deal_type, deal_amount, brand_address, brand_name, brand_email, shipping_required, payment_released_at, payment_received_date',
+    'id, status, creator_id, deal_type, deal_amount, brand_address, brand_name, brand_email, shipping_required, payment_released_at, payment_received_date',
     'id, status, creator_id, deal_type, deal_amount, brand_name, brand_email',
     'id, status, creator_id, deal_type, brand_name, brand_email',
     'id, status, creator_id, brand_name, brand_email',
@@ -145,8 +145,8 @@ const fetchDealForCreatorMutation = async (dealId: string) => {
 
 const fetchDealForViewer = async (dealId: string) => {
   const selectAttempts = [
-    'id, status, creator_id, brand_id, brand_email, brand_name, brand_logo_url, collab_type, deal_type, deal_amount, due_date, progress_percentage, payment_released_at, payment_received_date, utr_number, shipping_required, content_submission_url, content_url, content_notes, brand_approval_status, created_at, updated_at',
-    'id, status, creator_id, brand_id, brand_email, brand_name, brand_logo_url, collab_type, deal_type, deal_amount, due_date, payment_released_at, payment_received_date, utr_number, shipping_required, content_submission_url, content_url, content_notes, brand_approval_status, created_at, updated_at',
+    'id, status, creator_id, brand_id, brand_email, brand_name, brand_logo_url, deal_type, deal_amount, due_date, progress_percentage, payment_released_at, payment_received_date, utr_number, shipping_required, content_submission_url, content_url, content_notes, brand_approval_status, created_at, updated_at',
+    'id, status, creator_id, brand_id, brand_email, brand_name, brand_logo_url, deal_type, deal_amount, due_date, payment_released_at, payment_received_date, utr_number, shipping_required, content_submission_url, content_url, content_notes, brand_approval_status, created_at, updated_at',
     'id, status, creator_id, brand_id, brand_email, brand_name, brand_logo_url, deal_type, deal_amount, due_date, payment_released_at, payment_received_date, utr_number, content_submission_url, content_url, content_notes, created_at, updated_at',
     'id, status, creator_id, brand_id, brand_email, brand_name, deal_type, deal_amount, due_date, payment_released_at, payment_received_date, utr_number, content_submission_url, content_url, content_notes, created_at, updated_at',
     'id, status, creator_id, brand_id, brand_email, brand_name, brand_logo_url, deal_type, deal_amount, due_date, created_at, updated_at',
@@ -517,7 +517,7 @@ router.post('/log-reminder', authMiddleware, async (req: AuthenticatedRequest, r
       .single();
 
     if (dealError || !deal) {
-      return res.status(404).json({ success: false, error: 'Deal not found' });
+      console.error("404 Deal not found", dealId, dealError); return res.status(404).json({ success: false, error: 'Deal not found' });
     }
 
     if (deal.creator_id !== userId && req.user!.role !== 'admin') {
@@ -620,7 +620,7 @@ router.get('/:id', authMiddleware, async (req: AuthenticatedRequest, res: Respon
 
     const { deal, error } = await fetchDealForViewer(dealId);
     if (error || !deal) {
-      return res.status(404).json({ success: false, error: 'Deal not found' });
+      console.error("404 Deal not found", dealId, dealError); return res.status(404).json({ success: false, error: 'Deal not found' });
     }
 
     const dealBrandEmail = String((deal as any).brand_email || '').toLowerCase() || null;
@@ -663,7 +663,7 @@ router.post('/:id/upload-signed-contract', authMiddleware, upload.single('file')
       .single();
 
     if (dealError || !deal) {
-      return res.status(404).json({ success: false, error: 'Deal not found' });
+      console.error("404 Deal not found", dealId, dealError); return res.status(404).json({ success: false, error: 'Deal not found' });
     }
 
     if (deal.creator_id !== userId && req.user!.role !== 'admin') {
@@ -751,7 +751,7 @@ router.post('/barter/delivery-details', authMiddleware, async (req: Authenticate
       .single();
 
     if (dealError || !deal) {
-      return res.status(404).json({ success: false, error: 'Deal not found' });
+      console.error("404 Deal not found", dealId, dealError); return res.status(404).json({ success: false, error: 'Deal not found' });
     }
 
     if (deal.creator_id !== userId && req.user!.role !== 'admin') {
@@ -877,7 +877,7 @@ router.patch('/:dealId/delivery-details', async (req: AuthenticatedRequest, res:
       .single();
 
     if (dealError || !deal) {
-      return res.status(404).json({ success: false, error: 'Deal not found' });
+      console.error("404 Deal not found", dealId, dealError); return res.status(404).json({ success: false, error: 'Deal not found' });
     }
     if (deal.creator_id !== userId) {
       return res.status(403).json({ success: false, error: 'Access denied' });
@@ -1143,10 +1143,9 @@ router.patch('/:dealId/shipping/update', async (req: AuthenticatedRequest, res: 
 
     const { data: deal, error: dealError } = await supabase
       .from('brand_deals')
-      .select('id, brand_id, brand_email, shipping_required, collab_type, deal_type')
+      .select('id, brand_id, brand_email, shipping_required, deal_type')
       .eq('id', dealId)
       .maybeSingle();
-
     if (dealError || !deal) {
       return res.status(404).json({ success: false, error: 'Deal not found' });
     }
@@ -1214,7 +1213,7 @@ const confirmReceivedHandler = async (req: AuthenticatedRequest, res: Response) 
       .single();
 
     if (dealError || !deal) {
-      return res.status(404).json({ success: false, error: 'Deal not found' });
+      console.error("404 Deal not found", dealId, dealError); return res.status(404).json({ success: false, error: 'Deal not found' });
     }
 
     const dealData = deal as any;
@@ -1307,7 +1306,7 @@ router.post('/:dealId/regenerate-contract', async (req: AuthenticatedRequest, re
       .single();
 
     if (dealError || !deal) {
-      return res.status(404).json({ success: false, error: 'Deal not found' });
+      console.error("404 Deal not found", dealId, dealError); return res.status(404).json({ success: false, error: 'Deal not found' });
     }
 
     const isCreatorOwner = deal.creator_id === userId;
@@ -1505,7 +1504,7 @@ router.get('/:dealId/contract-review-link', async (req: AuthenticatedRequest, re
       .single();
 
     if (dealError || !deal) {
-      return res.status(404).json({ success: false, error: 'Deal not found' });
+      console.error("404 Deal not found", dealId, dealError); return res.status(404).json({ success: false, error: 'Deal not found' });
     }
 
     const isCreatorOwner = deal.creator_id === userId;
@@ -1575,7 +1574,7 @@ router.patch('/:dealId/shipping/report-issue', async (req: AuthenticatedRequest,
       .single();
 
     if (dealError || !deal) {
-      return res.status(404).json({ success: false, error: 'Deal not found' });
+      console.error("404 Deal not found", dealId, dealError); return res.status(404).json({ success: false, error: 'Deal not found' });
     }
 
     if (deal.creator_id !== userId && req.user!.role !== 'admin') {
@@ -1659,7 +1658,7 @@ router.post('/:id/sign-creator', async (req: AuthenticatedRequest, res: Response
       .maybeSingle();
 
     if (dealError || !deal) {
-      return res.status(404).json({ success: false, error: 'Deal not found' });
+      console.error("404 Deal not found", dealId, dealError); return res.status(404).json({ success: false, error: 'Deal not found' });
     }
 
     const dealData = deal as any;
@@ -1707,7 +1706,7 @@ router.post('/:id/sign-creator', async (req: AuthenticatedRequest, res: Response
     try {
       const { data: freshDeal } = await supabase
         .from('brand_deals')
-        .select('status, deal_type, collab_type, deal_amount')
+        .select('status, deal_type, deal_amount')
         .eq('id', dealId)
         .maybeSingle();
 
@@ -1772,7 +1771,7 @@ router.post('/:id/brand-shipping-address', authMiddleware, async (req: Authentic
 
     const { deal, error: dealError } = await fetchDealForBrandMutation(dealId);
     if (dealError || !deal) {
-      return res.status(404).json({ success: false, error: 'Deal not found' });
+      console.error("404 Deal not found", dealId, dealError); return res.status(404).json({ success: false, error: 'Deal not found' });
     }
 
     const dealBrandEmail = String((deal as any).brand_email || '').toLowerCase() || null;
@@ -1834,7 +1833,7 @@ router.post('/:id/confirm-payment-pending', authMiddleware, async (req: Authenti
     }
 
     const { deal, error: dealError } = await fetchDealForBrandMutation(dealId);
-    if (dealError || !deal) return res.status(404).json({ success: false, error: 'Deal not found' });
+    if (dealError || !deal) console.error("404 Deal not found", dealId, dealError); return res.status(404).json({ success: false, error: 'Deal not found' });
 
     const dealBrandEmail = String((deal as any).brand_email || '').toLowerCase() || null;
     const hasAccess =
@@ -1901,7 +1900,7 @@ router.post('/:id/cancel-unpaid', authMiddleware, async (req: AuthenticatedReque
     if (!userId) return res.status(401).json({ success: false, error: 'Authentication required' });
 
     const { data: deal } = await supabase.from('brand_deals').select('status, creator_id, brand_id, created_at').eq('id', dealId).single();
-    if (!deal) return res.status(404).json({ success: false, error: 'Deal not found' });
+    if (!deal) console.error("404 Deal not found", dealId, dealError); return res.status(404).json({ success: false, error: 'Deal not found' });
 
     // Only allow if it's PAYMENT_PENDING
     const current = normalizeStatus(deal.status);
@@ -1961,7 +1960,7 @@ router.post('/:id/create-payment-link', authMiddleware, async (req: Authenticate
 
     const { deal, error: dealError } = await fetchDealForBrandMutation(dealId);
 
-    if (dealError || !deal) return res.status(404).json({ success: false, error: 'Deal not found' });
+    if (dealError || !deal) console.error("404 Deal not found", dealId, dealError); return res.status(404).json({ success: false, error: 'Deal not found' });
 
     // Authorization: allow if role=brand/admin, OR if the user is the brand who owns this deal
     // (checked by brand_id or brand_email, to handle older records created without brand_id).
@@ -2065,7 +2064,7 @@ router.post('/:id/create-payment-order', authMiddleware, async (req: Authenticat
     if (!userId) return res.status(401).json({ success: false, error: 'Authentication required' });
 
     const { deal, error: dealError } = await fetchDealForBrandMutation(dealId);
-    if (dealError || !deal) return res.status(404).json({ success: false, error: 'Deal not found' });
+    if (dealError || !deal) console.error("404 Deal not found", dealId, dealError); return res.status(404).json({ success: false, error: 'Deal not found' });
 
     const dealBrandId = String((deal as any).brand_id || '');
     const dealBrandEmail = String((deal as any).brand_email || '').toLowerCase();
@@ -2164,7 +2163,7 @@ router.post('/:id/verify-payment', authMiddleware, async (req: AuthenticatedRequ
       .eq('id', dealId)
       .single();
 
-    if (error || !deal) return res.status(404).json({ success: false, error: 'Deal not found' });
+    if (error || !deal) console.error("404 Deal not found", dealId, dealError); return res.status(404).json({ success: false, error: 'Deal not found' });
 
     // 2. Check permission (Brand or Admin)
     const userEmail = String(req.user?.email || '').toLowerCase();
@@ -2276,7 +2275,7 @@ router.post('/:id/refund', authMiddleware, async (req: AuthenticatedRequest, res
     }
 
     const { data: deal } = await supabase.from('brand_deals').select('status, payment_id, deal_amount').eq('id', dealId).single();
-    if (!deal) return res.status(404).json({ success: false, error: 'Deal not found' });
+    if (!deal) console.error("404 Deal not found", dealId, dealError); return res.status(404).json({ success: false, error: 'Deal not found' });
     
     if (!deal.payment_id) return res.status(400).json({ success: false, error: 'No Razorpay payment ID found' });
 
@@ -2349,7 +2348,7 @@ router.post('/:id/escalate-dispute', authMiddleware, async (req: AuthenticatedRe
     const escalationNotes = String(req.body?.notes || '').trim() || null;
 
     const { deal, error: dealError } = await fetchDealForBrandMutation(dealId);
-    if (dealError || !deal) return res.status(404).json({ success: false, error: 'Deal not found' });
+    if (dealError || !deal) console.error("404 Deal not found", dealId, dealError); return res.status(404).json({ success: false, error: 'Deal not found' });
 
     const dealBrandEmail = String((deal as any).brand_email || '').toLowerCase() || null;
     const hasAccess =
@@ -2510,12 +2509,12 @@ router.patch('/:id/submit-content', authMiddleware, async (req: AuthenticatedReq
     const dealId = await resolveDealId(rawId);
     if (!dealId) {
       console.warn('[Deals] submit-content: could not resolve deal id', { rawId });
-      return res.status(404).json({ success: false, error: 'Deal not found' });
+      console.error("404 Deal not found", dealId, dealError); return res.status(404).json({ success: false, error: 'Deal not found' });
     }
 
     // Verify access — fetch with extended columns for gate checks
     const submitSelectAttempts = [
-      'id, creator_id, status, brand_email, brand_name, progress_percentage, updated_at, deal_type, collab_type, deal_amount, brand_address, shipping_required',
+      'id, creator_id, status, brand_email, brand_name, progress_percentage, updated_at, deal_type, deal_amount, brand_address, shipping_required',
       'id, creator_id, status, brand_email, brand_name, progress_percentage, updated_at, deal_type, deal_amount, brand_address',
       'id, creator_id, status, brand_email, brand_name, progress_percentage, updated_at, deal_type, deal_amount',
       'id, creator_id, status, brand_email, brand_name, progress_percentage, updated_at',
@@ -2535,7 +2534,7 @@ router.patch('/:id/submit-content', authMiddleware, async (req: AuthenticatedReq
     }
     if (dealError || !deal) {
       console.warn('[Deals] submit-content: deal not found after resolve', { rawId, dealId });
-      return res.status(404).json({ success: false, error: 'Deal not found' });
+      console.error("404 Deal not found", dealId, dealError); return res.status(404).json({ success: false, error: 'Deal not found' });
     }
 
     if (deal.creator_id !== userId && req.user!.role !== 'admin') {
@@ -2685,7 +2684,7 @@ router.patch('/:id/review-content', authMiddleware, async (req: AuthenticatedReq
     const { deal, error: dealError } = await fetchDealForBrandMutation(dealId);
 
     if (dealError || !deal) {
-      return res.status(404).json({ success: false, error: 'Deal not found' });
+      console.error("404 Deal not found", dealId, dealError); return res.status(404).json({ success: false, error: 'Deal not found' });
     }
 
     const dealBrandEmail = String((deal as any).brand_email || '').toLowerCase() || null;
@@ -2836,7 +2835,7 @@ router.patch('/:id/release-payment', authMiddleware, async (req: AuthenticatedRe
     const { deal, error: dealError } = await fetchDealForBrandMutation(dealId);
 
     if (dealError || !deal) {
-      return res.status(404).json({ success: false, error: 'Deal not found' });
+      console.error("404 Deal not found", dealId, dealError); return res.status(404).json({ success: false, error: 'Deal not found' });
     }
 
     const dealBrandEmail = String((deal as any).brand_email || '').toLowerCase() || null;
@@ -2957,7 +2956,7 @@ router.patch('/:id/confirm-payment-received', authMiddleware, async (req: Authen
 
     const { deal, error: dealError } = await fetchDealForCreatorMutation(dealId);
     if (dealError || !deal) {
-      return res.status(404).json({ success: false, error: 'Deal not found' });
+      console.error("404 Deal not found", dealId, dealError); return res.status(404).json({ success: false, error: 'Deal not found' });
     }
 
     const creatorId = String((deal as any).creator_id || '');
@@ -3019,7 +3018,7 @@ router.patch('/:id/unconfirm-payment-received', authMiddleware, async (req: Auth
     }
 
     const { deal, error: dealError } = await fetchDealForCreatorMutation(dealId);
-    if (dealError || !deal) return res.status(404).json({ success: false, error: 'Deal not found' });
+    if (dealError || !deal) console.error("404 Deal not found", dealId, dealError); return res.status(404).json({ success: false, error: 'Deal not found' });
 
     const creatorId = String((deal as any).creator_id || '');
     if (role !== 'admin' && creatorId !== String(userId)) {
@@ -3080,12 +3079,12 @@ router.patch('/:id/mark-complete', authMiddleware, async (req: AuthenticatedRequ
 
     const { data: deal, error: dealError } = await supabase
       .from('brand_deals')
-      .select('id, status, brand_id, brand_email, collab_type, deal_type, deal_amount, shipping_required, shipping_status')
+      .select('id, status, brand_id, brand_email, deal_type, deal_amount, shipping_required, shipping_status')
       .eq('id', dealId)
       .maybeSingle();
 
     if (dealError || !deal) {
-      return res.status(404).json({ success: false, error: 'Deal not found' });
+      console.error("404 Deal not found", dealId, dealError); return res.status(404).json({ success: false, error: 'Deal not found' });
     }
 
     const dealBrandEmail = String(deal.brand_email || '').toLowerCase() || null;
