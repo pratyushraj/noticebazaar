@@ -2132,6 +2132,10 @@ const CollabLinkLanding = () => {
       newErrors.barterTypes = 'Please specify what you are offering'
     }
 
+    if (barterTypes.includes('product') && !String(barterProductName || '').trim()) {
+      newErrors.barterProductName = 'Please specify the product name'
+    }
+
     // Conditional: Product Review requires Physical Product
     if (campaignGoal === 'Product Review / Unboxing' && paymentType === 'barter' && !barterTypes.includes('product')) {
       newErrors.barterTypes = 'Product Review requires a Physical Product'
@@ -2224,9 +2228,9 @@ const CollabLinkLanding = () => {
           exact_budget: exactBudget ? parseFloat(exactBudget) : null,
           campaign_category: campaignGoal || campaignCategory || 'General',
           barter_value: barterValue ? parseFloat(barterValue) : null,
-          barter_description: paymentType === 'barter' 
-            ? `Barter Types: ${barterTypes.map(t => BARTER_OPTIONS.find(o => o.id === t)?.label || t).join(', ')}`
-            : null,
+          barter_description: barterProductName || (paymentType === 'barter' 
+            ? `Barter: ${barterTypes.map(t => BARTER_OPTIONS.find(o => o.id === t)?.label || t).join(', ')}`
+            : 'Paid Collaboration'),
           barter_product_name: barterProductName || null,
           barter_product_category: barterProductCategory || null,
           barter_product_image_url: barterProductImageUrl
