@@ -137,10 +137,10 @@ const AddToHomeScreen: React.FC = () => {
         <div className="max-w-screen-sm mx-auto pointer-events-auto">
           <div
             className={cn(
-              "relative overflow-hidden rounded-[2.5rem] border backdrop-blur-3xl px-6 py-5 shadow-[0_32px_64px_rgba(0,0,0,0.6)]",
+              "relative overflow-hidden rounded-[2rem] border backdrop-blur-3xl px-5 py-4 shadow-[0_24px_48px_rgba(0,0,0,0.6)]",
               "bg-gradient-to-br from-slate-900/90 via-slate-950/95 to-black/98 border-white/10"
             )}
-            style={{ paddingTop: 'max(24px, env(safe-area-inset-top, 0px))' }}
+            style={{ paddingTop: 'max(12px, env(safe-area-inset-top, 0px))' }}
           >
             {/* Background Accent / Dynamic Glow */}
             <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/20 rounded-full -mr-32 -mt-32 blur-[100px] animate-pulse-slow" />
@@ -148,10 +148,10 @@ const AddToHomeScreen: React.FC = () => {
             
             <div className="flex items-center gap-5 relative z-10">
               <div className="relative group shrink-0">
-                <div className="absolute -inset-2 bg-gradient-to-tr from-emerald-400 to-sky-400 rounded-[22px] blur-lg opacity-40 group-hover:opacity-70 transition duration-1000 animate-pulse" />
-                <div className="relative w-14 h-14 rounded-[20px] bg-gradient-to-tr from-emerald-500 to-sky-500 flex items-center justify-center shadow-2xl border border-white/30 overflow-hidden">
+                <div className="absolute -inset-1.5 bg-gradient-to-tr from-emerald-400 to-sky-400 rounded-2xl blur-md opacity-40 group-hover:opacity-70 transition duration-1000 animate-pulse" />
+                <div className="relative w-12 h-12 rounded-2xl bg-gradient-to-tr from-emerald-500 to-sky-500 flex items-center justify-center shadow-2xl border border-white/30 overflow-hidden">
                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(255,255,255,0.4),transparent_70%)]" />
-                  <ShieldCheck className="w-8 h-8 text-white drop-shadow-md" strokeWidth={2.5} />
+                  <ShieldCheck className="w-7 h-7 text-white drop-shadow-md" strokeWidth={2.5} />
                 </div>
               </div>
               
@@ -163,7 +163,7 @@ const AddToHomeScreen: React.FC = () => {
                     <span className="text-[9px] font-black uppercase tracking-widest">v1.3</span>
                   </div>
                 </div>
-                <h3 className="text-white font-black tracking-tight text-[19px] leading-tight">
+                <h3 className="text-white font-black tracking-tight text-[17px] leading-tight">
                   Install <span className="text-emerald-400">Armour</span>
                 </h3>
                 <p className="text-white/60 text-[11px] font-bold leading-tight mt-1">
@@ -176,7 +176,7 @@ const AddToHomeScreen: React.FC = () => {
                   type="button"
                   onClick={handleInstall}
                   className={cn(
-                    "relative h-11 px-7 rounded-full text-[13px] font-black uppercase tracking-widest transition-all active:scale-90 shadow-2xl overflow-hidden",
+                    "relative h-10 px-6 rounded-full text-[12px] font-black uppercase tracking-widest transition-all active:scale-90 shadow-2xl overflow-hidden",
                     "bg-white text-black hover:bg-slate-100"
                   )}
                 >
