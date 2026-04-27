@@ -624,6 +624,42 @@ const BrandMobileDashboard = ({
 	    ? 'bg-secondary/6 backdrop-blur-xl'
 	    : 'bg-card';
 
+  const PageHeader = useMemo(() => ({ title }: { title: string }) => (
+    <div className="flex items-center gap-4 px-5 py-4 mb-4">
+      <button type="button"
+        onClick={() => {
+          triggerHaptic(HapticPatterns.light);
+          setActiveSettingsPage(null);
+        }}
+        className={cn('p-2 -ml-2 rounded-full transition-all active:scale-90', secondaryTextColor, isDark ? 'hover:bg-card' : 'hover:bg-background')}
+      >
+        <ChevronRight className="w-6 h-6 rotate-180" />
+      </button>
+      <h2 className={cn('text-[20px] font-bold tracking-tight', textColor)}>{title}</h2>
+    </div>
+  ), [isDark, textColor, secondaryTextColor]);
+
+  const DealCard = useMemo(() => ({ children, className }: { children: ReactNode; className?: string }) => (
+    <div
+      className={cn(
+        'rounded-3xl border shadow-[0_10px_40px_rgba(2,6,23,0.06)] overflow-hidden bg-card border-border',
+        className
+      )}
+    >
+      {children}
+    </div>
+  ), []);
+
+  const SectionTitle = useMemo(() => ({ children }: { children: ReactNode }) => (
+    <h4 className={cn('text-[13px] font-black uppercase tracking-wider mb-3 opacity-50', textColor)}>{children}</h4>
+  ), [textColor]);
+
+  const Pill = useMemo(() => ({ children }: { children: ReactNode }) => (
+    <div className={cn('rounded-2xl border px-4 py-3 text-[14px] font-black', isDark ? 'bg-card border-border text-foreground' : 'bg-card border-border text-muted-foreground')}>
+      {children}
+    </div>
+  ), [isDark]);
+
   const primaryButtonClass = cn('flex-1', dsButtons.ecosystemPrimary, 'h-10 text-[12px] disabled:opacity-50');
   const secondaryButtonClass = cn('h-10 px-4 text-[12px]', isDark ? dsButtons.ecosystemSecondaryDark : dsButtons.ecosystemSecondaryLight);
 
@@ -1360,20 +1396,6 @@ const BrandMobileDashboard = ({
     }
   };
 
-  const PageHeader = ({ title }: { title: string }) => (
-    <div className="flex items-center gap-4 px-5 py-4 mb-4">
-      <button type="button"
-        onClick={() => {
-          triggerHaptic(HapticPatterns.light);
-          setActiveSettingsPage(null);
-        }}
-        className={cn('p-2 -ml-2 rounded-full transition-all active:scale-90', secondaryTextColor, isDark ? 'hover:bg-card' : 'hover:bg-background')}
-      >
-        <ChevronRight className="w-6 h-6 rotate-180" />
-      </button>
-      <h2 className={cn('text-[20px] font-bold tracking-tight', textColor)}>{title}</h2>
-    </div>
-  );
 
   const renderOfferDetailsSheet = (offer: any) => {
     if (!offer) return null;
@@ -2464,27 +2486,6 @@ const BrandMobileDashboard = ({
       }
     };
 
-    const DealCard = ({ children, className }: { children: ReactNode; className?: string }) => (
-      <div
-        className={cn(
-          'rounded-3xl border shadow-[0_10px_40px_rgba(2,6,23,0.06)] overflow-hidden',
-          isDark ? 'bg-card border-border' : 'bg-card border-border',
-          className
-        )}
-      >
-        {children}
-      </div>
-    );
-
-    const SectionTitle = ({ children }: { children: ReactNode }) => (
-      <h4 className={cn('text-[13px] font-black uppercase tracking-wider mb-3 opacity-50', textColor)}>{children}</h4>
-    );
-
-    const Pill = ({ children }: { children: ReactNode }) => (
-      <div className={cn('rounded-2xl border px-4 py-3 text-[14px] font-black', isDark ? 'bg-card border-border text-foreground' : 'bg-card border-border text-muted-foreground')}>
-        {children}
-      </div>
-    );
 
     return (
       <motion.div
