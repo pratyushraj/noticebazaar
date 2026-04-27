@@ -4460,17 +4460,17 @@ const BrandMobileDashboard = ({
 	                                          isDark ? 'bg-secondary/[0.04]' : 'bg-secondary/85 shadow-[0_10px_35px_rgba(2,6,23,0.06)]'
 	                                        )}
 	                                      >
-	                                        <div className="flex flex-wrap items-center gap-2 mb-2">
-	                                          <span className={cn('inline-flex items-center gap-2 px-2.5 py-1 rounded-full border text-[10px] font-black uppercase tracking-widest', statusTone)}>
+	                                        <div className="flex items-center gap-2 mb-2 flex-nowrap overflow-hidden">
+	                                          <span className={cn('inline-flex items-center gap-2 px-2.5 py-1 rounded-full border text-[10px] font-black uppercase tracking-widest whitespace-nowrap', statusTone)}>
 	                                            {isCountered ? (
 	                                              <AlertTriangle className={cn('w-4 h-4', isDark ? 'text-warning' : 'text-warning')} strokeWidth={2.5} />
 	                                            ) : (
 	                                              <Clock className={cn('w-4 h-4', secondaryTextColor)} strokeWidth={2.5} />
 	                                            )}
-	                                            {statusLabel}
+	                                            {isNoResponse && urgencyText ? urgencyText : statusLabel}
 	                                          </span>
-	                                          {urgencyText && (
-	                                            <span className={cn('px-2.5 py-1 rounded-full border text-[10px] font-black uppercase tracking-widest', urgencyTone)}>
+	                                          {(!isNoResponse && urgencyText) && (
+	                                            <span className={cn('px-2.5 py-1 rounded-full border text-[10px] font-black uppercase tracking-widest whitespace-nowrap', urgencyTone)}>
 	                                              {urgencyText}
 	                                            </span>
 	                                          )}
@@ -4976,7 +4976,7 @@ const BrandMobileDashboard = ({
 	                                    : 'bg-white/90 shadow-[0_15px_40px_rgba(15,23,42,0.06)] hover:shadow-[0_20px_50px_rgba(15,23,42,0.1)]'
 	                                )}
 	                              >
-	                                <div className="flex items-center gap-2 mb-4 relative z-10 flex-nowrap overflow-x-hidden">
+	                                <div className="flex items-center gap-2 mb-4 relative z-10 flex-nowrap overflow-hidden">
 	                                  <span className={cn('inline-flex items-center gap-2 px-3 py-1.5 rounded-full border text-[10px] font-black uppercase tracking-[0.1em] shadow-sm whitespace-nowrap', (isNoResponse && urgencyText) ? urgencyTone : statusTone)}>
 	                                    {isCountered ? (
 	                                      <AlertTriangle className="w-3.5 h-3.5" strokeWidth={3} />
