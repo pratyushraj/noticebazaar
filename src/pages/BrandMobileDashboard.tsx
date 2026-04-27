@@ -4430,7 +4430,7 @@ const BrandMobileDashboard = ({
 	                                        tabIndex={0}
 	                                        onClick={() => setSelectedOffer(item)}
 	                                        className={cn(
-	                                          'w-full p-4 rounded-3xl border text-left transition backdrop-blur-xl',
+	                                          'w-full p-4 rounded-3xl border text-left transition backdrop-blur-xl cursor-pointer',
 	                                          borderColor,
 	                                          attentionBorder,
 	                                          isDark ? 'bg-secondary/[0.04]' : 'bg-secondary/85 shadow-[0_10px_35px_rgba(2,6,23,0.06)]'
@@ -4517,8 +4517,11 @@ const BrandMobileDashboard = ({
 		                                    <motion.div
 		                                      key={itemKey}
 		                                      whileTap={{ scale: 0.985 }}
+		                                      role="button"
+		                                      tabIndex={0}
+		                                      onClick={() => handleBrandDealPrimaryAction(undefined, item, ui)}
 		                                      className={cn(
-		                                        'w-full rounded-3xl border transition-all duration-300 group active:scale-[0.99] relative text-left backdrop-blur-xl overflow-hidden',
+		                                        'w-full rounded-3xl border transition-all duration-300 group active:scale-[0.99] relative text-left backdrop-blur-xl overflow-hidden cursor-pointer',
 		                                        borderColor,
 		                                        isDark ? 'bg-secondary/[0.04]' : 'bg-secondary/85 shadow-[0_10px_35px_rgba(2,6,23,0.06)]'
 		                                      )}
@@ -4632,10 +4635,26 @@ const BrandMobileDashboard = ({
                     </div>
                     <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
 	                      {(isLoadingSuggestedCreators ? Array.from({ length: 3 }).map((_, i) => ({ id: `sk-${i}`, name: 'Creator' })) : suggestedCreators.slice(0, 6)).map((c: any) => (
-	                        <div key={c.id} className={cn('min-w-[290px] p-4 rounded-[24px] border', cardBgColor, borderColor, isDark ? '' : 'shadow-[0_18px_45px_rgba(15,23,42,0.08)]')}>
-	                          <div className="flex items-center gap-3">
-	                            <Avatar className="w-11 h-11">
-	                              <AvatarImage src={safeImageSrc(c.profile_photo || c.avatar_url)} alt={c.name} />
+                         <motion.div 
+                           key={c.id} 
+                           whileTap={{ scale: 0.985 }}
+                           role="button"
+                           tabIndex={0}
+                           onClick={() => {
+                             const handle = String(c?.username || c?.handle || '').trim().replace(/^@+/, '');
+                             if (!handle) {
+                               triggerHaptic(HapticPatterns.light);
+                               setActiveTab('creators');
+                               return;
+                             }
+                             triggerHaptic(HapticPatterns.light);
+                             navigate(`/${handle}`);
+                           }}
+                           className={cn('min-w-[290px] p-4 rounded-[24px] border cursor-pointer', cardBgColor, borderColor, isDark ? '' : 'shadow-[0_18px_45px_rgba(15,23,42,0.08)]')}
+                         >
+                          <div className="flex items-center gap-3">
+                            <Avatar className="w-11 h-11">
+                              <AvatarImage src={safeImageSrc(c.profile_photo || c.avatar_url)} alt={c.name} />
                               <AvatarFallback>{String(c.name || 'C').slice(0, 1).toUpperCase()}</AvatarFallback>
                             </Avatar>
                             <div className="min-w-0 flex-1">
@@ -4701,7 +4720,7 @@ const BrandMobileDashboard = ({
                               Send offer
                             </button>
                           </div>
-                        </div>
+                         </motion.div>
                       ))}
                     </div>
                   </div>
@@ -4943,8 +4962,11 @@ const BrandMobileDashboard = ({
 	                              <motion.div
 	                                key={itemKey}
 	                                whileTap={{ scale: 0.985 }}
+	                                role="button"
+	                                tabIndex={0}
+	                                onClick={() => setSelectedOffer(item)}
 	                                className={cn(
-	                                  'w-full p-5 rounded-[2.5rem] border transition-all duration-500 backdrop-blur-2xl relative overflow-hidden group',
+	                                  'w-full p-5 rounded-[2.5rem] border transition-all duration-500 backdrop-blur-2xl relative overflow-hidden group cursor-pointer',
 	                                  borderColor,
                                     attentionBorder,
 	                                  isDark
@@ -5036,7 +5058,8 @@ const BrandMobileDashboard = ({
 
 		                                <button
 		                                  type="button"
-		                                  onClick={() => {
+		                                  onClick={(e) => {
+                                        e.stopPropagation();
 		                                    triggerHaptic(HapticPatterns.light);
 		                                    setSelectedOffer(item);
 		                                  }}
@@ -5077,8 +5100,11 @@ const BrandMobileDashboard = ({
                             <motion.div
                               key={item.id}
                               whileTap={{ scale: 0.985 }}
+                              role="button"
+                              tabIndex={0}
+                              onClick={() => handleBrandDealPrimaryAction(undefined, item, ui)}
                               className={cn(
-                                'w-full p-5 rounded-[2.5rem] border transition-all duration-500 backdrop-blur-2xl relative overflow-hidden group',
+                                'w-full p-5 rounded-[2.5rem] border transition-all duration-500 backdrop-blur-2xl relative overflow-hidden group cursor-pointer',
                                 borderColor,
                                 isDark
                                   ? 'bg-gradient-to-br from-secondary/[0.08] via-secondary/[0.04] to-transparent shadow-[0_20px_50px_rgba(0,0,0,0.3)]'
