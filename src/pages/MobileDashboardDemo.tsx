@@ -26,6 +26,7 @@ import { isBarterLikeCollab } from '@/lib/deals/collabType';
 import FiverrPackageEditor from '@/components/profile/FiverrPackageEditor';
 import { useInstagramSync } from '@/lib/hooks/useInstagramSync';
 import { safeAvatarSrc, withCacheBuster } from '@/lib/utils/image';
+import { fetchPincodeData } from '@/lib/utils/pincodeLookup';
 
 import DealSearchFilter from '@/components/dashboard/DealSearchFilter';
 import { generateAIBios } from '@/utils/aiBioGenerator';
@@ -142,8 +143,12 @@ const renderBudgetValue = (item: any) => {
     const min = Number(item?.budget_range?.min || item?.form_data?.budget_range?.min || (item?.budget_range && typeof item.budget_range === 'object' && item.budget_range.min));
     if (Number.isFinite(min) && min > 0) return `₹${min.toLocaleString()}+`;
 
-    const barter = Number(item?.barter_value || item?.form_data?.barter_value);
-    if (Number.isFinite(barter) && barter > 0) return `₹${barter.toLocaleString()} (Free products)`;
+    const barter = Number(item?.barter_value || item?.form_data?.barter_value || item?.product_value);
+    if (Number.isFinite(barter) && barter > 0) {
+        // If it's a placeholder value of 1, show a realistic default for demo
+        const finalBarter = barter <= 1 ? 2499 : barter;
+        return `₹${finalBarter.toLocaleString()} (Free products)`;
+    }
 
     return 'Flexible Budget';
 };
@@ -379,7 +384,7 @@ const getCreatorDealCardUX = (deal: any) => {
         cta = 'Waiting';
     } else if (isPaymentPending) {
         stagePill = 'WAITING FOR PAYMENT';
-        nextStep = 'Waiting for brand to fund escrow';
+        nextStep = 'Waiting for brand to fund payment';
         cta = 'Pending Payment';
     } else if (isFullyExecuted) {
         stagePill = 'COLLAB STARTED';
@@ -591,14 +596,23 @@ const getCreatorPaymentListUX = (deal: any) => {
     const isAwaitingApproval = rawStatus.includes('content_delivered') || rawStatus.includes('revision_done') || rawStatus.includes('draft_review') || rawStatus.includes('content_pending');
     const isContractPending = rawStatus.includes('contract_ready') || rawStatus === 'sent' || rawStatus.includes('needs signature');
 
-    if (isPaid) return { label: 'PAID', sublabel: 'Payment released', tone: 'success' as const };
-    if (isPaymentReleased) return { label: 'PAYMENT RELEASED', sublabel: 'Waiting to close the deal', tone: 'success' as const };
-    if (isApproved) return { label: 'APPROVED', sublabel: 'Payment pending', tone: 'warning' as const };
-    if (isAwaitingApproval) return { label: 'PENDING APPROVAL', sublabel: 'Waiting for brand approval', tone: 'warning' as const };
-    if (rawStatus.includes('payment_pending')) return { label: 'WAITING FOR PAYMENT', sublabel: 'Brand is funding the escrow', tone: 'warning' as const };
-    if (isContractPending) return { label: 'CONTRACT PENDING', sublabel: 'Sign to start collaboration', tone: 'neutral' as const };
-    if (ux.isRevisionRequested) return { label: 'REVISION', sublabel: 'Fix requested before approval', tone: 'warning' as const };
-    return { label: 'PENDING', sublabel: 'Released after approval', tone: 'info' as const };
+    if (isPaid || isPaymentReleased) return { label: 'PROCESSING', sublabel: 'Payment being settled', tone: 'success' as const };
+    
+    if (ux.isRevisionRequested) return { label: 'REVISION REQUIRED', sublabel: 'Fix requested by brand', tone: 'warning' as const };
+    
+    if (isApproved) return { label: 'APPROVED', sublabel: 'Ready for payout', tone: 'success' as const };
+    
+    if (rawStatus.includes('content_delivered') || rawStatus.includes('revision_done')) {
+        return { label: 'AWAITING APPROVAL', sublabel: 'Brand is reviewing content', tone: 'warning' as const };
+    }
+    
+    if (rawStatus.includes('draft_review') || rawStatus.includes('content_pending') || rawStatus.includes('active') || rawStatus.includes('working') || rawStatus.includes('ongoing')) {
+        return { label: 'AWAITING CONTENT', sublabel: 'Waiting for your delivery', tone: 'info' as const };
+    }
+    
+    if (isAwaitingApproval) return { label: 'AWAITING APPROVAL', sublabel: 'Waiting for brand review', tone: 'warning' as const };
+    
+    return { label: 'PENDING', sublabel: 'Transaction in progress', tone: 'info' as const };
 };
 
 // Animated Number Counter
@@ -1612,10 +1626,30 @@ const MobileDashboardDemo = ({
     };
 
     const uniqDeals = (rows: any[]) => {
-        const byFingerprint = uniqBy(rows, (r) => dealFingerprint(r));
-        const withId = byFingerprint.filter((x) => String(x?.id || x?.raw?.id || '').trim());
-        const withoutId = byFingerprint.filter((x) => !String(x?.id || x?.raw?.id || '').trim());
-        return [...uniqBy(withId, (x) => String(x?.id || x?.raw?.id || '').trim()), ...withoutId];
+        if (!rows || rows.length === 0) return [];
+        
+        const out: any[] = [];
+        const seenIds = new Set<string>();
+        const seenFingerprints = new Set<string>();
+
+        for (const row of rows) {
+            const id = String(row?.id || row?.raw?.id || '').trim();
+            if (id) {
+                if (!seenIds.has(id)) {
+                    seenIds.add(id);
+                    out.push(row);
+                }
+                continue;
+            }
+
+            // Fallback for items without ID (raw/mock data)
+            const fp = dealFingerprint(row);
+            if (!seenFingerprints.has(fp)) {
+                seenFingerprints.add(fp);
+                out.push(row);
+            }
+        }
+        return out;
     };
 
     const offerKeyFromDeal = (deal: any) => {
@@ -1717,18 +1751,18 @@ const MobileDashboardDemo = ({
     }, [pendingOffersDeduplicated]);
     const pendingOffersCount = displayOffers.length;
     const completedDealsList = React.useMemo(() => {
-        return uniqDeals((brandDeals || []).filter((d: any) => {
+        return (brandDeals || []).filter((d: any) => {
             const s = normalizeDealStatus(d);
             // Completed, paid, OR declined/cancelled/rejected
             return s.includes('completed') || s === 'paid' || s === 'declined' || s === 'rejected' || s === 'cancelled';
-        })).map((deal: any) => hydrateDealWithRequestMedia(deal));
+        }).map((deal: any) => hydrateDealWithRequestMedia(deal));
     }, [brandDeals, hydrateDealWithRequestMedia]);
     const activeDealsList = React.useMemo(() => {
-        return uniqDeals((brandDeals || []).filter((d: any) => {
+        return (brandDeals || []).filter((d: any) => {
             const s = normalizeDealStatus(d);
             // Exclude completed, paid, AND rejected/cancelled/declined deals
             return !(s.includes('completed') || s === 'paid' || s === 'declined' || s === 'rejected' || s === 'cancelled');
-        })).map((deal: any) => hydrateDealWithRequestMedia(deal));
+        }).map((deal: any) => hydrateDealWithRequestMedia(deal));
     }, [brandDeals, hydrateDealWithRequestMedia]);
     const actionRequiredDealsList = React.useMemo(() => {
         return (activeDealsList || []).filter((d: any) => Boolean(getCreatorDealCardUX(d).needsCreatorAction));
@@ -3005,7 +3039,20 @@ const MobileDashboardDemo = ({
                                                     className={cn("w-full bg-transparent outline-none font-black text-[15px] p-0 border-none focus:ring-0", textColor)}
                                                     value={profileFormData.pincode || ''}
                                                     placeholder="400001"
-                                                    onChange={e => setProfileFormData((p: any) => ({ ...p, pincode: e.target.value }))}
+                                                    onChange={async e => {
+                                                        const val = e.target.value.replace(/\D/g, '').slice(0, 6);
+                                                        setProfileFormData((p: any) => ({ ...p, pincode: val }));
+                                                        if (val.length === 6) {
+                                                            const data = await fetchPincodeData(val);
+                                                            if (data?.city) {
+                                                                setProfileFormData((p: any) => ({ ...p, city: data.city }));
+                                                                toast.success(`Location set to ${data.city}`, {
+                                                                    icon: '📍',
+                                                                    description: `Based on pincode ${val}`
+                                                                });
+                                                            }
+                                                        }
+                                                    }}
                                                 />
                                             ) : (
                                                 <p className={cn("font-black text-[15px] truncate", textColor)}>{profileFormData.pincode || '—'}</p>
@@ -3962,7 +4009,7 @@ const MobileDashboardDemo = ({
                                     Refresh
                                 </button>
                             </div>
-                            <div className={cn("p-4 rounded-2xl flex items-start gap-3", isDark ? "bg-warning/5 text-warning/80" : "bg-warning text-warning")}>
+                            <div className={cn("p-4 rounded-2xl flex items-start gap-3", isDark ? "bg-warning/5 text-warning/80" : "bg-warning text-white")}>
                                 <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
                                 <p className="text-[11px] leading-relaxed font-medium">
                                     We use push notifications to alert you about new contracts and emergency payment updates.
@@ -5340,15 +5387,23 @@ const MobileDashboardDemo = ({
                                                             </div>
 
                                                             {/* Content Wrapper */}
-                                                            <div className="absolute inset-0 p-8 flex flex-col justify-between z-10">
+                                                            <div className="absolute inset-0 p-6 flex flex-col justify-between z-10">
                                                                 {/* Top Row: Status Pills */}
-                                                                <div className="flex items-center gap-2">
-                                                                    <div className="px-4 py-2 rounded-full bg-white/10 backdrop-blur-md border border-white/10 flex items-center gap-2">
-                                                                        <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                                                                <div className="flex items-center gap-1.5">
+                                                                    <div className="px-2.5 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/10 flex items-center gap-1.5">
+                                                                        <div className={cn("w-2 h-2 rounded-full", ux.rawStatus.includes('payment_released') ? "bg-emerald-400" : "bg-emerald-400 animate-pulse")} />
                                                                         <span className="text-[11px] font-black uppercase tracking-widest text-white">{ux.stagePill || "Active Deal"}</span>
                                                                     </div>
+                                                                    {ux.rawStatus.includes('payment_released') && (
+                                                                        <div className="px-2.5 py-1.5 rounded-full bg-emerald-500/20 backdrop-blur-md border border-emerald-500/20 flex items-center gap-1.5">
+                                                                            <CreditCard className="w-3.5 h-3.5 text-emerald-300" />
+                                                                            <span className="text-[11px] font-black uppercase tracking-widest text-emerald-100">
+                                                                                PAID
+                                                                            </span>
+                                                                        </div>
+                                                                    )}
                                                                     {dueText && (
-                                                                        <div className="px-4 py-2 rounded-full bg-rose-500/20 backdrop-blur-md border border-rose-500/20 flex items-center gap-2">
+                                                                        <div className="px-2.5 py-1.5 rounded-full bg-rose-500/20 backdrop-blur-md border border-rose-500/20 flex items-center gap-1.5">
                                                                             <Clock className="w-3.5 h-3.5 text-rose-300" />
                                                                             <span className="text-[11px] font-black uppercase tracking-widest text-rose-100">{dueText}</span>
                                                                         </div>
@@ -5360,11 +5415,13 @@ const MobileDashboardDemo = ({
                                                                     {/* Progress Pill */}
                                                                     <div className="mb-4 flex items-center justify-between">
                                                                        <div className="flex items-center gap-2">
-                                                                            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white/50">Campaign Progress</span>
+                                                                            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white/50">
+                                                                                {inferCreatorRequiresPayment(deal) ? "Monetary Deal" : "Barter Deal"}
+                                                                            </span>
                                                                             <span className="text-[11px] font-black text-emerald-400">{Math.round((Math.max(1, ux.progressStep) / 5) * 100)}%</span>
                                                                        </div>
                                                                        <p className="text-[18px] font-black text-white tracking-tight">
-                                                                           {budget > 0 ? `₹${budget.toLocaleString()}` : '—'}
+                                                                           {budget > 0 ? `₹${budget.toLocaleString()}` : 'BARTER'}
                                                                        </p>
                                                                     </div>
                                                                     
@@ -5875,6 +5932,8 @@ const MobileDashboardDemo = ({
                             triggerHaptic={triggerHaptic}
                             setSelectedPayment={setSelectedPayment}
                             setActiveSettingsPage={setActiveSettingsPage}
+                            setActiveTab={setActiveTab}
+                            setIsEditMode={setIsEditMode}
                         />
                     )}
                 </div>
@@ -5908,7 +5967,7 @@ const MobileDashboardDemo = ({
                         WebkitBackdropFilter: 'blur(30px)' 
                     }}
                 >
-                    <div className="max-w-md md:max-w-2xl mx-auto flex items-center justify-between px-6 pt-3 gap-1">
+                    <div className="max-w-md md:max-w-2xl mx-auto flex items-center justify-between px-6 pt-3 gap-1 relative">
                         {/* Active Tab Background Indicator (Sliding) */}
                         <div className="absolute inset-x-6 top-3 h-[54px] pointer-events-none">
                             <motion.div 
@@ -6272,27 +6331,23 @@ const MobileDashboardDemo = ({
                                     )}
 
                                     {/* Fixed Header */}
-                                    <div className={cn(
-                                        "px-5 py-4 flex items-center justify-between border-b sticky top-0 z-20",
-                                        isDark ? "bg-[#061318]/80 backdrop-blur-2xl border-white/5" : "bg-white/95 backdrop-blur-md border-slate-200"
-                                    )}>
+                                    <div className="flex items-center justify-between px-6 py-5 border-b border-white/[0.03] backdrop-blur-md sticky top-0 z-20">
                                         <div className="flex items-center gap-4">
-                                            <button type="button"
+                                            <button 
+                                                type="button"
                                                 onClick={closeItemDetail}
                                                 className={cn(
-                                                    "w-10 h-10 rounded-full flex items-center justify-center border transition-all active:scale-95 shadow-sm",
-                                                    isDark ? "bg-[#151922] border-white/10 hover:bg-white/5" : "bg-white border-slate-200 hover:bg-slate-50"
+                                                    "w-11 h-11 rounded-2xl flex items-center justify-center border transition-all active:scale-90 shadow-sm",
+                                                    isDark ? "bg-white/[0.03] border-white/10 text-white" : "bg-slate-50 border-slate-200 text-slate-900"
                                                 )}
                                             >
-                                                <ChevronRight className="w-5 h-5 rotate-180" />
+                                                <ChevronLeft className="w-5 h-5" />
                                             </button>
-                                            <div>
-                                                <h2 className={cn("text-[17px] font-black tracking-tight leading-none mb-1", textColor)}>
-                                                    {selectedType === 'deal' ? 'Collaboration' : 'Offer Brief'}
-                                                </h2>
-                                                <div className="flex items-center gap-1.5 opacity-50">
-                                                    <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-                                                    <p className={cn("text-[11px] font-bold uppercase tracking-widest leading-none", textColor)}>
+                                            <div className="flex flex-col">
+                                                <span className={cn("text-[18px] font-black tracking-tight", textColor)}>Collaboration</span>
+                                                <div className="flex items-center gap-2">
+                                                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
+                                                    <p className={cn("text-[11px] font-black uppercase tracking-widest opacity-40", textColor)}>
                                                         {selectedItem.brand_name || selectedItem.raw?.brand_name || 'Brand Partner'}
                                                     </p>
                                                 </div>
@@ -6301,11 +6356,11 @@ const MobileDashboardDemo = ({
                                         <button type="button"
                                             onClick={() => { triggerHaptic(); setShowItemMenu(true); }}
                                             className={cn(
-                                                "w-10 h-10 rounded-full flex items-center justify-center border transition-all active:scale-95 shadow-sm",
-                                                isDark ? "bg-[#151922] border-white/10" : "bg-white border-slate-200"
+                                                "w-11 h-11 rounded-2xl flex items-center justify-center border transition-all active:scale-95 shadow-sm hover:bg-white/[0.05]",
+                                                isDark ? "bg-white/[0.03] border-white/10" : "bg-white border-slate-200"
                                             )}
                                         >
-                                            <MoreHorizontal className="w-5 h-5 opacity-50" />
+                                            <MoreHorizontal className="w-5 h-5 opacity-40" />
                                         </button>
                                     </div>
 
@@ -6389,7 +6444,7 @@ const MobileDashboardDemo = ({
                                                                         <ShieldCheck className={cn("w-3.5 h-3.5", isDark ? "text-emerald-300" : "text-emerald-600")} />
                                                                     </div>
                                                                     <p className={cn("text-[13px] font-bold tracking-tight", isDark ? "text-emerald-300/90" : "text-emerald-700")}>
-                                                                        Payment secured escrow
+                                                                        Payment secured
                                                                     </p>
                                                                 </div>
 
@@ -6525,73 +6580,101 @@ const MobileDashboardDemo = ({
                                                 </div>
                                             </div>
                                         ) : (
-                                            <div className={cn("rounded-[28px] border p-4 mb-6", cardBgColor, borderColor)}>
-                                                <div className={cn(
-                                                    "rounded-[22px] border overflow-hidden p-0",
-                                                    isDark ? "bg-[#151922] border-[#293342]" : "bg-white border-[#E5E7EB]"
-                                                )}>
-                                                    <div className="p-4">
-                                                        <div className={cn("w-full h-52 sm:h-64 rounded-[20px] overflow-hidden", isDark ? "bg-card" : "bg-slate-100")}>
+                                            <div className={cn("rounded-[36px] border p-1 mb-7 relative overflow-hidden group transition-all duration-500", 
+                                                isDark ? "bg-[#0A0D14] border-white/5 shadow-2xl" : "bg-white border-[#E2E8F0] shadow-[0_20px_50px_rgba(0,0,0,0.05)]")}>
+                                                
+                                                <div className={cn("rounded-[32px] overflow-hidden p-0 relative",
+                                                    isDark ? "bg-white/[0.02] backdrop-blur-xl" : "bg-slate-50/50")}>
+                                                    
+                                                    {/* Product Image Section */}
+                                                    <div className="relative p-3 pb-0">
+                                                        <div className={cn("w-full h-60 sm:h-72 rounded-[28px] overflow-hidden relative group", 
+                                                            isDark ? "bg-[#1C212B]" : "bg-white shadow-inner")}>
                                                             {(() => {
                                                                 const src = resolveCreatorDealProductImage(selectedItem) || 'https://images.unsplash.com/photo-1524169358666-79f22534bc6b?auto=format&fit=crop&q=80&w=1200';
-                                                                return <img src={src} alt="" className="w-full h-full object-cover" loading="lazy" />;
+                                                                return (
+                                                                    <>
+                                                                        <img src={src} alt="" className="w-full h-full object-cover transition-all duration-1000 group-hover:scale-110" loading="lazy" />
+                                                                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-60" />
+                                                                    </>
+                                                                );
                                                             })()}
-                                                        </div>
-                                                        
-                                                        <div className="mt-5 space-y-5">
-                                                            <div className="flex items-center justify-between">
+                                                            
+                                                            {/* Floating Status Badge */}
+                                                            <div className="absolute top-5 left-5">
                                                                 <div className={cn(
-                                                                    "inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-[0.12em] border shadow-sm",
-                                                                    isDark ? "bg-emerald-500/12 text-emerald-300 border-emerald-400/20" : "bg-emerald-50 text-emerald-700 border-emerald-100"
+                                                                    "inline-flex items-center gap-2.5 px-4 py-2.5 rounded-2xl text-[10px] font-black uppercase tracking-widest backdrop-blur-lg border shadow-lg transition-transform group-hover:scale-105",
+                                                                    isDark ? "bg-emerald-500/25 text-emerald-300 border-emerald-400/20" : "bg-emerald-100/95 text-emerald-800 border-emerald-200"
                                                                 )}>
-                                                                    <ShieldCheck className="w-3.5 h-3.5" />
+                                                                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_8px_rgba(52,211,153,0.8)]" />
                                                                     Active Collaboration
-                                                                </div>
-                                                                <div className={cn("flex items-center gap-1.5 text-[12px] font-bold opacity-40", textColor)}>
-                                                                    <Package className="w-3.5 h-3.5" />
-                                                                    #{selectedItem.id?.slice(0, 8).toUpperCase()}
                                                                 </div>
                                                             </div>
 
-                                                            <div className="flex items-end justify-between gap-4">
-                                                                <div className="min-w-0">
-                                                                    <p className={cn("text-[38px] leading-none font-black tracking-tight", textColor)}>
-                                                                        {renderBudgetValue(selectedItem)}
-                                                                    </p>
-                                                                    <p className={cn("text-[14px] font-bold mt-1.5 opacity-40 uppercase tracking-widest", textColor)}>Campaign Reward</p>
+                                                            {/* Package ID Overlay */}
+                                                            <div className="absolute bottom-5 right-5">
+                                                                <div className={cn(
+                                                                    "px-3 py-1.5 rounded-xl text-[10px] font-black tracking-wider border backdrop-blur-md",
+                                                                    isDark ? "bg-white/5 border-white/10 text-white/40" : "bg-black/5 border-black/5 text-black/40"
+                                                                )}>
+                                                                    <div className="flex items-center gap-1.5">
+                                                                        <Package className="w-3 h-3" />
+                                                                        #{selectedItem.id?.slice(0, 8).toUpperCase()}
+                                                                    </div>
                                                                 </div>
-                                                                <div className="text-right">
-                                                                    <div className={cn("text-[13px] font-black flex items-center justify-end gap-1.5 mb-2", textColor)}>
-                                                                        {(() => {
-                                                                            const raw = selectedItem.deliverables || selectedItem.raw?.deliverables;
-                                                                            let items: string[] = ['1 Reel', '2 Stories'];
-                                                                            try {
-                                                                                const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;
-                                                                                if (Array.isArray(parsed) && parsed.length > 0) {
-                                                                                    items = parsed.map((d: any) => {
-                                                                                        if (typeof d === 'string') return d;
-                                                                                        const ct = (d.contentType || d.type || '').toLowerCase();
-                                                                                        const count = d.count || d.quantity || 1;
-                                                                                        let emoji = '', label = 'Content';
-                                                                                        if (ct.includes('reel')) { emoji = '🎬'; label = 'Reel'; }
-                                                                                        else if (ct.includes('story')) { emoji = '📱'; label = 'Stories'; }
-                                                                                        else if (ct.includes('post')) { emoji = '🖼'; label = 'Post'; }
-                                                                                        return `${emoji} ${count} ${label}`;
-                                                                                    });
-                                                                                }
-                                                                            } catch (_) {}
-                                                                            return items.map((d, i) => (
-                                                                                <React.Fragment key={i}>
-                                                                                    <span>{d}</span>
-                                                                                    {i < items.length - 1 && <span className="opacity-20 px-0.5">•</span>}
-                                                                                </React.Fragment>
-                                                                            ));
-                                                                        })()}
-                                                                    </div>
-                                                                    <div className="flex items-center justify-end gap-1.5">
-                                                                        <CheckCircle2 className={cn("w-3.5 h-3.5", isDark ? "text-emerald-300" : "text-emerald-500")} />
-                                                                        <p className={cn("text-[11px] font-bold", isDark ? "text-emerald-300" : "text-emerald-600")}>Payment Secured</p>
-                                                                    </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    {/* Price and Details Section */}
+                                                    <div className="p-7 pt-6">
+                                                        <div className="flex items-end justify-between gap-6">
+                                                            <div className="min-w-0">
+                                                                <p className={cn("text-[10px] font-black uppercase tracking-[0.25em] opacity-40 mb-1.5", textColor)}>
+                                                                    Guaranteed Payout
+                                                                </p>
+                                                                <div className="flex items-baseline gap-1.5">
+                                                                    <span className={cn("text-[48px] leading-none font-black tracking-tighter", textColor)}>
+                                                                        {renderBudgetValue(selectedItem)}
+                                                                    </span>
+                                                                    <span className={cn("text-[15px] font-black opacity-30", textColor)}>INR</span>
+                                                                </div>
+                                                            </div>
+                                                            
+                                                            <div className="text-right flex flex-col items-end gap-3">
+                                                                <div className={cn("flex flex-wrap justify-end gap-2", textColor)}>
+                                                                    {(() => {
+                                                                        const raw = selectedItem.deliverables || selectedItem.raw?.deliverables;
+                                                                        let items: string[] = ['1 Reel', '2 Stories'];
+                                                                        try {
+                                                                            const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;
+                                                                            if (Array.isArray(parsed) && parsed.length > 0) {
+                                                                                items = parsed.map((d: any) => {
+                                                                                    if (typeof d === 'string') return d;
+                                                                                    const ct = (d.contentType || d.type || '').toLowerCase();
+                                                                                    const count = d.count || d.quantity || 1;
+                                                                                    let label = 'Content';
+                                                                                    if (ct.includes('reel')) label = 'Reel';
+                                                                                    else if (ct.includes('story')) label = 'Stories';
+                                                                                    else if (ct.includes('post')) label = 'Post';
+                                                                                    return `${count} ${label}`;
+                                                                                });
+                                                                            }
+                                                                        } catch (_) {}
+                                                                        return items.map((d, i) => (
+                                                                            <span key={i} className={cn(
+                                                                                "px-3 py-1.5 rounded-xl text-[11px] font-black border",
+                                                                                isDark ? "bg-white/[0.03] border-white/5" : "bg-white border-slate-200"
+                                                                            )}>{d}</span>
+                                                                        ));
+                                                                    })()}
+                                                                </div>
+                                                                <div className={cn(
+                                                                    "flex items-center gap-2 px-3 py-1.5 rounded-xl border",
+                                                                    isDark ? "bg-emerald-500/10 border-emerald-400/10" : "bg-emerald-50 border-emerald-100"
+                                                                )}>
+                                                                    <ShieldCheck className={cn("w-3.5 h-3.5", isDark ? "text-emerald-300" : "text-emerald-600")} />
+                                                                    <p className={cn("text-[11px] font-black uppercase tracking-wider", isDark ? "text-emerald-300" : "text-emerald-700")}>Payment Secured</p>
                                                                 </div>
                                                             </div>
                                                         </div>
@@ -6678,27 +6761,55 @@ const MobileDashboardDemo = ({
                                             </AnimatePresence>
                                         </motion.div>
 
-                                        {/* ── DELIVERY TIMELINE (Offers) ── */}
-                                        {selectedType === 'offer' && (
+                                        {/* ── DELIVERY TIMELINE (Offers & Deals) ── */}
+                                        {(selectedType === 'offer' || selectedType === 'deal') && (
                                             <div className="mb-6">
                                                 <h4 className={cn("text-[13px] font-black uppercase tracking-wider mb-3 opacity-50", textColor)}>Campaign Timeline</h4>
                                                 <div className={cn("rounded-2xl border px-2 py-4", isDark ? "bg-card border-border" : "bg-card border-border shadow-sm")}>
-                                                    <div className="flex items-center justify-between px-2 mb-4 text-[11px] font-black uppercase tracking-wider">
-                                                        <span className={isDark ? "text-info" : "text-info"}>Step 1 of 5</span>
-                                                        <span className={textColor}>Offer Received</span>
-                                                    </div>
-                                                    <div className="flex items-center justify-between px-2 relative">
-                                                        <div className={cn("absolute left-4 right-4 top-[6px] h-[3px] z-0 rounded-full", isDark ? "bg-secondary/50" : "bg-background")} />
-                                                        <div className={cn("absolute left-4 w-1 top-[6px] h-[3px] z-0 rounded-full", isDark ? "bg-info" : "bg-info")} />
-                                                        {['Offer', 'Accept', 'Create', 'Submit', 'Payment'].map((step, i) => (
-                                                            <div key={step} className="relative z-10 flex flex-col items-center gap-2">
-                                                                <div className={cn("w-[15px] h-[15px] rounded-full border-[3px]",
-                                                                    i === 0 ? "bg-card border-info shadow-[0_0_8px_rgba(59,130,246,0.6)] box-content" : (isDark ? "bg-[#111827] border-border" : "bg-card border-border")
-                                                                )} />
-                                                                <span className={cn("text-[9px] font-bold uppercase", i === 0 ? (isDark ? "text-info" : "text-info") : "opacity-40")}>{step}</span>
-                                                            </div>
-                                                        ))}
-                                                    </div>
+                                                    {(() => {
+                                                        const steps = ['Accept', 'Fund', 'Content', 'Release'];
+                                                        let currentStep = 0;
+                                                        
+                                                        const status = normalizeDealStatus(selectedItem);
+                                                        const raw = String(selectedItem.status || '').toLowerCase();
+                                                        const isPaid = status === 'paid' || status.includes('released') || status.includes('completed');
+                                                        const isApproved = status.includes('approved');
+                                                        const isDelivered = status.includes('delivered') || status.includes('review');
+                                                        const isMaking = status.includes('making') || status.includes('active') || status.includes('working');
+                                                        const isPaymentPending = raw.includes('payment_pending') || raw === 'pending';
+
+                                                        if (isPaid) currentStep = 4; // All done
+                                                        else if (isApproved || isDelivered) currentStep = 3; // Step 4: Release is next
+                                                        else if (isMaking && !isPaymentPending) currentStep = 2; // Step 3: Content is next
+                                                        else if (isPaymentPending) currentStep = 1; // Step 2: Fund is next
+                                                        else currentStep = 0; // Step 1: Accept is next
+
+                                                        return (
+                                                            <>
+                                                                <div className="flex items-center justify-between px-2 mb-4 text-[11px] font-black uppercase tracking-wider">
+                                                                    <span className={isDark ? "text-info" : "text-info"}>Step {Math.min(currentStep + 1, 4)} of 4</span>
+                                                                    <span className={textColor}>{steps[Math.min(currentStep, 3)]}</span>
+                                                                </div>
+                                                                <div className="flex items-center justify-between px-2 relative">
+                                                                    <div className={cn("absolute left-4 right-4 top-[6px] h-[3px] z-0 rounded-full", isDark ? "bg-secondary/50" : "bg-background")} />
+                                                                    <div 
+                                                                        className={cn("absolute left-4 top-[6px] h-[3px] z-0 rounded-full transition-all duration-500", isDark ? "bg-info" : "bg-info")} 
+                                                                        style={{ width: `${(currentStep / 3) * 100}%`, maxWidth: 'calc(100% - 32px)' }}
+                                                                    />
+                                                                    {steps.map((step, i) => (
+                                                                        <div key={step} className="relative z-10 flex flex-col items-center gap-2">
+                                                                            <div className={cn("w-[15px] h-[15px] rounded-full border-[3px] transition-all duration-300",
+                                                                                i < currentStep ? "bg-info border-info" : 
+                                                                                i === currentStep ? "bg-card border-info shadow-[0_0_8px_rgba(59,130,246,0.6)] box-content" : 
+                                                                                (isDark ? "bg-[#111827] border-border" : "bg-card border-border")
+                                                                            )} />
+                                                                            <span className={cn("text-[9px] font-bold uppercase", i === currentStep ? (isDark ? "text-info" : "text-info") : "opacity-40")}>{step}</span>
+                                                                        </div>
+                                                                    ))}
+                                                                </div>
+                                                            </>
+                                                        );
+                                                    })()}
                                                 </div>
                                             </div>
                                         )}
@@ -6757,10 +6868,12 @@ const MobileDashboardDemo = ({
 	                                                <h4 className={cn("text-[13px] font-black uppercase tracking-wider mb-3 opacity-50", textColor)}>Product Included</h4>
 	                                                <div className={cn("rounded-xl border p-3 flex items-center gap-4", isDark ? "bg-card border-border" : "bg-background border-border")}>
 <div className="w-20 h-20 rounded-xl bg-warning shrink-0 overflow-hidden border border-black/5">
-                                                         <img src={selectedItem.product_image || "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&q=80&w=300"} alt="Product" className="w-full h-full object-cover" />
+                                                         <img src={selectedItem.product_image || "https://images.unsplash.com/photo-1556821840-3a63f95609a7?auto=format&fit=crop&q=80&w=300"} alt="Product" className="w-full h-full object-cover" />
                                                      </div>
                                                     <div>
-                                                        <p className={cn("text-[14px] font-black leading-tight", textColor)}>{selectedItem.product_name || 'Signature Hoodie + Apparel Box'}</p>
+                                                        <p className={cn("text-[14px] font-black leading-tight", textColor)}>
+                                                            {selectedItem.product_name || (selectedItem.brand_name?.toLowerCase().includes('mellow') ? 'Signature Heavyweight Hoodie' : 'Signature Hoodie + Apparel Box')}
+                                                        </p>
                                                         <p className={cn("text-[12px] font-semibold mt-1", secondaryTextColor)}>Product Value {renderBudgetValue(selectedItem)}</p>
                                                         <p className={cn("text-[12px] font-semibold", secondaryTextColor)}>Ships within 3 days</p>
                                                     </div>
@@ -6859,14 +6972,23 @@ const MobileDashboardDemo = ({
                                                     )}
 
                                                     {selectedShippingStatus === 'pending' && (
-                                                        <div className={cn("rounded-2xl border p-4 flex items-start gap-3", isDark ? "bg-warning/5 border-warning/20" : "bg-warning border-warning")}>
-                                                            <Package className={cn("w-5 h-5 mt-0.5", isDark ? "text-warning" : "text-warning")} />
-                                                            <div>
-                                                                <p className={cn("text-[13px] font-black", textColor)}>Waiting for shipping update</p>
-                                                                <p className={cn("text-[12px] font-semibold mt-1", secondaryTextColor)}>
-                                                                    The brand still needs to submit the courier and tracking details.
-                                                                </p>
+                                                        <div className={cn("rounded-[28px] border p-6 flex flex-col gap-4 relative overflow-hidden transition-all", 
+                                                            isDark ? "bg-amber-500/[0.03] border-amber-500/10" : "bg-amber-50/50 border-amber-200/50 shadow-sm")}>
+                                                            <div className="flex items-center gap-4">
+                                                                <div className="w-12 h-12 rounded-2xl bg-amber-500/10 flex items-center justify-center shrink-0 border border-amber-500/10">
+                                                                    <Package className="w-6 h-6 text-amber-500" />
+                                                                </div>
+                                                                <div>
+                                                                    <p className={cn("text-[15px] font-black", isDark ? "text-amber-200" : "text-amber-900")}>Waiting for Shipping</p>
+                                                                    <div className="flex items-center gap-1.5 mt-0.5">
+                                                                        <div className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
+                                                                        <p className={cn("text-[11px] font-black uppercase tracking-wider opacity-40", textColor)}>Brand action pending</p>
+                                                                    </div>
+                                                                </div>
                                                             </div>
+                                                            <p className={cn("text-[13px] font-medium leading-relaxed opacity-60", textColor)}>
+                                                                The brand still needs to submit the courier and tracking details. We'll notify you instantly via push and email as soon as the package is dispatched.
+                                                            </p>
                                                         </div>
                                                     )}
 
@@ -6944,15 +7066,28 @@ const MobileDashboardDemo = ({
                                                 {/* Escrow Status & Receipt */}
                                                 {selectedRequiresPayment && (
                                                     <div className={cn("rounded-2xl border p-4 mb-6", isDark ? "bg-emerald-500/5 border-emerald-500/20" : "bg-emerald-50 border-emerald-200 shadow-sm shadow-emerald-500/5")}>
-                                                        <div className="flex items-center justify-between gap-3 mb-3">
-                                                            <div className="flex items-center gap-2">
-                                                                <ShieldCheck className="w-4 h-4 text-emerald-500" />
-                                                                <p className={cn("text-[13px] font-black", isDark ? "text-emerald-300" : "text-emerald-700")}>Escrow Protection Active</p>
+                                                        <div className="flex items-center justify-between gap-3 mb-4">
+                                                            <div className="flex items-center gap-2.5">
+                                                                <div className="w-8 h-8 rounded-xl bg-emerald-500/10 flex items-center justify-center">
+                                                                    <ShieldCheck className="w-4 h-4 text-emerald-500" />
+                                                                </div>
+                                                                <p className={cn("text-[14px] font-black", isDark ? "text-emerald-300" : "text-emerald-800")}>Payment Protection</p>
                                                             </div>
-                                                            <span className={cn("px-2 py-0.5 rounded-full text-[9px] font-black bg-emerald-500 text-white")}>SECURED</span>
+                                                            {(() => {
+                                                                const status = normalizeDealStatus(selectedItem);
+                                                                const isPaid = status === 'paid' || status.includes('released') || status.includes('completed');
+                                                                return isPaid ? (
+                                                                    <div className={cn(
+                                                                        "px-3 py-1.5 rounded-xl text-[10px] font-black tracking-widest border bg-emerald-500/20 border-emerald-500/20 text-emerald-300",
+                                                                        !isDark && "bg-emerald-100 border-emerald-200 text-emerald-700"
+                                                                    )}>
+                                                                        PAID
+                                                                    </div>
+                                                                ) : null;
+                                                            })()}
                                                         </div>
-                                                        <p className={cn("text-[11px] font-semibold mb-3 leading-relaxed", isDark ? "text-emerald-200/60" : "text-emerald-700/80")}>
-                                                            The brand has deposited funds into our secure escrow. Your payment is guaranteed upon content approval.
+                                                        <p className={cn("text-[12px] font-medium leading-relaxed opacity-80 mb-4", isDark ? "text-emerald-200" : "text-emerald-900")}>
+                                                            The brand has deposited funds into our secure system. Your payment is guaranteed and will be released upon content approval.
                                                         </p>
                                                         {selectedItem.escrow_receipt_url && (
                                                             <a 
@@ -6965,7 +7100,7 @@ const MobileDashboardDemo = ({
                                                                 )}
                                                             >
                                                                 <FileText className="w-3.5 h-3.5" />
-                                                                View Brand's Escrow Receipt
+                                                                View Payment Receipt
                                                                 <ExternalLink className="w-3 h-3 ml-auto opacity-50" />
                                                             </a>
                                                         )}
@@ -7737,12 +7872,18 @@ const MobileDashboardDemo = ({
                     const signedDate = pay.contract_signed_at || pay.created_at;
                     const signedDateStr = signedDate ? new Date(signedDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : '—';
 
+                    const rawStatus = (pay.status || '').toLowerCase();
+                    const status = normalizeDealStatus(pay);
+                    const isFunded = !rawStatus.includes('payment_pending') && rawStatus !== 'pending' && !rawStatus.includes('contract');
+                    const isSubmitted = !!(pay.submission_link || pay.content_url) || status.includes('delivered') || status.includes('review') || status.includes('approved');
+                    const isReleased = isPaid || status.includes('released');
+
                     const timelineSteps = [
                         { label: 'Deal accepted', done: true },
-                        { label: 'Contract generated', done: true },
-                        { label: 'Content submitted', done: !!(pay.submission_link || pay.content_url) },
-                        { label: 'Payment pending', done: isPaid, active: !isPaid },
-                        { label: isPaid ? 'Payment received' : (daysPast > 0 ? 'Payment overdue' : 'Payment due soon'), done: isPaid, warn: !isPaid && daysPast > 0 },
+                        { label: 'Contract signed', done: true },
+                        { label: 'Payment secured', done: isFunded, active: !isFunded },
+                        { label: 'Content submitted', done: isSubmitted, active: isFunded && !isSubmitted },
+                        { label: 'Payout released', done: isReleased, active: isSubmitted && !isReleased },
                     ];
 
                     return (
@@ -7775,14 +7916,21 @@ const MobileDashboardDemo = ({
                                             <h2 className={cn("text-[17px] font-bold tracking-tight", textColor)}>Payment Detail</h2>
                                         </div>
                                     </div>
-                                    <div className={cn(
-                                        "px-4 py-1.5 rounded-2xl border text-[11px] font-black uppercase tracking-wider",
-                                        isPaid
-                                            ? (isDark ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400" : "bg-emerald-50 text-emerald-600 border-emerald-100")
-                                            : (isDark ? "bg-rose-500/10 border-rose-500/20 text-rose-400" : "bg-rose-50 text-rose-600 border-rose-100")
-                                    )}>
-                                        {isPaid ? 'Completed' : 'Pending'}
-                                    </div>
+                                    {(() => {
+                                        const payUx = getCreatorPaymentListUX(pay);
+                                        return (
+                                            <div className={cn(
+                                                "px-4 py-1.5 rounded-full border text-[10px] font-black uppercase tracking-widest",
+                                                payUx.tone === 'success' 
+                                                    ? (isDark ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400" : "bg-emerald-50 text-emerald-600 border-emerald-100")
+                                                    : payUx.tone === 'warning'
+                                                        ? (isDark ? "bg-orange-500/10 border-orange-500/20 text-orange-400" : "bg-orange-50 text-orange-600 border-orange-100")
+                                                        : (isDark ? "bg-rose-500/10 border-rose-500/20 text-rose-400" : "bg-rose-50 text-rose-600 border-rose-100")
+                                            )}>
+                                                {payUx.label}
+                                            </div>
+                                        );
+                                    })()}
                                 </div>
                             </div>
 
@@ -7790,36 +7938,42 @@ const MobileDashboardDemo = ({
                             <div className="flex-1 overflow-y-auto px-5 pt-4 pb-40 space-y-6">
 
                                 {/* ── BRAND IDENTITY BANNER ── */}
-                                <div className="relative mb-4">
+                                <div className="relative mb-6">
                                     <div className={cn(
-                                        "relative h-32 rounded-[2.5rem] overflow-hidden mb-[-40px] z-0 px-8 py-5 flex flex-col justify-end",
-                                        isDark ? "bg-white/[0.03] border border-white/5" : "bg-gradient-to-br from-slate-100 to-slate-50 border border-slate-200"
+                                        "relative h-40 rounded-[2.5rem] overflow-hidden mb-[-50px] z-0 px-8 py-7 flex flex-col justify-start",
+                                        isDark 
+                                            ? "bg-gradient-to-b from-blue-600/20 to-blue-600/5 border border-white/5" 
+                                            : "bg-gradient-to-b from-blue-50 to-white border border-slate-200"
                                     )}>
-                                        <div className={cn("absolute inset-0 opacity-10 filter blur-3xl mix-blend-overlay", isPaid ? "bg-emerald-400" : "bg-blue-400")} />
-                                        <p className={cn("relative z-10 text-[9px] font-black uppercase tracking-[0.3em] mb-1 opacity-30", textColor)}>
-                                            Collaborator
+                                        <div className={cn("absolute inset-0 opacity-20 filter blur-3xl mix-blend-overlay", isPaid ? "bg-emerald-400" : "bg-blue-400")} />
+                                        <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-full blur-3xl -mr-16 -mt-16" />
+                                        <p className={cn("relative z-10 text-[10px] font-black uppercase tracking-[0.4em] opacity-40", textColor)}>
+                                            Campaign Collaborator
                                         </p>
                                     </div>
 
-                                    <div className="relative px-6 flex items-end gap-5 z-10">
+                                    <div className="relative px-6 flex items-end gap-6 z-10">
                                         <div className={cn(
-                                            "w-24 h-24 rounded-[2rem] p-1 shadow-2xl",
-                                            isDark ? "bg-[#0B0F14] ring-4 ring-[#0B0F14]" : "bg-white ring-4 ring-[#F9FAFB]"
+                                            "w-28 h-28 rounded-[2.5rem] p-1.5 shadow-[0_20px_50px_rgba(0,0,0,0.15)]",
+                                            isDark ? "bg-[#0B0F14] ring-1 ring-white/10" : "bg-white ring-1 ring-slate-200"
                                         )}>
                                             <div className={cn(
-                                                "w-full h-full rounded-[1.75rem] overflow-hidden border flex items-center justify-center",
-                                                isDark ? "bg-white/5 border-white/10" : "bg-white border-slate-200 shadow-sm"
+                                                "w-full h-full rounded-[2.1rem] overflow-hidden border flex items-center justify-center",
+                                                isDark ? "bg-white/5 border-white/10" : "bg-white border-slate-100 shadow-inner"
                                             )}>
                                                 {getBrandIcon(pay.brand_logo_url || pay.brand_logo || pay.logo_url || pay.raw?.brand_logo_url || pay.raw?.brand_logo, pay.category, pay.brand_name)}
                                             </div>
                                         </div>
-                                        <div className="pb-2 flex-1 min-w-0">
-                                            <h2 className={cn("text-[20px] font-bold truncate tracking-tight mb-0.5", textColor)}>
+                                        <div className="pb-3 flex-1 min-w-0">
+                                            <h2 className={cn("text-[24px] font-black truncate tracking-tighter mb-0.5", textColor)}>
                                                 {pay.brand_name || 'Brand'}
                                             </h2>
-                                            <div className="flex items-center gap-1.5">
-                                                <ShieldCheck className={cn("w-3.5 h-3.5", isPaid ? "text-emerald-500" : "text-blue-500")} strokeWidth={2.5} />
-                                                <span className={cn("text-[12px] font-black uppercase tracking-widest opacity-40", textColor)}>Verified Partner</span>
+                                            <div className="flex items-center gap-2">
+                                                <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-blue-500/10 border border-blue-500/20">
+                                                    <ShieldCheck className="w-3 h-3 text-blue-500" strokeWidth={3} />
+                                                    <span className="text-[9px] font-black text-blue-500 uppercase tracking-widest">Verified</span>
+                                                </div>
+                                                <span className={cn("text-[11px] font-bold opacity-30", textColor)}>Partner since 2024</span>
                                             </div>
                                         </div>
                                     </div>
@@ -7827,73 +7981,84 @@ const MobileDashboardDemo = ({
 
                                 {/* ── PAYMENT STATUS CARD ── */}
                                 <div className={cn(
-                                    "rounded-[2.5rem] border p-6 relative overflow-hidden transition-all duration-500",
+                                    "rounded-[2.5rem] border p-8 relative overflow-hidden transition-all duration-500",
                                     isPaid
-                                        ? (isDark ? "bg-emerald-500/[0.03] border-emerald-500/10" : "bg-emerald-50/50 border-emerald-100 shadow-sm")
-                                        : (isDark ? "bg-blue-500/[0.03] border-blue-500/10" : "bg-blue-50/50 border-blue-100 shadow-sm")
+                                        ? (isDark ? "bg-emerald-500/[0.04] border-emerald-500/10" : "bg-emerald-50/60 border-emerald-100 shadow-sm")
+                                        : (isDark ? "bg-primary/[0.04] border-primary/10" : "bg-primary/5 border-primary/10 shadow-sm")
                                 )}>
-                                    <div className="absolute top-0 right-0 p-6 opacity-10">
-                                        {isPaid ? <Check className="w-16 h-16" /> : <Clock className="w-16 h-16" />}
+                                    <div className="absolute top-0 right-0 p-8 opacity-[0.03]">
+                                        {isPaid ? <Check className="w-24 h-24" /> : <Clock className="w-24 h-24 text-primary" />}
                                     </div>
                                     
                                     <div className="relative">
-                                        <div className="flex items-center gap-2 mb-4">
-                                            <div className={cn(
-                                                "w-8 h-8 rounded-xl flex items-center justify-center",
-                                                isPaid ? "bg-emerald-500/10 text-emerald-500" : "bg-blue-500/10 text-blue-500"
-                                            )}>
-                                                {isPaid ? <Landmark className="w-4 h-4" /> : <Clock className="w-4 h-4" />}
+                                        <div className="flex items-center justify-between mb-6">
+                                            <div className="flex items-center gap-3">
+                                                <div className={cn(
+                                                    "w-10 h-10 rounded-2xl flex items-center justify-center",
+                                                    isPaid ? "bg-emerald-500 text-white" : "bg-primary text-white shadow-lg shadow-primary/20"
+                                                )}>
+                                                    {isPaid ? <Check className="w-5 h-5 stroke-[3]" /> : <Clock className="w-5 h-5 stroke-[3]" />}
+                                                </div>
+                                                <p className={cn("text-[11px] font-black uppercase tracking-[0.25em] opacity-50", textColor)}>
+                                                    {isPaid ? 'Payout Finalized' : 'Estimated Payout'}
+                                                </p>
                                             </div>
-                                            <p className={cn("text-[10px] font-black uppercase tracking-[0.2em] opacity-40", textColor)}>
-                                                {isPaid ? 'Payment Received' : 'Schedule Expected'}
-                                            </p>
+                                            {!isPaid && (
+                                                <div className="px-3 py-1 rounded-full bg-primary/10 border border-primary/20">
+                                                    <span className="text-[10px] font-black text-primary uppercase tracking-widest">In Escrow</span>
+                                                </div>
+                                            )}
                                         </div>
 
-                                        <p className={cn("text-4xl font-black tracking-tighter mb-1", textColor)}>
+                                        <p className={cn("text-5xl font-black tracking-tighter mb-4", textColor)}>
                                             {renderBudgetValue(pay)}
                                         </p>
                                         
-                                        {isPaid ? (
-                                            <div className="flex items-center gap-2">
-                                                <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                                                <p className={cn("text-[13px] font-bold opacity-60", textColor)}>Settled on {dueDateStr}</p>
-                                            </div>
-                                        ) : (
-                                            <div className="space-y-2">
-                                                <div className="flex items-center gap-2">
-                                                    <div className={cn("w-1.5 h-1.5 rounded-full", daysPast > 0 ? "bg-rose-500 animate-pulse" : "bg-blue-500")} />
-                                                    <p className={cn("text-[13px] font-bold opacity-60", textColor)}>Due by {dueDateStr}</p>
+                                        <div className={cn("p-4 rounded-2xl border", isDark ? "bg-white/5 border-white/5" : "bg-white border-slate-100")}>
+                                            {isPaid ? (
+                                                <div className="flex items-center justify-between">
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
+                                                        <p className={cn("text-[13px] font-black", textColor)}>Settled to Bank</p>
+                                                    </div>
+                                                    <p className={cn("text-[13px] font-bold opacity-40", textColor)}>{dueDateStr}</p>
                                                 </div>
-                                                {daysPast > 0 && (
-                                                    <span className="inline-block px-3 py-1 rounded-lg bg-rose-500/10 text-rose-500 text-[10px] font-black uppercase tracking-wider border border-rose-500/20">
-                                                        {daysPast} Day{daysPast > 1 ? 's' : ''} Overdue
-                                                    </span>
-                                                )}
-                                            </div>
-                                        )}
+                                            ) : (
+                                                <div className="flex items-center justify-between">
+                                                    <div className="flex items-center gap-3">
+                                                        <div className={cn("w-2 h-2 rounded-full", daysPast > 0 ? "bg-rose-500 animate-pulse" : "bg-primary animate-pulse")} />
+                                                        <p className={cn("text-[13px] font-black", textColor)}>
+                                                            {daysPast > 0 ? 'Overdue' : 'Expected By'}
+                                                        </p>
+                                                    </div>
+                                                    <p className={cn("text-[13px] font-bold", daysPast > 0 ? "text-rose-500" : (isDark ? "text-white/60" : "text-slate-600"))}>
+                                                        {dueDateStr} {daysPast > 0 && `(${daysPast}d)`}
+                                                    </p>
+                                                </div>
+                                            )}
+                                        </div>
                                     </div>
                                 </div>
 
                                 {/* ── DEAL BREAKDOWN ── */}
-                                <div className="space-y-3">
+                                <div className="space-y-4">
                                     <p className={cn("text-[11px] font-black uppercase tracking-[0.2em] px-4 opacity-30", textColor)}>Campaign Intel</p>
-                                    <div className={cn(
-                                        "rounded-[2.5rem] border overflow-hidden p-2 divide-y",
-                                        isDark ? "bg-white/[0.02] border-white/5 divide-white/5 shadow-2xl" : "bg-white border-slate-100 divide-slate-50 shadow-xl shadow-slate-200/40"
-                                    )}>
+                                    <div className="grid grid-cols-1 gap-3">
                                         {[
-                                            { label: 'Deliverables', value: pay.deliverables_summary || '1 Instagram Reel', icon: <FileText /> },
-                                            { label: 'Agreement Type', value: pay.collab_type === 'barter' ? '🎁 Product Exchange' : '💰 Paid Partnership', icon: <Handshake /> },
-                                            { label: 'Payment Method', value: pay.payment_terms || 'Direct Bank/UPI', icon: <CreditCard /> },
-                                            { label: 'Invoice Reference', value: invoiceId, icon: <LayoutDashboard /> },
+                                            { label: 'Deliverables', value: pay.deliverables_summary || '1 Instagram Reel', icon: <FileText className="w-5 h-5" />, color: 'bg-blue-500' },
+                                            { label: 'Agreement', value: pay.collab_type === 'barter' ? 'Product Exchange' : 'Paid Partnership', icon: <Handshake className="w-5 h-5" />, color: 'bg-indigo-500' },
+                                            { label: 'Method', value: pay.payment_terms || 'Direct Bank/UPI', icon: <CreditCard className="w-5 h-5" />, color: 'bg-amber-500' },
                                         ].map((row, i) => (
-                                            <div key={i} className={cn("flex items-center gap-4 px-4 py-4 rounded-[2rem] transition-colors", isDark ? "hover:bg-white/5" : "hover:bg-slate-50/50")}>
-                                                <div className={cn("w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 shadow-sm border", isDark ? "bg-white/5 border-white/5 text-white/40" : "bg-slate-50 border-slate-100 text-slate-400")}>
-                                                    {React.cloneElement(row.icon as React.ReactElement, { size: 18, strokeWidth: 1.5 })}
+                                            <div key={i} className={cn(
+                                                "flex items-center gap-4 px-5 py-4 rounded-[1.75rem] border transition-all active:scale-[0.98]",
+                                                isDark ? "bg-white/[0.03] border-white/5 hover:bg-white/[0.06]" : "bg-white border-slate-100 shadow-sm hover:border-slate-200"
+                                            )}>
+                                                <div className={cn("w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 text-white shadow-lg", row.color)}>
+                                                    {row.icon}
                                                 </div>
                                                 <div className="flex-1 min-w-0">
                                                     <p className={cn("text-[10px] font-black uppercase tracking-widest mb-0.5 opacity-30", textColor)}>{row.label}</p>
-                                                    <p className={cn("text-[14px] font-black truncate", textColor)}>{row.value}</p>
+                                                    <p className={cn("text-[15px] font-black truncate", textColor)}>{row.value}</p>
                                                 </div>
                                             </div>
                                         ))}
@@ -7982,7 +8147,7 @@ const MobileDashboardDemo = ({
                                             { label: 'System ID', value: invoiceId },
                                             { label: 'Settlement Node', value: pay.payment_terms || 'Direct Bank/UPI' },
                                             { label: 'Signed/Verified', value: signedDateStr },
-                                            { label: 'Escrow Coverage', value: '✓ 100% SECURED' },
+                                            { label: 'Payment Protection', value: '✓ 100% SECURED' },
                                         ].map((row, i) => (
                                             <div key={i} className={cn("flex items-center justify-between px-5 py-4", i > 0 ? (isDark ? "border-t border-border/5" : "border-t border-border") : "")}>
                                                 <span className={cn("text-[12px] font-semibold opacity-50", textColor)}>{row.label}</span>
@@ -8024,7 +8189,6 @@ const MobileDashboardDemo = ({
                                 {/* ── BRAND TRUST ── */}
                                 <div className={cn("rounded-2xl border p-4", cardBgColor, borderColor)}>
                                     <p className={cn("text-[10px] font-black uppercase tracking-widest mb-3 opacity-40", textColor)}>Brand Trust</p>
-                                    <div className="grid grid-cols-2 gap-3">
                                         <div className={cn("rounded-xl p-3 border", isDark ? "bg-card border-border" : "bg-background border-border")}>
                                             <p className={cn("text-[10px] font-black uppercase tracking-wider opacity-50 mb-1", textColor)}>Response Time</p>
                                             <p className={cn("text-[15px] font-black", textColor)}>~3 hours</p>
@@ -8033,56 +8197,49 @@ const MobileDashboardDemo = ({
                                             <p className={cn("text-[10px] font-black uppercase tracking-wider opacity-50 mb-1", textColor)}>Campaigns</p>
                                             <p className={cn("text-[15px] font-black", textColor)}>{pay.total_collabs || 21} done</p>
                                         </div>
-                                    </div>
                                 </div>
-
                             </div>
 
-                            {/* ── STICKY ACTION BAR ── */}
+                            {/* ── STICKY CTA ── */}
                             {!isPaid && (
                                 <div className={cn(
-                                    "px-5 pb-8 pt-4 border-t space-y-2.5",
-                                    isDark ? "bg-[#0B0F14] border-border" : "bg-card border-border"
+                                    "fixed bottom-0 left-0 right-0 p-5 z-[200] border-t",
+                                    isDark ? "bg-[#0B0F14]/90 backdrop-blur-xl border-white/5" : "bg-white/90 backdrop-blur-xl border-slate-100 shadow-[0_-10px_40px_rgba(0,0,0,0.05)]"
                                 )}>
-                                    <motion.button
-                                        whileTap={{ scale: 0.97 }}
-                                        onClick={() => {
-                                            triggerHaptic();
-                                            import('sonner').then(m => m.toast.success('Payment reminder sent to brand!', { description: 'They will be notified via email.' }));
-                                        }}
-                                        className="w-full py-3.5 rounded-2xl bg-warning text-foreground font-black text-[15px] flex items-center justify-center gap-2 shadow-lg shadow-amber-500/20 active:scale-[0.98] transition-all"
-                                    >
-                                        <Bell className="w-4 h-4" /> Send Payment Reminder
-                                    </motion.button>
-                                    <div className="flex gap-2.5">
+                                    <div className="max-w-md mx-auto space-y-3">
                                         <motion.button
                                             whileTap={{ scale: 0.97 }}
-                                            onClick={() => {
-                                                triggerHaptic();
-                                                navigate('/creator-dashboard?tab=disputes');
+                                            onClick={() => { 
+                                                triggerHaptic(); 
+                                                import('sonner').then(m => m.toast.success('Payment reminder sent to brand!', { description: 'They will be notified via email.' }));
                                             }}
-                                            className={cn(
-                                                "flex-1 py-3 rounded-2xl flex items-center justify-center gap-1.5 border font-black text-[13px] active:scale-95 transition-all text-destructive",
-                                                isDark ? "bg-destructive/10 border-destructive/20" : "bg-destructive/10 border-destructive/20"
-                                            )}
+                                            className="w-full py-4 rounded-[1.5rem] bg-gradient-to-r from-amber-500 to-orange-600 text-white text-[15px] font-black shadow-lg shadow-orange-500/20 flex items-center justify-center gap-2 active:scale-[0.98] transition-all"
                                         >
-                                            <AlertTriangle className="w-4 h-4" /> Open Dispute
+                                            <Bell className="w-4 h-4 fill-white" /> Send Payment Reminder
                                         </motion.button>
-                                        <motion.button
-                                            whileTap={{ scale: 0.97 }}
-                                            onClick={() => {
-                                                triggerHaptic();
-                                                if (pay.contact_email) window.open(`mailto:${pay.contact_email}`);
-                                                else import('sonner').then(m => m.toast('Brand contact not available'));
-                                            }}
-                                            className={cn(
-                                                "flex-1 py-3 rounded-2xl flex items-center justify-center gap-1.5 border font-black text-[13px] active:scale-95 transition-all",
-                                                isDark ? "bg-card border-border" : "bg-background border-border",
-                                                textColor
-                                            )}
-                                        >
-                                            <MessageSquare className="w-4 h-4" /> Contact Brand
-                                        </motion.button>
+                                        
+                                        <div className="flex gap-3">
+                                            <motion.button
+                                                whileTap={{ scale: 0.97 }}
+                                                onClick={() => { triggerHaptic(); import('sonner').then(m => m.toast('Dispute center coming soon')); }}
+                                                className={cn(
+                                                    "flex-1 py-3.5 rounded-[1.25rem] border text-[13px] font-bold flex items-center justify-center gap-2 transition-all active:scale-[0.98]",
+                                                    isDark ? "bg-rose-500/5 border-rose-500/20 text-rose-500" : "bg-rose-50 border-rose-100 text-rose-600"
+                                                )}
+                                            >
+                                                <AlertTriangle className="w-4 h-4" /> Open Dispute
+                                            </motion.button>
+                                            <motion.button
+                                                whileTap={{ scale: 0.97 }}
+                                                onClick={() => { triggerHaptic(); if (pay.contact_email) window.open(`mailto:${pay.contact_email}`); else import('sonner').then(m => m.toast('Direct messaging coming soon')); }}
+                                                className={cn(
+                                                    "flex-1 py-3.5 rounded-[1.25rem] border text-[13px] font-bold flex items-center justify-center gap-2 transition-all active:scale-[0.98]",
+                                                    isDark ? "bg-white/5 border-white/10 text-white" : "bg-white border-slate-200 text-slate-700"
+                                                )}
+                                            >
+                                                <MessageSquare className="w-4 h-4" /> Contact Brand
+                                            </motion.button>
+                                        </div>
                                     </div>
                                 </div>
                             )}

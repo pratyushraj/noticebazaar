@@ -5,7 +5,7 @@ import { BrandDeal } from '@/types';
 import type { Database } from '@/types/supabase';
 import { useSupabaseQuery } from './useSupabaseQuery';
 import { useSupabaseMutation } from './useSupabaseMutation';
-import { CREATOR_ASSETS_BUCKET, extractFilePathFromUrl } from '@/lib/constants/storage';
+import { isBarterLikeCollab, isPaidLikeCollab } from '@/lib/deals/collabType';
 import { logger } from '@/lib/utils/logger';
 import { validateNewDeal, validateDealAmount, validateEmail, validateFile, ALLOWED_FILE_TYPES, MAX_FILE_SIZES } from '@/lib/utils/validation';
 import { validateStatusTransition } from '@/lib/constants/dealStatuses';
@@ -1132,6 +1132,17 @@ export const useUpdateDealProgress = () => {
         }
       }
 
+      // ENFORCEMENT: If moving to content_making, ensure paid deals are actually funded
+      if (stage === 'content_making') {
+        const requiresPayment = isPaidLikeCollab(currentDeal);
+        if (requiresPayment) {
+          const hasPayment = (currentDeal as any)?.payment_id || (currentDeal as any)?.amount_paid > 0;
+          if (!hasPayment) {
+            throw new Error('Payment required. Please wait for the brand to fund the escrow before starting work.');
+          }
+        }
+      }
+
       const progress_percentage = STAGE_TO_PROGRESS[stage];
       const status = STAGE_TO_STATUS[stage];
 
@@ -1149,6 +1160,18 @@ export const useUpdateDealProgress = () => {
       if (error) {
         throw new Error(error.message);
       }
+
+      // Audit Logging
+      await supabase.from('deal_action_logs').insert({
+        deal_id: dealId,
+        event: 'STATUS_UPDATED',
+        metadata: {
+          previous_status: (currentDeal as any)?.status,
+          new_status: status,
+          stage,
+          source: 'creator_dashboard_progress'
+        }
+      });
     },
     {
       onSuccess: (_, variables) => {

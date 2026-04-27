@@ -1,4 +1,4 @@
-import { isBarterLikeCollab } from './collabType';
+import { isBarterLikeCollab, isPaidLikeCollab } from './collabType';
 
 export type DealRole = 'brand' | 'creator';
 
@@ -251,6 +251,13 @@ export const getDealPrimaryCta = (params: { role: DealRole; deal: any }): DealPr
     return { status, label: 'Review & Sign Contract', disabled: false, tone: 'action', action: 'review_sign_contract' };
   }
   if (status === 'FULLY_EXECUTED') {
+    const requiresPayment = isPaidLikeCollab(deal);
+    if (requiresPayment) {
+      const hasPayment = deal?.payment_id || deal?.amount_paid > 0 || deal?.raw?.payment_id;
+      if (!hasPayment) {
+        return { status, label: 'Awaiting Payment', disabled: true, tone: 'waiting', action: 'none' };
+      }
+    }
     return { status, label: 'Start Working', disabled: false, tone: 'action', action: 'start_working' };
   }
   if (status === 'CONTENT_MAKING') {

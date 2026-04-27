@@ -1126,7 +1126,7 @@ router.patch('/:dealId/delivery-details', async (req: AuthenticatedRequest, res:
  * PATCH /api/deals/:dealId/shipping/update
  * Brand/System updates shipping status (shipped, delivered, etc.).
  */
-router.patch('/:dealId/shipping/update', authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
+router.patch('/:dealId/shipping/update', async (req: AuthenticatedRequest, res: Response) => {
   try {
     const { dealId } = req.params;
     const userId = req.user?.id;

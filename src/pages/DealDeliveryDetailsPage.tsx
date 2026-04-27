@@ -17,6 +17,7 @@ import { cn } from "@/lib/utils";
 import { useQueryClient } from "@tanstack/react-query";
 import { CreatorNavigationWrapper } from "@/components/navigation/CreatorNavigationWrapper";
 import { gradients, spacing, typography, animations, buttons } from "@/lib/design-system";
+import { fetchPincodeData } from "@/lib/utils/pincodeLookup";
 
 const DELIVERY_PREFS_STORAGE_KEY = "nb_creator_delivery_prefs_v1";
 
@@ -92,28 +93,8 @@ export default function DealDeliveryDetailsPage() {
     }
   }, [deal]);
 
-  // Prefill from last-used delivery details (mobile-friendly; reduces form friction).
-  useEffect(() => {
-    // If deal already has delivery details, don't override.
-    if (hasExistingDelivery) return;
-    try {
-      const raw = window.localStorage.getItem(DELIVERY_PREFS_STORAGE_KEY);
-      if (!raw) return;
-      const parsed = JSON.parse(raw) as any;
-      if (!parsed || typeof parsed !== "object") return;
-
-      setDeliveryName((current) => current || String(parsed.deliveryName || ""));
-      setDeliveryPhone((current) => current || String(parsed.deliveryPhone || ""));
-      setAddressLine((current) => current || String(parsed.addressLine || ""));
-      setAddressLine2((current) => current || String(parsed.addressLine2 || ""));
-      setCity((current) => current || String(parsed.city || ""));
-      setState((current) => current || String(parsed.state || ""));
-      setPincode((current) => current || String(parsed.pincode || ""));
-      setDeliveryNotes((current) => current || String(parsed.deliveryNotes || ""));
-    } catch {
-      // ignore
-    }
-  }, [hasExistingDelivery]);
+  // Removed auto-fill from localStorage for security/privacy.
+  // Profile pre-fill (below) handles the user's saved data securely from the DB.
 
   // Auto-fill from profile if no existing delivery details
   useEffect(() => {
@@ -124,20 +105,16 @@ export default function DealDeliveryDetailsPage() {
     if ((profile as any)?.phone) setDeliveryPhone((current) => current || String((profile as any).phone));
   }, [profile, hasExistingDelivery]);
 
-  // Pincode-based city/state auto-fill
-  const [isLookingUpPincode, setIsLookingUpPincode] = useState(false);
   useEffect(() => {
     if (pincode.length !== 6 || !/^\d{6}$/.test(pincode)) return;
     
     const lookupPincode = async () => {
       setIsLookingUpPincode(true);
       try {
-        const response = await fetch(`https://api.postalpincode.in/pincode/${pincode}`);
-        const data = await response.json();
-        if (data?.[0]?.Status === "Success" && data[0]?.PostOffice?.length > 0) {
-          const postOffice = data[0].PostOffice[0];
-          if (!city.trim()) setCity(postOffice.District || "");
-          if (!state.trim()) setState(postOffice.State || "");
+        const data = await fetchPincodeData(pincode);
+        if (data?.city) {
+          if (!city.trim()) setCity(data.city);
+          if (!state.trim()) setState(data.state || "");
         }
       } catch {
         // Silent fail - user can fill manually
@@ -146,8 +123,7 @@ export default function DealDeliveryDetailsPage() {
       }
     };
     
-    const timer = setTimeout(lookupPincode, 500);
-    return () => clearTimeout(timer);
+    lookupPincode();
   }, [pincode]);
 
   // Redirect if not relevant or not owner
@@ -212,24 +188,8 @@ export default function DealDeliveryDetailsPage() {
 
         setIsSubmitted(true);
 
-        // Persist for next barter deal to avoid retyping (safe to keep locally).
-        try {
-          window.localStorage.setItem(
-            DELIVERY_PREFS_STORAGE_KEY,
-            JSON.stringify({
-              deliveryName: deliveryName.trim(),
-              deliveryPhone: deliveryPhone.trim(),
-              addressLine: addressLine.trim(),
-              addressLine2: addressLine2.trim(),
-              city: city.trim(),
-              state: state.trim(),
-              pincode: pincode.trim(),
-              deliveryNotes: deliveryNotes.trim(),
-            })
-          );
-        } catch {
-          // ignore
-        }
+        // Security: Removed local storage of PII (address/phone) to protect users on shared devices.
+        // We now rely purely on the database for persistence.
 
         // We delay navigation to show the confirmation state
         setTimeout(() => {

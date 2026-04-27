@@ -668,6 +668,37 @@ const BrandMobileDashboard = ({
   const [showConfirmPaymentModal, setShowConfirmPaymentModal] = useState(false);
   const [showBrandShippingModal, setShowBrandShippingModal] = useState(false);
 
+  // ── Deal detail screen hooks (hoisted to prevent remount focus loss) ──────
+  const dealDetailContractRef = useRef<HTMLDivElement | null>(null);
+  const dealDetailDeliverablesRef = useRef<HTMLDivElement | null>(null);
+  const dealDetailProgressRef = useRef<HTMLDivElement | null>(null);
+  const dealDetailContentRef = useRef<HTMLDivElement | null>(null);
+  const dealDetailShippingRef = useRef<HTMLDivElement | null>(null);
+  const [ddIsReviewingContent, setDdIsReviewingContent] = useState(false);
+  const [ddIsReleasingPayment, setDdIsReleasingPayment] = useState(false);
+  const [ddIsUpdatingShipping, setDdIsUpdatingShipping] = useState(false);
+  const [ddShowPaymentProofBox, setDdShowPaymentProofBox] = useState(false);
+  const [ddPaymentReferenceDraft, setDdPaymentReferenceDraft] = useState('');
+  const [ddPaymentDateDraft, setDdPaymentDateDraft] = useState(() => new Date().toISOString().slice(0, 10));
+  const [ddPaymentNotesDraft, setDdPaymentNotesDraft] = useState('');
+  const [ddPaymentProofFile, setDdPaymentProofFile] = useState<File | null>(null);
+  const [ddShowShippingBox, setDdShowShippingBox] = useState(false);
+  const [ddCourierNameDraft, setDdCourierNameDraft] = useState('');
+  const [ddTrackingNumberDraft, setDdTrackingNumberDraft] = useState('');
+  const [ddTrackingUrlDraft, setDdTrackingUrlDraft] = useState('');
+  const [ddExpectedDeliveryDateDraft, setDdExpectedDeliveryDateDraft] = useState('');
+  const [ddShowRevisionBox, setDdShowRevisionBox] = useState(false);
+  const [ddRevisionFeedbackDraft, setDdRevisionFeedbackDraft] = useState('');
+  const [ddShowDisputeBox, setDdShowDisputeBox] = useState(false);
+  const [ddDisputeNotesDraft, setDdDisputeNotesDraft] = useState('');
+
+  // ── Offer details sheet hooks (hoisted to prevent remount focus loss) ──────
+  const [odsIsRequestBusy, setOdsIsRequestBusy] = useState(false);
+  const [odsShowCounterEditor, setOdsShowCounterEditor] = useState(false);
+  const [odsCounterBudget, setOdsCounterBudget] = useState('');
+  const [odsCounterDeliverables, setOdsCounterDeliverables] = useState('');
+  const [odsCounterDeadline, setOdsCounterDeadline] = useState('');
+
   const handleBrandDealPrimaryAction = (
     event: MouseEvent<HTMLButtonElement> | undefined,
     item: BrandDeal | null | undefined,
@@ -763,6 +794,32 @@ const BrandMobileDashboard = ({
       if (updated && updated !== overlayDeal) setOverlayDeal(updated);
     }
   }, [deals, selectedOffer?.id, selectedDealPage?.id, overlayDeal?.id]);
+
+  // ── Initialize hoisted deal details drafts when deal changes ──────────────
+  useEffect(() => {
+    if (!selectedDealPage) return;
+    const deal = selectedDealPage;
+    setDdPaymentReferenceDraft(deal.payment_id || deal.raw?.payment_id || '');
+    setDdPaymentDateDraft(deal.paid_at ? new Date(deal.paid_at).toISOString().slice(0, 10) : new Date().toISOString().slice(0, 10));
+    setDdPaymentNotesDraft(deal.payment_notes || '');
+    setDdCourierNameDraft(deal.shipping_courier || deal.courier_name || '');
+    setDdTrackingNumberDraft(deal.shipping_tracking_id || deal.tracking_number || '');
+    setDdTrackingUrlDraft(deal.shipping_tracking_url || deal.tracking_url || '');
+    setDdExpectedDeliveryDateDraft(deal.expected_delivery_date ? new Date(deal.expected_delivery_date).toISOString().slice(0, 10) : '');
+    setDdRevisionFeedbackDraft('');
+    setDdDisputeNotesDraft('');
+  }, [selectedDealPage?.id]);
+
+  // ── Initialize hoisted offer details drafts when offer changes ────────────
+  useEffect(() => {
+    if (!selectedOffer) return;
+    const offer = selectedOffer;
+    setOdsCounterBudget(String(offer.exact_budget ?? offer.deal_amount ?? ''));
+    setOdsCounterDeliverables(String(formatDeliverables(offer) || '').trim());
+    setOdsCounterDeadline(offer.due_date ? new Date(offer.due_date).toISOString().slice(0, 10) : '');
+    setOdsShowCounterEditor(false);
+    setOdsIsRequestBusy(false);
+  }, [selectedOffer?.id]);
 
 		  const brandName = useMemo(() => {
 		    const name = profile?.business_name || profile?.first_name || profile?.full_name || 'Brand';
@@ -1318,8 +1375,20 @@ const BrandMobileDashboard = ({
     </div>
   );
 
-  const OfferDetailsSheet = ({ offer }: { offer: any }) => {
+  const renderOfferDetailsSheet = (offer: any) => {
     if (!offer) return null;
+
+    const isRequestBusy = odsIsRequestBusy;
+    const setIsRequestBusy = setOdsIsRequestBusy;
+    const showCounterEditor = odsShowCounterEditor;
+    const setShowCounterEditor = setOdsShowCounterEditor;
+    const counterBudget = odsCounterBudget;
+    const setCounterBudget = setOdsCounterBudget;
+    const counterDeliverables = odsCounterDeliverables;
+    const setCounterDeliverables = setOdsCounterDeliverables;
+    const counterDeadline = odsCounterDeadline;
+    const setCounterDeadline = setOdsCounterDeadline;
+
     const title = offer?.profiles ? firstNameish(offer.profiles) : offer?.creator_name || offer?.creator_email || 'Creator';
     const username = String(offer?.profiles?.username || '').trim();
     const isMarkedCompleted = normalizeStatus(offer?.status) === 'completed';
@@ -1337,16 +1406,6 @@ const BrandMobileDashboard = ({
     const sentAt = offer?.created_at || offer?.updated_at || null;
     const expires = offerExpiryLabel(offer);
     const requestStage = normalizeStatus(offer?.status) === 'countered' ? 'CREATOR COUNTERED' : 'AWAITING RESPONSE';
-    const [isRequestBusy, setIsRequestBusy] = useState(false);
-    const [showCounterEditor, setShowCounterEditor] = useState(false);
-    const [counterBudget, setCounterBudget] = useState<string>(() => {
-      const v = offer?.exact_budget ?? offer?.deal_amount ?? '';
-      return v === null || v === undefined ? '' : String(v);
-    });
-    const [counterDeliverables, setCounterDeliverables] = useState<string>(() => {
-      const base = formatDeliverables(offer);
-      return String(base || '').trim();
-    });
     const isCounteredRequest = normalizeStatus(offer?.status) === 'countered';
 
     const updateRequest = async (path: string, body?: any) => {
@@ -1488,7 +1547,7 @@ const BrandMobileDashboard = ({
 	                      expires.tone === 'danger'
 	                        ? (isDark ? 'bg-rose-500/10 text-rose-200 border-rose-300/30' : 'bg-rose-50 text-rose-800 border-rose-200')
 	                        : expires.tone === 'warn'
-	                          ? (isDark ? 'bg-warning/10 text-warning border-warning/30' : 'bg-warning text-warning border-warning')
+	                          ? (isDark ? 'bg-warning/10 text-warning border-warning/30' : 'bg-warning text-white border-warning')
 	                          : (isDark ? 'bg-card text-foreground/70 border-border' : 'bg-card text-muted-foreground border-border')
 	                    )}>
 	                      <Clock className="w-4 h-4" /> {expires.text}
@@ -1862,31 +1921,49 @@ const BrandMobileDashboard = ({
     );
   };
 
-  const BrandDealDetailScreen = ({ offer }: { offer: any }) => {
+  const renderBrandDealDetail = (offer: any) => {
     if (!offer) return null;
 
-    const contractSectionRef = useRef<HTMLDivElement | null>(null);
-    const deliverablesSectionRef = useRef<HTMLDivElement | null>(null);
-    const progressSectionRef = useRef<HTMLDivElement | null>(null);
-    const contentSectionRef = useRef<HTMLDivElement | null>(null);
+    const contractSectionRef = dealDetailContractRef;
+    const deliverablesSectionRef = dealDetailDeliverablesRef;
+    const progressSectionRef = dealDetailProgressRef;
+    const contentSectionRef = dealDetailContentRef;
+    const shippingSectionRef = dealDetailShippingRef;
 
-	    const [isReviewingContent, setIsReviewingContent] = useState(false);
-	    const [isReleasingPayment, setIsReleasingPayment] = useState(false);
-      const [isUpdatingShipping, setIsUpdatingShipping] = useState(false);
-	    const [showPaymentProofBox, setShowPaymentProofBox] = useState(false);
-	    const [paymentReferenceDraft, setPaymentReferenceDraft] = useState('');
-	    const [paymentDateDraft, setPaymentDateDraft] = useState(() => new Date().toISOString().slice(0, 10));
-	    const [paymentNotesDraft, setPaymentNotesDraft] = useState('');
-	    const [paymentProofFile, setPaymentProofFile] = useState<File | null>(null);
-      const [showShippingBox, setShowShippingBox] = useState(false);
-      const [courierNameDraft, setCourierNameDraft] = useState('');
-      const [trackingNumberDraft, setTrackingNumberDraft] = useState('');
-      const [trackingUrlDraft, setTrackingUrlDraft] = useState('');
-      const [expectedDeliveryDateDraft, setExpectedDeliveryDateDraft] = useState('');
-	    const [showRevisionBox, setShowRevisionBox] = useState(false);
-	    const [revisionFeedbackDraft, setRevisionFeedbackDraft] = useState('');
-	    const [showDisputeBox, setShowDisputeBox] = useState(false);
-	    const [disputeNotesDraft, setDisputeNotesDraft] = useState('');
+    const isReviewingContent = ddIsReviewingContent;
+    const setIsReviewingContent = setDdIsReviewingContent;
+    const isReleasingPayment = ddIsReleasingPayment;
+    const setIsReleasingPayment = setDdIsReleasingPayment;
+    const isUpdatingShipping = ddIsUpdatingShipping;
+    const setIsUpdatingShipping = setDdIsUpdatingShipping;
+    const showPaymentProofBox = ddShowPaymentProofBox;
+    const setShowPaymentProofBox = setDdShowPaymentProofBox;
+    const paymentReferenceDraft = ddPaymentReferenceDraft;
+    const setPaymentReferenceDraft = setDdPaymentReferenceDraft;
+    const paymentDateDraft = ddPaymentDateDraft;
+    const setPaymentDateDraft = setDdPaymentDateDraft;
+    const paymentNotesDraft = ddPaymentNotesDraft;
+    const setPaymentNotesDraft = setDdPaymentNotesDraft;
+    const paymentProofFile = ddPaymentProofFile;
+    const setPaymentProofFile = setDdPaymentProofFile;
+    const showShippingBox = ddShowShippingBox;
+    const setShowShippingBox = setDdShowShippingBox;
+    const courierNameDraft = ddCourierNameDraft;
+    const setCourierNameDraft = setDdCourierNameDraft;
+    const trackingNumberDraft = ddTrackingNumberDraft;
+    const setTrackingNumberDraft = setDdTrackingNumberDraft;
+    const trackingUrlDraft = ddTrackingUrlDraft;
+    const setTrackingUrlDraft = setDdTrackingUrlDraft;
+    const expectedDeliveryDateDraft = ddExpectedDeliveryDateDraft;
+    const setExpectedDeliveryDateDraft = setDdExpectedDeliveryDateDraft;
+    const showRevisionBox = ddShowRevisionBox;
+    const setShowRevisionBox = setDdShowRevisionBox;
+    const revisionFeedbackDraft = ddRevisionFeedbackDraft;
+    const setRevisionFeedbackDraft = setDdRevisionFeedbackDraft;
+    const showDisputeBox = ddShowDisputeBox;
+    const setShowDisputeBox = setDdShowDisputeBox;
+    const disputeNotesDraft = ddDisputeNotesDraft;
+    const setDisputeNotesDraft = setDdDisputeNotesDraft;
 
     const creatorName = firstNameish(offer?.profiles, offer?.creator_name || offer?.creator_email);
     const creatorUsername = String(offer?.profiles?.username || '').trim();
@@ -1950,10 +2027,10 @@ const BrandMobileDashboard = ({
 			      normalizedDealStatus === 'COMPLETED'
 			        ? (isDark ? 'bg-card text-foreground/70 border-border' : 'bg-background text-muted-foreground border-border')
 			        : primaryCta.tone === 'action'
-			          ? (isDark ? 'bg-warning/10 text-warning border-warning/25' : 'bg-warning text-warning border-warning')
+			          ? (isDark ? 'bg-warning/10 text-warning border-warning/25' : 'bg-warning text-white border-warning')
 			          : primaryCta.tone === 'waiting'
 			            ? (isDark ? 'bg-card text-foreground/70 border-border' : 'bg-card text-muted-foreground border-border')
-			            : (isDark ? 'bg-info/10 text-info border-sky-500/25' : 'bg-info text-info border-sky-200');
+			            : (isDark ? 'bg-info/10 text-info border-sky-500/25' : 'bg-info text-white border-sky-200');
 
 			    const stepIndex = Math.max(0, Math.min(4, (cardUi.step || 1) - 1));
 			    return { label, tone, cta: primaryCta.label, stepIndex };
@@ -2157,9 +2234,13 @@ const BrandMobileDashboard = ({
 	      }
 
 	      if (cta.action === 'track_progress') {
-	        scrollToRef(progressSectionRef);
-	        return;
-	      }
+ 	        if (cta.label === 'Ship Product') {
+ 	          scrollToRef(shippingSectionRef);
+ 	        } else {
+ 	          scrollToRef(progressSectionRef);
+ 	        }
+ 	        return;
+ 	      }
 
 	      if (cta.action === 'view_collaboration') {
 	        scrollToRef(deliverablesSectionRef);
@@ -2446,7 +2527,7 @@ const BrandMobileDashboard = ({
                   <span className={cn('inline-flex items-center px-3 py-1.5 rounded-full border text-[11px] font-black uppercase tracking-widest', dealUi.tone)}>
                     {dealUi.label}
                   </span>
-                  <span className={cn('inline-flex px-3 py-1.5 rounded-full border text-[11px] font-black uppercase tracking-widest', offer?.collab_type === 'barter' ? (isDark ? 'bg-warning/10 text-warning border-warning/20' : 'bg-warning text-warning border-warning') : (isDark ? 'bg-primary/10 text-primary border-primary/20' : 'bg-primary/10 text-primary border-primary/20'))}>
+                  <span className={cn('inline-flex px-3 py-1.5 rounded-full border text-[11px] font-black uppercase tracking-widest', offer?.collab_type === 'barter' ? (isDark ? 'bg-warning/10 text-warning border-warning/20' : 'bg-warning text-white border-warning') : (isDark ? 'bg-primary/10 text-primary border-primary/20' : 'bg-primary/10 text-primary border-primary/20'))}>
                     {offer?.collab_type === 'barter' ? 'BARTER' : 'PAID CAMPAIGN'}
                   </span>
                 </div>
@@ -2565,16 +2646,20 @@ const BrandMobileDashboard = ({
             <DealCard>
               <div className="p-4">
                 <p className={cn('text-[11px] font-black uppercase tracking-wider mb-2 opacity-50', textColor)}>
-                  {requiresPayment ? 'Payout method' : requiresShipping ? 'Fulfillment' : 'Deal type'}
+                  {requiresPayment ? 'Payment' : requiresShipping ? 'Fulfillment' : 'Deal type'}
                 </p>
                 <div className="flex items-center gap-2.5">
                   <div className={cn('w-9 h-9 rounded-xl flex items-center justify-center', isDark ? 'bg-primary/15' : 'bg-primary/10')}>
-                    <Landmark className={cn('w-4 h-4', isDark ? 'text-primary' : 'text-primary')} />
+                    {requiresPayment ? (
+                      <ShieldCheck className={cn('w-4 h-4', isDark ? 'text-primary' : 'text-primary')} />
+                    ) : (
+                      <Landmark className={cn('w-4 h-4', isDark ? 'text-primary' : 'text-primary')} />
+                    )}
                   </div>
                   <span className={cn('text-[14px] font-black leading-tight', textColor)}>
-                    {requiresPayment ? 'UPI' : requiresShipping ? 'Product' : 'Collab'}
+                    {requiresPayment ? 'Escrow' : requiresShipping ? 'Product' : 'Collab'}
                     <br />
-                    {requiresPayment ? 'Default payout' : requiresShipping ? 'Shipping required' : 'No payout needed'}
+                    {requiresPayment ? 'Secured' : requiresShipping ? 'Shipping required' : 'No payout needed'}
                   </span>
                 </div>
               </div>
@@ -2631,8 +2716,8 @@ const BrandMobileDashboard = ({
 	                  const badgeTone = isSignedStage
 	                    ? (isDark ? 'bg-primary/10 text-primary border-primary/20' : 'bg-primary/10 text-primary border-primary/20')
 	                    : contractUrl
-	                      ? (isDark ? 'bg-info/10 text-info border-sky-500/20' : 'bg-info text-info border-sky-200')
-	                      : (isDark ? 'bg-warning/10 text-warning border-warning/20' : 'bg-warning text-warning border-warning');
+	                      ? (isDark ? 'bg-info/10 text-info border-sky-500/20' : 'bg-info text-white border-sky-200')
+	                      : (isDark ? 'bg-warning/10 text-warning border-warning/20' : 'bg-warning text-white border-warning');
 	                  return (
 	                    <div className="flex items-start justify-between gap-3 mb-4">
 	                      <div className="min-w-0">
@@ -2707,7 +2792,7 @@ const BrandMobileDashboard = ({
           </div>
 
           {requiresShipping && (
-            <div className="mb-6">
+            <div ref={shippingSectionRef} className="mb-6">
               <SectionTitle>Shipping</SectionTitle>
               <DealCard>
                 <div className="p-5 space-y-4">
@@ -2723,8 +2808,8 @@ const BrandMobileDashboard = ({
                       shippingDelivered
                         ? (isDark ? 'bg-primary/10 text-primary border-primary/20' : 'bg-primary/10 text-primary border-primary/20')
                         : shippingStatus === 'shipped'
-                          ? (isDark ? 'bg-info/10 text-info border-sky-500/20' : 'bg-info text-info border-sky-200')
-                          : (isDark ? 'bg-warning/10 text-warning border-warning/20' : 'bg-warning text-warning border-warning')
+                          ? (isDark ? 'bg-info/10 text-info border-sky-500/20' : 'bg-info text-white border-sky-200')
+                          : (isDark ? 'bg-warning/10 text-warning border-warning/20' : 'bg-warning text-white border-warning')
                     )}>
                       {shippingDelivered ? 'DELIVERED' : shippingStatus === 'shipped' ? 'SHIPPED' : 'PENDING'}
                     </span>
@@ -2914,7 +2999,7 @@ const BrandMobileDashboard = ({
                             className={cn(
                               'px-3 py-1.5 rounded-full text-[11px] font-black uppercase tracking-wider border',
                               canReview
-                                ? (isDark ? 'bg-warning/10 text-warning border-warning/20' : 'bg-warning text-warning border-warning')
+                                ? (isDark ? 'bg-warning/10 text-warning border-warning/20' : 'bg-warning text-white border-warning')
                                 : isCompleted
                                   ? (isDark ? 'bg-primary/10 text-primary border-primary/20' : 'bg-primary/10 text-primary border-primary/20')
                                   : isDisputed
@@ -2998,18 +3083,18 @@ const BrandMobileDashboard = ({
                                 'px-3 py-1.5 rounded-full text-[11px] font-black uppercase tracking-wider border',
                                 normalizedDealStatus === 'PAYMENT_RELEASED' || normalizedDealStatus === 'COMPLETED'
                                   ? (isDark ? 'bg-primary/10 text-primary border-primary/20' : 'bg-primary/10 text-primary border-primary/20')
-                                  : (isDark ? 'bg-warning/10 text-warning border-warning/20' : 'bg-warning text-warning border-warning')
+                                  : (isDark ? 'bg-warning/10 text-warning border-warning/20' : 'bg-warning text-white border-warning')
                               )}>
                                 {normalizedDealStatus === 'PAYMENT_RELEASED' || normalizedDealStatus === 'COMPLETED' ? 'RECORDED' : 'REQUIRED'}
                               </span>
                             </div>
 
-                            <div className={cn('rounded-2xl border p-4 space-y-3', isDark ? 'bg-primary/5 border-primary/15' : 'bg-primary/70 border-primary')}>
+                            <div className={cn('rounded-2xl border p-4 space-y-3', isDark ? 'bg-primary/5 border-primary/15' : 'bg-emerald-50 border-emerald-200')}>
                               <div className="flex items-start justify-between gap-3">
                                 <div>
-                                  <p className={cn('text-[11px] font-black uppercase tracking-wider opacity-60 mb-1', textColor)}>Pay creator</p>
-                                  <p className={cn('text-[14px] font-black', textColor)}>UPI payout details</p>
-                                  <p className={cn('text-[12px] font-semibold mt-1', secondaryTextColor)}>Use this UPI ID when sending payment for this collaboration.</p>
+                                  <p className={cn('text-[11px] font-black uppercase tracking-wider opacity-60 mb-1', isDark ? textColor : 'text-emerald-800')}>Pay creator</p>
+                                  <p className={cn('text-[14px] font-black', isDark ? textColor : 'text-emerald-900')}>UPI payout details</p>
+                                  <p className={cn('text-[12px] font-semibold mt-1', isDark ? secondaryTextColor : 'text-emerald-700/80')}>Use this UPI ID when sending payment for this collaboration.</p>
                                 </div>
                                 <span className={cn('px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border', isDark ? 'bg-primary/10 text-primary border-primary/20' : 'bg-card text-primary border-primary')}>
                                   UPI
@@ -3349,7 +3434,7 @@ const BrandMobileDashboard = ({
           {/* Legal protection */}
           <div className="mb-6">
             <SectionTitle>Legal Protection</SectionTitle>
-            <div className={cn('rounded-3xl border p-5 relative overflow-hidden', isDark ? 'bg-primary/8 border-primary/20' : 'bg-primary border-primary')}>
+            <div className={cn('rounded-3xl border p-5 relative overflow-hidden', isDark ? 'bg-primary/8 border-primary/20' : 'bg-emerald-50 border-emerald-200')}>
               <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/12 to-transparent pointer-events-none" />
               <div className="relative flex items-center gap-4">
                 <div className="w-11 h-11 rounded-2xl bg-primary flex items-center justify-center shrink-0 shadow-[0_6px_18px_rgba(16,185,129,0.28)]">
@@ -3668,7 +3753,7 @@ const BrandMobileDashboard = ({
     return (
       <>
         <AnimatePresence>
-          {selectedOffer && <OfferDetailsSheet key={selectedOffer?.id || 'offer'} offer={selectedOffer} />}
+          {selectedOffer && renderOfferDetailsSheet(selectedOffer)}
         </AnimatePresence>
 
         {renderBrandSigningPortal()}
@@ -3729,7 +3814,7 @@ const BrandMobileDashboard = ({
   if (selectedDealPage) {
     return (
       <>
-        <BrandDealDetailScreen offer={selectedDealPage} />
+        {renderBrandDealDetail(selectedDealPage)}
         {renderGlobalOverlays()}
       </>
     );
@@ -4117,22 +4202,22 @@ const BrandMobileDashboard = ({
                               </div>
                               <div className="flex flex-wrap gap-2 mt-3">
                                 {contractsWaitingSignature > 0 && (
-                                  <span className={cn('px-3 py-1.5 rounded-full border text-[10px] font-black uppercase tracking-widest', isDark ? 'border-warning/25 bg-warning/10 text-warning' : 'border-warning bg-warning text-warning')}>
+                                  <span className={cn('px-3 py-1.5 rounded-full border text-[10px] font-black uppercase tracking-widest', isDark ? 'border-warning/25 bg-warning/10 text-warning' : 'border-orange-200 bg-orange-50 text-orange-700')}>
                                     {contractsWaitingSignature} waiting for signature
                                   </span>
                                 )}
-                                {0 > 0 && (
+                                {pendingCounterCount > 0 && (
                                   <span className={cn('px-3 py-1.5 rounded-full border text-[10px] font-black uppercase tracking-widest', isDark ? 'border-rose-500/25 bg-rose-500/10 text-rose-200' : 'border-rose-200 bg-rose-50 text-rose-800')}>
-                                    {0} counter{0 === 1 ? '' : 's'} to review
+                                    {pendingCounterCount} counter{pendingCounterCount === 1 ? '' : 's'} to review
                                   </span>
                                 )}
                                 {offersExpiringSoon > 0 && (
-                                  <span className={cn('px-3 py-1.5 rounded-full border text-[10px] font-black uppercase tracking-widest', isDark ? 'border-warning/25 bg-warning/10 text-warning' : 'border-warning bg-warning text-warning')}>
+                                  <span className={cn('px-3 py-1.5 rounded-full border text-[10px] font-black uppercase tracking-widest', isDark ? 'border-warning/25 bg-warning/10 text-warning' : 'border-amber-200 bg-amber-50 text-amber-700')}>
                                     {offersExpiringSoon} expiring soon
                                   </span>
                                 )}
                                 {contentPendingReview > 0 && (
-                                  <span className={cn('px-3 py-1.5 rounded-full border text-[10px] font-black uppercase tracking-widest', isDark ? 'border-sky-500/25 bg-info/10 text-info' : 'border-sky-200 bg-info text-info')}>
+                                  <span className={cn('px-3 py-1.5 rounded-full border text-[10px] font-black uppercase tracking-widest', isDark ? 'border-sky-500/25 bg-info/10 text-info' : 'border-sky-200 bg-info text-white')}>
                                     {contentPendingReview} content to review
                                   </span>
                                 )}
@@ -4340,18 +4425,18 @@ const BrandMobileDashboard = ({
                                     const urgencyText = urgencyParts.join(' • ');
 
                                     const statusTone = isCountered
-                                      ? (isDark ? 'bg-warning/10 text-warning border-warning/25' : 'bg-warning text-warning border-warning')
+                                      ? (isDark ? 'bg-warning/10 text-warning border-warning/25' : 'bg-warning text-white border-warning')
                                       : isNoResponse
-                                        ? (isDark ? 'bg-warning/10 text-warning border-warning/25' : 'bg-warning text-warning border-warning')
+                                        ? (isDark ? 'bg-warning/10 text-warning border-warning/25' : 'bg-warning text-white border-warning')
                                         : (isDark ? 'bg-card text-foreground/70 border-border' : 'bg-card text-muted-foreground border-border');
 
                                     const urgencyTone =
                                       exp?.tone === 'danger'
                                         ? (isDark ? 'bg-rose-500/10 text-rose-200 border-rose-300/30' : 'bg-rose-50 text-rose-800 border-rose-200')
                                         : exp?.tone === 'warn'
-                                          ? (isDark ? 'bg-warning/10 text-warning border-warning/30' : 'bg-warning text-warning border-warning')
+                                          ? (isDark ? 'bg-warning/10 text-warning border-warning/30' : 'bg-warning text-white border-warning')
                                           : isNoResponse
-                                            ? (isDark ? 'bg-warning/10 text-warning border-warning/25' : 'bg-warning text-warning border-warning')
+                                            ? (isDark ? 'bg-warning/10 text-warning border-warning/25' : 'bg-warning text-white border-warning')
                                             : (isDark ? 'bg-card text-foreground/70 border-border' : 'bg-card text-muted-foreground border-border');
 
                                     const attentionBorder =
@@ -4751,7 +4836,7 @@ const BrandMobileDashboard = ({
 	                    <h2 className={cn('text-[16px] font-bold tracking-tight', textColor)}>Collaborations</h2>
 	                    <div className="flex items-center gap-3">
 	                      {needsActionTotal > 0 && (
-	                        <div className={cn('px-2.5 py-1.5 rounded-full border text-[10px] font-black uppercase tracking-widest', isDark ? 'bg-warning/10 text-warning border-warning/25' : 'bg-warning text-warning border-warning')}>
+	                        <div className={cn('px-3 py-1.5 rounded-full border text-[10px] font-black uppercase tracking-widest shadow-sm', isDark ? 'bg-warning/10 text-warning border-warning/20' : 'bg-orange-50 text-orange-600 border-orange-200')}>
 	                          {needsActionTotal} need your review
 	                        </div>
 	                      )}
@@ -4763,7 +4848,7 @@ const BrandMobileDashboard = ({
 
 		                  {/* Keep the summary pill in the header; avoid duplicating the same items again in a separate widget. */}
 
-		                  <div className={cn('mb-4 rounded-[22px] border p-1 flex gap-1 backdrop-blur-xl shadow-[0_14px_40px_rgba(15,23,42,0.10)]', isDark ? 'bg-secondary/[0.06] border-border' : 'bg-secondary/80 border-border/70')}>
+		                  <div className={cn('mb-4 rounded-[22px] border p-1.5 flex gap-1.5 backdrop-blur-xl shadow-sm', isDark ? 'bg-secondary/[0.06] border-border/50' : 'bg-slate-100/80 border-slate-200/60')}>
 		                    {[
 			                      { key: 'action_required', label: 'Awaiting Response', count: pendingOffersList.length },
 		                      { key: 'active', label: 'Active', count: activeDealsList.length },
@@ -4782,22 +4867,22 @@ const BrandMobileDashboard = ({
 		                            'flex-1 h-11 rounded-[18px] px-3 transition-all active:scale-[0.98] flex items-center justify-center gap-2',
 		                            isSelected
 		                              ? isDark
-		                                ? 'bg-card text-muted-foreground shadow-[0_10px_28px_rgba(255,255,255,0.06)]'
-		                                : 'bg-[#2563EB] text-foreground shadow-[0_12px_30px_rgba(37,99,235,0.22)]'
+		                                ? 'bg-card text-foreground shadow-[0_10px_28px_rgba(255,255,255,0.06)]'
+		                                : 'bg-blue-600 text-white shadow-[0_12px_30px_rgba(37,99,235,0.25)]'
 		                              : isDark
-		                                ? 'text-foreground/70 hover:bg-secondary/[0.05]'
-		                                : 'text-muted-foreground hover:bg-secondary/60'
+		                                ? 'text-foreground/60 hover:bg-secondary/[0.05]'
+		                                : 'text-muted-foreground hover:bg-secondary/40'
 		                          )}
 		                        >
 		                          <span className={cn('text-[11px] font-black uppercase tracking-widest', isSelected ? 'opacity-95' : 'opacity-70')}>{item.label}</span>
-		                          <span
-		                            className={cn(
-		                              'px-2 py-1 rounded-full text-[10px] font-black tabular-nums',
-		                              isSelected
-		                                ? (isDark ? 'bg-background/10 text-muted-foreground' : 'bg-secondary/20 text-foreground')
-		                                : (isDark ? 'bg-card text-foreground/60' : 'bg-background text-muted-foreground')
-		                            )}
-		                          >
+		                                  <span
+		                                    className={cn(
+		                                      'px-2 py-0.5 rounded-full text-[10px] font-black tabular-nums transition-all duration-300',
+		                                      isSelected
+		                                        ? (isDark ? 'bg-white/10 text-white' : 'bg-white/20 text-white')
+		                                        : (isDark ? 'bg-white/5 text-foreground/40' : 'bg-black/5 text-muted-foreground/60')
+		                                    )}
+		                                  >
 		                            {item.count}
 		                          </span>
 		                        </button>
@@ -4847,13 +4932,13 @@ const BrandMobileDashboard = ({
 	                            const statusLabel = isCountered ? 'CREATOR COUNTERED' : isNoResponse ? 'NO RESPONSE YET' : 'AWAITING RESPONSE';
 
 	                            const stageTone = isCountered
-	                              ? (isDark ? 'bg-warning/10 text-warning border-warning/25' : 'bg-warning text-warning border-warning')
+	                              ? (isDark ? 'bg-warning/10 text-warning border-warning/25' : 'bg-orange-50 text-orange-600 border-orange-200 shadow-sm')
 	                              : (isDark ? 'bg-card text-foreground/70 border-border' : 'bg-card text-muted-foreground border-border');
 
                               const statusTone = isCountered
                                 ? stageTone
                                 : isNoResponse
-                                  ? (isDark ? 'bg-warning/10 text-warning border-warning/25' : 'bg-warning text-warning border-warning')
+                                  ? (isDark ? 'bg-warning/10 text-warning border-warning/25' : 'bg-orange-50 text-orange-600 border-orange-200 shadow-sm')
                                   : (isDark ? 'bg-card text-foreground/70 border-border' : 'bg-card text-muted-foreground border-border');
 
                               const urgencyParts: string[] = [];
@@ -4866,16 +4951,16 @@ const BrandMobileDashboard = ({
                                 exp?.tone === 'danger'
                                   ? (isDark ? 'bg-rose-500/10 text-rose-200 border-rose-300/30' : 'bg-rose-50 text-rose-800 border-rose-200')
                                   : exp?.tone === 'warn'
-                                    ? (isDark ? 'bg-warning/10 text-warning border-warning/30' : 'bg-warning text-warning border-warning')
+                                    ? (isDark ? 'bg-warning/10 text-warning border-warning/30' : 'bg-warning text-white border-warning')
                                     : isNoResponse
-                                      ? (isDark ? 'bg-warning/10 text-warning border-warning/25' : 'bg-warning text-warning border-warning')
+                                      ? (isDark ? 'bg-warning/10 text-warning border-warning/25' : 'bg-orange-50 text-orange-600 border-orange-200')
                                       : (isDark ? 'bg-card text-foreground/70 border-border' : 'bg-card text-muted-foreground border-border');
 
                               const attentionBorder =
                                 exp?.tone === 'danger'
                                   ? (isDark ? 'border-rose-500/30' : 'border-rose-200')
                                   : exp?.tone === 'warn' || isNoResponse
-                                    ? (isDark ? 'border-warning/25' : 'border-warning')
+                                    ? (isDark ? 'border-warning/25' : 'border-orange-300/40')
                                     : '';
 
 	                            return (
@@ -4887,24 +4972,24 @@ const BrandMobileDashboard = ({
 	                                  borderColor,
                                     attentionBorder,
 	                                  isDark
-	                                    ? 'bg-gradient-to-br from-secondary/[0.08] via-secondary/[0.04] to-transparent shadow-[0_20px_50px_rgba(0,0,0,0.3)]'
-	                                    : 'bg-gradient-to-br from-white/95 via-white/80 to-white/60 shadow-[0_20px_50px_rgba(15,23,42,0.08)]'
+	                                    ? 'bg-gradient-to-br from-secondary/[0.08] via-secondary/[0.04] to-transparent shadow-[0_20px_50px_rgba(0,0,0,0.3)] hover:border-primary/20'
+	                                    : 'bg-white/90 shadow-[0_15px_40px_rgba(15,23,42,0.06)] hover:shadow-[0_20px_50px_rgba(15,23,42,0.1)]'
 	                                )}
 	                              >
-	                                <div className="flex flex-wrap items-center gap-2 mb-4 relative z-10">
-	                                  <span className={cn('inline-flex items-center gap-2 px-3 py-1.5 rounded-full border text-[10px] font-black uppercase tracking-[0.1em] shadow-sm', statusTone)}>
+	                                <div className="flex items-center gap-2 mb-4 relative z-10 flex-nowrap overflow-x-hidden">
+	                                  <span className={cn('inline-flex items-center gap-2 px-3 py-1.5 rounded-full border text-[10px] font-black uppercase tracking-[0.1em] shadow-sm whitespace-nowrap', (isNoResponse && urgencyText) ? urgencyTone : statusTone)}>
 	                                    {isCountered ? (
 	                                      <AlertTriangle className="w-3.5 h-3.5" strokeWidth={3} />
 	                                    ) : (
 	                                      <Clock className="w-3.5 h-3.5 opacity-70" strokeWidth={3} />
 	                                    )}
-	                                    {statusLabel}
+	                                    {(isNoResponse && urgencyText) ? urgencyText : statusLabel}
 	                                  </span>
-                                   {urgencyText && (
-                                     <span className={cn('px-3 py-1.5 rounded-full border text-[10px] font-black uppercase tracking-[0.1em] shadow-sm', urgencyTone)}>
-                                       {urgencyText}
-                                     </span>
-                                   )}
+	                                  {(!isNoResponse && urgencyText) && (
+	                                    <span className={cn('px-3 py-1.5 rounded-full border text-[10px] font-black uppercase tracking-[0.1em] shadow-sm whitespace-nowrap', urgencyTone)}>
+	                                      {urgencyText}
+	                                    </span>
+	                                  )}
 	                                </div>
                                   <p className={cn('text-[13px] font-bold mb-4 opacity-80 leading-relaxed relative z-10', secondaryTextColor)}>
                                     {isCountered
@@ -4925,8 +5010,8 @@ const BrandMobileDashboard = ({
                                             {creatorName.slice(0, 1).toUpperCase()}
                                           </AvatarFallback>
                                         </Avatar>
-                                        <div className={cn("absolute -bottom-1 -right-1 w-5 h-5 rounded-full border-2 flex items-center justify-center shadow-lg", isDark ? "bg-info border-[#061318]" : "bg-info border-white")}>
-                                          <ShieldCheck className="w-3 h-3 text-white" strokeWidth={3} />
+                                        <div className={cn("absolute -bottom-1 -right-1 w-5.5 h-5.5 rounded-full border-2 flex items-center justify-center shadow-xl transform transition-transform duration-500 group-hover:scale-110", isDark ? "bg-blue-500 border-[#061318]" : "bg-blue-600 border-white")}>
+                                          <ShieldCheck className="w-3.5 h-3.5 text-white" strokeWidth={3.5} />
                                         </div>
                                       </div>
 	                                    <div className="min-w-0">
@@ -5197,13 +5282,13 @@ const BrandMobileDashboard = ({
       <div className={cn('fixed bottom-0 inset-x-0 border-t z-50 transition-all duration-500', isDark ? 'border-[#1F2937] bg-[#0B0F14]/90' : 'border-border bg-secondary/90')} style={{ backdropFilter: 'blur(30px)', WebkitBackdropFilter: 'blur(30px)' }}>
         <div className="max-w-md md:max-w-2xl mx-auto flex items-center justify-between px-6 py-3 pb-safe" style={{ paddingBottom: 'max(env(safe-area-inset-bottom), 16px)' }}>
           <motion.button whileTap={{ scale: 0.94 }} onClick={() => { triggerHaptic(HapticPatterns.light); setActiveTab('dashboard'); }} className="flex flex-col items-center gap-1 w-14">
-            <LayoutDashboard className={cn('w-[22px] h-[22px]', activeTab === 'dashboard' ? (isDark ? 'text-foreground' : 'text-muted-foreground') : secondaryTextColor)} />
-            <span className={cn('text-[10px] tracking-tight', activeTab === 'dashboard' ? (isDark ? 'text-foreground font-bold' : 'text-muted-foreground font-bold') : cn('font-medium', secondaryTextColor))}>Home</span>
+            <LayoutDashboard className={cn('w-[24px] h-[24px] transition-colors duration-300', activeTab === 'dashboard' ? (isDark ? 'text-blue-400' : 'text-blue-600') : secondaryTextColor)} />
+            <span className={cn('text-[10px] tracking-tight transition-colors duration-300', activeTab === 'dashboard' ? (isDark ? 'text-blue-400 font-bold' : 'text-blue-600 font-bold') : cn('font-medium', secondaryTextColor))}>Home</span>
           </motion.button>
 
           <motion.button whileTap={{ scale: 0.94 }} onClick={() => { triggerHaptic(HapticPatterns.light); setActiveTab('creators'); }} className="flex flex-col items-center gap-1 w-14 relative">
-            <User className={cn('w-[22px] h-[22px]', activeTab === 'creators' ? (isDark ? 'text-foreground' : 'text-muted-foreground') : secondaryTextColor)} />
-            <span className={cn('text-[10px] tracking-tight', activeTab === 'creators' ? (isDark ? 'text-foreground font-bold' : 'text-muted-foreground font-bold') : cn('font-medium', secondaryTextColor))}>Creators</span>
+            <User className={cn('w-[24px] h-[24px] transition-colors duration-300', activeTab === 'creators' ? (isDark ? 'text-blue-400' : 'text-blue-600') : secondaryTextColor)} />
+            <span className={cn('text-[10px] tracking-tight transition-colors duration-300', activeTab === 'creators' ? (isDark ? 'text-blue-400 font-bold' : 'text-blue-600 font-bold') : cn('font-medium', secondaryTextColor))}>Creators</span>
           </motion.button>
 
           <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={() => { triggerHaptic(HapticPatterns.success); openCreateOfferSheet(); }} className="relative flex flex-col items-center -mt-8">
@@ -5214,13 +5299,13 @@ const BrandMobileDashboard = ({
           </motion.button>
 
           <motion.button whileTap={{ scale: 0.94 }} onClick={() => { triggerHaptic(HapticPatterns.light); setActiveTab('collabs'); }} className="flex flex-col items-center gap-1 w-14">
-            <Handshake className={cn('w-[22px] h-[22px]', activeTab === 'collabs' ? (isDark ? 'text-foreground' : 'text-muted-foreground') : secondaryTextColor)} />
-            <span className={cn('text-[10px] tracking-tight', activeTab === 'collabs' ? (isDark ? 'text-foreground font-bold' : 'text-muted-foreground font-bold') : cn('font-medium', secondaryTextColor))}>Collabs</span>
+            <Handshake className={cn('w-[24px] h-[24px] transition-colors duration-300', activeTab === 'collabs' ? (isDark ? 'text-blue-400' : 'text-blue-600') : secondaryTextColor)} />
+            <span className={cn('text-[10px] tracking-tight transition-colors duration-300', activeTab === 'collabs' ? (isDark ? 'text-blue-400 font-bold' : 'text-blue-600 font-bold') : cn('font-medium', secondaryTextColor))}>Collabs</span>
           </motion.button>
 
           <motion.button whileTap={{ scale: 0.94 }} onClick={() => { triggerHaptic(HapticPatterns.light); setActiveTab('profile'); }} className="flex flex-col items-center gap-1 w-14">
-            <Settings className={cn('w-[22px] h-[22px]', activeTab === 'profile' ? (isDark ? 'text-foreground' : 'text-muted-foreground') : secondaryTextColor)} />
-            <span className={cn('text-[10px] tracking-tight', activeTab === 'profile' ? (isDark ? 'text-foreground font-bold' : 'text-muted-foreground font-bold') : cn('font-medium', secondaryTextColor))}>Account</span>
+            <Settings className={cn('w-[24px] h-[24px] transition-colors duration-300', activeTab === 'profile' ? (isDark ? 'text-blue-400' : 'text-blue-600') : secondaryTextColor)} />
+            <span className={cn('text-[10px] tracking-tight transition-colors duration-300', activeTab === 'profile' ? (isDark ? 'text-blue-400 font-bold' : 'text-blue-600 font-bold') : cn('font-medium', secondaryTextColor))}>Account</span>
           </motion.button>
         </div>
       </div>

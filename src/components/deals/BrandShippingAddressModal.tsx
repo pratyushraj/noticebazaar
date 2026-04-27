@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
+import { fetchPincodeData } from "@/lib/utils/pincodeLookup";
 
 interface Props {
   dealId: string;
@@ -39,12 +40,10 @@ export function BrandShippingAddressModal({ dealId, creatorName, onClose, onSucc
     if (val.length !== 6 || !/^\d{6}$/.test(val)) return;
     setIsLookingUpPincode(true);
     try {
-      const res = await fetch(`https://api.postalpincode.in/pincode/${val}`);
-      const data = await res.json();
-      if (data?.[0]?.Status === "Success" && data[0]?.PostOffice?.length > 0) {
-        const po = data[0].PostOffice[0];
-        if (!city.trim()) setCity(po.District || "");
-        if (!state.trim()) setState(po.State || "");
+      const data = await fetchPincodeData(val);
+      if (data?.city) {
+        if (!city.trim()) setCity(data.city);
+        if (!state.trim()) setState(data.state || "");
       }
     } catch { /* silent */ }
     finally { setIsLookingUpPincode(false); }

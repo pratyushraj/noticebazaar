@@ -23,3 +23,27 @@ export const isBarterLikeCollab = (deal: any): boolean => {
     ['both', 'hybrid', 'paid_barter'].includes(type)
   );
 };
+
+/**
+ * Determines if a deal is "paid-like", meaning it involves monetary payment.
+ * This includes pure paid, both/hybrid, and paid_barter deals.
+ */
+export const isPaidLikeCollab = (deal: any): boolean => {
+  if (!deal) return false;
+  
+  const type = String(
+    deal.collab_type || 
+    deal.deal_type || 
+    deal.raw?.collab_type || 
+    ''
+  ).trim().toLowerCase();
+  
+  // If deal amount is clearly > 0, it is paid-like regardless of string type
+  const amount = Number(deal.deal_amount || deal.exact_budget || 0);
+  if (amount > 0) return true;
+
+  return (
+    type.includes('paid') || 
+    ['both', 'hybrid', 'paid_barter'].includes(type)
+  );
+};

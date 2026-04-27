@@ -6,6 +6,7 @@ import {
     CheckCircle2, Clock, AlertCircle, History
 } from 'lucide-react';
 import { cn } from '../../lib/utils';
+import { normalizeDealStatus } from '../../lib/utils/creator-dashboard';
 
 interface PaymentsTabProps {
     isDark: boolean;
@@ -21,6 +22,8 @@ interface PaymentsTabProps {
     triggerHaptic: () => void;
     setSelectedPayment: (deal: any) => void;
     setActiveSettingsPage: (page: string | null) => void;
+    setActiveTab: (tab: string) => void;
+    setIsEditMode?: (mode: boolean) => void;
 }
 
 export const PaymentsTab: React.FC<PaymentsTabProps> = ({
@@ -36,15 +39,28 @@ export const PaymentsTab: React.FC<PaymentsTabProps> = ({
     getBrandIcon,
     triggerHaptic,
     setSelectedPayment,
-    setActiveSettingsPage
+    setActiveSettingsPage,
+    setActiveTab,
+    setIsEditMode
 }) => {
     // Group transactions by date
     const groupedTransactions = React.useMemo(() => {
         const groups: Record<string, any[]> = {};
-        const sortedDeals = [...brandDeals].sort((a, b) => 
-            new Date(b.completed_at || b.updated_at || b.created_at).getTime() - 
-            new Date(a.completed_at || a.updated_at || a.created_at).getTime()
-        );
+        const sortedDeals = [...brandDeals]
+            .filter(deal => {
+                const rawStatus = (deal.status || '').toLowerCase();
+                const isUnfunded = rawStatus.includes('payment_pending') || 
+                                 rawStatus === 'pending' || 
+                                 rawStatus.includes('contract') ||
+                                 rawStatus === 'sent';
+                
+                // Only show funded or completed deals in the transaction list
+                return !isUnfunded;
+            })
+            .sort((a, b) => 
+                new Date(b.completed_at || b.updated_at || b.created_at).getTime() - 
+                new Date(a.completed_at || a.updated_at || a.created_at).getTime()
+            );
 
         sortedDeals.forEach(deal => {
             const date = new Date(deal.completed_at || deal.updated_at || deal.created_at);
@@ -62,21 +78,22 @@ export const PaymentsTab: React.FC<PaymentsTabProps> = ({
         let paid = 0;
 
         brandDeals.forEach(deal => {
-            const status = String(deal.status || '').toLowerCase();
+            const rawStatus = (deal.status || '').toLowerCase();
+            const isUnfunded = rawStatus.includes('payment_pending') || 
+                             rawStatus === 'pending' || 
+                             rawStatus.includes('contract') ||
+                             rawStatus === 'sent';
+            
+            if (isUnfunded) return;
+
+            const status = normalizeDealStatus(deal);
             const amount = Number(deal.deal_amount || deal.exact_budget || 0);
 
             if (status.includes('paid') || status.includes('released') || status.includes('completed')) {
                 paid += amount;
                 total += amount;
-            } else if (
-                status.includes('approved') || 
-                status.includes('delivered') || 
-                status.includes('revision') ||
-                status.includes('making') ||
-                status.includes('accepted') ||
-                status.includes('working') ||
-                status.includes('ongoing')
-            ) {
+            } else {
+                // Everything else is "Processing" since we filtered out unfunded above
                 processing += amount;
                 total += amount;
             }
@@ -141,7 +158,12 @@ export const PaymentsTab: React.FC<PaymentsTabProps> = ({
                 <div className="flex items-center justify-between mb-4 px-1">
                     <h4 className={cn("text-sm font-bold uppercase tracking-widest text-slate-400")}>Payout Method</h4>
                     <button 
-                        onClick={() => { triggerHaptic(); setActiveSettingsPage('personal'); }}
+                        onClick={() => { 
+                            triggerHaptic(); 
+                            setActiveTab('profile');
+                            setActiveSettingsPage('personal'); 
+                            if (setIsEditMode) setIsEditMode(true);
+                        }}
                         className="text-xs font-bold text-blue-600 active:scale-95 transition-all"
                     >
                         Edit Details
@@ -149,7 +171,12 @@ export const PaymentsTab: React.FC<PaymentsTabProps> = ({
                 </div>
                 <div className={cn("p-5 rounded-3xl border flex items-center justify-between", isDark ? "bg-slate-900 border-slate-800" : "bg-white border-slate-200 shadow-sm")}>
                     <div 
-                        onClick={() => { triggerHaptic(); setActiveSettingsPage('personal'); }}
+                        onClick={() => { 
+                            triggerHaptic(); 
+                            setActiveTab('profile');
+                            setActiveSettingsPage('personal'); 
+                            if (setIsEditMode) setIsEditMode(true);
+                        }}
                         className="flex items-center gap-4 cursor-pointer"
                     >
                         <div className={cn("w-12 h-12 rounded-2xl flex items-center justify-center", isDark ? "bg-slate-800 text-slate-300" : "bg-slate-50 text-slate-600")}>
@@ -209,18 +236,22 @@ export const PaymentsTab: React.FC<PaymentsTabProps> = ({
                                                 <p className={cn("text-[17px] font-black truncate tracking-tight", isDark ? "text-white" : "text-slate-900")}>
                                                     {deal.brand_name || deal.brand?.brand_name || deal.brand?.name || 'Brand Partner'}
                                                 </p>
-                                                <p className="text-[12px] font-medium text-slate-500 uppercase tracking-wider">{isProcessing ? 'Processing Payout' : 'Campaign Revenue'}</p>
+                                                <div className="flex items-center gap-1.5 mt-1">
+                                                    {/* Escrow badge removed */}
+                                                </div>
                                             </div>
                                         </div>
                                         <div className="text-right shrink-0">
-                                            <p className={cn("text-[18px] font-black mb-1.5 tracking-tight", isDark ? "text-white" : "text-slate-900")}>₹{(deal.deal_amount || 0).toLocaleString()}</p>
+                                            <p className={cn("text-[18px] font-black mb-1.5 tracking-tight", isDark ? "text-white" : "text-slate-900")}>₹{(deal.deal_amount || deal.exact_budget || 0).toLocaleString()}</p>
                                             <span className={cn(
                                                 "px-2.5 py-1 rounded-full text-[9px] font-black uppercase tracking-[0.05em] border",
-                                                isProcessing 
-                                                    ? "bg-orange-50 text-orange-600 border-orange-100" 
-                                                    : "bg-emerald-50 text-emerald-600 border-emerald-100"
+                                                payUx.tone === 'success' 
+                                                    ? "bg-emerald-50 text-emerald-600 border-emerald-100" 
+                                                    : payUx.tone === 'warning'
+                                                        ? "bg-orange-50 text-orange-600 border-orange-100"
+                                                        : "bg-slate-50 text-slate-500 border-slate-100"
                                             )}>
-                                                {isProcessing ? 'In Transit' : 'Settled'}
+                                                {payUx.label}
                                             </span>
                                         </div>
                                     </div>

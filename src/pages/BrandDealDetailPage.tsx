@@ -9,14 +9,15 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import {
   ArrowLeft, Loader2, Clock, CheckCircle2, XCircle, IndianRupee,
-  FileText, Copy, ExternalLink, Calendar, ShieldCheck, MessageSquare, Send, Wallet
+  FileText, Copy, ExternalLink, Calendar, ShieldCheck, MessageSquare, Send, Wallet,
+  Package, MapPin, User, Phone
 } from 'lucide-react';
+import { isBarterLikeCollab } from '@/lib/deals/collabType';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { isBarterLikeCollab } from '@/lib/deals/collabType';
 
 const BrandDealDetailPage: React.FC = () => {
   const { dealId } = useParams<{ dealId: string }>();
@@ -352,6 +353,60 @@ const BrandDealDetailPage: React.FC = () => {
             <CardContent className="p-4">
               <p className="text-[11px] uppercase tracking-wider text-white/40 mb-3">Deliverables</p>
               <p className="text-base font-medium text-white">{deal.deliverables}</p>
+            </CardContent>
+          </Card>
+        )}
+ 
+        {/* Shipping & Fulfillment */}
+        {requiresShipping && (
+          <Card className="bg-white/5 border-white/10 rounded-2xl overflow-hidden">
+            <CardContent className="p-4 space-y-4">
+              <div className="flex items-center justify-between">
+                <p className="text-[11px] uppercase tracking-wider text-white/40">Shipping & Fulfillment</p>
+                <div className="flex items-center gap-1.5">
+                   <Package className="h-3.5 w-3.5 text-blue-400" />
+                   <span className="text-[10px] font-bold text-blue-300 uppercase tracking-tight">
+                     {shippingStatus === 'delivered' ? 'Delivered' : shippingStatus === 'shipped' ? 'In Transit' : 'Pending'}
+                   </span>
+                </div>
+              </div>
+
+              {/* Creator's receiving address */}
+              <div className="space-y-2">
+                <p className="text-xs font-semibold text-white/70">Creator's Delivery Address</p>
+                {deal.delivery_address ? (
+                  <div className="rounded-xl border border-white/10 bg-white/[0.03] p-3 space-y-2">
+                    <div className="flex items-center gap-2">
+                      <User className="h-3.5 w-3.5 text-white/40" />
+                      <p className="text-sm font-medium text-white">{deal.delivery_name || 'Creator'}</p>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <MapPin className="h-3.5 w-3.5 text-white/40 mt-0.5" />
+                      <p className="text-sm text-white/80 leading-relaxed">{deal.delivery_address}</p>
+                    </div>
+                    {deal.delivery_phone && (
+                      <div className="flex items-center gap-2">
+                        <Phone className="h-3.5 w-3.5 text-white/40" />
+                        <p className="text-sm text-white/80">{deal.delivery_phone}</p>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="rounded-xl border border-dashed border-white/10 p-4 text-center">
+                    <p className="text-xs text-white/40">Waiting for creator to provide delivery address.</p>
+                  </div>
+                )}
+              </div>
+
+              {/* Brand's shipping address (if relevant for returns/contract) */}
+              {(deal.brand_shipping_address || (deal as any).address) && (
+                <div className="space-y-2">
+                  <p className="text-xs font-semibold text-white/70">Your Shipping Address</p>
+                  <div className="rounded-xl border border-white/10 bg-white/[0.03] p-3">
+                    <p className="text-sm text-white/80">{deal.brand_shipping_address || (deal as any).address}</p>
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
         )}

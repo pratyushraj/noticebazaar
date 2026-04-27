@@ -164,7 +164,9 @@ export const getCreatorPaymentListUX = (deal: any) => {
     if (isAwaitingApproval) return { label: 'PENDING APPROVAL', sublabel: 'Waiting for brand approval', tone: 'warning' as const };
     if (isContractPending) return { label: 'CONTRACT PENDING', sublabel: 'Sign to start collaboration', tone: 'neutral' as const };
     if (ux.isRevisionRequested) return { label: 'REVISION', sublabel: 'Fix requested before approval', tone: 'warning' as const };
-    return { label: 'PENDING', sublabel: 'Released after approval', tone: 'info' as const };
+    
+    // Status is likely content_making (Funded/In Progress)
+    return { label: 'SECURED', sublabel: 'In escrow, released after approval', tone: 'info' as const };
 };
 
 export const parseLocationParts = (location?: string | null) => {

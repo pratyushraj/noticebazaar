@@ -22,7 +22,10 @@ export function getApiBaseUrl(): string {
       tunnelUrl = urlParams.get('tunnelUrl') || localStorage.getItem('tunnelUrl');
     } catch { /* private browsing / storage disabled */ }
 
-    if (useLocalApi && tunnelUrl) {
+    const isActuallyLocal = typeof window !== 'undefined' && 
+      (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+
+    if (useLocalApi && tunnelUrl && isActuallyLocal) {
       apiUrl = tunnelUrl.replace(/\/$/, '');
     } else if (window.location.origin) {
       const origin = window.location.origin;
@@ -45,10 +48,8 @@ export function getApiBaseUrl(): string {
       const isLocalNetwork =
         /^http:\/\/(192\.168\.|172\.(1[6-9]|2[0-9]|3[0-1])\.|10\.)/.test(origin);
 
-      if (useLocalApi && !isProduction) {
-        // Local debug mode should only force localhost on local/non-production hosts.
-        apiUrl = 'http://127.0.0.1:3001';
-      } else if (isProduction) {
+        // Ensure we don't force localhost on public domains even if localStorage was tampered with.
+      if (isProduction) {
         // Production: use dedicated API domain to avoid route drift
         // between frontend serverless handlers and backend API routes.
         apiUrl = 'https://creatorarmour-api.onrender.com';

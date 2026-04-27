@@ -135,37 +135,55 @@ const AddToHomeScreen: React.FC = () => {
       >
         <div className="max-w-screen-sm mx-auto pointer-events-auto">
           <div
-            className="relative overflow-hidden rounded-[28px] border border-white/10 bg-[#0B0F14]/90 backdrop-blur-2xl px-5 py-4 shadow-[0_20px_50px_rgba(0,0,0,0.5)]"
-            style={{ paddingTop: 'max(16px, env(safe-area-inset-top, 0px))' }}
+            className={cn(
+              "relative overflow-hidden rounded-[2.5rem] border backdrop-blur-3xl px-6 py-5 shadow-[0_25px_60px_rgba(0,0,0,0.4)]",
+              "bg-gradient-to-br from-[#0F172A]/90 via-[#0F172A]/95 to-black/95 border-white/10"
+            )}
+            style={{ paddingTop: 'max(20px, env(safe-area-inset-top, 0px))' }}
           >
-            {/* Background Glow */}
-            <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 rounded-full -mr-16 -mt-16 blur-2xl" />
+            {/* Background Accent */}
+            <div className="absolute top-0 right-0 w-48 h-48 bg-emerald-500/15 rounded-full -mr-20 -mt-20 blur-[80px]" />
+            <div className="absolute bottom-0 left-0 w-32 h-32 bg-blue-500/10 rounded-full -ml-16 -mb-16 blur-[60px]" />
             
-            <div className="flex items-center gap-4 relative z-10">
-              <div className="w-12 h-12 rounded-[18px] bg-emerald-500 flex items-center justify-center shrink-0 shadow-lg shadow-emerald-500/20">
-                <ShieldCheck className="w-6 h-6 text-white" />
+            <div className="flex items-center gap-5 relative z-10">
+              <div className="relative group">
+                <div className="absolute -inset-1.5 bg-gradient-to-tr from-emerald-500 to-sky-500 rounded-[22px] blur-md opacity-40 group-hover:opacity-60 transition duration-1000" />
+                <div className="relative w-14 h-14 rounded-[20px] bg-gradient-to-tr from-emerald-500 to-sky-500 flex items-center justify-center shrink-0 shadow-xl border border-white/20">
+                  <ShieldCheck className="w-7 h-7 text-white" strokeWidth={2.5} />
+                </div>
               </div>
               
               <div className="min-w-0 flex-1">
-                <p className="text-emerald-400 font-black text-[10px] uppercase tracking-[0.2em] mb-0.5">Premium Experience</p>
-                <h3 className="text-white font-black italic text-[16px] leading-tight">CreatorArmour App</h3>
-                <p className="text-white/40 text-[11px] font-bold leading-tight mt-1 truncate">
-                  {isAndroid ? 'Install for 2x faster deal alerts' : 'Add to home screen for native workflow'}
+                <div className="flex items-center gap-2 mb-0.5">
+                  <span className="px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 font-black text-[9px] uppercase tracking-[0.2em]">Premium</span>
+                  <div className="flex items-center gap-1 text-sky-400/60">
+                    <Zap className="w-2.5 h-2.5 fill-current" />
+                    <span className="text-[9px] font-black uppercase tracking-widest">Fast</span>
+                  </div>
+                </div>
+                <h3 className="text-white font-black tracking-tight text-[18px] leading-tight flex items-center gap-1.5">
+                  CreatorArmour <span className="text-white/40 font-medium">App</span>
+                </h3>
+                <p className="text-white/50 text-[11px] font-bold leading-tight mt-1 truncate">
+                  {isAndroid ? 'Native workflow • 2x Faster alerts' : 'Add to home screen for native experience'}
                 </p>
               </div>
 
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-3">
                 <button 
                   type="button"
                   onClick={handleInstall}
-                  className="bg-white text-black font-black px-4 py-2.5 rounded-full text-[12px] uppercase tracking-widest shadow-lg active:scale-95 transition-transform"
+                  className={cn(
+                    "relative h-11 px-6 rounded-full text-[13px] font-black uppercase tracking-widest transition-all active:scale-95 shadow-lg",
+                    "bg-white text-black hover:bg-slate-100 shadow-white/10"
+                  )}
                 >
-                  {showSteps ? 'Tap Share' : 'Open'}
+                  {showSteps ? 'Guide' : 'Open'}
                 </button>
                 <button 
                   type="button"
                   onClick={handleDismiss}
-                  className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-white/20 active:scale-90 transition-transform"
+                  className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white/30 hover:text-white/60 hover:bg-white/10 active:scale-90 transition-all"
                   aria-label="Dismiss app banner"
                 >
                   <X className="w-4 h-4" />
