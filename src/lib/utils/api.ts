@@ -35,6 +35,7 @@ export function getApiBaseUrl(): string {
       // returning an empty string allows for relative fetches like "/api/..."
       // which is more robust than hardcoding a domain that might change or have CORS issues.
       const isProduction =
+        origin.includes('noticebazaar.com') ||
         origin.includes('creatorarmour.com') ||
         origin.includes('vercel.app') ||
         origin.includes('netlify.app') ||
@@ -52,14 +53,14 @@ export function getApiBaseUrl(): string {
       if (isProduction) {
         // Production: use dedicated API domain to avoid route drift
         // between frontend serverless handlers and backend API routes.
-        apiUrl = 'https://creatorarmour-api.onrender.com';
+        apiUrl = 'https://noticebazaar-api.onrender.com';
       } else if (isLocalhost) {
         // Localhost default: prefer local API for developer experience.
         // To force production API, set localStorage.useProdApi = 'true' (or ?prodApi=true).
         let useProdApi = false;
         try { useProdApi = localStorage.getItem('useProdApi') === 'true'; } catch { /* ignore */ }
         useProdApi = useProdApi || urlParams.get('prodApi') === 'true';
-        apiUrl = useProdApi ? 'https://creatorarmour-api.onrender.com' : 'http://127.0.0.1:3001';
+        apiUrl = useProdApi ? 'https://noticebazaar-api.onrender.com' : 'http://127.0.0.1:3001';
       } else if (isLocalNetwork) {
         // Use the same IP but port 3001 for the API
         apiUrl = origin.replace(/:\d+$/, '') + ':3001';
@@ -97,6 +98,7 @@ export function getApiBaseUrl(): string {
   if (typeof window !== 'undefined') {
     const host = window.location.hostname.toLowerCase();
     const isPublicHost =
+      host.endsWith('noticebazaar.com') ||
       host.endsWith('creatorarmour.com') ||
       host.endsWith('vercel.app') ||
       host.endsWith('netlify.app') ||
@@ -113,7 +115,7 @@ export function getApiBaseUrl(): string {
       if (localhostPattern.test(cleanedUrl) || pointsToFrontendOrigin) {
         // Never allow localhost or same-origin API on public frontend hosts.
         // Route directly to production API domain.
-        cleanedUrl = 'https://creatorarmour-api.onrender.com';
+        cleanedUrl = 'https://noticebazaar-api.onrender.com';
       }
     }
   }

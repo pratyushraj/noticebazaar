@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { MouseEvent, MutableRefObject, ReactNode } from 'react';
 import { createPortal } from 'react-dom';
-import { AlertTriangle, Bell, Briefcase, Camera, Check, Clock, ChevronRight, CreditCard, FileText, Handshake, Landmark, LayoutDashboard, Loader2, Lock, Mail, Menu, Moon, MoreHorizontal, Plus, RefreshCw, Search, Send, Settings, Shield, ShieldCheck, Sparkles, Sun, User, Zap } from 'lucide-react';
+import { AlertTriangle, BarChart3, Bell, Briefcase, Camera, Check, Clock, ChevronRight, CreditCard, FileText, Handshake, Landmark, LayoutDashboard, Loader2, Lock, Mail, Menu, Moon, MoreHorizontal, Plus, RefreshCw, Search, Send, Settings, Shield, ShieldCheck, Sparkles, Sun, User, Zap } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import CountUp from 'react-countup';
