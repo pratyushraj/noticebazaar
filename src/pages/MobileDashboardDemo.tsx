@@ -6902,7 +6902,7 @@ const MobileDashboardDemo = ({
 	                                                <h4 className={cn("text-[13px] font-black uppercase tracking-wider mb-3 opacity-50", textColor)}>Product Included</h4>
 	                                                <div className={cn("rounded-xl border p-3 flex items-center gap-4", isDark ? "bg-card border-border" : "bg-background border-border")}>
 <div className="w-20 h-20 rounded-xl bg-warning shrink-0 overflow-hidden border border-black/5">
-                                                         <img src={selectedItem.product_image || "https://images.unsplash.com/photo-1556821840-3a63f95609a7?auto=format&fit=crop&q=80&w=300"} alt="Product" className="w-full h-full object-cover" />
+                                                         <img src={resolveCreatorDealProductImage(selectedItem) || "https://images.unsplash.com/photo-1556821840-3a63f95609a7?auto=format&fit=crop&q=80&w=300"} alt="Product" className="w-full h-full object-cover" />
                                                      </div>
                                                     <div>
                                                         <p className={cn("text-[14px] font-black leading-tight", textColor)}>

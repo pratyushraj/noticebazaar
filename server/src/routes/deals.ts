@@ -283,6 +283,7 @@ const fetchDealsForCreator = async (creatorId: string, creatorEmail?: string | n
             // Backfill product image
             if (!(d as any).barter_product_image_url && r.barter_product_image_url) {
               (d as any).barter_product_image_url = r.barter_product_image_url;
+              (d as any).product_image = r.barter_product_image_url;
               console.log(`[Deals] Backfilled image for deal ${d.id}: ${r.barter_product_image_url}`);
             }
             
