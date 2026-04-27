@@ -228,7 +228,7 @@ const fetchDealsForCreator = async (creatorId: string, creatorEmail?: string | n
              console.log(`[Deals] Enrichment: Searching requests for brands: ${brandNames.join(', ')}`);
              const { data: recovered, error: recoveredErr } = await supabase
                .from('collab_requests')
-               .select('id, exact_budget, barter_value, barter_product_image_url, brand_name, brand_logo_url')
+               .select('id, deal_id, exact_budget, barter_value, barter_product_image_url, brand_name, brand_logo_url')
                .eq('creator_id', creatorId)
                .in('brand_name', brandNames)
                .order('created_at', { ascending: false });
@@ -242,9 +242,13 @@ const fetchDealsForCreator = async (creatorId: string, creatorEmail?: string | n
 
           const requestMap = new Map<string, any>();
           const brandMap = new Map<string, any>();
+          const dealIdMap = new Map<string, any>();
           
           for (const r of requests) {
             requestMap.set(String(r.id), r);
+            if (r.deal_id) {
+              dealIdMap.set(String(r.deal_id), r);
+            }
             const brandKey = String(r.brand_name || '').trim().toLowerCase();
             if (brandKey) {
               const existing = brandMap.get(brandKey);
@@ -257,7 +261,9 @@ const fetchDealsForCreator = async (creatorId: string, creatorEmail?: string | n
 
           for (const d of deals) {
             const normalizedDealBrand = String(d.brand_name || '').trim().toLowerCase();
-            const r = requestMap.get(String((d as any).collab_request_id)) || brandMap.get(normalizedDealBrand);
+            const r = requestMap.get(String((d as any).collab_request_id)) || 
+                      dealIdMap.get(String(d.id)) ||
+                      brandMap.get(normalizedDealBrand);
             if (!r) {
               console.log(`[Deals] No request found for deal ${d.id} (Brand: ${d.brand_name}, Normalized: ${normalizedDealBrand})`);
               continue;
