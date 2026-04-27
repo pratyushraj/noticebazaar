@@ -1231,8 +1231,8 @@ const confirmReceivedHandler = async (req: AuthenticatedRequest, res: Response) 
       return res.status(403).json({ success: false, error: 'Access denied' });
     }
 
-    if (dealData.deal_type !== 'barter' || !dealData.shipping_required) {
-      return res.status(400).json({ success: false, error: 'Shipping confirmation is only for barter deals with shipping' });
+    if (!dealData.shipping_required) {
+      return res.status(400).json({ success: false, error: 'Shipping confirmation is only for deals with shipping required' });
     }
 
     const now = new Date().toISOString();
