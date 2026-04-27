@@ -6906,7 +6906,7 @@ const MobileDashboardDemo = ({
                                                      </div>
                                                     <div>
                                                         <p className={cn("text-[14px] font-black leading-tight", textColor)}>
-                                                            {selectedItem.product_name || (selectedItem.brand_name?.toLowerCase().includes('mellow') ? 'Signature Heavyweight Hoodie' : 'Signature Hoodie + Apparel Box')}
+                                                            {selectedItem.product_name || (selectedItem.brand_name?.toLowerCase().includes('mellow') ? 'Signature Product' : 'Signature Hoodie + Apparel Box')}
                                                         </p>
                                                         <p className={cn("text-[12px] font-semibold mt-1", secondaryTextColor)}>Product Value {renderBudgetValue(selectedItem)}</p>
                                                         <p className={cn("text-[12px] font-semibold", secondaryTextColor)}>Ships within 3 days</p>

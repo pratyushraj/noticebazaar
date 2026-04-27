@@ -215,7 +215,7 @@ const fetchDealsForCreator = async (creatorId: string, creatorEmail?: string | n
           if (linkedIds.length > 0) {
             const { data } = await supabase
               .from('collab_requests')
-              .select('id, exact_budget, barter_value, barter_product_image_url, brand_name, brand_logo_url')
+              .select('id, exact_budget, barter_value, barter_description, barter_product_image_url, brand_name, brand_logo_url')
               .in('id', linkedIds);
             if (data) requests = data;
           }
@@ -228,7 +228,7 @@ const fetchDealsForCreator = async (creatorId: string, creatorEmail?: string | n
              console.log(`[Deals] Enrichment: Searching requests for brands: ${brandNames.join(', ')}`);
              const { data: recovered, error: recoveredErr } = await supabase
                .from('collab_requests')
-               .select('id, deal_id, exact_budget, barter_value, barter_product_image_url, brand_name, brand_logo_url')
+               .select('id, deal_id, exact_budget, barter_value, barter_description, barter_product_image_url, brand_name, brand_logo_url')
                .eq('creator_id', creatorId)
                .in('brand_name', brandNames)
                .order('created_at', { ascending: false });
@@ -293,6 +293,9 @@ const fetchDealsForCreator = async (creatorId: string, creatorEmail?: string | n
             }
             if (!d.brand_logo_url && r.brand_logo_url) {
               d.brand_logo_url = r.brand_logo_url;
+            }
+            if (!(d as any).product_name && r.barter_description) {
+              (d as any).product_name = r.barter_description;
             }
           }
         } catch (enrichError) {
