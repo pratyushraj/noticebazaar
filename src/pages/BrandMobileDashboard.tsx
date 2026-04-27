@@ -4052,10 +4052,12 @@ const BrandMobileDashboard = ({
               {activeTab === 'dashboard' && (
                 <div className="flex items-end justify-between gap-3">
                   <div className="min-w-0">
-                    <p className={cn('text-[12px] font-black uppercase tracking-[0.18em] opacity-80', textColor)}>Welcome back</p>
-                    <h1 className={cn('text-[26px] font-semibold tracking-tight leading-tight mt-0.5', textColor)}>{brandName}</h1>
-                    <p className={cn('text-[12px] mt-1.5 opacity-60', textColor)}>
-                      Find creators. Send protected offers. Get quality content.
+                    <p className={cn('text-[11px] font-black uppercase tracking-[0.25em] opacity-40 mb-1', textColor)}>Premium Dashboard</p>
+                    <h1 className={cn('text-[28px] font-black tracking-tight leading-none', textColor)}>
+                      {brandName}
+                    </h1>
+                    <p className={cn('text-[12px] mt-2 font-medium opacity-50', textColor)}>
+                      Your active brand console for creator collaborations.
                     </p>
                   </div>
                 </div>
@@ -4175,142 +4177,112 @@ const BrandMobileDashboard = ({
 
 	                    return (
 	                      <>
-                          {attentionTotal > 0 && (
-                            <motion.button
-                              type="button"
-                              onClick={() => {
-                                triggerHaptic(HapticPatterns.light);
-                                setActiveTab('collabs', 'action_required');
-                              }}
-                              initial={{ opacity: 0, y: 10 }}
-                              animate={{ opacity: 1, y: 0 }}
-                              transition={{ delay: 0.02 }}
-                              className={cn(
-                                'mb-4 w-full text-left p-4 rounded-[24px] border transition-all active:scale-[0.99]',
-                                borderColor,
-                                isDark ? 'bg-card hover:bg-secondary/[0.07]' : 'bg-secondary/80 backdrop-blur-xl shadow-sm hover:bg-card'
-                              )}
-                            >
-                              <div className="flex items-start justify-between gap-3">
+                        {/* Premium Campaign Center Widget */}
+                        <motion.div 
+                          initial={{ opacity: 0, y: 15 }} 
+                          animate={{ opacity: 1, y: 0 }} 
+                          transition={{ delay: 0.03, type: 'spring', damping: 20 }} 
+                          className={cn(
+                            'mb-6 rounded-[36px] border overflow-hidden relative group', 
+                            isDark 
+                              ? 'border-emerald-500/30 bg-gradient-to-br from-emerald-500/10 via-emerald-950/20 to-[#020617] shadow-[0_30px_60px_rgba(0,0,0,0.4)]' 
+                              : 'border-primary/60 bg-gradient-to-br from-emerald-500 via-teal-500 to-blue-600 shadow-[0_25px_55px_rgba(16,185,129,0.22)]'
+                          )}
+                        >
+                          <div className={cn('absolute inset-0 pointer-events-none opacity-20', isDark ? 'bg-[radial-gradient(circle_at_top_right,rgba(16,185,129,0.3),transparent)]' : 'bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.4),transparent)]')} />
+                          
+                          <div className="relative p-6">
+                            <div className="flex flex-col gap-6">
+                              <div className="flex items-start justify-between">
                                 <div className="min-w-0">
-                                  <p className={cn('text-[12px] font-black uppercase tracking-[0.2em] opacity-50', textColor)}>Needs your attention</p>
-                                  <p className={cn('text-[13px] mt-1 font-bold', textColor)}>
-                                    {attentionTotal} item{attentionTotal === 1 ? '' : 's'} need your response
+                                  <p className={cn('text-[10px] font-black uppercase tracking-[0.25em]', isDark ? 'text-emerald-400' : 'text-white/80')}>Active Investment</p>
+                                  <div className="flex items-baseline gap-2 mt-3">
+                                    <span className={cn('text-[38px] font-black tracking-tighter leading-none', isDark ? 'text-white' : 'text-white')}>
+                                      ₹<CountUp end={Number(activeValue) || 0} duration={1.5} separator="," decimals={0} />
+                                    </span>
+                                    {newToday > 0 && (
+                                      <span className={cn('px-2 py-0.5 rounded-full text-[10px] font-black bg-white/20 text-white backdrop-blur-md border border-white/20 animate-pulse')}>
+                                        +{newToday} Today
+                                      </span>
+                                    )}
+                                  </div>
+                                  <p className={cn('text-[13px] font-bold mt-3', isDark ? 'text-white/60' : 'text-white/90')}>
+                                    {activeDealsList.length} Collaboration{activeDealsList.length === 1 ? '' : 's'} running
                                   </p>
                                 </div>
-                                <ChevronRight className={cn('w-5 h-5 opacity-30 mt-1', textColor)} />
+                                <div className={cn('w-12 h-12 rounded-2xl flex items-center justify-center backdrop-blur-2xl border', isDark ? 'bg-white/5 border-white/10' : 'bg-white/20 border-white/30')}>
+                                  <BarChart3 className="w-6 h-6 text-white" />
+                                </div>
                               </div>
-                              <div className="flex flex-wrap gap-2 mt-3">
-                                {contractsWaitingSignature > 0 && (
-                                  <span className={cn('px-3 py-1.5 rounded-full border text-[10px] font-black uppercase tracking-widest', isDark ? 'border-warning/25 bg-warning/10 text-warning' : 'border-orange-200 bg-orange-50 text-orange-700')}>
-                                    {contractsWaitingSignature} waiting for signature
-                                  </span>
-                                )}
-                                {pendingCounterCount > 0 && (
-                                  <span className={cn('px-3 py-1.5 rounded-full border text-[10px] font-black uppercase tracking-widest', isDark ? 'border-rose-500/25 bg-rose-500/10 text-rose-200' : 'border-rose-200 bg-rose-50 text-rose-800')}>
-                                    {pendingCounterCount} counter{pendingCounterCount === 1 ? '' : 's'} to review
-                                  </span>
-                                )}
-                                {offersExpiringSoon > 0 && (
-                                  <span className={cn('px-3 py-1.5 rounded-full border text-[10px] font-black uppercase tracking-widest', isDark ? 'border-warning/25 bg-warning/10 text-warning' : 'border-amber-200 bg-amber-50 text-amber-700')}>
-                                    {offersExpiringSoon} expiring soon
-                                  </span>
-                                )}
-                                {contentPendingReview > 0 && (
-                                  <span className={cn('px-3 py-1.5 rounded-full border text-[10px] font-black uppercase tracking-widest', isDark ? 'border-sky-500/25 bg-info/10 text-info' : 'border-sky-200 bg-info text-white')}>
-                                    {contentPendingReview} content to review
-                                  </span>
+
+                              <div className={cn('p-4 rounded-3xl border backdrop-blur-md transition-all', isDark ? 'bg-white/5 border-white/10' : 'bg-white/15 border-white/20')}>
+                                <div className="flex items-center justify-between gap-4">
+                                  <div className="flex items-center gap-3">
+                                    <div className={cn('w-8 h-8 rounded-full flex items-center justify-center', isDark ? 'bg-emerald-500/20 text-emerald-400' : 'bg-white/20 text-white')}>
+                                      <Zap className="w-4 h-4" />
+                                    </div>
+                                    <p className={cn('text-[13px] font-black', isDark ? 'text-white' : 'text-white')}>
+                                      {attentionTotal > 0 ? `${attentionTotal} Actions Pending` : 'All caught up'}
+                                    </p>
+                                  </div>
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      triggerHaptic(HapticPatterns.light);
+                                      if (needsActionTotal > 0) setActiveTab('collabs', 'action_required');
+                                      else openCreateOfferSheet();
+                                    }}
+                                    className={cn(
+                                      'px-5 py-2.5 rounded-2xl text-[11px] font-black uppercase tracking-widest transition-all active:scale-95 shadow-xl',
+                                      isDark 
+                                        ? 'bg-emerald-500 text-white hover:bg-emerald-400' 
+                                        : 'bg-white text-emerald-600 hover:bg-emerald-50 shadow-emerald-900/10'
+                                    )}
+                                  >
+                                    {needsActionTotal > 0 ? 'Review Now' : 'New Offer'}
+                                  </button>
+                                </div>
+                                {attentionTotal > 0 && (
+                                  <div className="mt-3 flex flex-wrap gap-1.5 border-t border-white/5 pt-3">
+                                    {pendingCounterCount > 0 && (
+                                      <span className="text-[9px] font-black uppercase tracking-widest opacity-60 text-white">
+                                        {pendingCounterCount} Counters • 
+                                      </span>
+                                    )}
+                                    {contentPendingReview > 0 && (
+                                      <span className="text-[9px] font-black uppercase tracking-widest opacity-60 text-white">
+                                        {contentPendingReview} Review Items • 
+                                      </span>
+                                    )}
+                                    {contractsWaitingSignature > 0 && (
+                                      <span className="text-[9px] font-black uppercase tracking-widest opacity-60 text-white">
+                                        {contractsWaitingSignature} Signature Pending
+                                      </span>
+                                    )}
+                                  </div>
                                 )}
                               </div>
-                            </motion.button>
-                          )}
+                            </div>
+                          </div>
+                        </motion.div>
 
-	                        {/* Performance (motivational) */}
-	                        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.03 }} className={cn('mb-4 rounded-[32px] border overflow-hidden relative', isDark ? 'border-emerald-500/40 bg-gradient-to-br from-emerald-500/20 via-emerald-900/20 to-[#061318] shadow-[0_22px_48px_rgba(16,185,129,0.15)]' : 'border-primary/70 bg-gradient-to-br from-emerald-500 via-teal-500 to-blue-600 shadow-[0_22px_48px_rgba(16,185,129,0.26)]')}>
-		                          <div
-                                className={cn(
-                                  'absolute inset-0 pointer-events-none',
-                                  isDark ? 'bg-gradient-to-b from-emerald-500/10 to-transparent' : 'bg-white/10'
-                                )}
-                              />
-	                          <div className="relative p-5">
-	                            <div className="flex flex-col gap-4">
-	                              <div className="min-w-0">
-	                                <p className={cn('text-[11px] font-black uppercase tracking-[0.2em]', isDark ? 'opacity-50 text-foreground' : 'text-foreground/80')}>Campaign value running</p>
-	                                <p className={cn('text-[34px] font-black tracking-tight leading-none mt-2', isDark ? textColor : 'text-foreground')}>
-	                                  ₹<CountUp end={Number(activeValue) || 0} duration={1.5} separator="," decimals={0} />
-	                                </p>
-	                                <p className={cn('text-[13px] font-bold mt-2', isDark ? 'text-foreground/70' : 'text-foreground/85')}>
-	                                  {activeDealsList.length === 0 ? 'No active deals yet — send your first offer' : `Across ${activeDealsList.length} active collaboration${activeDealsList.length === 1 ? '' : 's'}`}
-	                                </p>
-	                                <div className="mt-3 flex flex-wrap gap-2">
-	                                  {(newToday > 0 || contentPendingReview > 0) && (
-	                                    <span className={cn('inline-flex items-center px-3 py-1.5 rounded-full border text-[10px] font-black uppercase tracking-widest', isDark ? 'border-warning/25 bg-warning/10 text-warning' : 'border-border bg-secondary/50 text-foreground')}>
-	                                      {newToday > 0 ? `+${newToday} new today` : `${contentPendingReview} delivered`}
-	                                    </span>
-	                                  )}
-	                                </div>
-	                              </div>
-		                              <div className="flex items-center gap-3">
-		                              <button
-		                                type="button"
-		                                onClick={() => {
-		                                  triggerHaptic(HapticPatterns.light);
-		                                  if (needsActionTotal > 0) setActiveTab('collabs', 'action_required');
-		                                  else openCreateOfferSheet();
-		                                }}
-	                                className={cn(
-	                                  'w-full sm:w-auto px-4 py-3 rounded-2xl text-[11px] font-black uppercase tracking-widest border transition-all active:scale-[0.99]',
-	                                  needsActionTotal > 0
-	                                    ? 'bg-card text-muted-foreground border-transparent shadow-[0_12px_30px_rgba(255,255,255,0.18)]'
-	                                    : (isDark ? 'border-border bg-card text-foreground/80 hover:bg-secondary/50' : 'border-border bg-secondary/50 text-foreground hover:bg-secondary/15')
-	                                )}
-	                              >
-	                                {needsActionTotal > 0 ? 'Review actions' : 'Send offer'}
-	                              </button>
-	                              {needsActionTotal > 0 && (
-	                                <p className={cn('text-[12px] font-medium', isDark ? secondaryTextColor : 'text-foreground/80')}>
-	                                  {needsActionTotal} item{needsActionTotal === 1 ? '' : 's'} need your response
-	                                </p>
-	                              )}
-	                              </div>
-	                            </div>
-	                          </div>
-	                        </motion.div>
-
-	                        {/* Meaningful stats */}
-	                        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }} className={cn('grid grid-cols-2 gap-3 mb-5')}>
-	                          {[
-	                            { label: 'Active collaborations', value: activeDealsList.length },
-	                            { label: 'Action required', value: needsActionTotal, tone: needsActionTotal > 0 ? 'warn' : 'neutral' },
-	                          ].map((item: any) => (
-	                            <div key={item.label} className={cn('min-h-[96px] p-4 rounded-[24px] border', cardBgColor, borderColor)}>
-	                              <p className={cn('text-[10px] font-black uppercase tracking-[0.16em] opacity-45', textColor)}>{item.label}</p>
-	                              {isLoading ? (
-	                                <div className={cn('h-5 rounded-md mt-3 animate-pulse', isDark ? 'bg-secondary/50' : 'bg-background')} />
-	                              ) : (
-	                                <p className={cn('text-[20px] font-black tracking-tight mt-3', item.tone === 'warn' ? (isDark ? 'text-warning' : 'text-warning') : textColor)}>
-                                    <CountUp end={Number(item.value) || 0} duration={1.2} separator="," decimals={0} />
-                                  </p>
-	                              )}
-	                            </div>
-	                          ))}
-	                          <div className={cn('col-span-2 p-4 rounded-[24px] border flex items-center justify-between gap-3', cardBgColor, borderColor)}>
-	                            <div className="min-w-0">
-	                              <p className={cn('text-[10px] font-black uppercase tracking-[0.16em] opacity-45', textColor)}>Content to review</p>
-	                              <p className={cn('text-[13px] mt-1', secondaryTextColor)}>
-	                                {contentPendingReview > 0 ? 'New creator delivery is ready for review.' : 'No pending content reviews right now.'}
-	                              </p>
-	                            </div>
-	                            {isLoading ? (
-	                              <div className={cn('h-8 w-12 rounded-md animate-pulse', isDark ? 'bg-secondary/50' : 'bg-background')} />
-	                            ) : (
-	                              <p className={cn('text-[24px] font-black tracking-tight shrink-0', contentPendingReview > 0 ? (isDark ? 'text-warning' : 'text-warning') : textColor)}>
-                                  <CountUp end={Number(contentPendingReview) || 0} duration={1.2} separator="," decimals={0} />
-                                </p>
-	                            )}
-	                          </div>
-	                        </motion.div>
+                        {/* Secondary Stats Grid */}
+                        <div className="grid grid-cols-2 gap-3 mb-6">
+                          <div className={cn('p-4 rounded-[28px] border transition-all hover:border-primary/30', isDark ? 'bg-card border-border/50' : 'bg-white border-border/60 shadow-sm')}>
+                            <p className={cn('text-[10px] font-black uppercase tracking-[0.2em] opacity-40', textColor)}>Active</p>
+                            <div className="flex items-baseline gap-1 mt-3">
+                              <span className={cn('text-[22px] font-black tracking-tight', textColor)}>{activeDealsList.length}</span>
+                              <span className={cn('text-[10px] font-bold opacity-40', textColor)}>Deals</span>
+                            </div>
+                          </div>
+                          <div className={cn('p-4 rounded-[28px] border transition-all hover:border-warning/30', isDark ? 'bg-card border-border/50' : 'bg-white border-border/60 shadow-sm')}>
+                            <p className={cn('text-[10px] font-black uppercase tracking-[0.2em] opacity-40', textColor)}>Pending</p>
+                            <div className="flex items-baseline gap-1 mt-3">
+                              <span className={cn('text-[22px] font-black tracking-tight', needsActionTotal > 0 ? 'text-warning' : textColor)}>{needsActionTotal}</span>
+                              <span className={cn('text-[10px] font-bold opacity-40', textColor)}>Action</span>
+                            </div>
+                          </div>
+                        </div>
 
 	                        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.06 }} className="mb-8">
 	                          <div className="flex items-center justify-between mb-3">
@@ -4332,34 +4304,37 @@ const BrandMobileDashboard = ({
 	                              View all
 	                            </button>
 	                          </div>
-	                          <div className={cn('mb-4 rounded-[24px] border p-1.5 flex gap-1.5 backdrop-blur-xl shadow-[0_14px_40px_rgba(15,23,42,0.08)]', isDark ? 'bg-secondary/[0.06] border-border' : 'bg-secondary/75 border-primary/80')}>
+	                          <div className={cn('mb-6 p-1.5 rounded-[28px] border flex gap-1.5 backdrop-blur-2xl shadow-xl', isDark ? 'bg-secondary/[0.08] border-white/5' : 'bg-secondary/60 border-primary/40')}>
 	                            {[
-		                              { key: 'action_required', label: 'Awaiting Response', count: pendingOffersList.length },
-	                              { key: 'active', label: 'Active', count: activeDealsList.length },
-	                              { key: 'completed', label: 'Completed', count: completedDealsList.length },
+	                              { key: 'action_required', label: 'Action Needed', count: pendingOffersList.length, color: 'text-warning' },
+	                              { key: 'active', label: 'In Progress', count: activeDealsList.length, color: 'text-primary' },
+	                              { key: 'completed', label: 'Archive', count: completedDealsList.length, color: 'text-muted-foreground' },
 	                            ].map((item) => {
 	                              const isSelected = activeCollabTab === item.key;
 	                              return (
-		                                <button
-		                                  type="button"
-		                                  key={item.key}
-		                                  onClick={() => {
-		                                    triggerHaptic(HapticPatterns.light);
-		                                    setDashboardCollabTab(item.key as BrandCollabTab);
-		                                  }}
+	                                <button
+	                                  type="button"
+	                                  key={item.key}
+	                                  onClick={() => {
+	                                    triggerHaptic(HapticPatterns.light);
+	                                    setDashboardCollabTab(item.key as BrandCollabTab);
+	                                  }}
 	                                  className={cn(
-	                                    'flex-1 rounded-[20px] px-3 py-3 text-left transition-all active:scale-[0.98] border backdrop-blur-lg',
+	                                    'flex-1 rounded-[22px] px-3 py-3.5 text-center transition-all duration-300 active:scale-95 border relative',
 	                                    isSelected
 	                                      ? isDark
-	                                        ? 'bg-secondary/90 text-foreground border-border/40 shadow-[0_10px_30px_rgba(255,255,255,0.08)]'
-	                                        : 'bg-gradient-to-br from-emerald-500 to-teal-500 text-white border-primary/70 shadow-[0_12px_30px_rgba(16,185,129,0.24)]'
+	                                        ? 'bg-emerald-500 text-white border-emerald-400 shadow-[0_10px_25px_rgba(16,185,129,0.3)] scale-[1.02] z-10'
+	                                        : 'bg-emerald-500 text-white border-emerald-400 shadow-[0_12px_25px_rgba(16,185,129,0.3)] scale-[1.02] z-10'
 	                                      : isDark
-	                                        ? 'bg-secondary/40 text-foreground border-border/20 hover:bg-secondary/60'
-	                                        : 'bg-white text-muted-foreground border-border shadow-sm hover:bg-slate-50'
+	                                        ? 'bg-transparent text-foreground/40 border-transparent hover:text-foreground/60'
+	                                        : 'bg-transparent text-muted-foreground border-transparent hover:text-foreground'
 	                                  )}
 	                                >
-	                                  <p className={cn('text-[10px] font-black uppercase tracking-widest', isSelected ? 'text-white opacity-100' : 'opacity-70')}>{item.label}</p>
-	                                  <p className="mt-1 text-[16px] font-black">{item.count}</p>
+	                                  <p className={cn('text-[9px] font-black uppercase tracking-[0.1em]', isSelected ? 'text-white' : 'opacity-60')}>{item.label}</p>
+	                                  <p className="mt-1 text-[18px] font-black leading-none">{item.count}</p>
+	                                  {isSelected && (
+	                                    <motion.div layoutId="tab-glow" className="absolute inset-0 rounded-[22px] bg-white/10 blur-md pointer-events-none" />
+	                                  )}
 	                                </button>
 	                              );
 	                            })}
