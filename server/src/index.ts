@@ -217,9 +217,14 @@ const corsOptions = {
       return callback(null, true);
     }
 
-    // Allow cloudflared tunnel URLs
-    if (normalizedOrigin.includes('trycloudflare.com') || normalizedOrigin.includes('creatorarmour.com')) {
-      console.log('[CORS] ✓ Allowing cloudflared/creatorarmour origin:', origin);
+    // Allow cloudflared tunnel URLs, creatorarmour.com and vercel.app domains
+    if (
+      normalizedOrigin.includes('trycloudflare.com') || 
+      normalizedOrigin.includes('creatorarmour.com') ||
+      normalizedOrigin.includes('vercel.app') ||
+      normalizedOrigin.includes('noticebazaar.com')
+    ) {
+      console.log('[CORS] ✓ Allowing origin by keyword:', origin);
       return callback(null, true);
     }
 

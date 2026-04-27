@@ -25,15 +25,10 @@ async function fetchBrandDeals() {
       signal: controller.signal,
     });
     clearTimeout(timeoutId);
-    if (res.status === 404) return [];
-    if (res.status === 401) {
-      const err: any = new Error('SESSION_EXPIRED');
-      err.status = 401;
-      throw err;
-    }
     if (!res.ok) {
-      const payload = await res.json().catch(() => ({}));
-      throw new Error(payload?.error || `Failed to fetch deals (${res.status})`);
+      if (res.status === 401) throw new Error('SESSION_EXPIRED');
+      if (res.status === 504) throw new Error('API_TIMEOUT');
+      throw new Error(`Failed to fetch deals: ${res.status}`);
     }
     const data = await res.json().catch(() => ({}));
     return data?.deals || [];

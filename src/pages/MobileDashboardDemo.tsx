@@ -5,7 +5,21 @@ import { trackEvent } from '@/lib/utils/analytics';
 import { DashboardEmptyState } from '../components/dashboard/EmptyState';
 import { PaymentsTab } from '../components/dashboard/PaymentsTab';
 import { AccountTab } from '../components/dashboard/AccountTab';
-import { Tag, User, Search, ShieldCheck, Shield, Scale, Handshake, Camera, Plus, LayoutDashboard, CreditCard, Briefcase, Menu, Instagram, Target, Dumbbell, Shirt, Sun, Moon, RefreshCw, Loader2, Bell, ChevronRight, Zap, Rocket, Link2, CheckCircle2, Download, Clock, Info, Globe, Star, LogOut, Copy, Share2, QrCode, Eye, MoreHorizontal, Landmark, FileText, Smartphone, TrendingUp, BarChart3, Mail, Phone, MessageCircle, MessageSquare, Edit3, Send, X, XCircle, ExternalLink, AlertCircle, AlertTriangle, ArrowRight, Package, Flag, MapPin, Languages, Lock as LockIcon, ArrowUpRight, Wallet, HelpCircle, Sparkles, Youtube, Twitter, Heart, Trash2, Smartphone as SmartphoneIcon, Users, Calendar, ShoppingBag, Video, Film, BookOpen, GraduationCap, Laugh, Coffee, Layers, Flame, Clapperboard, BadgeCheck, Check, IndianRupee, Utensils, Building2, Plane } from 'lucide-react';
+import { 
+    Tag, User, Search, ShieldCheck, Shield, Scale, Handshake, Camera, Plus, 
+    LayoutDashboard, CreditCard, Briefcase, Menu, Instagram, Target, 
+    Dumbbell, Shirt, Sun, Moon, RefreshCw, Loader2, Bell, 
+    ChevronRight, Zap, Rocket, Link2, CheckCircle2, Download, Clock, 
+    Info, Globe, Star, LogOut, Copy, Share2, QrCode, Eye, MoreHorizontal, 
+    Landmark, FileText, Smartphone, TrendingUp, BarChart3, Mail, Phone, 
+    MessageCircle, MessageSquare, Edit3, Send, X, XCircle, ExternalLink, 
+    AlertCircle, AlertTriangle, ArrowRight, Package, Flag, MapPin, 
+    Languages, Lock as LockIcon, ArrowUpRight, Wallet, HelpCircle, 
+    Sparkles, Youtube, Twitter, Heart, Trash2, Smartphone as SmartphoneIcon, 
+    Users, Calendar, ShoppingBag, Video, Film, BookOpen, GraduationCap, 
+    Laugh, Coffee, Layers, Flame, Clapperboard, BadgeCheck, Check, 
+    IndianRupee, Utensils, Building2, Plane 
+} from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useSignOut } from '@/lib/hooks/useAuth';
@@ -5454,6 +5468,26 @@ const MobileDashboardDemo = ({
                                                     );
                                                 })}
                                             </div>
+                                        ) : dealsError ? (
+                                            <div className={cn(
+                                                "p-8 rounded-[2rem] border text-center",
+                                                isDark ? "bg-rose-500/5 border-rose-500/20" : "bg-rose-50 border-rose-100"
+                                            )}>
+                                                <div className="w-14 h-14 rounded-2xl bg-rose-500 mx-auto mb-4 flex items-center justify-center shadow-lg shadow-rose-500/20">
+                                                    <AlertCircle className="w-7 h-7 text-white" />
+                                                </div>
+                                                <h3 className={cn("text-[18px] font-black tracking-tight mb-2 font-outfit", isDark ? "text-rose-400" : "text-rose-600")}>Connection Issue</h3>
+                                                <p className={cn("text-[13px] leading-relaxed opacity-70 mb-5", textColor)}>
+                                                    {dealsError}. This usually happens when the API is unreachable or your session has expired.
+                                                </p>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => onRefresh?.()}
+                                                    className="h-12 px-6 rounded-2xl bg-rose-500 text-white font-black text-[13px] shadow-lg shadow-rose-500/20 active:scale-95 transition-all"
+                                                >
+                                                    Retry Connection
+                                                </button>
+                                            </div>
                                         ) : (
                                             <div className={cn(
                                                 "p-6 rounded-[2rem] border text-center",
@@ -6341,7 +6375,7 @@ const MobileDashboardDemo = ({
                                                     isDark ? "bg-white/[0.03] border-white/10 text-white" : "bg-slate-50 border-slate-200 text-slate-900"
                                                 )}
                                             >
-                                                <ChevronLeft className="w-5 h-5" />
+                                                <ChevronRight className="w-5 h-5 rotate-180" />
                                             </button>
                                             <div className="flex flex-col">
                                                 <span className={cn("text-[18px] font-black tracking-tight", textColor)}>Collaboration</span>
