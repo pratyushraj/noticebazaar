@@ -595,6 +595,8 @@ router.post('/:username/submit', async (req: Request, res: Response) => {
       deliverables,
       usage_rights,
       deadline,
+      campaign_category,
+      campaign_goal,
     } = req.body;
 
     // Validation
@@ -720,6 +722,8 @@ router.post('/:username/submit', async (req: Request, res: Response) => {
 	      deliverables,
 	      usage_rights: usage_rights === true || usage_rights === 'true',
 	      deadline: deadline || null,
+	      campaign_category: campaign_category || null,
+	      campaign_goal: campaign_goal || null,
 	      submitted_ip: clientIp,
       submitted_user_agent: userAgent,
       ...(brandContactId ? { brand_contact_id: brandContactId } : {}),
@@ -1288,21 +1292,21 @@ router.post('/accept/confirm', async (req: AuthenticatedRequest, res: Response) 
     if (request.collab_type === 'paid' || request.collab_type === 'both') {
       dealAmount = request.exact_budget || 0;
     }
-    const isBarter = request.collab_type === 'barter';
+     const isBarter = request.collab_type === 'barter';
 
-    const dealData: any = {
-      creator_id: userId,
-      brand_name: request.brand_name,
-      brand_email: request.brand_email,
-      deal_amount: dealAmount,
-      deliverables: deliverablesArray.join(', '),
-      due_date: request.deadline || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-      payment_expected_date: request.deadline || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-      platform: 'Other',
-      status: 'Drafting',
-      deal_type: isBarter ? 'barter' : 'paid',
-      created_via: 'collab_request',
-    };
+     const dealData: any = {
+       creator_id: userId,
+       brand_name: request.brand_name,
+       brand_email: request.brand_email,
+       deal_amount: dealAmount,
+       deliverables: deliverablesArray.join(', '),
+       due_date: request.deadline || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+       payment_expected_date: request.deadline || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+       platform: 'Other',
+       status: isBarter ? 'Drafting' : 'CONTRACT_READY',
+       deal_type: isBarter ? 'barter' : 'paid',
+       created_via: 'collab_request',
+     };
     const { data: deal, error: dealError } = await supabase
       .from('brand_deals')
       .insert(dealData)
@@ -1435,7 +1439,7 @@ router.post('/accept/confirm', async (req: AuthenticatedRequest, res: Response) 
         if (contractUrl) {
           await supabase.from('brand_deals').update({
             contract_file_url: contractUrl,
-            status: 'Drafting',
+            status: 'CONTRACT_READY', // Contract is ready, awaiting brand signature (paid deals only)
             updated_at: now,
           }).eq('id', deal.id);
         }
@@ -1523,19 +1527,19 @@ router.patch('/:id/accept', async (req: AuthenticatedRequest, res: Response) => 
     const isBarter = request.collab_type === 'barter';
 
     // Create brand deal
-    const dealData: any = {
-      creator_id: userId,
-      brand_name: request.brand_name,
-      brand_email: request.brand_email,
-      deal_amount: dealAmount,
-      deliverables: deliverablesArray.join(', '),
-      due_date: request.deadline || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-      payment_expected_date: request.deadline || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-      platform: 'Other',
-      status: 'Drafting',
-      deal_type: isBarter ? 'barter' : 'paid',
-      created_via: 'collab_request',
-    };
+     const dealData: any = {
+       creator_id: userId,
+       brand_name: request.brand_name,
+       brand_email: request.brand_email,
+       deal_amount: dealAmount,
+       deliverables: deliverablesArray.join(', '),
+       due_date: request.deadline || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+       payment_expected_date: request.deadline || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+       platform: 'Other',
+       status: isBarter ? 'Drafting' : 'CONTRACT_READY',
+       deal_type: isBarter ? 'barter' : 'paid',
+       created_via: 'collab_request',
+     };
 
     const { data: deal, error: dealError } = await supabase
       .from('brand_deals')
@@ -1755,15 +1759,15 @@ router.patch('/:id/accept', async (req: AuthenticatedRequest, res: Response) => 
           throw new Error('Failed to get contract URL');
         }
 
-        // Update deal with contract URL
-        const { error: contractUpdateError } = await supabase
-          .from('brand_deals')
-          .update({
-            contract_file_url: contractUrl,
-            status: 'Drafting', // Contract is ready, awaiting brand signature
-            updated_at: new Date().toISOString(),
-          })
-          .eq('id', deal.id);
+         // Update deal with contract URL
+         const { error: contractUpdateError } = await supabase
+           .from('brand_deals')
+           .update({
+             contract_file_url: contractUrl,
+             status: 'CONTRACT_READY', // Contract is ready, awaiting brand signature (paid deals only)
+             updated_at: new Date().toISOString(),
+           })
+           .eq('id', deal.id);
 
         if (contractUpdateError) {
           console.error('[CollabRequests] Error updating deal with contract:', contractUpdateError);

@@ -293,9 +293,12 @@ export const useBrandDeals = (options: UseBrandDealsOptions) => {
           error.message?.includes('not found');
 
         if (isMissingTableError && creatorId) {
-          logger.warn('[useBrandDeals] Table missing, returning demo data');
-          // Return demo data when table doesn't exist
-          return getDemoBrandDeals(creatorId);
+          logger.error('[useBrandDeals] Table missing or inaccessible. Please ensure database migrations are applied.', {
+            creatorId,
+            errorMessage: error.message,
+          });
+          // Return empty array instead of demo data to avoid masking issues
+          return [];
         }
 
         // Log the error but return an empty array to prevent crashing the UI

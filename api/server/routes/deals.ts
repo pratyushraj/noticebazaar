@@ -28,6 +28,26 @@ const inferRequiresPayment = (deal: any) => {
   return kind === 'paid' || kind === 'both' || kind === 'hybrid' || kind === 'paid_barter';
 };
 
+// Helper: determine if a deal is barter-type (requires shipping/product delivery)
+const isBarterType = (deal: any): boolean => {
+  if (!deal) return false;
+  // Flags take precedence
+  if (typeof deal.requires_shipping === 'boolean') return deal.requires_shipping;
+  if (typeof deal.shipping_required === 'boolean') return deal.shipping_required;
+  // Infer from type
+  const type = String(deal?.deal_type || '').toLowerCase();
+  return type === 'barter';
+};
+
+// Helper: determine if a deal is paid-type (requires monetary payment)
+const isPaidType = (deal: any): boolean => {
+  if (!deal) return false;
+  const type = String(deal?.deal_type || '').toLowerCase();
+  const amount = Number(deal?.deal_amount || 0);
+  if (amount > 0) return true;
+  return type === 'paid' || type.includes('paid');
+};
+
 // Helper: delegate generic push to Render server
 async function sendGenericPushViaRender(params: {
   creatorId: string;
@@ -409,9 +429,10 @@ router.patch('/:id/submit-content', async (req: AuthenticatedRequest, res: Respo
     const dealId = await resolveDealId(rawId);
     if (!dealId) return res.status(404).json({ success: false, error: 'Deal not found' });
 
+    // Fetch deal with all necessary columns for validation
     const { data: deal, error: dealErr } = await supabase
       .from('brand_deals')
-      .select('id, status, creator_id, brand_email, brand_name, updated_at')
+      .select('*')
       .eq('id', dealId)
       .maybeSingle();
     if (dealErr || !deal) return res.status(404).json({ success: false, error: 'Deal not found' });
@@ -429,6 +450,20 @@ router.patch('/:id/submit-content', async (req: AuthenticatedRequest, res: Respo
       current === 'REVISION_REQUESTED';
     if (!canSubmit) {
       return res.status(409).json({ success: false, error: `Cannot submit content from status ${current || 'UNKNOWN'}.` });
+    }
+
+    // Additional guard: enforce pre-conditions based on deal type
+    if (isBarterType(deal) && deal.shipping_status !== 'delivered') {
+      return res.status(409).json({
+        success: false,
+        error: 'Cannot submit content until you have received the product. Please confirm delivery first.',
+      });
+    }
+    if (isPaidType(deal) && !deal.payment_id && (!deal.amount_paid || deal.amount_paid <= 0)) {
+      return res.status(409).json({
+        success: false,
+        error: 'Cannot submit content until payment is escrowed. Please wait for the brand to fund the escrow.',
+      });
     }
 
     const now = new Date().toISOString();
@@ -1598,6 +1633,14 @@ router.post('/:dealId/regenerate-contract', async (req: AuthenticatedRequest, re
       return res.status(403).json({ success: false, error: 'Access denied' });
     }
 
+    // Pre-checks: barter deals require delivery address before contract generation
+    if (isBarterType(deal) && (!deal.delivery_address || !deal.delivery_address.trim())) {
+      return res.status(400).json({
+        success: false,
+        error: 'Delivery details are required before generating a contract. Please add delivery address first.',
+      });
+    }
+
     // Fetch creator profile (keep select conservative to avoid schema drift).
     const { data: creatorProfile } = await supabase
       .from('profiles')
@@ -1711,6 +1754,80 @@ router.post('/:dealId/regenerate-contract', async (req: AuthenticatedRequest, re
     return res.json({ success: true, contract: { url: contractUrl, token: token.id }, message: 'Contract regenerated.' });
   } catch (error: any) {
     console.error('[Deals] regenerate-contract error:', error);
+    return res.status(500).json({ success: false, error: error.message || 'Internal server error' });
+  }
+});
+
+// POST /api/deals/:dealId/brand-shipping-address
+// Brand updates their shipping/business address for a specific deal
+router.post('/:dealId/brand-shipping-address', async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const userId = req.user!.id;
+    const userEmail = String(req.user?.email || '').toLowerCase();
+    const { dealId } = req.params;
+    const { address, contactName, phone } = req.body;
+
+    if (!dealId) {
+      return res.status(400).json({ success: false, error: 'Deal ID is required' });
+    }
+
+    if (!address || typeof address !== 'string' || !address.trim()) {
+      return res.status(400).json({ success: false, error: 'Address is required' });
+    }
+
+    // Fetch deal to verify brand ownership
+    const { data: deal, error: dealError } = await supabase
+      .from('brand_deals')
+      .select('id, creator_id, brand_id, brand_email')
+      .eq('id', dealId)
+      .single();
+
+    if (dealError || !deal) {
+      return res.status(404).json({ success: false, error: 'Deal not found' });
+    }
+
+    // Verify brand ownership
+    const isBrandOwner =
+      deal.brand_id === userId ||
+      (userEmail && String(deal.brand_email || '').toLowerCase() === userEmail);
+    const isAdmin = String(req.user?.role || '').toLowerCase() === 'admin';
+
+    if (!isBrandOwner && !isAdmin) {
+      return res.status(403).json({ success: false, error: 'Access denied' });
+    }
+
+    // Update deal with brand shipping address and contact info
+    const updatePayload: any = {
+      brand_address: address.trim(),
+      updated_at: new Date().toISOString(),
+    };
+
+    if (contactName !== undefined && typeof contactName === 'string') {
+      updatePayload.contact_person = contactName.trim();
+    }
+    if (phone !== undefined && typeof phone === 'string' && phone.trim()) {
+      updatePayload.brand_phone = phone.trim();
+    }
+
+    const { error: updateError } = await supabase
+      .from('brand_deals')
+      .update(updatePayload)
+      .eq('id', dealId);
+
+    if (updateError) {
+      console.error('[Deals] brand-shipping-address update error:', updateError);
+      return res.status(500).json({ success: false, error: 'Failed to update shipping address' });
+    }
+
+    // Invalidate caches
+    // (We'll rely on realtime or client-side invalidation)
+
+    return res.json({
+      success: true,
+      message: 'Shipping address updated successfully',
+    });
+  } catch (error: any) {
+    console.error('[Deals] brand-shipping-address error:', error);
     return res.status(500).json({ success: false, error: error.message || 'Internal server error' });
   }
 });

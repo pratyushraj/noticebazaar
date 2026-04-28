@@ -77,6 +77,24 @@ const inferRequiresShipping = (deal: any) => {
   return false;
 };
 
+// Helper: determine if a deal is barter-type (requires shipping/product delivery)
+const isBarterType = (deal: any): boolean => {
+  if (!deal) return false;
+  if (typeof deal.requires_shipping === 'boolean') return deal.requires_shipping;
+  if (typeof deal.shipping_required === 'boolean') return deal.shipping_required;
+  const type = String(deal?.deal_type || '').toLowerCase();
+  return type === 'barter';
+};
+
+// Helper: determine if a deal is paid-type (requires monetary payment)
+const isPaidType = (deal: any): boolean => {
+  if (!deal) return false;
+  const type = String(deal?.deal_type || '').toLowerCase();
+  const amount = Number(deal?.deal_amount || 0);
+  if (amount > 0) return true;
+  return type === 'paid' || type.includes('paid');
+};
+
 const fetchDealForBrandMutation = async (dealId: string) => {
   const selectAttempts = [
     'id, status, brand_id, brand_email, brand_name, creator_id, deal_type, deal_amount, progress_percentage, shipping_required, payment_id, payment_status, amount_paid, creator_amount, platform_fee',
@@ -770,7 +788,23 @@ router.post('/barter/delivery-details', authMiddleware, async (req: Authenticate
 
     const creator = (deal as any).creator;
     const creatorName = creator ? `${creator.first_name || ''} ${creator.last_name || ''}`.trim() : 'Creator';
-    const creatorAddress = (creator as any).location || (creator as any).address || '';
+    // Resolve creator address - prioritize registered_address
+    let creatorAddress = (creator as any).registered_address || (creator as any).location || (creator as any).address || '';
+    if (creatorAddress && (creatorAddress.trim() === '' || creatorAddress.toLowerCase() === 'n/a')) {
+      creatorAddress = '';
+    }
+
+    // Resolve brand address - prioritize registered company_address if available
+    let companyAddressFromTable: string | null = null;
+    if (deal.brand_id) {
+      const { data: brandData } = await supabase
+        .from('brands')
+        .select('company_address')
+        .eq('external_id', deal.brand_id)
+        .maybeSingle();
+      companyAddressFromTable = brandData?.company_address || null;
+    }
+    const finalBrandAddress = brandAddress || companyAddressFromTable || undefined;
 
     // Try to get email from profile, then from req.user, then from auth
     let creatorEmail = creator?.email || req.user?.email || '';
@@ -794,7 +828,7 @@ router.post('/barter/delivery-details', authMiddleware, async (req: Authenticate
       paymentExpectedDate: '',
       platform: deal.platform || 'Instagram',
       brandEmail: deal.brand_email || undefined,
-      brandAddress,
+      brandAddress: finalBrandAddress,
       brandGstin: undefined,
       creatorAddress,
       dealSchema: {
@@ -837,7 +871,7 @@ router.post('/barter/delivery-details', authMiddleware, async (req: Authenticate
         barter_value: barterProductValue || 0,
         contract_file_url: urlData.publicUrl,
         contract_file_path: filePath, // Use new secure path column
-        status: 'contract_ready',
+        status: 'CONTRACT_READY',
         updated_at: new Date().toISOString()
       } as any)
       .eq('id', dealId);
@@ -946,13 +980,19 @@ router.patch('/:dealId/delivery-details', async (req: AuthenticatedRequest, res:
       } else {
         const { data: creatorProfile } = await supabase
           .from('profiles')
-          .select('first_name, last_name, email')
+          .select('first_name, last_name, email, address, location, registered_address')
           .eq('id', userId)
           .maybeSingle();
 
         const creatorName = creatorProfile
           ? `${((creatorProfile as any).first_name || '').trim()} ${((creatorProfile as any).last_name || '').trim()}`.trim() || delivery_name.trim()
           : delivery_name.trim();
+
+        // Resolve creator address - prioritize registered_address
+        let creatorAddress = (creatorProfile as any)?.registered_address || (creatorProfile as any)?.location || (creatorProfile as any)?.address || delivery_address.trim();
+        if (creatorAddress && (creatorAddress.trim() === '' || creatorAddress.toLowerCase() === 'n/a')) {
+          creatorAddress = delivery_address.trim();
+        }
 
         // Try to get email from profile, then from req.user, then from auth as last resort
         let creatorEmail = (creatorProfile as any)?.email || req.user?.email;
@@ -967,6 +1007,18 @@ router.patch('/:dealId/delivery-details', async (req: AuthenticatedRequest, res:
         }
 
         creatorEmail = creatorEmail || undefined;
+
+        // Resolve brand address - prioritize registered company_address if available
+        let companyAddressFromTable: string | null = null;
+        if (deal.brand_id) {
+          const { data: brandData } = await supabase
+            .from('brands')
+            .select('company_address')
+            .eq('external_id', deal.brand_id)
+            .maybeSingle();
+          companyAddressFromTable = brandData?.company_address || null;
+        }
+        const finalBrandAddress = (deal as any).brand_address || companyAddressFromTable || undefined;
 
         let deliverablesArray: string[] = [];
         try {
@@ -1005,10 +1057,10 @@ router.patch('/:dealId/delivery-details', async (req: AuthenticatedRequest, res:
         const canGenerateContract =
           deal.brand_name &&
           deal.brand_email &&
-          (deal as any).brand_address &&
+          finalBrandAddress &&
           creatorName &&
           creatorEmail &&
-          delivery_address.trim();
+          creatorAddress;
 
         if (canGenerateContract) {
           const contractResult = await generateContractFromScratch({
@@ -1022,9 +1074,9 @@ router.patch('/:dealId/delivery-details', async (req: AuthenticatedRequest, res:
             paymentExpectedDate: dueDateStr,
             platform: 'Multiple Platforms',
             brandEmail: deal.brand_email || undefined,
-            brandAddress: (deal as any).brand_address || undefined,
+            brandAddress: finalBrandAddress,
             brandPhone: (deal as any).brand_phone || undefined,
-            creatorAddress: delivery_address.trim(),
+            creatorAddress,
             dealSchema: dealSchema as any,
             usageType: 'Non-exclusive',
             usagePlatforms: ['All platforms'],
@@ -1309,11 +1361,30 @@ router.post('/:dealId/regenerate-contract', async (req: AuthenticatedRequest, re
       return res.status(400).json({ success: false, error: 'Deal ID is required' });
     }
 
-    const { data: deal, error: dealError } = await supabase
-      .from('brand_deals')
-      .select('*')
-      .eq('id', dealId)
-      .single();
+    const selectAttempts = [
+      'id, creator_id, brand_id, brand_name, brand_email, brand_address, brand_phone, deal_type, deal_amount, deliverables, due_date, payment_expected_date, platform, jurisdiction_city, delivery_address',
+      'id, creator_id, brand_id, brand_name, brand_email, brand_address, brand_phone, deal_type, deal_amount, deliverables, due_date, payment_expected_date, platform',
+      'id, creator_id, brand_id, brand_name, brand_email, brand_address, brand_phone, deal_type, deal_amount, deliverables, due_date, payment_expected_date',
+      'id, creator_id, brand_id, brand_name, brand_email, deal_type, deal_amount, deliverables, due_date, payment_expected_date',
+      'id, creator_id, brand_id, brand_name, brand_email, deal_type, deal_amount, deliverables',
+    ];
+
+    let deal: any = null;
+    let dealError: any = null;
+    for (const select of selectAttempts) {
+      const result = await supabase
+        .from('brand_deals')
+        .select(select)
+        .eq('id', dealId)
+        .maybeSingle();
+      deal = result.data;
+      dealError = result.error;
+      if (!dealError) break;
+      const msg = String(dealError?.message || '').toLowerCase();
+      if (!msg.includes('does not exist') && !msg.includes('could not find') && !msg.includes('schema cache')) {
+        break;
+      }
+    }
 
     if (dealError || !deal) {
       console.error("404 Deal not found", dealId, dealError); return res.status(404).json({ success: false, error: 'Deal not found' });
@@ -1327,32 +1398,47 @@ router.post('/:dealId/regenerate-contract', async (req: AuthenticatedRequest, re
       return res.status(403).json({ success: false, error: 'Access denied' });
     }
 
-    // Fetch creator profile
-    let creatorProfile: any = null;
-    const selectV2 = 'first_name, last_name, full_name, location, address, email';
-    const selectV1 = 'first_name, last_name, location';
+    // Pre-checks: barter deals require delivery address before contract generation
+    if (deal.deal_type === 'barter' && (!deal.delivery_address || !String(deal.delivery_address).trim())) {
+      return res.status(400).json({
+        success: false,
+        error: 'Delivery details are required before generating a contract. Please add delivery address first.',
+      });
+    }
 
-    try {
+    const tokenCreatorId = String(deal.creator_id || '').trim();
+    if (!tokenCreatorId) {
+      return res.status(400).json({
+        success: false,
+        error: 'Deal creator is missing, so a contract token cannot be generated.',
+      });
+    }
+
+    // Fetch creator profile
+    const profileSelectAttempts = [
+      'first_name, last_name, address, location, registered_address',
+      'first_name, last_name, address, location',
+      'first_name, last_name, location',
+      'first_name, last_name',
+    ];
+    let creatorProfile: any = null;
+    let creatorProfileError: any = null;
+    for (const select of profileSelectAttempts) {
       const { data, error } = await supabase
         .from('profiles')
-        .select(selectV2)
+        .select(select)
         .eq('id', deal.creator_id)
         .maybeSingle();
-
-      if (error) throw error;
       creatorProfile = data;
-    } catch (err: any) {
-      if (isMissingColumnError(err)) {
-        const { data: v1Data, error: v1Error } = await supabase
-          .from('profiles')
-          .select(selectV1)
-          .eq('id', deal.creator_id)
-          .maybeSingle();
-        if (v1Error) throw v1Error;
-        creatorProfile = v1Data;
-      } else {
-        throw err;
+      creatorProfileError = error;
+      if (!error) break;
+      const msg = String(error?.message || '').toLowerCase();
+      if (!msg.includes('does not exist') && !msg.includes('could not find') && !msg.includes('schema cache')) {
+        break;
       }
+    }
+    if (creatorProfileError && !creatorProfile) {
+      throw creatorProfileError;
     }
 
     const creatorName = creatorProfile
@@ -1376,7 +1462,23 @@ router.post('/:dealId/regenerate-contract', async (req: AuthenticatedRequest, re
       }
     }
 
-    const creatorAddress = (creatorProfile as any)?.location || (creatorProfile as any)?.address || undefined;
+    // Resolve creator address - prioritize registered_address
+    let creatorAddress = (creatorProfile as any)?.registered_address || (creatorProfile as any)?.location || (creatorProfile as any)?.address || undefined;
+    if (creatorAddress && (creatorAddress.trim() === '' || creatorAddress.toLowerCase() === 'n/a')) {
+      creatorAddress = undefined;
+    }
+
+    // Resolve brand address - prioritize registered company_address if available
+    let companyAddressFromTable: string | null = null;
+    if (deal.brand_id) {
+      const { data: brandData } = await supabase
+        .from('brands')
+        .select('company_address')
+        .eq('external_id', deal.brand_id)
+        .maybeSingle();
+      companyAddressFromTable = brandData?.company_address || null;
+    }
+    const finalBrandAddress = (deal as any).brand_address || companyAddressFromTable || undefined;
 
     // Parse deliverables
     let deliverablesArray: string[] = [];
@@ -1398,40 +1500,52 @@ router.post('/:dealId/regenerate-contract', async (req: AuthenticatedRequest, re
     const paymentExpectedDateStr = deal.payment_expected_date ? new Date(deal.payment_expected_date).toLocaleDateString() : undefined;
 
     // Generate contract
-    const contractResult = await generateContractFromScratch({
-      brandName: deal.brand_name,
-      creatorName,
-      creatorEmail,
-      dealAmount: deal.deal_amount,
-      deliverables: deliverablesArray.length > 0 ? deliverablesArray : ['As per agreement'],
-      dueDate: dueDateStr,
-      paymentExpectedDate: paymentExpectedDateStr,
-      platform: deal.platform || 'Multiple Platforms',
-      brandEmail: deal.brand_email || undefined,
-      brandAddress: (deal as any).brand_address || undefined,
-      brandPhone: (deal as any).brand_phone || undefined,
-      creatorAddress,
-      dealSchema: {
-        deal_amount: deal.deal_amount,
+    let contractResult;
+    try {
+      contractResult = await generateContractFromScratch({
+        brandName: deal.brand_name,
+        creatorName,
+        creatorEmail,
+        dealAmount: deal.deal_amount,
         deliverables: deliverablesArray.length > 0 ? deliverablesArray : ['As per agreement'],
-        delivery_deadline: deal.due_date || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-        payment: { method: 'Bank Transfer', timeline: paymentExpectedDateStr ? `Payment by ${paymentExpectedDateStr}` : 'Within 7 days of content delivery' },
-        usage: { type: 'Non-exclusive', platforms: ['All platforms'], duration: '6 months', paid_ads: false, whitelisting: false },
-        exclusivity: { enabled: false, category: null, duration: null },
-        termination: { notice_days: 7 },
-        jurisdiction_city: 'Mumbai',
-      },
-      usageType: 'Non-exclusive' as "Non-exclusive" | "Exclusive",
-      usagePlatforms: ['All platforms'],
-      usageDuration: '6 months',
-      paidAdsAllowed: false,
-      whitelistingAllowed: false,
-      exclusivityEnabled: false,
-      exclusivityCategory: null,
-      exclusivityDuration: null,
-      terminationNoticeDays: 7,
-      jurisdictionCity: 'Mumbai',
-    });
+        dueDate: dueDateStr,
+        paymentExpectedDate: paymentExpectedDateStr,
+        platform: deal.platform || 'Multiple Platforms',
+        brandEmail: deal.brand_email || undefined,
+        brandAddress: finalBrandAddress,
+        brandPhone: (deal as any).brand_phone || undefined,
+        creatorAddress,
+        dealSchema: {
+          deal_amount: deal.deal_amount,
+          deliverables: deliverablesArray.length > 0 ? deliverablesArray : ['As per agreement'],
+          delivery_deadline: deal.due_date || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+          payment: { method: 'Bank Transfer', timeline: paymentExpectedDateStr ? `Payment by ${paymentExpectedDateStr}` : 'Within 7 days of content delivery' },
+          usage: { type: 'Non-exclusive', platforms: ['All platforms'], duration: '6 months', paid_ads: false, whitelisting: false },
+          exclusivity: { enabled: false, category: null, duration: null },
+          termination: { notice_days: 7 },
+          jurisdiction_city: deal.jurisdiction_city || 'Mumbai',
+        },
+        usageType: 'Non-exclusive' as "Non-exclusive" | "Exclusive",
+        usagePlatforms: ['All platforms'],
+        usageDuration: '6 months',
+        paidAdsAllowed: false,
+        whitelistingAllowed: false,
+        exclusivityEnabled: false,
+        exclusivityCategory: null,
+        exclusivityDuration: null,
+        terminationNoticeDays: 7,
+        jurisdictionCity: deal.jurisdiction_city || 'Mumbai',
+      });
+    } catch (genErr: any) {
+      if (genErr.missingFields) {
+        return res.status(400).json({ 
+          success: false, 
+          error: 'Missing required information for contract generation.',
+          missingFields: genErr.missingFields 
+        });
+      }
+      throw genErr;
+    }
 
     const timestamp = Date.now();
     const storagePath = `contracts/${dealId}/${timestamp}_${contractResult.fileName}`;
@@ -1462,7 +1576,7 @@ router.post('/:dealId/regenerate-contract', async (req: AuthenticatedRequest, re
     // Create token
     const token = await createContractReadyToken({
       dealId,
-      creatorId: userId,
+      creatorId: tokenCreatorId,
       expiresAt: null,
     });
 
@@ -1793,13 +1907,18 @@ router.post('/:id/brand-shipping-address', authMiddleware, async (req: Authentic
       return res.status(403).json({ success: false, error: 'Access denied' });
     }
 
-    const now = new Date().toISOString();
-    const fullUpdate: any = {
-      brand_address: addressStr,
-      brand_phone: phone ? String(phone).trim() : undefined,
-      updated_at: now,
-    };
-    const minUpdate: any = { brand_address: addressStr, updated_at: now };
+     const now = new Date().toISOString();
+     const fullUpdate: any = {
+       brand_address: addressStr,
+       brand_phone: phone ? String(phone).trim() : undefined,
+       contact_person: contactName ? String(contactName).trim() : undefined,
+       updated_at: now,
+     };
+     const minUpdate: any = { brand_address: addressStr, updated_at: now };
+     // Include contact_person in minUpdate only if phone is not critical? We'll include both.
+     if (contactName) {
+       (minUpdate as any).contact_person = String(contactName).trim();
+     }
 
     const { error: updateError } = await supabase.from('brand_deals').update(fullUpdate).eq('id', dealId);
     if (updateError) {
@@ -2524,10 +2643,12 @@ router.patch('/:id/submit-content', authMiddleware, async (req: AuthenticatedReq
 
     // Verify access — fetch with extended columns for gate checks
     const submitSelectAttempts = [
-      'id, creator_id, status, brand_email, brand_name, progress_percentage, updated_at, deal_type, deal_amount, brand_address, shipping_required',
-      'id, creator_id, status, brand_email, brand_name, progress_percentage, updated_at, deal_type, deal_amount, brand_address',
+      'id, creator_id, status, brand_email, brand_name, progress_percentage, updated_at, deal_type, deal_amount, brand_address, shipping_required, shipping_status, amount_paid',
+      'id, creator_id, status, brand_email, brand_name, progress_percentage, updated_at, deal_type, deal_amount, brand_address, shipping_required, amount_paid',
+      'id, creator_id, status, brand_email, brand_name, progress_percentage, updated_at, deal_type, deal_amount, shipping_required, amount_paid',
+      'id, creator_id, status, brand_email, brand_name, progress_percentage, updated_at, deal_type, deal_amount, amount_paid',
       'id, creator_id, status, brand_email, brand_name, progress_percentage, updated_at, deal_type, deal_amount',
-      'id, creator_id, status, brand_email, brand_name, progress_percentage, updated_at',
+      'id, creator_id, status, brand_email, brand_name, progress_percentage, updated_at, amount_paid',
     ];
 
     let deal: any = null;
@@ -2558,15 +2679,18 @@ router.patch('/:id/submit-content', authMiddleware, async (req: AuthenticatedReq
     // A paid deal must sit in PAYMENT_PENDING (brand committed to pay) before
     // the creator can submit content. This prevents "deliver first, get paid maybe".
     if (!isAdminOverride && inferRequiresPayment(deal)) {
-      if (current === 'FULLY_EXECUTED') {
+      const hasFunded = (Number(deal?.amount_paid || 0) > 0);
+      
+      if (current === 'FULLY_EXECUTED' && !hasFunded) {
         return res.status(402).json({
           success: false,
           error: 'Payment must be confirmed by the brand before you can deliver content.',
           gate: 'PAYMENT_PENDING',
         });
       }
-      // PAYMENT_PENDING is the green-lit state; fall through to normal submit.
-      if (current !== 'PAYMENT_PENDING' && current !== 'CONTENT_MAKING' && current !== 'REVISION_REQUESTED') {
+      // PAYMENT_PENDING or CONTENT_MAKING or REVISION_REQUESTED are the normal green-lit states.
+      // We also allow if hasFunded is true regardless of status (failsafe).
+      if (!hasFunded && current !== 'PAYMENT_PENDING' && current !== 'CONTENT_MAKING' && current !== 'REVISION_REQUESTED') {
         return res.status(409).json({
           success: false,
           error: `Cannot submit content from status ${current || 'UNKNOWN'}. Wait for payment confirmation.`,
@@ -2589,8 +2713,18 @@ router.patch('/:id/submit-content', authMiddleware, async (req: AuthenticatedReq
       }
     }
 
-    const canSubmit = current === 'CONTENT_MAKING' || current === 'REVISION_REQUESTED' ||
-      current === 'FULLY_EXECUTED' || current === 'PAYMENT_PENDING';
+     // ── GATE 2b: Shipping delivery confirmation (barter only) ───────────────────
+     // For barter deals, content submission requires that the creator has received the product.
+     if (!isAdminOverride && inferRequiresShipping(deal) && deal.shipping_status !== 'delivered') {
+       return res.status(402).json({
+         success: false,
+         error: 'Cannot submit content until you have received and confirmed the product. Please confirm delivery first.',
+         gate: 'SHIPPING_NOT_DELIVERED',
+       });
+     }
+
+     const canSubmit = current === 'CONTENT_MAKING' || current === 'REVISION_REQUESTED' ||
+       current === 'FULLY_EXECUTED' || current === 'PAYMENT_PENDING';
     if (!canSubmit) {
       return res.status(409).json({ success: false, error: `Cannot submit content from status ${current || 'UNKNOWN'}.` });
     }

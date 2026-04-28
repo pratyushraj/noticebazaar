@@ -21,6 +21,8 @@ export interface CollabRequest {
   deliverables: string | string[];
   usage_rights: boolean;
   deadline: string | null;
+  campaign_category: string | null;
+  campaign_goal: string | null;
   status: CollabRequestStatus;
   created_at: string;
   updated_at?: string;

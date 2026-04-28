@@ -24,6 +24,15 @@ interface DealTemplate {
   addons?: { id: string, label: string, price: number }[];
 }
 
+const sanitizeDeliverables = (deliverables: unknown): string[] => {
+  if (!Array.isArray(deliverables)) return [];
+  return deliverables
+    .filter((item): item is string => typeof item === 'string')
+    .map(item => item.trim())
+    .filter(Boolean)
+    .filter(item => !/^https?:\/\//i.test(item) && !/^localhost(:\d+)?\//i.test(item) && !item.includes('localhost:8080'));
+};
+
 interface FiverrPackageEditorProps {
   templates: DealTemplate[] | null;
   avg_rate_reel?: number;
@@ -90,7 +99,7 @@ const FiverrPackageEditor: React.FC<FiverrPackageEditorProps> = ({
             t.id === 'basic' ? ['1 Reel (15-30s)', 'Organic reach focus', 'Basic editing'] :
             t.id === 'standard' ? ['1 Premium Reel (30-60s)', '30-day usage rights (for ads)', 'Script + hook optimization', '1 Story shoutout'] :
             (t.id === 'barter' || t.id === 'product_review') ? ['Product unboxing / review', '1 Story mention', 'No paid usage rights'] : []
-          ),
+          ).filter((item): item is string => typeof item === 'string' && item.trim().length > 0 && !/^https?:\/\//i.test(item) && !item.includes('localhost:8080')),
           quantities: t.quantities || {},
         })
       );
@@ -112,7 +121,7 @@ const FiverrPackageEditor: React.FC<FiverrPackageEditorProps> = ({
           budget: reelRate,
           type: 'paid',
           category: 'Short-form',
-          deliverables: ['1 Reel (15-30s)', 'Organic reach focus', 'Basic editing'],
+          deliverables: sanitizeDeliverables(['1 Reel (15-30s)', 'Organic reach focus', 'Basic editing']),
           quantities: { 'Reel': 1 },
           deadlineDays: 5,
         },
@@ -124,7 +133,7 @@ const FiverrPackageEditor: React.FC<FiverrPackageEditorProps> = ({
           budget: Math.round(reelRate * 2),
           type: 'paid',
           category: 'Premium',
-          deliverables: ['1 Premium Reel (30-60s)', '30-day usage rights (for ads)', 'Script + hook optimization', '1 Story shoutout'],
+          deliverables: sanitizeDeliverables(['1 Premium Reel (30-60s)', '30-day usage rights (for ads)', 'Script + hook optimization', '1 Story shoutout']),
           quantities: { 'Reel': 1, 'Story': 1 },
           deadlineDays: 7,
           isPopular: true,
@@ -137,7 +146,7 @@ const FiverrPackageEditor: React.FC<FiverrPackageEditorProps> = ({
           budget: 0,
           type: 'barter',
           category: 'Unboxing',
-          deliverables: ['Product unboxing / review', '1 Story mention', 'No paid usage rights'],
+          deliverables: sanitizeDeliverables(['Product unboxing / review', '1 Story mention', 'No paid usage rights']),
           quantities: { 'Unboxing Video': 1, 'Instagram Story': 1 },
           deadlineDays: 14,
         }
@@ -312,7 +321,7 @@ const FiverrPackageEditor: React.FC<FiverrPackageEditorProps> = ({
                   value={template.description || ''}
                   onChange={(e) => handleUpdate(template.id, { description: e.target.value })}
                   disabled={disabled}
-                  placeholder="What's included in this package?"
+                  placeholder="What the brand gets in this package"
                   className={cn(
                     "text-[13px] font-medium leading-relaxed border text-foreground resize-none min-h-[88px] rounded-2xl shadow-inner focus-visible:ring-emerald-400/20",
                     isDark 
@@ -323,7 +332,7 @@ const FiverrPackageEditor: React.FC<FiverrPackageEditorProps> = ({
 
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <span className={cn("text-[11px] font-black uppercase tracking-[0.24em]", isDark ? "text-white/45" : "text-slate-400")}>Deliverables</span>
+                    <span className={cn("text-[11px] font-black uppercase tracking-[0.24em]", isDark ? "text-white/45" : "text-slate-400")}>What the brand gets</span>
                     <button type="button" 
                       onClick={() => addDeliverable(template.id)}
                       className="text-[11px] text-emerald-500 hover:text-emerald-600 font-black tracking-wide"

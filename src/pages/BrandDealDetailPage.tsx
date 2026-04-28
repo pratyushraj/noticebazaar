@@ -399,11 +399,11 @@ const BrandDealDetailPage: React.FC = () => {
               </div>
 
               {/* Brand's shipping address (if relevant for returns/contract) */}
-              {(deal.brand_shipping_address || (deal as any).address) && (
+              {(deal.brand_address || (deal as any).address) && (
                 <div className="space-y-2">
                   <p className="text-xs font-semibold text-white/70">Your Shipping Address</p>
                   <div className="rounded-xl border border-white/10 bg-white/[0.03] p-3">
-                    <p className="text-sm text-white/80">{deal.brand_shipping_address || (deal as any).address}</p>
+                    <p className="text-sm text-white/80">{deal.brand_address || (deal as any).address}</p>
                   </div>
                 </div>
               )}
@@ -416,17 +416,53 @@ const BrandDealDetailPage: React.FC = () => {
             <CardContent className="p-4 space-y-4">
               <div>
                 <p className="text-[11px] uppercase tracking-wider text-white/40 mb-3">Creator Content</p>
-                {contentLink ? (
-                  <a
-                    href={contentLink}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 text-sm font-semibold text-purple-300 hover:text-purple-200 break-all"
-                  >
-                    <ExternalLink className="h-4 w-4 flex-shrink-0" />
-                    {contentLink}
-                  </a>
-                ) : (
+                {contentLink ? (() => {
+                  const urlParts = contentLink.split('/');
+                  const rawFile = urlParts[urlParts.length - 1] || 'content-file';
+                  const cleanFile = decodeURIComponent(rawFile).replace(/-\d{13,}\./, '.');
+                  const ext = cleanFile.split('.').pop()?.toLowerCase() || '';
+                  const isVideo = ['mp4', 'mov', 'webm', 'm4v', 'avi'].includes(ext);
+                  const isImage = ['jpg', 'jpeg', 'png', 'webp', 'gif'].includes(ext);
+                  const fileIcon = isVideo ? '🎬' : isImage ? '🖼️' : '📄';
+                  const fileType = isVideo ? 'Video File' : isImage ? 'Image File' : ext.toUpperCase() + ' File';
+
+                  return (
+                    <div className="rounded-xl border border-white/10 bg-white/[0.03] overflow-hidden">
+                      <div className="p-4 flex items-center gap-3">
+                        <div className="w-12 h-12 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-xl">
+                          {fileIcon}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-bold text-white truncate">{cleanFile}</p>
+                          <p className="text-[11px] text-white/40 mt-1 flex items-center gap-1.5">
+                            <span>{fileType}</span>
+                            <span className="w-1 h-1 rounded-full bg-white/20" />
+                            <span className="uppercase">.{ext}</span>
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex border-t border-white/10">
+                        <a
+                          href={contentLink}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex-1 flex items-center justify-center gap-2 py-3 text-sm font-semibold text-purple-300 hover:bg-white/5 transition-colors"
+                        >
+                          <ExternalLink className="h-4 w-4" />
+                          {isVideo ? 'Watch' : 'View'} Content
+                        </a>
+                        <div className="w-px bg-white/10" />
+                        <button
+                          onClick={() => { navigator.clipboard.writeText(contentLink); toast.success('Link copied!'); }}
+                          className="flex items-center justify-center gap-2 px-6 py-3 text-sm font-semibold text-white/60 hover:bg-white/5 transition-colors"
+                        >
+                          <Copy className="h-4 w-4" />
+                          Copy
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })() : (
                   <p className="text-sm text-white/60">
                     {isAwaitingShipment 
                       ? 'The creator is waiting for the product to start working.' 

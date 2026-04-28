@@ -6599,7 +6599,7 @@ const MobileDashboardDemo = ({
                                                                                     || ''
                                                                                 ).trim();
                                                                                 const ship = String(selectedItem?.shipping_status || '').trim().toLowerCase();
-                                                                                if (productName && ship === 'delivered' || ship === 'received') return `${productName} received`;
+                                                                                if (productName && (ship === 'delivered' || ship === 'received')) return `${productName} received`;
                                                                                 if (productName && ship === 'shipped') return `${productName} shipped to creator`;
                                                                                 if (selectedItem?.brand_address || selectedItem?.delivery_address) return productName ? `${productName} shipping details added` : 'Shipping details added';
                                                                                 return productName ? `${productName} awaiting shipping` : 'Awaiting shipping details';

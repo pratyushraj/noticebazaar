@@ -112,7 +112,7 @@ router.put('/profile', async (req: AuthenticatedRequest, res: Response) => {
     const brand = requireBrand(req, res);
     if (!brand) return;
 
-    const { name, website_url, industry, description, logo_url } = req.body;
+    const { name, website_url, industry, description, logo_url, company_address } = req.body;
 
     if (!name?.trim()) {
       return res.status(400).json({ success: false, error: 'Brand name is required' });
@@ -132,6 +132,7 @@ router.put('/profile', async (req: AuthenticatedRequest, res: Response) => {
       industry: industry || null,
       description: description || null,
       logo_url: logo_url || null,
+      company_address: company_address ? String(company_address).trim() : null,
       updated_at: new Date().toISOString(),
     };
 

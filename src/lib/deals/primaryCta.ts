@@ -152,6 +152,9 @@ export const getDealPrimaryCta = (params: { role: DealRole; deal: any }): DealPr
   const { role, deal } = params;
   const status = getCanonicalDealStatus(deal);
   const requiresShipping = isBarterLikeCollab(deal);
+  const collabType = String(deal?.collab_type || deal?.deal_type || deal?.raw?.collab_type || '').trim().toLowerCase();
+  const isPureBarter = collabType === 'barter';
+  const requiresPayment = isPaidLikeCollab(deal) && !isPureBarter;
   const shippingStatus = String(deal?.shipping_status || deal?.raw?.shipping_status || '').trim().toLowerCase();
   const hasReceivedShipment = shippingStatus === 'delivered' || shippingStatus === 'received';
   const signatureSources = [
@@ -180,17 +183,27 @@ export const getDealPrimaryCta = (params: { role: DealRole; deal: any }): DealPr
     }
     // ── Payment pending gate: brand must confirm payment ──────────────────────
     if (status === 'PAYMENT_PENDING') {
-      return { status, label: 'Confirm Payment', disabled: false, tone: 'action', action: 'confirm_payment' };
+      if (isPureBarter && requiresShipping) {
+        return { status, label: 'Add Shipping Details', disabled: false, tone: 'action', action: 'provide_shipping_address' };
+      }
+      return requiresShipping
+        ? { status, label: 'Ship Product First', disabled: true, tone: 'waiting', action: 'none' }
+        : { status, label: 'Pay Escrow', disabled: false, tone: 'action', action: 'confirm_payment' };
     }
     // ── Shipping address gate: brand must provide address ─────────────────────
     if (status === 'AWAITING_BRAND_ADDRESS') {
-      return { status, label: 'Provide Shipping Address', disabled: false, tone: 'action', action: 'provide_shipping_address' };
+      return requiresShipping
+        ? { status, label: 'Provide Shipping Address', disabled: false, tone: 'action', action: 'provide_shipping_address' }
+        : { status, label: 'Review & Sign Contract', disabled: false, tone: 'action', action: 'review_sign_contract' };
     }
     if (status === 'CONTRACT_READY' || status === 'SENT') {
       // If the brand already signed, this is no longer an "action required" step for the brand.
       // The next step is waiting for the creator to sign.
       if (brandSigned && !creatorSigned) {
         return { status, label: 'Waiting for Creator', disabled: true, tone: 'waiting', action: 'none' };
+      }
+      if (requiresShipping && !hasReceivedShipment && isPureBarter) {
+        return { status, label: 'Add Shipping Details', disabled: false, tone: 'action', action: 'provide_shipping_address' };
       }
       return { status, label: 'Review & Sign Contract', disabled: false, tone: 'action', action: 'review_sign_contract' };
     }
@@ -199,12 +212,14 @@ export const getDealPrimaryCta = (params: { role: DealRole; deal: any }): DealPr
     }
     if (status === 'CONTENT_MAKING') {
       if (requiresShipping && shippingStatus !== 'shipped' && shippingStatus !== 'delivered' && shippingStatus !== 'received') {
-        return { status, label: 'Ship Product', disabled: false, tone: 'action', action: 'track_progress' };
+        return isPureBarter
+          ? { status, label: 'Confirm Product Receipt', disabled: false, tone: 'action', action: 'track_progress' }
+          : { status, label: 'Ship Product', disabled: false, tone: 'action', action: 'track_progress' };
       }
       return { status, label: 'Track Progress', disabled: false, tone: 'view', action: 'track_progress' };
     }
     if (status === 'CONTENT_DELIVERED') {
-      return { status, label: 'Review Content', disabled: false, tone: 'action', action: 'review_content' };
+      return { status, label: 'Review & Approve', disabled: false, tone: 'action', action: 'review_content' };
     }
     if (status === 'REVISION_REQUESTED') {
       return { status, label: 'Waiting for Revision', disabled: true, tone: 'waiting', action: 'none' };
@@ -219,19 +234,29 @@ export const getDealPrimaryCta = (params: { role: DealRole; deal: any }): DealPr
   }
 
   // Creator
+  if (status === 'COMPLETED') {
+    return { status, label: 'View Summary', disabled: false, tone: 'view', action: 'view_summary' };
+  }
   // Shipping deals: never show "Mark as Delivered" until the product shipment is received.
   // (Some legacy states incorrectly set status=CONTENT_MAKING for barter/shipping deals.)
   if (requiresShipping && !hasReceivedShipment) {
     // If the brand hasn't provided their address yet, show a specific gate message
     if (status === 'AWAITING_BRAND_ADDRESS' || status === 'FULLY_EXECUTED') {
-      return { status, label: 'Waiting for Brand Address', disabled: true, tone: 'waiting', action: 'none' };
+      return { status, label: 'Waiting for Shipping Details', disabled: true, tone: 'waiting', action: 'none' };
     }
-    return { status, label: 'Waiting for Product', disabled: true, tone: 'waiting', action: 'none' };
+    return isPureBarter
+      ? { status, label: 'Waiting for Product Shipment', disabled: true, tone: 'waiting', action: 'none' }
+      : { status, label: 'Waiting for Product Shipment', disabled: true, tone: 'waiting', action: 'none' };
   }
 
   // ── Payment pending gate (creator side) ───────────────────────────────────
   if (status === 'PAYMENT_PENDING') {
-    return { status, label: 'Waiting for Payment Confirmation', disabled: true, tone: 'waiting', action: 'none' };
+    if (isPureBarter && requiresShipping) {
+      return { status, label: 'Awaiting Shipping Details', disabled: true, tone: 'waiting', action: 'none' };
+    }
+    return requiresPayment
+      ? { status, label: 'Awaiting Brand Payment', disabled: true, tone: 'waiting', action: 'none' }
+      : { status, label: 'Awaiting Shipping Details', disabled: true, tone: 'waiting', action: 'none' };
   }
 
   // ── Dispute escalation statuses (creator side) ────────────────────────────
@@ -248,12 +273,11 @@ export const getDealPrimaryCta = (params: { role: DealRole; deal: any }): DealPr
       return { status, label: 'Waiting for Brand', disabled: true, tone: 'waiting', action: 'none' };
     }
     // Otherwise, contract signing is the creator's next action.
-    return { status, label: 'Review & Sign Contract', disabled: false, tone: 'action', action: 'review_sign_contract' };
+    return { status, label: 'Sign Agreement', disabled: false, tone: 'action', action: 'review_sign_contract' };
   }
   if (status === 'FULLY_EXECUTED') {
-    const requiresPayment = isPaidLikeCollab(deal);
     if (requiresPayment) {
-      const hasPayment = deal?.payment_id || deal?.amount_paid > 0 || deal?.raw?.payment_id;
+      const hasPayment = (deal?.amount_paid && deal.amount_paid > 0);
       if (!hasPayment) {
         return { status, label: 'Awaiting Payment', disabled: true, tone: 'waiting', action: 'none' };
       }
@@ -261,7 +285,7 @@ export const getDealPrimaryCta = (params: { role: DealRole; deal: any }): DealPr
     return { status, label: 'Start Working', disabled: false, tone: 'action', action: 'start_working' };
   }
   if (status === 'CONTENT_MAKING') {
-    return { status, label: 'Mark as Delivered', disabled: false, tone: 'action', action: 'mark_delivered' };
+    return { status, label: 'Submit Content', disabled: false, tone: 'action', action: 'mark_delivered' };
   }
   if (status === 'CONTENT_DELIVERED') {
     return { status, label: 'Waiting for Review', disabled: true, tone: 'waiting', action: 'none' };
@@ -271,9 +295,6 @@ export const getDealPrimaryCta = (params: { role: DealRole; deal: any }): DealPr
   }
   if (status === 'DISPUTED') {
     return { status, label: 'View Issue', disabled: false, tone: 'view', action: 'view_issue' };
-  }
-  if (status === 'COMPLETED') {
-    return { status, label: 'View Summary', disabled: false, tone: 'view', action: 'view_summary' };
   }
   if (status === 'CANCELLED') {
     return { status, label: 'View Details', disabled: false, tone: 'view', action: 'view_details' };

@@ -597,6 +597,8 @@ async function attachPendingCollabLeadsForCreator(creatorId: string): Promise<{ 
         barter_value: claimedLead.barter_value || null,
         barter_product_image_url: claimedLead.barter_product_image_url || null,
         campaign_description: claimedLead.campaign_description,
+        campaign_category: claimedLead.campaign_category || null,
+        campaign_goal: claimedLead.campaign_goal || null,
         deliverables: claimedLead.deliverables || [],
         usage_rights: claimedLead.usage_rights === true,
         deadline: claimedLead.deadline || null,
@@ -1850,6 +1852,7 @@ router.post('/:username/submit', async (req: Request, res: Response) => {
       barter_value,
       barter_product_image_url,
       campaign_category,
+      campaign_goal,
       campaign_description,
       deliverables,
       usage_rights,
@@ -1947,6 +1950,8 @@ router.post('/:username/submit', async (req: Request, res: Response) => {
       deadline: deadline || null,
       offer_expires_at: offer_expires_at || null,
       shipping_required: requires_shipping === true || requires_shipping === 'true',
+      campaign_category: campaign_category?.trim() || null,
+      campaign_goal: campaign_goal?.trim() || null,
     };
 
     if (isPaidLikeCollab(collabTypeForDb)) {
@@ -2068,6 +2073,8 @@ router.post('/:username/submit', async (req: Request, res: Response) => {
         brand_instagram: basePayload.brand_instagram,
         collab_type: basePayload.collab_type,
         campaign_description: basePayload.campaign_description,
+        campaign_category: basePayload.campaign_category,
+        campaign_goal: basePayload.campaign_goal,
         deliverables: basePayload.deliverables,
         usage_rights: basePayload.usage_rights,
         deadline: basePayload.deadline,
@@ -2181,6 +2188,8 @@ router.post('/:username/submit', async (req: Request, res: Response) => {
       brand_logo_url: basePayload.brand_logo_url,
       collab_type: basePayload.collab_type,
       campaign_description: basePayload.campaign_description,
+      campaign_category: basePayload.campaign_category,
+      campaign_goal: basePayload.campaign_goal,
       deliverables: basePayload.deliverables,
       usage_rights: basePayload.usage_rights,
       deadline: basePayload.deadline,
@@ -2733,13 +2742,13 @@ router.get('/', async (req: AuthenticatedRequest, res: Response) => {
       return res.json(cached);
     }
 
-    // Best-effort auto-attach to make onboarding->requests seamless even if frontend
-    // doesn't explicitly call /attach-leads. Run in background to avoid delaying the list endpoint.
-    setTimeout(() => {
-      attachPendingCollabLeadsForCreator(userId).catch((attachError) => {
-        console.warn('[CollabRequests] Auto-attach leads failed (non-fatal):', attachError);
-      });
-    }, 0);
+    // Best-effort auto-attach so the dashboard immediately sees lead-captured barter offers
+    // and other pending requests after creator login.
+    try {
+      await attachPendingCollabLeadsForCreator(userId);
+    } catch (attachError) {
+      console.warn('[CollabRequests] Auto-attach leads failed (non-fatal):', attachError);
+    }
 
     // Deduplicate: keep most recent request per unique (brand_name, collab_type, exact_budget)
     // Only applied when filtering by status=pending to avoid hiding legitimate history entries
@@ -2823,7 +2832,8 @@ router.get('/', async (req: AuthenticatedRequest, res: Response) => {
       // This is critical for creator UX (budget chips, accept CTA, etc).
       if (statusNorm === 'pending' || statusNorm === 'countered') {
         if (isPaidLike(typeNorm) && !hasPaidValue) return false;
-        if (isBarterLike(typeNorm) && !hasBarterValue && !hasPaidValue) return false;
+        // Barter deals are allowed even without a specific value (the product description is enough)
+        if (isBarterLike(typeNorm) && !hasBarterValue && !hasPaidValue && typeNorm !== 'barter') return false;
       }
       return true;
     });
@@ -3078,15 +3088,34 @@ router.post('/accept/confirm', async (req: AuthenticatedRequest, res: Response) 
       } else {
         const { data: creatorProfile, error: creatorError } = await supabase
           .from('profiles')
-          .select('first_name, last_name, location')
+          .select('*')
           .eq('id', userId)
           .maybeSingle();
+
         if (creatorError) throw new Error('Failed to fetch creator profile');
         const creatorName = creatorProfile
           ? `${creatorProfile.first_name || ''} ${creatorProfile.last_name || ''}`.trim() || 'Creator'
           : 'Creator';
         const creatorEmail = creatorProfile?.email || req.user?.email || undefined;
-        const creatorAddress = creatorProfile?.location || creatorProfile?.address || undefined;
+        
+        // Resolve creator address - prioritize registered_address
+        let creatorAddress = creatorProfile?.registered_address || creatorProfile?.location || creatorProfile?.address || undefined;
+        if (creatorAddress && (creatorAddress.trim() === '' || creatorAddress.toLowerCase() === 'n/a')) {
+          creatorAddress = undefined;
+        }
+
+        // Resolve brand address - prioritize registered company_address if available
+        let companyAddressFromTable: string | null = null;
+        if (request.brand_id) {
+          const { data: brandData } = await supabase
+            .from('brands')
+            .select('company_address')
+            .eq('external_id', request.brand_id)
+            .maybeSingle();
+          companyAddressFromTable = brandData?.company_address || null;
+        }
+        const brandAddress = request.brand_address?.trim() || companyAddressFromTable || undefined;
+
         let paymentTerms: string | undefined;
         if (isPaidLikeCollab(request.collab_type)) {
           paymentTerms = `Payment expected by ${request.deadline ? new Date(request.deadline).toLocaleDateString() : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString()}`;
@@ -3112,7 +3141,7 @@ router.post('/accept/confirm', async (req: AuthenticatedRequest, res: Response) 
           paymentExpectedDate: request.deadline ? new Date(request.deadline).toLocaleDateString() : undefined,
           platform: 'Multiple Platforms',
           brandEmail: request.brand_email || undefined,
-          brandAddress: request.brand_address?.trim() || undefined,
+          brandAddress,
           brandGstin: request.brand_gstin?.trim() || undefined,
           creatorAddress,
           dealSchema,
@@ -3142,7 +3171,7 @@ router.post('/accept/confirm', async (req: AuthenticatedRequest, res: Response) 
         if (contractUrl) {
           await supabase.from('brand_deals').update({
             contract_file_url: contractUrl,
-            status: 'Drafting',
+            status: 'CONTRACT_READY', // Contract is ready, awaiting brand signature (paid deals only)
             updated_at: now,
           }).eq('id', deal.id);
         }
@@ -3249,27 +3278,27 @@ router.patch('/:id/accept', async (req: AuthenticatedRequest, res: Response) => 
         : undefined;
 
     // Create brand deal
-    const dealData: any = {
-      creator_id: userId,
-      brand_id: request.brand_id || null,
-      brand_name: request.brand_name,
-      brand_email: request.brand_email,
-      deal_amount: dealAmount,
-      deliverables: deliverablesArray.join(', '),
-      due_date: request.deadline || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-      payment_expected_date: request.deadline || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-      platform: 'Other',
-      status: 'Drafting',
-      deal_type: isBarter ? 'barter' : 'paid',
-      collab_type: normalizeCollabTypeForApi(request.collab_type) || request.collab_type,
-      shipping_required: isBarterLikeCollab(request.collab_type),
-      created_via: 'collab_request',
-      brand_address: request.brand_address,
-      brand_phone: request.brand_phone,
-      barter_product_image_url: normalizedProductImage,
-      form_data: persistedFormData,
-      // collab_request_id: request.id, // Column currently missing in production DB
-    };
+     const dealData: any = {
+       creator_id: userId,
+       brand_id: request.brand_id || null,
+       brand_name: request.brand_name,
+       brand_email: request.brand_email,
+       deal_amount: dealAmount,
+       deliverables: deliverablesArray.join(', '),
+       due_date: request.deadline || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+       payment_expected_date: request.deadline || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+       platform: 'Other',
+       status: isBarter ? 'Drafting' : 'CONTRACT_READY',
+       deal_type: isBarter ? 'barter' : 'paid',
+       collab_type: normalizeCollabTypeForApi(request.collab_type) || request.collab_type,
+       shipping_required: isBarterLikeCollab(request.collab_type),
+       created_via: 'collab_request',
+       brand_address: request.brand_address,
+       brand_phone: request.brand_phone,
+       barter_product_image_url: normalizedProductImage,
+       form_data: persistedFormData,
+       // collab_request_id: request.id, // Column currently missing in production DB
+     };
 
     const dealOptionalFields = new Set([
       'brand_id',
@@ -3472,25 +3501,45 @@ router.patch('/:id/accept', async (req: AuthenticatedRequest, res: Response) => 
         // Fetch creator profile for contract generation
         const { data: creatorProfile, error: creatorError } = await supabase
           .from('profiles')
-          .select('first_name, last_name, location')
+          .select('*')
           .eq('id', userId)
           .maybeSingle();
 
-        if (creatorError) {
-          console.error('[CollabRequests] Error fetching creator profile:', creatorError);
-          // Don't fail the whole request, just log and use defaults
-          // We can't generate a good contract without profile, but the deal exists
-        }
-
-        // Build creator name
         const creatorName = creatorProfile
-          ? `${creatorProfile.first_name || ''} ${creatorProfile.last_name || ''}`.trim() || 'Creator'
+          ? `${((creatorProfile as any).first_name || '').trim()} ${((creatorProfile as any).last_name || '').trim()}`.trim() || 'Creator'
           : 'Creator';
 
-        // Creator email from session context (recommended since missing in profiles table)
-        const creatorEmail = req.user?.email || undefined;
-        // creatorProfile.location is the canonical column for address
-        const creatorAddress = creatorProfile?.location || undefined;
+        // Resolve creator address - prioritize registered_address
+        let creatorAddress = (creatorProfile as any)?.registered_address || (creatorProfile as any)?.location || (creatorProfile as any)?.address || undefined;
+        if (creatorAddress && (creatorAddress.trim() === '' || creatorAddress.toLowerCase() === 'n/a')) {
+          creatorAddress = undefined;
+        }
+
+        // Try to get email from profile, then from req.user, then from auth as last resort
+        let creatorEmail = (creatorProfile as any)?.email || req.user?.email;
+
+        if (!creatorEmail) {
+          try {
+            const { data: authUser } = await supabase.auth.admin.getUserById(userId);
+            creatorEmail = authUser?.user?.email;
+          } catch (e) {
+            console.error('[CollabRequests] Failed to fetch creator email from auth:', e);
+          }
+        }
+
+        creatorEmail = creatorEmail || undefined;
+
+        // Resolve brand address - prioritize registered company_address if available
+        let companyAddressFromTable: string | null = null;
+        if (request.brand_id) {
+          const { data: brandData } = await supabase
+            .from('brands')
+            .select('company_address')
+            .eq('external_id', request.brand_id)
+            .maybeSingle();
+          companyAddressFromTable = brandData?.company_address || null;
+        }
+        const brandAddress = request.brand_address?.trim() || companyAddressFromTable || undefined;
 
         // Build payment terms based on collab type
         let paymentTerms: string | undefined;
@@ -3528,7 +3577,6 @@ router.patch('/:id/accept', async (req: AuthenticatedRequest, res: Response) => 
           jurisdiction_city: 'Mumbai', // Default to Mumbai, India
         };
 
-        const brandAddress = request.brand_address?.trim() || undefined;
         const canGenerateContract = Boolean(
           request.brand_name &&
           creatorName &&

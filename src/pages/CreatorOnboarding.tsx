@@ -51,7 +51,7 @@ import { CREATOR_ASSETS_BUCKET } from '@/lib/constants/storage';
 import { getApiBaseUrl } from '@/lib/utils/api';
 import { triggerHaptic } from '@/lib/utils/haptics';
 
-type OnboardingStep = 'identity' | 'reach' | 'audience' | 'style' | 'collab' | 'videoSuccess' | 'payout' | 'logistics' | 'notifications' | 'finalizing';
+type OnboardingStep = 'identity' | 'reach' | 'audience' | 'style' | 'collab' | 'videoSuccess' | 'payout' | 'verification' | 'notifications' | 'finalizing';
 
 const NICHES = [
   { id: 'beauty', label: 'Beauty', icon: '💄' },
@@ -136,7 +136,7 @@ const CITY_ALIASES: Record<string, string> = {
   allahabad: 'Prayagraj',
 };
 
-const STEP_ORDER: OnboardingStep[] = ['identity', 'reach', 'audience', 'style', 'collab', 'payout', 'notifications'];
+const STEP_ORDER: OnboardingStep[] = ['identity', 'reach', 'audience', 'style', 'collab', 'payout', 'verification', 'notifications'];
 const ONBOARDING_DRAFT_KEY = 'creator-onboarding-draft-v1';
 
 const normalizeCityValue = (value: string) => {
@@ -208,7 +208,15 @@ export default function CreatorOnboarding() {
   const [audienceAgeRange, setAudienceAgeRange] = useState<string[]>([]);
   const [isSyncing, setIsSyncing] = useState(false);
   const [followersAutoFilled, setFollowersAutoFilled] = useState(false);
+  const [legalAddress, setLegalAddress] = useState('');
+  const [useShippingAsLegal, setUseShippingAsLegal] = useState(true);
   const [activeCityField, setActiveCityField] = useState<'baseCity' | 'topCity1' | 'topCity2' | 'topCity3' | null>(null);
+  const [otpValue, setOtpValue] = useState('');
+  const [isSendingOtp, setIsSendingOtp] = useState(false);
+  const [isVerifyingOtp, setIsVerifyingOtp] = useState(false);
+  const [otpSent, setOtpSent] = useState(false);
+  const [isPhoneVerified, setIsPhoneVerified] = useState(false);
+
 
   const videoInputRef = useRef<HTMLInputElement>(null);
   const lastFetchedHandleRef = useRef<string>('');
@@ -223,9 +231,9 @@ export default function CreatorOnboarding() {
       collab: 4,
       videoSuccess: 4,
       payout: 5,
-      logistics: 5,
-      notifications: 6,
-      finalizing: 6,
+      verification: 6,
+      notifications: 7,
+      finalizing: 7,
     };
 
     return progressIndexByStep[step] ?? 0;
@@ -286,7 +294,17 @@ export default function CreatorOnboarding() {
           .filter(Boolean)
       );
     }
-  }, [profile, instagramHandle, selectedNiches, contentVibes, baseRate, bio, upiId, shippingAddress, topCity1, topCity2, topCity3, phone, followerCount]);
+    if (profile?.pincode && !pincode) {
+      setPincode(profile.pincode);
+    }
+    if (profile?.registered_address && !legalAddress) {
+      setLegalAddress(profile.registered_address);
+      setUseShippingAsLegal(false);
+    }
+    if (profile?.phone_verified && !isPhoneVerified) {
+      setIsPhoneVerified(true);
+    }
+  }, [profile, instagramHandle, selectedNiches, contentVibes, baseRate, bio, upiId, shippingAddress, topCity1, topCity2, topCity3, phone, followerCount, pincode, legalAddress, isPhoneVerified]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -447,6 +465,10 @@ export default function CreatorOnboarding() {
       setStep('videoSuccess');
       return;
     }
+    if (step === 'verification') {
+      setStep('payout');
+      return;
+    }
     if (step === 'finalizing') {
       setStep('notifications');
       return;
@@ -568,7 +590,7 @@ export default function CreatorOnboarding() {
         toast.error('Please enter your UPI ID for payments');
         return;
       }
-      setStep('notifications');
+      setStep('verification');
       updateProfileMutation.mutate({
         id: profile!.id,
         payout_upi: upiId || null,
@@ -577,12 +599,94 @@ export default function CreatorOnboarding() {
         location: shippingAddress ? `${shippingAddress}${pincode ? ', ' + pincode : ''}` : null,
         shipping_address: shippingAddress || null,
         pincode: pincode || null,
+        registered_address: useShippingAsLegal ? shippingAddress : (legalAddress || shippingAddress),
       } as any);
+      return;
+    }
+
+    if (step === 'verification') {
+      if (!isPhoneVerified) {
+        toast.error('Please verify your identity with OTP');
+        return;
+      }
+      setStep('notifications');
       return;
     }
   };
 
-  const handleVideoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleSendOtp = async () => {
+    if (!phone || phone.length < 10) {
+      toast.error('Please enter a valid phone number in Settlements step');
+      return;
+    }
+    triggerHaptic?.();
+    setIsSendingOtp(true);
+    try {
+      const apiBaseUrl = getApiBaseUrl();
+      const { data: sessionData } = await supabase.auth.getSession();
+      const token = sessionData.session?.access_token;
+
+      const response = await fetch(`${apiBaseUrl}/api/otp/onboarding/send`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ phone }),
+      });
+
+      const data = await response.json();
+      if (response.ok && data.success) {
+        setOtpSent(true);
+        toast.success('OTP sent successfully!');
+      } else {
+        toast.error(data.error || 'Failed to send OTP');
+      }
+    } catch (err: any) {
+      toast.error('Error: ' + err.message);
+    } finally {
+      setIsSendingOtp(false);
+    }
+  };
+
+  const handleVerifyOtp = async () => {
+    if (!otpValue || otpValue.length !== 6) {
+      toast.error('Please enter 6-digit OTP');
+      return;
+    }
+    triggerHaptic?.();
+    setIsVerifyingOtp(true);
+    try {
+      const apiBaseUrl = getApiBaseUrl();
+      const { data: sessionData } = await supabase.auth.getSession();
+      const token = sessionData.session?.access_token;
+
+      const response = await fetch(`${apiBaseUrl}/api/otp/onboarding/verify`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ otp: otpValue }),
+      });
+
+      const data = await response.json();
+      if (response.ok && data.success) {
+        setIsPhoneVerified(true);
+        toast.success('Identity verified successfully!');
+        // Small delay then proceed
+        setTimeout(() => {
+          setStep('notifications');
+        }, 1500);
+      } else {
+        toast.error(data.error || 'Invalid OTP');
+      }
+    } catch (err: any) {
+      toast.error('Error: ' + err.message);
+    } finally {
+      setIsVerifyingOtp(false);
+    }
+  };
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -682,6 +786,8 @@ export default function CreatorOnboarding() {
         audience_gender_split: audienceGenderSplit || null,
         audience_age_range: audienceAgeRange.length ? audienceAgeRange.join(', ') : null,
         collab_past_work_items: portfolioItems,
+        registered_address: useShippingAsLegal ? shippingAddress : (legalAddress || shippingAddress),
+        phone_verified: isPhoneVerified,
         onboarding_complete: true,
         open_to_collabs: true,
       } as any);
@@ -1482,6 +1588,53 @@ export default function CreatorOnboarding() {
                     className="h-[68px] px-6 rounded-[24px] border-white/10 bg-white/5 font-bold text-white focus:border-emerald-500/50 focus:bg-white/10 transition-all shadow-none outline-none"
                   />
                 </div>
+
+                <div className="pt-4 space-y-4">
+                  <button 
+                    type="button"
+                    onClick={() => {
+                      triggerHaptic?.();
+                      setUseShippingAsLegal(!useShippingAsLegal);
+                    }}
+                    className="flex items-center gap-3 group/check"
+                  >
+                    <div className={cn(
+                      "w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-all",
+                      useShippingAsLegal 
+                        ? "bg-emerald-500 border-emerald-400 shadow-[0_5px_15px_rgba(16,185,129,0.3)]" 
+                        : "bg-white/5 border-white/10 group-hover/check:border-white/20"
+                    )}>
+                      {useShippingAsLegal && <Check className="w-4 h-4 text-white" />}
+                    </div>
+                    <span className="text-[10px] font-black uppercase tracking-widest text-white/40 group-hover/check:text-white/60 transition-colors">
+                      Use shipping address for legal contracts
+                    </span>
+                  </button>
+
+                  <AnimatePresence>
+                    {!useShippingAsLegal && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: 'auto', opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        className="overflow-hidden"
+                      >
+                        <div className="space-y-3 group pt-2">
+                          <Label className="text-[10px] font-black uppercase tracking-widest text-white/30 px-1 group-focus-within:text-emerald-400">Registered/Legal Address</Label>
+                          <Textarea
+                            value={legalAddress}
+                            onChange={e => setLegalAddress(e.target.value)}
+                            placeholder="Your permanent home/office address..."
+                            className="min-h-[100px] p-6 rounded-[28px] border-white/10 bg-white/5 font-semibold text-white focus:border-emerald-500/50 focus:bg-white/10 transition-all shadow-none resize-none outline-none"
+                          />
+                          <p className="text-[9px] font-bold text-white/20 uppercase tracking-widest px-1">
+                            Only visible in the deal contract PDF
+                          </p>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
               </div>
 
               <div className="mt-auto pt-12 w-full">
@@ -1495,6 +1648,132 @@ export default function CreatorOnboarding() {
                   ) : (
                     <>Save & Continue <ArrowRight className="w-6 h-6" /></>
                   )}
+                </Button>
+              </div>
+            </OnboardingSlide>
+          )}
+
+          {step === 'verification' && (
+            <OnboardingSlide key="verification" slideKey="verification">
+              <div className="text-center mb-10">
+                <motion.div 
+                   initial={{ scale: 0.8, opacity: 0 }}
+                   animate={{ scale: 1, opacity: 1 }}
+                   className="w-16 h-16 bg-emerald-500/10 rounded-2xl flex items-center justify-center mb-6 mx-auto border border-emerald-500/20"
+                >
+                  <ShieldCheck className="w-8 h-8 text-emerald-400" />
+                </motion.div>
+                <h1 className="text-3xl font-black tracking-tight text-white mb-2 uppercase italic">Verification</h1>
+                <p className="text-white/30 font-black text-[10px] uppercase tracking-[0.3em]">Identity & Legal Address</p>
+              </div>
+
+              <div className="w-full space-y-8 text-left">
+                {/* Legal Info Summary */}
+                <div className="p-6 rounded-[32px] bg-white/5 border border-white/10 space-y-4">
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center border border-white/10">
+                      <Phone className="w-5 h-5 text-emerald-400" />
+                    </div>
+                    <div>
+                      <p className="text-[10px] font-black uppercase tracking-widest text-white/30">Verified Phone</p>
+                      <p className="text-lg font-black text-white italic">{phone}</p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-start gap-4">
+                    <div className="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center border border-white/10 shrink-0">
+                      <MapPin className="w-5 h-5 text-emerald-400" />
+                    </div>
+                    <div>
+                      <p className="text-[10px] font-black uppercase tracking-widest text-white/30">Registered Address</p>
+                      <p className="text-xs font-bold text-white/60 leading-relaxed mt-1">
+                        {useShippingAsLegal ? shippingAddress : legalAddress}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {!isPhoneVerified ? (
+                  <div className="space-y-6">
+                    {!otpSent ? (
+                      <div className="space-y-4">
+                        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-white/40 text-center px-4 leading-relaxed">
+                          We'll send a 6-digit OTP to your WhatsApp to verify your identity for legal contracts.
+                        </p>
+                        <Button
+                          onClick={handleSendOtp}
+                          disabled={isSendingOtp}
+                          className="w-full h-16 rounded-[24px] bg-white/10 hover:bg-white/20 text-white font-black uppercase tracking-widest border border-white/10 transition-all flex items-center justify-center gap-3"
+                        >
+                          {isSendingOtp ? <Loader2 className="w-5 h-5 animate-spin" /> : <>Send OTP via WhatsApp <ArrowRight className="w-4 h-4" /></>}
+                        </Button>
+                      </div>
+                    ) : (
+                      <motion.div 
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="space-y-6"
+                      >
+                        <div className="space-y-3">
+                          <Label className="text-[10px] font-black uppercase tracking-widest text-white/30 px-1">Enter 6-Digit OTP</Label>
+                          <div className="relative">
+                            <Input
+                              value={otpValue}
+                              onChange={e => setOtpValue(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                              placeholder="0 0 0 0 0 0"
+                              className="h-[72px] text-center text-3xl font-black tracking-[0.5em] bg-white/5 border-white/10 rounded-[26px] text-white focus:border-emerald-500/50 focus:bg-white/10 transition-all outline-none"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="space-y-3">
+                          <Button
+                            onClick={handleVerifyOtp}
+                            disabled={isVerifyingOtp || otpValue.length !== 6}
+                            className="w-full h-16 rounded-[24px] bg-emerald-500 hover:bg-emerald-400 text-white font-black uppercase tracking-widest shadow-lg shadow-emerald-500/20 active:scale-95 transition-all flex items-center justify-center gap-3"
+                          >
+                            {isVerifyingOtp ? <Loader2 className="w-5 h-5 animate-spin" /> : "Verify & Continue"}
+                          </Button>
+                          <button 
+                            onClick={handleSendOtp}
+                            disabled={isSendingOtp}
+                            className="w-full text-[10px] font-black uppercase tracking-widest text-white/20 hover:text-white/40 transition-colors py-2"
+                          >
+                            Resend Code
+                          </button>
+                        </div>
+                      </motion.div>
+                    )}
+                  </div>
+                ) : (
+                  <motion.div 
+                    initial={{ scale: 0.9, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    className="p-8 rounded-[32px] bg-emerald-500/10 border border-emerald-500/20 text-center space-y-4"
+                  >
+                    <div className="w-16 h-16 rounded-full bg-emerald-500 text-white flex items-center justify-center mx-auto shadow-xl shadow-emerald-500/20">
+                      <Check className="w-8 h-8" strokeWidth={4} />
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-black italic text-white uppercase">Identity Verified</h3>
+                      <p className="text-[10px] font-black uppercase tracking-widest text-emerald-400/60 mt-1">Legally binding profile ready</p>
+                    </div>
+                  </motion.div>
+                )}
+              </div>
+
+              <div className="mt-auto pt-12 w-full">
+                <Button
+                  onClick={handleNext}
+                  disabled={!isPhoneVerified}
+                  className={cn(
+                    "w-full h-[72px] rounded-[26px] font-black italic text-xl active:scale-95 transition-all flex items-center justify-center gap-3 border-none uppercase tracking-widest",
+                    isPhoneVerified 
+                      ? "bg-emerald-500 hover:bg-emerald-400 text-white shadow-[0_20px_40px_rgba(16,185,129,0.2)]" 
+                      : "bg-white/5 text-white/20 cursor-not-allowed"
+                  )}
+                >
+                  Continue <ArrowRight className="w-6 h-6" />
                 </Button>
               </div>
             </OnboardingSlide>

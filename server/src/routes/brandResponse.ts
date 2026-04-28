@@ -7,6 +7,7 @@ import { Router, Request, Response } from 'express';
 import { supabase, supabaseInitialized } from '../lib/supabase.js';
 import crypto from 'crypto';
 import { generateContractFromScratch } from '../services/contractGenerator.js';
+import { createContractReadyToken } from '../services/contractReadyTokenService.js';
 
 const router = Router();
 
@@ -646,11 +647,22 @@ router.post('/:token', async (req: Request, res: Response) => {
         // Fetch creator details for contract generation
         const { data: creator, error: creatorError } = await supabase
           .from('profiles')
-          .select('id, first_name, last_name, email, address')
+          .select('id, first_name, last_name, email, address, location, registered_address')
           .eq('id', deal.creator_id)
           .single();
 
         if (!creatorError && creator) {
+          // Fetch brand details for legal address if brand_id is available
+          let companyAddressFromTable: string | null = null;
+          if (deal.brand_id) {
+            const { data: brandData } = await supabase
+              .from('brands')
+              .select('company_address')
+              .eq('external_id', deal.brand_id)
+              .maybeSingle();
+            companyAddressFromTable = brandData?.company_address || null;
+          }
+
           // Fetch analysis data if available
           let analysisData: any = null;
           if (deal.analysis_report_id) {
@@ -687,15 +699,31 @@ router.post('/:token', async (req: Request, res: Response) => {
             ? `${creator.first_name} ${creator.last_name}`
             : creator.first_name || creator.email?.split('@')[0] || 'Creator';
 
+          // Get creator address - prioritize registered_address for legal contracts
+          let creatorAddress: string | null = creator.registered_address || null;
+
+          if (!creatorAddress || creatorAddress.trim() === '' || creatorAddress.toLowerCase() === 'n/a') {
+            const locationValue = creator.location;
+            const addressValue = creator.address;
+
+            const rawAddress = (locationValue && typeof locationValue === 'string' && locationValue.trim() !== '' && locationValue.toLowerCase() !== 'n/a')
+              ? locationValue.trim()
+              : (addressValue && typeof addressValue === 'string' && addressValue.trim() !== '' && addressValue.toLowerCase() !== 'n/a')
+                ? addressValue.trim()
+                : null;
+
+            creatorAddress = rawAddress;
+          }
+
           const contractRequest = {
             brandName: deal.brand_name || 'Brand',
             creatorName: creatorName,
             dealAmount: deal.deal_amount || 0,
             deliverables: deliverablesList.length > 0 ? deliverablesList : ['As per agreement'],
             brandEmail: deal.brand_email || null,
-            brandAddress: dealSchema.brand_address || null,
+            brandAddress: dealSchema.brand_address || companyAddressFromTable || null,
             creatorEmail: creator.email || null,
-            creatorAddress: creator.address || null,
+            creatorAddress: creatorAddress,
             dealSchema: dealSchema,
             usageType: dealSchema.usage_type || null,
             usagePlatforms: dealSchema.usage_platforms || [dealSchema.platform || 'Instagram'],
@@ -736,9 +764,32 @@ router.post('/:token', async (req: Request, res: Response) => {
               .from('brand_deals')
               .update({
                 contract_file_url: urlData.publicUrl,
+                status: 'CONTRACT_READY',
                 updated_at: new Date().toISOString()
               })
               .eq('id', tokenData.deal_id);
+
+            try {
+              const { data: activeToken } = await supabase
+                .from('contract_ready_tokens')
+                .select('id')
+                .eq('deal_id', tokenData.deal_id)
+                .eq('is_active', true)
+                .is('revoked_at', null)
+                .order('created_at', { ascending: false })
+                .limit(1)
+                .maybeSingle();
+
+              if (!activeToken?.id) {
+                await createContractReadyToken({
+                  dealId: tokenData.deal_id,
+                  creatorId: deal.creator_id,
+                  expiresAt: null,
+                });
+              }
+            } catch (tokenErr) {
+              console.warn('[BrandResponse] Failed to ensure contract-ready token:', tokenErr);
+            }
 
             contractGenerated = true;
             console.log('[BrandResponse] Contract auto-generated successfully');

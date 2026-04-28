@@ -10,22 +10,22 @@ const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-async function checkDealsSchema() {
-  const { data: deals, error } = await supabase
+async function checkDeal() {
+  const dealId = '408e6fac-cb12-4694-b2a1-971eb92f9bce';
+
+  const { data, error } = await supabase
     .from('brand_deals')
-    .select('*')
-    .limit(1);
+    .select('id, deal_type, shipping_required, shipping_status, brand_name')
+    .eq('id', dealId)
+    .single();
 
   if (error) {
-    console.error('Error:', error);
+    console.error(error);
     return;
   }
 
-  if (deals && deals.length > 0) {
-    console.log('Columns in brand_deals:', Object.keys(deals[0]));
-  } else {
-    console.log('No deals found to check schema');
-  }
+  console.log('Deal Data:');
+  console.log(JSON.stringify(data, null, 2));
 }
 
-checkDealsSchema();
+checkDeal();

@@ -747,7 +747,7 @@ router.post('/generate-contract-from-scratch', async (req: AuthenticatedRequest,
       // Now try with specific columns
       const { data: currentUserProfile, error: profileError } = await supabase
         .from('profiles')
-        .select('first_name, last_name, location')
+        .select('first_name, last_name, location, address, registered_address')
         .eq('id', userId)
         .maybeSingle();
 
@@ -782,13 +782,11 @@ router.post('/generate-contract-from-scratch', async (req: AuthenticatedRequest,
         const fullName = `${firstName} ${lastName}`.trim();
         creatorName = fullName || firstName || lastName || 'Creator';
 
-        // Try location first (where address is stored)
-        const locationValue = profileToUse.location;
-        const profileAddress = (locationValue && typeof locationValue === 'string' && locationValue.trim() !== '')
-          ? locationValue.trim()
-          : null;
-
-        creatorAddress = profileAddress || undefined;
+        // Resolve creator address - prioritize registered_address
+        creatorAddress = (profileToUse as any).registered_address || (profileToUse as any).location || (profileToUse as any).address || undefined;
+        if (creatorAddress && (creatorAddress.trim() === '' || creatorAddress.toLowerCase() === 'n/a')) {
+          creatorAddress = undefined;
+        }
 
         console.log('[Protection] Set creator info from profile:', {
           creatorName,
@@ -830,7 +828,7 @@ router.post('/generate-contract-from-scratch', async (req: AuthenticatedRequest,
     if (deal.creator_id && deal.creator_id !== userId) {
       const { data: profileData, error: otherUserError } = await supabase
         .from('profiles')
-        .select('first_name, last_name, location')
+        .select('first_name, last_name, location, address, registered_address')
         .eq('id', deal.creator_id)
         .maybeSingle();
 
@@ -845,8 +843,11 @@ router.post('/generate-contract-from-scratch', async (req: AuthenticatedRequest,
         const fullName = `${firstName} ${lastName}`.trim();
         creatorName = fullName || firstName || lastName || 'Creator';
 
-        const profileAddress = profileData.location;
-        creatorAddress = profileAddress && profileAddress.trim() !== '' ? profileAddress.trim() : undefined;
+        // Resolve creator address - prioritize registered_address
+        creatorAddress = (profileData as any).registered_address || (profileData as any).location || (profileData as any).address || undefined;
+        if (creatorAddress && (creatorAddress.trim() === '' || creatorAddress.toLowerCase() === 'n/a')) {
+          creatorAddress = undefined;
+        }
 
         // For other users, we can't get their email from auth.users, so it stays undefined
         // This is okay - email validation will fail and user will need to add it to deal
@@ -866,7 +867,7 @@ router.post('/generate-contract-from-scratch', async (req: AuthenticatedRequest,
 
       const { data: fallbackProfile, error: fallbackError } = await supabase
         .from('profiles')
-        .select('first_name, last_name, location')
+        .select('first_name, last_name, location, address, registered_address')
         .eq('id', userId)
         .maybeSingle(); // Use maybeSingle() instead of single() to avoid error if not found
 
@@ -892,8 +893,11 @@ router.post('/generate-contract-from-scratch', async (req: AuthenticatedRequest,
           console.log('[Protection] Updated creatorName from fallback:', creatorName);
         }
         if (!creatorAddress) {
-          const fallbackAddress = fallbackProfile.location;
-          creatorAddress = fallbackAddress && fallbackAddress.trim() !== '' ? fallbackAddress.trim() : creatorAddress;
+          // Resolve creator address - prioritize registered_address
+          creatorAddress = (fallbackProfile as any).registered_address || (fallbackProfile as any).location || (fallbackProfile as any).address || creatorAddress;
+          if (creatorAddress && (creatorAddress.trim() === '' || creatorAddress.toLowerCase() === 'n/a')) {
+            creatorAddress = undefined;
+          }
           console.log('[Protection] Updated creatorAddress from fallback:', creatorAddress);
         }
       } else if (fallbackError) {
@@ -917,9 +921,21 @@ router.post('/generate-contract-from-scratch', async (req: AuthenticatedRequest,
     const dealSchema = buildDealSchemaFromDealData(deal);
 
     // Validate required fields before generation
+    // Resolve brand address - prioritize registered company_address if available
+    let companyAddressFromTable: string | null = null;
+    if (deal.brand_id) {
+      const { data: brandData } = await supabase
+        .from('brands')
+        .select('company_address')
+        .eq('external_id', deal.brand_id)
+        .maybeSingle();
+      companyAddressFromTable = brandData?.company_address || null;
+    }
+    const finalBrandAddress = (deal as any).brand_address || companyAddressFromTable || undefined;
+
     const brandInfo = {
       name: deal.brand_name || 'Brand',
-      address: (deal as any).brand_address,
+      address: finalBrandAddress,
       email: deal.brand_email,
     };
 
@@ -927,9 +943,12 @@ router.post('/generate-contract-from-scratch', async (req: AuthenticatedRequest,
     // This is a critical fallback - always try to get address from profile
     // Also do a fresh database query if needed
     if ((!creatorAddress || creatorAddress.trim() === '') && creatorProfile) {
-      const finalAddress = creatorProfile.location || creatorProfile.address;
-      if (finalAddress && typeof finalAddress === 'string' && finalAddress.trim() !== '') {
-        creatorAddress = finalAddress.trim();
+      creatorAddress = (creatorProfile as any).registered_address || (creatorProfile as any).location || (creatorProfile as any).address || undefined;
+      if (creatorAddress && (creatorAddress.trim() === '' || creatorAddress.toLowerCase() === 'n/a')) {
+        creatorAddress = undefined;
+      }
+      if (creatorAddress) {
+        creatorAddress = creatorAddress.trim();
         console.log('[Protection] Final address extraction from profile:', {
           address: creatorAddress,
           addressLength: creatorAddress.length,
@@ -956,18 +975,12 @@ router.post('/generate-contract-from-scratch', async (req: AuthenticatedRequest,
         console.log('[Protection] Attempting fresh database query for location...');
         const { data: freshProfile, error: freshError } = await supabase
           .from('profiles')
-          .select('location')
+          .select('location, address, registered_address')
           .eq('id', userId)
           .maybeSingle();
 
         if (freshProfile && !freshError) {
-          const freshLocation = freshProfile.location;
-          const freshAddress = freshProfile.address;
-          const freshFinal = (freshLocation && typeof freshLocation === 'string' && freshLocation.trim() !== '')
-            ? freshLocation.trim()
-            : (freshAddress && typeof freshAddress === 'string' && freshAddress.trim() !== '')
-              ? freshAddress.trim()
-              : null;
+          const freshFinal = freshProfile.registered_address || freshProfile.location || freshProfile.address || null;
 
           if (freshFinal) {
             creatorAddress = freshFinal;
@@ -1014,7 +1027,7 @@ router.post('/generate-contract-from-scratch', async (req: AuthenticatedRequest,
     // CRITICAL: Ensure address is set from profile if it exists
     // This is a final safety check before creating creatorInfo
     if ((!creatorAddress || creatorAddress.trim() === '') && creatorProfile) {
-      const safetyCheck = creatorProfile.location || creatorProfile.address;
+      const safetyCheck = creatorProfile.registered_address || creatorProfile.location || creatorProfile.address;
       if (safetyCheck && typeof safetyCheck === 'string' && safetyCheck.trim() !== '') {
         creatorAddress = safetyCheck.trim();
         console.log('[Protection] Safety check: Extracted address from profile:', {
@@ -1191,8 +1204,8 @@ router.post('/generate-contract-from-scratch', async (req: AuthenticatedRequest,
       platform: deal.platform || 'Multiple Platforms',
       brandEmail: deal.brand_email || undefined,
       brandPhone: (deal as any).brand_phone || undefined,
-      brandAddress: (deal as any).brand_address || undefined,
-      creatorAddress: creatorAddress || creatorProfile?.location || creatorProfile?.address || undefined,
+      brandAddress: finalBrandAddress,
+      creatorAddress: creatorAddress || (creatorProfile as any)?.registered_address || (creatorProfile as any)?.location || (creatorProfile as any)?.address || undefined,
       // Pass structured schema
       dealSchema,
       // Pass usage and exclusivity settings if available
@@ -1409,15 +1422,32 @@ router.post('/generate-contract-docx', async (req: AuthenticatedRequest, res: Re
 
     const { data: creatorProfile } = await supabase
       .from('profiles')
-      .select('first_name, last_name, location')
+      .select('first_name, last_name, location, address, registered_address')
       .eq('id', deal.creator_id)
       .single();
 
     if (creatorProfile) {
       creatorName = (creatorProfile.first_name + ' ' + (creatorProfile.last_name || '')).trim() || creatorName;
       creatorEmail = req.user?.email || creatorEmail; // Use auth email if available
-      creatorAddress = creatorProfile.location || (deal as any).creator_address;
+      
+      // Resolve creator address - prioritize registered_address
+      creatorAddress = (creatorProfile as any).registered_address || (creatorProfile as any).location || (creatorProfile as any).address || (deal as any).creator_address;
+      if (creatorAddress && (creatorAddress.trim() === '' || creatorAddress.toLowerCase() === 'n/a')) {
+        creatorAddress = (deal as any).creator_address;
+      }
     }
+
+    // Resolve brand address - prioritize registered company_address if available
+    let companyAddressFromTable: string | null = null;
+    if (deal.brand_id) {
+      const { data: brandData } = await supabase
+        .from('brands')
+        .select('company_address')
+        .eq('external_id', deal.brand_id)
+        .maybeSingle();
+      companyAddressFromTable = brandData?.company_address || null;
+    }
+    const finalBrandAddress = (deal as any).brand_address || companyAddressFromTable || undefined;
 
     // Fetch signatures if available
     const { data: signatures } = await supabase
@@ -1435,7 +1465,7 @@ router.post('/generate-contract-docx', async (req: AuthenticatedRequest, res: Re
       dealAmount: deal.deal_amount || 0,
       deliverables: Array.isArray(deal.deliverables) ? deal.deliverables : [deal.deliverables || 'As per agreement'],
       brandEmail: deal.brand_email,
-      brandAddress: (deal as any).brand_address,
+      brandAddress: finalBrandAddress,
       creatorEmail: creatorEmail,
       creatorAddress: creatorAddress,
       dealSchema: (deal as any).deal_schema,

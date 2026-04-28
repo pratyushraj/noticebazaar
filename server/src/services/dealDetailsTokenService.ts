@@ -235,9 +235,20 @@ export async function submitDealDetails(
     // Fetch creator details
     const { data: creator, error: creatorError } = await supabase
       .from('profiles')
-      .select('id, first_name, last_name, address, location')
+      .select('id, first_name, last_name, address, location, registered_address')
       .eq('id', token.creator_id)
       .single();
+
+    // Fetch brand details if brand_id exists on token (if we have a linked brand)
+    let companyAddressFromTable: string | null = null;
+    if (token.brand_id) {
+      const { data: brandData } = await supabase
+        .from('brands')
+        .select('company_address')
+        .eq('external_id', token.brand_id)
+        .maybeSingle();
+      companyAddressFromTable = brandData?.company_address || null;
+    }
 
     // Get email from auth.users
     let creatorEmail: string | null = null;
@@ -259,18 +270,21 @@ export async function submitDealDetails(
         ? `${creator.first_name} ${creator.last_name}`
         : creator.first_name || creator.email?.split('@')[0] || 'Creator';
 
-      // Get creator address
-      let creatorAddress: string | null = null;
-      const locationValue = creator.location;
-      const addressValue = creator.address;
+      // Get creator address - prioritize registered_address for legal contracts
+      let creatorAddress: string | null = creator.registered_address || null;
 
-      const rawAddress = (locationValue && typeof locationValue === 'string' && locationValue.trim() !== '' && locationValue.toLowerCase() !== 'n/a')
-        ? locationValue.trim()
-        : (addressValue && typeof addressValue === 'string' && addressValue.trim() !== '' && addressValue.toLowerCase() !== 'n/a')
-          ? addressValue.trim()
-          : null;
+      if (!creatorAddress || creatorAddress.trim() === '' || creatorAddress.toLowerCase() === 'n/a') {
+        const locationValue = creator.location;
+        const addressValue = creator.address;
 
-      creatorAddress = rawAddress;
+        const rawAddress = (locationValue && typeof locationValue === 'string' && locationValue.trim() !== '' && locationValue.toLowerCase() !== 'n/a')
+          ? locationValue.trim()
+          : (addressValue && typeof addressValue === 'string' && addressValue.trim() !== '' && addressValue.toLowerCase() !== 'n/a')
+            ? addressValue.trim()
+            : null;
+
+        creatorAddress = rawAddress;
+      }
 
       const dealAmount = formData.dealType === 'paid' && formData.paymentAmount
         ? parseFloat(formData.paymentAmount) || 0
@@ -282,7 +296,7 @@ export async function submitDealDetails(
         dealAmount: dealAmount,
         deliverables: deliverablesList,
         brandEmail: formData.companyEmail || null,
-        brandAddress: formData.companyAddress || null,
+        brandAddress: formData.companyAddress || companyAddressFromTable || null,
         creatorEmail: creatorEmail || null,
         creatorAddress: creatorAddress,
         dealSchema: {

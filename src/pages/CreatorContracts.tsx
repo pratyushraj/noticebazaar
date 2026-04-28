@@ -23,21 +23,16 @@ const CreatorContracts = () => {
   const navigate = useNavigate();
   const { profile } = useSession();
 
-  // Fetch real brand deals data (single call for both data and loading state)
-  const { data: rawBrandDeals = [], isLoading: isLoadingDeals, refetch: refetchDeals } = useBrandDeals({
-    creatorId: profile?.id,
-    enabled: !!profile?.id,
-  });
+   // Fetch real brand deals data (single call for both data and loading state)
+   const { data: rawBrandDeals = [], isLoading: isLoadingDeals, refetch: refetchDeals } = useBrandDeals({
+     creatorId: profile?.id,
+     enabled: !!profile?.id,
+   });
 
-  // Filter out incomplete barter deals (no delivery address)
-  const brandDeals = useMemo(() => {
-    return rawBrandDeals.filter(deal => {
-      if (deal.deal_type === 'barter' && (deal.status === 'Drafting' || (deal as any).status === 'drafting') && !deal.delivery_address) {
-        return false;
-      }
-      return true;
-    });
-  }, [rawBrandDeals]);
+   // Include all deals; incomplete barter deals will display with 'Add delivery details' CTA
+   const brandDeals = useMemo(() => {
+     return rawBrandDeals;
+   }, [rawBrandDeals]);
 
   // Refetch deals when component mounts or becomes visible (to catch newly created deals)
   useEffect(() => {

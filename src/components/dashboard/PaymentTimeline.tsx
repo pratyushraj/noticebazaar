@@ -43,9 +43,9 @@ const PaymentTimeline: React.FC<PaymentTimelineProps> = ({
       date: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
       amount: 35000,
       status: 'completed',
-      label: 'Payment Received',
+      label: 'Milestone Completed',
       brandName: 'Zepto',
-      description: '₹35,000 credited',
+      description: 'Deliverable approved',
     },
     {
       id: '3',
@@ -61,16 +61,16 @@ const PaymentTimeline: React.FC<PaymentTimelineProps> = ({
       date: new Date(Date.now() + 10 * 24 * 60 * 60 * 1000),
       amount: 45000,
       status: 'pending',
-      label: 'Payment Expected',
+      label: 'Next Milestone',
       brandName: 'Spotify',
-      description: 'Upon approval',
+      description: 'Upon completion',
     },
     {
       id: '5',
       date: new Date(Date.now() - 8 * 24 * 60 * 60 * 1000),
       amount: 25000,
       status: 'overdue',
-      label: 'Payment Overdue',
+      label: 'Milestone Overdue',
       brandName: 'Fashion Nova',
       description: '5 days pending',
     },
@@ -134,7 +134,7 @@ const PaymentTimeline: React.FC<PaymentTimelineProps> = ({
             'text-base font-bold tracking-tight',
             isDark ? 'text-foreground' : 'text-muted-foreground'
           )}>
-            💰 Payment Timeline
+            📍 Deal Timeline
           </h3>
           <Badge variant="outline" className={cn(
             isDark ? 'bg-info/20 text-info border-info/30' : 'bg-info text-info border-info'

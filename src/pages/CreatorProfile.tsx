@@ -385,6 +385,7 @@ const ProfileSettings = () => {
     autoPricingEnabled: false,
     dealTemplates: [] as DealTemplate[],
     upiId: "",
+    registered_address: "",
   });
 
   const isDirty = useMemo(() => {
@@ -401,9 +402,8 @@ const ProfileSettings = () => {
       formData.addressLine !== (parseLocationString(profile.location || '').addressLine || '') ||
       formData.city !== (parseLocationString(profile.location || '').city || '') ||
       formData.state !== (parseLocationString(profile.location || '').state || '') ||
-      formData.pricingMin !== (profile.pricing_min?.toString() || '') ||
-      formData.pricingAvg !== (profile.pricing_avg?.toString() || '') ||
-      formData.pricingMax !== (profile.pricing_max?.toString() || '')
+      formData.pricingMax !== (profile.pricing_max?.toString() || '') ||
+      formData.registered_address !== (profile.registered_address || '')
     );
   }, [formData, profile]);
 
@@ -526,6 +526,7 @@ const ProfileSettings = () => {
         collaborationPreference: savedCollabPreference,
         autoPricingEnabled: !!profile.auto_pricing_enabled,
         dealTemplates: Array.isArray(profile.deal_templates) ? profile.deal_templates : [],
+        registered_address: profile.registered_address || '',
       } as any);
       setGenderSplit(profile.audience_gender_split || '');
       setTopCities(
@@ -1311,6 +1312,7 @@ const ProfileSettings = () => {
         // Always include location (address) - required for contracts
         // Save trimmed value
         location: locationValue.trim(),
+        registered_address: formData.registered_address?.trim() || null,
       };
 
       console.log('[CreatorProfile] Saving profile with location:', {
@@ -1465,7 +1467,8 @@ const ProfileSettings = () => {
         addressLine: savedParsedLocation.addressLine || prev.addressLine,
         city: savedParsedLocation.city || finalCity || prev.city, // Ensure city is preserved
         state: savedParsedLocation.state || finalState || prev.state, // Ensure state is preserved
-        pincode: savedParsedLocation.pincode || finalPincode || prev.pincode
+        pincode: savedParsedLocation.pincode || finalPincode || prev.pincode,
+        registered_address: formData.registered_address
       }));
 
       console.log('[CreatorProfile] Updated formData after save:', {
@@ -2217,6 +2220,30 @@ const ProfileSettings = () => {
                     />
                   </div>
                 </div>
+
+                {/* Legal/Registered Address */}
+                <div className="pt-2 mt-2 border-t border-border/30">
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="text-xs text-foreground/70 block font-medium">Legal / Registered Address</label>
+                    <span className="text-[10px] text-muted-foreground bg-muted px-1.5 py-0.5 rounded uppercase tracking-wider font-bold">Legal Document Address</span>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <Shield className="w-4 h-4 text-primary/60 flex-shrink-0 mt-2.5" />
+                    <div className="flex-1 space-y-2">
+                      <textarea
+                        value={formData.registered_address}
+                        onChange={(e) => setFormData(prev => ({ ...prev, registered_address: e.target.value }))}
+                        disabled={!editMode}
+                        placeholder="Official/Registered address for legal contracts (leave blank to use current address)"
+                        rows={2}
+                        className={`w-full bg-muted/50 border border-border rounded-lg px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground/40 outline-none transition-all ${editMode ? 'focus:border-primary/50 focus:ring-2 focus:ring-primary/20 focus:bg-muted' : 'cursor-not-allowed opacity-70'} resize-none`}
+                      />
+                      <p className="text-[10px] text-muted-foreground leading-relaxed">
+                        This address will be used exclusively for your **legal contracts** and will not be public. If left blank, your current address will be used.
+                      </p>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -2715,11 +2742,12 @@ const ProfileSettings = () => {
               </div>
 
               <div className="mb-6">
-                <FiverrPackageEditor 
-                  templates={formData.dealTemplates}
-                  onChange={(templates) => setFormData(prev => ({ ...prev, dealTemplates: templates }))}
-                  disabled={!editMode}
-                />
+              <FiverrPackageEditor 
+                templates={formData.dealTemplates}
+                avg_rate_reel={Number(formData.avgRateReel) || profile.avg_rate_reel || 5000}
+                onChange={(templates) => setFormData(prev => ({ ...prev, dealTemplates: templates }))}
+                disabled={!editMode}
+              />
               </div>
 
               <div className="space-y-3">

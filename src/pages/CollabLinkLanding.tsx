@@ -810,7 +810,7 @@ const CollabLinkLanding = () => {
   const [draftEmail, setDraftEmail] = useState('')
   const [saveDraftSubmitting, setSaveDraftSubmitting] = useState(false)
   const [newNicheInput, setNewNicheInput] = useState('')
-  const [showCustomFlow, setShowCustomFlow] = useState(false)
+  const [showCustomFlow, setShowCustomFlow] = useState(() => searchParams.get('type') === 'barter' ? true : false)
   const [templateContinueNudge, setTemplateContinueNudge] = useState(0)
   const [localDealTemplates, setLocalDealTemplates] = useState<DealTemplate[]>([])
   const [isEditingTemplates, setIsEditingTemplates] = useState(false)
@@ -849,9 +849,7 @@ const CollabLinkLanding = () => {
     ? Boolean(String(barterProductImageUrl || '').trim())
     : true
   const isLogoReady = Boolean(String(brandLogoUrl || '').trim())
-  const isStep2Ready = Boolean(
-    brandEmail.trim() && isValidBrandEmail && isProductImageReady && isLogoReady
-  )
+  const isStep2Ready = Boolean(brandEmail.trim() && isValidBrandEmail && isProductImageReady)
 
   const completionChecks = useMemo(
     () => [
@@ -877,6 +875,25 @@ const CollabLinkLanding = () => {
 
     input.click()
   }
+
+  // --- NEW: BARTER AUTO-FILL & RESTRICTION ---
+  const isBarterRestricted = searchParams.get('type') === 'barter'
+
+  useEffect(() => {
+    if (isBarterRestricted) {
+      setPaymentType('barter')
+      setIncludesProduct(true)
+      setBarterTypes(['product'])
+      setCampaignGoal('Product Review / Unboxing')
+      setDeliverables(['Instagram Reel'])
+      setDeliverableQuantities({ 'Instagram Reel': 1 })
+      setContentQuantity(1)
+      setContentDuration('15s')
+      setHasStartedOffer(true)
+      setShowCustomFlow(true)
+      setCurrentStep(1)
+    }
+  }, [isBarterRestricted])
 
   // --- NEW: PASTE IMAGE SUPPORT ---
   useEffect(() => {
@@ -2111,7 +2128,7 @@ const CollabLinkLanding = () => {
     }
   }
 
-  const validateForm = (): boolean => {
+  const validateForm = (): { valid: boolean; firstErrorMessage?: string } => {
     const newErrors: FormErrors = {}
 
     if (!brandName.trim()) {
@@ -2125,14 +2142,17 @@ const CollabLinkLanding = () => {
     }
 
     if (!campaignGoal) {
-      newErrors.campaignGoal = 'Please select a campaign goal'
+      newErrors.campaignGoal =
+        paymentType === 'barter'
+          ? 'Choose a campaign goal too. Barter only sets the payment type.'
+          : 'Please select a campaign goal'
     }
 
     if (paymentType === 'barter' && barterTypes.length === 0) {
       newErrors.barterTypes = 'Please specify what you are offering'
     }
 
-    if (barterTypes.includes('product') && !String(barterProductName || '').trim()) {
+    if (!String(barterProductName || '').trim()) {
       newErrors.barterProductName = 'Please specify the product name'
     }
 
@@ -2155,12 +2175,12 @@ const CollabLinkLanding = () => {
       newErrors.budget = 'Enter your budget'
     }
 
-    if (isProductImageRequired && !String(barterProductImageUrl || '').trim()) {
-      newErrors.barterProductImageUrl = 'Please upload a product image'
+    if (collabType === 'barter' && !barterValue) {
+      newErrors.budget = 'Enter estimated product value'
     }
 
-    if (!String(brandLogoUrl || '').trim()) {
-      newErrors.brandLogoUrl = 'Please upload your brand logo'
+    if (isProductImageRequired && !String(barterProductImageUrl || '').trim()) {
+      newErrors.barterProductImageUrl = 'Please upload a product image'
     }
 
     setErrors(newErrors)
@@ -2174,15 +2194,18 @@ const CollabLinkLanding = () => {
                           errorKeys[0] === 'campaignGoal' ? 'campaign-goal-section' :
                           errorKeys[0] === 'barterTypes' ? 'barter-types-section' :
                           errorKeys[0] === 'campaignDescription' ? 'campaign-description-input' :
-                          errorKeys[0] === 'barterProductImageUrl' ? 'barter-product-image-upload' :
-                          errorKeys[0] === 'brandLogoUrl' ? 'brand-logo-upload' : null
+                          errorKeys[0] === 'barterProductName' ? 'barter-product-name-input' :
+                          errorKeys[0] === 'barterProductImageUrl' ? 'barter-product-image-upload' : null
       
       if (firstErrorId) {
         document.getElementById(firstErrorId)?.scrollIntoView({ behavior: 'smooth', block: 'center' })
       }
     }
 
-    return Object.keys(newErrors).length === 0
+    return {
+      valid: Object.keys(newErrors).length === 0,
+      firstErrorMessage: errorKeys.length > 0 ? newErrors[errorKeys[0] as keyof FormErrors] : undefined,
+    }
   }
 
   // Normalize website URL - add https:// if missing
@@ -2200,8 +2223,9 @@ const CollabLinkLanding = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    if (!validateForm()) {
-      toast.error('Please fix the errors above')
+    const validation = validateForm()
+    if (!validation.valid) {
+      toast.error(validation.firstErrorMessage || 'Please fix the errors above')
       return
     }
 
@@ -2226,7 +2250,8 @@ const CollabLinkLanding = () => {
           collab_type: collabType,
           budget_range: budgetRange || null,
           exact_budget: exactBudget ? parseFloat(exactBudget) : null,
-          campaign_category: campaignGoal || campaignCategory || 'General',
+          campaign_category: campaignCategory || 'General',
+          campaign_goal: campaignGoal || null,
           barter_value: barterValue ? parseFloat(barterValue) : null,
           barter_description: barterProductName || (paymentType === 'barter' 
             ? `Barter: ${barterTypes.map(t => BARTER_OPTIONS.find(o => o.id === t)?.label || t).join(', ')}`
@@ -2674,6 +2699,7 @@ const CollabLinkLanding = () => {
     }
 
     if (template.category) setCampaignCategory(template.category)
+    setCampaignGoal(template.label)
     setCampaignDescription(template.description)
     setDeliverables(template.deliverables)
     setDeliverableQuantities(template.quantities)
@@ -2686,11 +2712,11 @@ const CollabLinkLanding = () => {
     toast.success(`${template.label} selected`)
     triggerHaptic(HapticPatterns.success)
 
-    // Auto-advance into the minimal quick-offer form.
+    // Keep the user on the current step so they can review the selected template
+    // and complete the campaign goal/details before moving on.
     setShowCustomFlow(true)
-    setCurrentStep(2)
 
-    // Make the next step obvious: bring the offer panel into view and nudge the header.
+    // Bring the offer panel into view so the selected template is visible.
     setTemplateContinueNudge(Date.now())
     requestAnimationFrame(() => {
       document
@@ -3252,6 +3278,20 @@ const CollabLinkLanding = () => {
                             {template.description}
                           </p>
 
+                          <div className="mb-8 rounded-2xl border border-slate-100 bg-slate-50/80 px-4 py-3">
+                            <p className="text-[10px] font-black uppercase tracking-[0.18em] text-slate-400 mb-2">
+                              What the brand gets
+                            </p>
+                            <ul className="space-y-1.5">
+                              {template.deliverables.map((item) => (
+                                <li key={item} className="flex items-start gap-2 text-[12px] font-semibold text-slate-700 leading-snug">
+                                  <Check className="w-3.5 h-3.5 text-emerald-500 mt-0.5 shrink-0" />
+                                  <span>{item}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+
                           <div className="flex justify-between items-center mt-auto">
                             <div>
                               <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">
@@ -3270,8 +3310,18 @@ const CollabLinkLanding = () => {
                             <Button
                               onClick={() => {
                                 handleTemplateSelect(template)
-                                setCurrentStep(2)
-                                window.scrollTo({ top: 0, behavior: 'smooth' })
+                                if (template.type !== 'barter') {
+                                  setCurrentStep(2)
+                                  window.scrollTo({ top: 0, behavior: 'smooth' })
+                                } else {
+                                  setCurrentStep(1)
+                                  // Scroll to form if on mobile
+                                  requestAnimationFrame(() => {
+                                    document
+                                      .getElementById('core-offer-form')
+                                      ?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                                  })
+                                }
                               }}
                               className={cn(
                                 'h-12 px-8 rounded-2xl font-black text-sm transition-all shadow-lg',
@@ -3479,34 +3529,36 @@ const CollabLinkLanding = () => {
                             </label>
                           </div>
                           
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <button
-                              type="button"
-                              onClick={() => {
-                                setPaymentType('paid')
-                                triggerHaptic(HapticPatterns.selection)
-                              }}
-                              className={cn(
-                                'relative flex flex-col items-start p-5 rounded-2xl border-2 transition-all text-left group overflow-hidden',
-                                paymentType === 'paid'
-                                  ? 'border-slate-900 bg-slate-900 text-white shadow-xl scale-[1.01]'
-                                  : 'border-slate-100 bg-slate-50/50 hover:border-slate-200 text-slate-600 hover:bg-white'
-                              )}
-                            >
-                              <div className="flex items-center gap-3 mb-2">
-                                <div className={cn(
-                                  "p-2.5 rounded-xl transition-colors shadow-sm",
-                                  paymentType === 'paid' ? "bg-white/10 text-emerald-400" : "bg-white text-slate-400"
-                                )}>
-                                  <Wallet className="h-5 w-5" />
+                          <div className={cn("grid gap-4", isBarterRestricted ? "grid-cols-1" : "grid-cols-1 md:grid-cols-2")}>
+                            {!isBarterRestricted && (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setPaymentType('paid')
+                                  triggerHaptic(HapticPatterns.selection)
+                                }}
+                                className={cn(
+                                  'relative flex flex-col items-start p-5 rounded-2xl border-2 transition-all text-left group overflow-hidden',
+                                  paymentType === 'paid'
+                                    ? 'border-slate-900 bg-slate-900 text-white shadow-xl scale-[1.01]'
+                                    : 'border-slate-100 bg-slate-50/50 hover:border-slate-200 text-slate-600 hover:bg-white'
+                                )}
+                              >
+                                <div className="flex items-center gap-3 mb-2">
+                                  <div className={cn(
+                                    "p-2.5 rounded-xl transition-colors shadow-sm",
+                                    paymentType === 'paid' ? "bg-white/10 text-emerald-400" : "bg-white text-slate-400"
+                                  )}>
+                                    <Wallet className="h-5 w-5" />
+                                  </div>
+                                  <span className="text-[15px] font-black tracking-tight">Paid Collaboration</span>
                                 </div>
-                                <span className="text-[15px] font-black tracking-tight">Paid Collaboration</span>
-                              </div>
-                              <p className={cn("text-[12px] font-medium leading-snug", paymentType === 'paid' ? 'text-white/70' : 'text-slate-500')}>Direct payment for your deliverables.</p>
-                              <div className={cn("mt-4 py-1.5 px-3 rounded-lg text-[10px] font-black uppercase tracking-widest flex items-center gap-1.5", paymentType === 'paid' ? 'bg-white/10 text-emerald-300' : 'bg-emerald-50 text-emerald-600')}>
-                                <ShieldCheck className="h-3.5 w-3.5" /> High creator interest
-                              </div>
-                            </button>
+                                <p className={cn("text-[12px] font-medium leading-snug", paymentType === 'paid' ? 'text-white/70' : 'text-slate-500')}>Direct payment for your deliverables.</p>
+                                <div className={cn("mt-4 py-1.5 px-3 rounded-lg text-[10px] font-black uppercase tracking-widest flex items-center gap-1.5", paymentType === 'paid' ? 'bg-white/10 text-emerald-300' : 'bg-emerald-50 text-emerald-600')}>
+                                  <ShieldCheck className="h-3.5 w-3.5" /> High creator interest
+                                </div>
+                              </button>
+                            )}
 
                             <button
                               type="button"
@@ -3584,6 +3636,14 @@ const CollabLinkLanding = () => {
                             </div>
                           </div>
                           
+                          {paymentType === 'barter' && !campaignGoal && (
+                            <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3">
+                              <p className="text-[12px] font-bold text-amber-900">
+                                Barter is the payment type. You still need to choose what the campaign is for.
+                              </p>
+                            </div>
+                          )}
+                          
                           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
                             {[
                               { id: 'App / Website Promotion', icon: <Rocket />, label: 'App / Website', sub: 'Promote installs or usage' },
@@ -3592,7 +3652,9 @@ const CollabLinkLanding = () => {
                               { id: 'Performance Campaign', icon: <TrendingUp />, label: 'Sales / Leads', sub: 'Focus on conversions' },
                               { id: 'Content Creation (UGC)', icon: <Camera />, label: 'Content for Ads', sub: 'High-quality UGC ads' },
                               { id: 'Custom Collaboration', icon: <Sparkles />, label: 'Custom', sub: 'Tailored partnership' },
-                            ].map((goal) => (
+                            ]
+                            .filter(goal => !isBarterRestricted || goal.id === 'Product Review / Unboxing')
+                            .map((goal) => (
                               <button
                                 type="button"
                                 key={goal.id}
@@ -3665,7 +3727,9 @@ const CollabLinkLanding = () => {
                             </div>
                             
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                              {BARTER_OPTIONS.map((option) => (
+                              {BARTER_OPTIONS
+                                .filter(option => !isBarterRestricted || option.id === 'product')
+                                .map((option) => (
                                 <button
                                   type="button"
                                   key={option.id}
@@ -3755,7 +3819,9 @@ const CollabLinkLanding = () => {
                           </label>
                           
                           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                            {DELIVERABLE_OPTIONS.slice(0, 6).map(option => {
+                            {DELIVERABLE_OPTIONS.slice(0, 6)
+                              .filter(option => !isBarterRestricted || option.label === 'Reel')
+                              .map(option => {
                               const isSelected = deliverables.includes(option.value)
                               return (
                                 <button
@@ -3789,7 +3855,7 @@ const CollabLinkLanding = () => {
                                     <span className="text-[10px] font-bold text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">Recommended: 1-2</span>
                                   </div>
                                   <div className="flex gap-2">
-                                    {([1, 2, '3+'] as (number | '3+')[]).map(num => (
+                                    {(isBarterRestricted ? [1] : [1, 2, '3+'] as (number | '3+')[]).map(num => (
                                       <button 
                                         key={String(num)}
                                         type="button"
@@ -3811,7 +3877,7 @@ const CollabLinkLanding = () => {
                                   <div className="space-y-3">
                                     <span className="text-[11px] font-black uppercase tracking-widest text-slate-400">Duration</span>
                                     <div className="flex gap-2">
-                                      {['15s', '30s', '60s'].map(dur => (
+                                      {(isBarterRestricted ? ['15s'] : ['15s', '30s', '60s']).map(dur => (
                                         <button 
                                           key={dur}
                                           type="button"
@@ -3935,45 +4001,6 @@ const CollabLinkLanding = () => {
                     {/* Step 2: Contact Details + Quick Info */}
                     {currentStep === 2 && (
                       <div className="space-y-4">
-                        {selectedTemplate && (
-                          <div className="rounded-[28px] border border-emerald-200 bg-gradient-to-br from-emerald-50 via-white to-teal-50 p-5 shadow-[0_12px_28px_rgba(15,164,127,0.12)]">
-                            <div className="flex items-start justify-between gap-3">
-                              <div className="min-w-0">
-                                <p className="text-[10px] font-black uppercase tracking-[0.16em] text-emerald-700/80 mb-1">
-                                  Chosen service
-                                </p>
-                                <p className="text-[16px] font-black text-slate-900 truncate">
-                                  {selectedTemplate.label}
-                                </p>
-                                <p className="text-[12px] font-semibold text-slate-600 mt-1">
-                                  {selectedTemplate.type === 'barter'
-                                    ? 'Free products as payment'
-                                    : `₹${selectedTemplate.budget.toLocaleString('en-IN')}`}{' '}
-                                  • {selectedTemplate.deliverables.length} deliverable
-                                  {selectedTemplate.deliverables.length === 1 ? '' : 's'} •{' '}
-                                  {selectedTemplate.deadlineDays || 7} days
-                                </p>
-                              </div>
-                              <div className="shrink-0 flex flex-col items-end gap-2">
-                                <div className="bg-[#0FA47F] text-white rounded-full p-1 shadow-sm">
-                                  <CheckCircle2 className="w-5 h-5" />
-                                </div>
-                                <Button
-                                  type="button"
-                                  variant="outline"
-                                  onClick={() => {
-                                    setShowCustomFlow(false)
-                                    setCurrentStep(1)
-                                    triggerHaptic(HapticPatterns.selection)
-                                  }}
-                                  className="h-8 rounded-2xl border-emerald-200 text-emerald-800 hover:bg-emerald-50 font-black text-[10px] uppercase tracking-widest px-3"
-                                >
-                                  Change
-                                </Button>
-                              </div>
-                            </div>
-                          </div>
-                        )}
                         {/* Contact Section */}
                         <div className="bg-slate-50 rounded-[24px] md:rounded-[32px] p-4 md:p-6 border border-slate-200 shadow-inner space-y-4">
                           <div className="flex items-center justify-between gap-1">
@@ -4195,22 +4222,60 @@ const CollabLinkLanding = () => {
                         {/* Product image / product details */}
                         {isProductImageRequired && (
                           <div id="barter-product-image-upload" className="bg-slate-50 rounded-[32px] p-6 border border-slate-200 shadow-inner space-y-4">
-                            {(collabType === 'barter' || collabType === 'hybrid') && (
+                            {(collabType === 'barter' || collabType === 'hybrid' || collabType === 'paid') && (
                               <>
                                 <label
                                   htmlFor="barter-product-name-input"
                                   className={`block text-[15px] font-black text-slate-800 mb-2 ${typeLabel} flex items-center gap-2`}
                                 >
                                   <Package className="h-5 w-5 text-slate-900" />
-                                  Product details
+                                  Product name
                                 </label>
                                 <Input
                                   id="barter-product-name-input"
                                   value={barterProductName}
                                   onChange={e => setBarterProductName(e.target.value)}
                                   placeholder="Product name you'll send"
-                                  className="h-12 px-4 rounded-xl border-white bg-white font-bold text-[14px] text-slate-900 placeholder:text-slate-500 shadow-sm focus-visible:ring-2 focus-visible:ring-emerald-500/30"
+                                  className={cn(
+                                    "h-12 px-4 rounded-xl border-white bg-white font-bold text-[14px] text-slate-900 placeholder:text-slate-500 shadow-sm focus-visible:ring-2 focus-visible:ring-emerald-500/30",
+                                    errors.barterProductName && "border-destructive ring-1 ring-destructive"
+                                  )}
                                 />
+                                {errors.barterProductName && (
+                                  <p className="mt-1 text-[11px] font-bold text-destructive">
+                                    {errors.barterProductName}
+                                  </p>
+                                )}
+
+                                <div className="space-y-2 pt-1">
+                                  <label
+                                    htmlFor="barter-value-input"
+                                    className="block text-[11px] font-black uppercase tracking-widest text-slate-500"
+                                  >
+                                    Estimated Value (₹)
+                                  </label>
+                                  <div className="relative group">
+                                    <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-black text-[14px] group-focus-within:text-slate-900 transition-colors">
+                                      ₹
+                                    </div>
+                                    <Input
+                                      id="barter-value-input"
+                                      type="number"
+                                      value={barterValue}
+                                      onChange={e => setBarterValue(e.target.value)}
+                                      placeholder="Product's market price"
+                                      className={cn(
+                                        "h-12 pl-10 pr-4 rounded-xl border-white bg-white font-black text-[14px] text-slate-900 placeholder:text-slate-500 shadow-sm focus-visible:ring-2 focus-visible:ring-emerald-500/30",
+                                        errors.budget && "border-destructive ring-1 ring-destructive"
+                                      )}
+                                    />
+                                  </div>
+                                  {errors.budget && paymentType === 'barter' && (
+                                    <p className="mt-1 text-[11px] font-bold text-destructive">
+                                      {errors.budget}
+                                    </p>
+                                  )}
+                                </div>
                               </>
                             )}
 
@@ -4744,11 +4809,10 @@ const CollabLinkLanding = () => {
                 )}
                 <Button
                   onClick={
-                    !showCustomFlow
+                      !showCustomFlow
                       ? () => {
                           if (selectedTemplate) {
                             setShowCustomFlow(true)
-                            setCurrentStep(2)
                             window.scrollTo({ top: 0, behavior: 'smooth' })
                             triggerHaptic(HapticPatterns.success)
                             return

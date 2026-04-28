@@ -562,7 +562,7 @@ AND
 Creator:
 
 Name: ${variables.creator_name}
-Address: ${variables.creator_address}
+Registered Address: ${variables.creator_address}
 Email: ${variables.creator_email}
 
 Collectively referred to as the "Parties".

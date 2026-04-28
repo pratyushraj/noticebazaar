@@ -225,7 +225,10 @@ export async function generateContractFromScratch(
     };
   } catch (error: any) {
     console.error('[ContractGenerator] Failed to generate contract:', error);
-    throw new Error(`Failed to generate contract: ${error.message}`);
+    const wrappedError: any = new Error(`Failed to generate contract: ${error.message}`);
+    if (error?.missingFields) {
+      wrappedError.missingFields = error.missingFields;
+    }
+    throw wrappedError;
   }
 }
-

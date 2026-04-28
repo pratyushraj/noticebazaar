@@ -60,7 +60,7 @@ export async function generateContractDocx(schema: ContractSchema): Promise<Buff
     }
     if (!schema.creator_address || schema.creator_address.trim() === '' ||
         isPlaceholder(schema.creator_address)) {
-      throw new Error('Creator address is required');
+      throw new Error('Creator registered address is required');
     }
     if (!schema.jurisdiction_city || schema.jurisdiction_city.trim() === '') {
       throw new Error('Jurisdiction is required');
@@ -226,7 +226,7 @@ export async function generateContractDocx(schema: ContractSchema): Promise<Buff
           new Paragraph({
             children: [
               new TextRun({
-                text: `Address: ${data.brand_address}`,
+                text: `Registered Address: ${data.brand_address}`,
                 font: 'Times New Roman',
                 size: BODY_FONT_SIZE,
                 underline: {
@@ -329,7 +329,7 @@ export async function generateContractDocx(schema: ContractSchema): Promise<Buff
           new Paragraph({
             children: [
               new TextRun({
-                text: `Address: ${data.creator_address}`,
+                text: `Registered Address: ${data.creator_address}`,
                 font: 'Times New Roman',
                 size: BODY_FONT_SIZE,
                 underline: {

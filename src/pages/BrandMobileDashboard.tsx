@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { MouseEvent, MutableRefObject, ReactNode } from 'react';
 import { createPortal } from 'react-dom';
-import { AlertTriangle, BarChart3, Bell, Briefcase, Camera, Check, Clock, ChevronRight, CreditCard, FileText, Handshake, Landmark, LayoutDashboard, Loader2, Lock, Mail, Menu, Moon, MoreHorizontal, Plus, RefreshCw, Search, Send, Settings, Shield, ShieldCheck, Sparkles, Sun, User, Zap } from 'lucide-react';
+import { AlertTriangle, ArrowLeft, BarChart3, Bell, Briefcase, Calendar, Camera, Check, CheckCircle2, ChevronRight, Clock, Copy, CreditCard, ExternalLink, Eye, FileText, Globe, Handshake, History, Info, Landmark, LayoutDashboard, Loader2, Lock, Mail, Menu, MessageSquare, Moon, MoreHorizontal, MoreVertical, PenTool, PlayCircle, Plus, RefreshCw, RotateCcw, Search, Send, Settings, Shield, ShieldCheck, Sparkles, Sun, Truck, User, Video, Wallet, Zap } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import CountUp from 'react-countup';
@@ -16,7 +16,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { buttons as dsButtons } from '@/lib/design-system';
 import { dealPrimaryCtaButtonClass, getDealPrimaryCta } from '@/lib/deals/primaryCta';
 import { CREATOR_ASSETS_BUCKET } from '@/lib/constants/storage';
-import { isBarterLikeCollab } from '@/lib/deals/collabType';
+import { isBarterLikeCollab, isPaidLikeCollab } from '@/lib/deals/collabType';
 import { BrandSettingsPanel } from '@/pages/BrandSettings';
 import { toast } from 'sonner';
 import { DiscoveryStack } from '@/components/brand-dashboard/DiscoveryStack';
@@ -250,10 +250,11 @@ const effectiveDealStatus = (row: BrandDeal | null | undefined) => {
   // New enforcement gate statuses
   if (lower === 'payment_pending') return 'PAYMENT_PENDING';
   if (lower === 'awaiting_brand_address') return 'AWAITING_BRAND_ADDRESS';
-  if (lower.includes('content_making') || lower.includes('content making')) return 'CONTENT_MAKING';
+  if (lower.includes('content_making') || lower.includes('content making') || lower === 'making' || lower === 'active') return 'CONTENT_MAKING';
   if (
     lower.includes('content_delivered') ||
     lower.includes('content delivered') ||
+    lower === 'delivered' ||
     lower.includes('awaiting_review') ||
     lower.includes('waiting_for_review') ||
     lower.includes('waiting for review')
@@ -262,9 +263,12 @@ const effectiveDealStatus = (row: BrandDeal | null | undefined) => {
   }
   if (lower.includes('revision_requested') || lower.includes('revision requested') || lower.includes('changes_requested') || lower.includes('changes requested')) return 'REVISION_REQUESTED';
   if (lower.includes('revision_done') || lower.includes('revision done') || lower.includes('revision_submitted') || lower.includes('revision submitted')) return 'REVISION_DONE';
-  if (lower.includes('content_approved') || lower.includes('content approved') || lower.includes('approved')) return 'CONTENT_APPROVED';
-  if (lower.includes('payment_released') || lower.includes('payment released')) return 'PAYMENT_RELEASED';
-  if (lower === 'completed' || lower.includes('completed')) return 'COMPLETED';
+  if (lower.includes('content_approved') || lower.includes('content approved') || lower === 'approved' || lower === 'content_approved') return 'CONTENT_APPROVED';
+  if (lower.includes('payment_released') || lower.includes('payment released') || lower === 'released') return 'PAYMENT_RELEASED';
+  if (lower === 'completed' || lower.includes('completed') || lower === 'finished') return 'COMPLETED';
+
+  // "Accepted" usually means the offer was accepted, but contract isn't fully signed yet.
+  if (lower === 'accepted') return 'CONTRACT_READY';
 
   // Prefer signature signals over the raw status when present.
   const signatureSources = [
@@ -404,20 +408,22 @@ const collectSignatureHints = (row: BrandDeal | null | undefined) => {
 
 const dealStageLabel = (row: BrandDeal | null | undefined) => {
   const s = effectiveDealStatus(row);
-  if (!s) return 'In progress';
-  if (s === 'DISPUTED') return 'Issue raised';
-  if (s === 'DISPUTE_ARBITRATION') return 'Under arbitration';
-  if (s === 'DISPUTE_PARTIAL_REFUND') return 'Partial refund pending';
-  if (s === 'PAYMENT_PENDING') return 'Awaiting payment confirmation';
-  if (s === 'AWAITING_BRAND_ADDRESS') return 'Brand address required';
-  if (s === 'CONTRACT_READY' || s === 'AWAITING_BRAND_SIGNATURE') return 'Signature required';
-  if (s === 'SENT' || s === 'AWAITING_CREATOR_SIGNATURE') return 'Waiting for creator signature';
-  if (s === 'FULLY_EXECUTED') return 'Collaboration started';
-  if (s === 'CONTENT_MAKING') return 'Creator working';
-  if (s === 'REVISION_REQUESTED') return 'Waiting for revision';
-  if (s === 'CONTENT_DELIVERED' || s === 'REVISION_DONE') return 'Content ready for review';
+  const isBarterDeal = isBarterLikeCollab(row) && !isPaidLikeCollab(row);
+  if (!s) return 'In Progress';
+  if (s === 'DISPUTED') return 'Issue Reported';
+  if (s === 'DISPUTE_ARBITRATION') return 'Under Arbitration';
+  if (s === 'DISPUTE_PARTIAL_REFUND') return 'Refund Pending';
+  if (s === 'PAYMENT_PENDING') return isBarterDeal ? 'Shipping Required' : 'Payment Required';
+  if (s === 'AWAITING_BRAND_ADDRESS') return 'Address Needed';
+  if (s === 'CONTRACT_READY' || s === 'AWAITING_BRAND_SIGNATURE') return 'Ready to Sign';
+  if (s === 'SENT' || s === 'AWAITING_CREATOR_SIGNATURE') return 'Awaiting Creator';
+  if (s === 'FULLY_EXECUTED') return isBarterDeal ? 'Awaiting Shipment' : 'Collab Active';
+  if (s === 'CONTENT_MAKING') return 'In Production';
+  if (s === 'REVISION_REQUESTED') return 'Revision Needed';
+  if (s === 'CONTENT_DELIVERED' || s === 'REVISION_DONE') return 'Review Content';
+  if (s === 'CONTENT_APPROVED' || s === 'PAYMENT_RELEASED') return 'Approved';
   if (s === 'COMPLETED') return 'Completed';
-  return 'In progress';
+  return 'In Progress';
 };
 
 const deadlineLabel = (row: BrandDeal | null | undefined) => {
@@ -447,13 +453,15 @@ const offerExpiryLabel = (row: BrandDeal | null | undefined) => {
 
 const brandDealCardUi = (row: BrandDeal | null | undefined) => {
   const s = effectiveDealStatus(row);
+  const isBarterDeal = isBarterLikeCollab(row) && !isPaidLikeCollab(row);
   const human = dealStageLabel({ status: s });
   const stageBadge =
     s === 'DISPUTED' ? 'ISSUE'
       : (s === 'DISPUTE_ARBITRATION' || s === 'DISPUTE_PARTIAL_REFUND') ? 'DISPUTE'
+      : (s === 'CONTENT_APPROVED' || s === 'PAYMENT_RELEASED' || s === 'COMPLETED') ? 'DONE'
       : (s === 'CONTENT_DELIVERED' || s === 'REVISION_DONE') ? 'REVIEW'
         : s === 'CONTENT_MAKING' ? 'CREATE'
-          : s === 'PAYMENT_PENDING' ? 'PAY'
+          : s === 'PAYMENT_PENDING' ? (isBarterDeal ? 'SHIP' : 'PAY')
           : s === 'AWAITING_BRAND_ADDRESS' ? 'ADDRESS'
           : s === 'FULLY_EXECUTED' ? 'SIGNED'
             : 'CONTRACT';
@@ -464,35 +472,42 @@ const brandDealCardUi = (row: BrandDeal | null | undefined) => {
 
   const statusLine =
     s === 'DISPUTED'
-      ? 'Issue raised — escalate or resolve'
+      ? 'Dispute raised — your action is required'
       : s === 'DISPUTE_ARBITRATION'
-        ? 'Under arbitration — awaiting team review'
+      ? 'Under arbitration — NoticeBazaar team reviewing'
       : s === 'DISPUTE_PARTIAL_REFUND'
-        ? 'Partial refund in progress'
+        ? 'Partial refund is currently processing'
       : s === 'PAYMENT_PENDING'
-        ? 'Confirm payment to unblock creator delivery'
+        ? (isBarterDeal ? 'Add shipping details to start the barter collaboration' : 'Fund the escrow to start collaboration')
       : s === 'AWAITING_BRAND_ADDRESS'
-        ? 'Provide your shipping address to proceed'
+        ? 'Shipping address required to proceed'
       : s === 'COMPLETED'
-        ? 'Deal completed'
+        ? 'Collaboration successfully completed'
+        : (s === 'CONTENT_APPROVED' || s === 'PAYMENT_RELEASED')
+          ? 'Content approved & payment released'
         : (s === 'CONTENT_DELIVERED' || s === 'REVISION_DONE')
-          ? 'Content ready — review and approve'
+          ? 'Creator has submitted content for review'
           : s === 'REVISION_REQUESTED'
-            ? 'Waiting for creator revision'
+            ? 'Awaiting revised content from creator'
             : s === 'CONTENT_MAKING'
-              ? (primaryActionLabel === 'Ship Product' ? 'Awaiting product shipment' : 'Creator working on deliverables')
+              ? ((isBarterDeal && (primaryActionLabel === 'Track Progress' || primaryActionLabel === 'Confirm Product Receipt'))
+                  ? 'Creator is waiting for product delivery confirmation'
+                  : primaryActionLabel === 'Ship Product'
+                    ? 'Please ship the product to the creator'
+                    : 'Creator is now crafting your content')
               : s === 'FULLY_EXECUTED'
-                ? 'Contract signed — creator can start work'
+                ? (isBarterDeal ? 'Contract signed — add shipping details to continue' : 'Contract signed — awaiting content')
                 : s === 'AWAITING_CREATOR_SIGNATURE' || s === 'SENT'
-                  ? 'Waiting for creator to sign'
-                  : 'Signature required to start';
+                  ? "Waiting for creator's signature"
+                  : 'Review the agreement to get started';
 
   const step =
     s === 'COMPLETED' ? 5
-      : (s === 'CONTENT_DELIVERED' || s === 'REVISION_DONE' || s === 'DISPUTED' || s === 'DISPUTE_ARBITRATION' || s === 'DISPUTE_PARTIAL_REFUND') ? 4
-        : (s === 'CONTENT_MAKING' || s === 'REVISION_REQUESTED') ? 3
-          : (s === 'FULLY_EXECUTED' || s === 'PAYMENT_PENDING' || s === 'AWAITING_BRAND_ADDRESS') ? 2
-            : 1;
+      : (s === 'CONTENT_APPROVED' || s === 'PAYMENT_RELEASED') ? 5
+        : (s === 'CONTENT_DELIVERED' || s === 'REVISION_DONE' || s === 'DISPUTED' || s === 'DISPUTE_ARBITRATION' || s === 'DISPUTE_PARTIAL_REFUND') ? 4
+          : (s === 'CONTENT_MAKING' || s === 'REVISION_REQUESTED') ? 3
+            : (s === 'FULLY_EXECUTED' || s === 'PAYMENT_PENDING' || s === 'AWAITING_BRAND_ADDRESS') ? 2
+              : 1;
 
   return { status: s, human, stageBadge, needsAction, primaryActionLabel, statusLine, step, ctaTone: primaryCta.tone, ctaDisabled: primaryCta.disabled, ctaAction: primaryCta.action };
 };
@@ -1999,493 +2014,138 @@ const BrandMobileDashboard = ({
     const diffDays = deadline ? Math.ceil((deadline.getTime() - Date.now()) / 86400000) : null;
     const dueTone = diffDays === null ? secondaryTextColor : diffDays < 0 ? 'text-rose-500' : diffDays <= 7 ? 'text-warning' : 'text-info';
     const contractUrl = offer?.safe_contract_url || offer?.signed_contract_url || offer?.contract_file_url || null;
-    const usageRights = offer?.usage_rights || offer?.usage_type || 'Organic social media only';
-    const usageDuration = offer?.usage_duration || '90 days limit';
-    const paymentReference = String(offer?.utr_number || offer?.payment_reference || '').trim();
-    const paymentReceivedDate = String(offer?.payment_received_date || '').trim();
-    const paymentProofUrl = String(offer?.payment_proof_url || '').trim();
-    const paymentNotes = String(offer?.payment_notes || '').trim();
-    const creatorPayeeName = String(offer?.profiles?.bank_account_name || creatorName || 'Creator').trim();
-    const creatorUpiId = String(offer?.profiles?.bank_upi || '').trim();
-    const collabKind = String(offer?.collab_type || offer?.deal_type || '').trim().toLowerCase();
-    const requiresPayment = typeof offer?.requires_payment === 'boolean'
-      ? Boolean(offer.requires_payment)
-      : (collabKind === 'paid' || collabKind === 'both' || collabKind === 'hybrid' || collabKind === 'paid_barter' || (collabKind !== 'barter' && amount > 0));
+    
+    const collabType = String(offer?.collab_type || offer?.deal_type || offer?.raw?.collab_type || '').trim().toLowerCase();
+    const isPureBarter = collabType === 'barter';
+    const requiresPayment = isPaidLikeCollab(offer) && !isPureBarter;
     const requiresShipping = isBarterLikeCollab(offer);
     const shippingStatus = String(offer?.shipping_status || '').trim().toLowerCase();
     const shippingDelivered = shippingStatus === 'delivered' || shippingStatus === 'received';
     const trackingNumber = String(offer?.tracking_number || '').trim();
-    const trackingUrl = String(offer?.tracking_url || '').trim();
     const courierName = String(offer?.courier_name || '').trim();
-    const expectedDeliveryDate = String(offer?.expected_delivery_date || '').trim();
-    const productImageUrl = resolveDealProductImageUrl(offer);
-    const hasProductImage = Boolean(productImageUrl);
+    const creatorUpiId = String(offer?.profiles?.bank_upi || '').trim();
 
-			  const normalizedDealStatus = effectiveDealStatus(offer);
-			  const canReviewContent = normalizedDealStatus === 'CONTENT_DELIVERED' || normalizedDealStatus === 'REVISION_DONE';
-    const isEscrowDeal = Boolean(offer?.payment_id || (offer as any)?.payment_status === 'captured' || (offer as any)?.amount_paid > 0);
+    const normalizedDealStatus = effectiveDealStatus(offer);
+    const canReviewContent = normalizedDealStatus === 'CONTENT_DELIVERED' || normalizedDealStatus === 'REVISION_DONE';
+    const isEscrowDeal = Boolean(offer?.payment_id || (offer as any)?.payment_status === 'captured');
     const canReleasePayment = requiresPayment && normalizedDealStatus === 'CONTENT_APPROVED' && !isEscrowDeal;
-    const contentApprovedForCompletion =
-      normalizedDealStatus === 'CONTENT_APPROVED' ||
-      normalizedDealStatus === 'PAYMENT_RELEASED' ||
-      normalizedDealStatus === 'COMPLETED';
-    const paymentReleasedForCompletion =
-      !requiresPayment ||
-      normalizedDealStatus === 'PAYMENT_RELEASED' ||
-      normalizedDealStatus === 'COMPLETED';
-    const shippingSatisfiedForCompletion = !requiresShipping || shippingDelivered;
-    const completionBlockers = [
-      !contentApprovedForCompletion ? 'content approval is still pending' : null,
-      !shippingSatisfiedForCompletion ? 'product delivery is not confirmed yet' : null,
-      !paymentReleasedForCompletion ? 'payment has not been released yet' : null,
-    ].filter(Boolean) as string[];
-    const canSubmitCompletion = completionBlockers.length === 0;
-			  const cardUi = brandDealCardUi(offer);
-	      const primaryCta = getDealPrimaryCta({ role: 'brand', deal: offer });
-
-			  const dealUi = (() => {
-			    const label = cardUi.human || 'In progress';
-			    const tone =
-			      normalizedDealStatus === 'COMPLETED'
-			        ? (isDark ? 'bg-card text-foreground/70 border-border' : 'bg-background text-muted-foreground border-border')
-			        : primaryCta.tone === 'action'
-			          ? (isDark ? 'bg-warning/10 text-warning border-warning/25' : 'bg-warning text-white border-warning')
-			          : primaryCta.tone === 'waiting'
-			            ? (isDark ? 'bg-card text-foreground/70 border-border' : 'bg-card text-muted-foreground border-border')
-			            : (isDark ? 'bg-info/10 text-info border-sky-500/25' : 'bg-info text-white border-sky-200');
-
-			    const stepIndex = Math.max(0, Math.min(4, (cardUi.step || 1) - 1));
-			    return { label, tone, cta: primaryCta.label, stepIndex };
-	    })();
+    
+    const cardUi = brandDealCardUi(offer);
+    const primaryCta = getDealPrimaryCta({ role: 'brand', deal: offer });
+    const dealUi = (() => {
+      const label = cardUi.human || 'In progress';
+      const tone = primaryCta.tone === 'action' ? 'bg-warning/10 text-warning border-warning/20' : 'bg-info/10 text-info border-sky-500/20';
+      const stepIndex = Math.max(0, Math.min(4, (cardUi.step || 1) - 1));
+      return { label, tone, stepIndex };
+    })();
 
     const copyText = async (value: string, label: string) => {
-      const text = String(value || '').trim();
-      if (!text) {
-        toast.error(`${label} not available`);
-        return;
-      }
       try {
-        await navigator.clipboard.writeText(text);
+        await navigator.clipboard.writeText(value);
         toast.success(`${label} copied`);
       } catch {
-        toast.error(`Failed to copy ${label.toLowerCase()}`);
+        toast.error('Failed to copy');
       }
-    };
-
-    const getContractViewUrl = async () => {
-      try {
-        triggerHaptic(HapticPatterns.light);
-        if (!offer?.id) {
-          toast.error('Deal details unavailable');
-          return null;
-        }
-
-        const { data: { session } } = await supabase.auth.getSession();
-        const token = session?.access_token;
-        if (!token) {
-          toast.error('Authentication required');
-          return null;
-        }
-
-		        const apiBase = getApiBaseUrl();
-		        const response = await fetch(`${apiBase}/api/deals/${offer.id}/contract-review-link`, {
-		          headers: { Authorization: `Bearer ${token}` },
-		        });
-		        const data = await response.json().catch(() => ({}));
-		        const nextUrl = data?.signUrl || data?.viewUrl || null;
-		        if (response.ok && data?.success && nextUrl) {
-		          return String(nextUrl);
-		        }
-
-		        if (contractUrl) return contractUrl;
-		        throw new Error(data?.error || 'Failed to open contract');
-	      } catch (error: any) {
-	        if (contractUrl) return contractUrl;
-	        toast.error(error?.message || 'Contract not generated yet');
-	        return null;
-      }
-    };
-
-    // iOS/Safari blocks `window.open()` if it happens after an async boundary (await/fetch).
-    // Workaround: open a blank tab synchronously on click, then redirect it once the URL is resolved.
-    const openUrlFromUserGesture = async (resolveUrl: () => Promise<string | null>) => {
-      let popup: Window | null = null;
-      try {
-        popup = window.open('about:blank', '_blank', 'noopener,noreferrer');
-        // Best-effort hardening; safe even if browser ignores it.
-        if (popup) popup.opener = null;
-      } catch {
-        popup = null;
-      }
-
-      const url = await resolveUrl();
-      if (!url) {
-        try {
-          popup?.close();
-        } catch {
-          // ignore
-        }
-        return;
-      }
-
-      if (popup && !popup.closed) {
-        try {
-          popup.location.href = url;
-          return;
-        } catch {
-          // If we can't navigate the popup (or it got blocked), fallback to same-tab navigation.
-        }
-      }
-      window.location.assign(url);
     };
 
     const openContract = async () => {
       setIsOpeningContract(true);
-      try {
-        await startBrandSigningFlow(offer);
-      } finally {
-        setIsOpeningContract(false);
-      }
+      try { await startBrandSigningFlow(offer); } finally { setIsOpeningContract(false); }
     };
 
     const generateContract = async () => {
-      // Pre-open a tab synchronously to avoid iOS popup blocking after async work.
-      let popup: Window | null = null;
+      setIsGeneratingContract(true);
       try {
-        popup = window.open('about:blank', '_blank', 'noopener,noreferrer');
-        if (popup) popup.opener = null;
-      } catch {
-        popup = null;
-      }
-
-      try {
-        setIsGeneratingContract(true);
-        triggerHaptic(HapticPatterns.light);
         const { data: { session } } = await supabase.auth.getSession();
-        const token = session?.access_token;
-        if (!token) {
-          toast.error('Authentication required');
-          return;
-        }
-
         const apiBase = getApiBaseUrl();
         const response = await fetch(`${apiBase}/api/deals/${offer.id}/regenerate-contract`, {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session?.access_token}` },
         });
-        const data = await response.json().catch(() => ({}));
-        if (!response.ok || !data?.success) {
-          throw new Error(data?.error || 'Failed to generate contract');
+        if (response.ok) {
+          toast.success('Contract regenerated');
+          await onRefresh?.();
         }
-
-        const nextUrl = data?.contract?.url || null;
-        const nextOffer = nextUrl ? { ...offer, contract_file_url: nextUrl } : offer;
-        setSelectedDealPage(nextOffer);
-        setSelectedOffer(nextOffer);
-	        toast.success('Contract generated');
-	        if (nextUrl) {
-	          try {
-	            const response = await fetch(`${apiBase}/api/deals/${offer.id}/contract-review-link`, {
-	              headers: { Authorization: `Bearer ${token}` },
-	            });
-	            const view = await response.json().catch(() => ({}));
-	            const viewUrl = view?.signUrl || view?.viewUrl || null;
-	            const finalUrl =
-	              response.ok && view?.success && viewUrl ? String(viewUrl) : String(nextUrl);
-              if (popup && !popup.closed) popup.location.href = finalUrl;
-              else window.location.assign(finalUrl);
-	          } catch (_) {
-            const finalUrl = String(nextUrl);
-            if (popup && !popup.closed) popup.location.href = finalUrl;
-            else window.location.assign(finalUrl);
-	          }
-	        }
-	        await onRefresh?.();
-	        triggerHaptic(HapticPatterns.success);
-      } catch (error: any) {
-        try {
-          popup?.close();
-        } catch {
-          // ignore
-        }
-        toast.error(error?.message || 'Failed to generate contract');
-      } finally {
-        setIsGeneratingContract(false);
-      }
+      } catch {
+        toast.error('Failed to regenerate');
+      } finally { setIsGeneratingContract(false); }
     };
-
-    const copyDealLink = async () => {
-      try {
-        setIsOpeningContract(true);
-        const url = await getContractViewUrl();
-        if (!url) return;
-        await navigator.clipboard.writeText(url);
-        toast.success('Link copied');
-      } catch (error: any) {
-        toast.error(error?.message || 'Failed to copy link');
-      } finally {
-        setIsOpeningContract(false);
-      }
-    };
-
-    const scrollToRef = (ref: MutableRefObject<HTMLDivElement | null>) => {
-      const el = ref.current;
-      if (!el) return;
-      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    };
-
-	    const onPrimaryCta = async () => {
-	      const cta = getDealPrimaryCta({ role: 'brand', deal: offer });
-	      if (cta.disabled) {
-	        toast.message(cta.label);
-	        return;
-	      }
-
-	      if (cta.action === 'review_sign_contract') {
-	        await openContract();
-	        return;
-	      }
-
-	      if (cta.action === 'review_content') {
-	        scrollToRef(contentSectionRef);
-	        toast.message('Review the submitted content below.');
-	        return;
-	      }
-
-	      if (cta.action === 'track_progress') {
- 	        if (cta.label === 'Ship Product') {
- 	          scrollToRef(shippingSectionRef);
- 	        } else {
- 	          scrollToRef(progressSectionRef);
- 	        }
- 	        return;
- 	      }
-
-	      if (cta.action === 'view_collaboration') {
-	        scrollToRef(deliverablesSectionRef);
-	        return;
-	      }
-
-	      if (cta.action === 'view_summary' || cta.action === 'view_details') {
-	        scrollToRef(progressSectionRef);
-	        return;
-	      }
-
-	      if (cta.action === 'view_issue') {
-	        scrollToRef(contentSectionRef);
-	        toast.message('This deal has an issue raised. Review the notes below.');
-	        return;
-	      }
-
-	      // ── New enforcement CTA actions ────────────────────────────────────────────
-	      if (cta.action === 'escalate_dispute') {
-	        setShowDisputeEscalationModal(true);
-	        return;
-	      }
-
-	      if (cta.action === 'confirm_payment') {
-	        setShowConfirmPaymentModal(true);
-	        return;
-	      }
-
-	      if (cta.action === 'provide_shipping_address') {
-	        setShowBrandShippingModal(true);
-	        return;
-	      }
-	    };
 
     const patchDeal = async (path: string, body?: any) => {
       const { data: { session } } = await supabase.auth.getSession();
-      const token = session?.access_token;
-      if (!token) throw new Error('Authentication required');
       const apiBase = getApiBaseUrl();
       const resp = await fetch(`${apiBase}${path}`, {
         method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session?.access_token}` },
         body: body ? JSON.stringify(body) : undefined,
       });
-      const data = await resp.json().catch(() => ({}));
-      if (!resp.ok || !data?.success) {
-        throw new Error(data?.error || 'Request failed');
-      }
-      return data;
+      return await resp.json();
     };
 
     const approveContent = async () => {
+      setIsReviewingContent(true);
       try {
-        triggerHaptic(HapticPatterns.light);
-        setIsReviewingContent(true);
         await patchDeal(`/api/deals/${offer.id}/review-content`, { status: 'approved' });
         toast.success('Content approved');
-        // Optimistic UI update (avoid requiring a manual refresh to see CTA/progress changes).
-        setSelectedDealPage((prev) => (prev?.id === offer.id ? { ...prev, status: 'CONTENT_APPROVED', progress_percentage: 95, brand_approval_status: 'approved', updated_at: new Date().toISOString() } : prev));
-        setShowRevisionBox(false);
-        setRevisionFeedbackDraft('');
         await onRefresh?.();
-      } catch (e: any) {
-        toast.error(e?.message || 'Failed to approve content');
-      } finally {
-        setIsReviewingContent(false);
-      }
-    };
-
-    const updateShipping = async () => {
-      try {
-        triggerHaptic(HapticPatterns.light);
-        const tracking = String(trackingNumberDraft || '').trim();
-        if (!tracking) {
-          toast.error('Tracking number is required');
-          return;
-        }
-        setIsUpdatingShipping(true);
-        await patchDeal(`/api/deals/${offer.id}/shipping/update`, {
-          status: 'shipped',
-          courier_name: String(courierNameDraft || '').trim() || undefined,
-          tracking_number: tracking,
-          tracking_url: String(trackingUrlDraft || '').trim() || undefined,
-          expected_delivery_date: String(expectedDeliveryDateDraft || '').trim() || undefined,
-        });
-        toast.success('Shipping updated');
-        setSelectedDealPage((prev) => (
-          prev?.id === offer.id
-            ? {
-                ...prev,
-                shipping_status: 'shipped',
-                courier_name: String(courierNameDraft || '').trim() || null,
-                tracking_number: tracking,
-                tracking_url: String(trackingUrlDraft || '').trim() || null,
-                expected_delivery_date: String(expectedDeliveryDateDraft || '').trim() || null,
-                updated_at: new Date().toISOString(),
-              }
-            : prev
-        ));
-        setShowShippingBox(false);
-        await onRefresh?.();
-      } catch (e: any) {
-        toast.error(e?.message || 'Failed to update shipping');
-      } finally {
-        setIsUpdatingShipping(false);
-      }
+      } finally { setIsReviewingContent(false); }
     };
 
     const requestRevision = async () => {
+      if (!revisionFeedbackDraft.trim()) { toast.error('Note is required'); return; }
+      setIsReviewingContent(true);
       try {
-        triggerHaptic(HapticPatterns.light);
-        const feedback = String(revisionFeedbackDraft || '').trim();
-        if (!feedback) {
-          toast.error('Add a revision note for the creator');
-          return;
-        }
-        setIsReviewingContent(true);
-        await patchDeal(`/api/deals/${offer.id}/review-content`, { status: 'changes_requested', feedback });
+        await patchDeal(`/api/deals/${offer.id}/review-content`, { status: 'changes_requested', feedback: revisionFeedbackDraft });
         toast.success('Revision requested');
-        setSelectedDealPage((prev) =>
-          prev?.id === offer.id
-            ? { ...prev, status: 'Content Making', progress_percentage: 85, brand_approval_status: 'changes_requested', brand_feedback: feedback, updated_at: new Date().toISOString() }
-            : prev
-        );
         setShowRevisionBox(false);
-        setRevisionFeedbackDraft('');
         await onRefresh?.();
-      } catch (e: any) {
-        toast.error(e?.message || 'Failed to request revision');
-      } finally {
-        setIsReviewingContent(false);
-      }
+      } finally { setIsReviewingContent(false); }
     };
 
-    const raiseDispute = async () => {
+    const updateShipping = async () => {
+      if (!trackingNumberDraft.trim()) { toast.error('ID is required'); return; }
+      setIsUpdatingShipping(true);
       try {
-        triggerHaptic(HapticPatterns.light);
-        const disputeNotes = String(disputeNotesDraft || '').trim();
-        setIsReviewingContent(true);
-        await patchDeal(`/api/deals/${offer.id}/review-content`, { status: 'disputed', disputeNotes });
-        toast.success('Issue raised');
-        setSelectedDealPage((prev) =>
-          prev?.id === offer.id
-            ? { ...prev, status: 'DISPUTED', brand_approval_status: 'disputed', dispute_notes: disputeNotes || null, updated_at: new Date().toISOString() }
-            : prev
-        );
-        setShowDisputeBox(false);
-        setDisputeNotesDraft('');
+        await patchDeal(`/api/deals/${offer.id}/shipping/update`, {
+          status: 'shipped',
+          courier_name: courierNameDraft,
+          tracking_number: trackingNumberDraft,
+        });
+        toast.success('Shipping updated');
+        setShowShippingBox(false);
         await onRefresh?.();
-      } catch (e: any) {
-        toast.error(e?.message || 'Failed to raise issue');
-      } finally {
-        setIsReviewingContent(false);
-      }
+      } finally { setIsUpdatingShipping(false); }
     };
 
     const releasePayment = async () => {
+      if (!paymentReferenceDraft.trim()) { toast.error('UTR is required'); return; }
+      setIsReleasingPayment(true);
       try {
-        triggerHaptic(HapticPatterns.light);
-        if (!creatorUpiId) {
-          toast.error('Creator UPI ID missing', { description: 'Ask the creator to add a UPI ID before releasing payment.' });
-          return;
-        }
-        const paymentReference = String(paymentReferenceDraft || '').trim();
-        if (!paymentReference) {
-          toast.error('Payment reference is required');
-          return;
-        }
-        setIsReleasingPayment(true);
-        let paymentProofUrl: string | null = null;
-        if (paymentProofFile) {
-          const fileExt = paymentProofFile.name.split('.').pop()?.toLowerCase() || 'jpg';
-          const filePath = `${profile?.id || 'brand'}/payment-proofs/${offer.id}-${Date.now()}.${fileExt}`;
-          const { error: uploadError } = await supabase.storage.from(CREATOR_ASSETS_BUCKET).upload(filePath, paymentProofFile, {
-            cacheControl: '3600',
-            upsert: false,
-          });
-          if (uploadError) {
-            throw new Error(`Payment proof upload failed: ${uploadError.message}`);
-          }
-          const { data: publicUrlData } = supabase.storage.from(CREATOR_ASSETS_BUCKET).getPublicUrl(filePath);
-          paymentProofUrl = publicUrlData?.publicUrl || null;
-        }
-
-        const payload = {
-          paymentReference,
-          paymentReceivedDate: paymentDateDraft || undefined,
-          paymentNotes: String(paymentNotesDraft || '').trim() || undefined,
-          paymentProofUrl: paymentProofUrl || undefined,
-        };
-
-        await patchDeal(`/api/deals/${offer.id}/release-payment`, payload);
+        await patchDeal(`/api/deals/${offer.id}/release-payment`, { paymentReference: paymentReferenceDraft });
         toast.success('Payment released');
-        setSelectedDealPage((prev) => (
-          prev?.id === offer.id
-            ? {
-                ...prev,
-                status: 'PAYMENT_RELEASED',
-                payment_released_at: new Date().toISOString(),
-                payment_received_date: payload.paymentReceivedDate || new Date().toISOString(),
-                utr_number: paymentReference,
-                payment_proof_url: paymentProofUrl,
-                payment_notes: payload.paymentNotes || null,
-                updated_at: new Date().toISOString(),
-              }
-            : prev
-        ));
         setShowPaymentProofBox(false);
-        setPaymentReferenceDraft('');
-        setPaymentDateDraft(new Date().toISOString().slice(0, 10));
-        setPaymentNotesDraft('');
-        setPaymentProofFile(null);
         await onRefresh?.();
-      } catch (e: any) {
-        toast.error(e?.message || 'Failed to release payment');
-      } finally {
-        setIsReleasingPayment(false);
-      }
+      } finally { setIsReleasingPayment(false); }
     };
 
+    const raiseDispute = async () => {
+      setIsReviewingContent(true);
+      try {
+        await patchDeal(`/api/deals/${offer.id}/raise-dispute`, { notes: disputeNotesDraft });
+        toast.success('Dispute raised. Support will contact you.');
+        setShowDisputeBox(false);
+        await onRefresh?.();
+      } finally { setIsReviewingContent(false); }
+    };
+
+    const onPrimaryCta = () => {
+      if (primaryCta.action === 'review_sign_contract') openContract();
+      else if (primaryCta.action === 'review_content') contentSectionRef.current?.scrollIntoView({ behavior: 'smooth' });
+      else if (primaryCta.action === 'track_progress') progressSectionRef.current?.scrollIntoView({ behavior: 'smooth' });
+      else toast.message(primaryCta.label);
+    };
+
+    const scrollToRef = (ref: any) => ref.current?.scrollIntoView({ behavior: 'smooth' });
 
     return (
       <motion.div
@@ -2497,984 +2157,559 @@ const BrandMobileDashboard = ({
           isDark ? 'bg-[#061318]' : 'bg-[#F9FAFB]'
         )}
       >
-        <div className={cn('px-5 py-3.5 flex items-center justify-between border-b sticky top-0 z-[210]', isDark ? 'bg-[#061318]/92 backdrop-blur-xl border-border' : 'bg-card border-border')}>
+        {/* Sticky Header */}
+        <div className={cn('px-4 py-3.5 flex items-center justify-between border-b sticky top-0 z-[210]', isDark ? 'bg-[#061318]/92 backdrop-blur-xl border-white/5' : 'bg-white/80 backdrop-blur-xl border-border/60')}>
           <div className="flex items-center gap-3">
-            <button type="button" onClick={() => { triggerHaptic(HapticPatterns.light); setSelectedDealPage(null); }} aria-label="Close deal detail" className={cn('w-10 h-10 rounded-full flex items-center justify-center border transition-all active:scale-90', borderColor, isDark ? 'bg-card hover:bg-secondary/50' : 'bg-card hover:bg-background')}>
-              <ChevronRight className="w-4 h-4 rotate-180" aria-hidden="true" />
+            <button type="button" onClick={() => { triggerHaptic(HapticPatterns.light); setSelectedDealPage(null); }} aria-label="Close deal detail" className={cn('w-10 h-10 rounded-2xl flex items-center justify-center border transition-all active:scale-90', borderColor, isDark ? 'bg-card hover:bg-secondary/50' : 'bg-white hover:bg-slate-50')}>
+              <ArrowLeft className="w-4 h-4" />
             </button>
-            <div>
-              <h2 className={cn('text-[16px] font-bold tracking-tight leading-tight', textColor)}>Deal Detail</h2>
-              <p className={cn('text-[10px] font-bold uppercase tracking-widest opacity-40 leading-tight', textColor)}>{creatorName || 'Creator'}</p>
+            <div className="flex items-center gap-3">
+              <Avatar className="w-8 h-8 border border-border/50">
+                <AvatarImage src={safeAvatarSrc(offer?.profiles?.avatar_url || offer?.profiles?.profile_image_url || offer?.creator_avatar_url || offer?.creator_photo_url)} alt={creatorName} />
+                <AvatarFallback>{(creatorName || 'C').slice(0, 1).toUpperCase()}</AvatarFallback>
+              </Avatar>
+              <div className="min-w-0">
+                <h2 className={cn('text-[14px] font-black tracking-tight leading-tight truncate max-w-[120px]', textColor)}>{creatorName || 'Creator'}</h2>
+                <p className={cn('text-[9px] font-black uppercase tracking-widest opacity-40 leading-tight', textColor)}>Deal Details</p>
+              </div>
             </div>
           </div>
-          <button type="button"
-            onClick={() => {
-              triggerHaptic(HapticPatterns.light);
-              toast.message('More actions coming next.');
-            }}
-            className={cn('w-10 h-10 rounded-full flex items-center justify-center border transition-all active:scale-90', borderColor, isDark ? 'bg-card hover:bg-secondary/50' : 'bg-card hover:bg-background')}
-          >
-            <MoreHorizontal className={cn('w-5 h-5 opacity-60', textColor)} />
-          </button>
+          <div className="flex items-center gap-2">
+            <button type="button" onClick={() => { triggerHaptic(HapticPatterns.light); toast.info('Status History', { description: 'Chronology of deal events coming soon.' }); }} className={cn('w-10 h-10 rounded-2xl flex items-center justify-center border transition-all active:scale-90', borderColor, isDark ? 'bg-card' : 'bg-white shadow-sm')}>
+              <History className={cn('w-4 h-4 opacity-60', textColor)} />
+            </button>
+            <button type="button" onClick={() => { triggerHaptic(HapticPatterns.light); toast.message('More actions coming next.'); }} className={cn('w-10 h-10 rounded-2xl flex items-center justify-center border transition-all active:scale-90', borderColor, isDark ? 'bg-card' : 'bg-white shadow-sm')}>
+              <MoreVertical className={cn('w-4 h-4 opacity-60', textColor)} />
+            </button>
+          </div>
         </div>
 
         <div className="px-5 pt-5 pb-40 max-w-md md:max-w-2xl mx-auto">
-          {/* Hero */}
-          <DealCard className="mb-6">
-            <div className="p-5 relative overflow-hidden">
-              <div className="absolute inset-0 pointer-events-none bg-background" />
-              <div className="relative">
-                <div className="flex items-center justify-between gap-3 mb-4">
-                  <span className={cn('inline-flex items-center px-3 py-1.5 rounded-full border text-[11px] font-black uppercase tracking-widest', dealUi.tone)}>
+          {/* Hero Section */}
+          <div className="mb-8 relative">
+            <div className={cn(
+              'rounded-[42px] border p-8 overflow-hidden relative shadow-2xl transition-all duration-700',
+              isDark 
+                ? 'bg-gradient-to-br from-emerald-500/20 via-sky-500/5 to-transparent border-white/5' 
+                : 'bg-gradient-to-br from-emerald-50 via-sky-50 to-white border-primary/20 shadow-primary/10'
+            )}>
+              <div className="absolute top-0 right-0 p-8 opacity-[0.03] rotate-12">
+                <Sparkles size={180} />
+              </div>
+              
+              <div className="relative z-10">
+                <div className="flex items-center justify-between mb-8">
+                  <div className={cn('px-4 py-1.5 rounded-full border text-[10px] font-black uppercase tracking-[0.2em] shadow-sm flex items-center gap-2', dealUi.tone)}>
+                    <div className="w-1.5 h-1.5 rounded-full bg-current animate-pulse" />
                     {dealUi.label}
-                  </span>
-                  <span className={cn('inline-flex px-3 py-1.5 rounded-full border text-[11px] font-black uppercase tracking-widest', offer?.collab_type === 'barter' ? (isDark ? 'bg-warning/10 text-warning border-warning/20' : 'bg-warning text-white border-warning') : (isDark ? 'bg-primary/10 text-primary border-primary/20' : 'bg-primary/10 text-primary border-primary/20'))}>
-                    {offer?.collab_type === 'barter' ? 'BARTER' : 'PAID CAMPAIGN'}
-                  </span>
-                </div>
-
-                <div className="flex items-end justify-between gap-3">
-                  <div>
-                    <p className={cn('text-[44px] font-black leading-none tracking-tight', textColor)}>
-                      {amount > 0 ? formatCompactINR(amount) : '—'}
-                    </p>
-                    <p className={cn('text-[15px] font-semibold mt-2', secondaryTextColor)}>
-                      Offer
-                    </p>
                   </div>
-                  <div className={cn('pb-1 text-[14px] font-semibold', secondaryTextColor)}>
-                    {String(deliverables).replaceAll(',', ' •')}
+                  <div className={cn('px-4 py-1.5 rounded-full border text-[10px] font-black uppercase tracking-[0.2em] shadow-sm', isDark ? 'bg-white/5 border-white/10 text-white/60' : 'bg-slate-100 border-slate-200 text-slate-500')}>
+                    {offer?.collab_type?.toUpperCase() || 'COLLAB'}
                   </div>
                 </div>
 
-                 {hasProductImage && (
-                   <div className="mt-5 overflow-hidden rounded-3xl border border-border bg-background">
-                     <div className="relative aspect-[4/3] w-full">
-                       <img
-                         src={safeImageSrc(productImageUrl)}
-                         alt={`${creatorName || 'Creator'} product preview`}
-                         className="absolute inset-0 h-full w-full object-cover"
-                       />
-                       <div className="absolute left-3 top-3 rounded-full bg-black/55 px-2.5 py-1 text-[10px] font-black uppercase tracking-widest text-white backdrop-blur-sm">
-                         Product image
-                       </div>
-                     </div>
-                   </div>
-                 )}
-
-                {showSignatureDebug && (
-                  <div className={cn('text-[11px] font-semibold mt-3', secondaryTextColor)}>
-                    {(() => {
-                      const hints = collectSignatureHints(offer);
-                      const status = effectiveDealStatus(offer);
-                      const raw = String(offer?.status || offer?.raw?.status || '—');
-                      const esign = String(offer?.esign_status || offer?.raw?.esign_status || offer?.contract_status || offer?.raw?.contract_status || '');
-                      return (
-                        <span>
-                          debugSig: status={status} raw={raw} esign={esign || '—'} brandKeys=[{hints.brand.join(',') || '—'}] creatorKeys=[{hints.creator.join(',') || '—'}]
-                        </span>
-                      );
-                    })()}
+                <div className="text-center mb-8">
+                  <p className={cn('text-[11px] font-black uppercase tracking-[0.3em] opacity-40 mb-3', textColor)}>Investment</p>
+                  <div className="flex items-center justify-center gap-1">
+                    <span className={cn('text-[20px] font-black mb-4 mr-1', isDark ? 'text-primary' : 'text-primary')}>₹</span>
+                    <h1 className={cn('text-[64px] font-black tracking-tighter leading-none', textColor)}>
+                      <CountUp end={amount} duration={1.5} separator="," />
+                    </h1>
                   </div>
-                )}
-
-                <div className={cn('mt-5 rounded-2xl border px-4 py-3', isDark ? 'bg-card border-border' : 'bg-secondary/80 border-border')}>
-                  <p className={cn('text-[10px] font-black uppercase tracking-[0.16em] opacity-50 mb-1', textColor)}>Campaign brief</p>
-                  <p className={cn('text-[12px] font-semibold leading-relaxed whitespace-pre-wrap', isDark ? 'text-foreground/80' : 'text-muted-foreground')}>
-                    {typeof offer?.campaign_description === 'string' && offer.campaign_description.trim()
-                      ? offer.campaign_description.trim()
-                      : 'Create an engaging reel showcasing the brand message and key product benefits.'}
-                  </p>
                 </div>
 
-                <div className={cn('flex items-center gap-3 w-full border-t pt-4 mt-5', isDark ? 'border-border' : 'border-border')}>
-                  <Avatar className={cn('w-11 h-11 border shadow-sm', isDark ? 'border-border' : 'border-border')}>
-                    <AvatarImage src={safeAvatarSrc(offer?.profiles?.avatar_url || offer?.profiles?.profile_image_url || offer?.creator_avatar_url || offer?.creator_photo_url)} alt={creatorName || 'Creator'} />
-                    <AvatarFallback className={cn(isDark ? 'bg-card text-foreground' : 'bg-background text-muted-foreground')}>
-                      {(creatorName || 'C').slice(0, 1).toUpperCase()}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="min-w-0">
-                    <div className="flex items-center gap-1.5">
-                      <p className={cn('text-[15px] font-black tracking-tight truncate', textColor)}>{creatorName || 'Creator'}</p>
-                      <ShieldCheck className="w-4 h-4 text-info" strokeWidth={2.5} />
+                <div className="flex items-center justify-center gap-6 py-5 border-y border-white/5 bg-white/[0.02] -mx-4 px-4 mb-8">
+                  <div className="text-center">
+                    <p className={cn('text-[9px] font-black uppercase tracking-widest opacity-40 mb-1.5', textColor)}>Type</p>
+                    <p className={cn('text-[13px] font-bold', textColor)}>{String(deliverables).split('•')[0] || 'Reel'}</p>
+                  </div>
+                  <div className="w-px h-8 bg-white/10" />
+                  <div className="text-center">
+                    <p className={cn('text-[9px] font-black uppercase tracking-widest opacity-40 mb-1.5', textColor)}>Rights</p>
+                    <p className={cn('text-[13px] font-bold', textColor)}>Organic</p>
+                  </div>
+                  <div className="w-px h-8 bg-white/10" />
+                  <div className="text-center">
+                    <p className={cn('text-[9px] font-black uppercase tracking-widest opacity-40 mb-1.5', textColor)}>Platform</p>
+                    <p className={cn('text-[13px] font-bold', textColor)}>Instagram</p>
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between gap-4">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <Avatar className="w-12 h-12 border-2 border-white/10 shadow-xl">
+                      <AvatarImage src={safeAvatarSrc(offer?.profiles?.avatar_url || offer?.profiles?.profile_image_url || offer?.creator_avatar_url || offer?.creator_photo_url)} alt={creatorName} />
+                      <AvatarFallback className="bg-primary/20 text-primary font-black">
+                        {(creatorName || 'C').slice(0, 1).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-1.5">
+                        <p className={cn('text-[15px] font-black truncate', textColor)}>{creatorName}</p>
+                        <ShieldCheck className="w-4 h-4 text-info" />
+                      </div>
+                      <p className={cn('text-[11px] font-bold opacity-50 truncate', textColor)}>@{creatorUsername || 'creator'}</p>
                     </div>
-                    <p className={cn('text-[11px] font-semibold mt-0.5', secondaryTextColor)}>Verified Creator</p>
                   </div>
+                  <button type="button" onClick={() => navigate(`/${creatorUsername || ''}`)} className={cn('px-4 py-2 rounded-2xl text-[11px] font-black uppercase tracking-widest border transition-all active:scale-95', isDark ? 'border-white/10 bg-white/5 hover:bg-white/10 text-white' : 'border-slate-200 bg-white hover:bg-slate-50 text-slate-700 shadow-sm')}>
+                    Profile
+                  </button>
                 </div>
               </div>
             </div>
-          </DealCard>
-
-          {/* Progress */}
-          <div ref={progressSectionRef} className="mb-6">
-            <SectionTitle>Timeline</SectionTitle>
-            <DealCard>
-              <div className="p-5">
-                <div className="flex items-center justify-between mb-3">
-                  <p className={cn('text-[14px] font-black', textColor)}>Deal progress</p>
-                  <p className={cn('text-[12px] font-semibold', secondaryTextColor)}>{dealUi.label}</p>
-                </div>
-                <div className="grid grid-cols-5 gap-2">
-                  {['Contract', 'Signed', 'Create', 'Deliver', 'Done'].map((step, idx) => (
-                    <div key={step} className="flex flex-col items-center gap-2">
-                      <div className={cn('h-2 w-full rounded-full', idx <= dealUi.stepIndex ? (isDark ? 'bg-gradient-to-r from-emerald-400 to-sky-400' : 'bg-gradient-to-r from-emerald-500 to-sky-500') : (isDark ? 'bg-secondary/50' : 'bg-background'))} />
-                      <span className={cn('text-[10px] font-black tracking-tight text-center', idx <= dealUi.stepIndex ? textColor : secondaryTextColor)}>{step}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </DealCard>
           </div>
 
-          {/* Escrow Protection Warning (72h rule) */}
-          {(dealUi.stepIndex === 3 || dealUi.stepIndex === 4) && (
-            <div className="mb-6">
-              <div className={cn('rounded-2xl border p-4 space-y-2', isDark ? 'bg-amber-500/10 border-amber-500/20' : 'bg-amber-50 border-amber-200')}>
-                <div className="flex items-center gap-2 text-amber-500">
-                  <Clock className="w-4 h-4" />
-                  <p className="text-[12px] font-black uppercase tracking-tight">Review Period Active</p>
-                </div>
-                <p className={cn('text-[11px] font-semibold leading-relaxed', isDark ? 'text-amber-100/70' : 'text-amber-700/80')}>
-                  You have <strong>72 hours</strong> to review the submitted content. If no action is taken, the funds held in escrow will be <strong>automatically released</strong> to the creator to ensure fair payment.
-                </p>
+          {/* Timeline Section */}
+          <div ref={progressSectionRef} className="mb-8">
+            <div className="flex items-center justify-between mb-4 px-1">
+              <SectionTitle>{requiresShipping && !requiresPayment ? 'Fulfillment Timeline' : 'Deal Timeline'}</SectionTitle>
+              <div className={cn('px-2.5 py-1 rounded-lg border text-[9px] font-black uppercase tracking-widest', isDark ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-emerald-50 text-emerald-600 border-emerald-100')}>
+                {requiresShipping && !requiresPayment ? 'BARTER' : dealUi.label}
               </div>
             </div>
-          )}
+            <div className={cn('p-6 rounded-[32px] border relative overflow-hidden', isDark ? 'bg-card/40 border-white/5' : 'bg-white border-slate-100 shadow-sm')}>
+              <div className="relative flex justify-between">
+                <div className={cn('absolute top-5 left-0 right-0 h-[2px] z-0', isDark ? 'bg-white/5' : 'bg-slate-100')}>
+                  <motion.div
+                    initial={{ width: 0 }}
+                    animate={{ width: `${(dealUi.stepIndex / 4) * 100}%` }}
+                    className={cn('h-full bg-gradient-to-r from-emerald-500 to-sky-500 shadow-[0_0_10px_rgba(16,185,129,0.3)]')}
+                  />
+                </div>
+                  {(requiresShipping && !requiresPayment
+                    ? [
+                        { label: 'Contract', icon: FileText },
+                        { label: 'Signed', icon: PenTool },
+                        { label: 'Dispatch', icon: Truck },
+                        { label: 'Received', icon: CheckCircle2 },
+                        { label: 'Complete', icon: Wallet },
+                      ]
+                    : [
+                        { label: 'Contract', icon: FileText },
+                        { label: 'Signed', icon: PenTool },
+                        { label: 'Create', icon: PlayCircle },
+                        { label: 'Deliver', icon: CheckCircle2 },
+                        { label: 'Done', icon: Wallet },
+                      ]
+                  ).map((step, idx) => {
+                  const isCompleted = idx <= dealUi.stepIndex;
+                  const isActive = idx === dealUi.stepIndex;
+                  return (
+                    <div key={step.label} className="relative z-10 flex flex-col items-center gap-3 w-12">
+                      <div className={cn(
+                        'w-10 h-10 rounded-2xl flex items-center justify-center transition-all duration-500 border-2',
+                        isCompleted ? 'bg-gradient-to-br from-emerald-500 to-sky-500 border-white/10 text-white shadow-lg' : isDark ? 'bg-secondary/40 border-white/5 text-white/20' : 'bg-slate-50 border-slate-100 text-slate-300'
+                      )}>
+                        <step.icon className={cn('w-4.5 h-4.5', isActive && 'animate-pulse')} strokeWidth={isCompleted ? 3 : 2} />
+                      </div>
+                      <span className={cn('text-[9px] font-black uppercase tracking-widest text-center', isCompleted ? textColor : 'opacity-30')}>{step.label}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
 
-          {/* Quick info */}
-          <div className="mb-6 grid grid-cols-2 gap-3">
-            <DealCard>
-              <div className="p-4">
-                <p className={cn('text-[11px] font-black uppercase tracking-wider mb-2 opacity-50', textColor)}>
-                  {requiresPayment ? 'Payment' : requiresShipping ? 'Fulfillment' : 'Deal type'}
-                </p>
-                <div className="flex items-center gap-2.5">
-                  <div className={cn('w-9 h-9 rounded-xl flex items-center justify-center', isDark ? 'bg-primary/15' : 'bg-primary/10')}>
-                    {requiresPayment ? (
-                      <ShieldCheck className={cn('w-4 h-4', isDark ? 'text-primary' : 'text-primary')} />
-                    ) : (
-                      <Landmark className={cn('w-4 h-4', isDark ? 'text-primary' : 'text-primary')} />
-                    )}
-                  </div>
-                  <span className={cn('text-[14px] font-black leading-tight', textColor)}>
+          {/* Quick Info Tiles */}
+          <div className="mb-8 grid grid-cols-2 gap-4">
+            <div className={cn('p-5 rounded-[32px] border relative overflow-hidden transition-all', isDark ? 'bg-card/40 border-white/5' : 'bg-white border-slate-100 shadow-sm')}>
+              <p className={cn('text-[10px] font-black uppercase tracking-[0.2em] mb-3 opacity-40', textColor)}>
+                {requiresPayment ? 'Payment' : requiresShipping ? 'Fulfillment' : 'Deal type'}
+              </p>
+              <div className="flex items-center gap-3">
+                <div className={cn('w-10 h-10 rounded-2xl flex items-center justify-center', isDark ? 'bg-primary/10 text-primary' : 'bg-emerald-50 text-emerald-600')}>
+                  {requiresPayment ? <ShieldCheck className="w-5 h-5" /> : <Landmark className="w-5 h-5" />}
+                </div>
+                <div className="min-w-0">
+                  <p className={cn('text-[14px] font-black leading-tight truncate', textColor)}>
                     {requiresPayment ? 'Escrow' : requiresShipping ? 'Product' : 'Collab'}
-                    <br />
-                    {requiresPayment ? 'Secured' : requiresShipping ? 'Shipping required' : 'No payout needed'}
-                  </span>
-                </div>
-              </div>
-            </DealCard>
-            <DealCard>
-              <div className="p-4">
-                <p className={cn('text-[11px] font-black uppercase tracking-wider mb-2 opacity-50', textColor)}>Deadline</p>
-                <p className={cn('text-[14px] font-black leading-tight', textColor)}>{deadlineText}</p>
-                <span className={cn('text-[11px] font-black tracking-tight flex items-center mt-2', dueTone)}>
-                  ⚡ {diffDays === null ? 'No deadline set' : diffDays > 0 ? `${diffDays} days remaining` : 'Overdue'}
-                </span>
-              </div>
-            </DealCard>
-          </div>
-
-	          {/* Contract */}
-	          <div ref={contractSectionRef} className="mb-6">
-	            <SectionTitle>Contract</SectionTitle>
-	            <DealCard>
-	              <div className="p-5">
-	                {(() => {
-	                  const isSignedStage =
-	                    normalizedDealStatus === 'FULLY_EXECUTED' ||
-	                    normalizedDealStatus === 'CONTENT_MAKING' ||
-	                    normalizedDealStatus === 'CONTENT_DELIVERED' ||
-	                    normalizedDealStatus === 'COMPLETED';
-		                  const contractTitle = isSignedStage
-		                    ? 'Signed and active'
-		                    : normalizedDealStatus === 'AWAITING_BRAND_SIGNATURE'
-		                      ? 'Your signature required'
-		                      : normalizedDealStatus === 'AWAITING_CREATOR_SIGNATURE'
-		                        ? 'Waiting for creator signature'
-		                        : (normalizedDealStatus === 'CONTRACT_READY' || normalizedDealStatus === 'SENT')
-		                          ? (contractUrl ? 'Ready for signature' : 'Contract is being prepared')
-		                        : contractUrl
-		                          ? 'Ready for review'
-		                          : 'Contract is being prepared';
-	                  const contractDescription = isSignedStage
-	                    ? 'Next: confirm deliverables and execution timeline.'
-	                    : normalizedDealStatus === 'AWAITING_BRAND_SIGNATURE'
-	                      ? 'Open the contract and sign to start the collaboration.'
-	                      : normalizedDealStatus === 'AWAITING_CREATOR_SIGNATURE'
-	                        ? 'You’ve signed. We’ll notify you once the creator signs.'
-	                        : contractUrl
-	                          ? 'Open the protected contract view or copy the link.'
-	                          : 'Generate the agreement to lock terms and start execution.';
-	                  const badgeText = isSignedStage
-	                    ? 'SIGNED'
-	                    : normalizedDealStatus === 'AWAITING_BRAND_SIGNATURE'
-	                      ? 'READY'
-	                      : contractUrl
-	                        ? 'READY'
-	                        : 'PENDING';
-	                  const badgeTone = isSignedStage
-	                    ? (isDark ? 'bg-primary/10 text-primary border-primary/20' : 'bg-primary/10 text-primary border-primary/20')
-	                    : contractUrl
-	                      ? (isDark ? 'bg-info/10 text-info border-sky-500/20' : 'bg-info text-white border-sky-200')
-	                      : (isDark ? 'bg-warning/10 text-warning border-warning/20' : 'bg-warning text-white border-warning');
-	                  return (
-	                    <div className="flex items-start justify-between gap-3 mb-4">
-	                      <div className="min-w-0">
-	                        <p className={cn('text-[16px] font-black leading-tight', textColor)}>{contractTitle}</p>
-	                        <p className={cn('text-[12px] font-semibold mt-1', secondaryTextColor)}>{contractDescription}</p>
-	                      </div>
-	                      <span className={cn('px-3 py-1.5 rounded-full text-[11px] font-black uppercase tracking-wider border', badgeTone)}>
-	                        {badgeText}
-	                      </span>
-	                    </div>
-	                  );
-	                })()}
-
-	                <div className={cn('rounded-2xl border px-4 py-3 mb-4', isDark ? 'bg-card border-border' : 'bg-background border-border')}>
-	                  <p className={cn('text-[11px] font-black uppercase tracking-wider opacity-50 mb-1', textColor)}>Document</p>
-                  <p className={cn('text-[13px] font-bold truncate', textColor)}>
-                    {contractUrl ? decodeURIComponent(String(contractUrl).split('/').pop() || 'collaboration-contract.pdf') : 'Contract will appear here'}
+                  </p>
+                  <p className={cn('text-[10px] font-bold mt-1 truncate', dueTone)}>
+                    {diffDays === null ? 'No limit' : diffDays > 0 ? `${diffDays}d left` : 'Overdue'}
                   </p>
                 </div>
-
-                <div className="grid grid-cols-2 gap-2">
-                  <button type="button"
-                    onClick={openContract}
-                    disabled={isOpeningContract || isGeneratingContract}
-                    className={cn(
-                      'h-12 rounded-2xl font-black text-[13px] border transition active:scale-[0.98] disabled:opacity-60',
-                      isDark ? 'bg-card border-border text-foreground hover:bg-secondary/50' : 'bg-card border-border text-muted-foreground hover:bg-background'
-                    )}
-                  >
-                    Open
-                  </button>
-                  <button type="button"
-                    onClick={copyDealLink}
-                    disabled={isOpeningContract || isGeneratingContract}
-                    className={cn(
-                      'h-12 rounded-2xl font-black text-[13px] border transition active:scale-[0.98] disabled:opacity-60',
-                      isDark ? 'bg-card border-border text-foreground hover:bg-secondary/50' : 'bg-card border-border text-muted-foreground hover:bg-background'
-                    )}
-                  >
-                    Copy Link
-                  </button>
-                </div>
-
-                {!contractUrl && (
-                  <button type="button"
-                    onClick={generateContract}
-                    disabled={isOpeningContract || isGeneratingContract}
-                    className={cn(
-                      'mt-3 h-12 w-full rounded-2xl font-black text-[13px] transition active:scale-[0.98] disabled:opacity-60',
-                      'bg-gradient-to-r from-emerald-600 to-sky-600 text-foreground shadow-[0_10px_35px_rgba(16,185,129,0.20)]'
-                    )}
-                  >
-                    Generate Contract
-                  </button>
-                )}
               </div>
-            </DealCard>
-          </div>
-
-          {/* Deliverables */}
-          <div ref={deliverablesSectionRef} className="mb-6">
-            <SectionTitle>Deliverables</SectionTitle>
-            <div className="flex flex-wrap gap-3">
-              {String(deliverables)
-                .split(',')
-                .map((item) => item.trim())
-                .filter(Boolean)
-                .map((item, index) => (
-                  <Pill key={`${item}-${index}`}>{item}</Pill>
-                ))}
+            </div>
+            
+            <div className={cn('p-5 rounded-[32px] border relative overflow-hidden transition-all', isDark ? 'bg-card/40 border-white/5' : 'bg-white border-slate-100 shadow-sm')}>
+              <p className={cn('text-[10px] font-black uppercase tracking-[0.2em] mb-3 opacity-40', textColor)}>Deadline</p>
+              <div className="flex items-center gap-3">
+                <div className={cn('w-10 h-10 rounded-2xl flex items-center justify-center', isDark ? 'bg-sky-500/10 text-sky-400' : 'bg-sky-50 text-sky-600')}>
+                  <Calendar className="w-5 h-5" />
+                </div>
+                <div className="min-w-0">
+                  <p className={cn('text-[14px] font-black leading-tight truncate', textColor)}>{deadlineText}</p>
+                </div>
+              </div>
             </div>
           </div>
 
-          {requiresShipping && (
-            <div ref={shippingSectionRef} className="mb-6">
-              <SectionTitle>Shipping</SectionTitle>
-              <DealCard>
-                <div className="p-5 space-y-4">
-                  <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <p className={cn('text-[18px] font-black tracking-tight', textColor)}>Product fulfillment</p>
-                      <p className={cn('text-[13px] font-semibold mt-1', secondaryTextColor)}>
-                        Shipping is tracked separately from content and payment.
+          {/* Legal Agreement */}
+          <div ref={contractSectionRef} className="mb-8">
+            <div className="flex items-center justify-between mb-4 px-1">
+              <SectionTitle>Legal Agreement</SectionTitle>
+              <div className={cn('px-2.5 py-1 rounded-lg border text-[9px] font-black uppercase tracking-widest', isDark ? 'bg-sky-500/10 text-sky-400 border-sky-500/20' : 'bg-sky-50 text-sky-600 border-sky-100')}>
+                Protected
+              </div>
+            </div>
+            <div className={cn('p-6 rounded-[32px] border relative overflow-hidden', isDark ? 'bg-card/40 border-white/5' : 'bg-white border-slate-100 shadow-sm')}>
+                {(() => {
+                  const isSignedStage = normalizedDealStatus === 'FULLY_EXECUTED' || normalizedDealStatus === 'CONTENT_MAKING' || normalizedDealStatus === 'CONTENT_DELIVERED' || normalizedDealStatus === 'REVISION_REQUESTED' || normalizedDealStatus === 'REVISION_DONE' || normalizedDealStatus === 'CONTENT_APPROVED' || normalizedDealStatus === 'PAYMENT_RELEASED' || normalizedDealStatus === 'COMPLETED';
+                  const contractTitle = isSignedStage ? 'Signed & Active' : normalizedDealStatus === 'AWAITING_BRAND_SIGNATURE' ? 'Your Signature Required' : normalizedDealStatus === 'AWAITING_CREATOR_SIGNATURE' ? 'Waiting for Creator' : contractUrl ? 'Ready for Signature' : 'Preparing...';
+                  const contractSubtitle = isSignedStage ? 'Both parties have signed. Deal is legally binding.' : normalizedDealStatus === 'AWAITING_BRAND_SIGNATURE' ? 'Review and sign to proceed with this collaboration.' : normalizedDealStatus === 'AWAITING_CREATOR_SIGNATURE' ? 'Waiting for the creator to review and sign.' : 'Contract is being prepared.';
+                  const badgeTone = isSignedStage ? (isDark ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-emerald-50 text-emerald-600 border-emerald-100') : (isDark ? 'bg-sky-500/10 text-sky-400 border-sky-500/20' : 'bg-sky-50 text-sky-600 border-sky-100');
+                  
+                  return (
+                    <div className="flex items-center justify-between gap-4 mb-6">
+                      <div className="min-w-0 flex-1">
+                        <p className={cn('text-[17px] font-black tracking-tight leading-none', textColor)}>{contractTitle}</p>
+                        <p className={cn('text-[11px] font-bold mt-2 opacity-50 leading-relaxed', textColor)}>{contractSubtitle}</p>
+                      </div>
+                      <span className={cn('px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest border shrink-0', badgeTone)}>
+                        {isSignedStage ? 'SIGNED' : 'PENDING'}
+                      </span>
+                    </div>
+                  );
+                })()}
+
+                <div className={cn('rounded-[24px] border overflow-hidden mb-6', isDark ? 'bg-white/[0.03] border-white/5' : 'bg-slate-50 border-slate-100')}>
+                  <div className="px-5 py-5 flex items-center gap-4">
+                    <div className={cn('w-12 h-12 rounded-2xl flex items-center justify-center border shadow-inner', isDark ? 'bg-sky-500/10 border-sky-500/20' : 'bg-sky-50 border-sky-100')}>
+                      <FileText className={cn('w-5 h-5', isDark ? 'text-sky-400' : 'text-sky-600')} />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className={cn('text-[13px] font-black truncate leading-tight', textColor)}>
+                        {contractUrl ? decodeURIComponent(String(contractUrl).split('/').pop() || 'collaboration-contract.pdf') : 'Contract not generated yet'}
+                      </p>
+                      <p className={cn('text-[10px] font-bold mt-1.5 flex items-center gap-2', isDark ? 'text-white/40' : 'text-slate-400')}>
+                        <span>PDF Document</span>
+                        <span className="w-1 h-1 rounded-full bg-current opacity-40" />
+                        <span>Legal Agreement</span>
                       </p>
                     </div>
-                    <span className={cn(
-                      'px-3 py-1.5 rounded-full text-[11px] font-black uppercase tracking-wider border',
-                      shippingDelivered
-                        ? (isDark ? 'bg-primary/10 text-primary border-primary/20' : 'bg-primary/10 text-primary border-primary/20')
-                        : shippingStatus === 'shipped'
-                          ? (isDark ? 'bg-info/10 text-info border-sky-500/20' : 'bg-info text-white border-sky-200')
-                          : (isDark ? 'bg-warning/10 text-warning border-warning/20' : 'bg-warning text-white border-warning')
-                    )}>
-                      {shippingDelivered ? 'DELIVERED' : shippingStatus === 'shipped' ? 'SHIPPED' : 'PENDING'}
-                    </span>
-                  </div>
-
-                  {(courierName || trackingNumber || trackingUrl || expectedDeliveryDate) && (
-                    <div className={cn('rounded-2xl border p-4 space-y-3', isDark ? 'bg-secondary/3 border-border' : 'bg-card border-border')}>
-                      {courierName && (
-                        <div>
-                          <p className={cn('text-[11px] font-black uppercase tracking-wider opacity-50 mb-1', textColor)}>Courier</p>
-                          <p className={cn('text-[13px] font-semibold', textColor)}>{courierName}</p>
-                        </div>
-                      )}
-                      {trackingNumber && (
-                        <div>
-                          <div className="flex items-center justify-between gap-3 mb-1">
-                            <p className={cn('text-[11px] font-black uppercase tracking-wider opacity-50', textColor)}>Tracking</p>
-                            <button type="button"
-                              onClick={() => { void copyText(trackingNumber, 'Tracking number'); }}
-                              className={cn('text-[11px] font-black uppercase tracking-wider', isDark ? 'text-info' : 'text-info')}
-                            >
-                              Copy
-                            </button>
-                          </div>
-                          <p className={cn('text-[13px] font-semibold break-all', textColor)}>{trackingNumber}</p>
-                        </div>
-                      )}
-                      {expectedDeliveryDate && (
-                        <div>
-                          <p className={cn('text-[11px] font-black uppercase tracking-wider opacity-50 mb-1', textColor)}>Expected delivery</p>
-                          <p className={cn('text-[13px] font-semibold', textColor)}>
-                            {new Date(expectedDeliveryDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}
-                          </p>
-                        </div>
-                      )}
-                      {trackingUrl && (
-                        <a href={trackingUrl} target="_blank" rel="noreferrer" className={cn('inline-flex items-center gap-2 text-[13px] font-bold underline', isDark ? 'text-info' : 'text-info')}>
-                          <FileText className="w-4 h-4" />
-                          Open tracking link
-                        </a>
-                      )}
-                    </div>
-                  )}
-
-                  {!shippingDelivered && (
-                    !showShippingBox ? (
-                      <button type="button"
-                        onClick={() => {
-                          triggerHaptic(HapticPatterns.light);
-                          setCourierNameDraft(courierName);
-                          setTrackingNumberDraft(trackingNumber);
-                          setTrackingUrlDraft(trackingUrl);
-                          setExpectedDeliveryDateDraft(expectedDeliveryDate ? expectedDeliveryDate.slice(0, 10) : '');
-                          setShowShippingBox(true);
-                        }}
-                        className={cn('h-12 w-full rounded-2xl font-black text-[13px] transition active:scale-[0.98]', 'bg-gradient-to-r from-emerald-600 to-sky-600 text-foreground')}
-                      >
-                        {shippingStatus === 'shipped' ? 'Update shipping' : 'Add shipping details'}
+                    {contractUrl && (
+                      <button onClick={(e) => { e.stopPropagation(); copyText(contractUrl, 'Link'); }} className={cn('w-10 h-10 rounded-xl flex items-center justify-center transition-all active:scale-90', isDark ? 'hover:bg-white/10' : 'hover:bg-slate-100')}>
+                        <Copy className="w-4 h-4 opacity-40" />
                       </button>
-                    ) : (
-                      <div className="space-y-3">
-                        <div>
-                          <p className={cn('text-[12px] font-black mb-2', textColor)}>Courier name</p>
-                          <input
-                            value={courierNameDraft}
-                            onChange={(e) => setCourierNameDraft(e.target.value)}
-                            placeholder="Blue Dart, Delhivery, DHL..."
-                            className={cn('w-full h-12 rounded-2xl px-4 text-[13px] font-semibold outline-none border', isDark ? 'bg-card border-border text-foreground placeholder:text-foreground/30' : 'bg-background border-border text-muted-foreground placeholder:text-muted-foreground')}
-                          />
-                        </div>
-                        <div>
-                          <p className={cn('text-[12px] font-black mb-2', textColor)}>Tracking number (required)</p>
-                          <input
-                            value={trackingNumberDraft}
-                            onChange={(e) => setTrackingNumberDraft(e.target.value)}
-                            placeholder="Enter shipment tracking number"
-                            className={cn('w-full h-12 rounded-2xl px-4 text-[13px] font-semibold outline-none border', isDark ? 'bg-card border-border text-foreground placeholder:text-foreground/30' : 'bg-background border-border text-muted-foreground placeholder:text-muted-foreground')}
-                          />
-                        </div>
-                        <div>
-                          <p className={cn('text-[12px] font-black mb-2', textColor)}>Tracking URL (optional)</p>
-                          <input
-                            value={trackingUrlDraft}
-                            onChange={(e) => setTrackingUrlDraft(e.target.value)}
-                            placeholder="https://..."
-                            className={cn('w-full h-12 rounded-2xl px-4 text-[13px] font-semibold outline-none border', isDark ? 'bg-card border-border text-foreground placeholder:text-foreground/30' : 'bg-background border-border text-muted-foreground placeholder:text-muted-foreground')}
-                          />
-                        </div>
-                        <div>
-                          <p className={cn('text-[12px] font-black mb-2', textColor)}>Expected delivery (optional)</p>
-                          <input
-                            type="date"
-                            value={expectedDeliveryDateDraft}
-                            onChange={(e) => setExpectedDeliveryDateDraft(e.target.value)}
-                            className={cn('w-full h-12 rounded-2xl px-4 text-[13px] font-semibold outline-none border', isDark ? 'bg-card border-border text-foreground' : 'bg-background border-border text-muted-foreground')}
-                          />
-                        </div>
-                        <div className="grid grid-cols-2 gap-2">
-                          <button type="button"
-                            onClick={() => {
-                              triggerHaptic(HapticPatterns.light);
-                              setShowShippingBox(false);
-                            }}
-                            className={cn('h-11 rounded-2xl font-black text-[12px] border transition active:scale-[0.98]', isDark ? 'bg-card border-border text-foreground hover:bg-secondary/50' : 'bg-card border-border text-muted-foreground hover:bg-background')}
-                          >
-                            Cancel
-                          </button>
-                          <button type="button"
-                            onClick={updateShipping}
-                            disabled={isUpdatingShipping}
-                            className={cn('h-11 rounded-2xl font-black text-[12px] transition active:scale-[0.98] disabled:opacity-60', 'bg-gradient-to-r from-emerald-600 to-sky-600 text-foreground')}
-                          >
-                            {isUpdatingShipping ? 'Saving…' : shippingStatus === 'shipped' ? 'Update shipping' : 'Mark as shipped'}
-                          </button>
-                        </div>
-                      </div>
-                    )
+                    )}
+                  </div>
+                </div>
+
+                <div className="flex gap-3">
+                  <button type="button" onClick={openContract} disabled={isOpeningContract || isGeneratingContract} className={cn('flex-1 h-12 rounded-2xl text-[13px] font-black uppercase tracking-widest transition-all active:scale-[0.98] flex items-center justify-center gap-2', isDark ? 'bg-white text-[#061318] hover:bg-white/90' : 'bg-slate-900 text-white hover:bg-slate-800')}>
+                    {isOpeningContract ? <Loader2 className="w-4 h-4 animate-spin" /> : <Eye className="w-4 h-4" />}
+                    View Contract
+                  </button>
+                  {!normalizedDealStatus.includes('FULLY_EXECUTED') && (
+                    <button type="button" onClick={generateContract} disabled={isOpeningContract || isGeneratingContract} className={cn('h-12 px-5 rounded-2xl border flex items-center justify-center gap-2 transition-all active:scale-[0.98] text-[11px] font-black uppercase tracking-widest', isDark ? 'bg-white/5 border-white/10 hover:bg-white/10' : 'bg-white border-slate-200 shadow-sm hover:bg-slate-50')}>
+                      {isGeneratingContract ? <Loader2 className="w-4 h-4 animate-spin" /> : <RotateCcw className="w-3.5 h-3.5 opacity-50" />}
+                      Generate
+                    </button>
                   )}
                 </div>
-              </DealCard>
             </div>
-          )}
-
-          {/* Content delivery + review */}
-          {(normalizedDealStatus === 'CONTENT_MAKING' ||
-            normalizedDealStatus === 'CONTENT_DELIVERED' ||
-            normalizedDealStatus === 'REVISION_REQUESTED' ||
-            normalizedDealStatus === 'REVISION_DONE' ||
-            normalizedDealStatus === 'CONTENT_APPROVED' ||
-            normalizedDealStatus === 'PAYMENT_RELEASED' ||
-            normalizedDealStatus === 'COMPLETED') && (
-            <div ref={contentSectionRef} className="mb-6">
-              <SectionTitle>{canReviewContent ? 'Content Review' : 'Content'}</SectionTitle>
-              <DealCard>
-                <div className="p-5">
-                  {(() => {
-                    const contentUrl = String(offer?.content_submission_url || offer?.content_url || '').trim();
-                    const caption = String(offer?.content_caption || '').trim();
-                    const drive = String(offer?.content_drive_link || '').trim();
-                    const notes = String(offer?.content_notes || '').trim();
-                    const deliveryStatusRaw = String(offer?.content_delivery_status || '').trim().toLowerCase();
-                    const deliveryStatus = deliveryStatusRaw === 'posted' ? 'posted' : deliveryStatusRaw === 'draft' ? 'draft' : '';
-                    const feedback = String(offer?.brand_feedback || '').trim();
-
-                    const canReview = canReviewContent;
-                    const waitingRevision =
-                      normalizedDealStatus === 'REVISION_REQUESTED' ||
-                      (normalizedDealStatus === 'CONTENT_MAKING' && String(offer?.brand_approval_status || '').toLowerCase().includes('changes_requested'));
-                    const isCompleted = normalizedDealStatus === 'COMPLETED';
-                    const isDisputed = normalizedDealStatus === 'DISPUTED';
-
-                    const linksFromDeal = Array.isArray((offer as any)?.content_links) ? ((offer as any)?.content_links as any[]) : [];
-                    const contentLinks = Array.from(
-                      new Set(
-                        [contentUrl, ...linksFromDeal.map((v) => String(v || '').trim()), drive]
-                          .map((v) => String(v || '').trim())
-                          .filter(Boolean)
-                      )
-                    );
-
-                    return (
-                      <div className="space-y-4">
-                        <div className="flex items-start justify-between gap-3">
-                          <div className="min-w-0">
-                            <p className={cn('text-[16px] font-black leading-tight', textColor)}>
-                              {isDisputed ? 'Issue raised' : isCompleted ? 'Completed' : canReview ? 'Review content' : waitingRevision ? 'Revision requested' : 'In progress'}
-                            </p>
-                            <p className={cn('text-[12px] font-semibold mt-1', secondaryTextColor)}>
-                              {normalizedDealStatus === 'CONTENT_MAKING'
-                                ? waitingRevision
-                                  ? 'Waiting for creator to submit the updated links.'
-                                  : requiresShipping && !shippingDelivered
-                                    ? 'Awaiting product shipment from your side.'
-                                    : 'Waiting for creator to deliver the content links.'
-                                : canReview
-                                  ? 'Open the links, then approve, request a revision, or raise an issue.'
-                                  : waitingRevision
-                                    ? 'Waiting for creator to submit a revision.'
-                                    : isCompleted
-                                      ? 'Content approved. Deal completed.'
-                                      : isDisputed
-                                        ? 'This deal is in dispute.'
-                                        : '—'}
-                            </p>
-                          </div>
-                          <span
-                            className={cn(
-                              'px-3 py-1.5 rounded-full text-[11px] font-black uppercase tracking-wider border',
-                              canReview
-                                ? (isDark ? 'bg-warning/10 text-warning border-warning/20' : 'bg-warning text-white border-warning')
-                                : isCompleted
-                                  ? (isDark ? 'bg-primary/10 text-primary border-primary/20' : 'bg-primary/10 text-primary border-primary/20')
-                                  : isDisputed
-                                    ? (isDark ? 'bg-rose-500/10 text-rose-200 border-rose-500/20' : 'bg-rose-50 text-rose-700 border-rose-200')
-                                    : waitingRevision
-                                      ? (isDark ? 'bg-rose-500/10 text-rose-200 border-rose-500/20' : 'bg-rose-50 text-rose-700 border-rose-200')
-                                      : (isDark ? 'bg-card text-foreground/70 border-border' : 'bg-background text-muted-foreground border-border')
-                            )}
-                          >
-                            {canReview ? 'NEEDS REVIEW' : isCompleted ? 'COMPLETED' : isDisputed ? 'DISPUTED' : waitingRevision ? 'REVISION' : 'WAITING'}
-                          </span>
-                        </div>
-
-                        <div className={cn('rounded-2xl border px-4 py-3', isDark ? 'bg-card border-border' : 'bg-background border-border')}>
-                          <p className={cn('text-[11px] font-black uppercase tracking-wider opacity-50 mb-1', textColor)}>Content Links</p>
-                          {contentLinks.length ? (
-                            <div className="space-y-2">
-                              {contentLinks.map((link, index) => (
-                                <a
-                                  key={`${link}-${index}`}
-                                  href={link}
-                                  target="_blank"
-                                  rel="noreferrer"
-                                  className={cn('text-[13px] font-bold break-all underline block', isDark ? 'text-info' : 'text-info')}
-                                >
-                                  {link}
-                                </a>
-                              ))}
-                            </div>
-                          ) : (
-                            <p className={cn('text-[13px] font-bold', secondaryTextColor)}>Not submitted yet</p>
-                          )}
-                        </div>
-
-                        {(caption || notes || deliveryStatus) && (
-                          <div className={cn('rounded-2xl border p-4 space-y-3', isDark ? 'bg-secondary/3 border-border' : 'bg-card border-border')}>
-                            {deliveryStatus && (
-                              <div>
-                                <p className={cn('text-[11px] font-black uppercase tracking-wider opacity-50 mb-1', textColor)}>Status</p>
-                                <p className={cn('text-[13px] font-semibold', isDark ? 'text-foreground/80' : 'text-muted-foreground')}>
-                                  {deliveryStatus === 'posted' ? 'Already posted' : 'Draft for review'}
-                                </p>
-                              </div>
-                            )}
-                            {caption && (
-                              <div>
-                                <p className={cn('text-[11px] font-black uppercase tracking-wider opacity-50 mb-1', textColor)}>Caption</p>
-                                <p className={cn('text-[13px] font-semibold whitespace-pre-wrap', isDark ? 'text-foreground/80' : 'text-muted-foreground')}>{caption}</p>
-                              </div>
-                            )}
-                            {notes && (
-                              <div>
-                                <p className={cn('text-[11px] font-black uppercase tracking-wider opacity-50 mb-1', textColor)}>Message</p>
-                                <p className={cn('text-[13px] font-semibold whitespace-pre-wrap', isDark ? 'text-foreground/80' : 'text-muted-foreground')}>{notes}</p>
-                              </div>
-                            )}
-                          </div>
-                        )}
-
-                        {feedback && (
-                          <div className={cn('rounded-2xl border p-4', isDark ? 'bg-rose-500/5 border-rose-500/20' : 'bg-rose-50 border-rose-200')}>
-                            <p className={cn('text-[11px] font-black uppercase tracking-wider opacity-50 mb-1', isDark ? 'text-rose-200' : 'text-rose-700')}>Revision note</p>
-                            <p className={cn('text-[13px] font-semibold whitespace-pre-wrap', isDark ? 'text-rose-100/90' : 'text-rose-700')}>{feedback}</p>
-                          </div>
-                        )}
-
-                        {requiresPayment && (canReleasePayment || normalizedDealStatus === 'PAYMENT_RELEASED' || normalizedDealStatus === 'COMPLETED') && (
-                          <div className={cn('rounded-2xl border p-4 space-y-3', isDark ? 'bg-card border-border' : 'bg-card border-border')}>
-                            <div className="flex items-start justify-between gap-3">
-                              <div>
-                                <p className={cn('text-[16px] font-black leading-tight', textColor)}>
-                                  {normalizedDealStatus === 'PAYMENT_RELEASED' || normalizedDealStatus === 'COMPLETED' ? 'Payment proof submitted' : 'Release payment'}
-                                </p>
-                                <p className={cn('text-[12px] font-semibold mt-1', secondaryTextColor)}>
-                                  {normalizedDealStatus === 'PAYMENT_RELEASED' || normalizedDealStatus === 'COMPLETED'
-                                    ? 'Payment evidence recorded for this collaboration.'
-                                    : 'Add the payment reference before marking payment as released.'}
-                                </p>
-                              </div>
-                              <span className={cn(
-                                'px-3 py-1.5 rounded-full text-[11px] font-black uppercase tracking-wider border',
-                                normalizedDealStatus === 'PAYMENT_RELEASED' || normalizedDealStatus === 'COMPLETED'
-                                  ? (isDark ? 'bg-primary/10 text-primary border-primary/20' : 'bg-primary/10 text-primary border-primary/20')
-                                  : (isDark ? 'bg-warning/10 text-warning border-warning/20' : 'bg-warning text-white border-warning')
-                              )}>
-                                {normalizedDealStatus === 'PAYMENT_RELEASED' || normalizedDealStatus === 'COMPLETED' ? 'RECORDED' : 'REQUIRED'}
-                              </span>
-                            </div>
-
-                            <div className={cn('rounded-2xl border p-4 space-y-3', isDark ? 'bg-primary/5 border-primary/15' : 'bg-emerald-50 border-emerald-200')}>
-                              <div className="flex items-start justify-between gap-3">
-                                <div>
-                                  <p className={cn('text-[11px] font-black uppercase tracking-wider opacity-60 mb-1', isDark ? textColor : 'text-emerald-800')}>Pay creator</p>
-                                  <p className={cn('text-[14px] font-black', isDark ? textColor : 'text-emerald-900')}>UPI payout details</p>
-                                  <p className={cn('text-[12px] font-semibold mt-1', isDark ? secondaryTextColor : 'text-emerald-700/80')}>Use this UPI ID when sending payment for this collaboration.</p>
-                                </div>
-                                <span className={cn('px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border', isDark ? 'bg-primary/10 text-primary border-primary/20' : 'bg-card text-primary border-primary')}>
-                                  UPI
-                                </span>
-                              </div>
-
-                              <div className={cn('rounded-2xl border p-4 space-y-3', isDark ? 'bg-secondary/3 border-border' : 'bg-card border-primary')}>
-                                <div>
-                                  <p className={cn('text-[11px] font-black uppercase tracking-wider opacity-50 mb-1', textColor)}>Payee name</p>
-                                  <p className={cn('text-[13px] font-semibold break-all', textColor)}>{creatorPayeeName || 'Creator'}</p>
-                                </div>
-                                <div>
-                                  <div className="flex items-center justify-between gap-3 mb-1">
-                                    <p className={cn('text-[11px] font-black uppercase tracking-wider opacity-50', textColor)}>UPI ID</p>
-                                    {creatorUpiId && (
-                                      <button type="button"
-                                        onClick={() => { void copyText(creatorUpiId, 'UPI ID'); }}
-                                        className={cn('text-[11px] font-black uppercase tracking-wider', isDark ? 'text-info' : 'text-info')}
-                                      >
-                                        Copy
-                                      </button>
-                                    )}
-                                  </div>
-                                  <p className={cn('text-[13px] font-semibold break-all', textColor)}>{creatorUpiId || 'Creator has not added a UPI ID yet'}</p>
-                                </div>
-                              </div>
-                            </div>
-
-                            {(paymentReference || paymentReceivedDate || paymentProofUrl || paymentNotes) && (
-                              <div className={cn('rounded-2xl border p-4 space-y-3', isDark ? 'bg-secondary/3 border-border' : 'bg-background border-border')}>
-                                {paymentReference && (
-                                  <div>
-                                    <p className={cn('text-[11px] font-black uppercase tracking-wider opacity-50 mb-1', textColor)}>Reference</p>
-                                    <p className={cn('text-[13px] font-semibold break-all', textColor)}>{paymentReference}</p>
-                                  </div>
-                                )}
-                                {paymentReceivedDate && (
-                                  <div>
-                                    <p className={cn('text-[11px] font-black uppercase tracking-wider opacity-50 mb-1', textColor)}>Paid on</p>
-                                    <p className={cn('text-[13px] font-semibold', textColor)}>
-                                      {new Date(paymentReceivedDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}
-                                    </p>
-                                  </div>
-                                )}
-                                {paymentNotes && (
-                                  <div>
-                                    <p className={cn('text-[11px] font-black uppercase tracking-wider opacity-50 mb-1', textColor)}>Notes</p>
-                                    <p className={cn('text-[13px] font-semibold whitespace-pre-wrap', textColor)}>{paymentNotes}</p>
-                                  </div>
-                                )}
-                                {paymentProofUrl && (
-                                  <a
-                                    href={paymentProofUrl}
-                                    target="_blank"
-                                    rel="noreferrer"
-                                    className={cn('inline-flex items-center gap-2 text-[13px] font-bold underline', isDark ? 'text-info' : 'text-info')}
-                                  >
-                                    <FileText className="w-4 h-4" />
-                                    View payment proof
-                                  </a>
-                                )}
-                              </div>
-                            )}
-
-                             {/* Escrow Receipt Link */}
-                             {(offer as any).escrow_receipt_url && (
-                               <div className="mt-3">
-                                 <a
-                                   href={(offer as any).escrow_receipt_url}
-                                   target="_blank"
-                                   rel="noopener noreferrer"
-                                   className={cn(
-                                     'flex items-center gap-2 p-3.5 rounded-xl border transition-colors text-[13px] font-bold',
-                                     isDark 
-                                       ? 'border-emerald-500/20 bg-emerald-500/5 text-emerald-400 hover:bg-emerald-500/10' 
-                                       : 'border-emerald-500/20 bg-emerald-50/50 text-emerald-600 hover:bg-emerald-50'
-                                   )}
-                                 >
-                                   <FileText className="w-4 h-4" />
-                                   View Escrow Payment Receipt
-                                   <ExternalLink className="w-3 h-3 ml-auto opacity-50" />
-                                 </a>
-                               </div>
-                             )}
-
-                            {isEscrowDeal && normalizedDealStatus === 'CONTENT_APPROVED' && (
-                              <div className={cn('rounded-xl border p-4 space-y-2', isDark ? 'bg-emerald-500/10 border-emerald-500/20' : 'bg-emerald-50 border-emerald-200')}>
-                                <div className="flex items-center gap-2 text-emerald-500">
-                                  <ShieldCheck className="w-4 h-4" />
-                                  <p className="text-[12px] font-black uppercase tracking-tight">Payout Processing</p>
-                                </div>
-                                <p className={cn('text-[11px] font-semibold leading-relaxed', isDark ? 'text-emerald-100/70' : 'text-emerald-700/80')}>
-                                  Funds are securely held in escrow. Since you have approved the content, our finance team is now processing the payout to the creator.
-                                </p>
-                              </div>
-                            )}
-
-                            {canReleasePayment && (
-                              <>
-                                {!showPaymentProofBox ? (
-                                  <button type="button"
-                                    onClick={() => {
-                                      triggerHaptic(HapticPatterns.light);
-                                      if (!creatorUpiId) {
-                                        toast.error('Creator UPI ID missing', { description: 'Ask the creator to add a UPI ID before releasing payment.' });
-                                        return;
-                                      }
-                                      setShowPaymentProofBox(true);
-                                    }}
-                                    className={cn('h-12 w-full rounded-2xl font-black text-[13px] transition active:scale-[0.98]', 'bg-gradient-to-r from-emerald-600 to-sky-600 text-foreground')}
-                                  >
-                                    Add payment proof
-                                  </button>
-                                ) : (
-                                  <div className="space-y-3">
-                                    <div>
-                                      <p className={cn('text-[12px] font-black mb-2', textColor)}>Payment reference / UTR (required)</p>
-                                      <input
-                                        value={paymentReferenceDraft}
-                                        onChange={(e) => setPaymentReferenceDraft(e.target.value)}
-                                        placeholder="Enter UTR, bank ref, or transaction id"
-                                        className={cn('w-full h-12 rounded-2xl px-4 text-[13px] font-semibold outline-none border', isDark ? 'bg-card border-border text-foreground placeholder:text-foreground/30' : 'bg-background border-border text-muted-foreground placeholder:text-muted-foreground')}
-                                      />
-                                    </div>
-                                    <div>
-                                      <p className={cn('text-[12px] font-black mb-2', textColor)}>Payment date</p>
-                                      <input
-                                        type="date"
-                                        value={paymentDateDraft}
-                                        onChange={(e) => setPaymentDateDraft(e.target.value)}
-                                        className={cn('w-full h-12 rounded-2xl px-4 text-[13px] font-semibold outline-none border', isDark ? 'bg-card border-border text-foreground' : 'bg-background border-border text-muted-foreground')}
-                                      />
-                                    </div>
-                                    <div>
-                                      <p className={cn('text-[12px] font-black mb-2', textColor)}>Receipt / screenshot (optional)</p>
-                                      <label className={cn('flex items-center gap-2 px-4 py-2.5 rounded-2xl border cursor-pointer text-[12px] font-semibold transition-colors',
-                                        isDark ? 'border-border bg-card text-foreground/80 hover:bg-secondary/50' : 'border-border bg-background text-muted-foreground hover:bg-accent'
-                                      )}>
-                                        <span>Upload receipt</span>
-                                        <input
-                                          type="file"
-                                          accept="image/*,.pdf"
-                                          className="sr-only"
-                                          onChange={(e) => {
-                                            const file = e.target.files?.[0] || null;
-                                            if (file && file.size > 5 * 1024 * 1024) {
-                                              toast.error('Receipt must be 5 MB or smaller');
-                                              e.target.value = '';
-                                              return;
-                                            }
-                                            setPaymentProofFile(file);
-                                          }}
-                                        />
-                                      </label>
-                                      {paymentProofFile && (
-                                        <p className={cn('text-[11px] font-semibold mt-1', secondaryTextColor)}>{paymentProofFile.name}</p>
-                                      )}
-                                      {paymentProofFile && (
-                                        <p className={cn('text-[11px] font-semibold mt-2', secondaryTextColor)}>{paymentProofFile.name}</p>
-                                      )}
-                                    </div>
-                                    <div>
-                                      <p className={cn('text-[12px] font-black mb-2', textColor)}>Notes (optional)</p>
-                                      <textarea
-                                        value={paymentNotesDraft}
-                                        onChange={(e) => setPaymentNotesDraft(e.target.value)}
-                                        placeholder="Add bank/account/payment notes"
-                                        className={cn('w-full min-h-[92px] rounded-2xl px-4 py-3 text-[13px] font-semibold outline-none border resize-none', isDark ? 'bg-card border-border text-foreground placeholder:text-foreground/30' : 'bg-background border-border text-muted-foreground placeholder:text-muted-foreground')}
-                                      />
-                                    </div>
-                                    <div className="grid grid-cols-2 gap-2">
-                                      <button type="button"
-                                        onClick={() => {
-                                          triggerHaptic(HapticPatterns.light);
-                                          setShowPaymentProofBox(false);
-                                        }}
-                                        className={cn('h-11 rounded-2xl font-black text-[12px] border transition active:scale-[0.98]', isDark ? 'bg-card border-border text-foreground hover:bg-secondary/50' : 'bg-card border-border text-muted-foreground hover:bg-background')}
-                                      >
-                                        Cancel
-                                      </button>
-                                      <button type="button"
-                                        onClick={releasePayment}
-                                        disabled={isReleasingPayment}
-                                        className={cn('h-11 rounded-2xl font-black text-[12px] transition active:scale-[0.98] disabled:opacity-60', 'bg-gradient-to-r from-emerald-600 to-sky-600 text-foreground')}
-                                      >
-                                        {isReleasingPayment ? 'Saving…' : 'Release payment'}
-                                      </button>
-                                    </div>
-                                  </div>
-                                )}
-                              </>
-                            )}
-                          </div>
-                        )}
-
-                        {canReview && (
-                          <div className="space-y-2">
-                            <button type="button"
-                              onClick={approveContent}
-                              disabled={isReviewingContent}
-                              className={cn(
-                                'h-12 w-full rounded-2xl font-black text-[13px] transition active:scale-[0.98] disabled:opacity-60',
-                                'bg-gradient-to-r from-emerald-600 to-sky-600 text-foreground'
-                              )}
-                            >
-                              {isReviewingContent ? 'Saving…' : 'Approve content'}
-                            </button>
-                            <div className="grid grid-cols-2 gap-2">
-                              <button type="button"
-                                onClick={() => {
-                                  triggerHaptic(HapticPatterns.light);
-                                  setShowRevisionBox((v) => !v);
-                                  setShowDisputeBox(false);
-                                }}
-                                disabled={isReviewingContent}
-                                className={cn(
-                                  'h-12 rounded-2xl font-black text-[13px] border transition active:scale-[0.98] disabled:opacity-60',
-                                  isDark ? 'bg-card border-border text-foreground hover:bg-secondary/50' : 'bg-card border-border text-muted-foreground hover:bg-background'
-                                )}
-                              >
-                                Request revision
-                              </button>
-                              <button type="button"
-                                onClick={() => {
-                                  triggerHaptic(HapticPatterns.light);
-                                  setShowDisputeBox((v) => !v);
-                                  setShowRevisionBox(false);
-                                }}
-                                disabled={isReviewingContent}
-                                className={cn(
-                                  'h-12 rounded-2xl font-black text-[13px] border transition active:scale-[0.98] disabled:opacity-60',
-                                  isDark ? 'bg-rose-500/10 border-rose-500/20 text-rose-200 hover:bg-rose-500/15' : 'bg-rose-50 border-rose-200 text-rose-700 hover:bg-rose-100'
-                                )}
-                              >
-                                Raise issue
-                              </button>
-                            </div>
-                          </div>
-                        )}
-
-                        {showRevisionBox && (
-                          <div className={cn('rounded-2xl border p-4 space-y-3', isDark ? 'bg-card border-border' : 'bg-card border-border')}>
-                            <p className={cn('text-[12px] font-black', textColor)}>Revision note (required)</p>
-                            <textarea
-                              value={revisionFeedbackDraft}
-                              onChange={(e) => setRevisionFeedbackDraft(e.target.value)}
-                              placeholder="What should the creator change?"
-                              className={cn(
-                                'w-full min-h-[92px] rounded-2xl px-4 py-3 text-[13px] font-semibold outline-none border resize-none',
-                                isDark ? 'bg-card border-border text-foreground placeholder:text-foreground/30' : 'bg-background border-border text-muted-foreground placeholder:text-muted-foreground'
-                              )}
-                            />
-                            <div className="grid grid-cols-2 gap-2">
-                              <button type="button"
-                                onClick={() => {
-                                  triggerHaptic(HapticPatterns.light);
-                                  setShowRevisionBox(false);
-                                }}
-                                className={cn(
-                                  'h-11 rounded-2xl font-black text-[12px] border transition active:scale-[0.98]',
-                                  isDark ? 'bg-card border-border text-foreground hover:bg-secondary/50' : 'bg-card border-border text-muted-foreground hover:bg-background'
-                                )}
-                              >
-                                Cancel
-                              </button>
-                              <button type="button"
-                                onClick={requestRevision}
-                                disabled={isReviewingContent}
-                                className={cn(
-                                  'h-11 rounded-2xl font-black text-[12px] transition active:scale-[0.98] disabled:opacity-60',
-                                  isDark ? 'bg-rose-600 text-foreground' : 'bg-rose-600 text-foreground'
-                                )}
-                              >
-                                {isReviewingContent ? 'Sending…' : 'Send note'}
-                              </button>
-                            </div>
-                          </div>
-                        )}
-
-                        {showDisputeBox && (
-                          <div className={cn('rounded-2xl border p-4 space-y-3', isDark ? 'bg-rose-500/5 border-rose-500/20' : 'bg-rose-50 border-rose-200')}>
-                            <p className={cn('text-[12px] font-black', isDark ? 'text-rose-200' : 'text-rose-700')}>Issue details (optional)</p>
-                            <textarea
-                              value={disputeNotesDraft}
-                              onChange={(e) => setDisputeNotesDraft(e.target.value)}
-                              placeholder="What went wrong? Add any context for support."
-                              className={cn(
-                                'w-full min-h-[92px] rounded-2xl px-4 py-3 text-[13px] font-semibold outline-none border resize-none',
-                                isDark ? 'bg-card border-border text-foreground placeholder:text-foreground/30' : 'bg-card border-rose-200 text-muted-foreground placeholder:text-muted-foreground'
-                              )}
-                            />
-                            <div className="grid grid-cols-2 gap-2">
-                              <button type="button"
-                                onClick={() => {
-                                  triggerHaptic(HapticPatterns.light);
-                                  setShowDisputeBox(false);
-                                }}
-                                className={cn(
-                                  'h-11 rounded-2xl font-black text-[12px] border transition active:scale-[0.98]',
-                                  isDark ? 'bg-card border-border text-foreground hover:bg-secondary/50' : 'bg-card border-rose-200 text-rose-700 hover:bg-rose-100'
-                                )}
-                              >
-                                Cancel
-                              </button>
-                              <button type="button"
-                                onClick={raiseDispute}
-                                disabled={isReviewingContent}
-                                className={cn(
-                                  'h-11 rounded-2xl font-black text-[12px] transition active:scale-[0.98] disabled:opacity-60',
-                                  'bg-rose-600 text-foreground'
-                                )}
-                              >
-                                {isReviewingContent ? 'Saving…' : 'Raise issue'}
-                              </button>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })()}
-                </div>
-              </DealCard>
-            </div>
-          )}
-
-          {/* Usage rights */}
-          <div className="mb-6">
-            <SectionTitle>Usage Rights</SectionTitle>
-            <DealCard>
-              <div className="p-5">
-                <p className={cn('text-[14px] font-black leading-tight', textColor)}>{usageRights}</p>
-                <p className={cn('text-[12px] font-semibold mt-1', secondaryTextColor)}>{usageDuration}</p>
-              </div>
-            </DealCard>
           </div>
 
-          {/* Legal protection */}
-          <div className="mb-6">
-            <SectionTitle>Legal Protection</SectionTitle>
-            <div className={cn('rounded-3xl border p-5 relative overflow-hidden', isDark ? 'bg-primary/8 border-primary/20' : 'bg-emerald-50 border-emerald-200')}>
-              <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/12 to-transparent pointer-events-none" />
-              <div className="relative flex items-center gap-4">
-                <div className="w-11 h-11 rounded-2xl bg-primary flex items-center justify-center shrink-0 shadow-[0_6px_18px_rgba(16,185,129,0.28)]">
-                  <ShieldCheck className="w-6 h-6 text-foreground" strokeWidth={2.5} />
+          {/* Fulfillment (Shipping) Section */}
+          {requiresShipping && (
+            <div ref={shippingSectionRef} className="mb-8">
+              <div className="flex items-center justify-between mb-4 px-1">
+                <SectionTitle>{requiresPayment ? 'Fulfillment' : 'Product Briefing'}</SectionTitle>
+                <div className={cn('px-2.5 py-1 rounded-lg border text-[9px] font-black uppercase tracking-widest', isDark ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' : 'bg-amber-50 text-amber-600 border-amber-100')}>
+                  {requiresPayment ? 'Product' : 'SHIPPING REQUIRED'}
                 </div>
-                <div className="flex-1 min-w-0">
-                  <p className={cn('font-black text-[15px] leading-tight', isDark ? 'text-primary' : 'text-primary')}>Protected by CreatorArmour</p>
-                  <p className={cn('text-[12px] font-semibold mt-1', isDark ? 'text-primary/70' : 'text-primary/80')}>Contract + rights + dispute support</p>
+              </div>
+              <div className={cn('p-6 rounded-[32px] border relative overflow-hidden', isDark ? 'bg-card/40 border-white/5' : 'bg-white border-slate-100 shadow-sm')}>
+                <div className="flex items-center justify-between gap-4 mb-6">
+                  <div className="min-w-0 flex-1">
+                    <p className={cn('text-[17px] font-black tracking-tight leading-none', textColor)}>
+                      {requiresPayment ? (shippingDelivered ? 'Product Delivered' : 'In Transit') : (shippingDelivered ? 'Product Delivered' : 'Awaiting Shipping Details')}
+                    </p>
+                    <p className={cn('text-[11px] font-bold mt-2 opacity-50', textColor)}>
+                      {requiresPayment
+                        ? (shippingDelivered ? 'Confirming arrival of item.' : 'Keep the creator updated.')
+                        : (shippingDelivered ? 'Product has reached the creator.' : 'Add shipping details so the creator can receive the product.')}
+                    </p>
+                  </div>
+                  <span className={cn('px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest border shrink-0', shippingDelivered ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-warning/10 text-warning border-warning/20')}>
+                    {shippingDelivered ? 'ARRIVED' : requiresPayment ? 'ACTION' : 'NEEDS SHIP'}
+                  </span>
                 </div>
+
+                {offer?.brand_address && (
+                  <div className={cn('rounded-[24px] border px-4 py-4 mb-6', isDark ? 'bg-white/[0.03] border-white/5' : 'bg-slate-50 border-slate-100')}>
+                    <p className={cn('text-[9px] font-black uppercase tracking-widest opacity-40 mb-2', textColor)}>Business & Return Address</p>
+                    <p className={cn('text-[13px] font-bold leading-relaxed', textColor)}>{offer.brand_address}</p>
+                    {offer.brand_phone && (
+                      <p className={cn('text-[11px] mt-2 opacity-60', textColor)}>Contact: {offer.brand_phone}</p>
+                    )}
+                  </div>
+                )}
+
+                <div className="flex gap-3">
+                  <button 
+                    type="button" 
+                    onClick={() => {
+                      setOverlayDeal(offer);
+                      setShowBrandShippingModal(true);
+                    }} 
+                    className={cn('flex-1 h-12 rounded-2xl text-[13px] font-black uppercase tracking-widest transition-all active:scale-[0.98] flex items-center justify-center gap-2', isDark ? 'bg-white/5 border border-white/10 hover:bg-white/10' : 'bg-white border border-slate-200 shadow-sm hover:bg-slate-50')}
+                  >
+                    <MapPin className="w-4 h-4 opacity-40" />
+                    {offer?.brand_address ? 'Edit Address' : 'Add Address'}
+                  </button>
+                  
+                  <button 
+                    type="button" 
+                    onClick={() => setShowShippingBox(true)} 
+                    className={cn('flex-1 h-12 rounded-2xl text-[13px] font-black uppercase tracking-widest transition-all active:scale-[0.98] flex items-center justify-center gap-2', isDark ? 'bg-white/5 border border-white/10 hover:bg-white/10' : 'bg-white border border-slate-200 shadow-sm hover:bg-slate-50')}
+                  >
+                    <Truck className="w-4 h-4 opacity-40" />
+                    {trackingNumber ? 'Update Tracking' : 'Add Tracking'}
+                  </button>
+                </div>
+
+                {showShippingBox && (
+                  <motion.div 
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    className="mt-6 pt-6 border-t border-white/5 space-y-4"
+                  >
+                    <div className="space-y-2">
+                      <label className={cn('text-[10px] font-black uppercase tracking-widest opacity-40', textColor)}>Courier Name</label>
+                      <input
+                        value={courierNameDraft}
+                        onChange={(e) => setCourierNameDraft(e.target.value)}
+                        placeholder="e.g. Delhivery, BlueDart"
+                        className={cn('w-full h-12 px-4 rounded-xl border text-[14px] font-bold outline-none focus:ring-2 focus:ring-primary/20 transition-all', isDark ? 'bg-[#0B0F14] border-white/10' : 'bg-white border-slate-200')}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className={cn('text-[10px] font-black uppercase tracking-widest opacity-40', textColor)}>Tracking ID / AWB</label>
+                      <input
+                        value={trackingNumberDraft}
+                        onChange={(e) => setTrackingNumberDraft(e.target.value)}
+                        placeholder="Enter tracking number"
+                        className={cn('w-full h-12 px-4 rounded-xl border text-[14px] font-bold outline-none focus:ring-2 focus:ring-primary/20 transition-all', isDark ? 'bg-[#0B0F14] border-white/10' : 'bg-white border-slate-200')}
+                      />
+                    </div>
+                    <div className="flex gap-3 pt-2">
+                      <button 
+                        onClick={() => setShowShippingBox(false)}
+                        className={cn('flex-1 h-11 rounded-xl text-[11px] font-black uppercase tracking-widest border', borderColor, isDark ? 'bg-white/5' : 'bg-white')}
+                      >
+                        Cancel
+                      </button>
+                      <button 
+                        onClick={updateShipping}
+                        disabled={isUpdatingShipping || !trackingNumberDraft.trim()}
+                        className={cn('flex-[2] h-11 rounded-xl text-[11px] font-black uppercase tracking-widest bg-primary text-white flex items-center justify-center gap-2')}
+                      >
+                        {isUpdatingShipping ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
+                        Save Tracking
+                      </button>
+                    </div>
+                  </motion.div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Content Submission Section */}
+          {(offer?.submission_url || canReviewContent) && (
+            <div ref={contentSectionRef} className="mb-8">
+              <div className="flex items-center justify-between mb-4 px-1">
+                <SectionTitle>Content Review</SectionTitle>
+                <div className={cn('px-2.5 py-1 rounded-lg border text-[9px] font-black uppercase tracking-widest', canReviewContent ? (isDark ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' : 'bg-amber-50 text-amber-600 border-amber-100') : (isDark ? 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20' : 'bg-indigo-50 text-indigo-600 border-indigo-100'))}>
+                  {canReviewContent ? 'Needs Review' : 'Deliverable'}
+                </div>
+              </div>
+              <div className={cn('p-6 rounded-[32px] border relative overflow-hidden', isDark ? 'bg-card/40 border-white/5' : 'bg-white border-slate-100 shadow-sm')}>
+                {offer?.submission_url ? (() => {
+                  const rawUrl = String(offer.submission_url);
+                  const urlSegments = rawUrl.split('/');
+                  const rawFileName = urlSegments[urlSegments.length - 1] || 'content-file';
+                  // Clean up timestamp suffixes from filename (e.g. "REC-20260220221339-1777313799050.mp4" → "REC-20260220221339.mp4")
+                  const cleanName = decodeURIComponent(rawFileName).replace(/-\d{13,}\./, '.');
+                  const ext = cleanName.split('.').pop()?.toLowerCase() || '';
+                  const isVideo = ['mp4', 'mov', 'webm', 'm4v', 'avi'].includes(ext);
+                  const isImage = ['jpg', 'jpeg', 'png', 'webp', 'gif'].includes(ext);
+                  const fileIcon = isVideo ? '🎬' : isImage ? '🖼️' : '📄';
+                  const fileType = isVideo ? 'Video File' : isImage ? 'Image File' : ext.toUpperCase() + ' File';
+
+                  return (
+                    <div className="mb-6">
+                      <p className={cn('text-[10px] font-black uppercase tracking-[0.2em] opacity-40 mb-4', textColor)}>Submitted Content</p>
+                      
+                      {/* Media Card */}
+                      <div className={cn('rounded-[24px] border overflow-hidden', isDark ? 'bg-white/[0.03] border-white/5' : 'bg-slate-50 border-slate-100')}>
+                        {/* File Preview Header */}
+                        <div className={cn('px-5 py-5 flex items-center gap-4', isDark ? 'border-b border-white/5' : 'border-b border-slate-100')}>
+                          <div className={cn('w-14 h-14 rounded-2xl flex items-center justify-center text-2xl shadow-inner border', isDark ? 'bg-indigo-500/10 border-indigo-500/20' : 'bg-indigo-50 border-indigo-100')}>
+                            {fileIcon}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className={cn('text-[14px] font-black truncate leading-tight', textColor)}>{cleanName}</p>
+                            <p className={cn('text-[11px] font-bold mt-1.5 flex items-center gap-2', isDark ? 'text-white/40' : 'text-slate-400')}>
+                              <span>{fileType}</span>
+                              <span className="w-1 h-1 rounded-full bg-current opacity-40" />
+                              <span className="uppercase">.{ext}</span>
+                            </p>
+                          </div>
+                          <div className={cn('px-3 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-widest border shrink-0', isDark ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-emerald-50 text-emerald-600 border-emerald-100')}>
+                            Received
+                          </div>
+                        </div>
+
+                        {/* Action Row */}
+                        <div className="px-5 py-4 flex items-center gap-3">
+                          <a
+                            href={rawUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className={cn('flex-1 h-11 rounded-2xl text-[12px] font-black uppercase tracking-widest flex items-center justify-center gap-2 transition-all active:scale-[0.98] border', isDark ? 'bg-info/10 text-info border-info/20 hover:bg-info/20' : 'bg-info/10 text-info border-info/20 hover:bg-info/15')}
+                          >
+                            <ExternalLink className="w-4 h-4" />
+                            {isVideo ? 'Watch' : 'View'} Content
+                          </a>
+                          <button
+                            type="button"
+                            onClick={() => { navigator.clipboard.writeText(rawUrl); toast.success('Link copied!'); }}
+                            className={cn('w-11 h-11 rounded-2xl flex items-center justify-center border transition-all active:scale-[0.98]', isDark ? 'bg-white/5 border-white/10 hover:bg-white/10' : 'bg-white border-slate-200 shadow-sm hover:bg-slate-50')}
+                          >
+                            <Copy className="w-4 h-4 opacity-50" />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })() : (
+                  <div className="mb-6 py-8 text-center">
+                    <div className={cn('w-16 h-16 rounded-[20px] flex items-center justify-center mx-auto mb-4', isDark ? 'bg-white/5' : 'bg-slate-50')}>
+                      <Clock className="w-7 h-7 opacity-20" />
+                    </div>
+                    <p className={cn('text-[15px] font-black opacity-40 mb-1', textColor)}>Awaiting Delivery</p>
+                    <p className={cn('text-[12px] font-bold opacity-30', textColor)}>Creator hasn't submitted content yet.</p>
+                  </div>
+                )}
+
+                {canReviewContent && (
+                  <div className="space-y-3">
+                    <button type="button" onClick={approveContent} disabled={isReviewingContent} className={cn('h-14 w-full rounded-2xl text-[14px] font-black uppercase tracking-widest transition-all active:scale-[0.98] flex items-center justify-center gap-2.5 shadow-xl', isDark ? 'bg-gradient-to-r from-emerald-600 to-emerald-500 text-white shadow-emerald-500/20' : 'bg-gradient-to-r from-emerald-600 to-emerald-500 text-white shadow-emerald-200')}>
+                      {isReviewingContent ? <Loader2 className="w-5 h-5 animate-spin" /> : <CheckCircle2 className="w-5 h-5" />}
+                      Approve Content
+                    </button>
+                    <div className="grid grid-cols-2 gap-3">
+                      <button type="button" onClick={() => setShowRevisionBox(true)} className={cn('h-12 rounded-2xl text-[11px] font-black uppercase tracking-widest border transition-all active:scale-[0.98] flex items-center justify-center gap-2', borderColor, isDark ? 'bg-white/5 hover:bg-white/10' : 'bg-white hover:bg-slate-50 shadow-sm')}>
+                        <RotateCcw className="w-3.5 h-3.5 opacity-50" />
+                        Revision
+                      </button>
+                      <button type="button" onClick={() => setShowDisputeBox(true)} className={cn('h-12 rounded-2xl text-[11px] font-black uppercase tracking-widest border border-rose-500/20 text-rose-500 transition-all active:scale-[0.98] flex items-center justify-center gap-2', isDark ? 'bg-rose-500/10 hover:bg-rose-500/20' : 'bg-rose-50 hover:bg-rose-100')}>
+                        <AlertTriangle className="w-3.5 h-3.5" />
+                        Raise Issue
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Payment Section */}
+          {requiresPayment && (
+            <div className="mb-8">
+              <div className="flex items-center justify-between mb-4 px-1">
+                <SectionTitle>Payout Status</SectionTitle>
+                <div className={cn('px-2.5 py-1 rounded-lg border text-[9px] font-black uppercase tracking-widest', isDark ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-emerald-50 text-emerald-600 border-emerald-100')}>
+                  Payment
+                </div>
+              </div>
+              <div className={cn('p-6 rounded-[32px] border relative overflow-hidden', isDark ? 'bg-card/40 border-white/5' : 'bg-white border-slate-100 shadow-sm')}>
+                <div className="flex items-center justify-between gap-4 mb-6">
+                  <div className="min-w-0 flex-1">
+                    <p className={cn('text-[17px] font-black tracking-tight leading-none', textColor)}>
+                      {isEscrowDeal ? 'Funds Secured' : normalizedDealStatus === 'COMPLETED' ? 'Paid' : 'Awaiting Release'}
+                    </p>
+                    <p className={cn('text-[11px] font-bold mt-2 opacity-50', textColor)}>
+                      {isEscrowDeal ? 'Creator will be paid upon approval.' : isPureBarter ? 'No escrow for this collaboration.' : 'Direct payment to creator.'}
+                    </p>
+                  </div>
+                  <div className={cn('w-12 h-12 rounded-2xl flex items-center justify-center', isDark ? 'bg-emerald-500/10 text-emerald-400' : 'bg-emerald-50 text-emerald-600')}>
+                    <Wallet className="w-6 h-6" />
+                  </div>
+                </div>
+
+                <div className={cn('rounded-[24px] border p-4 mb-6', isDark ? 'bg-white/[0.03] border-white/5' : 'bg-slate-50 border-slate-100')}>
+                  <div className="flex items-center justify-between mb-4">
+                    <p className={cn('text-[10px] font-black uppercase tracking-widest opacity-40', textColor)}>Amount Due</p>
+                    <p className={cn('text-[16px] font-black', textColor)}>₹{amount.toLocaleString('en-IN')}</p>
+                  </div>
+                  {creatorUpiId && (
+                    <div className="flex items-center justify-between pt-4 border-t border-white/5">
+                      <p className={cn('text-[10px] font-black uppercase tracking-widest opacity-40', textColor)}>Creator UPI</p>
+                      <div className="flex items-center gap-2">
+                        <p className={cn('text-[13px] font-bold', textColor)}>{creatorUpiId}</p>
+                        <button onClick={() => copyText(creatorUpiId, 'UPI')} className="p-1 hover:bg-white/10 rounded">
+                          <Copy className="w-3 h-3 opacity-40" />
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {canReleasePayment && (
+                  <button type="button" onClick={() => setShowPaymentProofBox(true)} disabled={isReleasingPayment} className={cn('h-12 w-full rounded-2xl text-[13px] font-black uppercase tracking-widest transition-all active:scale-[0.98] flex items-center justify-center gap-2', isDark ? 'bg-emerald-600 text-white' : 'bg-emerald-600 text-white')}>
+                    {isReleasingPayment ? <Loader2 className="w-4 h-4 animate-spin" /> : <Zap className="w-4 h-4" />}
+                    Confirm Payout
+                  </button>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Usage Rights */}
+          <div className="mb-8">
+            <SectionTitle>Usage Rights</SectionTitle>
+            <div className={cn('p-6 rounded-[32px] border', isDark ? 'bg-card/40 border-white/5' : 'bg-white border-slate-100 shadow-sm')}>
+              <div className="flex items-center gap-4 mb-4">
+                <div className={cn('w-10 h-10 rounded-2xl flex items-center justify-center', isDark ? 'bg-sky-500/10 text-sky-400' : 'bg-sky-50 text-sky-600')}>
+                  <Globe className="w-5 h-5" />
+                </div>
+                <div>
+                  <p className={cn('text-[15px] font-black', textColor)}>Organic Usage</p>
+                  <p className={cn('text-[12px] font-bold opacity-50', textColor)}>Perpetual organic rights included.</p>
+                </div>
+              </div>
+              <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/5">
+                <p className={cn('text-[12px] leading-relaxed opacity-70', textColor)}>
+                  Creator grants the brand perpetual, non-exclusive rights to use the content on brand's own social channels and website for organic marketing purposes.
+                </p>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Sticky action CTA */}
-        <div
-          className={cn(
-            'fixed inset-x-0 bottom-0 z-[220] border-t',
-            isDark ? 'bg-[#061318] border-border' : 'bg-card border-border'
-          )}
-        >
-          <div
-            className="max-w-md md:max-w-2xl mx-auto px-5 pt-4"
-            style={{ paddingBottom: 'max(env(safe-area-inset-bottom), 16px)' }}
-          >
-	            <motion.button
-	              whileTap={{ scale: 0.98 }}
-	              onClick={onPrimaryCta}
-	              disabled={isOpeningContract || isGeneratingContract || primaryCta.disabled}
-	              className={cn(
-	                'w-full h-14 rounded-2xl shadow-[0_14px_45px_rgba(2,6,23,0.22)] transition-all flex items-center justify-center active:scale-[0.99] disabled:opacity-60',
-	                dealPrimaryCtaButtonClass(primaryCta.tone),
-	                primaryCta.disabled && 'cursor-not-allowed active:scale-100'
-	              )}
-	            >
-	              <span className="text-[16px] font-black">
-	                {isOpeningContract ? 'Opening…' : isGeneratingContract ? 'Generating…' : primaryCta.label}
-	              </span>
-	            </motion.button>
+        {/* Floating Action Bar */}
+        <div className={cn('fixed bottom-0 inset-x-0 z-[220] px-4 pb-8 pt-4 border-t backdrop-blur-2xl', isDark ? 'bg-[#061318]/80 border-white/5' : 'bg-white/80 border-slate-100')}>
+          <div className="max-w-md mx-auto flex items-center gap-3">
+            <button type="button" onClick={() => scrollToRef(progressSectionRef)} className={cn('w-14 h-14 rounded-[22px] border flex items-center justify-center transition-all active:scale-90', borderColor, isDark ? 'bg-card' : 'bg-white shadow-sm')}>
+              <Info className={cn('w-5 h-5 opacity-60', textColor)} />
+            </button>
+            <button type="button" onClick={() => toast.info('Chat coming soon')} className={cn('w-14 h-14 rounded-[22px] border flex items-center justify-center transition-all active:scale-90', borderColor, isDark ? 'bg-card' : 'bg-white shadow-sm')}>
+              <MessageSquare className={cn('w-5 h-5 opacity-60', textColor)} />
+            </button>
+            <button
+              type="button"
+              onClick={onPrimaryCta}
+              disabled={primaryCta.disabled || isOpeningContract || isGeneratingContract}
+              className={cn(
+                'flex-1 h-14 rounded-[22px] text-[15px] font-black uppercase tracking-widest flex items-center justify-center gap-3 transition-all active:scale-[0.98] shadow-2xl',
+                dealPrimaryCtaButtonClass(primaryCta.tone)
+              )}
+            >
+              {isOpeningContract ? <Loader2 className="w-5 h-5 animate-spin" /> : <Zap className="w-5 h-5" />}
+              {primaryCta.label}
+            </button>
           </div>
         </div>
       </motion.div>

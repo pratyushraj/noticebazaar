@@ -9,7 +9,7 @@ import { uploadFile } from '@/lib/services/fileService';
 import {
   Camera, Check, ChevronDown, Loader2, LogOut, Shield, ShieldCheck,
   Upload, X, AlertTriangle, Globe, Instagram, MessageCircle, Tag,
-  Activity, Briefcase, ExternalLink, ArrowRight, FileText,
+  Activity, Briefcase, ExternalLink, ArrowRight, FileText, MapPin,
 } from 'lucide-react';
 
 /* ─── Types ─────────────────────────────────────────────────────────────── */
@@ -22,6 +22,7 @@ type BrandProfilePayload = {
   instagram_handle?: string | null;
   whatsapp_handle?: string | null;
   content_niches?: string[];
+  company_address?: string | null;
 };
 
 const INDUSTRIES = [
@@ -151,6 +152,7 @@ export const BrandSettingsPanel = ({
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
   const [currentLogoUrl, setCurrentLogoUrl] = useState<string | null>(null);
   const [logoUploading, setLogoUploading] = useState(false);
+  const [companyAddress, setCompanyAddress] = useState('');
 
   /* ── Save state ── */
   const [isSaving, setIsSaving] = useState(false);
@@ -228,8 +230,10 @@ export const BrandSettingsPanel = ({
             logo: b.logo_url || '',
             instagram: b.instagram_handle || '',
             whatsapp: b.whatsapp_handle || '',
-            tags: b.content_niches || []
+            tags: b.content_niches || [],
+            address: b.company_address || ''
           };
+          setCompanyAddress(b.company_address || '');
           seededRef.current = true;
         } else {
           // Fallback if no brand data
@@ -261,9 +265,10 @@ export const BrandSettingsPanel = ({
       socialLinks.instagram !== b.instagram ||
       socialLinks.whatsapp !== b.whatsapp ||
       JSON.stringify(tags) !== JSON.stringify(b.tags) ||
+      companyAddress !== b.address ||
       !!logoFile
     );
-  }, [name, website, industry, description, logoFile, socialLinks, tags]);
+  }, [name, website, industry, description, logoFile, socialLinks, tags, companyAddress]);
 
   /* ─── File validation ── */
   const validateFile = (file: File): boolean => {
@@ -326,6 +331,7 @@ export const BrandSettingsPanel = ({
         instagram_handle: socialLinks.instagram.trim() || null,
         whatsapp_handle: socialLinks.whatsapp.trim() || null,
         content_niches: tags,
+        company_address: companyAddress.trim() || null,
       };
       const res = await fetch(`${apiBase}/api/brand-dashboard/profile`, {
         method: 'PUT',
@@ -343,7 +349,8 @@ export const BrandSettingsPanel = ({
         logo: logoUrl || '',
         instagram: socialLinks.instagram.trim(),
         whatsapp: socialLinks.whatsapp.trim(),
-        tags: [...tags]
+        tags: [...tags],
+        address: companyAddress.trim()
       };
       setIsDirty(false);
       toast.success('Profile updated ✓');
@@ -561,6 +568,24 @@ export const BrandSettingsPanel = ({
                   </select>
                   <ChevronDown className={cn("absolute right-5 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none opacity-40 transition-transform group-hover:translate-y-[-40%]")} />
                 </div>
+              </div>
+
+              <div className="space-y-2 relative group">
+                <label className={labelSub}>Registered Office Address</label>
+                <div className="relative">
+                  <div className="absolute left-4 top-6 z-20 opacity-30 group-focus-within:opacity-100 transition-opacity">
+                    <MapPin className={isDark ? "text-white" : "text-slate-900"} size={18} />
+                  </div>
+                  <textarea
+                    className={cn(inputBase, "h-32 pt-4 resize-none")}
+                    value={companyAddress}
+                    onChange={e => setCompanyAddress(e.target.value)}
+                    placeholder="Enter your company's legal address for contracts..."
+                  />
+                </div>
+                <p className="text-[10px] font-bold text-white/20 uppercase tracking-widest px-1">
+                  Only used for legally binding agreements
+                </p>
               </div>
             </div>
           </SettingsGroup>

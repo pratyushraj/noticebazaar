@@ -10,6 +10,25 @@ import { AuthenticatedRequest, authMiddleware } from '../middleware/auth.js';
 
 const router = express.Router();
 
+/**
+ * Log onboarding action
+ */
+async function logOnboardingAction(
+  userId: string,
+  event: string,
+  metadata: Record<string, any> = {}
+): Promise<void> {
+  try {
+    await supabase.from('activity_log').insert({
+      profile_id: userId,
+      activity_type: event,
+      metadata,
+    });
+  } catch (error: any) {
+    console.error('[OTP] Failed to log onboarding action:', error);
+  }
+}
+
 // Diagnostic route to test Resend directly
 router.get('/test-resend', async (req, res) => {
   try {
@@ -123,7 +142,8 @@ router.post('/send', async (req, res) => {
         .from('contract_ready_tokens')
         .select('*, brand_deals!inner(brand_email)')
         .eq('id', token)
-        .eq('is_valid', true)
+        .eq('is_active', true)
+        .is('revoked_at', null)
         .maybeSingle();
 
       if (contractTokenData) {
@@ -283,7 +303,8 @@ router.post('/verify', async (req, res) => {
         .from('contract_ready_tokens')
         .select('*, brand_deals!inner(brand_email, brand_phone)')
         .eq('id', token)
-        .eq('is_valid', true)
+        .eq('is_active', true)
+        .is('revoked_at', null)
         .maybeSingle();
 
       if (contractTokenData) {
@@ -721,3 +742,171 @@ router.post('/verify-creator', authMiddleware, async (req: AuthenticatedRequest,
 });
 
 export default router;
+
+// --- ONBOARDING OTP ROUTES ---
+
+/**
+ * Generate and send OTP for onboarding verification
+ * This route is authenticated as it's part of the onboarding flow
+ */
+router.post('/onboarding/send', authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const userId = req.user?.id;
+    const { phone } = req.body;
+
+    if (!userId) {
+      return res.status(401).json({ success: false, error: 'Unauthorized' });
+    }
+
+    if (!phone) {
+      return res.status(400).json({ success: false, error: 'Phone number is required' });
+    }
+
+    // Rate limiting (simple)
+    const ip = req.headers['x-forwarded-for']?.toString() || req.ip || 'unknown';
+    const rateKey = `onboarding:${userId}:${ip}`;
+    const now = Date.now();
+    const entry = sendRateStore[rateKey];
+    
+    if (entry && now < entry.resetAt && now - entry.lastSentAt < SEND_COOLDOWN_MS) {
+      return res.status(429).json({
+        success: false,
+        error: 'Please wait before requesting another OTP.',
+        retryAfter: Math.ceil((SEND_COOLDOWN_MS - (now - entry.lastSentAt)) / 1000)
+      });
+    }
+
+    // Generate 6-digit OTP
+    const otp = generateOTP();
+    const otpHash = hashOTP(otp);
+    const expiresAt = new Date(now + 10 * 60 * 1000);
+
+    // Update profile with OTP hash
+    const { error: updateError } = await supabase
+      .from('profiles')
+      .update({
+        phone_otp_hash: otpHash,
+        phone_otp_expires_at: expiresAt.toISOString(),
+        phone_otp_attempts: 0,
+        phone: phone // Update phone as well if changed
+      })
+      .eq('id', userId);
+
+    if (updateError) {
+      console.error('[OTP] Failed to store onboarding OTP:', updateError);
+      return res.status(500).json({ success: false, error: 'Failed to generate OTP' });
+    }
+
+    // Send via WhatsApp (using msg91)
+    try {
+      const { sendOTPviaWhatsApp } = await import('../services/msg91Service.js');
+      const waResult = await sendOTPviaWhatsApp(phone, otp);
+      
+      if (!waResult.success) {
+        console.warn('[OTP] Failed to send WhatsApp OTP, falling back to console for demo:', waResult.error);
+        console.log(`[DEMO ONLY] Onboarding OTP for ${phone}: ${otp}`);
+      }
+    } catch (err) {
+      console.error('[OTP] Error importing msg91Service or sending WA:', err);
+      console.log(`[DEMO ONLY] Onboarding OTP for ${phone}: ${otp}`);
+    }
+
+    logOnboardingAction(userId, 'otp_sent', { phone });
+
+    // Update rate store
+    if (!entry || now > entry.resetAt) {
+      sendRateStore[rateKey] = { count: 1, resetAt: now + SEND_WINDOW_MS, lastSentAt: now };
+    } else {
+      entry.count += 1;
+      entry.lastSentAt = now;
+    }
+
+    res.json({
+      success: true,
+      message: 'OTP sent successfully via WhatsApp',
+      expiresAt: expiresAt.toISOString()
+    });
+
+  } catch (error) {
+    console.error('[OTP] Onboarding send error:', error);
+    res.status(500).json({ success: false, error: 'Failed to send OTP' });
+  }
+});
+
+/**
+ * Verify OTP for onboarding
+ */
+router.post('/onboarding/verify', authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const userId = req.user?.id;
+    const { otp } = req.body;
+
+    if (!userId || !otp) {
+      return res.status(400).json({ success: false, error: 'User ID and OTP are required' });
+    }
+
+    // Fetch profile
+    const { data: profile, error: fetchError } = await supabase
+      .from('profiles')
+      .select('phone_otp_hash, phone_otp_expires_at, phone_otp_attempts')
+      .eq('id', userId)
+      .maybeSingle();
+
+    if (!profile) {
+      return res.status(404).json({ success: false, error: 'Profile not found' });
+    }
+
+    const { phone_otp_hash: storedHash, phone_otp_expires_at: storedExpires, phone_otp_attempts: storedAttempts } = profile;
+
+    if (!storedHash || !storedExpires) {
+      return res.status(400).json({ success: false, error: 'No OTP found. Please request a new one.' });
+    }
+
+    if (new Date(storedExpires) < new Date()) {
+      return res.status(400).json({ success: false, error: 'OTP has expired. Please request a new one.' });
+    }
+
+    if ((storedAttempts || 0) >= 5) {
+      return res.status(429).json({ success: false, error: 'Too many failed attempts. Please request a new OTP.' });
+    }
+
+    // Verify
+    const otpHash = hashOTP(otp);
+    if (otpHash !== storedHash) {
+      await supabase
+        .from('profiles')
+        .update({ phone_otp_attempts: (storedAttempts || 0) + 1 })
+        .eq('id', userId);
+
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid OTP. Please try again.',
+        attemptsRemaining: 5 - (storedAttempts || 0) - 1
+      });
+    }
+
+    // Success!
+    const { error: updateError } = await supabase
+      .from('profiles')
+      .update({
+        phone_verified: true,
+        phone_verified_at: new Date().toISOString(),
+        phone_otp_hash: null, // Clear hash
+        is_verified: true // Also mark general verification if phone is verified
+      })
+      .eq('id', userId);
+
+    if (updateError) {
+      console.error('[OTP] Failed to update verification status:', updateError);
+      return res.status(500).json({ success: false, error: 'Failed to verify OTP' });
+    }
+
+    logOnboardingAction(userId, 'otp_verified');
+
+    res.json({ success: true, message: 'Identity verified successfully' });
+
+  } catch (error) {
+    console.error('[OTP] Onboarding verify error:', error);
+    res.status(500).json({ success: false, error: 'Failed to verify OTP' });
+  }
+});
