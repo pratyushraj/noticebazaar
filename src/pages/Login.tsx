@@ -128,7 +128,12 @@ const Login = () => {
         toast.error(message);
         return;
       }
-      navigate('/creator-dashboard', { replace: true });
+      if (resolvedEmail) {
+        // We let the useEffect handle the redirection based on the session and profile role
+        // This ensures the user is sent to the correct dashboard (Brand, Creator, etc.)
+        // without a split-second flash of the wrong one.
+        console.log('[Login] Success, waiting for session redirect...');
+      }
     } catch (err: unknown) {
       toast.error(getErrorMessage(err));
     } finally {

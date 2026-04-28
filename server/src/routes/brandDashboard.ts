@@ -48,22 +48,38 @@ const linkOrphanedRecords = async (userId: string, email: string | null) => {
   const brandEmail = String(email).toLowerCase().trim();
   
   try {
-    // 1. Collab Requests
-    await supabase
+    // Only perform the update if there are records that actually need it.
+    // This saves unnecessary write locks on every request.
+    const { count: reqCount } = await supabase
       .from('collab_requests')
-      .update({ brand_id: userId } as any)
+      .select('id', { count: 'exact', head: true })
       .eq('brand_email', brandEmail)
       .is('brand_id', null);
       
-    // 2. Brand Deals
-    await supabase
+    if (reqCount && reqCount > 0) {
+      await supabase
+        .from('collab_requests')
+        .update({ brand_id: userId } as any)
+        .eq('brand_email', brandEmail)
+        .is('brand_id', null);
+    }
+      
+    const { count: dealCount } = await supabase
       .from('brand_deals')
-      .update({ brand_id: userId } as any)
+      .select('id', { count: 'exact', head: true })
       .eq('brand_email', brandEmail)
       .is('brand_id', null);
+      
+    if (dealCount && dealCount > 0) {
+      await supabase
+        .from('brand_deals')
+        .update({ brand_id: userId } as any)
+        .eq('brand_email', brandEmail)
+        .is('brand_id', null);
+    }
   } catch (err) {
-    // Non-fatal; might happen if columns are missing in some environments
-    console.warn('[BrandDashboard] Record linking notice (potentially missing columns):', err?.message || err);
+    // Non-fatal
+    console.warn('[BrandDashboard] Record linking notice:', err?.message || err);
   }
 };
 
@@ -592,529 +608,24 @@ router.get('/deals', async (req: AuthenticatedRequest, res: Response) => {
 
     // Schema evolves over time across environments. Keep the brand dashboard resilient by
     // progressively falling back when optional columns are missing.
-    //
-	    // Important: some deployments do not have `deal_execution_status`, so every "full" select
-	    // has a corresponding fallback without it.
-	    const selectAttempts = [
+    const selectAttempts = [
       {
         select: '*',
         canUseBrandId: true,
       },
-	      // Newer schemas (signature timestamps + contract state)
-	      {
-	        select: `
-	          id,
-	          creator_id,
-	          status,
-	          deal_execution_status,
-	          esign_status,
-	          contract_status,
-	          contract_signing_status,
-	          signing_status,
-	          signature_status,
-	          brand_signed_at,
-	          creator_signed_at,
-	          contract_signed_at,
-	          signed_at,
-	          signed_pdf_url,
-	          created_at,
-	          updated_at,
-	          deal_amount,
-	          deliverables,
-	          due_date,
-	          contract_file_url,
-	          safe_contract_url,
-	          signed_contract_url,
-	          signed_contract_path,
-          brand_address,
-          brand_phone,
-          contact_person,
-          shipping_required,
-          brand_id,
-	          brand_email
-	        `,
-	        canUseBrandId: true,
-	      },
-	      {
-	        select: `
-	          id,
-	          creator_id,
-	          status,
-	          esign_status,
-	          contract_status,
-	          contract_signing_status,
-	          signing_status,
-	          signature_status,
-	          brand_signed_at,
-	          creator_signed_at,
-	          contract_signed_at,
-	          signed_at,
-	          signed_pdf_url,
-	          created_at,
-	          updated_at,
-	          deal_amount,
-	          deliverables,
-	          due_date,
-	          contract_file_url,
-	          safe_contract_url,
-	          signed_contract_url,
-	          signed_contract_path,
-          brand_address,
-          brand_phone,
-          contact_person,
-          shipping_required,
-          brand_id,
-	          brand_email
-	        `,
-	        canUseBrandId: true,
-	      },
-	      // Brand id available (preferred)
-	      {
-	        select: `
-	          id,
-          creator_id,
-          status,
-          deal_execution_status,
-          esign_status,
-          signed_at,
-          signed_pdf_url,
-          created_at,
-          updated_at,
-          deal_amount,
-          deliverables,
-          due_date,
-          contract_file_url,
-          safe_contract_url,
-          signed_contract_url,
-          signed_contract_path,
-          brand_address,
-          brand_phone,
-          contact_person,
-          shipping_required,
-          brand_id,
-          brand_email
+      // Schema fallback if * fails
+      {
+        select: `
+          id, creator_id, status, created_at, updated_at, deal_amount, deliverables, due_date, 
+          contract_file_url, safe_contract_url, brand_address, brand_phone, contact_person, 
+          shipping_required, brand_id, brand_email, signed_contract_path
         `,
         canUseBrandId: true,
       },
       {
-        select: `
-          id,
-          creator_id,
-          status,
-          esign_status,
-          signed_at,
-          signed_pdf_url,
-          created_at,
-          updated_at,
-          deal_amount,
-          deliverables,
-          due_date,
-          contract_file_url,
-          safe_contract_url,
-          signed_contract_url,
-          signed_contract_path,
-          brand_address,
-          brand_phone,
-          contact_person,
-          shipping_required,
-          brand_id,
-          brand_email
-        `,
+        select: 'id, creator_id, status, created_at, updated_at, deal_amount, deliverables, due_date, brand_id, brand_email',
         canUseBrandId: true,
-      },
-      {
-        select: `
-          id,
-          creator_id,
-          status,
-          deal_execution_status,
-          esign_status,
-          signed_at,
-          signed_pdf_url,
-          created_at,
-          updated_at,
-          deal_amount,
-          deliverables,
-          due_date,
-          contract_file_url,
-          safe_contract_url,
-          signed_contract_url,
-          brand_address,
-          brand_phone,
-          contact_person,
-          shipping_required,
-          brand_id,
-          brand_email
-        `,
-        canUseBrandId: true,
-      },
-      {
-        select: `
-          id,
-          creator_id,
-          status,
-          esign_status,
-          signed_at,
-          signed_pdf_url,
-          created_at,
-          updated_at,
-          deal_amount,
-          deliverables,
-          due_date,
-          contract_file_url,
-          safe_contract_url,
-          signed_contract_url,
-          brand_address,
-          brand_phone,
-          contact_person,
-          shipping_required,
-          brand_id,
-          brand_email
-        `,
-        canUseBrandId: true,
-      },
-      {
-        select: `
-          id,
-          creator_id,
-          status,
-          created_at,
-          updated_at,
-          deal_amount,
-          deliverables,
-          due_date,
-          contract_file_url,
-          safe_contract_url,
-          signed_contract_url,
-          signed_contract_path,
-          brand_address,
-          brand_phone,
-          contact_person,
-          shipping_required,
-          brand_id,
-          brand_email
-        `,
-        canUseBrandId: true,
-      },
-      {
-        select: `
-          id,
-          creator_id,
-          status,
-          deal_execution_status,
-          created_at,
-          updated_at,
-          deal_amount,
-          deliverables,
-          due_date,
-          contract_file_url,
-          safe_contract_url,
-          signed_contract_url,
-          brand_address,
-          brand_phone,
-          contact_person,
-          shipping_required,
-          brand_id,
-          brand_email
-        `,
-        canUseBrandId: true,
-      },
-      {
-        select: `
-          id,
-          creator_id,
-          status,
-          created_at,
-          updated_at,
-          deal_amount,
-          deliverables,
-          due_date,
-          contract_file_url,
-          safe_contract_url,
-          signed_contract_url,
-          brand_address,
-          brand_phone,
-          contact_person,
-          shipping_required,
-          brand_id,
-          brand_email
-        `,
-        canUseBrandId: true,
-      },
-      {
-        select: `
-          id,
-          creator_id,
-          status,
-          deal_execution_status,
-          created_at,
-          updated_at,
-          deal_amount,
-          deliverables,
-          due_date,
-          contract_file_url,
-          safe_contract_url,
-          brand_address,
-          brand_phone,
-          contact_person,
-          shipping_required,
-          brand_id,
-          brand_email
-        `,
-        canUseBrandId: true,
-      },
-      {
-        select: `
-          id,
-          creator_id,
-          status,
-          created_at,
-          updated_at,
-          deal_amount,
-          deliverables,
-          due_date,
-          contract_file_url,
-          safe_contract_url,
-          brand_address,
-          brand_phone,
-          contact_person,
-          brand_id,
-          brand_email
-        `,
-        canUseBrandId: true,
-      },
-      {
-        select: `
-          id,
-          creator_id,
-          status,
-          created_at,
-          deal_amount,
-          due_date,
-          contract_file_url,
-          brand_address,
-          brand_phone,
-          contact_person,
-          brand_id,
-          brand_email
-        `,
-        canUseBrandId: true,
-      },
-
-      // Brand email only (fallback)
-      {
-        select: `
-          id,
-          creator_id,
-          status,
-          deal_execution_status,
-          esign_status,
-          signed_at,
-          signed_pdf_url,
-          created_at,
-          updated_at,
-          deal_amount,
-          deliverables,
-          due_date,
-          contract_file_url,
-          safe_contract_url,
-          signed_contract_url,
-          signed_contract_path,
-          brand_address,
-          brand_phone,
-          contact_person,
-          brand_email
-        `,
-        canUseBrandId: false,
-      },
-      {
-        select: `
-          id,
-          creator_id,
-          status,
-          esign_status,
-          signed_at,
-          signed_pdf_url,
-          created_at,
-          updated_at,
-          deal_amount,
-          deliverables,
-          due_date,
-          contract_file_url,
-          safe_contract_url,
-          signed_contract_url,
-          signed_contract_path,
-          brand_address,
-          brand_phone,
-          contact_person,
-          brand_email
-        `,
-        canUseBrandId: false,
-      },
-      {
-        select: `
-          id,
-          creator_id,
-          status,
-          deal_execution_status,
-          esign_status,
-          signed_at,
-          signed_pdf_url,
-          created_at,
-          updated_at,
-          deal_amount,
-          deliverables,
-          due_date,
-          contract_file_url,
-          safe_contract_url,
-          signed_contract_url,
-          brand_address,
-          brand_phone,
-          contact_person,
-          brand_email
-        `,
-        canUseBrandId: false,
-      },
-      {
-        select: `
-          id,
-          creator_id,
-          status,
-          esign_status,
-          signed_at,
-          signed_pdf_url,
-          created_at,
-          updated_at,
-          deal_amount,
-          deliverables,
-          due_date,
-          contract_file_url,
-          safe_contract_url,
-          signed_contract_url,
-          brand_address,
-          brand_phone,
-          contact_person,
-          brand_email
-        `,
-        canUseBrandId: false,
-      },
-      {
-        select: `
-          id,
-          creator_id,
-          status,
-          created_at,
-          updated_at,
-          deal_amount,
-          deliverables,
-          due_date,
-          contract_file_url,
-          safe_contract_url,
-          signed_contract_url,
-          signed_contract_path,
-          brand_address,
-          brand_phone,
-          contact_person,
-          brand_email
-        `,
-        canUseBrandId: false,
-      },
-      {
-        select: `
-          id,
-          creator_id,
-          status,
-          deal_execution_status,
-          created_at,
-          updated_at,
-          deal_amount,
-          deliverables,
-          due_date,
-          contract_file_url,
-          safe_contract_url,
-          signed_contract_url,
-          brand_address,
-          brand_phone,
-          contact_person,
-          brand_email
-        `,
-        canUseBrandId: false,
-      },
-      {
-        select: `
-          id,
-          creator_id,
-          status,
-          created_at,
-          updated_at,
-          deal_amount,
-          deliverables,
-          due_date,
-          contract_file_url,
-          safe_contract_url,
-          signed_contract_url,
-          brand_address,
-          brand_phone,
-          contact_person,
-          brand_email
-        `,
-        canUseBrandId: false,
-      },
-      {
-        select: `
-          id,
-          creator_id,
-          status,
-          deal_execution_status,
-          created_at,
-          updated_at,
-          deal_amount,
-          deliverables,
-          due_date,
-          contract_file_url,
-          safe_contract_url,
-          brand_address,
-          brand_phone,
-          contact_person,
-          brand_email
-        `,
-        canUseBrandId: false,
-      },
-      {
-        select: `
-          id,
-          creator_id,
-          status,
-          created_at,
-          updated_at,
-          deal_amount,
-          deliverables,
-          due_date,
-          contract_file_url,
-          safe_contract_url,
-          brand_address,
-          brand_phone,
-          contact_person,
-          brand_email
-        `,
-        canUseBrandId: false,
-      },
-      {
-        select: `
-          id,
-          creator_id,
-          status,
-          created_at,
-          deal_amount,
-          due_date,
-          contract_file_url,
-          brand_address,
-          brand_phone,
-          contact_person,
-          brand_email
-        `,
-        canUseBrandId: false,
-      },
+      }
     ];
 
     const run = async (select: string, canUseBrandId: boolean) => {
@@ -1141,116 +652,76 @@ router.get('/deals', async (req: AuthenticatedRequest, res: Response) => {
         break;
       } catch (err: any) {
         lastError = err;
-	        const missingOptionalColumn =
-	          isMissingColumnError(err, 'brand_id') ||
-	          isMissingColumnError(err, 'signed_contract_url') ||
-	          isMissingColumnError(err, 'signed_contract_path') ||
-	          isMissingColumnError(err, 'safe_contract_url') ||
-	          isMissingColumnError(err, 'deal_execution_status') ||
-	          isMissingColumnError(err, 'esign_status') ||
-	          isMissingColumnError(err, 'contract_status') ||
-	          isMissingColumnError(err, 'contract_signing_status') ||
-	          isMissingColumnError(err, 'signing_status') ||
-	          isMissingColumnError(err, 'signature_status') ||
-	          isMissingColumnError(err, 'brand_signed_at') ||
-	          isMissingColumnError(err, 'creator_signed_at') ||
-	          isMissingColumnError(err, 'contract_signed_at') ||
-	          isMissingColumnError(err, 'signed_at') ||
-	          isMissingColumnError(err, 'signed_pdf_url') ||
-	          isMissingColumnError(err, 'updated_at') ||
-            isMissingColumnError(err, 'tracking_number') ||
-            isMissingColumnError(err, 'tracking_url') ||
-            isMissingColumnError(err, 'courier_name') ||
-            isMissingColumnError(err, 'shipping_required') ||
-            isMissingColumnError(err, 'shipping_status') ||
-            isMissingColumnError(err, 'expected_delivery_date') ||
-            isMissingColumnError(err, 'delivered_at') ||
-            isMissingColumnError(err, 'shipped_at') ||
-            isMissingColumnError(err, 'collab_type') ||
-            isMissingColumnError(err, 'deal_type');
-	        if (!missingOptionalColumn) {
-	          throw err;
+        // Optimization: don't loop if it's not a missing column error
+        if (!isAnyMissingColumnError(err)) {
+          throw err;
         }
       }
     }
-	    if (lastError) {
-	      throw lastError;
-	    }
 
-	    // Attach signing timestamps from `contract_signatures` when available.
-	    // This makes the dashboard correct even in environments where `brand_deals.status` isn't updated reliably.
-	    try {
-	      const dealIds = Array.from(new Set(rows.map((r) => String(r?.id || '')).filter(Boolean)));
-	      if (dealIds.length > 0) {
-	        const { data: sigs, error: sigErr } = await (supabase as any)
-	          .from('contract_signatures')
-	          .select('deal_id, signer_role, signed, signed_at')
-	          .in('deal_id', dealIds as any[]);
-	        if (!sigErr && Array.isArray(sigs)) {
-	          const byDeal = new Map<string, { brand?: string | null; creator?: string | null }>();
-	          sigs.forEach((s: any) => {
-	            const dealId = String(s?.deal_id || '');
-	            if (!dealId) return;
-	            if (!s?.signed) return;
-	            const role = String(s?.signer_role || '').toLowerCase();
-	            const signedAt = s?.signed_at ? String(s.signed_at) : null;
-	            const existing = byDeal.get(dealId) || {};
-	            if (role === 'brand') existing.brand = signedAt || existing.brand || null;
-	            if (role === 'creator') existing.creator = signedAt || existing.creator || null;
-	            byDeal.set(dealId, existing);
-	          });
-
-	          rows = rows.map((r) => {
-	            const id = String(r?.id || '');
-	            const sig = byDeal.get(id);
-	            if (!sig) return r;
-	            return {
-	              ...r,
-	              brand_signed_at: (r as any)?.brand_signed_at || sig.brand || null,
-	              creator_signed_at: (r as any)?.creator_signed_at || sig.creator || null,
-	            };
-	          });
-	        }
-	      }
-	    } catch (e) {
-	      // Non-fatal: some environments may not have `contract_signatures`.
-	    }
-
-	    const creatorIds = Array.from(new Set(rows.map((r) => String(r.creator_id || '')).filter(Boolean)));
-	    if (creatorIds.length > 0) {
-	      const { data: profs, error: profErr } = await supabase
-	        .from('profiles')
-        .select('*')
-        .in('id' as any, creatorIds as any[]);
-      if (!profErr) {
-        const byId = buildProfilesById(profs);
-        rows = rows.map((r) => {
-          const profile = byId.get(String(r.creator_id)) || null;
-          return { 
-            ...r, 
-            profiles: profile,
-            creator_name: String(profile ? (profile.business_name || `${profile.first_name || ""} ${profile.last_name || ""}`.trim() || profile.username || (r as any).creator_name || 'Creator') : ((r as any).creator_name || 'Creator')).trim() || 'Creator',
-            creator_avatar_url: String(profile ? (profile.avatar_url || profile.instagram_profile_photo || (r as any).creator_avatar_url || '') : ((r as any).creator_avatar_url || '')).trim()
-          };
-        });
-      }
+    if (lastError) {
+      console.error('[BrandDashboard] Select attempts exhausted:', lastError);
+      throw lastError;
     }
 
-    // Hydrate content submission details from action logs so the brand dashboard can
-    // show submitted links even when older schemas don't persist content_* columns.
-    try {
-      const dealIds = Array.from(new Set(rows.map((r) => String(r?.id || '')).filter(Boolean)));
-      if (dealIds.length > 0) {
-        const { data: logs, error: logsError } = await (supabase as any)
-          .from('deal_action_logs')
-          .select('deal_id, event, metadata, created_at')
-          .in('deal_id', dealIds as any[])
-          .in('event', ['CONTENT_SUBMITTED', 'REVISION_SUBMITTED', 'CONTENT_APPROVED', 'REVISION_REQUESTED', 'DEAL_DISPUTED', 'PAYMENT_RELEASED', 'shipping_marked_shipped', 'shipping_status_updated', 'shipping_confirmed_delivered'] as any[])
-          .order('created_at', { ascending: false });
+    // Hydrate all secondary data in parallel to minimize latency
+    const dealIds = Array.from(new Set(rows.map((r) => String(r?.id || '')).filter(Boolean)));
+    const creatorIds = Array.from(new Set(rows.map((r) => String(r.creator_id || '')).filter(Boolean)));
 
-        if (!logsError && Array.isArray(logs)) {
+    if (dealIds.length > 0 || creatorIds.length > 0) {
+      try {
+        const [sigsRes, profsRes, logsRes] = await Promise.all([
+          // 1. Signatures
+          dealIds.length > 0 ? (supabase as any).from('contract_signatures').select('deal_id, signer_role, signed, signed_at').in('deal_id', dealIds) : Promise.resolve({ data: [] }),
+          // 2. Profiles
+          creatorIds.length > 0 ? supabase.from('profiles').select('*').in('id' as any, creatorIds as any[]) : Promise.resolve({ data: [] }),
+          // 3. Action Logs
+          dealIds.length > 0 ? (supabase as any).from('deal_action_logs').select('deal_id, event, metadata, created_at').in('deal_id', dealIds).in('event', ['CONTENT_SUBMITTED', 'REVISION_SUBMITTED', 'CONTENT_APPROVED', 'REVISION_REQUESTED', 'DEAL_DISPUTED', 'PAYMENT_RELEASED', 'shipping_marked_shipped', 'shipping_status_updated', 'shipping_confirmed_delivered'] as any[]).order('created_at', { ascending: false }) : Promise.resolve({ data: [] })
+        ]);
+
+        // Process Signatures
+        if (!sigsRes.error && Array.isArray(sigsRes.data)) {
+          const byDeal = new Map<string, { brand?: string | null; creator?: string | null }>();
+          sigsRes.data.forEach((s: any) => {
+            const dealId = String(s?.deal_id || '');
+            if (!dealId || !s?.signed) return;
+            const role = String(s?.signer_role || '').toLowerCase();
+            const signedAt = s?.signed_at ? String(s.signed_at) : null;
+            const existing = byDeal.get(dealId) || {};
+            if (role === 'brand') existing.brand = signedAt || existing.brand || null;
+            if (role === 'creator') existing.creator = signedAt || existing.creator || null;
+            byDeal.set(dealId, existing);
+          });
+
+          rows = rows.map((r) => {
+            const sig = byDeal.get(String(r?.id || ''));
+            if (!sig) return r;
+            return {
+              ...r,
+              brand_signed_at: (r as any)?.brand_signed_at || sig.brand || null,
+              creator_signed_at: (r as any)?.creator_signed_at || sig.creator || null,
+            };
+          });
+        }
+
+        // Process Profiles
+        if (!profsRes.error && Array.isArray(profsRes.data)) {
+          const byId = buildProfilesById(profsRes.data);
+          rows = rows.map((r) => {
+            const profile = byId.get(String(r.creator_id)) || null;
+            return { 
+              ...r, 
+              profiles: profile,
+              creator_name: String(profile ? (profile.business_name || `${profile.first_name || ""} ${profile.last_name || ""}`.trim() || profile.username || (r as any).creator_name || 'Creator') : ((r as any).creator_name || 'Creator')).trim() || 'Creator',
+              creator_avatar_url: String(profile ? (profile.avatar_url || profile.instagram_profile_photo || (r as any).creator_avatar_url || '') : ((r as any).creator_avatar_url || '')).trim()
+            };
+          });
+        }
+
+        // Process Action Logs
+        if (!logsRes.error && Array.isArray(logsRes.data)) {
           const latestByDeal = new Map<string, any[]>();
-          logs.forEach((log: any) => {
+          logsRes.data.forEach((log: any) => {
             const dealId = String(log?.deal_id || '');
             if (!dealId) return;
             const bucket = latestByDeal.get(dealId) || [];
@@ -1260,62 +731,28 @@ router.get('/deals', async (req: AuthenticatedRequest, res: Response) => {
 
           rows = rows.map((row) => {
             const dealLogs = latestByDeal.get(String(row?.id || '')) || [];
-            const submissionLog = dealLogs.find((log: any) =>
-              log?.event === 'CONTENT_SUBMITTED' || log?.event === 'REVISION_SUBMITTED'
-            );
-            const reviewLog = dealLogs.find((log: any) =>
-              log?.event === 'CONTENT_APPROVED' || log?.event === 'REVISION_REQUESTED' || log?.event === 'DEAL_DISPUTED'
-            );
+            const submissionLog = dealLogs.find((log: any) => log?.event === 'CONTENT_SUBMITTED' || log?.event === 'REVISION_SUBMITTED');
+            const reviewLog = dealLogs.find((log: any) => log?.event === 'CONTENT_APPROVED' || log?.event === 'REVISION_REQUESTED' || log?.event === 'DEAL_DISPUTED');
             const paymentLog = dealLogs.find((log: any) => log?.event === 'PAYMENT_RELEASED');
+            const shippingLog = dealLogs.find((log: any) => log?.event === 'shipping_marked_shipped' || log?.event === 'shipping_status_updated' || log?.event === 'shipping_confirmed_delivered');
 
-            const submissionMeta = submissionLog?.metadata && typeof submissionLog.metadata === 'object'
-              ? submissionLog.metadata
-              : {};
-            const reviewMeta = reviewLog?.metadata && typeof reviewLog.metadata === 'object'
-              ? reviewLog.metadata
-              : {};
-            const paymentMeta = paymentLog?.metadata && typeof paymentLog.metadata === 'object'
-              ? paymentLog.metadata
-              : {};
-            const shippingLog = dealLogs.find((log: any) =>
-              log?.event === 'shipping_marked_shipped' ||
-              log?.event === 'shipping_status_updated' ||
-              log?.event === 'shipping_confirmed_delivered'
-            );
-            const shippingMeta = shippingLog?.metadata && typeof shippingLog.metadata === 'object'
-              ? shippingLog.metadata
-              : {};
+            const submissionMeta = submissionLog?.metadata || {};
+            const reviewMeta = reviewLog?.metadata || {};
+            const paymentMeta = paymentLog?.metadata || {};
+            const shippingMeta = shippingLog?.metadata || {};
+
             const collabKind = String((row as any)?.collab_type || (row as any)?.deal_type || '').trim().toLowerCase();
-            const requiresPayment =
-              collabKind === 'paid' ||
-              collabKind === 'both' ||
-              collabKind === 'hybrid' ||
-              collabKind === 'paid_barter' ||
-              (collabKind !== 'barter' && Number((row as any)?.deal_amount || 0) > 0);
-            const requiresShipping =
-              typeof (row as any)?.shipping_required === 'boolean'
-                ? Boolean((row as any)?.shipping_required)
-                : collabKind === 'barter' || collabKind === 'both' || collabKind === 'hybrid' || collabKind === 'paid_barter';
+            const requiresPayment = collabKind === 'paid' || collabKind === 'both' || collabKind === 'hybrid' || collabKind === 'paid_barter' || (collabKind !== 'barter' && Number((row as any)?.deal_amount || 0) > 0);
+            const requiresShipping = typeof (row as any)?.shipping_required === 'boolean' ? Boolean((row as any)?.shipping_required) : collabKind === 'barter' || collabKind === 'both' || collabKind === 'hybrid' || collabKind === 'paid_barter';
 
             const rawLinks = Array.isArray(submissionMeta.content_links) ? submissionMeta.content_links : [];
-            const contentLinks = Array.from(
-              new Set(
-                [
-                  submissionMeta.content_url,
-                  ...rawLinks,
-                ]
-                  .map((value) => String(value || '').trim())
-                  .filter(Boolean)
-              )
-            );
+            const contentLinks = Array.from(new Set([submissionMeta.content_url, ...rawLinks].map(v => String(v || '').trim()).filter(Boolean)));
 
             return {
               ...row,
               content_submission_url: String((row as any)?.content_submission_url || submissionMeta.content_url || '').trim() || null,
               content_url: String((row as any)?.content_url || submissionMeta.content_url || '').trim() || null,
-              content_links: Array.isArray((row as any)?.content_links) && (row as any).content_links.length
-                ? (row as any).content_links
-                : contentLinks,
+              content_links: Array.isArray((row as any)?.content_links) && (row as any).content_links.length ? (row as any).content_links : contentLinks,
               content_caption: String((row as any)?.content_caption || submissionMeta.caption || '').trim() || null,
               content_notes: String((row as any)?.content_notes || submissionMeta.notes || '').trim() || null,
               content_delivery_status: String((row as any)?.content_delivery_status || submissionMeta.content_status || '').trim() || null,
@@ -1335,9 +772,9 @@ router.get('/deals', async (req: AuthenticatedRequest, res: Response) => {
             };
           });
         }
+      } catch (err) {
+        console.warn('[BrandDashboard] Hydration error:', err);
       }
-    } catch (e) {
-      // Non-fatal: keep dashboard working even if action logs are unavailable.
     }
 
     res.setHeader('Cache-Control', 'no-store');

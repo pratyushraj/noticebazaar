@@ -19,7 +19,8 @@ import { useDealAlertNotifications } from '@/hooks/useDealAlertNotifications';
 import { useSupabaseQuery } from '@/lib/hooks/useSupabaseQuery';
 import { getApiBaseUrl } from '@/lib/utils/api';
 import { supabase } from '@/integrations/supabase/client';
-import { buttons as dsButtons } from '@/lib/design-system';
+import * as ds from '@/lib/design-system';
+const { buttons: dsButtons } = ds;
 import { dealPrimaryCtaButtonClass, getDealPrimaryCta } from '@/lib/deals/primaryCta';
 import { CREATOR_ASSETS_BUCKET } from '@/lib/constants/storage';
 import { isBarterLikeCollab, isPaidLikeCollab } from '@/lib/deals/collabType';
@@ -29,6 +30,7 @@ import { DiscoveryStack } from '@/components/brand-dashboard/DiscoveryStack';
 import { DisputeEscalationModal } from '@/components/deals/DisputeEscalationModal';
 import { BrandShippingAddressModal } from '@/components/deals/BrandShippingAddressModal';
 import { ConfirmPaymentPendingModal } from '@/components/deals/ConfirmPaymentPendingModal';
+import { BrandDashboardSkeleton } from '@/components/brand-dashboard/BrandDashboardSkeleton';
 
 import { optimizeImage, safeAvatarSrc, withCacheBuster } from '@/lib/utils/image';
 
@@ -3144,11 +3146,14 @@ const BrandMobileDashboard = ({
         }}
       >
         <div className="max-w-md md:max-w-2xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-          >
+          {isLoading && activeTab === 'dashboard' ? (
+            <BrandDashboardSkeleton isDark={isDark} />
+          ) : (
+            <motion.div
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+            >
             <div className="px-5 pb-4 pt-safe" style={{ paddingTop: 'max(env(safe-area-inset-top), 8px)' }}>
 
               {/* Brand Getting Started Banner — shown when no deals exist */}
@@ -4591,7 +4596,8 @@ const BrandMobileDashboard = ({
 
 	              </>
 	            </div>
-          </motion.div>
+            </motion.div>
+          )}
         </div>
       </div>
 
