@@ -91,15 +91,19 @@ const BrandDashboard: React.FC = () => {
     void loadBrandDashboard();
   }, [loadBrandDashboard]);
 
+  // Use a ref for the reload function so the real-time listener always has the latest 
+  // closure without needing to rebuild the subscription every time a dependency changes.
+  const loadBrandDashboardRef = React.useRef(loadBrandDashboard);
+  useEffect(() => {
+    loadBrandDashboardRef.current = loadBrandDashboard;
+  }, [loadBrandDashboard]);
+
   // Real-time: Listen for updates to deals or requests
   useEffect(() => {
-    if (!user?.id || !isBrandUser) return;
+    if (!user?.id || !isBrandUser || sessionLoading) return;
 
     console.log('[BrandDashboard] Setting up real-time subscription for brand:', user.id);
 
-    // We use filters to ensure we only get relevant updates and to satisfy Realtime server requirements.
-    // 1. collab_requests are filtered by brand_email.
-    // 2. brand_deals are filtered by brand_id.
     const channel = supabase
       .channel(`brand-dashboard-updates-${user.id}`)
       .on(
@@ -111,8 +115,8 @@ const BrandDashboard: React.FC = () => {
           filter: user.email ? `brand_email=eq.${user.email}` : undefined
         },
         (payload) => {
-          console.log('[Realtime] Brand collab request event received:', payload.eventType, payload.new?.id);
-          void loadBrandDashboard();
+          console.log('[Realtime] Brand collab request event received:', payload.eventType);
+          void loadBrandDashboardRef.current();
           
           if (document.visibilityState === 'visible') {
             triggerHaptic();
@@ -133,8 +137,8 @@ const BrandDashboard: React.FC = () => {
           filter: `brand_id=eq.${user.id}`
         },
         (payload) => {
-          console.log('[Realtime] Brand deal event received:', payload.eventType, payload.new?.id);
-          void loadBrandDashboard();
+          console.log('[Realtime] Brand deal event received:', payload.eventType);
+          void loadBrandDashboardRef.current();
           
           if (document.visibilityState === 'visible') {
             triggerHaptic();
@@ -144,23 +148,22 @@ const BrandDashboard: React.FC = () => {
       )
       .subscribe((status, err) => {
         if (status === 'SUBSCRIBED') {
-          console.log('[Realtime] Brand dashboard is now LIVE and listening for filtered updates');
+          console.log('[Realtime] Brand dashboard is now LIVE');
         }
         if (status === 'CHANNEL_ERROR') {
-          console.error('[Realtime] Brand dashboard channel error. Status:', status, 'Error:', err);
-          // If it fails, we might want to try subscribing without filters as a fallback, 
-          // but usually filters make it MORE likely to succeed.
-        }
-        if (status === 'TIMED_OUT') {
-          console.warn('[Realtime] Brand dashboard subscription timed out');
+          console.error('[Realtime] Brand dashboard channel error:', err);
         }
       });
 
     return () => {
       console.log('[BrandDashboard] Cleaning up real-time subscription');
-      void supabase.removeChannel(channel);
+      // Use a timeout for cleanup to avoid the "WebSocket closed before established" warning
+      // if the component unmounts immediately after mounting.
+      setTimeout(() => {
+        void supabase.removeChannel(channel);
+      }, 100);
     };
-  }, [user?.id, isBrandUser, loadBrandDashboard]);
+  }, [user?.id, isBrandUser, user?.email, sessionLoading]);
 
   const stats: BrandDashboardStats = useMemo(() => {
     const totalSent = (requests || []).length;

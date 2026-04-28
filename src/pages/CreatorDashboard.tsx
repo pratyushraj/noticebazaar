@@ -160,7 +160,9 @@ const CreatorDashboard = () => {
       });
 
     return () => {
-      supabase.removeChannel(channel);
+      setTimeout(() => {
+        void supabase.removeChannel(channel);
+      }, 100);
     };
   }, [user?.id, queryClient]);
 

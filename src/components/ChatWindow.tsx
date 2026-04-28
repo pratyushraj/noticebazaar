@@ -190,7 +190,9 @@ const ChatWindow = ({ receiverId, receiverName, receiverAvatarUrl }: ChatWindowP
         .subscribe();
 
       return () => {
-        supabase.removeChannel(channel);
+        setTimeout(() => {
+          void supabase.removeChannel(channel);
+        }, 100);
       };
     } else if (!isLawyerChat) {
       // Subscribe to legacy messages
@@ -214,7 +216,9 @@ const ChatWindow = ({ receiverId, receiverName, receiverAvatarUrl }: ChatWindowP
         .subscribe();
 
       return () => {
-        supabase.removeChannel(channel);
+        setTimeout(() => {
+          void supabase.removeChannel(channel);
+        }, 100);
       };
     }
   }, [currentUserId, receiverId, conversationId, isLawyerChat, queryClient]);

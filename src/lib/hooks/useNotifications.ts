@@ -245,7 +245,9 @@ export const useNotifications = (options: UseNotificationsOptions = {}) => {
       });
 
     return () => {
-      supabase.removeChannel(channel);
+      setTimeout(() => {
+        void supabase.removeChannel(channel);
+      }, 100);
     };
   }, [userId, enabled, queryClient, shouldSkipNotifications]);
 

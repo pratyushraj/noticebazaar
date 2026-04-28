@@ -77,7 +77,11 @@ export const DiscoveryStack: React.FC<DiscoveryStackProps> = ({
 
         subscribeToMatches();
         return () => {
-            if (channel) supabase.removeChannel(channel);
+            if (channel) {
+                setTimeout(() => {
+                    void supabase.removeChannel(channel);
+                }, 100);
+            }
         };
     }, []);
 

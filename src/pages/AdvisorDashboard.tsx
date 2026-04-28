@@ -180,7 +180,9 @@ export default function AdvisorDashboard() {
       .subscribe();
 
     return () => {
-      supabase.removeChannel(channel);
+      setTimeout(() => {
+        void supabase.removeChannel(channel);
+      }, 100);
     };
   }, [user?.id]);
 

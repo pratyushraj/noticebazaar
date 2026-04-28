@@ -797,11 +797,13 @@ export default function LawyerDashboard() {
       .subscribe();
 
     return () => {
-      supabase.removeChannel(conversationsChannel);
-      if (participantsChannel) {
-        supabase.removeChannel(participantsChannel);
-      }
-      supabase.removeChannel(messagesChannel);
+      setTimeout(() => {
+        void supabase.removeChannel(conversationsChannel);
+        if (participantsChannel) {
+          void supabase.removeChannel(participantsChannel);
+        }
+        void supabase.removeChannel(messagesChannel);
+      }, 100);
     };
   }, [user?.id, selectedConversation]);
 
@@ -1061,15 +1063,17 @@ export default function LawyerDashboard() {
     return () => {
       isMounted = false;
       console.log('[LawyerDashboard] Cleanup: Removing message subscription for conversation:', selectedConversation);
-      if (messageSubscriptionRef.current) {
-        supabase.removeChannel(messageSubscriptionRef.current);
-        messageSubscriptionRef.current = null;
-      } else if (channel) {
-      supabase.removeChannel(channel);
-      }
-      if (fallbackChannel) {
-        supabase.removeChannel(fallbackChannel);
-      }
+      setTimeout(() => {
+        if (messageSubscriptionRef.current) {
+          void supabase.removeChannel(messageSubscriptionRef.current);
+          messageSubscriptionRef.current = null;
+        } else if (channel) {
+          void supabase.removeChannel(channel);
+        }
+        if (fallbackChannel) {
+          void supabase.removeChannel(fallbackChannel);
+        }
+      }, 100);
     };
   }, [selectedConversation, user?.id]);
 

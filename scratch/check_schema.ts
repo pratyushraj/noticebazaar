@@ -1,28 +1,22 @@
 
-import { createClient } from '@supabase/supabase-js';
-import dotenv from 'dotenv';
-dotenv.config({ path: '../server/.env' });
+import { supabase } from '../server/src/lib/supabase.js';
 
-const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
+async function checkSchema() {
+  console.log('Checking brand_deals columns...');
+  const { data: deals, error: dealsErr } = await supabase.from('brand_deals').select('*').limit(1);
+  if (dealsErr) {
+    console.error('Error fetching brand_deals:', dealsErr);
+  } else {
+    console.log('brand_deals columns:', Object.keys(deals[0] || {}));
+  }
 
-async function check() {
-  try {
-    const { data, error } = await supabase.from('brands').select('*').limit(1);
-    if (error) {
-      console.error('Error fetching brands:', error);
-    } else {
-      console.log('Brands Columns:', Object.keys(data[0] || {}));
-    }
-    
-    const { data: pData, error: pError } = await supabase.from('profiles').select('*').limit(1);
-    if (pError) {
-      console.error('Error fetching profiles:', pError);
-    } else {
-      console.log('Profiles Columns:', Object.keys(pData[0] || {}));
-    }
-  } catch (err) {
-    console.error('Crash:', err);
+  console.log('Checking collab_requests columns...');
+  const { data: reqs, error: reqsErr } = await supabase.from('collab_requests').select('*').limit(1);
+  if (reqsErr) {
+    console.error('Error fetching collab_requests:', reqsErr);
+  } else {
+    console.log('collab_requests columns:', Object.keys(reqs[0] || {}));
   }
 }
 
-check();
+checkSchema();
