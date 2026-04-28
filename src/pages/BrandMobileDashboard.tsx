@@ -30,7 +30,7 @@ import { DisputeEscalationModal } from '@/components/deals/DisputeEscalationModa
 import { BrandShippingAddressModal } from '@/components/deals/BrandShippingAddressModal';
 import { ConfirmPaymentPendingModal } from '@/components/deals/ConfirmPaymentPendingModal';
 
-import { safeAvatarSrc, withCacheBuster } from '@/lib/utils/image';
+import { optimizeImage, safeAvatarSrc, withCacheBuster } from '@/lib/utils/image';
 
 type BrandTab = 'dashboard' | 'collabs' | 'creators' | 'profile' | 'payments';
 type BrandCollabTab = 'action_required' | 'active' | 'completed';
@@ -104,7 +104,7 @@ const hoursSince = (iso: string | Date | null | undefined) => {
 };
 
 const safeImageSrc = (url: string | null | undefined) => {
-  return safeAvatarSrc(url);
+  return optimizeImage(url, { width: 300, height: 300, fit: 'cover' });
 };
 
 const uniqBy = <T,>(items: T[], key: (item: T) => string) => {
@@ -806,8 +806,8 @@ const BrandMobileDashboard = ({
     else setSelectedOffer(item);
   };
 
-  const resolveDealProductImageUrl = (dealLike: any) =>
-    String(
+  const resolveDealProductImageUrl = (dealLike: any) => {
+    const raw = String(
       dealLike?.barter_product_image_url ||
       dealLike?.product_image_url ||
       dealLike?.barterProductImageUrl ||
@@ -827,6 +827,9 @@ const BrandMobileDashboard = ({
       dealLike?.raw?.brand_logo_url ||
       ''
     ).trim();
+
+    return optimizeImage(raw, { width: 500, quality: 75 }) || '';
+  };
 
   useEffect(() => {
     try {

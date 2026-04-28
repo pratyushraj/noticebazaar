@@ -14,6 +14,7 @@ import { getInitials } from '@/lib/utils/avatar';
 import { logger } from '@/lib/utils/logger';
 import { cn } from '@/lib/utils';
 
+import { optimizeImage } from '@/lib/utils/image';
 import FiverrPackageEditor from '@/components/profile/FiverrPackageEditor';
 import { DealTemplate } from '@/types';
 import { fetchPincodeData, parseLocationString, formatLocationString } from '@/lib/utils/pincodeLookup';
@@ -1986,7 +1987,7 @@ const ProfileSettings = () => {
                   >
                     {(profile.instagram_profile_photo || profile.avatar_url) && !profilePhotoError ? (
                       <img
-                        src={(profile.instagram_profile_photo || profile.avatar_url) ?? ''}
+                        src={optimizeImage((profile.instagram_profile_photo || profile.avatar_url) ?? '', { width: 300, height: 300 }) ?? ''}
                         alt={userData.name}
                         className="w-full h-full object-cover"
                         onError={() => setProfilePhotoError(true)}

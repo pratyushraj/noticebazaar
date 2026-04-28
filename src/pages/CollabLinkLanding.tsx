@@ -83,7 +83,7 @@ import { useUpdateProfile } from '@/lib/hooks/useProfiles'
 import { useSignOut } from '@/lib/hooks/useAuth'
 import { supabase } from '@/integrations/supabase/client'
 import { normalizeLogoUrl } from '@/lib/deals/format'
-import { safeAvatarSrc } from '@/lib/utils/image'
+import { optimizeImage, safeAvatarSrc } from '@/lib/utils/image'
 import type { PortfolioItem } from '@/types'
 
 // Generic JSON-LD injector for page-specific schema markup
@@ -421,10 +421,15 @@ const normalizePortfolioItems = (rawItems: any, legacyLinks?: string[] | null): 
           if (!sourceUrl) return null
           const mediaType =
             item?.mediaType === 'video' || isPortfolioVideoUrl(sourceUrl) ? 'video' : 'link'
+          
+          // Optimize URLs if they are images
+          const optimizedSource = mediaType === 'link' ? (optimizeImage(sourceUrl, { width: 800, quality: 80 }) || sourceUrl) : sourceUrl
+          const optimizedPoster = optimizeImage(String(item?.posterUrl || item?.thumbnailUrl || '').trim(), { width: 600, quality: 75 }) || null
+
           return {
             id: String(item?.id || `portfolio-item-${index + 1}`),
-            sourceUrl,
-            posterUrl: String(item?.posterUrl || item?.thumbnailUrl || '').trim() || null,
+            sourceUrl: optimizedSource,
+            posterUrl: optimizedPoster,
             title: String(item?.title || '').trim() || null,
             mediaType,
             platform: String(item?.platform || inferPortfolioPlatform(sourceUrl)).trim() || null,
@@ -443,12 +448,15 @@ const normalizePortfolioItems = (rawItems: any, legacyLinks?: string[] | null): 
     .map((value, index) => {
       const sourceUrl = String(value || '').trim()
       if (!sourceUrl) return null
+      const mediaType = isPortfolioVideoUrl(sourceUrl) ? 'video' : 'link'
+      const optimizedSource = mediaType === 'link' ? (optimizeImage(sourceUrl, { width: 800, quality: 80 }) || sourceUrl) : sourceUrl
+      
       return {
         id: `portfolio-link-${index + 1}`,
-        sourceUrl,
+        sourceUrl: optimizedSource,
         posterUrl: null,
         title: null,
-        mediaType: isPortfolioVideoUrl(sourceUrl) ? 'video' : 'link',
+        mediaType,
         platform: inferPortfolioPlatform(sourceUrl),
       } satisfies PortfolioItem
     })

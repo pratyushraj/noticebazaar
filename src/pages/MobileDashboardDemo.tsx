@@ -39,7 +39,7 @@ import { dealPrimaryCtaButtonClass, getDealPrimaryCta, getCanonicalDealStatus } 
 import { isBarterLikeCollab, isPaidLikeCollab } from '@/lib/deals/collabType';
 import FiverrPackageEditor from '@/components/profile/FiverrPackageEditor';
 import { useInstagramSync } from '@/lib/hooks/useInstagramSync';
-import { safeAvatarSrc, withCacheBuster } from '@/lib/utils/image';
+import { optimizeImage, safeAvatarSrc, withCacheBuster } from '@/lib/utils/image';
 import { fetchPincodeData } from '@/lib/utils/pincodeLookup';
 
 import DealSearchFilter from '@/components/dashboard/DealSearchFilter';
@@ -238,10 +238,9 @@ const resolveCreatorDealProductImage = (item: any) => {
     const raw = candidates.map((x) => String(x || '').trim()).find((x) => x && x !== 'null' && x !== 'undefined') || '';
     if (!raw) return '';
     if (/^(data:|blob:)/i.test(raw)) return raw;
-    if (/^https?:\/\//i.test(raw)) return raw;
-    if (raw.startsWith('//')) return `https:${raw}`;
-    if (/^www\./i.test(raw)) return `https://${raw}`;
-    return raw;
+    
+    // Optimize the final URL
+    return optimizeImage(raw, { width: 500, quality: 75 }) || raw;
 };
 
 const isPortfolioVideoUrl = (value: string) => /\.(mp4|mov|webm|m4v)(\?|#|$)/i.test(String(value || '').trim());
