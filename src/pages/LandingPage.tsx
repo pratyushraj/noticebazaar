@@ -7,17 +7,18 @@ import { SEOHead } from '@/components/seo/SEOHead';
 import { ArrowRight, ShieldCheck, CheckCircle2, Instagram, Linkedin, Twitter, Menu, X, BriefcaseBusiness, Zap, Clock, XCircle, Wallet, Landmark, ChevronRight, FileText, Gavel, AlertTriangle } from 'lucide-react';
 import { triggerHaptic, HapticPatterns } from '@/lib/utils/haptics';
 import { cn } from '@/lib/utils';
+import { optimizeImage } from '@/lib/utils/image';
 
 const ThreeDIllustration = lazy(() =>
   import('@/components/ui/ThreeDIllustration').then(m => ({ default: m.default }))
 );
 
-const AANYA_IMG = "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=500&h=500&q=80";
-const PRIYA_IMG = "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=500&h=500&q=80";
-const ARJUN_IMG = "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&w=500&h=500&q=80";
-const NEHA_IMG = "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=500&h=500&q=80";
-const RITIKA_IMG = "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=500&h=500&q=80";
-const ROHAN_IMG = "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=500&h=500&q=80";
+const AANYA_IMG = optimizeImage("https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=500&h=500&q=80", { width: 128, quality: 80 }) ?? "";
+const PRIYA_IMG = optimizeImage("https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=500&h=500&q=80", { width: 128, quality: 80 }) ?? "";
+const ARJUN_IMG = optimizeImage("https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&w=500&h=500&q=80", { width: 128, quality: 80 }) ?? "";
+const NEHA_IMG = optimizeImage("https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=500&h=500&q=80", { width: 128, quality: 80 }) ?? "";
+const RITIKA_IMG = optimizeImage("https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=500&h=500&q=80", { width: 128, quality: 80 }) ?? "";
+const ROHAN_IMG = optimizeImage("https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=500&h=500&q=80", { width: 128, quality: 80 }) ?? "";
 
 const dashboardShowcase = [
   {
@@ -46,8 +47,8 @@ const dashboardShowcase = [
           <div className="flex gap-4 mb-6">
             <div className="w-[100px] h-[100px] rounded-[24px] overflow-hidden border border-slate-100 bg-slate-50/50 shrink-0 p-1 shadow-md transition-all duration-500 group-hover:scale-[1.05]">
               <img 
-                src="https://images.unsplash.com/photo-1596462502278-27bfdc403348?auto=format&fit=crop&w=500&h=500&q=80" 
-                alt="Brand Logo" 
+                src={optimizeImage("https://images.unsplash.com/photo-1596462502278-27bfdc403348?auto=format&fit=crop&w=500&h=500&q=80", { width: 128, quality: 80 }) ?? ""} 
+                alt="Nykaa Beauty Logo" 
                 className="w-full h-full object-cover rounded-[18px]" 
               />
             </div>
@@ -487,7 +488,7 @@ const LandingPage = () => {
                   <div className="absolute top-0 left-0 right-0 h-44 bg-gradient-to-b from-[#DCFCE7] to-white" />
 
                   <div className="relative z-10 flex flex-col items-center mb-6">
-                    <img src={AANYA_IMG} className="w-24 h-24 rounded-full object-cover border-4 border-white shadow-md mb-4" alt="Creator" />
+                    <img src={AANYA_IMG} className="w-24 h-24 rounded-full object-cover border-4 border-white shadow-md mb-4" alt="Creator Ananya Kapoor Profile Photo" />
                     <h2 className="text-2xl font-black text-[#0F172A] flex items-center gap-1">Ananya Kapoor <CheckCircle2 className="w-6 h-6 text-[#16A34A] fill-[#DCFCE7]" /></h2>
                     <p className="text-[13px] font-bold text-[#64748B] mb-4">@aanyakapoor</p>
 
@@ -837,9 +838,9 @@ const LandingPage = () => {
               </div>
                             <div className="flex items-center gap-4 pt-6">
                 <div className="flex -space-x-3">
-                  <img src={PRIYA_IMG} className="w-10 h-10 rounded-full border-2 border-[#05070A] object-cover" alt="User 1" />
-                  <img src={ARJUN_IMG} className="w-10 h-10 rounded-full border-2 border-[#05070A] object-cover" alt="User 2" />
-                  <img src={NEHA_IMG} className="w-10 h-10 rounded-full border-2 border-[#05070A] object-cover" alt="User 3" />
+                  <img src={PRIYA_IMG} className="w-10 h-10 rounded-full border-2 border-[#05070A] object-cover" alt="Priya Sharma Profile Photo" />
+                  <img src={ARJUN_IMG} className="w-10 h-10 rounded-full border-2 border-[#05070A] object-cover" alt="Arjun Patel Profile Photo" />
+                  <img src={NEHA_IMG} className="w-10 h-10 rounded-full border-2 border-[#05070A] object-cover" alt="Neha Verma Profile Photo" />
                 </div>
                 <p className="text-[15px] font-bold text-slate-300">Join <span className="text-white">500+</span> top creators</p>
               </div>
