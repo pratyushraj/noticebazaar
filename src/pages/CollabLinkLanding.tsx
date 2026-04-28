@@ -4252,7 +4252,7 @@ const CollabLinkLanding = () => {
                                     htmlFor="barter-value-input"
                                     className="block text-[11px] font-black uppercase tracking-widest text-slate-500"
                                   >
-                                    Estimated Value (₹)
+                                    Product Value (₹)
                                   </label>
                                   <div className="relative group">
                                     <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-black text-[14px] group-focus-within:text-slate-900 transition-colors">

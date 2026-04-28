@@ -3066,14 +3066,7 @@ router.post('/accept/confirm', async (req: AuthenticatedRequest, res: Response) 
       },
     });
 
-    if (isBarter) {
-      return res.json({
-        success: true,
-        deal: { id: deal.id },
-        needs_delivery_details: true,
-        message: 'Deal accepted. Please add delivery details so we can generate the contract.',
-      });
-    }
+    // Proceed to generate contract for all deal types
 
     let contractUrl: string | null = null;
     let contractReadyToken: string | null = null;
@@ -3288,7 +3281,7 @@ router.patch('/:id/accept', async (req: AuthenticatedRequest, res: Response) => 
        due_date: request.deadline || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
        payment_expected_date: request.deadline || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
        platform: 'Other',
-       status: isBarter ? 'Drafting' : 'CONTRACT_READY',
+       status: 'CONTRACT_READY',
        deal_type: isBarter ? 'barter' : 'paid',
        collab_type: normalizeCollabTypeForApi(request.collab_type) || request.collab_type,
        shipping_required: isBarterLikeCollab(request.collab_type),

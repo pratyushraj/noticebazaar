@@ -80,32 +80,38 @@ const inferRequiresShipping = (deal: any) => {
 // Helper: determine if a deal is barter-type (requires shipping/product delivery)
 const isBarterType = (deal: any): boolean => {
   if (!deal) return false;
+  // Flags take precedence
   if (typeof deal.requires_shipping === 'boolean') return deal.requires_shipping;
   if (typeof deal.shipping_required === 'boolean') return deal.shipping_required;
-  const type = String(deal?.deal_type || '').toLowerCase();
-  return type === 'barter';
+  
+  // Infer from type fields
+  const type = String(deal?.collab_type || deal?.deal_type || '').trim().toLowerCase();
+  return (
+    type.includes('barter') || 
+    ['both', 'hybrid', 'paid_barter', 'product_only', 'gifted', 'product'].includes(type)
+  );
 };
 
 // Helper: determine if a deal is paid-type (requires monetary payment)
 const isPaidType = (deal: any): boolean => {
   if (!deal) return false;
-  const type = String(deal?.deal_type || '').toLowerCase();
-  const amount = Number(deal?.deal_amount || 0);
+  const type = String(deal?.collab_type || deal?.deal_type || '').trim().toLowerCase();
+  const amount = Number(deal?.deal_amount || deal?.exact_budget || 0);
   if (amount > 0) return true;
-  return type === 'paid' || type.includes('paid');
+  return type.includes('paid') || ['both', 'hybrid', 'paid_barter'].includes(type);
 };
 
 const fetchDealForBrandMutation = async (dealId: string) => {
   const selectAttempts = [
-    'id, status, brand_id, brand_email, brand_name, creator_id, deal_type, deal_amount, progress_percentage, shipping_required, payment_id, payment_status, amount_paid, creator_amount, platform_fee',
-    'id, status, brand_id, brand_email, brand_name, creator_id, deal_type, deal_amount, progress_percentage, shipping_required, payment_id, payment_status',
-    'id, status, brand_id, brand_email, brand_name, creator_id, deal_type, deal_amount, shipping_required, payment_id',
-    'id, status, brand_id, brand_email, brand_name, creator_id, deal_type, deal_amount, progress_percentage, shipping_required',
-    'id, status, brand_id, brand_email, brand_name, creator_id, deal_type, deal_amount, shipping_required',
-    'id, status, brand_id, brand_email, brand_name, creator_id, deal_type, deal_amount, shipping_required',
-    'id, status, brand_id, brand_email, brand_name, creator_id, deal_type, deal_amount',
-    'id, status, brand_email, brand_name, creator_id, deal_type, deal_amount',
-    'id, status, brand_email, brand_name, creator_id',
+    'id, status, brand_address, brand_phone, contact_person, brand_id, brand_email, brand_name, creator_id, deal_type, deal_amount, progress_percentage, shipping_required, payment_id, payment_status, amount_paid, creator_amount, platform_fee',
+    'id, status, brand_address, brand_phone, contact_person, brand_id, brand_email, brand_name, creator_id, deal_type, deal_amount, progress_percentage, shipping_required, payment_id, payment_status',
+    'id, status, brand_address, brand_phone, contact_person, brand_id, brand_email, brand_name, creator_id, deal_type, deal_amount, shipping_required, payment_id',
+    'id, status, brand_address, brand_phone, contact_person, brand_id, brand_email, brand_name, creator_id, deal_type, deal_amount, progress_percentage, shipping_required',
+    'id, status, brand_address, brand_phone, contact_person, brand_id, brand_email, brand_name, creator_id, deal_type, deal_amount, shipping_required',
+    'id, status, brand_address, brand_phone, contact_person, brand_id, brand_email, brand_name, creator_id, deal_type, deal_amount, shipping_required',
+    'id, status, brand_address, brand_phone, contact_person, brand_id, brand_email, brand_name, creator_id, deal_type, deal_amount',
+    'id, status, brand_address, brand_phone, contact_person, brand_email, brand_name, creator_id, deal_type, deal_amount',
+    'id, status, brand_address, brand_phone, contact_person, brand_email, brand_name, creator_id',
   ];
 
   let lastError: any = null;
@@ -163,14 +169,14 @@ const fetchDealForCreatorMutation = async (dealId: string) => {
 
 const fetchDealForViewer = async (dealId: string) => {
   const selectAttempts = [
-    'id, status, creator_id, brand_id, brand_email, brand_name, brand_logo_url, deal_type, deal_amount, due_date, progress_percentage, payment_released_at, payment_received_date, utr_number, shipping_required, content_submission_url, content_url, content_notes, brand_approval_status, created_at, updated_at',
-    'id, status, creator_id, brand_id, brand_email, brand_name, brand_logo_url, deal_type, deal_amount, due_date, payment_released_at, payment_received_date, utr_number, shipping_required, content_submission_url, content_url, content_notes, brand_approval_status, created_at, updated_at',
-    'id, status, creator_id, brand_id, brand_email, brand_name, brand_logo_url, deal_type, deal_amount, due_date, payment_released_at, payment_received_date, utr_number, content_submission_url, content_url, content_notes, created_at, updated_at',
-    'id, status, creator_id, brand_id, brand_email, brand_name, deal_type, deal_amount, due_date, payment_released_at, payment_received_date, utr_number, content_submission_url, content_url, content_notes, created_at, updated_at',
-    'id, status, creator_id, brand_id, brand_email, brand_name, brand_logo_url, deal_type, deal_amount, due_date, created_at, updated_at',
-    'id, status, creator_id, brand_id, brand_email, brand_name, deal_type, deal_amount, due_date, created_at, updated_at',
-    'id, status, creator_id, brand_email, brand_name, brand_logo_url, deal_type, deal_amount, due_date, created_at, updated_at',
-    'id, status, creator_id, brand_email, brand_name, deal_type, deal_amount, due_date, created_at, updated_at',
+    'id, status, creator_id, brand_id, brand_email, brand_name, brand_logo_url, deal_type, deal_amount, due_date, progress_percentage, payment_released_at, payment_received_date, utr_number, shipping_required, brand_address, brand_phone, contact_person, content_submission_url, content_url, content_notes, brand_approval_status, created_at, updated_at',
+    'id, status, creator_id, brand_id, brand_email, brand_name, brand_logo_url, deal_type, deal_amount, due_date, payment_released_at, payment_received_date, utr_number, shipping_required, brand_address, brand_phone, contact_person, content_submission_url, content_url, content_notes, brand_approval_status, created_at, updated_at',
+    'id, status, creator_id, brand_id, brand_email, brand_name, brand_logo_url, deal_type, deal_amount, due_date, payment_released_at, payment_received_date, utr_number, brand_address, brand_phone, contact_person, content_submission_url, content_url, content_notes, created_at, updated_at',
+    'id, status, creator_id, brand_id, brand_email, brand_name, deal_type, deal_amount, due_date, payment_released_at, payment_received_date, utr_number, brand_address, brand_phone, contact_person, content_submission_url, content_url, content_notes, created_at, updated_at',
+    'id, status, creator_id, brand_id, brand_email, brand_name, brand_logo_url, deal_type, deal_amount, due_date, brand_address, brand_phone, contact_person, created_at, updated_at',
+    'id, status, creator_id, brand_id, brand_email, brand_name, deal_type, deal_amount, due_date, brand_address, brand_phone, contact_person, created_at, updated_at',
+    'id, status, creator_id, brand_email, brand_name, brand_logo_url, deal_type, deal_amount, due_date, brand_address, brand_phone, contact_person, created_at, updated_at',
+    'id, status, creator_id, brand_email, brand_name, deal_type, deal_amount, due_date, brand_address, brand_phone, contact_person, created_at, updated_at',
     'id, status, creator_id, brand_email, brand_name, brand_logo_url, created_at',
     'id, status, creator_id, brand_email, brand_name, created_at',
   ];
@@ -1292,6 +1298,7 @@ const confirmReceivedHandler = async (req: AuthenticatedRequest, res: Response) 
       .from('brand_deals')
       .update({
         shipping_status: 'delivered',
+        status: 'CONTENT_MAKING',
         delivered_at: now,
         updated_at: now
       } as any)
@@ -1398,23 +1405,7 @@ router.post('/:dealId/regenerate-contract', async (req: AuthenticatedRequest, re
       return res.status(403).json({ success: false, error: 'Access denied' });
     }
 
-    // Pre-checks: barter deals require delivery address before contract generation
-    if (deal.deal_type === 'barter' && (!deal.delivery_address || !String(deal.delivery_address).trim())) {
-      return res.status(400).json({
-        success: false,
-        error: 'Delivery details are required before generating a contract. Please add delivery address first.',
-      });
-    }
-
-    const tokenCreatorId = String(deal.creator_id || '').trim();
-    if (!tokenCreatorId) {
-      return res.status(400).json({
-        success: false,
-        error: 'Deal creator is missing, so a contract token cannot be generated.',
-      });
-    }
-
-    // Fetch creator profile
+    // Fetch creator profile first so we can use it for address fallbacks
     const profileSelectAttempts = [
       'first_name, last_name, address, location, registered_address',
       'first_name, last_name, address, location',
@@ -1440,6 +1431,26 @@ router.post('/:dealId/regenerate-contract', async (req: AuthenticatedRequest, re
     if (creatorProfileError && !creatorProfile) {
       throw creatorProfileError;
     }
+
+    // Fallback for barter delivery address: use creator's location if explicit delivery_address is missing
+    const resolvedCreatorAddress = creatorProfile?.registered_address || creatorProfile?.location || creatorProfile?.address || '';
+    const finalDeliveryAddress = (deal.delivery_address || resolvedCreatorAddress || '').trim();
+
+    if (deal.deal_type === 'barter' && !finalDeliveryAddress) {
+      return res.status(400).json({
+        success: false,
+        error: 'Delivery details are required before generating a contract. Please ensure you have a location set in your profile or provide a delivery address.',
+      });
+    }
+
+    const tokenCreatorId = String(deal.creator_id || '').trim();
+    if (!tokenCreatorId) {
+      return res.status(400).json({
+        success: false,
+        error: 'Deal creator is missing, so a contract token cannot be generated.',
+      });
+    }
+
 
     const creatorName = creatorProfile
       ? `${(creatorProfile.first_name || '').trim()} ${(creatorProfile.last_name || '').trim()}`.trim() || (creatorProfile as any)?.full_name?.trim() || 'Creator'
@@ -1915,16 +1926,31 @@ router.post('/:id/brand-shipping-address', authMiddleware, async (req: Authentic
        updated_at: now,
      };
      const minUpdate: any = { brand_address: addressStr, updated_at: now };
-     // Include contact_person in minUpdate only if phone is not critical? We'll include both.
      if (contactName) {
        (minUpdate as any).contact_person = String(contactName).trim();
      }
 
-    const { error: updateError } = await supabase.from('brand_deals').update(fullUpdate).eq('id', dealId);
+     // If this is a barter deal in a gate status (PAYMENT_PENDING or AWAITING_BRAND_ADDRESS),
+     // providing the address moves it to the next active state: CONTENT_MAKING.
+    const currentStatus = normalizeStatus((deal as any).status);
+    const isBarter = isBarterType(deal);
+    
+    // Clear the address gate for any deal type. 
+    // For barter, we also skip the payment and contract gates since there is no escrow 
+    // and provide shipping is the definitive "start" action.
+    if (currentStatus === 'AWAITING_BRAND_ADDRESS' || (isBarter && (currentStatus === 'PAYMENT_PENDING' || currentStatus === 'ACCEPTED' || currentStatus === 'CONTRACT_READY' || currentStatus === 'SENT'))) {
+      fullUpdate.status = 'CONTENT_MAKING';
+      minUpdate.status = 'CONTENT_MAKING';
+    }
+
+    const { data: updatedData, error: updateError } = await supabase.from('brand_deals').update(fullUpdate).eq('id', dealId).select();
     if (updateError) {
       const { error: fallback } = await supabase.from('brand_deals').update(minUpdate).eq('id', dealId);
       if (fallback) throw fallback;
     }
+
+    // Invalidate creator cache so they see the address immediately
+    invalidateDealsMineCache(String(deal.creator_id));
 
     await supabase.from('deal_action_logs').insert({
       deal_id: dealId,
@@ -1933,7 +1959,7 @@ router.post('/:id/brand-shipping-address', authMiddleware, async (req: Authentic
       metadata: { address: addressStr, contact_name: contactName || null, phone: phone || null, notes: notes || null },
     });
 
-    await notifyCreatorForDealEvent('deal_activated', { ...deal, status: (deal as any).status }, {
+    await notifyCreatorForDealEvent('deal_activated', { ...deal, status: fullUpdate.status || (deal as any).status }, {
       brand_address_provided: true,
     });
 
@@ -2724,7 +2750,8 @@ router.patch('/:id/submit-content', authMiddleware, async (req: AuthenticatedReq
      }
 
      const canSubmit = current === 'CONTENT_MAKING' || current === 'REVISION_REQUESTED' ||
-       current === 'FULLY_EXECUTED' || current === 'PAYMENT_PENDING';
+       current === 'FULLY_EXECUTED' || current === 'PAYMENT_PENDING' ||
+       current === 'SENT' || current === 'CONTRACT_READY' || current === 'AWAITING_SHIPMENT' || current === 'SHIPPED' || current === 'DRAFTING';
     if (!canSubmit) {
       return res.status(409).json({ success: false, error: `Cannot submit content from status ${current || 'UNKNOWN'}.` });
     }
@@ -3223,7 +3250,7 @@ router.patch('/:id/mark-complete', authMiddleware, async (req: AuthenticatedRequ
 
     const { data: deal, error: dealError } = await supabase
       .from('brand_deals')
-      .select('id, status, brand_id, brand_email, deal_type, deal_amount, shipping_required, shipping_status')
+      .select('id, status, brand_address, brand_phone, contact_person, brand_id, brand_email, deal_type, deal_amount, shipping_required, shipping_status')
       .eq('id', dealId)
       .maybeSingle();
 

@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { MouseEvent, MutableRefObject, ReactNode } from 'react';
 import { createPortal } from 'react-dom';
-import { AlertTriangle, ArrowLeft, BarChart3, Bell, Briefcase, Calendar, Camera, Check, CheckCircle2, ChevronRight, Clock, Copy, CreditCard, ExternalLink, Eye, FileText, Globe, Handshake, History, Info, Landmark, LayoutDashboard, Loader2, Lock, Mail, Menu, MessageSquare, Moon, MoreHorizontal, MoreVertical, PenTool, PlayCircle, Plus, RefreshCw, RotateCcw, Search, Send, Settings, Shield, ShieldCheck, Sparkles, Sun, Truck, User, Video, Wallet, Zap } from 'lucide-react';
+import { AlertTriangle, ArrowLeft, BarChart3, Bell, Briefcase, Calendar, Camera, Check, CheckCircle2, ChevronRight, Clock, Copy, CreditCard, ExternalLink, Eye, FileText, Globe, Handshake, History, Info, Landmark, LayoutDashboard, Loader2, Lock, Mail, MapPin, Menu, MessageSquare, Moon, MoreHorizontal, MoreVertical, PenTool, Play, PlayCircle, Plus, RefreshCw, RotateCcw, Search, Send, Settings, Shield, ShieldCheck, Sparkles, Sun, Truck, User, Video, Wallet, Zap } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import CountUp from 'react-countup';
@@ -9,6 +9,12 @@ import { cn } from '@/lib/utils';
 import { triggerHaptic, HapticPatterns } from '@/lib/utils/haptics';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { useDealAlertNotifications } from '@/hooks/useDealAlertNotifications';
 import { useSupabaseQuery } from '@/lib/hooks/useSupabaseQuery';
 import { getApiBaseUrl } from '@/lib/utils/api';
@@ -268,7 +274,15 @@ const effectiveDealStatus = (row: BrandDeal | null | undefined) => {
   if (lower === 'completed' || lower.includes('completed') || lower === 'finished') return 'COMPLETED';
 
   // "Accepted" usually means the offer was accepted, but contract isn't fully signed yet.
-  if (lower === 'accepted') return 'CONTRACT_READY';
+  if (lower === 'accepted') {
+    if (isBarterLikeCollab(row) && !!String(row?.brand_address || '').trim()) return 'CONTENT_MAKING';
+    return 'CONTRACT_READY';
+  }
+
+  // Barter override: if address is provided, it's effectively active
+  if (isBarterLikeCollab(row) && !!String(row?.brand_address || '').trim() && lower !== 'completed' && !lower.includes('dispute')) {
+    return 'CONTENT_MAKING';
+  }
 
   // Prefer signature signals over the raw status when present.
   const signatureSources = [
@@ -478,9 +492,11 @@ const brandDealCardUi = (row: BrandDeal | null | undefined) => {
       : s === 'DISPUTE_PARTIAL_REFUND'
         ? 'Partial refund is currently processing'
       : s === 'PAYMENT_PENDING'
-        ? (isBarterDeal ? 'Add shipping details to start the barter collaboration' : 'Fund the escrow to start collaboration')
+        ? (isBarterDeal 
+            ? (row?.brand_address ? 'Review the agreement to get started' : 'Add shipping details to start the barter collaboration') 
+            : 'Fund the escrow to start collaboration')
       : s === 'AWAITING_BRAND_ADDRESS'
-        ? 'Shipping address required to proceed'
+        ? (row?.brand_address ? 'Review the agreement to get started' : 'Shipping address required to proceed')
       : s === 'COMPLETED'
         ? 'Collaboration successfully completed'
         : (s === 'CONTENT_APPROVED' || s === 'PAYMENT_RELEASED')
@@ -491,12 +507,16 @@ const brandDealCardUi = (row: BrandDeal | null | undefined) => {
             ? 'Awaiting revised content from creator'
             : s === 'CONTENT_MAKING'
               ? ((isBarterDeal && (primaryActionLabel === 'Track Progress' || primaryActionLabel === 'Confirm Product Receipt'))
-                  ? 'Creator is waiting for product delivery confirmation'
+                  ? (row?.shipping_status === 'delivered' || row?.shipping_status === 'received' 
+                      ? 'Creator has received the product' 
+                      : 'Creator is waiting for product delivery confirmation')
                   : primaryActionLabel === 'Ship Product'
                     ? 'Please ship the product to the creator'
                     : 'Creator is now crafting your content')
-              : s === 'FULLY_EXECUTED'
-                ? (isBarterDeal ? 'Contract signed — add shipping details to continue' : 'Contract signed — awaiting content')
+              : (s === 'FULLY_EXECUTED' || s === 'CONTRACT_READY')
+                ? (isBarterDeal 
+                    ? (row?.brand_address ? 'Creator is now crafting your content' : 'Contract signed — add shipping details to continue') 
+                    : 'Contract signed — awaiting content')
                 : s === 'AWAITING_CREATOR_SIGNATURE' || s === 'SENT'
                   ? "Waiting for creator's signature"
                   : 'Review the agreement to get started';
@@ -640,17 +660,17 @@ const BrandMobileDashboard = ({
 	    : 'bg-card';
 
   const PageHeader = useMemo(() => ({ title }: { title: string }) => (
-    <div className="flex items-center gap-4 px-5 py-4 mb-4">
+    <div className="flex items-center gap-4 px-6 py-6 mb-2">
       <button type="button"
         onClick={() => {
           triggerHaptic(HapticPatterns.light);
           setActiveSettingsPage(null);
         }}
-        className={cn('p-2 -ml-2 rounded-full transition-all active:scale-90', secondaryTextColor, isDark ? 'hover:bg-card' : 'hover:bg-background')}
+        className={cn('p-2.5 -ml-2.5 rounded-2xl transition-all active:scale-90', isDark ? 'hover:bg-white/5 text-white/40' : 'hover:bg-black/5 text-black/40')}
       >
         <ChevronRight className="w-6 h-6 rotate-180" />
       </button>
-      <h2 className={cn('text-[20px] font-bold tracking-tight', textColor)}>{title}</h2>
+      <h2 className={ds.typography.h2}>{title}</h2>
     </div>
   ), [isDark, textColor, secondaryTextColor]);
 
@@ -1263,7 +1283,7 @@ const BrandMobileDashboard = ({
       const s = normalizeStatus(d?.status);
       if (!s) return true;
       if (s.includes('cancel')) return false;
-      if (s.includes('complete') || s.includes('completed') || s.includes('closed') || s.includes('paid')) return false;
+      if (s.includes('complete') || s.includes('completed') || s.includes('closed') || s.includes('paid') || s.includes('payment_released') || s.includes('approved')) return false;
       return true;
     }));
     // Also include collab_requests accepted by creator (these are active collabs)
@@ -1282,7 +1302,7 @@ const BrandMobileDashboard = ({
     return uniqDeals((deals || []).filter((d: any) => {
       const s = normalizeStatus(d?.status);
       if (!s) return false;
-      return s.includes('complete') || s.includes('completed') || s.includes('closed') || s.includes('paid');
+      return s.includes('complete') || s.includes('completed') || s.includes('closed') || s.includes('paid') || s.includes('payment_released') || s.includes('approved');
     }) as any[]);
   }, [deals]);
 
@@ -1749,6 +1769,45 @@ const BrandMobileDashboard = ({
 	                  </div>
 	                </div>
 
+	                {(() => {
+	                  const links = Array.isArray(offer?.content_links) ? offer.content_links : [];
+	                  if (links.length === 0) return null;
+	                  return (
+	                    <div className="mb-5 space-y-2">
+	                      <p className={cn('text-[11px] font-black uppercase tracking-[0.2em] opacity-50 px-1 mb-3', textColor)}>Delivered Content</p>
+	                      <div className="grid grid-cols-1 gap-2">
+	                        {links.map((link: string, idx: number) => (
+	                          <button
+	                            key={idx}
+	                            type="button"
+	                            onClick={() => {
+	                              triggerHaptic(HapticPatterns.light);
+	                              window.open(link, '_blank', 'noopener,noreferrer');
+	                            }}
+	                            className={cn(
+	                              'p-5 rounded-[1.6rem] text-left border transition active:scale-[0.98] flex items-center justify-between group',
+	                              isDark
+	                                ? 'border-emerald-500/20 bg-emerald-500/5 hover:bg-emerald-500/10'
+	                                : 'border-emerald-100 bg-emerald-50/50 hover:bg-emerald-50'
+	                            )}
+	                          >
+	                            <div className="flex items-center gap-3">
+	                              <div className={cn('w-10 h-10 rounded-xl flex items-center justify-center', isDark ? 'bg-emerald-500/20' : 'bg-white shadow-sm')}>
+	                                <Play className="w-5 h-5 text-emerald-500" />
+	                              </div>
+	                              <div>
+	                                <p className={cn('text-[13px] font-bold', textColor)}>View Content #{idx + 1}</p>
+	                                <p className={cn('text-[11px] opacity-60 truncate max-w-[200px]', textColor)}>{link}</p>
+	                              </div>
+	                            </div>
+	                            <ExternalLink className="w-4 h-4 opacity-40 group-hover:opacity-100 transition-opacity" />
+	                          </button>
+	                        ))}
+	                      </div>
+	                    </div>
+	                  );
+	                })()}
+
 	                <div className="grid grid-cols-1 gap-2">
 		                  <button type="button"
 		                    onClick={async () => {
@@ -2178,9 +2237,40 @@ const BrandMobileDashboard = ({
             <button type="button" onClick={() => { triggerHaptic(HapticPatterns.light); toast.info('Status History', { description: 'Chronology of deal events coming soon.' }); }} className={cn('w-10 h-10 rounded-2xl flex items-center justify-center border transition-all active:scale-90', borderColor, isDark ? 'bg-card' : 'bg-white shadow-sm')}>
               <History className={cn('w-4 h-4 opacity-60', textColor)} />
             </button>
-            <button type="button" onClick={() => { triggerHaptic(HapticPatterns.light); toast.message('More actions coming next.'); }} className={cn('w-10 h-10 rounded-2xl flex items-center justify-center border transition-all active:scale-90', borderColor, isDark ? 'bg-card' : 'bg-white shadow-sm')}>
-              <MoreVertical className={cn('w-4 h-4 opacity-60', textColor)} />
-            </button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button type="button" onClick={() => triggerHaptic(HapticPatterns.light)} className={cn('w-10 h-10 rounded-2xl flex items-center justify-center border transition-all active:scale-90', borderColor, isDark ? 'bg-card' : 'bg-white shadow-sm')}>
+                  <MoreVertical className={cn('w-4 h-4 opacity-60', textColor)} />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className={cn('w-56 rounded-2xl border p-2', isDark ? 'bg-[#0B0F14] border-white/5 shadow-2xl' : 'bg-white border-slate-200 shadow-xl')}>
+                <DropdownMenuItem onClick={openContract} className="rounded-xl py-3 cursor-pointer">
+                  <Eye className="w-4 h-4 mr-3 opacity-60" />
+                  <span className="font-bold">View Contract</span>
+                </DropdownMenuItem>
+                
+                {!normalizedDealStatus.includes('FULLY_EXECUTED') && (
+                  <DropdownMenuItem onClick={generateContract} className="rounded-xl py-3 cursor-pointer">
+                    <RotateCcw className="w-4 h-4 mr-3 opacity-60" />
+                    <span className="font-bold">Regenerate Contract</span>
+                  </DropdownMenuItem>
+                )}
+
+                {contractUrl && (
+                  <DropdownMenuItem onClick={() => copyText(contractUrl, 'Contract Link')} className="rounded-xl py-3 cursor-pointer">
+                    <Copy className="w-4 h-4 mr-3 opacity-60" />
+                    <span className="font-bold">Copy Contract Link</span>
+                  </DropdownMenuItem>
+                )}
+
+                <div className="h-px bg-white/5 my-1" />
+                
+                <DropdownMenuItem onClick={() => { triggerHaptic(HapticPatterns.light); toast.info('Status History', { description: 'Chronology of deal events coming soon.' }); }} className="rounded-xl py-3 cursor-pointer opacity-50">
+                  <History className="w-4 h-4 mr-3" />
+                  <span className="font-bold">Deal History</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
 
@@ -2344,71 +2434,6 @@ const BrandMobileDashboard = ({
             </div>
           </div>
 
-          {/* Legal Agreement */}
-          <div ref={contractSectionRef} className="mb-8">
-            <div className="flex items-center justify-between mb-4 px-1">
-              <SectionTitle>Legal Agreement</SectionTitle>
-              <div className={cn('px-2.5 py-1 rounded-lg border text-[9px] font-black uppercase tracking-widest', isDark ? 'bg-sky-500/10 text-sky-400 border-sky-500/20' : 'bg-sky-50 text-sky-600 border-sky-100')}>
-                Protected
-              </div>
-            </div>
-            <div className={cn('p-6 rounded-[32px] border relative overflow-hidden', isDark ? 'bg-card/40 border-white/5' : 'bg-white border-slate-100 shadow-sm')}>
-                {(() => {
-                  const isSignedStage = normalizedDealStatus === 'FULLY_EXECUTED' || normalizedDealStatus === 'CONTENT_MAKING' || normalizedDealStatus === 'CONTENT_DELIVERED' || normalizedDealStatus === 'REVISION_REQUESTED' || normalizedDealStatus === 'REVISION_DONE' || normalizedDealStatus === 'CONTENT_APPROVED' || normalizedDealStatus === 'PAYMENT_RELEASED' || normalizedDealStatus === 'COMPLETED';
-                  const contractTitle = isSignedStage ? 'Signed & Active' : normalizedDealStatus === 'AWAITING_BRAND_SIGNATURE' ? 'Your Signature Required' : normalizedDealStatus === 'AWAITING_CREATOR_SIGNATURE' ? 'Waiting for Creator' : contractUrl ? 'Ready for Signature' : 'Preparing...';
-                  const contractSubtitle = isSignedStage ? 'Both parties have signed. Deal is legally binding.' : normalizedDealStatus === 'AWAITING_BRAND_SIGNATURE' ? 'Review and sign to proceed with this collaboration.' : normalizedDealStatus === 'AWAITING_CREATOR_SIGNATURE' ? 'Waiting for the creator to review and sign.' : 'Contract is being prepared.';
-                  const badgeTone = isSignedStage ? (isDark ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-emerald-50 text-emerald-600 border-emerald-100') : (isDark ? 'bg-sky-500/10 text-sky-400 border-sky-500/20' : 'bg-sky-50 text-sky-600 border-sky-100');
-                  
-                  return (
-                    <div className="flex items-center justify-between gap-4 mb-6">
-                      <div className="min-w-0 flex-1">
-                        <p className={cn('text-[17px] font-black tracking-tight leading-none', textColor)}>{contractTitle}</p>
-                        <p className={cn('text-[11px] font-bold mt-2 opacity-50 leading-relaxed', textColor)}>{contractSubtitle}</p>
-                      </div>
-                      <span className={cn('px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest border shrink-0', badgeTone)}>
-                        {isSignedStage ? 'SIGNED' : 'PENDING'}
-                      </span>
-                    </div>
-                  );
-                })()}
-
-                <div className={cn('rounded-[24px] border overflow-hidden mb-6', isDark ? 'bg-white/[0.03] border-white/5' : 'bg-slate-50 border-slate-100')}>
-                  <div className="px-5 py-5 flex items-center gap-4">
-                    <div className={cn('w-12 h-12 rounded-2xl flex items-center justify-center border shadow-inner', isDark ? 'bg-sky-500/10 border-sky-500/20' : 'bg-sky-50 border-sky-100')}>
-                      <FileText className={cn('w-5 h-5', isDark ? 'text-sky-400' : 'text-sky-600')} />
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <p className={cn('text-[13px] font-black truncate leading-tight', textColor)}>
-                        {contractUrl ? decodeURIComponent(String(contractUrl).split('/').pop() || 'collaboration-contract.pdf') : 'Contract not generated yet'}
-                      </p>
-                      <p className={cn('text-[10px] font-bold mt-1.5 flex items-center gap-2', isDark ? 'text-white/40' : 'text-slate-400')}>
-                        <span>PDF Document</span>
-                        <span className="w-1 h-1 rounded-full bg-current opacity-40" />
-                        <span>Legal Agreement</span>
-                      </p>
-                    </div>
-                    {contractUrl && (
-                      <button onClick={(e) => { e.stopPropagation(); copyText(contractUrl, 'Link'); }} className={cn('w-10 h-10 rounded-xl flex items-center justify-center transition-all active:scale-90', isDark ? 'hover:bg-white/10' : 'hover:bg-slate-100')}>
-                        <Copy className="w-4 h-4 opacity-40" />
-                      </button>
-                    )}
-                  </div>
-                </div>
-
-                <div className="flex gap-3">
-                  <button type="button" onClick={openContract} disabled={isOpeningContract || isGeneratingContract} className={cn('flex-1 h-12 rounded-2xl text-[13px] font-black uppercase tracking-widest transition-all active:scale-[0.98] flex items-center justify-center gap-2', isDark ? 'bg-white text-[#061318] hover:bg-white/90' : 'bg-slate-900 text-white hover:bg-slate-800')}>
-                    {isOpeningContract ? <Loader2 className="w-4 h-4 animate-spin" /> : <Eye className="w-4 h-4" />}
-                    View Contract
-                  </button>
-                  {!normalizedDealStatus.includes('FULLY_EXECUTED') && (
-                    <button type="button" onClick={generateContract} disabled={isOpeningContract || isGeneratingContract} className={cn('h-12 px-5 rounded-2xl border flex items-center justify-center gap-2 transition-all active:scale-[0.98] text-[11px] font-black uppercase tracking-widest', isDark ? 'bg-white/5 border-white/10 hover:bg-white/10' : 'bg-white border-slate-200 shadow-sm hover:bg-slate-50')}>
-                      {isGeneratingContract ? <Loader2 className="w-4 h-4 animate-spin" /> : <RotateCcw className="w-3.5 h-3.5 opacity-50" />}
-                      Generate
-                    </button>
-                  )}
-                </div>
-            </div>
-          </div>
 
           {/* Fulfillment (Shipping) Section */}
           {requiresShipping && (
@@ -2436,40 +2461,34 @@ const BrandMobileDashboard = ({
                   </span>
                 </div>
 
-                {offer?.brand_address && (
-                  <div className={cn('rounded-[24px] border px-4 py-4 mb-6', isDark ? 'bg-white/[0.03] border-white/5' : 'bg-slate-50 border-slate-100')}>
-                    <p className={cn('text-[9px] font-black uppercase tracking-widest opacity-40 mb-2', textColor)}>Business & Return Address</p>
-                    <p className={cn('text-[13px] font-bold leading-relaxed', textColor)}>{offer.brand_address}</p>
-                    {offer.brand_phone && (
-                      <p className={cn('text-[11px] mt-2 opacity-60', textColor)}>Contact: {offer.brand_phone}</p>
-                    )}
+                {/* Address managed via Edit button below */}
+
+                {!shippingDelivered && (
+                  <div className="flex gap-3">
+                    <button 
+                      type="button" 
+                      onClick={() => {
+                        setOverlayDeal(offer);
+                        setShowBrandShippingModal(true);
+                      }} 
+                      className={cn('flex-1 h-12 rounded-2xl text-[13px] font-black uppercase tracking-widest transition-all active:scale-[0.98] flex items-center justify-center gap-2', isDark ? 'bg-white/5 border border-white/10 hover:bg-white/10' : 'bg-white border border-slate-200 shadow-sm hover:bg-slate-50')}
+                    >
+                      <MapPin className="w-4 h-4 opacity-40" />
+                      {offer?.brand_address ? 'Edit Address' : 'Add Address'}
+                    </button>
+                    
+                    <button 
+                      type="button" 
+                      onClick={() => setShowShippingBox(true)} 
+                      className={cn('flex-1 h-12 rounded-2xl text-[13px] font-black uppercase tracking-widest transition-all active:scale-[0.98] flex items-center justify-center gap-2', isDark ? 'bg-white/5 border border-white/10 hover:bg-white/10' : 'bg-white border border-slate-200 shadow-sm hover:bg-slate-50')}
+                    >
+                      <Truck className="w-4 h-4 opacity-40" />
+                      {trackingNumber ? 'Update Tracking' : 'Add Tracking'}
+                    </button>
                   </div>
                 )}
 
-                <div className="flex gap-3">
-                  <button 
-                    type="button" 
-                    onClick={() => {
-                      setOverlayDeal(offer);
-                      setShowBrandShippingModal(true);
-                    }} 
-                    className={cn('flex-1 h-12 rounded-2xl text-[13px] font-black uppercase tracking-widest transition-all active:scale-[0.98] flex items-center justify-center gap-2', isDark ? 'bg-white/5 border border-white/10 hover:bg-white/10' : 'bg-white border border-slate-200 shadow-sm hover:bg-slate-50')}
-                  >
-                    <MapPin className="w-4 h-4 opacity-40" />
-                    {offer?.brand_address ? 'Edit Address' : 'Add Address'}
-                  </button>
-                  
-                  <button 
-                    type="button" 
-                    onClick={() => setShowShippingBox(true)} 
-                    className={cn('flex-1 h-12 rounded-2xl text-[13px] font-black uppercase tracking-widest transition-all active:scale-[0.98] flex items-center justify-center gap-2', isDark ? 'bg-white/5 border border-white/10 hover:bg-white/10' : 'bg-white border border-slate-200 shadow-sm hover:bg-slate-50')}
-                  >
-                    <Truck className="w-4 h-4 opacity-40" />
-                    {trackingNumber ? 'Update Tracking' : 'Add Tracking'}
-                  </button>
-                </div>
-
-                {showShippingBox && (
+                {showShippingBox && !shippingDelivered && (
                   <motion.div 
                     initial={{ opacity: 0, height: 0 }}
                     animate={{ opacity: 1, height: 'auto' }}
@@ -2525,73 +2544,72 @@ const BrandMobileDashboard = ({
                 </div>
               </div>
               <div className={cn('p-6 rounded-[32px] border relative overflow-hidden', isDark ? 'bg-card/40 border-white/5' : 'bg-white border-slate-100 shadow-sm')}>
-                {offer?.submission_url ? (() => {
-                  const rawUrl = String(offer.submission_url);
-                  const urlSegments = rawUrl.split('/');
-                  const rawFileName = urlSegments[urlSegments.length - 1] || 'content-file';
-                  // Clean up timestamp suffixes from filename (e.g. "REC-20260220221339-1777313799050.mp4" → "REC-20260220221339.mp4")
-                  const cleanName = decodeURIComponent(rawFileName).replace(/-\d{13,}\./, '.');
-                  const ext = cleanName.split('.').pop()?.toLowerCase() || '';
-                  const isVideo = ['mp4', 'mov', 'webm', 'm4v', 'avi'].includes(ext);
-                  const isImage = ['jpg', 'jpeg', 'png', 'webp', 'gif'].includes(ext);
-                  const fileIcon = isVideo ? '🎬' : isImage ? '🖼️' : '📄';
-                  const fileType = isVideo ? 'Video File' : isImage ? 'Image File' : ext.toUpperCase() + ' File';
+                {(() => {
+                  const rawUrl = String(offer?.content_submission_url || offer?.content_url || offer?.submission_url || '').trim();
+                  if (rawUrl) {
+                    const urlSegments = rawUrl.split('/');
+                    const rawFileName = urlSegments[urlSegments.length - 1] || 'content-file';
+                    // Clean up timestamp suffixes from filename
+                    const cleanName = decodeURIComponent(rawFileName).replace(/-\d{13,}\./, '.');
+                    const ext = cleanName.split('.').pop()?.toLowerCase() || '';
+                    const isVideo = ['mp4', 'mov', 'webm', 'm4v', 'avi'].includes(ext);
+                    const isImage = ['jpg', 'jpeg', 'png', 'webp', 'gif'].includes(ext);
+                    const fileIcon = isVideo ? '🎬' : isImage ? '🖼️' : '📄';
+                    const fileType = isVideo ? 'Video File' : isImage ? 'Image File' : ext.toUpperCase() + ' File';
 
-                  return (
-                    <div className="mb-6">
-                      <p className={cn('text-[10px] font-black uppercase tracking-[0.2em] opacity-40 mb-4', textColor)}>Submitted Content</p>
-                      
-                      {/* Media Card */}
-                      <div className={cn('rounded-[24px] border overflow-hidden', isDark ? 'bg-white/[0.03] border-white/5' : 'bg-slate-50 border-slate-100')}>
-                        {/* File Preview Header */}
-                        <div className={cn('px-5 py-5 flex items-center gap-4', isDark ? 'border-b border-white/5' : 'border-b border-slate-100')}>
-                          <div className={cn('w-14 h-14 rounded-2xl flex items-center justify-center text-2xl shadow-inner border', isDark ? 'bg-indigo-500/10 border-indigo-500/20' : 'bg-indigo-50 border-indigo-100')}>
-                            {fileIcon}
+                    return (
+                      <div className="mb-6">
+                        <p className={cn('text-[10px] font-black uppercase tracking-[0.2em] opacity-40 mb-4', textColor)}>Submitted Content</p>
+                        <div className={cn('rounded-[24px] border overflow-hidden', isDark ? 'bg-white/[0.03] border-white/5' : 'bg-slate-50 border-slate-100')}>
+                          <div className={cn('px-5 py-5 flex items-center gap-4', isDark ? 'border-b border-white/5' : 'border-b border-slate-100')}>
+                            <div className={cn('w-14 h-14 rounded-2xl flex items-center justify-center text-2xl shadow-inner border', isDark ? 'bg-indigo-500/10 border-indigo-500/20' : 'bg-indigo-50 border-indigo-100')}>
+                              {fileIcon}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className={cn('text-[14px] font-black truncate leading-tight', textColor)}>{cleanName}</p>
+                              <p className={cn('text-[11px] font-bold mt-1.5 flex items-center gap-2', isDark ? 'text-white/40' : 'text-slate-400')}>
+                                <span>{fileType}</span>
+                                <span className="w-1 h-1 rounded-full bg-current opacity-40" />
+                                <span className="uppercase">.{ext}</span>
+                              </p>
+                            </div>
+                            <div className={cn('px-3 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-widest border shrink-0', isDark ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-emerald-50 text-emerald-600 border-emerald-100')}>
+                              Received
+                            </div>
                           </div>
-                          <div className="flex-1 min-w-0">
-                            <p className={cn('text-[14px] font-black truncate leading-tight', textColor)}>{cleanName}</p>
-                            <p className={cn('text-[11px] font-bold mt-1.5 flex items-center gap-2', isDark ? 'text-white/40' : 'text-slate-400')}>
-                              <span>{fileType}</span>
-                              <span className="w-1 h-1 rounded-full bg-current opacity-40" />
-                              <span className="uppercase">.{ext}</span>
-                            </p>
+                          <div className="px-5 py-4 flex items-center gap-3">
+                            <a
+                              href={rawUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className={cn('flex-1 h-11 rounded-2xl text-[12px] font-black uppercase tracking-widest flex items-center justify-center gap-2 transition-all active:scale-[0.98] border', isDark ? 'bg-info/10 text-info border-info/20 hover:bg-info/20' : 'bg-info/10 text-info border-info/20 hover:bg-info/15')}
+                            >
+                              <ExternalLink className="w-4 h-4" />
+                              {isVideo ? 'Watch' : 'View'} Content
+                            </a>
+                            <button
+                              type="button"
+                              onClick={() => { navigator.clipboard.writeText(rawUrl); toast.success('Link copied!'); }}
+                              className={cn('w-11 h-11 rounded-2xl flex items-center justify-center border transition-all active:scale-[0.98]', isDark ? 'bg-white/5 border-white/10 hover:bg-white/10' : 'bg-white border-slate-200 shadow-sm hover:bg-slate-50')}
+                            >
+                              <Copy className="w-4 h-4 opacity-50" />
+                            </button>
                           </div>
-                          <div className={cn('px-3 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-widest border shrink-0', isDark ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-emerald-50 text-emerald-600 border-emerald-100')}>
-                            Received
-                          </div>
-                        </div>
-
-                        {/* Action Row */}
-                        <div className="px-5 py-4 flex items-center gap-3">
-                          <a
-                            href={rawUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className={cn('flex-1 h-11 rounded-2xl text-[12px] font-black uppercase tracking-widest flex items-center justify-center gap-2 transition-all active:scale-[0.98] border', isDark ? 'bg-info/10 text-info border-info/20 hover:bg-info/20' : 'bg-info/10 text-info border-info/20 hover:bg-info/15')}
-                          >
-                            <ExternalLink className="w-4 h-4" />
-                            {isVideo ? 'Watch' : 'View'} Content
-                          </a>
-                          <button
-                            type="button"
-                            onClick={() => { navigator.clipboard.writeText(rawUrl); toast.success('Link copied!'); }}
-                            className={cn('w-11 h-11 rounded-2xl flex items-center justify-center border transition-all active:scale-[0.98]', isDark ? 'bg-white/5 border-white/10 hover:bg-white/10' : 'bg-white border-slate-200 shadow-sm hover:bg-slate-50')}
-                          >
-                            <Copy className="w-4 h-4 opacity-50" />
-                          </button>
                         </div>
                       </div>
+                    );
+                  }
+
+                  return (
+                    <div className="mb-6 py-8 text-center">
+                      <div className={cn('w-16 h-16 rounded-[20px] flex items-center justify-center mx-auto mb-4', isDark ? 'bg-white/5' : 'bg-slate-50')}>
+                        <Clock className="w-7 h-7 opacity-20" />
+                      </div>
+                      <p className={cn('text-[15px] font-black opacity-40 mb-1', textColor)}>Awaiting Delivery</p>
+                      <p className={cn('text-[12px] font-bold opacity-30', textColor)}>Creator hasn't submitted content yet.</p>
                     </div>
                   );
-                })() : (
-                  <div className="mb-6 py-8 text-center">
-                    <div className={cn('w-16 h-16 rounded-[20px] flex items-center justify-center mx-auto mb-4', isDark ? 'bg-white/5' : 'bg-slate-50')}>
-                      <Clock className="w-7 h-7 opacity-20" />
-                    </div>
-                    <p className={cn('text-[15px] font-black opacity-40 mb-1', textColor)}>Awaiting Delivery</p>
-                    <p className={cn('text-[12px] font-bold opacity-30', textColor)}>Creator hasn't submitted content yet.</p>
-                  </div>
-                )}
+                })()}
 
                 {canReviewContent && (
                   <div className="space-y-3">
@@ -3520,31 +3538,35 @@ const BrandMobileDashboard = ({
                           </div>
                         </div>
 
-	                        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.06 }} className="mb-8">
-	                          <div className="flex items-center justify-between mb-3">
+	                        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.06 }} className="mb-10">
+	                          <div className="flex items-center justify-between mb-5">
 	                            <div>
-	                              <p className={cn('text-[12px] font-black', textColor)}>Collaborations</p>
-	                              <p className={cn('text-[12px] mt-1', secondaryTextColor)}>
+	                              <h3 className={ds.typography.h3}>Collaborations</h3>
+	                              <p className="text-[11px] font-medium opacity-40 uppercase tracking-widest mt-1">
 	                                {activeCollabTab === 'action_required'
-	                                  ? 'Review pending offers and counters first.'
+	                                  ? 'Review pending pipeline'
 	                                  : activeCollabTab === 'active'
-	                                    ? 'Track live collaborations and deadlines.'
-	                                    : 'See completed work and closed deals.'}
+	                                    ? 'Track active workflow'
+	                                    : 'Performance history'}
 	                              </p>
 	                            </div>
-		                            <button
-		                              type="button"
-		                              onClick={() => setActiveTab('collabs', activeCollabTab)}
-		                              className={cn('text-[12px] font-bold', isDark ? 'text-info' : 'text-info')}
-		                            >
-	                              View all
-	                            </button>
+                              {needsActionTotal > 0 && (
+                                <div className="px-3 py-1.5 bg-warning/10 border border-warning/20 rounded-full flex items-center gap-2 animate-pulse">
+                                  <div className="w-1.5 h-1.5 bg-warning rounded-full" />
+                                  <span className="text-[10px] font-black uppercase tracking-widest text-warning">
+                                    {needsActionTotal} Need Review
+                                  </span>
+                                </div>
+                              )}
 	                          </div>
-	                          <div className={cn('mb-6 p-1.5 rounded-[28px] border flex gap-1.5 backdrop-blur-2xl shadow-xl', isDark ? 'bg-secondary/[0.08] border-white/5' : 'bg-secondary/60 border-primary/40')}>
+	                          <div className={cn(
+                              'mb-6 p-1.5 rounded-[32px] border flex gap-1.5 backdrop-blur-3xl transition-all', 
+                              isDark ? 'bg-white/[0.03] border-white/5 shadow-2xl shadow-black/40' : 'bg-white/60 border-slate-200 shadow-xl'
+                            )}>
 	                            {[
-	                              { key: 'action_required', label: 'Action Needed', count: pendingOffersList.length, color: 'text-warning' },
-	                              { key: 'active', label: 'In Progress', count: activeDealsList.length, color: 'text-primary' },
-	                              { key: 'completed', label: 'Archive', count: completedDealsList.length, color: 'text-muted-foreground' },
+	                              { key: 'action_required', label: 'Action Needed', count: pendingOffersList.length },
+	                              { key: 'active', label: 'Active', count: activeDealsList.length },
+	                              { key: 'completed', label: 'History', count: completedDealsList.length },
 	                            ].map((item) => {
 	                              const isSelected = activeCollabTab === item.key;
 	                              return (
@@ -3556,30 +3578,49 @@ const BrandMobileDashboard = ({
 	                                    setDashboardCollabTab(item.key as BrandCollabTab);
 	                                  }}
 	                                  className={cn(
-	                                    'flex-1 rounded-[22px] px-3 py-3.5 text-center transition-all duration-300 active:scale-95 border relative',
+	                                    'flex-1 rounded-[26px] px-3 py-4 text-center transition-all duration-500 relative overflow-hidden group/tab',
 	                                    isSelected
-	                                      ? isDark
-	                                        ? 'bg-emerald-500 text-white border-emerald-400 shadow-[0_10px_25px_rgba(16,185,129,0.3)] scale-[1.02] z-10'
-	                                        : 'bg-emerald-500 text-white border-emerald-400 shadow-[0_12px_25px_rgba(16,185,129,0.3)] scale-[1.02] z-10'
-	                                      : isDark
-	                                        ? 'bg-transparent text-foreground/40 border-transparent hover:text-foreground/60'
-	                                        : 'bg-transparent text-muted-foreground border-transparent hover:text-foreground'
+	                                      ? 'z-10'
+	                                      : 'hover:bg-white/[0.02]'
 	                                  )}
 	                                >
-	                                  <p className={cn('text-[9px] font-black uppercase tracking-[0.1em]', isSelected ? 'text-white' : 'opacity-60')}>{item.label}</p>
-	                                  <p className="mt-1 text-[18px] font-black leading-none">{item.count}</p>
-	                                  {isSelected && (
-	                                    <motion.div layoutId="tab-glow" className="absolute inset-0 rounded-[22px] bg-white/10 blur-md pointer-events-none" />
-	                                  )}
+                                    {isSelected && (
+                                      <motion.div 
+                                        layoutId="tab-active-bg"
+                                        className={cn(
+                                          "absolute inset-0 rounded-[26px] border",
+                                          isDark ? "bg-white/[0.08] border-white/10" : "bg-white border-slate-200 shadow-lg"
+                                        )}
+                                      />
+                                    )}
+	                                  <p className={cn(
+                                      'text-[10px] font-black uppercase tracking-[0.15em] relative z-10 transition-colors', 
+                                      isSelected ? 'text-white' : 'text-white/30 group-hover/tab:text-white/50'
+                                    )}>
+                                      {item.label}
+                                    </p>
+	                                  <p className={cn(
+                                      "mt-1.5 text-[20px] font-black leading-none relative z-10 tracking-tighter transition-transform",
+                                      isSelected ? "scale-110 text-white" : "text-white/20 group-hover/tab:text-white/40"
+                                    )}>
+                                      {item.count}
+                                    </p>
 	                                </button>
 	                              );
 	                            })}
 	                          </div>
-		                          <div className={cn('rounded-[28px] border overflow-hidden backdrop-blur-xl shadow-[0_18px_45px_rgba(15,23,42,0.10)]', borderColor, isDark ? 'bg-secondary/[0.04] shadow-black/20' : 'bg-card shadow-sm')}>
-	                            <div className={cn('p-4 backdrop-blur-md', isDark ? 'border-b border-border bg-secondary/[0.03]' : 'border-b border-border/80 bg-secondary/45')}>
-	                              <p className={cn('text-[12px] font-black uppercase tracking-widest opacity-50', textColor)}>
-	                                {activeCollabTab === 'action_required' ? 'Awaiting Response' : activeCollabTab === 'active' ? 'Active Deals' : 'Completed Deals'}
+		                          <div className={cn(
+                                'rounded-[32px] border overflow-hidden backdrop-blur-3xl transition-all', 
+                                isDark ? 'bg-white/[0.02] border-white/5 shadow-2xl' : 'bg-white/40 border-slate-200 shadow-sm'
+                              )}>
+	                            <div className={cn('px-6 py-5 border-b flex items-center justify-between', isDark ? 'border-white/5 bg-white/[0.02]' : 'border-slate-100 bg-slate-50/50')}>
+	                              <p className="text-[11px] font-black uppercase tracking-[0.2em] opacity-40">
+	                                {activeCollabTab === 'action_required' ? 'Awaiting Response' : activeCollabTab === 'active' ? 'Active Deals' : 'Completed Archive'}
 	                              </p>
+                                <div className="flex items-center gap-2">
+                                  <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                                  <span className="text-[10px] font-bold opacity-30 uppercase tracking-widest">Live Updates</span>
+                                </div>
 	                            </div>
 	                            {visibleCollabItems.length === 0 ? (
 	                              <div className="p-8 text-center">
@@ -3647,9 +3688,6 @@ const BrandMobileDashboard = ({
                                         : exp?.tone === 'warn'
                                           ? (isDark ? 'bg-warning/10 text-warning border-warning/30' : 'bg-warning text-white border-warning')
                                           : isNoResponse
-                                            ? (isDark ? 'bg-warning/10 text-warning border-warning/25' : 'bg-warning text-white border-warning')
-                                            : (isDark ? 'bg-card text-foreground/70 border-border' : 'bg-card text-muted-foreground border-border');
-
                                     const attentionBorder =
                                       exp?.tone === 'danger'
                                         ? (isDark ? 'border-rose-500/30' : 'border-rose-200')
@@ -3658,96 +3696,103 @@ const BrandMobileDashboard = ({
                                           : '';
 
                                     return (
-	                                      <motion.div
-	                                        key={itemKey}
-	                                        whileTap={{ scale: 0.99 }}
-	                                        role="button"
-	                                        tabIndex={0}
-	                                        onClick={() => setSelectedOffer(item)}
-	                                        className={cn(
-	                                          'w-full p-4 rounded-3xl border text-left transition backdrop-blur-xl cursor-pointer',
-	                                          borderColor,
-	                                          attentionBorder,
-	                                          isDark ? 'bg-secondary/[0.04]' : 'bg-secondary/85 shadow-[0_10px_35px_rgba(2,6,23,0.06)]'
-	                                        )}
-	                                      >
-	                                        <div className="flex items-center gap-2 mb-2 flex-nowrap overflow-hidden">
-	                                          <span className={cn('inline-flex items-center gap-2 px-2.5 py-1 rounded-full border text-[10px] font-black uppercase tracking-widest whitespace-nowrap', statusTone)}>
-	                                            {isCountered ? (
-	                                              <AlertTriangle className={cn('w-4 h-4', isDark ? 'text-warning' : 'text-warning')} strokeWidth={2.5} />
-	                                            ) : (
-	                                              <Clock className={cn('w-4 h-4', secondaryTextColor)} strokeWidth={2.5} />
-	                                            )}
-	                                            {isNoResponse && urgencyText ? urgencyText : statusLabel}
-	                                          </span>
-	                                          {(!isNoResponse && urgencyText) && (
-	                                            <span className={cn('px-2.5 py-1 rounded-full border text-[10px] font-black uppercase tracking-widest whitespace-nowrap', urgencyTone)}>
-	                                              {urgencyText}
-	                                            </span>
-	                                          )}
-	                                        </div>
-	                                        <p className={cn('text-[12px] font-semibold mb-3', secondaryTextColor)}>
-	                                          {isCountered ? 'Review counter terms.' : 'Follow up or edit the offer.'}
-	                                        </p>
+                                       <motion.div
+                                         key={itemKey}
+                                         whileTap={{ scale: 0.985 }}
+                                         role="button"
+                                         tabIndex={0}
+                                         onClick={() => setSelectedOffer(item)}
+                                         className={cn(
+                                           'w-full rounded-[28px] border transition-all duration-300 group relative text-left overflow-hidden cursor-pointer',
+                                           isDark 
+                                             ? 'bg-gradient-to-br from-white/[0.05] via-white/[0.02] to-transparent border-white/[0.08] shadow-2xl shadow-black/40' 
+                                             : 'bg-white border-[#E5E5EA] shadow-[0_8px_30px_rgba(0,0,0,0.04)]',
+                                           'backdrop-blur-2xl'
+                                         )}
+                                       >
+                                         <div className="p-5 relative z-10">
+                                           <div className="flex items-center gap-2 mb-4 flex-nowrap overflow-hidden">
+                                             <span className={cn(
+                                               'inline-flex items-center gap-2 px-3 py-1.5 rounded-full border text-[9px] font-black uppercase tracking-widest whitespace-nowrap shadow-sm transition-all',
+                                               statusTone
+                                             )}>
+                                               {isCountered ? (
+                                                 <AlertTriangle className="w-3.5 h-3.5" strokeWidth={2.5} />
+                                               ) : (
+                                                 <Clock className="w-3.5 h-3.5" strokeWidth={2.5} />
+                                               )}
+                                               {isNoResponse && urgencyText ? urgencyText : statusLabel}
+                                             </span>
+                                             {(!isNoResponse && urgencyText) && (
+                                               <span className={cn('px-3 py-1.5 rounded-full border text-[9px] font-black uppercase tracking-widest whitespace-nowrap shadow-sm', urgencyTone)}>
+                                                 {urgencyText}
+                                               </span>
+                                             )}
+                                           </div>
+                                           
+                                           <div className="flex items-start justify-between gap-3 mb-5">
+                                             <div className="flex items-center gap-3 min-w-0">
+                                               <Avatar className={cn('w-12 h-12 border-2 shadow-xl shrink-0', isDark ? 'border-white/10' : 'border-white')}>
+                                                 <AvatarImage src={safeImageSrc(creatorAvatar)} alt={creatorName} />
+                                                 <AvatarFallback className={cn(isDark ? 'bg-white/5 text-white' : 'bg-slate-100 text-slate-500')}>
+                                                   {creatorName.slice(0, 1).toUpperCase()}
+                                                 </AvatarFallback>
+                                               </Avatar>
+                                               <div className="min-w-0">
+                                                 <h4 className={cn('text-[16px] font-black tracking-tight truncate leading-tight', textColor)}>{creatorName}</h4>
+                                                 <p className={cn('text-[11px] font-bold opacity-40 truncate uppercase tracking-[0.05em]', textColor)}>{creatorMeta}</p>
+                                               </div>
+                                             </div>
+                                             <div className="text-right shrink-0 flex flex-col items-end">
+                                               <p className={cn('text-[20px] font-black tracking-tighter leading-none', isDark ? 'text-white' : 'text-slate-900')}>
+                                                 {amount > 0 ? formatCompactINR(amount) : '—'}
+                                               </p>
+                                               <p className="text-[9px] font-black opacity-30 mt-1 uppercase tracking-widest">Est. Payout</p>
+                                             </div>
+                                           </div>
+ 
+                                           {resolveDealProductImageUrl(item) && (
+                                             <div className="mb-4 overflow-hidden rounded-[20px] border border-white/5 bg-black/20 group-hover:border-white/10 transition-colors">
+                                               <div className="relative aspect-[16/9] w-full">
+                                                 <img
+                                                   src={safeImageSrc(resolveDealProductImageUrl(item))}
+                                                   alt={`${creatorName} product preview`}
+                                                   className="absolute inset-0 h-full w-full object-cover group-hover:scale-105 transition-transform duration-700"
+                                                 />
+                                                 <div className="absolute left-3 top-3 rounded-full bg-black/60 px-3 py-1 text-[9px] font-black uppercase tracking-widest text-white backdrop-blur-md border border-white/10">
+                                                   Product Preview
+                                                 </div>
+                                               </div>
+                                             </div>
+                                           )}
+ 
+                                           <div className="flex items-center justify-between gap-3 text-[12px] font-bold mb-4">
+                                             <div className={cn('min-w-0 truncate px-2.5 py-1 bg-white/5 rounded-lg border border-white/5', secondaryTextColor)}>
+                                               {String(formatDeliverables(item) || item?.collab_type || 'Collaboration').replaceAll(',', ' • ')}
+                                             </div>
+                                           </div>
+ 
+                                           <div className={cn('rounded-2xl border px-4 py-3 mb-4 text-[11px] font-bold flex items-center gap-3', isDark ? 'bg-blue-500/10 text-blue-300 border-blue-500/20' : 'bg-blue-50 text-blue-700 border-blue-100')}>
+                                             <Landmark className="w-4 h-4 shrink-0" />
+                                             <p className="leading-tight">Payment secure in Escrow until you approve content.</p>
+                                           </div>
 
-                                      <div className="flex items-start justify-between gap-3 mb-3">
-                                        <div className="flex items-center gap-3 min-w-0">
-                                          <Avatar className={cn('w-11 h-11 border shadow-sm shrink-0', isDark ? 'border-border' : 'border-border')}>
-                                            <AvatarImage src={safeImageSrc(creatorAvatar)} alt={creatorName} />
-	                                              <AvatarFallback className={cn(isDark ? 'bg-card text-foreground' : 'bg-background text-muted-foreground')}>
-	                                                {creatorName.slice(0, 1).toUpperCase()}
-	                                              </AvatarFallback>
-	                                            </Avatar>
-                                            <div className="min-w-0">
-                                              <p className={cn('text-[15px] font-black truncate', textColor)}>{creatorName}</p>
-                                              <p className={cn('text-[11px] mt-1 font-semibold truncate', secondaryTextColor)}>{creatorMeta}</p>
-                                            </div>
-                                          </div>
-                                          <div className="text-right shrink-0">
-                                            <p className={cn('text-[18px] font-black tracking-tight', textColor)}>{amount > 0 ? formatCompactINR(amount) : '—'}</p>
-                                            <p className={cn('text-[9px] font-black uppercase tracking-widest opacity-40 mt-1', isDark ? 'text-primary' : 'text-primary')}>Campaign budget</p>
-                                          </div>
-                                        </div>
-
-                                        {resolveDealProductImageUrl(item) && (
-                                          <div className="mb-3 overflow-hidden rounded-2xl border border-border bg-background">
-                                            <div className="relative aspect-[16/9] w-full">
-                                              <img
-                                                src={safeImageSrc(resolveDealProductImageUrl(item))}
-                                                alt={`${creatorName} product preview`}
-                                                className="absolute inset-0 h-full w-full object-cover"
-                                              />
-                                              <div className="absolute left-2 top-2 rounded-full bg-black/60 px-2 py-0.5 text-[9px] font-black uppercase tracking-widest text-white backdrop-blur-sm border border-white/10">
-                                                Preview
-                                              </div>
-                                            </div>
-                                          </div>
-                                        )}
-
-                                        <p className={cn('text-[12px] font-bold mb-3', isDark ? 'text-muted-foreground' : 'text-muted-foreground')}>
-                                          {String(formatDeliverables(item) || item?.collab_type || 'Deliverables').replaceAll(',', ' • ')}
-                                        </p>
-
-	                                        <div className={cn('rounded-2xl border px-3.5 py-2.5 mb-3 text-[11px] font-semibold', isDark ? 'bg-primary/10 text-primary border-primary/20' : 'bg-primary/10 text-primary border-primary/20')}>
-	                                          <Landmark className="w-4 h-4 inline-block mr-2 -mt-0.5" />
-	                                          Payment released after content approval
-	                                        </div>
-
-		                                        <button
-		                                          type="button"
-		                                          onClick={(e) => {
-		                                            e.stopPropagation();
-		                                            triggerHaptic(HapticPatterns.light);
-		                                            setSelectedOffer(item);
-	                                          }}
-	                                          className={cn('h-11 w-full rounded-2xl text-[13px] font-black transition active:scale-[0.98]', 'bg-gradient-to-r from-emerald-600 to-sky-600 text-foreground shadow-[0_14px_34px_rgba(16,185,129,0.22)]')}
-	                                        >
-	                                          Review & Take Action
-	                                        </button>
-	                                      </motion.div>
-	                                    );
-		                                  }
-			                                  const ui = brandDealCardUi(item);
+                                           <button
+                                             type="button"
+                                             onClick={() => setSelectedOffer(item)}
+                                             className={cn(
+                                               'h-12 w-full rounded-2xl text-[12px] font-black transition-all active:scale-[0.98] uppercase tracking-[0.1em]',
+                                               isDark ? 'bg-white/10 hover:bg-white/15 text-white' : 'bg-slate-100 hover:bg-slate-200 text-slate-900',
+                                               'border border-white/5'
+                                             )}
+                                           >
+                                             View Offer Details
+                                           </button>
+                                         </div>
+                                       </motion.div>
+                                    );
+                                  }
+                                   const ui = brandDealCardUi(item);
 		                                  return (
 		                                    <motion.div
 		                                      key={itemKey}
@@ -3756,96 +3801,127 @@ const BrandMobileDashboard = ({
 		                                      tabIndex={0}
 		                                      onClick={() => handleBrandDealPrimaryAction(undefined, item, ui)}
 		                                      className={cn(
-		                                        'w-full rounded-3xl border transition-all duration-300 group active:scale-[0.99] relative text-left backdrop-blur-xl overflow-hidden cursor-pointer',
-		                                        borderColor,
-		                                        isDark ? 'bg-secondary/[0.04]' : 'bg-secondary/85 shadow-[0_10px_35px_rgba(2,6,23,0.06)]'
+		                                        'w-full rounded-[28px] border transition-all duration-300 group relative text-left overflow-hidden cursor-pointer',
+		                                        isDark 
+                                              ? 'bg-gradient-to-br from-white/[0.05] via-white/[0.02] to-transparent border-white/[0.08] shadow-2xl shadow-black/40' 
+                                              : 'bg-white border-[#E5E5EA] shadow-[0_8px_30px_rgba(0,0,0,0.04)]',
+                                            'backdrop-blur-2xl'
 		                                      )}
 		                                    >
-		                                      <div className="p-4">
-		                                      <div className="flex items-start justify-between gap-3 mb-3.5">
-		                                        <div className="flex items-center gap-3 min-w-0">
-		                                          <Avatar className={cn('w-11 h-11 border shadow-sm shrink-0', isDark ? 'border-border' : 'border-border')}>
-		                                            <AvatarImage src={safeImageSrc(item?.profiles?.avatar_url || item?.profiles?.profile_image_url || item?.creator_avatar_url || item?.creator_photo_url || '')} alt={creatorName} />
-		                                            <AvatarFallback className={cn(isDark ? 'bg-card text-foreground' : 'bg-background text-muted-foreground')}>
-		                                              {creatorName.slice(0, 1).toUpperCase()}
-		                                            </AvatarFallback>
-		                                          </Avatar>
-		                                          <div className="min-w-0">
-		                                            <h4 className={cn('text-[15px] font-black tracking-tight truncate', textColor)}>{creatorName}</h4>
-		                                            <p className={cn('text-[11px] font-semibold mt-0.5 truncate', secondaryTextColor)}>{creatorMeta}</p>
+                                          {/* Subtle Gloss Effect */}
+                                          <div className="absolute inset-0 bg-gradient-to-tr from-white/[0.02] via-transparent to-transparent pointer-events-none" />
+                                          
+		                                      <div className="p-5 relative z-10">
+		                                        <div className="flex items-start justify-between gap-3 mb-4">
+		                                          <div className="flex items-center gap-3 min-w-0">
+                                                <div className="relative">
+                                                  <Avatar className={cn('w-12 h-12 border-2 shadow-xl shrink-0', isDark ? 'border-white/10' : 'border-white')}>
+                                                    <AvatarImage src={safeImageSrc(item?.profiles?.avatar_url || item?.profiles?.profile_image_url || item?.creator_avatar_url || item?.creator_photo_url || '')} alt={creatorName} />
+                                                    <AvatarFallback className={cn(isDark ? 'bg-white/5 text-white' : 'bg-slate-100 text-slate-500')}>
+                                                      {creatorName.slice(0, 1).toUpperCase()}
+                                                    </AvatarFallback>
+                                                  </Avatar>
+                                                  {ui.needsAction && (
+                                                    <div className="absolute -top-1 -right-1 w-4 h-4 bg-blue-500 border-2 border-[#061318] rounded-full animate-pulse shadow-[0_0_10px_rgba(59,130,246,0.5)]" />
+                                                  )}
+                                                </div>
+		                                            <div className="min-w-0">
+		                                              <h4 className={cn('text-[16px] font-black tracking-tight truncate leading-tight', textColor)}>{creatorName}</h4>
+		                                              <p className={cn('text-[11px] font-bold opacity-40 truncate uppercase tracking-[0.05em]', textColor)}>{creatorMeta}</p>
+		                                            </div>
+		                                          </div>
+		                                          <div className="text-right shrink-0 pl-3 flex flex-col items-end">
+		                                            <p className={cn('text-[22px] font-black tracking-tighter leading-none', isDark ? 'text-white' : 'text-slate-900')}>
+		                                              {amount > 0 ? formatCompactINR(amount) : '—'}
+		                                            </p>
+                                                <p className="text-[9px] font-black opacity-30 mt-1 uppercase tracking-widest">Est. Payout</p>
 		                                          </div>
 		                                        </div>
-		                                        <div className="text-right shrink-0 pl-3">
-		                                          <p className={cn('text-[20px] font-black tracking-tight leading-none', isDark ? 'text-foreground' : 'text-muted-foreground')}>
-		                                            {amount > 0 ? formatCompactINR(amount) : '—'}
-		                                          </p>
-		                                        </div>
-		                                      </div>
-
-		                                      <div className="flex items-center justify-between gap-3 text-[12px] font-semibold mb-3">
-		                                        <div className={cn('min-w-0 truncate', secondaryTextColor)}>
-		                                          {String(formatDeliverables(item) || item?.collab_type || 'Collaboration').replaceAll(',', ' • ')}
-		                                        </div>
-		                                        {due?.text && (
-		                                          <div className={cn(
-		                                            'shrink-0 flex items-center gap-1.5',
-		                                            due.tone === 'danger'
-		                                              ? (isDark ? 'text-rose-200' : 'text-rose-700')
-		                                              : due.tone === 'warn'
-		                                                ? (isDark ? 'text-warning' : 'text-warning')
-		                                                : secondaryTextColor
-		                                          )}>
-		                                            <Clock className="w-3.5 h-3.5" />
-		                                            <span className="font-bold">{due.text}</span>
+		
+		                                        <div className="flex items-center justify-between gap-3 text-[12px] font-bold mb-4">
+		                                          <div className={cn('min-w-0 truncate px-2.5 py-1 bg-white/5 rounded-lg border border-white/5', secondaryTextColor)}>
+		                                            {String(formatDeliverables(item) || item?.collab_type || 'Collaboration').replaceAll(',', ' • ')}
 		                                          </div>
-		                                        )}
-		                                      </div>
+		                                          {due?.text && (
+		                                            <div className={cn(
+		                                              'shrink-0 flex items-center gap-1.5 px-2.5 py-1 rounded-lg border',
+		                                              due.tone === 'danger'
+		                                                ? (isDark ? 'bg-rose-500/10 text-rose-300 border-rose-500/20' : 'bg-rose-50 text-rose-700 border-rose-100')
+		                                                : due.tone === 'warn'
+		                                                  ? (isDark ? 'bg-warning/10 text-warning border-warning/20' : 'bg-amber-50 text-amber-700 border-amber-100')
+		                                                  : (isDark ? 'bg-white/5 text-white/50 border-white/5' : 'bg-slate-50 text-slate-500 border-slate-100')
+		                                            )}>
+		                                              <Clock className="w-3.5 h-3.5" />
+		                                              <span className="font-black text-[10px] uppercase tracking-wider">{due.text}</span>
+		                                            </div>
+		                                          )}
+		                                        </div>
+		
+			                                  <div className={cn(
+			                                    'group/status p-4 rounded-2xl mb-4 border transition-all duration-300 relative',
+			                                    ui.needsAction
+			                                      ? (isDark ? 'bg-warning/10 text-warning border-warning/20' : 'bg-amber-50 text-amber-700 border-amber-100')
+			                                      : (isDark ? 'bg-white/5 text-white/60 border-white/5' : 'bg-slate-50 text-slate-500 border-slate-100')
+			                                  )}>
+                                            <div className="flex items-center justify-between gap-3">
+                                              <div className="flex items-center gap-3">
+                                                <div className={cn(
+                                                  "p-2 rounded-xl shrink-0 transition-transform group-hover/status:scale-110",
+                                                  ui.needsAction ? "bg-warning/20" : "bg-white/10"
+                                                )}>
+                                                  {ui.needsAction ? <Sparkles className="w-4 h-4" /> : <Info className="w-4 h-4" />}
+                                                </div>
+                                                <p className="text-[13px] font-black leading-tight">
+                                                  {ui.statusLine}
+                                                </p>
+                                              </div>
+                                              <ChevronRight className="w-4 h-4 opacity-30 group-hover/status:opacity-100 transition-opacity" />
+                                            </div>
 
-			                              <p className={cn(
-			                                'text-[13px] font-black mb-3',
-			                                ui.needsAction
-			                                  ? (isDark ? 'text-warning' : 'text-warning')
-			                                  : (isDark ? 'text-foreground/80' : 'text-muted-foreground')
-			                              )}>
-			                                {ui.statusLine}
-			                              </p>
-
-			                              {showSignatureDebug && (
-			                                <div className={cn('text-[11px] font-semibold mb-3', secondaryTextColor)}>
-			                                  {(() => {
-			                                    const hints = collectSignatureHints(item);
-			                                    const status = effectiveDealStatus(item);
-			                                    const raw = String(item?.status || item?.raw?.status || '—');
-			                                    const esign = String(item?.esign_status || item?.raw?.esign_status || item?.contract_status || item?.raw?.contract_status || '');
-			                                    return (
-			                                      <span>
-			                                        debugSig: status={status} raw={raw} esign={esign || '—'} brandKeys=[{hints.brand.join(',') || '—'}] creatorKeys=[{hints.creator.join(',') || '—'}]
-			                                      </span>
-			                                    );
-			                                  })()}
-			                                </div>
-			                              )}
-
-		                                      <button
-					                                type="button"
-					                                onClick={(e) => handleBrandDealPrimaryAction(e, item, ui)}
-				                                disabled={Boolean(ui?.ctaDisabled)}
-				                                className={cn(
-				                                  'mt-4 h-12 w-full rounded-2xl text-[13px] font-black transition active:scale-[0.98]',
-				                                  dealPrimaryCtaButtonClass(ui?.ctaTone || (ui.needsAction ? 'action' : 'view')),
-				                                  Boolean(ui?.ctaDisabled) && 'opacity-60 cursor-not-allowed active:scale-100'
-				                                )}
-				                              >
-				                                {ui.primaryActionLabel}
-				                              </button>
-		                                      </div>
-
-		                                      {/* Progress bar as bottom card edge */}
-		                                      <div className={cn('h-1 w-full', isDark ? 'bg-white/5' : 'bg-black/5')}>
-		                                        <div 
-		                                          className={cn('h-full rounded-r-full transition-all duration-500', isDark ? 'bg-emerald-400/60' : 'bg-emerald-500/70')}
-		                                          style={{ width: `${(ui.step / 5) * 100}%` }}
-		                                        />
+                                            {/* Progress Segments */}
+                                            <div className="flex gap-1 mt-4">
+                                              {[1, 2, 3, 4, 5].map((s) => (
+                                                <div 
+                                                  key={s} 
+                                                  className={cn(
+                                                    "h-1 flex-1 rounded-full transition-all duration-500",
+                                                    s <= ui.step 
+                                                      ? (isDark ? "bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.4)]" : "bg-emerald-500")
+                                                      : (isDark ? "bg-white/10" : "bg-slate-200")
+                                                  )}
+                                                />
+                                              ))}
+                                            </div>
+			                                  </div>
+		
+			                                  {showSignatureDebug && (
+			                                    <div className={cn('text-[11px] font-semibold mb-3 px-3 py-2 bg-black/40 rounded-xl border border-white/10', secondaryTextColor)}>
+			                                      {(() => {
+			                                        const hints = collectSignatureHints(item);
+			                                        const status = effectiveDealStatus(item);
+			                                        const raw = String(item?.status || item?.raw?.status || '—');
+			                                        const esign = String(item?.esign_status || item?.raw?.esign_status || item?.contract_status || item?.raw?.contract_status || '');
+			                                        return (
+			                                          <span className="font-mono">
+			                                            debugSig: status={status} raw={raw} esign={esign || '—'} brandKeys=[{hints.brand.join(',') || '—'}] creatorKeys=[{hints.creator.join(',') || '—'}]
+			                                          </span>
+			                                        );
+			                                      })()}
+			                                    </div>
+			                                  )}
+		
+		                                        <button
+		                                          type="button"
+		                                          onClick={(e) => handleBrandDealPrimaryAction(e, item, ui)}
+				                                      disabled={Boolean(ui?.ctaDisabled)}
+				                                      className={cn(
+				                                        'h-14 w-full rounded-2xl text-[14px] font-black transition-all active:scale-[0.98] uppercase tracking-[0.1em] shadow-xl',
+				                                        dealPrimaryCtaButtonClass(ui?.ctaTone || (ui.needsAction ? 'action' : 'view')),
+				                                        Boolean(ui?.ctaDisabled) && 'opacity-60 cursor-not-allowed active:scale-100'
+				                                      )}
+				                                    >
+				                                      {ui.primaryActionLabel}
+				                                    </button>
 		                                      </div>
 		                                    </motion.div>
 		                                  );
@@ -4367,7 +4443,7 @@ const BrandMobileDashboard = ({
                                 </div>
                                 <div className="text-right shrink-0 pl-3">
                                   <p className={cn('text-[22px] font-black tracking-tighter leading-none', isDark ? 'text-white' : 'text-slate-900')}>
-                                    {amount > 0 ? formatCompactINR(amount) : '—'}
+                                    {amount > 0 ? formatCompactINR(amount) : (isBarterLikeCollab(item) ? 'BARTER' : '—')}
                                   </p>
                                 </div>
                               </div>
@@ -4516,33 +4592,82 @@ const BrandMobileDashboard = ({
         </div>
       </div>
 
-      <div className={cn('fixed bottom-0 inset-x-0 border-t z-50 transition-all duration-500', isDark ? 'border-[#1F2937] bg-[#0B0F14]/90' : 'border-border bg-secondary/90')} style={{ backdropFilter: 'blur(30px)', WebkitBackdropFilter: 'blur(30px)' }}>
-        <div className="max-w-md md:max-w-2xl mx-auto flex items-center justify-between px-6 py-3 pb-safe" style={{ paddingBottom: 'max(env(safe-area-inset-bottom), 16px)' }}>
-          <motion.button whileTap={{ scale: 0.94 }} onClick={() => { triggerHaptic(HapticPatterns.light); setActiveTab('dashboard'); }} className="flex flex-col items-center gap-1 w-14">
-            <LayoutDashboard className={cn('w-[24px] h-[24px] transition-colors duration-300', activeTab === 'dashboard' ? (isDark ? 'text-blue-400' : 'text-blue-600') : secondaryTextColor)} />
-            <span className={cn('text-[10px] tracking-tight transition-colors duration-300', activeTab === 'dashboard' ? (isDark ? 'text-blue-400 font-bold' : 'text-blue-600 font-bold') : cn('font-medium', secondaryTextColor))}>Home</span>
-          </motion.button>
-
-          <motion.button whileTap={{ scale: 0.94 }} onClick={() => { triggerHaptic(HapticPatterns.light); setActiveTab('creators'); }} className="flex flex-col items-center gap-1 w-14 relative">
-            <User className={cn('w-[24px] h-[24px] transition-colors duration-300', activeTab === 'creators' ? (isDark ? 'text-blue-400' : 'text-blue-600') : secondaryTextColor)} />
-            <span className={cn('text-[10px] tracking-tight transition-colors duration-300', activeTab === 'creators' ? (isDark ? 'text-blue-400 font-bold' : 'text-blue-600 font-bold') : cn('font-medium', secondaryTextColor))}>Creators</span>
-          </motion.button>
-
-          <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={() => { triggerHaptic(HapticPatterns.success); openCreateOfferSheet(); }} className="relative flex flex-col items-center -mt-8">
-            <div className={cn('w-16 h-16 rounded-full flex items-center justify-center transition-all hover:brightness-110', isDark ? 'bg-gradient-to-br from-emerald-500 to-sky-500 border-4 border-[#061318] text-foreground shadow-[0_4px_30px_rgba(16,185,129,0.28)] hover:shadow-[0_6px_40px_rgba(14,165,233,0.20)] ring-1 ring-emerald-300/30' : 'bg-gradient-to-br from-emerald-600 to-sky-600 border-4 border-white text-foreground shadow-lg hover:shadow-xl ring-1 ring-slate-200')}>
-              <Plus className="w-7 h-7" />
+      <div className={cn(
+        'fixed bottom-0 inset-x-0 z-50 transition-all duration-500', 
+        isDark ? 'border-t border-white/5 bg-[#061318]/80' : 'border-t border-slate-100 bg-white/80'
+      )} style={{ backdropFilter: 'blur(30px)', WebkitBackdropFilter: 'blur(30px)' }}>
+        <div className="max-w-md md:max-w-2xl mx-auto flex items-center justify-between px-8 py-3 pb-safe">
+          <motion.button 
+            whileTap={{ scale: 0.9 }} 
+            onClick={() => { triggerHaptic(HapticPatterns.light); setActiveTab('dashboard'); }} 
+            className="flex flex-col items-center gap-1 w-12"
+          >
+            <div className={cn(
+              "p-2 rounded-xl transition-all duration-300",
+              activeTab === 'dashboard' ? (isDark ? 'bg-blue-500/10' : 'bg-blue-50') : 'bg-transparent'
+            )}>
+              <LayoutDashboard className={cn('w-[24px] h-[24px] transition-colors duration-300', activeTab === 'dashboard' ? (isDark ? 'text-blue-400' : 'text-blue-600') : secondaryTextColor)} />
             </div>
-            <span className={cn('text-[11px] font-semibold tracking-tight mt-1 whitespace-nowrap', isDark ? 'text-muted-foreground' : 'text-muted-foreground')}>Create</span>
+            <span className={cn('text-[9px] font-black uppercase tracking-widest transition-colors duration-300', activeTab === 'dashboard' ? (isDark ? 'text-blue-400' : 'text-blue-600') : secondaryTextColor)}>Home</span>
           </motion.button>
 
-          <motion.button whileTap={{ scale: 0.94 }} onClick={() => { triggerHaptic(HapticPatterns.light); setActiveTab('collabs'); }} className="flex flex-col items-center gap-1 w-14">
-            <Handshake className={cn('w-[24px] h-[24px] transition-colors duration-300', activeTab === 'collabs' ? (isDark ? 'text-blue-400' : 'text-blue-600') : secondaryTextColor)} />
-            <span className={cn('text-[10px] tracking-tight transition-colors duration-300', activeTab === 'collabs' ? (isDark ? 'text-blue-400 font-bold' : 'text-blue-600 font-bold') : cn('font-medium', secondaryTextColor))}>Collabs</span>
+          <motion.button 
+            whileTap={{ scale: 0.9 }} 
+            onClick={() => { triggerHaptic(HapticPatterns.light); setActiveTab('creators'); }} 
+            className="flex flex-col items-center gap-1 w-12"
+          >
+            <div className={cn(
+              "p-2 rounded-xl transition-all duration-300",
+              activeTab === 'creators' ? (isDark ? 'bg-blue-500/10' : 'bg-blue-50') : 'bg-transparent'
+            )}>
+              <User className={cn('w-[24px] h-[24px] transition-colors duration-300', activeTab === 'creators' ? (isDark ? 'text-blue-400' : 'text-blue-600') : secondaryTextColor)} />
+            </div>
+            <span className={cn('text-[9px] font-black uppercase tracking-widest transition-colors duration-300', activeTab === 'creators' ? (isDark ? 'text-blue-400' : 'text-blue-600') : secondaryTextColor)}>Find</span>
           </motion.button>
 
-          <motion.button whileTap={{ scale: 0.94 }} onClick={() => { triggerHaptic(HapticPatterns.light); setActiveTab('profile'); }} className="flex flex-col items-center gap-1 w-14">
-            <Settings className={cn('w-[24px] h-[24px] transition-colors duration-300', activeTab === 'profile' ? (isDark ? 'text-blue-400' : 'text-blue-600') : secondaryTextColor)} />
-            <span className={cn('text-[10px] tracking-tight transition-colors duration-300', activeTab === 'profile' ? (isDark ? 'text-blue-400 font-bold' : 'text-blue-600 font-bold') : cn('font-medium', secondaryTextColor))}>Account</span>
+          <motion.button 
+            whileHover={{ scale: 1.05 }} 
+            whileTap={{ scale: 0.9 }} 
+            onClick={() => { triggerHaptic(HapticPatterns.success); openCreateOfferSheet(); }} 
+            className="relative flex flex-col items-center -mt-10"
+          >
+            <div className={cn(
+              'w-16 h-16 rounded-[22px] flex items-center justify-center transition-all shadow-[0_10px_30px_rgba(16,185,129,0.3)]',
+              isDark 
+                ? 'bg-gradient-to-br from-emerald-500 to-sky-500 border-2 border-white/20 text-white' 
+                : 'bg-gradient-to-br from-emerald-600 to-sky-600 border-2 border-white text-white'
+            )}>
+              <Plus className="w-8 h-8" />
+            </div>
+            <span className={cn('text-[10px] font-black uppercase tracking-[0.15em] mt-2 whitespace-nowrap', isDark ? 'text-white/40' : 'text-slate-400')}>Offer</span>
+          </motion.button>
+
+          <motion.button 
+            whileTap={{ scale: 0.9 }} 
+            onClick={() => { triggerHaptic(HapticPatterns.light); setActiveTab('collabs'); }} 
+            className="flex flex-col items-center gap-1 w-12"
+          >
+            <div className={cn(
+              "p-2 rounded-xl transition-all duration-300",
+              activeTab === 'collabs' ? (isDark ? 'bg-blue-500/10' : 'bg-blue-50') : 'bg-transparent'
+            )}>
+              <Handshake className={cn('w-[24px] h-[24px] transition-colors duration-300', activeTab === 'collabs' ? (isDark ? 'text-blue-400' : 'text-blue-600') : secondaryTextColor)} />
+            </div>
+            <span className={cn('text-[9px] font-black uppercase tracking-widest transition-colors duration-300', activeTab === 'collabs' ? (isDark ? 'text-blue-400' : 'text-blue-600') : secondaryTextColor)}>Deals</span>
+          </motion.button>
+
+          <motion.button 
+            whileTap={{ scale: 0.9 }} 
+            onClick={() => { triggerHaptic(HapticPatterns.light); setActiveTab('profile'); }} 
+            className="flex flex-col items-center gap-1 w-12"
+          >
+            <div className={cn(
+              "p-2 rounded-xl transition-all duration-300",
+              activeTab === 'profile' ? (isDark ? 'bg-blue-500/10' : 'bg-blue-50') : 'bg-transparent'
+            )}>
+              <Settings className={cn('w-[24px] h-[24px] transition-colors duration-300', activeTab === 'profile' ? (isDark ? 'text-blue-400' : 'text-blue-600') : secondaryTextColor)} />
+            </div>
+            <span className={cn('text-[9px] font-black uppercase tracking-widest transition-colors duration-300', activeTab === 'profile' ? (isDark ? 'text-blue-400' : 'text-blue-600') : secondaryTextColor)}>More</span>
           </motion.button>
         </div>
       </div>

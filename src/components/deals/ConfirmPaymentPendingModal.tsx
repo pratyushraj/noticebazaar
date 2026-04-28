@@ -1,9 +1,13 @@
 import { useState } from "react";
-import { IndianRupee, X, Shield, Loader2 } from "lucide-react";
+import { IndianRupee, X, Shield, Loader2, Lock, ArrowRight, CheckCircle2 } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import { getApiBaseUrl } from "@/lib/utils/api";
 import { useSession } from "@/contexts/SessionContext";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import { triggerHaptic, HapticPatterns } from "@/lib/utils/haptics";
+import * as ds from "@/lib/design-system";
 
 interface Props {
   dealId: string;
@@ -58,6 +62,7 @@ export function ConfirmPaymentPendingModal({ dealId, dealAmount, creatorName, on
       return;
     }
 
+    triggerHaptic(HapticPatterns.light);
     setIsLoading(true);
     try {
       await loadRazorpayScript();
@@ -97,6 +102,7 @@ export function ConfirmPaymentPendingModal({ dealId, dealAmount, creatorName, on
         },
         theme: { color: '#10b981' },
         handler: () => {
+          triggerHaptic(HapticPatterns.success);
           toast.success('Payment submitted. We will update the deal once Razorpay confirms it.');
           onClose();
         },
@@ -124,116 +130,167 @@ export function ConfirmPaymentPendingModal({ dealId, dealAmount, creatorName, on
     }
   };
 
+  const handleVerify = async () => {
+    if (isLoading) return;
+    triggerHaptic(HapticPatterns.light);
+    setIsLoading(true);
+    try {
+      const res = await fetch(`${getApiBaseUrl()}/api/deals/${dealId}/verify-payment`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${session?.access_token}` }
+      });
+      const data = await res.json();
+      if (data.success) {
+        triggerHaptic(HapticPatterns.success);
+        toast.success(data.message || "Payment verified!");
+        if (data.status === 'content_making') {
+          onClose();
+          window.location.reload();
+        }
+      } else {
+        toast.error(data.error || "Could not verify payment status.");
+      }
+    } catch (err) {
+      toast.error("Failed to verify payment. Please try again later.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-      <div
-        className="w-full max-w-md bg-[#0D1117] border border-white/10 rounded-2xl shadow-2xl overflow-hidden"
-        role="dialog"
-        aria-modal
-        aria-label="Confirm payment"
-      >
-        <div className="flex items-center justify-between px-5 py-4 border-b border-white/10">
-          <div className="flex items-center gap-2">
-            <IndianRupee className="h-5 w-5 text-emerald-400" />
-            <span className="font-bold text-white text-base">Confirm Payment</span>
-          </div>
-          <button onClick={onClose} className="text-white/40 hover:text-white/80 transition-colors" aria-label="Close">
-            <X className="h-5 w-5" />
-          </button>
-        </div>
+    <AnimatePresence>
+      <div className="fixed inset-0 z-[10000] flex items-end sm:items-center justify-center p-4">
+        {/* Backdrop */}
+        <motion.div 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          onClick={onClose}
+          className="absolute inset-0 bg-black/60 backdrop-blur-md"
+        />
 
-        <div className="p-5 space-y-5">
-          <div className="flex items-start gap-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 px-4 py-3">
-            <Shield className="h-4 w-4 text-emerald-400 mt-0.5 shrink-0" />
-            <p className="text-sm text-emerald-300 font-medium leading-relaxed">
-              Payment stays inside the app through Razorpay Checkout and is released only after content approval.
-            </p>
+        {/* Modal Container */}
+        <motion.div
+          initial={{ opacity: 0, y: 100, scale: 0.95 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          exit={{ opacity: 0, y: 100, scale: 0.95 }}
+          transition={ds.animations.spring}
+          className={cn(
+            "relative w-full max-w-md overflow-hidden",
+            ds.ios.glass.full,
+            "rounded-[32px] sm:rounded-[40px]",
+            "shadow-[0_20px_80px_rgba(0,0,0,0.6)]"
+          )}
+          role="dialog"
+          aria-modal
+        >
+          {/* Spotlight Effect */}
+          <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-emerald-500/10 to-transparent pointer-events-none" />
+
+          {/* Header */}
+          <div className="relative flex items-center justify-between px-6 py-6 border-b border-white/5">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-emerald-500/10 rounded-xl">
+                <IndianRupee className="h-5 w-5 text-emerald-400" />
+              </div>
+              <div>
+                <h2 className={ds.typography.h3}>Secure Checkout</h2>
+                <p className="text-[10px] text-white/40 uppercase tracking-[0.1em] font-black mt-0.5">Escrow Protection Active</p>
+              </div>
+            </div>
+            <button 
+              onClick={onClose} 
+              className="p-2 hover:bg-white/10 rounded-full transition-colors active:scale-90"
+            >
+              <X className="h-5 w-5 text-white/40" />
+            </button>
           </div>
 
-          {breakdown ? (
-            <div className="rounded-xl bg-white/5 border border-white/10 p-4 space-y-3">
-              <div className="flex justify-between text-sm text-white/70">
-                <span>Deal amount</span>
-                <span>₹{breakdown.dealAmount.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-              </div>
-              <div className="flex justify-between text-sm text-white/70">
-                <span>Platform fee (10%)</span>
-                <span>₹{breakdown.platformFee.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-              </div>
-              <div className="flex justify-between text-sm text-white/70">
-                <span>GST (18% on fee)</span>
-                <span>₹{breakdown.gstOnFee.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-              </div>
-              <div className="border-t border-white/10 pt-3 flex justify-between font-bold text-white text-base">
-                <span>Total Payable</span>
-                <span>₹{breakdown.brandTotal.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-              </div>
-              <p className="text-xs text-white/40 pt-1">
-                Creator receives ₹{breakdown.creatorPayout.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} after content approval.
+          <div className="relative p-6 space-y-6">
+            {/* Trust Banner */}
+            <div className="flex items-start gap-3 p-4 bg-emerald-500/[0.03] border border-emerald-500/10 rounded-2xl">
+              <Shield className="h-5 w-5 shrink-0 text-emerald-400/80" />
+              <p className="text-[12px] leading-relaxed text-emerald-100/60 font-medium">
+                Funds are held in escrow and only released to <span className="text-emerald-300 font-bold">{creatorName || "the creator"}</span> after you approve the final content.
               </p>
             </div>
-          ) : (
-            <div className="rounded-xl bg-white/5 border border-white/10 p-4 text-center text-white/50 text-sm">
-              No deal amount set. Please contact support.
-            </div>
-          )}
 
-          <Button
-            type="button"
-            onClick={handlePayNow}
-            disabled={isLoading || !breakdown}
-            className="w-full h-12 font-bold bg-emerald-600 hover:bg-emerald-500 text-white disabled:opacity-40 flex items-center justify-center gap-2"
-          >
-            {isLoading ? (
-              <>
-                <Loader2 className="h-4 w-4 animate-spin" />
-                Opening payment…
-              </>
-            ) : breakdown ? (
-              `Pay ₹${breakdown.brandTotal.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} via Razorpay`
+            {/* Breakdown Card */}
+            {breakdown ? (
+              <div className="space-y-4">
+                <div className="p-5 bg-white/[0.03] border border-white/5 rounded-2xl space-y-3.5 shadow-[inset_0_1px_2px_rgba(0,0,0,0.2)]">
+                  <div className="flex justify-between text-[13px] font-medium">
+                    <span className="text-white/40">Base Deal Amount</span>
+                    <span className="text-white">₹{breakdown.dealAmount.toLocaleString("en-IN", { minimumFractionDigits: 2 })}</span>
+                  </div>
+                  <div className="flex justify-between text-[13px] font-medium">
+                    <span className="text-white/40">Platform Fee (10%)</span>
+                    <span className="text-white">₹{breakdown.platformFee.toLocaleString("en-IN", { minimumFractionDigits: 2 })}</span>
+                  </div>
+                  <div className="flex justify-between text-[13px] font-medium pb-3.5 border-b border-white/5">
+                    <span className="text-white/40">GST (18% on fee)</span>
+                    <span className="text-white">₹{breakdown.gstOnFee.toLocaleString("en-IN", { minimumFractionDigits: 2 })}</span>
+                  </div>
+                  <div className="flex justify-between items-end pt-1">
+                    <div>
+                      <p className="text-[10px] font-black uppercase tracking-widest text-emerald-400/60 mb-1">Total Due</p>
+                      <h3 className="text-2xl font-black text-white tracking-tight">₹{breakdown.brandTotal.toLocaleString("en-IN", { minimumFractionDigits: 2 })}</h3>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-[10px] font-bold text-white/20 uppercase tracking-widest leading-none mb-1">Payout to</p>
+                      <p className="text-[11px] font-black text-white/50">{creatorName || "Creator"}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
             ) : (
-              "Amount not available"
+              <div className="p-8 text-center bg-white/[0.03] border border-white/5 rounded-2xl">
+                <p className="text-sm text-white/40 font-bold uppercase tracking-widest">Pricing details unavailable</p>
+              </div>
             )}
-          </Button>
 
-          <button
-            type="button"
-            onClick={async () => {
-              if (isLoading) return;
-              setIsLoading(true);
-              try {
-                const res = await fetch(`${getApiBaseUrl()}/api/deals/${dealId}/verify-payment`, {
-                  method: 'POST',
-                  headers: { Authorization: `Bearer ${session?.access_token}` }
-                });
-                const data = await res.json();
-                if (data.success) {
-                  toast.success(data.message || "Payment verified!");
-                  if (data.status === 'content_making') {
-                    onClose();
-                    // Optional: refresh page or trigger parent update
-                    window.location.reload();
-                  }
-                } else {
-                  toast.error(data.error || "Could not verify payment status.");
-                }
-              } catch (err) {
-                toast.error("Failed to verify payment. Please try again later.");
-              } finally {
-                setIsLoading(false);
-              }
-            }}
-            disabled={isLoading}
-            className="w-full text-xs text-white/40 hover:text-white/60 transition-colors py-2"
-          >
-            I have already made the payment. Verify status.
-          </button>
+            {/* Actions */}
+            <div className="space-y-4">
+              <Button
+                type="button"
+                onClick={handlePayNow}
+                disabled={isLoading || !breakdown}
+                className={cn(
+                  "w-full h-14 text-base font-black uppercase tracking-widest transition-all",
+                  breakdown && !isLoading ? "bg-emerald-600 hover:bg-emerald-500 shadow-[0_10px_30px_rgba(16,185,129,0.3)]" : "bg-white/5",
+                  "rounded-2xl"
+                )}
+              >
+                {isLoading ? (
+                  <div className="flex items-center gap-3">
+                    <Loader2 className="h-5 w-5 animate-spin" />
+                    <span>Processing...</span>
+                  </div>
+                ) : (
+                  <span className="flex items-center gap-2">
+                    Initialize Escrow
+                    <ArrowRight className="w-5 h-5" />
+                  </span>
+                )}
+              </Button>
 
-          <p className="text-center text-xs text-white/30">
-            Payment processed securely by Razorpay
-          </p>
-        </div>
+              <button
+                type="button"
+                onClick={handleVerify}
+                disabled={isLoading}
+                className="w-full py-2 text-[11px] font-black uppercase tracking-widest text-white/30 hover:text-white/60 transition-colors"
+              >
+                Already paid? Verify status
+              </button>
+            </div>
+
+            <div className="flex items-center justify-center gap-2 pt-2 grayscale opacity-40">
+              <Lock className="h-3 w-3" />
+              <p className="text-[10px] font-black uppercase tracking-widest">Razorpay Secure 256-bit SSL</p>
+            </div>
+          </div>
+        </motion.div>
       </div>
-    </div>
+    </AnimatePresence>
   );
 }

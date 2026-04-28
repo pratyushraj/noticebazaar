@@ -97,18 +97,18 @@ const BrandDashboard: React.FC = () => {
 
     console.log('[BrandDashboard] Setting up real-time subscription for brand:', user.id);
 
-    // We remove the filter `brand_id=eq.${user.id}` because:
-    // 1. Supabase RLS already restricts events to rows the user can see.
-    // 2. Some deals might be linked via brand_email instead of brand_id initially.
-    // 3. Filters are case-sensitive and column-name-sensitive; removing them is more robust.
+    // We use filters to ensure we only get relevant updates and to satisfy Realtime server requirements.
+    // 1. collab_requests are filtered by brand_email.
+    // 2. brand_deals are filtered by brand_id.
     const channel = supabase
-      .channel(`brand-dashboard-all-updates:${user.id}`)
+      .channel(`brand-dashboard-updates-${user.id}`)
       .on(
         'postgres_changes',
         {
           event: '*',
           schema: 'public',
-          table: 'collab_requests'
+          table: 'collab_requests',
+          filter: user.email ? `brand_email=eq.${user.email}` : undefined
         },
         (payload) => {
           console.log('[Realtime] Brand collab request event received:', payload.eventType, payload.new?.id);
@@ -129,7 +129,8 @@ const BrandDashboard: React.FC = () => {
         {
           event: '*',
           schema: 'public',
-          table: 'brand_deals'
+          table: 'brand_deals',
+          filter: `brand_id=eq.${user.id}`
         },
         (payload) => {
           console.log('[Realtime] Brand deal event received:', payload.eventType, payload.new?.id);
@@ -143,10 +144,12 @@ const BrandDashboard: React.FC = () => {
       )
       .subscribe((status, err) => {
         if (status === 'SUBSCRIBED') {
-          console.log('[Realtime] Brand dashboard is now LIVE and listening for ALL accessible updates');
+          console.log('[Realtime] Brand dashboard is now LIVE and listening for filtered updates');
         }
         if (status === 'CHANNEL_ERROR') {
-          console.error('[Realtime] Brand dashboard channel error:', err);
+          console.error('[Realtime] Brand dashboard channel error. Status:', status, 'Error:', err);
+          // If it fails, we might want to try subscribing without filters as a fallback, 
+          // but usually filters make it MORE likely to succeed.
         }
         if (status === 'TIMED_OUT') {
           console.warn('[Realtime] Brand dashboard subscription timed out');

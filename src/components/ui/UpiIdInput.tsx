@@ -1,20 +1,16 @@
 import { useState, useEffect, useCallback } from 'react';
-import { ShieldCheck, AlertTriangle, ExternalLink, CheckCircle2, Copy, Eye, EyeOff, Smartphone } from 'lucide-react';
+import { AlertTriangle, CheckCircle2, Copy, Eye } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
-import { validateUpiId, buildUpiVerificationDeeplink, type UpiValidationResult } from '@/lib/utils/upiValidation';
+import { validateUpiId, type UpiValidationResult } from '@/lib/utils/upiValidation';
 
 interface UpiIdInputProps {
   /** Current saved/committed value (from DB) */
   value: string;
-  /** Whether the saved value is verified (upi_verified_at is set) */
-  isVerified?: boolean;
   /** Read-only mode (display only) */
   readOnly?: boolean;
   /** Called with the normalised UPI ID when the user commits a valid entry */
   onChange: (normalisedValue: string, isVerified: false) => void;
-  /** Called when user explicitly marks as verified via the deeplink flow */
-  onVerified?: (normalisedValue: string) => void;
   /** Dark mode flag */
   isDark?: boolean;
   className?: string;
@@ -22,19 +18,15 @@ interface UpiIdInputProps {
 
 export function UpiIdInput({
   value,
-  isVerified = false,
   readOnly = false,
   onChange,
-  onVerified,
   isDark = true,
   className,
 }: UpiIdInputProps) {
   const [draft, setDraft] = useState(value || '');
   const [confirmDraft, setConfirmDraft] = useState(value || '');
   const [showConfirm, setShowConfirm] = useState(false);
-  const [showVerifyFlow, setShowVerifyFlow] = useState(false);
   const [hasCopied, setHasCopied] = useState(false);
-  const [selfConfirmed, setSelfConfirmed] = useState(false);
 
   // Sync external value changes (e.g. profile reload)
   useEffect(() => {
@@ -54,8 +46,6 @@ export function UpiIdInput({
     setDraft(cleaned);
     setShowConfirm(false);
     setConfirmDraft('');
-    setSelfConfirmed(false);
-    setShowVerifyFlow(false);
   }, []);
 
   const handleDraftBlur = () => {
@@ -77,7 +67,7 @@ export function UpiIdInput({
     if (!confirmMatch) return;
     onChange(validation.normalised, false);
     setShowConfirm(false);
-    toast.success('UPI ID saved. Verify it below to get the ✓ badge.');
+    toast.success('UPI ID saved');
   };
 
   const handleCopyUpi = async () => {
@@ -91,33 +81,17 @@ export function UpiIdInput({
     }
   };
 
-  const handleSelfVerify = () => {
-    setSelfConfirmed(true);
-    onVerified?.(validation.normalised || value);
-    setShowVerifyFlow(false);
-    toast.success('UPI ID verified ✓');
-  };
-
-  const deeplink = buildUpiVerificationDeeplink(validation.valid ? validation.normalised : value);
-  const isDesktop = typeof window !== 'undefined' && !/Mobi|Android/i.test(navigator.userAgent);
-
   const inputBase = cn(
-    'w-full bg-transparent outline-none font-bold text-[15px] p-0 border-none focus:ring-0 font-mono tracking-wide',
-    isDark ? 'text-blue-400' : 'text-blue-600'
+    'w-full bg-transparent outline-none font-semibold text-[15px] p-0 border-none focus:ring-0 tracking-tight',
+    isDark ? 'text-white placeholder:text-white/20' : 'text-slate-900 placeholder:text-slate-400'
   );
 
   if (readOnly) {
     return (
       <div className={cn('flex items-center gap-2', className)}>
-        <span className={cn('font-bold text-[15px] font-mono truncate', isDark ? 'text-blue-400' : 'text-blue-600')}>
-          {value || <span className="opacity-30 italic font-sans font-normal">Not set</span>}
+        <span className={cn('font-semibold text-[15px] tracking-tight truncate', isDark ? 'text-white' : 'text-slate-900')}>
+          {value || <span className="opacity-30 italic font-normal">Not set</span>}
         </span>
-        {value && isVerified && (
-          <ShieldCheck className="h-4 w-4 text-emerald-400 shrink-0" />
-        )}
-        {value && !isVerified && (
-          <AlertTriangle className="h-3.5 w-3.5 text-amber-400 shrink-0" />
-        )}
       </div>
     );
   }
@@ -169,25 +143,34 @@ export function UpiIdInput({
             </p>
           )}
           {validation.valid && !validation.warning && (
-            <p className="flex items-center gap-1.5 text-[11px] text-emerald-400">
+            <p className="flex items-center gap-1.5 text-[11px] text-emerald-400 font-medium">
               <CheckCircle2 className="h-3 w-3 shrink-0" />
               Valid format
-              {isVerified && ' · Verified'}
             </p>
           )}
         </div>
       )}
 
-      {/* ── Confirm-entry field (shown when draft changes and is valid) ── */}
+      {/* ── Confirm-entry field ── */}
       {showConfirm && (
-        <div className="rounded-xl border border-amber-500/30 bg-amber-500/5 px-3 py-2.5 space-y-2">
-          <p className="text-[11px] text-amber-400 font-semibold flex items-center gap-1.5">
-            <Eye className="h-3 w-3" />
-            Re-enter UPI ID to confirm — typos mean brands can't pay you
+        <div className={cn(
+          'rounded-2xl px-4 py-3.5 space-y-3 border-l-2',
+          isDark
+            ? 'bg-white/[0.03] border border-white/[0.08] border-l-amber-400/60'
+            : 'bg-slate-50 border border-slate-200 border-l-amber-400'
+        )}>
+          <p className={cn('text-[11px] font-semibold flex items-center gap-1.5', isDark ? 'text-white/60' : 'text-slate-600')}>
+            <Eye className="h-3 w-3 shrink-0 opacity-70" />
+            Re-enter to confirm — typos mean brands can't pay you
           </p>
           <input
-            className={cn(inputBase, 'text-[14px]',
-              confirmMismatch ? 'text-red-400' : confirmMatch ? 'text-emerald-400' : ''
+            className={cn(
+              'w-full bg-transparent outline-none font-semibold text-[14px] p-0 border-none focus:ring-0 tracking-tight',
+              confirmMismatch
+                ? (isDark ? 'text-red-400' : 'text-red-600')
+                : confirmMatch
+                  ? (isDark ? 'text-emerald-400' : 'text-emerald-600')
+                  : (isDark ? 'text-white placeholder:text-white/20' : 'text-slate-900 placeholder:text-slate-400')
             )}
             value={confirmDraft}
             onChange={e => setConfirmDraft(e.target.value.replace(/\s/g, '').toLowerCase())}
@@ -209,83 +192,15 @@ export function UpiIdInput({
             <button
               type="button"
               onClick={handleCommit}
-              className="w-full text-center text-[11px] font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/25 rounded-lg py-1.5 hover:bg-emerald-500/20 transition-colors"
+              className={cn(
+                'w-full text-center text-[12px] font-bold rounded-xl py-2 transition-colors',
+                isDark
+                  ? 'text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 hover:bg-emerald-500/15'
+                  : 'text-emerald-700 bg-emerald-50 border border-emerald-200 hover:bg-emerald-100'
+              )}
             >
               ✓ Confirm & Save
             </button>
-          )}
-        </div>
-      )}
-
-      {/* ── Verified badge OR verify-now prompt ── */}
-      {value && !showConfirm && (
-        <div className="mt-1">
-          {isVerified ? (
-            <div className="flex items-center gap-1.5 text-[11px] text-emerald-400">
-              <ShieldCheck className="h-3.5 w-3.5 shrink-0" />
-              <span className="font-semibold">Verified UPI</span>
-              <span className="opacity-50">— brands see a ✓ badge next to your ID</span>
-            </div>
-          ) : (
-            <div>
-              {!showVerifyFlow ? (
-                <button
-                  type="button"
-                  onClick={() => setShowVerifyFlow(true)}
-                  className="flex items-center gap-1.5 text-[11px] text-amber-400 hover:text-amber-300 transition-colors font-medium"
-                >
-                  <Smartphone className="h-3.5 w-3.5 shrink-0" />
-                  Verify this UPI ID on your phone
-                  <span className="text-white/25 font-normal">(brands trust verified IDs)</span>
-                </button>
-              ) : (
-                <div className="rounded-xl border border-white/8 bg-white/3 p-3 space-y-2.5">
-                  <p className="text-[12px] font-bold text-white/70">
-                    Verify your UPI ID
-                  </p>
-                  <p className="text-[11px] text-white/45 leading-relaxed">
-                    Open this link on your phone. Your UPI app will load and show the name
-                    registered to <span className="text-white/70 font-semibold">{value}</span>.
-                    If it matches you, tap the button below.
-                  </p>
-
-                  {isDesktop ? (
-                    <div className="text-[11px] text-white/45 bg-white/4 rounded-lg px-3 py-2 font-mono break-all">
-                      {deeplink}
-                    </div>
-                  ) : (
-                    <a
-                      href={deeplink}
-                      className="flex items-center justify-center gap-2 w-full text-center text-[12px] font-bold text-blue-400 bg-blue-500/10 border border-blue-500/25 rounded-lg py-2 hover:bg-blue-500/20 transition-colors"
-                    >
-                      <ExternalLink className="h-3.5 w-3.5" />
-                      Open in UPI App
-                    </a>
-                  )}
-
-                  <div className="flex gap-2">
-                    <button
-                      type="button"
-                      onClick={() => setShowVerifyFlow(false)}
-                      className="flex-1 text-[11px] text-white/40 hover:text-white/70 transition-colors py-1.5"
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      type="button"
-                      onClick={handleSelfVerify}
-                      className="flex-1 text-[11px] font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/25 rounded-lg py-1.5 hover:bg-emerald-500/20 transition-colors"
-                    >
-                      ✓ My name appeared — mark as verified
-                    </button>
-                  </div>
-
-                  <p className="text-[10px] text-white/25 text-center">
-                    By tapping above, you confirm this UPI ID belongs to you.
-                  </p>
-                </div>
-              )}
-            </div>
           )}
         </div>
       )}
