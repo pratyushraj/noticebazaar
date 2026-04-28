@@ -3039,6 +3039,8 @@ const MobileDashboardDemo = ({
                                                 <input
                                                     className={cn("w-full bg-transparent outline-none font-black text-[15px] p-0 border-none focus:ring-0", textColor)}
                                                     value={profileFormData.full_name || ''}
+                                                    onKeyDown={e => e.key === 'Enter' && e.currentTarget.blur()}
+                                                    enterKeyHint="done"
                                                     placeholder="Your full name"
                                                     onChange={e => setProfileFormData((p: any) => ({ ...p, full_name: e.target.value }))}
                                                 />
@@ -3075,6 +3077,8 @@ const MobileDashboardDemo = ({
                                                     inputMode="tel"
                                                     className={cn("w-full bg-transparent outline-none font-black text-[15px] p-0 border-none focus:ring-0", textColor)}
                                                     value={profileFormData.phone || ''}
+                                                    onKeyDown={e => e.key === 'Enter' && e.currentTarget.blur()}
+                                                    enterKeyHint="done"
                                                     placeholder="+91 XXXXX XXXXX"
                                                     onChange={e => setProfileFormData((p: any) => ({ ...p, phone: e.target.value }))}
                                                 />
@@ -3103,6 +3107,8 @@ const MobileDashboardDemo = ({
                                                 <input
                                                     className={cn("w-full bg-transparent outline-none font-black text-[15px] p-0 border-none focus:ring-0", textColor)}
                                                     value={profileFormData.address || ''}
+                                                    onKeyDown={e => e.key === 'Enter' && e.currentTarget.blur()}
+                                                    enterKeyHint="done"
                                                     placeholder="123 Creator Lane, Studio B"
                                                     onChange={e => setProfileFormData((p: any) => ({ ...p, address: e.target.value }))}
                                                 />
@@ -3119,6 +3125,8 @@ const MobileDashboardDemo = ({
                                                 <input
                                                     className={cn("w-full bg-transparent outline-none font-black text-[15px] p-0 border-none focus:ring-0", textColor)}
                                                     value={profileFormData.city || ''}
+                                                    onKeyDown={e => e.key === 'Enter' && e.currentTarget.blur()}
+                                                    enterKeyHint="done"
                                                     placeholder="Mumbai"
                                                     onChange={e => setProfileFormData((p: any) => ({ ...p, city: e.target.value }))}
                                                 />
@@ -3133,6 +3141,8 @@ const MobileDashboardDemo = ({
                                                     inputMode="numeric"
                                                     className={cn("w-full bg-transparent outline-none font-black text-[15px] p-0 border-none focus:ring-0", textColor)}
                                                     value={profileFormData.pincode || ''}
+                                                    onKeyDown={e => e.key === 'Enter' && e.currentTarget.blur()}
+                                                    enterKeyHint="done"
                                                     placeholder="400001"
                                                     onChange={async e => {
                                                         const val = e.target.value.replace(/\D/g, '').slice(0, 6);
@@ -3202,6 +3212,8 @@ const MobileDashboardDemo = ({
                                                     className={cn("w-full bg-transparent outline-none font-black text-[15px] p-0 border-none focus:ring-0 resize-none leading-relaxed", textColor)}
                                                     rows={3}
                                                     value={profileFormData.bio || ''}
+                                                    onKeyDown={e => e.key === 'Enter' && (e.shiftKey || e.currentTarget.blur())}
+                                                    enterKeyHint="done"
                                                     placeholder="Describe your content style..."
                                                     onChange={e => setProfileFormData((p: any) => ({ ...p, bio: e.target.value }))}
                                                 />
@@ -3395,6 +3407,8 @@ const MobileDashboardDemo = ({
                                                     inputMode="numeric"
                                                     placeholder="5000"
                                                     value={profileFormData.avg_rate_reel || ''}
+                                                    onKeyDown={e => e.key === 'Enter' && e.currentTarget.blur()}
+                                                    enterKeyHint="done"
                                                     onChange={(e) => setProfileFormData((p: any) => ({ ...p, avg_rate_reel: e.target.value, suggested_reel_rate: e.target.value }))}
                                                 />
                                             </div>
@@ -3408,7 +3422,9 @@ const MobileDashboardDemo = ({
                                                     inputMode="numeric"
                                                     placeholder="2000"
                                                     value={profileFormData.story_price || ''}
-                                                    onChange={(e) => setProfileFormData((p: any) => ({ ...p, story_price: e.target.value }))}
+                                                    onKeyDown={e => e.key === 'Enter' && e.currentTarget.blur()}
+                                                    enterKeyHint="done"
+                                                    onChange={(e) => setProfileFormData((p: any) => ({ ...p, story_price: e.target.value, suggested_story_rate: e.target.value }))}
                                                 />
                                             </div>
                                         </div>

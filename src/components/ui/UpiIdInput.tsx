@@ -105,6 +105,8 @@ export function UpiIdInput({
           value={draft}
           onChange={e => handleDraftChange(e.target.value)}
           onBlur={handleDraftBlur}
+          onKeyDown={e => e.key === 'Enter' && e.currentTarget.blur()}
+          enterKeyHint="done"
           placeholder="yourname@okaxis"
           autoCapitalize="none"
           autoCorrect="off"
@@ -175,6 +177,8 @@ export function UpiIdInput({
             value={confirmDraft}
             onChange={e => setConfirmDraft(e.target.value.replace(/\s/g, '').toLowerCase())}
             onBlur={handleConfirmBlur}
+            onKeyDown={e => e.key === 'Enter' && e.currentTarget.blur()}
+            enterKeyHint="done"
             placeholder="Re-enter your UPI ID"
             autoCapitalize="none"
             autoCorrect="off"

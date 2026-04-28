@@ -1713,6 +1713,8 @@ const BrandMobileDashboard = ({
 	                            <input
 	                              value={counterBudget}
 	                              onChange={(e) => setCounterBudget(e.target.value)}
+	                              onKeyDown={(e) => e.key === 'Enter' && e.currentTarget.blur()}
+	                              enterKeyHint="done"
 	                              inputMode="numeric"
 	                              className={cn('mt-2 w-full bg-transparent text-[14px] font-bold outline-none', textColor)}
 	                              placeholder="10379"
@@ -1723,6 +1725,8 @@ const BrandMobileDashboard = ({
 	                            <textarea
 	                              value={counterDeliverables}
 	                              onChange={(e) => setCounterDeliverables(e.target.value)}
+	                              onKeyDown={(e) => e.key === 'Enter' && e.currentTarget.blur()}
+	                              enterKeyHint="done"
 	                              rows={3}
 	                              className={cn('mt-2 w-full bg-transparent text-[13px] font-semibold outline-none resize-none', textColor)}
 	                              placeholder="1 Reel, 2 Stories"
@@ -3314,7 +3318,7 @@ const BrandMobileDashboard = ({
               {activeTab === 'dashboard' && (
                 <div className="flex items-end justify-between gap-3">
                   <div className="min-w-0">
-                    <p className={cn('text-[11px] font-black uppercase tracking-[0.25em] opacity-40 mb-1', textColor)}>Premium Dashboard</p>
+
                     <h1 className={cn('text-[28px] font-black tracking-tight leading-none', textColor)}>
                       {brandName}
                     </h1>
@@ -4816,6 +4820,8 @@ const BrandMobileDashboard = ({
                     placeholder="e.g. 100000"
                     value={budgetDraft}
                     onChange={(e) => setBudgetDraft(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && e.currentTarget.blur()}
+                    enterKeyHint="done"
                     className={cn(
                       'w-full h-12 px-4 rounded-xl border text-sm font-medium focus:ring-2 focus:ring-emerald-500/20 transition-all outline-none',
                       isDark ? 'bg-card border-border text-foreground' : 'bg-background border-border text-muted-foreground'

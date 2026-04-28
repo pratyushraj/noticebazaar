@@ -236,6 +236,8 @@ const Login = () => {
                       placeholder="Enter your handle"
                       value={identifier}
                       onChange={(e) => setIdentifier(e.target.value)}
+                      onKeyDown={(e) => e.key === 'Enter' && e.currentTarget.blur()}
+                      enterKeyHint="done"
                       className="bg-white/5 border-white/10 text-white placeholder:text-white/10 text-[16px] h-[64px] rounded-[20px] focus:border-emerald-500/50 focus:ring-0 focus:bg-white/10 pl-12 transition-all outline-none"
                       required
                     />
@@ -258,6 +260,8 @@ const Login = () => {
                       placeholder="••••••••"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
+                      onKeyDown={(e) => e.key === 'Enter' && e.currentTarget.blur()}
+                      enterKeyHint="done"
                       className="bg-white/5 border-white/10 text-white placeholder:text-white/10 text-[16px] h-[64px] rounded-[20px] focus:border-emerald-500/50 focus:ring-0 focus:bg-white/10 pl-12 pr-12 transition-all outline-none"
                       required
                     />

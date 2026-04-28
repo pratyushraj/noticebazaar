@@ -4035,6 +4035,8 @@ const CollabLinkLanding = () => {
                                 type="email"
                                 value={brandEmail}
                                 onChange={e => setBrandEmail(e.target.value)}
+                                onKeyDown={e => e.key === 'Enter' && e.currentTarget.blur()}
+                                enterKeyHint="done"
                                 placeholder="your@company.com"
                                 className={cn(
                                   "h-14 px-4 rounded-xl border-white bg-white font-bold text-base text-slate-900 placeholder:text-slate-500 shadow-sm focus-visible:ring-2 focus-visible:ring-emerald-500/30 transition-all",
@@ -4079,6 +4081,8 @@ const CollabLinkLanding = () => {
                                 id="brand-name-input"
                                 value={brandName}
                                 onChange={e => setBrandName(e.target.value)}
+                                onKeyDown={e => e.key === 'Enter' && e.currentTarget.blur()}
+                                enterKeyHint="done"
                                 placeholder="Brand or company name"
                                 className={cn(
                                   "h-14 px-4 rounded-xl border-white bg-white font-bold text-base text-slate-900 placeholder:text-slate-500 shadow-sm focus-visible:ring-2 focus-visible:ring-emerald-500/30 transition-all",
@@ -4099,6 +4103,8 @@ const CollabLinkLanding = () => {
                               id="brand-instagram-input"
                               value={brandInstagram}
                               onChange={e => setBrandInstagram(e.target.value)}
+                              onKeyDown={e => e.key === 'Enter' && e.currentTarget.blur()}
+                              enterKeyHint="done"
                               placeholder="@brand_instagram (optional)"
                               className="h-12 px-4 rounded-xl border-white bg-white font-semibold text-[14px] text-slate-900 placeholder:text-slate-500 shadow-sm focus-visible:ring-2 focus-visible:ring-emerald-500/30 transition-all"
                             />
@@ -4243,6 +4249,8 @@ const CollabLinkLanding = () => {
                                   id="barter-product-name-input"
                                   value={barterProductName}
                                   onChange={e => setBarterProductName(e.target.value)}
+                                  onKeyDown={e => e.key === 'Enter' && e.currentTarget.blur()}
+                                  enterKeyHint="done"
                                   placeholder="Product name you'll send"
                                   className={cn(
                                     "h-12 px-4 rounded-xl border-white bg-white font-bold text-[14px] text-slate-900 placeholder:text-slate-500 shadow-sm focus-visible:ring-2 focus-visible:ring-emerald-500/30",
@@ -4271,6 +4279,8 @@ const CollabLinkLanding = () => {
                                       type="number"
                                       value={barterValue}
                                       onChange={e => setBarterValue(e.target.value)}
+                                      onKeyDown={e => e.key === 'Enter' && e.currentTarget.blur()}
+                                      enterKeyHint="done"
                                       placeholder="Product's market price"
                                       className={cn(
                                         "h-12 pl-10 pr-4 rounded-xl border-white bg-white font-black text-[14px] text-slate-900 placeholder:text-slate-500 shadow-sm focus-visible:ring-2 focus-visible:ring-emerald-500/30",
@@ -4389,6 +4399,8 @@ const CollabLinkLanding = () => {
                                   type="number"
                                   value={exactBudget}
                                   onChange={e => setExactBudget(e.target.value)}
+                                  onKeyDown={e => e.key === 'Enter' && e.currentTarget.blur()}
+                                  enterKeyHint="done"
                                   placeholder="Plus cash amount"
                                   className="h-14 pl-10 pr-6 rounded-2xl border-white bg-white font-black text-[15px] text-slate-900 placeholder:text-slate-500 shadow-sm focus-visible:ring-2 focus-visible:ring-emerald-500/30 transition-all"
                                 />
@@ -4416,6 +4428,8 @@ const CollabLinkLanding = () => {
                                   type="number"
                                   value={exactBudget}
                                   onChange={e => setExactBudget(e.target.value)}
+                                  onKeyDown={e => e.key === 'Enter' && e.currentTarget.blur()}
+                                  enterKeyHint="done"
                                   placeholder="Amount (e.g. 5000)"
                                   className="h-14 pl-10 pr-6 rounded-2xl border-white bg-white font-black text-[15px] text-slate-900 placeholder:text-slate-500 shadow-sm focus-visible:ring-2 focus-visible:ring-emerald-500/30 transition-all"
                                 />
@@ -5136,6 +5150,8 @@ const EditDealTemplateModal = ({
               maxLength={120}
               value={edited.description}
               onChange={e => setEdited({ ...edited, description: e.target.value })}
+              onKeyDown={e => e.key === 'Enter' && e.currentTarget.blur()}
+              enterKeyHint="done"
               placeholder="e.g. Best for product launches. Includes 1 reel + 2 story mentions."
               className="rounded-2xl border-slate-200 bg-slate-50 min-h-[80px] font-medium focus:bg-white transition-all py-3 px-4 resize-none"
             />

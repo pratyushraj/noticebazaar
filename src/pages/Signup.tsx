@@ -752,6 +752,8 @@ const Signup = () => {
                       placeholder="e.g. John Doe"
                       value={name}
                       onChange={(e) => setName(e.target.value)}
+                      onKeyDown={(e) => e.key === 'Enter' && e.currentTarget.blur()}
+                      enterKeyHint="done"
                       className="bg-white/5 border-white/10 text-white placeholder:text-white/10 text-[16px] h-[60px] rounded-[20px] focus:border-emerald-500/50 focus:ring-0 focus:bg-white/10 transition-all outline-none"
                       required
                     />
@@ -768,6 +770,8 @@ const Signup = () => {
                           placeholder="yourhandle"
                           value={instagramHandle}
                           onChange={(e) => setInstagramHandle(e.target.value)}
+                          onKeyDown={(e) => e.key === 'Enter' && e.currentTarget.blur()}
+                          enterKeyHint="done"
                           className="bg-white/5 border-white/10 text-white placeholder:text-white/10 text-[16px] h-[60px] rounded-[20px] focus:border-emerald-500/50 focus:ring-0 focus:bg-white/10 pl-10 transition-all outline-none"
                         />
                       </div>
@@ -784,6 +788,8 @@ const Signup = () => {
                           placeholder="e.g. Nike, creatorarmour"
                           value={brandName}
                           onChange={(e) => setBrandName(e.target.value)}
+                          onKeyDown={(e) => e.key === 'Enter' && e.currentTarget.blur()}
+                          enterKeyHint="done"
                           className="bg-white/5 border-white/10 text-white placeholder:text-white/10 text-[16px] h-[60px] rounded-[20px] focus:border-emerald-500/50 focus:ring-0 focus:bg-white/10 transition-all outline-none"
                           required
                         />
@@ -812,6 +818,8 @@ const Signup = () => {
                   placeholder="name@example.com"
                   value={email}
                   onChange={(e) => handleEmailChange(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && e.currentTarget.blur()}
+                  enterKeyHint="done"
                   className={cn(
                     "bg-white/5 border-white/10 text-white placeholder:text-white/10 text-[16px] h-[60px] rounded-[20px] focus:border-emerald-500/50 focus:ring-0 focus:bg-white/10 transition-all outline-none",
                     emailError && "border-red-500/50 focus:border-red-500/50"
@@ -837,6 +845,8 @@ const Signup = () => {
                     placeholder="••••••••"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && e.currentTarget.blur()}
+                    enterKeyHint="done"
                     className="bg-white/5 border-white/10 text-white placeholder:text-white/10 text-[16px] h-[60px] rounded-[20px] focus:border-emerald-500/50 focus:ring-0 focus:bg-white/10 pr-12 transition-all outline-none"
                     required
                   />

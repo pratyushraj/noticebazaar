@@ -363,8 +363,11 @@ export const QuickOfferSheet: React.FC<QuickOfferSheetProps> = ({
                                     <IndianRupee className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
                                     <Input 
                                         type="number"
+                                        inputMode="numeric"
                                         value={budget}
                                         onChange={(e) => setBudget(e.target.value)}
+                                        onKeyDown={(e) => e.key === 'Enter' && e.currentTarget.blur()}
+                                        enterKeyHint="done"
                                         className="h-14 rounded-2xl border border-slate-200 bg-white pl-10 font-black text-lg text-slate-900 shadow-sm focus:border-emerald-500/50"
                                         placeholder="0"
                                     />
@@ -378,6 +381,8 @@ export const QuickOfferSheet: React.FC<QuickOfferSheetProps> = ({
                                         type="date"
                                         value={deadline}
                                         onChange={(e) => setDeadline(e.target.value)}
+                                        onKeyDown={(e) => e.key === 'Enter' && e.currentTarget.blur()}
+                                        enterKeyHint="done"
                                         className="h-14 rounded-2xl border border-slate-200 bg-white pl-10 font-bold text-sm text-slate-900 shadow-sm focus:border-emerald-500/50"
                                     />
                                 </div>
@@ -390,6 +395,8 @@ export const QuickOfferSheet: React.FC<QuickOfferSheetProps> = ({
                             <Input 
                                 value={description}
                                 onChange={(e) => setDescription(e.target.value)}
+                                onKeyDown={(e) => e.key === 'Enter' && e.currentTarget.blur()}
+                                enterKeyHint="done"
                                 className="h-14 rounded-2xl border border-slate-200 bg-white px-4 font-medium text-sm text-slate-900 shadow-sm focus:border-emerald-500/50"
                                 placeholder="Describe your requirements..."
                             />

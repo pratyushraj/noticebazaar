@@ -244,6 +244,8 @@ export default function BrandOnboarding() {
                     <input
                       value={brandName}
                       onChange={(e) => setBrandName(e.target.value)}
+                      onKeyDown={(e) => e.key === 'Enter' && e.currentTarget.blur()}
+                      enterKeyHint="done"
                       className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3.5 text-[16px] font-semibold text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 transition-all"
                       placeholder="e.g. Nike, Mamaearth..."
                     />

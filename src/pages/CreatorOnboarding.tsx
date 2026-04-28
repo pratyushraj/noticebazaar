@@ -30,6 +30,7 @@ import {
   TrendingUp,
   ArrowUpRight,
   Phone,
+  Mail,
   LayoutDashboard
 } from 'lucide-react';
 import { generateAIBios } from '@/utils/aiBioGenerator';
@@ -615,8 +616,8 @@ export default function CreatorOnboarding() {
   };
 
   const handleSendOtp = async () => {
-    if (!phone || phone.length < 10) {
-      toast.error('Please enter a valid phone number in Settlements step');
+    if (!user?.email) {
+      toast.error('Email address not found');
       return;
     }
     triggerHaptic?.();
@@ -632,7 +633,7 @@ export default function CreatorOnboarding() {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ phone }),
+        body: JSON.stringify({ email: user.email }),
       });
 
       const data = await response.json();
@@ -1104,6 +1105,8 @@ export default function CreatorOnboarding() {
                         setFollowerCount(e.target.value);
                         setFollowersAutoFilled(false);
                       }}
+                      onKeyDown={(e) => e.key === 'Enter' && e.currentTarget.blur()}
+                      enterKeyHint="done"
                       placeholder="e.g. 15400"
                       className="h-[68px] pl-14 rounded-[24px] border-white/10 bg-white/5 text-lg font-bold text-white focus:border-emerald-500/50 focus:bg-white/10 transition-all shadow-none outline-none"
                     />
@@ -1133,6 +1136,8 @@ export default function CreatorOnboarding() {
                         setUniqueCityValue(e.target.value, baseCity, setBaseCity);
                         window.setTimeout(() => setActiveCityField((current) => current === 'baseCity' ? null : current), 200);
                       }}
+                      onKeyDown={(e) => e.key === 'Enter' && e.currentTarget.blur()}
+                      enterKeyHint="done"
                       placeholder="e.g. Mumbai"
                       autoComplete="off"
                       className="h-[68px] pl-14 rounded-[24px] border-white/10 bg-white/5 text-lg font-bold text-white focus:border-emerald-500/50 focus:bg-white/10 transition-all shadow-none outline-none"
@@ -1154,6 +1159,8 @@ export default function CreatorOnboarding() {
                           setUniqueCityValue(e.target.value, topCity1, setTopCity1);
                           window.setTimeout(() => setActiveCityField((current) => current === 'topCity1' ? null : current), 200);
                         }}
+                        onKeyDown={(e) => e.key === 'Enter' && e.currentTarget.blur()}
+                        enterKeyHint="done"
                         placeholder="City 1"
                         autoComplete="off"
                         className="h-[60px] px-4 rounded-[20px] border-white/10 bg-white/5 text-[11px] font-black uppercase tracking-widest text-white focus:border-emerald-500/50 focus:bg-white/10 transition-all shadow-none outline-none"
@@ -1169,6 +1176,8 @@ export default function CreatorOnboarding() {
                           setUniqueCityValue(e.target.value, topCity2, setTopCity2);
                           window.setTimeout(() => setActiveCityField((current) => current === 'topCity2' ? null : current), 200);
                         }}
+                        onKeyDown={(e) => e.key === 'Enter' && e.currentTarget.blur()}
+                        enterKeyHint="done"
                         placeholder="City 2"
                         autoComplete="off"
                         className="h-[60px] px-4 rounded-[20px] border-white/10 bg-white/5 text-[11px] font-black uppercase tracking-widest text-white focus:border-emerald-500/50 focus:bg-white/10 transition-all shadow-none outline-none"
@@ -1184,6 +1193,8 @@ export default function CreatorOnboarding() {
                           setUniqueCityValue(e.target.value, topCity3, setTopCity3);
                           window.setTimeout(() => setActiveCityField((current) => current === 'topCity3' ? null : current), 200);
                         }}
+                        onKeyDown={(e) => e.key === 'Enter' && e.currentTarget.blur()}
+                        enterKeyHint="done"
                         placeholder="City 3"
                         autoComplete="off"
                         className="h-[60px] px-4 rounded-[20px] border-white/10 bg-white/5 text-[11px] font-black uppercase tracking-widest text-white focus:border-emerald-500/50 focus:bg-white/10 transition-all shadow-none outline-none"
@@ -1448,6 +1459,8 @@ export default function CreatorOnboarding() {
                       type="number"
                       value={baseRate}
                       onChange={e => setBaseRate(e.target.value)}
+                      onKeyDown={(e) => e.key === 'Enter' && e.currentTarget.blur()}
+                      enterKeyHint="done"
                       placeholder="5,000"
                       className="h-[84px] pl-16 text-3xl font-black italic bg-white/5 border-white/10 rounded-[28px] text-white focus:bg-white/10 focus:border-emerald-500/50 transition-all shadow-none outline-none"
                     />
@@ -1549,6 +1562,8 @@ export default function CreatorOnboarding() {
                   <Input
                     value={upiId}
                     onChange={e => setUpiId(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && e.currentTarget.blur()}
+                    enterKeyHint="done"
                     placeholder="e.g. name@okhdfcbank"
                     className="h-[68px] px-6 rounded-[24px] border-white/10 bg-white/5 font-bold text-white focus:border-emerald-500/50 focus:bg-white/10 transition-all shadow-none outline-none"
                   />
@@ -1564,6 +1579,8 @@ export default function CreatorOnboarding() {
                       type="tel"
                       value={phone}
                       onChange={e => setPhone(e.target.value)}
+                      onKeyDown={(e) => e.key === 'Enter' && e.currentTarget.blur()}
+                      enterKeyHint="done"
                       placeholder="e.g. +91 98765 43210"
                       className="h-[68px] pl-14 rounded-[24px] border-white/10 bg-white/5 font-bold text-white focus:border-emerald-500/50 focus:bg-white/10 transition-all shadow-none outline-none"
                     />
@@ -1575,6 +1592,7 @@ export default function CreatorOnboarding() {
                   <Textarea
                     value={shippingAddress}
                     onChange={e => setShippingAddress(e.target.value)}
+                    enterKeyHint="done"
                     placeholder="Building, Street, Area..."
                     className="min-h-[100px] p-6 rounded-[28px] border-white/10 bg-white/5 font-semibold text-white focus:border-emerald-500/50 focus:bg-white/10 transition-all shadow-none resize-none outline-none"
                   />
@@ -1585,6 +1603,8 @@ export default function CreatorOnboarding() {
                   <Input
                     value={pincode}
                     onChange={e => setPincode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                    onKeyDown={(e) => e.key === 'Enter' && e.currentTarget.blur()}
+                    enterKeyHint="done"
                     placeholder="6-digit Pincode"
                     className="h-[68px] px-6 rounded-[24px] border-white/10 bg-white/5 font-bold text-white focus:border-emerald-500/50 focus:bg-white/10 transition-all shadow-none outline-none"
                   />
@@ -1625,6 +1645,7 @@ export default function CreatorOnboarding() {
                           <Textarea
                             value={legalAddress}
                             onChange={e => setLegalAddress(e.target.value)}
+                            enterKeyHint="done"
                             placeholder="Your permanent home/office address..."
                             className="min-h-[100px] p-6 rounded-[28px] border-white/10 bg-white/5 font-semibold text-white focus:border-emerald-500/50 focus:bg-white/10 transition-all shadow-none resize-none outline-none"
                           />
@@ -1673,11 +1694,11 @@ export default function CreatorOnboarding() {
                 <div className="p-6 rounded-[32px] bg-white/5 border border-white/10 space-y-4">
                   <div className="flex items-center gap-4">
                     <div className="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center border border-white/10">
-                      <Phone className="w-5 h-5 text-emerald-400" />
+                      <Mail className="w-5 h-5 text-emerald-400" />
                     </div>
-                    <div>
-                      <p className="text-[10px] font-black uppercase tracking-widest text-white/30">Verified Phone</p>
-                      <p className="text-lg font-black text-white italic">{phone}</p>
+                    <div className="min-w-0">
+                      <p className="text-[10px] font-black uppercase tracking-widest text-white/30">Verified Email</p>
+                      <p className="text-lg font-black text-white italic truncate">{user?.email}</p>
                     </div>
                   </div>
 
@@ -1699,14 +1720,14 @@ export default function CreatorOnboarding() {
                     {!otpSent ? (
                       <div className="space-y-4">
                         <p className="text-[10px] font-black uppercase tracking-[0.2em] text-white/40 text-center px-4 leading-relaxed">
-                          We'll send a 6-digit OTP to your WhatsApp to verify your identity for legal contracts.
+                          We'll send a 6-digit OTP to your email to verify your identity for legal contracts.
                         </p>
                         <Button
                           onClick={handleSendOtp}
                           disabled={isSendingOtp}
                           className="w-full h-16 rounded-[24px] bg-white/10 hover:bg-white/20 text-white font-black uppercase tracking-widest border border-white/10 transition-all flex items-center justify-center gap-3"
                         >
-                          {isSendingOtp ? <Loader2 className="w-5 h-5 animate-spin" /> : <>Send OTP via WhatsApp <ArrowRight className="w-4 h-4" /></>}
+                          {isSendingOtp ? <Loader2 className="w-5 h-5 animate-spin" /> : <>Send OTP via Email <ArrowRight className="w-4 h-4" /></>}
                         </Button>
                       </div>
                     ) : (

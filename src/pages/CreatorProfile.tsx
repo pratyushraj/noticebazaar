@@ -2093,6 +2093,8 @@ const ProfileSettings = () => {
                     type="text"
                     value={formData.name}
                     onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                    onKeyDown={(e) => e.key === 'Enter' && e.currentTarget.blur()}
+                    enterKeyHint="done"
                     disabled={!editMode}
                     placeholder="Enter your full name"
                     className={`w-full bg-muted/50 border border-border rounded-lg px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground/60 outline-none transition-all ${editMode ? 'focus:border-primary/50 focus:ring-2 focus:ring-primary/20 focus:bg-muted' : 'cursor-not-allowed opacity-70'}`}
@@ -2133,6 +2135,8 @@ const ProfileSettings = () => {
                         }
                         setFormData(prev => ({ ...prev, phone: value }));
                       }}
+                      onKeyDown={(e) => e.key === 'Enter' && e.currentTarget.blur()}
+                      enterKeyHint="done"
                       disabled={!editMode}
                       placeholder="+91 98765 43210"
                       className={`flex-1 bg-muted/50 border border-border rounded-lg px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground/60 outline-none transition-all ${editMode ? 'focus:border-primary/50 focus:ring-2 focus:ring-primary/20 focus:bg-muted' : 'cursor-not-allowed opacity-70'}`}
@@ -2148,6 +2152,8 @@ const ProfileSettings = () => {
                       type="text"
                       value={formData.addressLine}
                       onChange={(e) => setFormData(prev => ({ ...prev, addressLine: e.target.value }))}
+                      onKeyDown={(e) => e.key === 'Enter' && e.currentTarget.blur()}
+                      enterKeyHint="done"
                       disabled={!editMode}
                       placeholder="House/Flat No., Building, Street"
                       className={`flex-1 bg-muted/50 border border-border rounded-lg px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground/60 outline-none transition-all ${editMode ? 'focus:border-primary/50 focus:ring-2 focus:ring-primary/20 focus:bg-muted' : 'cursor-not-allowed opacity-70'}`}
@@ -2167,6 +2173,8 @@ const ProfileSettings = () => {
                           const value = e.target.value.replace(/\D/g, '').slice(0, 6);
                           handlePincodeChange(value);
                         }}
+                        onKeyDown={(e) => e.key === 'Enter' && e.currentTarget.blur()}
+                        enterKeyHint="done"
                         disabled={!editMode}
                         placeholder="6-digit pincode"
                         maxLength={6}
@@ -2200,6 +2208,8 @@ const ProfileSettings = () => {
                           return updated;
                         });
                       }}
+                      onKeyDown={(e) => e.key === 'Enter' && e.currentTarget.blur()}
+                      enterKeyHint="done"
                       disabled={!editMode || isLookingUpPincode}
                       placeholder="City"
                       className={`w-full bg-muted/50 border border-border rounded-lg px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground/60 outline-none transition-all ${editMode ? 'focus:border-primary/50 focus:ring-2 focus:ring-primary/20 focus:bg-muted' : 'cursor-not-allowed opacity-70'} ${isLookingUpPincode ? 'opacity-50' : ''}`}
@@ -2215,6 +2225,8 @@ const ProfileSettings = () => {
                       type="text"
                       value={formData.state}
                       onChange={(e) => setFormData(prev => ({ ...prev, state: e.target.value }))}
+                      onKeyDown={(e) => e.key === 'Enter' && e.currentTarget.blur()}
+                      enterKeyHint="done"
                       disabled={!editMode || isLookingUpPincode}
                       placeholder="State"
                       className={`w-full bg-muted/50 border border-border rounded-lg px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground/60 outline-none transition-all ${editMode ? 'focus:border-primary/50 focus:ring-2 focus:ring-primary/20 focus:bg-muted' : 'cursor-not-allowed opacity-70'} ${isLookingUpPincode ? 'opacity-50' : ''}`}
@@ -2234,6 +2246,8 @@ const ProfileSettings = () => {
                       <textarea
                         value={formData.registered_address}
                         onChange={(e) => setFormData(prev => ({ ...prev, registered_address: e.target.value }))}
+                        onKeyDown={(e) => e.key === 'Enter' && e.currentTarget.blur()}
+                        enterKeyHint="done"
                         disabled={!editMode}
                         placeholder="Official/Registered address for legal contracts (leave blank to use current address)"
                         rows={2}
@@ -2276,6 +2290,8 @@ const ProfileSettings = () => {
                           username: value // Use same value for collab link username
                         }));
                       }}
+                      onKeyDown={(e) => e.key === 'Enter' && e.currentTarget.blur()}
+                      enterKeyHint="done"
                       disabled={!editMode}
                       placeholder="e.g. your_handle"
                       className={`flex-1 bg-muted/50 border border-border rounded-lg px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground/40 outline-none transition-all ${editMode ? 'focus:border-primary/50 focus:ring-2 focus:ring-primary/20 focus:bg-muted' : 'cursor-not-allowed opacity-70'}`}
