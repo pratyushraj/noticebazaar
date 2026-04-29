@@ -51,16 +51,15 @@ export function getApiBaseUrl(): string {
 
         // Ensure we don't force localhost on public domains even if localStorage was tampered with.
       if (isProduction) {
-        // Production: use dedicated API domain to avoid route drift
-        // between frontend serverless handlers and backend API routes.
-        apiUrl = 'https://noticebazaar-api.onrender.com';
+        // Production: use tunnel while Render is down
+        apiUrl = 'https://ruled-qty-brad-examination.trycloudflare.com';
       } else if (isLocalhost) {
         // Localhost default: prefer local API for developer experience.
         // To force production API, set localStorage.useProdApi = 'true' (or ?prodApi=true).
         let useProdApi = false;
         try { useProdApi = localStorage.getItem('useProdApi') === 'true'; } catch { /* ignore */ }
         useProdApi = useProdApi || urlParams.get('prodApi') === 'true';
-        apiUrl = useProdApi ? 'https://noticebazaar-api.onrender.com' : 'http://127.0.0.1:3001';
+        apiUrl = useProdApi ? 'https://ruled-qty-brad-examination.trycloudflare.com' : 'http://127.0.0.1:3001';
       } else if (isLocalNetwork) {
         // Use the same IP but port 3001 for the API
         apiUrl = origin.replace(/:\d+$/, '') + ':3001';
