@@ -7791,7 +7791,7 @@ const DashboardTab = React.memo(({
                                     <motion.div
                                         key={req.id}
                                         whileTap={{ scale: 0.98 }}
-                                        onTap={() => {
+                                        onClick={() => {
                                             triggerHaptic();
                                             setSelectedItem(req);
                                             setSelectedType('offer');
@@ -7832,7 +7832,10 @@ const DashboardTab = React.memo(({
                                                     <p className="text-[18px] font-black tracking-tight text-white">₹{amount.toLocaleString()}</p>
                                                 </div>
                                                 <h2 className="text-xl font-black italic uppercase text-white truncate">{req.brand_name || 'Partner'}</h2>
-                                                <button className="w-full h-12 mt-4 rounded-xl bg-white text-black font-black uppercase tracking-widest text-[11px] flex items-center justify-center gap-2">
+                                                <button 
+                                                    onClick={(e) => { e.stopPropagation(); triggerHaptic(); setSelectedItem(req); setSelectedType('offer'); }}
+                                                    className="w-full h-12 mt-4 rounded-xl bg-white text-black font-black uppercase tracking-widest text-[11px] flex items-center justify-center gap-2"
+                                                >
                                                     View Offer <ChevronRight className="w-4 h-4" />
                                                 </button>
                                             </div>
