@@ -7050,7 +7050,7 @@ const MobileDashboardDemo = ({
                                                 onClick={() => { triggerHaptic(); setShowBrandDetails(v => !v); }}
                                                 className="w-full flex items-center gap-4 px-5 py-4 active:opacity-70 transition-opacity"
                                             >
-                                                <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center shrink-0 shadow-sm", isDark ? "bg-info/10 border border-info/20" : "bg-info border border-info/20")}>
+                                                <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center shrink-0 shadow-sm", isDark ? "bg-info/10 border border-info/20" : "bg-info/10 border border-info/20")}>
                                                     <ShieldCheck className="w-5 h-5 text-info" strokeWidth={2.5} />
                                                 </div>
                                                 <div className="flex-1 text-left min-w-0">
