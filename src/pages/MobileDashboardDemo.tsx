@@ -7029,22 +7029,35 @@ const MobileDashboardDemo = ({
                                                                 <div className={cn("flex flex-wrap gap-2 sm:justify-end", textColor)}>
                                                                     {(() => {
                                                                         const raw = selectedItem.deliverables || selectedItem.raw?.deliverables;
-                                                                        let items: string[] = ['1 Reel', '2 Stories'];
+                                                                        let items: string[] = [];
                                                                         try {
-                                                                            const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;
-                                                                            if (Array.isArray(parsed) && parsed.length > 0) {
-                                                                                items = parsed.map((d: any) => {
-                                                                                    if (typeof d === 'string') return d;
-                                                                                    const ct = (d.contentType || d.type || '').toLowerCase();
-                                                                                    const count = d.count || d.quantity || 1;
-                                                                                    let label = 'Content';
-                                                                                    if (ct.includes('reel')) label = 'Reel';
-                                                                                    else if (ct.includes('story')) label = 'Stories';
-                                                                                    else if (ct.includes('post')) label = 'Post';
-                                                                                    return `${count} ${label}`;
-                                                                                });
+                                                                            if (raw) {
+                                                                                if (typeof raw === 'string' && !raw.startsWith('[') && !raw.startsWith('{')) {
+                                                                                    // Handle plain text deliverables
+                                                                                    items = [raw];
+                                                                                } else {
+                                                                                    const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;
+                                                                                    if (Array.isArray(parsed) && parsed.length > 0) {
+                                                                                        items = parsed.map((d: any) => {
+                                                                                            if (typeof d === 'string') return d;
+                                                                                            const ct = (d.contentType || d.type || '').toLowerCase();
+                                                                                            const count = d.count || d.quantity || 1;
+                                                                                            let label = 'Content';
+                                                                                            if (ct.includes('reel')) label = 'Reel';
+                                                                                            else if (ct.includes('story')) label = 'Stories';
+                                                                                            else if (ct.includes('post')) label = 'Post';
+                                                                                            return `${count} ${label}`;
+                                                                                        });
+                                                                                    } else if (typeof parsed === 'string') {
+                                                                                        items = [parsed];
+                                                                                    }
+                                                                                }
                                                                             }
-                                                                        } catch (_) {}
+                                                                        } catch (_) {
+                                                                            if (typeof raw === 'string') items = [raw];
+                                                                        }
+                                                                        // Sensible default if still empty
+                                                                        if (items.length === 0) items = ['1 Reel'];
                                                                         return items.map((d, i) => (
                                                                             <span key={i} className={cn(
                                                                                 "px-3 py-1.5 rounded-xl text-[11px] font-black border whitespace-nowrap",
