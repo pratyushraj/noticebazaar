@@ -13,7 +13,7 @@
 /* Disable selection globally for a native app feel, except in inputs/textareas */
 html {
   /* Inherit theme background to prevent visual mismatch during overscroll/PWA launch */
-  background-color: hsl(var(--background));
+  background-color: #020D0A;
 }
 
 body {
@@ -22,7 +22,7 @@ body {
   user-select: none;
   overscroll-behavior-y: none; /* Disable browser pull-to-refresh for custom implementation */
   /* iOS PWA: prevent hardcoded background mismatch */
-  background-color: hsl(var(--background));
+  background-color: #020D0A;
 }
   .animate-loading-bar {
     animation: loading-slide 1.5s ease-in-out infinite;
@@ -136,10 +136,7 @@ input, textarea, [contenteditable="true"], .selectable {
 
 html,
 body {
-  height: 100%;
   width: 100%;
-  position: fixed; /* Prevent body scroll entirely */
-  overflow: hidden;
   -webkit-overflow-scrolling: touch;
 }
 

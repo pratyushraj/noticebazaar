@@ -1,7 +1,7 @@
 
 
 import React, { useEffect, useMemo, useState } from 'react';
-import { Download, Smartphone, ShieldCheck } from 'lucide-react';
+import { Download, Smartphone, ShieldCheck, Share, Plus, MoreVertical, Zap, Bell } from 'lucide-react';
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
@@ -18,6 +18,7 @@ const CreatorAppModeGate: React.FC<CreatorAppModeGateProps> = ({ enabled, childr
   const [isStandalone, setIsStandalone] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [isIOS, setIsIOS] = useState(false);
+  const [isAndroid, setIsAndroid] = useState(false);
   const [isInstagramBrowser, setIsInstagramBrowser] = useState(false);
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [allowBrowserMode, setAllowBrowserMode] = useState(false);
@@ -34,6 +35,7 @@ const CreatorAppModeGate: React.FC<CreatorAppModeGateProps> = ({ enabled, childr
       setIsStandalone(standaloneMatch || iosStandalone);
       setIsMobile(/Android|iPhone|iPad|iPod/i.test(userAgent) || window.innerWidth < 1024);
       setIsIOS(/iPhone|iPad|iPod/i.test(userAgent));
+      setIsAndroid(/Android/i.test(userAgent));
       setIsInstagramBrowser(/Instagram/i.test(userAgent));
     };
 
@@ -97,8 +99,8 @@ const CreatorAppModeGate: React.FC<CreatorAppModeGateProps> = ({ enabled, childr
 
   const title = isInstagramBrowser ? 'Best in Browser or App' : 'Open Creator Armour App';
   const description = isInstagramBrowser
-    ? 'Instagram in-app browser can break login and sharing. Open in your browser or continue here if you need to finish quickly.'
-    : 'For the smoothest creator experience, use the installed app. You can still continue in your browser.';
+    ? 'Instagram in-app browser can break login and sharing. Open in your browser or install the app for a native experience.'
+    : 'Get instant notifications, faster load times, and a native app experience. Install to your home screen today.';
   const installLabel = deferredPrompt ? 'Install App' : isInstagramBrowser ? 'Open in Browser / Install App' : 'Install / Open App';
   const continueLabel = 'Continue in Browser';
   const quickSteps = isInstagramBrowser
@@ -134,14 +136,66 @@ const CreatorAppModeGate: React.FC<CreatorAppModeGateProps> = ({ enabled, childr
         >
           {continueLabel}
         </button>
-        <div className="mt-4 rounded-2xl bg-background border border-border p-4 text-left">
-          <p className="text-sm font-semibold text-muted-foreground mb-2 flex items-center gap-2">
-            <Smartphone className="w-4 h-4 text-primary" />
-            Quick steps
+        <div className="mt-6 rounded-[24px] bg-background border border-border p-5 text-left relative overflow-hidden">
+          <div className="absolute top-0 right-0 p-3 opacity-[0.05]">
+            <Smartphone className="w-16 h-16 rotate-12" />
+          </div>
+          
+          <p className="text-[12px] font-black uppercase tracking-[0.2em] text-primary mb-4 flex items-center gap-2">
+            <Smartphone className="w-3.5 h-3.5" />
+            Quick Setup Guide
           </p>
-          {quickSteps.map((step) => (
-            <p key={step} className="text-sm text-muted-foreground">{quickSteps.indexOf(step) + 1}. {step}</p>
-          ))}
+
+          <div className="space-y-4 relative z-10">
+            {isIOS ? (
+              <>
+                <div className="flex items-start gap-4">
+                  <div className="w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center shrink-0 border border-primary/20">
+                    <Share className="w-4 h-4 text-primary" />
+                  </div>
+                  <div>
+                    <p className="text-[13px] font-bold text-muted-foreground leading-tight">Step 1: Tap Share</p>
+                    <p className="text-[11px] text-muted-foreground/60 mt-0.5">Found at the bottom or top of Safari</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-4">
+                  <div className="w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center shrink-0 border border-primary/20">
+                    <Plus className="w-4 h-4 text-primary" />
+                  </div>
+                  <div>
+                    <p className="text-[13px] font-bold text-muted-foreground leading-tight">Step 2: Add to Home Screen</p>
+                    <p className="text-[11px] text-muted-foreground/60 mt-0.5">Scroll down in the share menu to find it</p>
+                  </div>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="flex items-start gap-4">
+                  <div className="w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center shrink-0 border border-primary/20">
+                    <MoreVertical className="w-4 h-4 text-primary" />
+                  </div>
+                  <div>
+                    <p className="text-[13px] font-bold text-muted-foreground leading-tight">Step 1: Open Browser Menu</p>
+                    <p className="text-[11px] text-muted-foreground/60 mt-0.5">Tap the three dots in Chrome or Edge</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-4">
+                  <div className="w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center shrink-0 border border-primary/20">
+                    <Download className="w-4 h-4 text-primary" />
+                  </div>
+                  <div>
+                    <p className="text-[13px] font-bold text-muted-foreground leading-tight">Step 2: Install / Add to Home</p>
+                    <p className="text-[11px] text-muted-foreground/60 mt-0.5">Tap 'Install app' or 'Add to home screen'</p>
+                  </div>
+                </div>
+              </>
+            )}
+
+            <div className="pt-2 flex items-center gap-2 text-[10px] font-bold text-emerald-600 uppercase tracking-widest bg-emerald-500/5 -mx-5 -mb-5 p-3 px-5 border-t border-emerald-500/10">
+              <Bell className="w-3 h-3" />
+              Enables Instant Notifications
+            </div>
+          </div>
         </div>
       </div>
     </div>

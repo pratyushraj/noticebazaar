@@ -43,7 +43,7 @@ export const OnboardingSlide: React.FC<OnboardingSlideProps> = ({
       className={cn(
         "flex flex-col items-center",
         "flex-1 w-full min-h-0 min-h-full",
-        "p-4 md:p-6 pt-10 md:pt-6 pb-8 md:pb-8",
+        "p-4 md:p-6 pt-10 md:pt-6 pb-40 md:pb-12",
         "text-center",
         className
       )}

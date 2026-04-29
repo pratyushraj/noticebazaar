@@ -62,7 +62,7 @@ export const OnboardingContainer: React.FC<OnboardingContainerProps> = ({
 
         // Background
         theme === 'dark'
-          ? "bg-[#0B0F14] text-foreground"
+          ? "bg-[#020D0A] text-foreground"
           : "bg-white text-slate-900",
 
         // Layout

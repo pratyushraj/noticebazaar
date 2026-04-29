@@ -1025,7 +1025,7 @@ export default function CreatorOnboarding() {
 
               </div>
 
-              <div className="sticky bottom-0 mt-auto pt-10 pb-10 w-[calc(100%+3rem)] -mx-6 px-6 bg-gradient-to-t from-[#0B0F14] via-[#0B0F14] to-transparent z-20 space-y-6">
+              <div className="relative mt-auto pt-10 pb-10 w-[calc(100%+3rem)] -mx-6 px-6 bg-gradient-to-t from-[#020D0A] via-[#020D0A] to-transparent z-20 space-y-6">
                 <Button
                   onClick={handleNext}
                   disabled={isSubmitting}
@@ -1179,7 +1179,7 @@ export default function CreatorOnboarding() {
                 </div>
               </div>
 
-              <div className="sticky bottom-0 mt-auto pt-10 pb-10 w-[calc(100%+3rem)] -mx-6 px-6 bg-gradient-to-t from-[#0B0F14] via-[#0B0F14] to-transparent z-20">
+              <div className="relative mt-auto pt-10 pb-10 w-[calc(100%+3rem)] -mx-6 px-6 bg-gradient-to-t from-[#020D0A] via-[#020D0A] to-transparent z-20">
                 <Button
                   onClick={handleNext}
                   className="w-full h-[72px] rounded-[26px] bg-emerald-500 hover:bg-emerald-400 text-white font-black italic text-xl shadow-[0_20px_40px_rgba(16,185,129,0.2)] active:scale-95 transition-all flex items-center justify-center gap-3 border-none uppercase tracking-widest"
@@ -1266,7 +1266,7 @@ export default function CreatorOnboarding() {
                 </div>
               </div>
 
-              <div className="sticky bottom-0 mt-auto pt-10 pb-10 w-[calc(100%+3rem)] -mx-6 px-6 bg-gradient-to-t from-[#0B0F14] via-[#0B0F14] to-transparent z-20">
+              <div className="relative mt-auto pt-10 pb-10 w-[calc(100%+3rem)] -mx-6 px-6 bg-gradient-to-t from-[#020D0A] via-[#020D0A] to-transparent z-20">
                 <Button
                   onClick={handleNext}
                   className="w-full h-[72px] rounded-[26px] bg-emerald-500 hover:bg-emerald-400 text-white font-black italic text-xl shadow-[0_20px_40px_rgba(16,185,129,0.2)] active:scale-95 transition-all flex items-center justify-center gap-3 border-none uppercase tracking-widest"
@@ -1339,7 +1339,7 @@ export default function CreatorOnboarding() {
                 </div>
               </div>
 
-              <div className="sticky bottom-0 mt-auto pt-10 pb-10 w-[calc(100%+3rem)] -mx-6 px-6 bg-gradient-to-t from-[#0B0F14] via-[#0B0F14] to-transparent z-20">
+              <div className="relative mt-auto pt-10 pb-10 w-[calc(100%+3rem)] -mx-6 px-6 bg-gradient-to-t from-[#020D0A] via-[#020D0A] to-transparent z-20">
                 <Button
                   onClick={handleNext}
                   className="w-full h-[72px] rounded-[26px] bg-emerald-500 hover:bg-emerald-400 text-white font-black italic text-xl shadow-[0_20px_40px_rgba(16,185,129,0.2)] active:scale-95 transition-all flex items-center justify-center gap-3 border-none uppercase tracking-widest"
@@ -1365,40 +1365,6 @@ export default function CreatorOnboarding() {
               </div>
 
               <div className="w-full space-y-10">
-                {/* Creator Title */}
-                <div className="space-y-3 group text-left">
-                  <Label className="text-[10px] font-black uppercase tracking-widest text-white/30 px-1 flex justify-between items-center group-focus-within:text-emerald-400 transition-colors">
-                    <span>Professional Title</span>
-                    <button 
-                      type="button"
-                      onClick={() => {
-                        triggerHaptic?.();
-                        const bios = generateAIBios({
-                          name: instagramHandle || 'Creator',
-                          niches: selectedNiches,
-                          vibes: contentVibes,
-                          city: baseCity
-                        });
-                        const currentIndex = bios.indexOf(creatorTitle);
-                        const nextIndex = (currentIndex + 1) % bios.length;
-                        setCreatorTitle(bios[nextIndex]);
-                        toast.success('AI Bio Generated ✨');
-                      }}
-                      className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 hover:bg-emerald-500 hover:text-white hover:border-emerald-500 transition-all active:scale-95 shadow-lg shadow-emerald-900/20 group/ai"
-                    >
-                      <Sparkles className="w-3.5 h-3.5 group-hover/ai:animate-pulse transition-transform group-hover/ai:scale-110" />
-                      <span className="text-[10px] font-black uppercase tracking-widest">AI Magic</span>
-                    </button>
-                  </Label>
-                  <Input
-                    value={creatorTitle}
-                    onChange={e => setCreatorTitle(e.target.value)}
-                    placeholder="e.g. Tech Enthusiast & Reviewer"
-                    onKeyDown={(e) => e.key === 'Enter' && e.currentTarget.blur()}
-                    enterKeyHint="done"
-                    className="h-[68px] px-6 rounded-[24px] border-white/10 bg-white/5 text-lg font-bold text-white focus:border-emerald-500/50 focus:bg-white/10 transition-all shadow-none outline-none"
-                  />
-                </div>
 
                 {/* Video Upload Section */}
                 <div className="space-y-4">
@@ -1490,9 +1456,44 @@ export default function CreatorOnboarding() {
                     ))}
                   </div>
                 </div>
+
+                {/* Creator Title */}
+                <div className="space-y-3 group text-left">
+                  <Label className="text-[10px] font-black uppercase tracking-widest text-white/30 px-1 flex justify-between items-center group-focus-within:text-emerald-400 transition-colors">
+                    <span>Professional Title</span>
+                    <button 
+                      type="button"
+                      onClick={() => {
+                        triggerHaptic?.();
+                        const bios = generateAIBios({
+                          name: instagramHandle || 'Creator',
+                          niches: selectedNiches,
+                          vibes: contentVibes,
+                          city: baseCity
+                        });
+                        const currentIndex = bios.indexOf(creatorTitle);
+                        const nextIndex = (currentIndex + 1) % bios.length;
+                        setCreatorTitle(bios[nextIndex]);
+                        toast.success('AI Bio Generated ✨');
+                      }}
+                      className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 hover:bg-emerald-500 hover:text-white hover:border-emerald-500 transition-all active:scale-95 shadow-lg shadow-emerald-900/20 group/ai"
+                    >
+                      <Sparkles className="w-3.5 h-3.5 group-hover/ai:animate-pulse transition-transform group-hover/ai:scale-110" />
+                      <span className="text-[10px] font-black uppercase tracking-widest">AI Magic</span>
+                    </button>
+                  </Label>
+                  <Input
+                    value={creatorTitle}
+                    onChange={e => setCreatorTitle(e.target.value)}
+                    placeholder="e.g. Tech Enthusiast & Reviewer"
+                    onKeyDown={(e) => e.key === 'Enter' && e.currentTarget.blur()}
+                    enterKeyHint="done"
+                    className="h-[68px] px-6 rounded-[24px] border-white/10 bg-white/5 text-lg font-bold text-white focus:border-emerald-500/50 focus:bg-white/10 transition-all shadow-none outline-none"
+                  />
+                </div>
               </div>
 
-              <div className="sticky bottom-0 mt-auto pt-10 pb-10 w-[calc(100%+3rem)] -mx-6 px-6 bg-gradient-to-t from-[#0B0F14] via-[#0B0F14] to-transparent z-20">
+              <div className="relative mt-auto pt-10 pb-10 w-[calc(100%+3rem)] -mx-6 px-6 bg-gradient-to-t from-[#020D0A] via-[#020D0A] to-transparent z-20">
                 <Button
                   onClick={handleNext}
                   disabled={isSubmitting || isUploading}
@@ -1537,7 +1538,7 @@ export default function CreatorOnboarding() {
                   </div>
                 </motion.div>
 
-                <div className="sticky bottom-0 mt-auto pt-10 pb-10 w-[calc(100%+3rem)] -mx-6 px-6 bg-gradient-to-t from-[#0B0F14] via-[#0B0F14] to-transparent z-20">
+                <div className="relative mt-auto pt-10 pb-10 w-[calc(100%+3rem)] -mx-6 px-6 bg-gradient-to-t from-[#020D0A] via-[#020D0A] to-transparent z-20">
                   <Button
                     onClick={() => { triggerHaptic?.(); setStep('payout'); }}
                     className="w-full h-[72px] rounded-[26px] bg-emerald-500 hover:bg-emerald-400 text-white font-black italic text-xl shadow-[0_20px_40px_rgba(16,185,129,0.2)] active:scale-95 transition-all"
@@ -1668,7 +1669,7 @@ export default function CreatorOnboarding() {
                 </div>
               </div>
 
-              <div className="sticky bottom-0 mt-auto pt-10 pb-10 w-[calc(100%+3rem)] -mx-6 px-6 bg-gradient-to-t from-[#0B0F14] via-[#0B0F14] to-transparent z-20">
+              <div className="relative mt-auto pt-10 pb-10 w-[calc(100%+3rem)] -mx-6 px-6 bg-gradient-to-t from-[#020D0A] via-[#020D0A] to-transparent z-20">
                 <Button
                   onClick={handleNext}
                   disabled={isSubmitting}
@@ -1793,7 +1794,7 @@ export default function CreatorOnboarding() {
                 )}
               </div>
 
-              <div className="sticky bottom-0 mt-auto pt-10 pb-10 w-[calc(100%+3rem)] -mx-6 px-6 bg-gradient-to-t from-[#0B0F14] via-[#0B0F14] to-transparent z-20">
+              <div className="relative mt-auto pt-10 pb-10 w-[calc(100%+3rem)] -mx-6 px-6 bg-gradient-to-t from-[#020D0A] via-[#020D0A] to-transparent z-20">
                 <Button
                   onClick={handleNext}
                   disabled={!isPhoneVerified}
@@ -1829,7 +1830,7 @@ export default function CreatorOnboarding() {
                       initial={{ rotate: 15, scale: 0 }}
                       animate={{ rotate: -10, scale: 1 }}
                       transition={{ type: 'spring', delay: 0.5 }}
-                      className="bg-emerald-500 text-white text-[10px] font-black px-4 py-1.5 rounded-full shadow-2xl border-2 border-[#0B0F14] uppercase tracking-widest"
+                      className="bg-emerald-500 text-white text-[10px] font-black px-4 py-1.5 rounded-full shadow-2xl border-2 border-[#020D0A] uppercase tracking-widest"
                     >
                       New Offer
                     </motion.div>
@@ -1860,7 +1861,7 @@ export default function CreatorOnboarding() {
                   </div>
                 </div>
 
-                <div className="sticky bottom-0 mt-auto pt-8 pb-10 w-[calc(100%+3rem)] -mx-6 px-6 bg-gradient-to-t from-[#0B0F14] via-[#0B0F14] to-transparent z-20 space-y-6">
+                <div className="relative mt-auto pt-8 pb-10 w-[calc(100%+3rem)] -mx-6 px-6 bg-gradient-to-t from-[#020D0A] via-[#020D0A] to-transparent z-20 space-y-6">
                   <Button
                     onClick={async () => {
                       triggerHaptic?.();

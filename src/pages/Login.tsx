@@ -161,20 +161,26 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#020D0A] text-white flex flex-col items-center justify-center font-outfit relative overflow-hidden"
+    <div className="min-h-screen bg-[#020D0A] text-white flex flex-col items-center py-12 font-outfit relative overflow-x-hidden overflow-y-auto"
       style={{
         minHeight: '100dvh',
-        paddingTop: 'max(24px, env(safe-area-inset-top, 0px))',
-        paddingBottom: 'max(24px, env(safe-area-inset-bottom, 0px))',
+        paddingTop: 'max(48px, env(safe-area-inset-top, 0px))',
+        paddingBottom: 'max(48px, env(safe-area-inset-bottom, 0px))',
         paddingLeft: 'env(safe-area-inset-left, 0px)',
         paddingRight: 'env(safe-area-inset-right, 0px)',
+        WebkitOverflowScrolling: 'touch',
       }}
     >
-      {/* Premium Background Accents */}
+      {/* Dark Theme Force - Prevent white leak from LandingPage light class */}
+      <style>{`
+        html, body { background-color: #020D0A !important; }
+        .light { --background: 222 15% 4% !important; }
+      `}</style>
+
+      {/* Premium Background Accents - Simplified for mobile stability */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        <div className="absolute top-[-10%] left-[-20%] w-[60%] h-[60%] bg-emerald-500/10 rounded-full blur-[120px]" />
-        <div className="absolute bottom-[-10%] right-[-20%] w-[60%] h-[60%] bg-teal-500/10 rounded-full blur-[120px]" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-[0.03]" />
+        <div className="absolute top-[-5%] left-[-10%] w-[50%] h-[50%] bg-emerald-500/5 rounded-full blur-[100px]" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-[0.02]" />
       </div>
 
       <motion.div

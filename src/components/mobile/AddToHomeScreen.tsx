@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ShieldCheck, Share, PlusSquare, X, ArrowRight, Zap } from 'lucide-react';
+import { ShieldCheck, Share, PlusSquare, X, ArrowRight, Zap, MoreVertical, Download, Bell, Plus } from 'lucide-react';
 import { useLocation } from 'react-router-dom';
 import { trackEvent } from '@/lib/utils/analytics';
 import { triggerHaptic, HapticPatterns } from '@/lib/utils/haptics';
@@ -98,9 +98,8 @@ const AddToHomeScreen: React.FC = () => {
         setShowSteps(true);
         triggerHaptic(HapticPatterns.light);
       } else {
-        toast.message('Install from browser menu', {
-          description: 'Tap browser menu and choose "Install app" or "Add to Home screen".',
-        });
+        setShowSteps(true);
+        triggerHaptic(HapticPatterns.light);
       }
       return;
     }
@@ -195,33 +194,64 @@ const AddToHomeScreen: React.FC = () => {
             </div>
 
             <AnimatePresence>
-              {showSteps && isIOSDevice && (
+              {showSteps && (
                 <motion.div 
                   initial={{ height: 0, opacity: 0 }}
                   animate={{ height: 'auto', opacity: 1 }}
                   className="mt-6 pt-6 border-t border-white/10"
                 >
                   <div className="grid grid-cols-2 gap-4">
-                    <div className="bg-white/[0.03] rounded-[22px] p-4 border border-white/5 relative overflow-hidden group">
-                      <div className="absolute inset-0 bg-emerald-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
-                      <div className="flex items-center gap-3 mb-2.5">
-                        <div className="w-8 h-8 rounded-xl bg-emerald-500/10 flex items-center justify-center border border-emerald-500/20 shadow-inner">
-                          <Share className="w-4 h-4 text-emerald-400" />
+                    {isIOSDevice ? (
+                      <>
+                        <div className="bg-white/[0.03] rounded-[22px] p-4 border border-white/5 relative overflow-hidden group">
+                          <div className="absolute inset-0 bg-emerald-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+                          <div className="flex items-center gap-3 mb-2.5">
+                            <div className="w-8 h-8 rounded-xl bg-emerald-500/10 flex items-center justify-center border border-emerald-500/20 shadow-inner">
+                              <Share className="w-4 h-4 text-emerald-400" />
+                            </div>
+                            <span className="text-[10px] font-black uppercase text-white/40 tracking-[0.2em]">Step 01</span>
+                          </div>
+                          <p className="text-[11px] font-bold text-white/90 leading-snug">Tap 'Share' in Safari browser</p>
                         </div>
-                        <span className="text-[10px] font-black uppercase text-white/40 tracking-[0.2em]">Step 01</span>
-                      </div>
-                      <p className="text-[11px] font-bold text-white/90 leading-snug">Tap 'Share' in your Safari browser</p>
-                    </div>
-                    <div className="bg-white/[0.03] rounded-[22px] p-4 border border-white/5 relative overflow-hidden group">
-                      <div className="absolute inset-0 bg-emerald-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
-                      <div className="flex items-center gap-3 mb-2.5">
-                        <div className="w-8 h-8 rounded-xl bg-emerald-500/10 flex items-center justify-center border border-emerald-500/20 shadow-inner">
-                          <PlusSquare className="w-4 h-4 text-emerald-400" />
+                        <div className="bg-white/[0.03] rounded-[22px] p-4 border border-white/5 relative overflow-hidden group">
+                          <div className="absolute inset-0 bg-emerald-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+                          <div className="flex items-center gap-3 mb-2.5">
+                            <div className="w-8 h-8 rounded-xl bg-emerald-500/10 flex items-center justify-center border border-emerald-500/20 shadow-inner">
+                              <Plus className="w-4 h-4 text-emerald-400" />
+                            </div>
+                            <span className="text-[10px] font-black uppercase text-white/40 tracking-[0.2em]">Step 02</span>
+                          </div>
+                          <p className="text-[11px] font-bold text-white/90 leading-snug">Select 'Add to Home Screen'</p>
                         </div>
-                        <span className="text-[10px] font-black uppercase text-white/40 tracking-[0.2em]">Step 02</span>
-                      </div>
-                      <p className="text-[11px] font-bold text-white/90 leading-snug">Select 'Add to Home Screen'</p>
-                    </div>
+                      </>
+                    ) : (
+                      <>
+                        <div className="bg-white/[0.03] rounded-[22px] p-4 border border-white/5 relative overflow-hidden group">
+                          <div className="absolute inset-0 bg-emerald-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+                          <div className="flex items-center gap-3 mb-2.5">
+                            <div className="w-8 h-8 rounded-xl bg-emerald-500/10 flex items-center justify-center border border-emerald-500/20 shadow-inner">
+                              <MoreVertical className="w-4 h-4 text-emerald-400" />
+                            </div>
+                            <span className="text-[10px] font-black uppercase text-white/40 tracking-[0.2em]">Step 01</span>
+                          </div>
+                          <p className="text-[11px] font-bold text-white/90 leading-snug">Tap Menu (three dots)</p>
+                        </div>
+                        <div className="bg-white/[0.03] rounded-[22px] p-4 border border-white/5 relative overflow-hidden group">
+                          <div className="absolute inset-0 bg-emerald-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+                          <div className="flex items-center gap-3 mb-2.5">
+                            <div className="w-8 h-8 rounded-xl bg-emerald-500/10 flex items-center justify-center border border-emerald-500/20 shadow-inner">
+                              <Download className="w-4 h-4 text-emerald-400" />
+                            </div>
+                            <span className="text-[10px] font-black uppercase text-white/40 tracking-[0.2em]">Step 02</span>
+                          </div>
+                          <p className="text-[11px] font-bold text-white/90 leading-snug">Select 'Install' or 'Add to Home'</p>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                  <div className="mt-4 flex items-center gap-2 text-[9px] font-black text-emerald-400 uppercase tracking-widest bg-emerald-500/5 rounded-xl p-3 border border-emerald-500/10">
+                    <Bell className="w-3 h-3 fill-current" />
+                    Enables Instant Push Notifications & Offline Access
                   </div>
                 </motion.div>
               )}
