@@ -29,7 +29,7 @@ const getDomain = (url: string): string => {
 };
 
 // Check if URL is Creator Armour
-const isCreator ArmourUrl = (url: string): boolean => {
+const isCreatorArmourUrl = (url: string): boolean => {
   const domain = getDomain(url);
   return domain.includes('creatorarmour.com');
 };
@@ -42,8 +42,8 @@ export const LinkPreview: React.FC<LinkPreviewProps> = ({
   domain,
 }) => {
   // Use Creator Armour preview if it's a Creator Armour URL
-  const isCreator Armour = isCreator ArmourUrl(url);
-  const previewData = isCreator Armour ? CREATORARMOUR_PREVIEW : {
+  const isCreatorArmour = isCreatorArmourUrl(url);
+  const previewData = isCreatorArmour ? CREATORARMOUR_PREVIEW : {
     title: title || getDomain(url),
     description: description || 'Click to visit this website',
     image: image,
