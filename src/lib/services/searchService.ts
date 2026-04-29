@@ -6,6 +6,7 @@
 
 import { BrandDeal } from '@/types';
 import { Notification } from '@/types/notifications';
+import { safeParseArray } from '@/lib/utils';
 
 export type SearchResultType = 'deal' | 'payment' | 'contract' | 'notification' | 'message' | 'tax';
 
@@ -90,7 +91,7 @@ export function searchDeals(deals: BrandDeal[], query: string): SearchResult[] {
       deal.platform,
       deal.status,
       deal.brand_email,
-      deal.deliverables ? JSON.parse(deal.deliverables).join(' ') : '',
+      deal.deliverables ? safeParseArray(deal.deliverables).join(' ') : '',
       deal.deal_amount?.toString(),
     ].filter(Boolean);
 

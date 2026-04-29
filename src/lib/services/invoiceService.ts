@@ -5,6 +5,7 @@
  */
 
 import { BrandDeal } from '@/types';
+import { safeParseArray } from '@/lib/utils';
 
 export interface InvoiceData {
   deal: BrandDeal;
@@ -132,11 +133,9 @@ export async function generateInvoicePDF(data: InvoiceData): Promise<Blob> {
   yPos += 12;
 
   // Deliverables
-  const deliverables = deal.deliverables 
-    ? (typeof deal.deliverables === 'string' ? JSON.parse(deal.deliverables) : deal.deliverables)
+  const deliverablesList = deal.deliverables 
+    ? safeParseArray(deal.deliverables)
     : ['Content Creation Services'];
-  
-  const deliverablesList = Array.isArray(deliverables) ? deliverables : [deliverables];
   
   deliverablesList.forEach((item: string) => {
     addText(`• ${item}`, margin + 5, yPos, 10, '#333333', pageWidth - margin - 60);

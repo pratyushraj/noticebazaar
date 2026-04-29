@@ -115,7 +115,7 @@ const SettingsGroup = ({ children, isDark, className }: any) => (
 
 const SectionHeader = ({ title, isDark }: any) => (
   <p className={cn(
-    "px-6 mb-3 mt-8 text-[11px] font-black uppercase tracking-[0.2em] opacity-80",
+    "px-6 mb-3 mt-8 text-[11px] font-black uppercase tracking-widest opacity-80",
     isDark ? "text-white/30" : "text-slate-400"
   )}>
     {title}
@@ -372,7 +372,7 @@ export const BrandSettingsPanel = ({
   );
   
   const inputBase = cn(
-    'w-full h-14 pl-12 pr-6 rounded-[1.5rem] border text-[15px] font-bold outline-none transition-all duration-300 relative z-10',
+    'w-full h-14 pl-12 pr-6 rounded-[2rem] border text-[15px] font-bold outline-none transition-all duration-300 relative z-10',
     isDark
       ? 'border-white/5 bg-white/[0.02] text-white placeholder:text-white/10 focus:border-emerald-500/30 focus:bg-white/[0.05] focus:ring-[12px] focus:ring-emerald-500/5'
       : 'border-slate-100 bg-slate-50/50 text-slate-900 placeholder:text-slate-300 focus:border-emerald-500/30 focus:bg-white focus:ring-[12px] focus:ring-emerald-500/5 shadow-sm'
@@ -677,7 +677,7 @@ export const BrandSettingsPanel = ({
                   placeholder="We are a D2C fashion brand looking for Instagram reels that showcase aesthetic utility..."
                   rows={6}
                   className={cn(
-                    'w-full px-6 py-6 rounded-[2rem] border text-[15px] font-bold outline-none resize-none transition-all leading-relaxed duration-300',
+                    'w-full px-6 py-6 rounded-[2.5rem] border text-[15px] font-bold outline-none resize-none transition-all leading-relaxed duration-300',
                     isDark
                       ? 'border-white/5 bg-white/[0.02] text-white placeholder:text-white/10 focus:border-emerald-500/30 focus:ring-[12px] focus:ring-emerald-500/5 focus:bg-white/[0.05]'
                       : 'border-slate-100 bg-slate-50/50 text-slate-900 placeholder:text-slate-300 focus:border-emerald-500/30 focus:ring-[12px] focus:ring-emerald-500/5 focus:bg-white shadow-sm',

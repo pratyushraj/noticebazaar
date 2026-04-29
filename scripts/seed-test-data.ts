@@ -188,7 +188,6 @@ async function seedTestData() {
         id: userId,
         first_name: TEST_USER.firstName,
         last_name: TEST_USER.lastName,
-        email: TEST_EMAIL,
         role: 'creator',
         phone: TEST_USER.phone,
         location: TEST_USER.location,

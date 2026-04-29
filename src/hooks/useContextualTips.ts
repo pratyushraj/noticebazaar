@@ -1,5 +1,3 @@
-
-
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Tip, TipAction } from '@/components/contextual-tips/TipCard';
@@ -8,6 +6,7 @@ import { analytics } from '@/utils/analytics';
 import { useSession } from '@/contexts/SessionContext';
 import { useBrandDeals } from '@/lib/hooks/useBrandDeals';
 import { useProtectionScore } from '@/lib/hooks/useProtectionReports';
+import { safeJsonParse } from '@/lib/utils';
 
 const STORAGE_KEY_PREFIX = 'contextual-tip-dismissed-';
 const TEMP_STORAGE_KEY_PREFIX = 'contextual-tip-temp-dismissed-';
@@ -84,36 +83,28 @@ export const useContextualTips = (currentView?: string) => {
       // Load permanent dismissals
       const stored = localStorage.getItem(`${STORAGE_KEY_PREFIX}${profile.id}`);
       if (stored) {
-        try {
-          const parsed = JSON.parse(stored);
-          setDismissedTips(parsed);
-          console.log('Loaded permanent dismissals:', parsed);
-        } catch (e) {
-          console.warn('Failed to parse dismissed tips', e);
-        }
+        const parsed = safeJsonParse(stored, []);
+        setDismissedTips(parsed);
+        console.log('Loaded permanent dismissals:', parsed);
       }
       
       // Load temporary dismissals
       const storedTemp = localStorage.getItem(`${TEMP_STORAGE_KEY_PREFIX}${profile.id}`);
       if (storedTemp) {
-        try {
-          const tempDismissals = JSON.parse(storedTemp);
-          // Clean up expired dismissals
-          const now = Date.now();
-          const cleaned: Record<string, number> = {};
-          for (const [key, value] of Object.entries(tempDismissals)) {
-            if (typeof value === 'number' && value > now) {
-              cleaned[key] = value;
-            }
+        const tempDismissals = safeJsonParse(storedTemp, {});
+        // Clean up expired dismissals
+        const now = Date.now();
+        const cleaned: Record<string, number> = {};
+        for (const [key, value] of Object.entries(tempDismissals)) {
+          if (typeof value === 'number' && value > now) {
+            cleaned[key] = value;
           }
-          setTemporaryDismissals(cleaned);
-          console.log('Loaded temporary dismissals:', cleaned);
-          // Update localStorage with cleaned data
-          if (Object.keys(cleaned).length !== Object.keys(tempDismissals).length) {
-            localStorage.setItem(`${TEMP_STORAGE_KEY_PREFIX}${profile.id}`, JSON.stringify(cleaned));
-          }
-        } catch (e) {
-          console.warn('Failed to parse temporary dismissed tips', e);
+        }
+        setTemporaryDismissals(cleaned);
+        console.log('Loaded temporary dismissals:', cleaned);
+        // Update localStorage with cleaned data
+        if (Object.keys(cleaned).length !== Object.keys(tempDismissals).length) {
+          localStorage.setItem(`${TEMP_STORAGE_KEY_PREFIX}${profile.id}`, JSON.stringify(cleaned));
         }
       }
       
@@ -160,21 +151,13 @@ export const useContextualTips = (currentView?: string) => {
     let localStorageDismissed: string[] = [];
     let localStorageDismissals: Record<string, number> = {};
     if (profile?.id) {
-      try {
         // Load permanent dismissals
         const storedPermanent = localStorage.getItem(`${STORAGE_KEY_PREFIX}${profile.id}`);
-        if (storedPermanent) {
-          localStorageDismissed = JSON.parse(storedPermanent);
-        }
+        localStorageDismissed = safeJsonParse(storedPermanent, []);
         
         // Load temporary dismissals
         const storedTemp = localStorage.getItem(`${TEMP_STORAGE_KEY_PREFIX}${profile.id}`);
-        if (storedTemp) {
-          localStorageDismissals = JSON.parse(storedTemp);
-        }
-      } catch (e) {
-        // Ignore parse errors
-      }
+        localStorageDismissals = safeJsonParse(storedTemp, {});
     }
     
     return allTips
@@ -228,24 +211,18 @@ export const useContextualTips = (currentView?: string) => {
       
       // Check permanent dismissal in localStorage (most reliable check)
       if (profile?.id) {
-        try {
-          const storedPermanent = localStorage.getItem(`${STORAGE_KEY_PREFIX}${profile.id}`);
-          if (storedPermanent) {
-            const permanentDismissals: string[] = JSON.parse(storedPermanent);
-            if (permanentDismissals.includes(tip.id)) {
-              console.log('Tip blocked by localStorage permanent dismissal:', tip.id);
-              // Update state to match localStorage (sync state with localStorage)
-              setDismissedTips((prev) => {
-                if (!prev.includes(tip.id)) {
-                  return [...prev, tip.id];
-                }
-                return prev;
-              });
-              return; // Don't show if permanently dismissed in localStorage
+        const storedPermanent = localStorage.getItem(`${STORAGE_KEY_PREFIX}${profile.id}`);
+        const permanentDismissals: string[] = safeJsonParse(storedPermanent, []);
+        if (permanentDismissals.includes(tip.id)) {
+          console.log('Tip blocked by localStorage permanent dismissal:', tip.id);
+          // Update state to match localStorage (sync state with localStorage)
+          setDismissedTips((prev) => {
+            if (!prev.includes(tip.id)) {
+              return [...prev, tip.id];
             }
-          }
-        } catch (e) {
-          // Ignore parse errors
+            return prev;
+          });
+          return; // Don't show if permanently dismissed in localStorage
         }
       }
       
@@ -258,25 +235,19 @@ export const useContextualTips = (currentView?: string) => {
       
       // Check temporary dismissal in localStorage
       if (profile?.id) {
-        try {
-          const storedTemp = localStorage.getItem(`${TEMP_STORAGE_KEY_PREFIX}${profile.id}`);
-          if (storedTemp) {
-            const tempDismissals = JSON.parse(storedTemp);
-            const storedExpiry = tempDismissals[tip.id];
-            if (storedExpiry && storedExpiry > now) {
-              console.log('Tip blocked by localStorage temp dismissal:', tip.id);
-              // Update state to match localStorage (sync state with localStorage)
-              setTemporaryDismissals((prev) => {
-                if (prev[tip.id] !== storedExpiry) {
-                  return { ...prev, [tip.id]: storedExpiry };
-                }
-                return prev;
-              });
-              return; // Don't show if temporarily dismissed in localStorage
+        const storedTemp = localStorage.getItem(`${TEMP_STORAGE_KEY_PREFIX}${profile.id}`);
+        const tempDismissals = safeJsonParse(storedTemp, {});
+        const storedExpiry = tempDismissals[tip.id];
+        if (storedExpiry && storedExpiry > now) {
+          console.log('Tip blocked by localStorage temp dismissal:', tip.id);
+          // Update state to match localStorage (sync state with localStorage)
+          setTemporaryDismissals((prev) => {
+            if (prev[tip.id] !== storedExpiry) {
+              return { ...prev, [tip.id]: storedExpiry };
             }
-          }
-        } catch (e) {
-          // Ignore parse errors
+            return prev;
+          });
+          return; // Don't show if temporarily dismissed in localStorage
         }
       }
       
@@ -327,12 +298,11 @@ export const useContextualTips = (currentView?: string) => {
           // Save to localStorage FIRST (synchronously) to prevent race conditions
           if (profile?.id) {
             try {
-              const stored = localStorage.getItem(`${STORAGE_KEY_PREFIX}${profile.id}`);
-              const dismissed = stored ? JSON.parse(stored) : [];
-              if (!dismissed.includes(tipId)) {
-                dismissed.push(tipId);
-                localStorage.setItem(`${STORAGE_KEY_PREFIX}${profile.id}`, JSON.stringify(dismissed));
-                console.log('Saved permanent dismissal to localStorage:', dismissed);
+              const storedPermanent = localStorage.getItem(`${STORAGE_KEY_PREFIX}${profile.id}`);
+              const permanentDismissals = storedPermanent ? JSON.parse(storedPermanent) : [];
+              if (!permanentDismissals.includes(tipId)) {
+                permanentDismissals.push(tipId);
+                localStorage.setItem(`${STORAGE_KEY_PREFIX}${profile.id}`, JSON.stringify(permanentDismissals));
               }
             } catch (e) {
               console.warn('Failed to save permanent dismissal', e);
@@ -364,7 +334,6 @@ export const useContextualTips = (currentView?: string) => {
           const expiry = Date.now() + TEMP_DISMISS_DURATION;
           
           // Save to localStorage FIRST (synchronously) to prevent race conditions
-          // This ensures localStorage is updated before any re-renders
           if (profile?.id) {
             try {
               const storedTemp = localStorage.getItem(`${TEMP_STORAGE_KEY_PREFIX}${profile.id}`);
@@ -376,27 +345,23 @@ export const useContextualTips = (currentView?: string) => {
             }
           }
           
-          // Update state BEFORE clearing tip (so filter excludes it immediately)
+          // Update state BEFORE clearing tip
           setTemporaryDismissals((prev) => ({
             ...prev,
             [tipId]: expiry,
           }));
           
-          // Clear tip AFTER state is updated (prevents reappearance)
+          // Clear tip AFTER state is updated
           setCurrentTip(null);
           
-          // Mark user actions based on tip type to prevent re-showing
-          // This makes conditions false so tips don't reappear
+          // Mark user actions based on tip type
           if (tipId === 'payments-first-view') {
             setUserActions((prev) => ({ ...prev, checkedPayments: true }));
           } else if (tipId === 'deals-empty' || tipId === 'deals-first-view' || tipId === 'deal-progress-tip') {
             setUserActions((prev) => ({ ...prev, viewedDeals: true }));
           } else if (tipId === 'messages-advisor-available') {
-            // Mark as having seen messages to prevent re-showing
             setUserActions((prev) => ({ ...prev, messagesSent: prev.messagesSent > 0 ? prev.messagesSent : 1 }));
           } else if (tipId === 'dashboard-welcome' || tipId === 'earnings-zero') {
-            // Mark as having viewed dashboard - this won't affect dashboard-welcome condition
-            // but the temporary dismissal will prevent it from showing
             setUserActions((prev) => ({ ...prev, viewedDeals: true, checkedPayments: true }));
           }
           

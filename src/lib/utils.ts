@@ -210,9 +210,36 @@ export async function openContractFile(url: string | null | undefined, onError?:
       return;
     }
   } catch (error) {
-    const errorMsg = error instanceof Error 
-      ? `Failed to open contract file: ${error.message}`
-      : 'Failed to open contract file. Please check your connection and try again.';
     onError?.(errorMsg);
+  }
+}
+
+/**
+ * Safely parse JSON with a fallback
+ */
+export function safeJsonParse<T>(raw: any, fallback: T): T {
+  if (typeof raw !== 'string' || !raw) return (raw as any) || fallback;
+  try {
+    return JSON.parse(raw) as T;
+  } catch (e) {
+    if (import.meta.env.DEV) {
+      console.warn('[JSON Parse Error]', e, raw);
+    }
+    return fallback;
+  }
+}
+
+/**
+ * Safely parse a JSON string into an array, or wrap a single item/string in an array
+ */
+export function safeParseArray<T>(raw: any): T[] {
+  if (Array.isArray(raw)) return raw as T[];
+  if (typeof raw !== 'string' || !raw) return [] as T[];
+  try {
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? (parsed as T[]) : [parsed as T];
+  } catch (e) {
+    // If it's a plain string that's not JSON, return it as a single-item array
+    return [raw as any] as T[];
   }
 }

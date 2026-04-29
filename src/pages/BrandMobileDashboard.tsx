@@ -31,6 +31,7 @@ import { DisputeEscalationModal } from '@/components/deals/DisputeEscalationModa
 import { BrandShippingAddressModal } from '@/components/deals/BrandShippingAddressModal';
 import { ConfirmPaymentPendingModal } from '@/components/deals/ConfirmPaymentPendingModal';
 import { BrandDashboardSkeleton } from '@/components/brand-dashboard/BrandDashboardSkeleton';
+import PushNotificationPrompt from '@/components/dashboard/PushNotificationPrompt';
 
 import { optimizeImage, safeAvatarSrc, withCacheBuster } from '@/lib/utils/image';
 
@@ -688,8 +689,13 @@ const BrandMobileDashboard = ({
   ), []);
 
   const SectionTitle = useMemo(() => ({ children }: { children: ReactNode }) => (
-    <h4 className={cn('text-[13px] font-black uppercase tracking-wider mb-3 opacity-50', textColor)}>{children}</h4>
-  ), [textColor]);
+    <p className={cn(
+        "px-4 mb-3 mt-8 text-[11px] font-black uppercase tracking-widest opacity-80",
+        isDark ? "text-white/30" : "text-slate-400"
+    )}>
+        {children}
+    </p>
+  ), [isDark]);
 
   const Pill = useMemo(() => ({ children }: { children: ReactNode }) => (
     <div className={cn('rounded-2xl border px-4 py-3 text-[14px] font-black', isDark ? 'bg-card border-border text-foreground' : 'bg-card border-border text-muted-foreground')}>
@@ -1408,9 +1414,39 @@ const BrandMobileDashboard = ({
     try {
       setPushPromptDismissedLocal(localStorage.getItem(pushPromptStorageKey) === '1');
     } catch {
-      setPushPromptDismissedLocal(false);
+      // ignore
     }
   }, [pushPromptStorageKey]);
+
+  const [showPushPrompt, setShowPushPrompt] = useState(false);
+
+  useEffect(() => {
+    // Show prompt if supported, not subscribed, and not dismissed
+    if (isPushSupported && pushPermission === 'default' && !isPushSubscribed && !isPushPromptDismissed && !pushPromptDismissedLocal && !isPushBusy) {
+        const timer = setTimeout(() => {
+            setShowPushPrompt(true);
+        }, 3000);
+        return () => clearTimeout(timer);
+    }
+  }, [isPushSupported, pushPermission, isPushSubscribed, isPushPromptDismissed, pushPromptDismissedLocal, isPushBusy]);
+
+  const handleEnablePush = async () => {
+    try {
+      const res = await enableNotifications();
+      if (res.success) {
+        toast.success('Instant alerts active! 🚀');
+        setShowPushPrompt(false);
+      } else {
+        if (res.reason === 'denied') {
+          toast.error('Permission denied', { description: 'Please enable notifications in your browser settings.' });
+        }
+        setShowPushPrompt(false);
+      }
+    } catch (err) {
+      console.error('[Push] Error:', err);
+      setShowPushPrompt(false);
+    }
+  };
 
   const dismissPushPromptPersisted = () => {
     dismissPushPrompt();
@@ -1580,7 +1616,7 @@ const BrandMobileDashboard = ({
 	              <>
 	                <div className="flex items-start justify-between gap-3 mb-5">
 	                  <div className="min-w-0">
-	                    <p className={cn('text-[11px] font-black uppercase tracking-[0.2em] opacity-50', textColor)}>Pending offer</p>
+	                    <p className={cn('text-[11px] font-black uppercase tracking-widest opacity-50', textColor)}>Pending offer</p>
 	                    <h3 className={cn('text-[18px] font-bold tracking-tight truncate', textColor)}>{title}</h3>
 	                    <p className={cn('text-[12px] mt-1 opacity-60', textColor)}>{String(deliverables).replaceAll(',', ' • ')}</p>
 	                  </div>
@@ -1698,7 +1734,7 @@ const BrandMobileDashboard = ({
 	                    >
 	                      <div className="flex items-center justify-between mb-4">
 	                        <div>
-	                          <p className={cn('text-[11px] font-black uppercase tracking-[0.2em] opacity-50', textColor)}>Counter offer</p>
+	                          <p className={cn('text-[11px] font-black uppercase tracking-widest opacity-50', textColor)}>Counter offer</p>
 	                          <p className={cn('text-[16px] font-black tracking-tight', textColor)}>Update terms</p>
 	                        </div>
 	                        <button type="button"
@@ -1760,7 +1796,7 @@ const BrandMobileDashboard = ({
 	              <div className="max-w-md mx-auto">
 	                <div className="flex items-start justify-between gap-3 mb-5">
 	                  <div className="min-w-0">
-	                    <p className={cn('text-[11px] font-black uppercase tracking-[0.2em] opacity-50', textColor)}>Deal offer</p>
+	                    <p className={cn('text-[11px] font-black uppercase tracking-widest opacity-50', textColor)}>Deal offer</p>
 	                    <h3 className={cn('text-[18px] font-bold tracking-tight truncate', textColor)}>{title}</h3>
 	                    <p className={cn('text-[12px] mt-1 opacity-60', textColor)}>{deliverables}</p>
 	                  </div>
@@ -1785,7 +1821,7 @@ const BrandMobileDashboard = ({
 	                  if (links.length === 0) return null;
 	                  return (
 	                    <div className="mb-5 space-y-2">
-	                      <p className={cn('text-[11px] font-black uppercase tracking-[0.2em] opacity-50 px-1 mb-3', textColor)}>Delivered Content</p>
+	                      <p className={cn('text-[11px] font-black uppercase tracking-widest opacity-50 px-1 mb-3', textColor)}>Delivered Content</p>
 	                      <div className="grid grid-cols-1 gap-2">
 	                        {links.map((link: string, idx: number) => (
 	                          <button
@@ -2300,17 +2336,17 @@ const BrandMobileDashboard = ({
               
               <div className="relative z-10">
                 <div className="flex items-center justify-between mb-5">
-                  <div className={cn('px-4 py-1.5 rounded-full border text-[10px] font-black uppercase tracking-[0.2em] shadow-sm flex items-center gap-2', dealUi.tone)}>
+                  <div className={cn('px-4 py-1.5 rounded-full border text-[10px] font-black uppercase tracking-widest shadow-sm flex items-center gap-2', dealUi.tone)}>
                     <div className="w-1.5 h-1.5 rounded-full bg-current animate-pulse" />
                     {dealUi.label}
                   </div>
-                  <div className={cn('px-4 py-1.5 rounded-full border text-[10px] font-black uppercase tracking-[0.2em] shadow-sm', isDark ? 'bg-white/5 border-white/10 text-white/60' : 'bg-slate-100 border-slate-200 text-slate-500')}>
+                  <div className={cn('px-4 py-1.5 rounded-full border text-[10px] font-black uppercase tracking-widest shadow-sm', isDark ? 'bg-white/5 border-white/10 text-white/60' : 'bg-slate-100 border-slate-200 text-slate-500')}>
                     {offer?.collab_type?.toUpperCase() || 'COLLAB'}
                   </div>
                 </div>
 
                 <div className="text-center mb-5">
-                  <p className={cn('text-[11px] font-black uppercase tracking-[0.3em] opacity-40 mb-3', textColor)}>Investment</p>
+                  <p className={cn('text-[11px] font-black uppercase tracking-widest opacity-40 mb-3', textColor)}>Investment</p>
                   <div className="flex items-center justify-center gap-1">
                     <span className={cn('text-[20px] font-black mb-4 mr-1', isDark ? 'text-primary' : 'text-primary')}>₹</span>
                     <h1 className={cn('text-[64px] font-black tracking-tighter leading-none', textColor)}>
@@ -2414,7 +2450,7 @@ const BrandMobileDashboard = ({
           {/* Quick Info Tiles */}
           <div className="mb-6 grid grid-cols-2 gap-4">
             <div className={cn('p-5 rounded-[32px] border relative overflow-hidden transition-all', isDark ? 'bg-card/40 border-white/5' : 'bg-white border-slate-100 shadow-sm')}>
-              <p className={cn('text-[10px] font-black uppercase tracking-[0.2em] mb-3 opacity-40', textColor)}>
+              <p className={cn('text-[10px] font-black uppercase tracking-widest mb-3 opacity-40', textColor)}>
                 {requiresPayment ? 'Payment' : requiresShipping ? 'Fulfillment' : 'Deal type'}
               </p>
               <div className="flex items-center gap-3">
@@ -2433,7 +2469,7 @@ const BrandMobileDashboard = ({
             </div>
             
             <div className={cn('p-5 rounded-[32px] border relative overflow-hidden transition-all', isDark ? 'bg-card/40 border-white/5' : 'bg-white border-slate-100 shadow-sm')}>
-              <p className={cn('text-[10px] font-black uppercase tracking-[0.2em] mb-3 opacity-40', textColor)}>Deadline</p>
+              <p className={cn('text-[10px] font-black uppercase tracking-widest mb-3 opacity-40', textColor)}>Deadline</p>
               <div className="flex items-center gap-3">
                 <div className={cn('w-10 h-10 rounded-2xl flex items-center justify-center', isDark ? 'bg-sky-500/10 text-sky-400' : 'bg-sky-50 text-sky-600')}>
                   <Calendar className="w-5 h-5" />
@@ -2570,7 +2606,7 @@ const BrandMobileDashboard = ({
 
                     return (
                       <div className="mb-6">
-                        <p className={cn('text-[10px] font-black uppercase tracking-[0.2em] opacity-40 mb-4', textColor)}>Submitted Content</p>
+                        <p className={cn('text-[10px] font-black uppercase tracking-widest opacity-40 mb-4', textColor)}>Submitted Content</p>
                         <div className={cn('rounded-[24px] border overflow-hidden', isDark ? 'bg-white/[0.03] border-white/5' : 'bg-slate-50 border-slate-100')}>
                           <div className={cn('px-5 py-5 flex items-center gap-4', isDark ? 'border-b border-white/5' : 'border-b border-slate-100')}>
                             <div className={cn('w-14 h-14 rounded-2xl flex items-center justify-center text-2xl shadow-inner border', isDark ? 'bg-indigo-500/10 border-indigo-500/20' : 'bg-indigo-50 border-indigo-100')}>
@@ -3274,7 +3310,7 @@ const BrandMobileDashboard = ({
                         )}
                       >
                         <div className="flex items-center justify-between mb-4 px-1">
-                          <p className={cn('text-[11px] font-black uppercase tracking-[0.2em]', isDark ? 'text-foreground/40' : 'text-muted-foreground')}>
+                          <p className={cn('text-[11px] font-black uppercase tracking-widest', isDark ? 'text-foreground/40' : 'text-muted-foreground')}>
                             Updates
                           </p>
                           <div className={cn('h-1.5 w-1.5 rounded-full animate-pulse', isDark ? 'bg-primary' : 'bg-primary')} />
@@ -3337,52 +3373,6 @@ const BrandMobileDashboard = ({
 	              <>
 	              {activeTab === 'dashboard' && (
 	                <>
-                  {showPushPrompt && (
-                    <motion.div
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      className={cn(
-                        'mb-5 p-4 rounded-[24px] border shadow-sm',
-                        isDark ? 'bg-card border-border' : 'bg-secondary/80 border-border'
-                      )}
-                    >
-                      <div className="flex items-start gap-3">
-                        <div className={cn('w-10 h-10 rounded-2xl flex items-center justify-center', isDark ? 'bg-primary/15' : 'bg-primary/10')}>
-                          <Bell className={cn('w-5 h-5', isDark ? 'text-primary' : 'text-primary')} />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className={cn('text-[13px] font-bold', textColor)}>Enable deal alerts</p>
-                          <p className={cn('text-[12px] mt-1 opacity-60', textColor)}>
-                            {isIOSNeedsInstall
-                              ? 'On iPhone/iPad, install the app (Add to Home Screen) to receive notifications.'
-                              : 'Get notified when creators reply and deals need action.'}
-                          </p>
-                          {pushPermission === 'denied' && (
-                            <p className={cn('text-[12px] mt-2 opacity-60', textColor)}>
-                              Notifications blocked — enable in browser settings.
-                            </p>
-                          )}
-	                          <div className="flex gap-2 mt-3">
-	                            <button
-	                              type="button"
-	                              disabled={isPushBusy || pushPermission === 'denied' || isIOSNeedsInstall}
-	                              onClick={handleEnablePush}
-	                              className={cn('flex-1 h-10 px-4 text-[12px] font-black rounded-xl shadow-md transition-all active:scale-95', isDark ? 'bg-primary text-white hover:bg-primary/90' : 'bg-primary text-white hover:bg-primary/90')}
-	                            >
-	                              Enable
-	                            </button>
-	                            <button
-	                              type="button"
-	                              onClick={() => dismissPushPromptPersisted()}
-	                              className={cn('h-10 px-4 text-[12px] font-semibold rounded-xl border shadow-sm', isDark ? 'bg-secondary/80 border-border/60 text-foreground hover:bg-secondary' : 'bg-white text-foreground border-border/80 hover:bg-secondary/60')}
-	                            >
-	                              Later
-	                            </button>
-	                          </div>
-                        </div>
-                      </div>
-                    </motion.div>
-                  )}
 
                   {!hasUploadedBrandLogo && (
                     <motion.div
@@ -3452,7 +3442,7 @@ const BrandMobileDashboard = ({
                           animate={{ opacity: 1, y: 0 }} 
                           transition={{ delay: 0.03, type: 'spring', damping: 20 }} 
                           className={cn(
-                            'mb-6 rounded-[36px] border overflow-hidden relative group', 
+                            'mb-6 rounded-[2.5rem] border overflow-hidden relative group', 
                             isDark 
                               ? 'border-emerald-500/30 bg-gradient-to-br from-emerald-500/10 via-emerald-950/20 to-[#020617] shadow-[0_30px_60px_rgba(0,0,0,0.4)]' 
                               : 'border-primary/60 bg-gradient-to-br from-emerald-500 via-teal-500 to-blue-600 shadow-[0_25px_55px_rgba(16,185,129,0.22)]'
@@ -3464,7 +3454,7 @@ const BrandMobileDashboard = ({
                             <div className="flex flex-col gap-6">
                               <div className="flex items-start justify-between">
                                 <div className="min-w-0">
-                                  <p className={cn('text-[10px] font-black uppercase tracking-[0.25em]', isDark ? 'text-emerald-400' : 'text-white/80')}>Active Investment</p>
+                                  <p className={cn('text-[10px] font-black uppercase tracking-widest', isDark ? 'text-emerald-400' : 'text-white/80')}>Active Investment</p>
                                   <div className="flex items-baseline gap-2 mt-3">
                                     <span className={cn('text-[38px] font-black tracking-tighter leading-none', isDark ? 'text-white' : 'text-white')}>
                                       ₹<CountUp end={Number(activeValue) || 0} duration={1.5} separator="," decimals={0} />
@@ -3484,7 +3474,7 @@ const BrandMobileDashboard = ({
                                 </div>
                               </div>
 
-                              <div className={cn('p-4 rounded-3xl border backdrop-blur-md transition-all', isDark ? 'bg-white/5 border-white/10' : 'bg-white/15 border-white/20')}>
+                              <div className={cn('p-4 rounded-[2rem] border backdrop-blur-md transition-all', isDark ? 'bg-white/5 border-white/10' : 'bg-white/15 border-white/20')}>
                                 <div className="flex items-center justify-between gap-4">
                                   <div className="flex items-center gap-3">
                                     <div className={cn('w-8 h-8 rounded-full flex items-center justify-center', isDark ? 'bg-emerald-500/20 text-emerald-400' : 'bg-white/20 text-white')}>
@@ -3537,18 +3527,18 @@ const BrandMobileDashboard = ({
 
                         {/* Secondary Stats Grid */}
                         <div className="grid grid-cols-2 gap-3 mb-6">
-                          <div className={cn('p-4 rounded-[28px] border transition-all hover:border-primary/30', isDark ? 'bg-card border-border/50' : 'bg-white border-border/60 shadow-sm')}>
-                            <p className={cn('text-[10px] font-black uppercase tracking-[0.2em] opacity-40', textColor)}>Active</p>
+                          <div className={cn('p-5 rounded-[2.5rem] border transition-all hover:border-primary/30', isDark ? 'bg-card border-border/50' : 'bg-white border-border/60 shadow-sm')}>
+                            <p className={cn('text-[10px] font-black uppercase tracking-widest opacity-40', textColor)}>Active</p>
                             <div className="flex items-baseline gap-1 mt-3">
-                              <span className={cn('text-[22px] font-black tracking-tight', textColor)}>{activeDealsList.length}</span>
-                              <span className={cn('text-[10px] font-bold opacity-40', textColor)}>Deals</span>
+                              <span className={cn('text-[24px] font-black tracking-tight', textColor)}>{activeDealsList.length}</span>
+                              <span className={cn('text-[10px] font-black uppercase tracking-widest opacity-40', textColor)}>Deals</span>
                             </div>
                           </div>
-                          <div className={cn('p-4 rounded-[28px] border transition-all hover:border-warning/30', isDark ? 'bg-card border-border/50' : 'bg-white border-border/60 shadow-sm')}>
-                            <p className={cn('text-[10px] font-black uppercase tracking-[0.2em] opacity-40', textColor)}>Pending</p>
+                          <div className={cn('p-5 rounded-[2.5rem] border transition-all hover:border-warning/30', isDark ? 'bg-card border-border/50' : 'bg-white border-border/60 shadow-sm')}>
+                            <p className={cn('text-[10px] font-black uppercase tracking-widest opacity-40', textColor)}>Pending</p>
                             <div className="flex items-baseline gap-1 mt-3">
-                              <span className={cn('text-[22px] font-black tracking-tight', needsActionTotal > 0 ? 'text-warning' : textColor)}>{needsActionTotal}</span>
-                              <span className={cn('text-[10px] font-bold opacity-40', textColor)}>Action</span>
+                              <span className={cn('text-[24px] font-black tracking-tight', needsActionTotal > 0 ? 'text-warning' : textColor)}>{needsActionTotal}</span>
+                              <span className={cn('text-[10px] font-black uppercase tracking-widest opacity-40', textColor)}>Action</span>
                             </div>
                           </div>
                         </div>
@@ -3575,7 +3565,7 @@ const BrandMobileDashboard = ({
                               )}
 	                          </div>
 	                          <div className={cn(
-                              'mb-6 p-1.5 rounded-[32px] border flex gap-1.5 backdrop-blur-3xl transition-all', 
+                              'mb-6 p-1.5 rounded-[2.5rem] border flex gap-1.5 backdrop-blur-3xl transition-all', 
                               isDark ? 'bg-white/[0.03] border-white/5 shadow-2xl shadow-black/40' : 'bg-white/60 border-slate-200 shadow-xl'
                             )}>
 	                            {[
@@ -3633,7 +3623,7 @@ const BrandMobileDashboard = ({
                                 isDark ? 'bg-white/[0.02] border-white/5 shadow-2xl' : 'bg-white/40 border-slate-200 shadow-sm'
                               )}>
 	                            <div className={cn('px-6 py-5 border-b flex items-center justify-between', isDark ? 'border-white/5 bg-white/[0.02]' : 'border-slate-100 bg-slate-50/50')}>
-	                              <p className={cn("text-[11px] font-black uppercase tracking-[0.2em]", isDark ? 'opacity-40' : 'text-slate-500')}>
+	                              <p className={cn("text-[11px] font-black uppercase tracking-widest", isDark ? 'opacity-40' : 'text-slate-500')}>
 	                                {activeCollabTab === 'action_required' ? 'Awaiting Response' : activeCollabTab === 'active' ? 'Active Deals' : 'Completed Archive'}
 	                              </p>
                                 <div className="flex items-center gap-2">
@@ -3702,7 +3692,7 @@ const BrandMobileDashboard = ({
                                           tabIndex={0}
                                           onClick={() => setSelectedOffer(item)}
                                           className={cn(
-                                            'w-full rounded-[28px] border transition-all duration-300 group relative text-left overflow-hidden cursor-pointer',
+                                            'w-full rounded-[2.5rem] border transition-all duration-300 group relative text-left overflow-hidden cursor-pointer',
                                             isDark 
                                               ? 'bg-gradient-to-br from-white/[0.05] via-white/[0.02] to-transparent border-white/[0.08] shadow-2xl shadow-black/40' 
                                               : 'bg-white border-[#E5E5EA] shadow-[0_8px_30px_rgba(0,0,0,0.04)]',
@@ -3813,7 +3803,7 @@ const BrandMobileDashboard = ({
                                               type="button"
                                               onClick={() => setSelectedOffer(item)}
                                               className={cn(
-                                                'h-14 w-full rounded-2xl text-[14px] font-black transition-all active:scale-[0.98] uppercase tracking-[0.1em] shadow-xl',
+                                                'h-14 w-full rounded-2xl text-[14px] font-black transition-all active:scale-[0.98] uppercase tracking-widest shadow-xl',
                                                 dealPrimaryCtaButtonClass(ui.ctaTone),
                                                 'border border-white/5'
                                               )}
@@ -3833,7 +3823,7 @@ const BrandMobileDashboard = ({
 		                                      tabIndex={0}
 		                                      onClick={() => handleBrandDealPrimaryAction(undefined, item, ui)}
 		                                      className={cn(
-		                                        'w-full rounded-[28px] border transition-all duration-300 group relative text-left overflow-hidden cursor-pointer',
+		                                        'w-full rounded-[2.5rem] border transition-all duration-300 group relative text-left overflow-hidden cursor-pointer',
 		                                        isDark 
                                               ? 'bg-gradient-to-br from-white/[0.05] via-white/[0.02] to-transparent border-white/[0.08] shadow-2xl shadow-black/40' 
                                               : 'bg-white border-[#E5E5EA] shadow-[0_8px_30px_rgba(0,0,0,0.04)]',
@@ -3947,7 +3937,7 @@ const BrandMobileDashboard = ({
 		                                          onClick={(e) => handleBrandDealPrimaryAction(e, item, ui)}
 				                                      disabled={Boolean(ui?.ctaDisabled)}
 				                                      className={cn(
-				                                        'h-14 w-full rounded-2xl text-[14px] font-black transition-all active:scale-[0.98] uppercase tracking-[0.1em] shadow-xl',
+				                                        'h-14 w-full rounded-2xl text-[14px] font-black transition-all active:scale-[0.98] uppercase tracking-widest shadow-xl',
 				                                        dealPrimaryCtaButtonClass(ui?.ctaTone || (ui.needsAction ? 'action' : 'view')),
 				                                        Boolean(ui?.ctaDisabled) && 'opacity-60 cursor-not-allowed active:scale-100'
 				                                      )}
@@ -3969,7 +3959,7 @@ const BrandMobileDashboard = ({
                   <div className="mb-5">
                     <div className="flex items-center justify-between mb-3">
                       <div>
-                        <p className={cn('text-[11px] font-black uppercase tracking-[0.2em] opacity-50', textColor)}>Suggested creators</p>
+                        <p className={cn('text-[11px] font-black uppercase tracking-widest opacity-50', textColor)}>Suggested creators</p>
                         <p className={cn('text-[12px] opacity-60 mt-1', textColor)}>Pick based on reliability — not views.</p>
                       </div>
                       <button type="button" onClick={() => { triggerHaptic(HapticPatterns.light); setActiveTab('creators'); }} className={cn('text-[12px] font-bold', isDark ? 'text-info' : 'text-info')}>
@@ -3993,7 +3983,7 @@ const BrandMobileDashboard = ({
                              triggerHaptic(HapticPatterns.light);
                              navigate(`/${handle}`);
                            }}
-                           className={cn('min-w-[290px] p-4 rounded-[24px] border cursor-pointer', cardBgColor, borderColor, isDark ? '' : 'shadow-[0_18px_45px_rgba(15,23,42,0.08)]')}
+                           className={cn('min-w-[290px] p-5 rounded-[2.5rem] border cursor-pointer', cardBgColor, borderColor, isDark ? '' : 'shadow-[0_18px_45px_rgba(15,23,42,0.08)]')}
                          >
                           <div className="flex items-center gap-3">
                             <Avatar className="w-11 h-11">
@@ -4566,11 +4556,11 @@ const BrandMobileDashboard = ({
 
               {activeTab === 'payments' && (
                 <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="pb-20">
-                  <div className={cn('mb-5 p-5 rounded-[28px] border overflow-hidden', borderColor, isDark ? 'bg-secondary/[0.04]' : 'bg-secondary/80 backdrop-blur-xl shadow-[0_18px_45px_rgba(15,23,42,0.08)]')}>
+                  <div className={cn('mb-5 p-5 rounded-[2.5rem] border overflow-hidden', borderColor, isDark ? 'bg-secondary/[0.04]' : 'bg-secondary/80 backdrop-blur-xl shadow-[0_18px_45px_rgba(15,23,42,0.08)]')}>
                     <h2 className={cn('text-[16px] font-bold tracking-tight mb-1', textColor)}>Payments</h2>
                     <p className={cn('text-[13px] opacity-60', secondaryTextColor)}>Track your completed deal payouts below.</p>
                   </div>
-                  <div className={cn('p-5 rounded-[24px] border text-center', borderColor, isDark ? 'bg-card' : 'bg-secondary/80')}>
+                  <div className={cn('p-5 rounded-[2.5rem] border text-center', borderColor, isDark ? 'bg-card' : 'bg-secondary/80')}>
                     <p className={cn('text-[13px] opacity-60', textColor)}>No completed payouts yet.</p>
                     <p className={cn('text-[12px] mt-1 opacity-40', textColor)}>Payouts are processed after you mark a deal as complete.</p>
                   </div>
@@ -4739,7 +4729,7 @@ const BrandMobileDashboard = ({
                   </button>
 
                   <div className="pt-2">
-                    <p className={cn('text-[11px] font-black uppercase tracking-[0.2em] mb-2 opacity-50', textColor)}>Notifications</p>
+                    <p className={cn('text-[11px] font-black uppercase tracking-widest mb-2 opacity-50', textColor)}>Notifications</p>
                   </div>
                   {!isPushSubscribed && isPushSupported && (
                     <button type="button"
@@ -4842,6 +4832,23 @@ const BrandMobileDashboard = ({
 	      </AnimatePresence>
 
         {renderGlobalOverlays()}
+
+        {/* Notification Pop-up */}
+        {showPushPrompt && (
+          <PushNotificationPrompt 
+            onEnable={handleEnablePush}
+            onDismiss={() => {
+              dismissPushPrompt();
+              try {
+                localStorage.setItem(pushPromptStorageKey, '1');
+                setPushPromptDismissedLocal(true);
+              } catch {}
+              setShowPushPrompt(false);
+            }}
+            isBusy={isPushBusy}
+            isDark={isDark}
+          />
+        )}
       </div>
     );
 };

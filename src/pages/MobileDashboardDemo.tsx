@@ -69,6 +69,7 @@ import type { PortfolioItem } from '@/types';
 import { DiscoveryVideoUpload } from '@/components/dashboard/DiscoveryVideoUpload';
 import { CreatorDiscoveryStack } from '@/components/creator-dashboard/CreatorDiscoveryStack';
 import { DisputeEscalationModal } from '@/components/deals/DisputeEscalationModal';
+import PushNotificationPrompt from '@/components/dashboard/PushNotificationPrompt';
 
 interface MobileDashboardProps {
     profile?: any;
@@ -890,6 +891,29 @@ const buildProfileFormData = (profile: any, userEmail?: string | null) => {
     };
 };
 
+// Safe JSON Parsing Helpers
+const safeJsonParse = (raw: any, fallback: any = null) => {
+    if (typeof raw !== 'string' || !raw) return raw || fallback;
+    try {
+        return JSON.parse(raw);
+    } catch (e) {
+        console.error('[JSON Parse Error]', e, raw);
+        return fallback;
+    }
+};
+
+const safeParseArray = (raw: any): any[] => {
+    if (Array.isArray(raw)) return raw;
+    if (typeof raw !== 'string' || !raw) return [];
+    try {
+        const parsed = JSON.parse(raw);
+        return Array.isArray(parsed) ? parsed : [parsed];
+    } catch (e) {
+        // If it's a plain string that's not JSON, return it as a single-item array
+        return [raw];
+    }
+};
+
 // Main Component
 const MobileDashboardDemo = ({
     profile,
@@ -1013,6 +1037,44 @@ const MobileDashboardDemo = ({
         else if (subtabParam === 'completed') setCollabSubTab('completed');
         else if (subtabParam === 'active') setCollabSubTab('active');
     }, [activeTab, requestIdParam, dealIdParam, subtabParam, collabRequests, brandDeals, searchParams, setSearchParams]);
+
+    // Push Notification Auto-Prompt Logic
+    useEffect(() => {
+        // Show prompt if:
+        // 1. Notifications are supported
+        // 2. Permission is still 'default'
+        // 3. Not already subscribed
+        // 4. Hasn't dismissed the global prompt (stored in localStorage via hook)
+        // 5. Not currently busy
+        if (isPushSupported && pushPermission === 'default' && !isPushSubscribed && !isPushPromptDismissed && !isPushBusy) {
+            // Small delay so it doesn't hit immediately on mount
+            const timer = setTimeout(() => {
+                setShowPushPrompt(true);
+            }, 3000);
+            return () => clearTimeout(timer);
+        }
+    }, [isPushSupported, pushPermission, isPushSubscribed, isPushPromptDismissed, isPushBusy]);
+
+    const handleEnablePush = async () => {
+        try {
+            const res = await enableNotifications();
+            if (res.success) {
+                toast.success('Instant alerts active! 🚀');
+                setShowPushPrompt(false);
+            } else {
+                if (res.reason === 'denied') {
+                    toast.error('Permission denied', { description: 'Please enable notifications in your browser settings to receive alerts.' });
+                } else if (res.reason !== 'localhost_disabled') {
+                    toast.error('Failed to enable', { description: res.reason });
+                }
+                // Even on failure, we hide the prompt to not annoy the user
+                setShowPushPrompt(false);
+            }
+        } catch (err) {
+            console.error('[Push] Error enabling:', err);
+            setShowPushPrompt(false);
+        }
+    };
     const [theme, setTheme] = useState<'light' | 'dark'>(() => {
         if (typeof window !== 'undefined' && window.matchMedia) {
             return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
@@ -1021,6 +1083,7 @@ const MobileDashboardDemo = ({
     });
     const [showItemMenu, setShowItemMenu] = useState(false);
     const [showProgressSheet, setShowProgressSheet] = useState(false);
+    const [showPushPrompt, setShowPushPrompt] = useState(false);
     const mainContainerRef = useRef<HTMLDivElement>(null);
     
     const totalFollowers = (profile?.platforms || []).reduce((acc: number, p: any) => acc + (p.followers || 0), 0) || 50000;
@@ -2016,7 +2079,7 @@ const MobileDashboardDemo = ({
 
     const isDark = theme === 'dark';
     // Brand-like background base (gradient overlays applied in JSX below)
-    const bgColor = isDark ? '#020D0A' : '#FFFFFF';
+    const bgColor = isDark ? '#061318' : '#FFFFFF';
     const cardBgColor = isDark ? 'bg-card backdrop-blur-md' : 'bg-card';
     const borderColor = isDark ? 'border-border' : 'border-border';
     const secondaryTextColor = isDark ? 'text-foreground/60' : 'text-muted-foreground';
@@ -2787,7 +2850,7 @@ const MobileDashboardDemo = ({
                         alt=""
                         src={proxiedLogo}
                         className="w-full h-full object-contain absolute inset-0 z-10 p-1 transition-opacity duration-300"
-                        loading="lazy"
+                        loading="eager"
                         decoding="async"
                         referrerPolicy="no-referrer"
                         onError={(e) => { 
@@ -3661,7 +3724,7 @@ const MobileDashboardDemo = ({
                                                             type="button"
                                                             onClick={() => { triggerHaptic(); setProfileFormData({ ...profileFormData, audience_gender_split: isSelected ? '' : split.value }); }}
                                                             className={cn(
-                                                                "flex flex-col items-center justify-center p-3 rounded-2xl border transition-all active:scale-95 gap-2",
+                                                                "flex flex-col items-center justify-center p-3 rounded-2xl border transition-all active:scale-95",
                                                                 isSelected 
                                                                     ? (isDark ? "bg-primary/20 border-primary shadow-lg shadow-primary/10" : "bg-emerald-500 border-emerald-500 shadow-md shadow-emerald-500/10")
                                                                     : (isDark ? "bg-white/5 border-white/10" : "bg-slate-50 border-slate-200")
@@ -4901,7 +4964,7 @@ const MobileDashboardDemo = ({
                                                                     ? (isDark ? 'bg-blue-500/10 border-blue-500/20 text-blue-400' : 'bg-blue-50 border-blue-200 text-blue-700')
                                                                     : (isDark ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' : 'bg-emerald-50 border-emerald-200 text-emerald-700');
 
-                                                            const deliverables = Array.isArray(req?.deliverables) ? req?.deliverables : (typeof req?.deliverables === 'string' ? JSON.parse(req?.deliverables || '[]') : []);
+                                                            const deliverables = safeParseArray(req?.deliverables);
                                                             const deliverablesContent = deliverables.length > 0 ? deliverables.slice(0, 1).join(', ') : 'Campaign';
 
                                                             return (
@@ -4915,7 +4978,7 @@ const MobileDashboardDemo = ({
                                                                         navigate(`/offer/${req.id}`);
                                                                     }}
                                                                     className={cn(
-                                                                        "relative w-full aspect-[1.2/1] md:aspect-auto rounded-[32px] overflow-hidden transition-all duration-500 group cursor-pointer border-0 shadow-2xl shadow-black/20 mb-6",
+                                                                        "relative w-full aspect-[1.2/1] md:aspect-auto rounded-[2.5rem] overflow-hidden transition-all duration-500 group cursor-pointer border-0 shadow-2xl shadow-black/20 mb-6",
                                                                         "bg-[#0B1220]"
                                                                     )}
                                                                 >
@@ -4970,7 +5033,7 @@ const MobileDashboardDemo = ({
 
                                                                             <button 
                                                                                 type="button"
-                                                                                className="w-full h-14 rounded-2xl bg-white text-black font-black uppercase tracking-[0.15em] text-[13px] flex items-center justify-center gap-2 shadow-2xl active:scale-95 transition-all duration-300"
+                                                                                className="w-full h-14 rounded-2xl bg-white text-black font-black uppercase tracking-widest text-[13px] flex items-center justify-center gap-2 shadow-2xl active:scale-95 transition-all duration-300"
                                                                             >
                                                                                 View & Accept Offer
                                                                                 <ChevronRight className="w-5 h-5" strokeWidth={3} />
@@ -5545,7 +5608,7 @@ const MobileDashboardDemo = ({
                                                     const deliverablesContent = (() => {
                                                         const raw = deal?.deliverables || deal?.raw?.deliverables;
                                                         try {
-                                                            const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;
+                                                            const parsed = safeJsonParse(raw, raw);
                                                             if (Array.isArray(parsed) && parsed.length > 0) {
                                                                 const types = parsed.map((d: any) => {
                                                                     if (typeof d === 'string') return d.includes('Reel') ? 'Reel' : d;
@@ -5570,7 +5633,7 @@ const MobileDashboardDemo = ({
                                                                 setSelectedType('deal');
                                                             }}
                                                             className={cn(
-                                                                "relative w-full aspect-[1.2/1] md:aspect-auto rounded-[32px] overflow-hidden transition-all duration-500 group cursor-pointer border-0 shadow-2xl shadow-black/20",
+                                                                "relative w-full aspect-[1.2/1] md:aspect-auto rounded-[2.5rem] overflow-hidden transition-all duration-500 group cursor-pointer border-0 shadow-2xl shadow-black/20 mb-6",
                                                                 isDark ? "bg-[#0B1220]" : "bg-white border border-slate-100"
                                                             )}
                                                         >
@@ -5697,7 +5760,7 @@ const MobileDashboardDemo = ({
                                                                     <button 
                                                                         type="button"
                                                                         className={cn(
-                                                                            "w-full h-14 rounded-2xl font-black uppercase tracking-[0.15em] text-[13px] flex items-center justify-center gap-2 shadow-2xl active:scale-95 transition-all duration-300",
+                                                                            "w-full h-14 rounded-2xl font-black uppercase tracking-widest text-[13px] flex items-center justify-center gap-2 shadow-2xl active:scale-95 transition-all duration-300",
                                                                             isDark ? "bg-white text-black shadow-white/5" : "bg-white text-black shadow-black/10 md:bg-slate-900 md:text-white md:shadow-slate-900/10"
                                                                         )}
                                                                     >
@@ -5790,8 +5853,10 @@ const MobileDashboardDemo = ({
                                                             className="space-y-4"
                                                         >
                                                             {completedDealsList.slice(0, 10).map((deal: any, idx: number) => {
-                                                            const ux = getCreatorDealCardUX(deal);
                                                             const productImage = resolveCreatorDealProductImage(deal);
+                                                            const budget = Number(deal?.deal_amount || deal?.exact_budget || 0);
+                                                            const isBarter = String(deal?.deal_type || '').toLowerCase().includes('barter');
+
                                                             return (
                                                         <motion.div
                                                             key={deal.id || idx}
@@ -5803,7 +5868,7 @@ const MobileDashboardDemo = ({
                                                                 navigate(`/deal/${deal.id}`);
                                                             }}
                                                             className={cn(
-                                                                "relative w-full aspect-[1.2/1] md:aspect-auto rounded-[32px] overflow-hidden transition-all duration-500 group cursor-pointer border-0 shadow-2xl shadow-black/20 mb-6",
+                                                                "relative w-full aspect-[1.2/1] md:aspect-auto rounded-[2.5rem] overflow-hidden transition-all duration-500 group cursor-pointer border-0 shadow-2xl shadow-black/20 mb-6",
                                                                 "bg-[#0B1220]"
                                                             )}
                                                         >
@@ -5813,7 +5878,7 @@ const MobileDashboardDemo = ({
                                                                     <img 
                                                                         src={productImage} 
                                                                         alt="" 
-                                                                        className="w-full h-full object-cover grayscale opacity-40 transition-all duration-700 group-hover:scale-110 group-hover:grayscale-0 group-hover:opacity-60" 
+                                                                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
                                                                         loading="lazy" 
                                                                     />
                                                                 ) : (
@@ -5841,11 +5906,11 @@ const MobileDashboardDemo = ({
                                                                     <div className="mb-4 flex items-center justify-between">
                                                                         <div className="flex items-center gap-2">
                                                                             <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white/50">
-                                                                                {deal?.deal_type === 'barter' ? 'Barter Project' : 'Monetary Project'}
+                                                                                {isBarter ? 'Barter Project' : 'Monetary Project'}
                                                                             </span>
                                                                         </div>
                                                                         <p className="text-[18px] font-black tracking-tight text-white/50 line-through">
-                                                                            {(deal.deal_amount || deal.exact_budget || 0) > 0 ? `₹${(deal.deal_amount || deal.exact_budget || 0).toLocaleString()}` : 'BARTER'}
+                                                                            {budget > 0 ? `₹${budget.toLocaleString()}` : 'BARTER'}
                                                                         </p>
                                                                     </div>
                                                                     
@@ -5853,20 +5918,19 @@ const MobileDashboardDemo = ({
                                                                         {deal.company_name || deal.brand_name || 'Brand Partner'}
                                                                     </h2>
                                                                     <p className="text-sm font-semibold mb-8 line-clamp-2 leading-relaxed text-white/70">
-                                                                        {(Array.isArray(deal?.deliverables) ? deal?.deliverables : (typeof deal?.deliverables === 'string' ? JSON.parse(deal?.deliverables || '[]') : [])).slice(0, 1).join(', ') || 'Campaign'} • <span className="text-emerald-400">{deal?.campaign_goal || deal?.campaign_category || (deal?.deal_type === 'barter' ? 'Barter Package' : 'Monetary Package')}</span>
+                                                                        {safeParseArray(deal?.deliverables).slice(0, 1).join(', ') || 'Campaign'} • <span className="text-emerald-400">{deal?.campaign_goal || deal?.campaign_category || (isBarter ? 'Barter Package' : 'Monetary Package')}</span>
                                                                     </p>
 
                                                                     <button 
                                                                         type="button"
-                                                                        className="w-full h-14 rounded-2xl bg-white/10 border border-white/10 text-white font-black uppercase tracking-[0.15em] text-[13px] flex items-center justify-center gap-2 shadow-2xl active:scale-95 transition-all duration-300 backdrop-blur-md hover:bg-white/20"
+                                                                        className="w-full h-14 rounded-2xl bg-white text-black font-black uppercase tracking-widest text-[13px] flex items-center justify-center gap-2 shadow-2xl active:scale-95 transition-all duration-300"
                                                                     >
                                                                         View Case Summary
-                                                                        <ArrowRight className="w-5 h-5" strokeWidth={3} />
+                                                                        <ChevronRight className="w-5 h-5" strokeWidth={3} />
                                                                     </button>
                                                                 </div>
                                                             </div>
                                                         </motion.div>
-
                                                     );
                                                 })}
                                                         </motion.div>
@@ -5948,7 +6012,7 @@ const MobileDashboardDemo = ({
                                             const deliverableText = (req: any) => {
                                                 const raw = req?.deliverables || req?.raw?.deliverables;
                                                 try {
-                                                    const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;
+                                                    const parsed = safeJsonParse(raw, raw);
                                                     if (Array.isArray(parsed) && parsed.length > 0) {
                                                         const labels = parsed.map((d: any) => {
                                                             if (typeof d === 'string') return d;
@@ -6018,166 +6082,91 @@ const MobileDashboardDemo = ({
                                                     <div className="space-y-4">
                                                         {offers.slice(0, 20).map((req: any, idx: number) => {
                                                             const amount = Number(req?.exact_budget || req?.deal_amount || req?.barter_value || 0);
-                                                            const isHighPaying = Number.isFinite(amount) && amount >= 20000;
-                                                            const offerImage = resolveOfferImage(req);
-                                                            const posted = timeAgo(req?.created_at || req?.raw?.created_at);
-                                                            const expText = expiresInText(req);
+                                                            const productImage = resolveCreatorDealProductImage(req);
+                                                            const isBarter = String(req?.collab_type || '').toLowerCase().includes('barter');
+                                                            const deliverables = safeParseArray(req?.deliverables);
+                                                            const deliverablesContent = deliverables.length > 0 ? deliverables.slice(0, 1).join(', ') : 'Campaign';
                                                             const expBadge = expBadgeText(req);
-                                                            const deliverables = deliverableText(req);
-                                                            const category = String(req?.category || req?.industry || req?.niche || '').trim();
-                                                            const brandName = String(req?.brand_name || 'Brand').trim();
 
                                                             return (
-                                                                 <motion.div
-                                                                    key={String(req?.id || idx)}
-                                                                    whileTap={{ scale: 0.985 }}
+                                                                <motion.div
+                                                                    key={req.id || idx}
+                                                                    initial={{ opacity: 0, y: 20 }}
+                                                                    animate={{ opacity: 1, y: 0 }}
+                                                                    transition={{ delay: idx * 0.1 }}
                                                                     onTap={() => {
                                                                         triggerHaptic();
-                                                                        setSelectedItem(req);
-                                                                        setSelectedType('offer');
+                                                                        navigate(`/offer/${req.id}`);
                                                                     }}
                                                                     className={cn(
-                                                                        "p-6 rounded-[2.5rem] border transition-all duration-500 group relative cursor-pointer overflow-hidden",
-                                                                        isDark 
-                                                                            ? "bg-gradient-to-br from-[#0B1220] to-[#070B14] border-white/5 shadow-2xl shadow-black/40" 
-                                                                            : "bg-white border-slate-200/60 shadow-[0_15px_35px_rgba(0,0,0,0.05)] hover:shadow-[0_20px_45px_rgba(0,0,0,0.08)]"
+                                                                        "relative w-full aspect-[1.2/1] md:aspect-auto rounded-[2.5rem] overflow-hidden transition-all duration-500 group cursor-pointer border-0 shadow-2xl shadow-black/20 mb-6",
+                                                                        "bg-[#0B1220]"
                                                                     )}
                                                                 >
-                                                                    {/* Background Texture */}
-                                                                    <div className="absolute inset-0 opacity-[0.03] pointer-events-none mix-blend-overlay bg-[url('data:image/svg+xml,%3Csvg viewBox=%220 0 200 200%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22noiseFilter%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.65%22 numOctaves=%223%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23noiseFilter)%22/%3E%3C/svg%3E')]" />
-
-                                                                    <div className="flex items-center justify-between gap-2 mb-5">
-                                                                        <div className="flex gap-2">
-                                                                            <span className={cn(
-                                                                                "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider border",
-                                                                                req?.collab_type === 'barter'
-                                                                                    ? (isDark ? "bg-amber-500/10 text-amber-300 border-amber-400/20" : "bg-amber-50 text-amber-700 border-amber-100")
-                                                                                    : isHighPaying
-                                                                                        ? (isDark ? "bg-emerald-500/10 text-emerald-300 border-emerald-400/20 shadow-[0_0_15px_rgba(16,185,129,0.1)]" : "bg-emerald-50 text-emerald-700 border-emerald-100")
-                                                                                        : (isDark ? "bg-blue-500/10 text-blue-300 border-blue-500/20" : "bg-blue-50 text-blue-700 border-blue-100")
-                                                                            )}>
-                                                                                {req?.collab_type === 'barter' ? (
-                                                                                    <Package className="w-3 h-3" />
-                                                                                ) : (
-                                                                                    <Zap className="w-3 h-3 fill-current" />
-                                                                                )}
-                                                                                {req?.collab_type === 'barter' ? 'Barter Collab' : isHighPaying ? 'High Paying' : 'Standard Deal'}
-                                                                            </span>
-                                                                        </div>
-                                                                        <span className={cn(
-                                                                            "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider border",
-                                                                            isDark ? "bg-rose-500/10 text-rose-300 border-rose-500/20" : "bg-rose-50 text-rose-600 border-rose-100"
-                                                                        )}>
-                                                                            <Clock className="w-3 h-3" />
-                                                                            {expBadge}
-                                                                        </span>
+                                                                    {/* Background Image/Fallback */}
+                                                                    <div className="absolute inset-0">
+                                                                        {productImage ? (
+                                                                            <img 
+                                                                                src={productImage} 
+                                                                                alt="" 
+                                                                                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
+                                                                                loading="lazy" 
+                                                                            />
+                                                                        ) : (
+                                                                            <div className="w-full h-full flex flex-col items-center justify-center gap-4 bg-gradient-to-br from-[#1A1D25] to-[#12141A]">
+                                                                                <div className="w-24 h-24 rounded-3xl bg-white/10 backdrop-blur-md border border-white/10 flex items-center justify-center p-4">
+                                                                                    {getBrandIcon(req.brand_logo_url, req.campaign_category, req.brand_name)}
+                                                                                </div>
+                                                                            </div>
+                                                                        )}
+                                                                        <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/60 to-black/30" />
                                                                     </div>
 
-                                                                    <div className="flex gap-5 mb-6">
-                                                                        <div className={cn(
-                                                                            "w-[110px] h-[110px] rounded-[24px] overflow-hidden border shrink-0 p-1 shadow-lg transition-all duration-700 group-hover:scale-[1.05] relative", 
-                                                                            isDark ? "border-white/5 bg-white/5" : "border-slate-100 bg-slate-50/50"
-                                                                        )}>
-                                                                            {offerImage ? (
-                                                                                <img src={offerImage} alt="" className="w-full h-full object-cover rounded-[18px]" loading="lazy" />
-                                                                            ) : (
-                                                                                <div className={cn("w-full h-full rounded-[18px] flex items-center justify-center", isDark ? "bg-slate-800" : "bg-white")}>
-                                                                                    {getBrandIcon(req.brand_logo_url || req.brand_logo || req.logo_url || req.raw?.brand_logo_url || req.raw?.brand_logo || (req as any).brand?.logo_url, req.category, brandName)}
+                                                                    {/* Content Wrapper */}
+                                                                    <div className="relative h-full p-5 flex flex-col justify-between z-10">
+                                                                        {/* Top Row: Status Pills */}
+                                                                        <div className="flex items-center justify-between">
+                                                                            <div className="flex items-center gap-1.5">
+                                                                                <div className="px-2.5 py-1.5 rounded-full bg-emerald-500/20 backdrop-blur-md border border-emerald-500/20 flex items-center gap-1.5">
+                                                                                    <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                                                                                    <span className="text-[11px] font-black uppercase tracking-widest text-emerald-100">New Offer</span>
                                                                                 </div>
-                                                                            )}
+                                                                            </div>
+                                                                            <div className="px-2.5 py-1.5 rounded-full bg-rose-500/20 backdrop-blur-md border border-rose-500/20 flex items-center gap-1.5">
+                                                                                <Clock className="w-3 h-3 text-rose-300" />
+                                                                                <span className="text-[11px] font-black uppercase tracking-widest text-rose-100">{expBadge}</span>
+                                                                            </div>
                                                                         </div>
 
-                                                                        <div className="min-w-0 flex-1 py-1 flex flex-col justify-center">
-                                                                            <div className="min-w-0">
-                                                                                <h4 className={cn("text-[18px] font-black tracking-tight leading-tight capitalize truncate font-outfit", isDark ? "text-white" : "text-slate-900")}>
-                                                                                    {req.company_name || brandName}
-                                                                                </h4>
-                                                                                <p className={cn("text-[12px] font-bold mt-1.5 opacity-40 truncate leading-relaxed", textColor)}>
-                                                                                    {deliverables}
+                                                                        {/* Bottom Section */}
+                                                                        <div>
+                                                                            <div className="mb-4 flex items-center justify-between">
+                                                                                <div className="flex items-center gap-2">
+                                                                                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white/50">
+                                                                                        {isBarter ? 'Barter Offer' : 'Paid Offer'}
+                                                                                    </span>
+                                                                                </div>
+                                                                                <p className="text-[18px] font-black tracking-tight text-white">
+                                                                                    {amount > 0 ? `₹${amount.toLocaleString()}` : 'BARTER'}
                                                                                 </p>
                                                                             </div>
+                                                                            
+                                                                            <h2 className="text-xl font-black tracking-tighter mb-2 uppercase italic whitespace-nowrap overflow-hidden text-ellipsis text-white">
+                                                                                {req.company_name || req.brand_name || 'Brand Partner'}
+                                                                            </h2>
+                                                                            <p className="text-sm font-semibold mb-8 line-clamp-2 leading-relaxed text-white/70">
+                                                                                {deliverablesContent} • <span className="text-emerald-400">{req?.campaign_goal || req?.campaign_category || (isBarter ? 'Barter Package' : 'Monetary Package')}</span>
+                                                                            </p>
 
-                                                                            <div className="mt-4">
-                                                                                {amount > 0 ? (
-                                                                                    <div className="flex items-baseline gap-1.5">
-                                                                                        <p className={cn("text-[28px] font-black tracking-tighter tabular-nums leading-none font-outfit", isDark ? "text-white" : "text-slate-900")}>
-                                                                                            ₹{amount.toLocaleString()}
-                                                                                        </p>
-                                                                                        <p className={cn("text-[10px] font-black uppercase tracking-widest opacity-30", textColor)}>
-                                                                                            {req?.collab_type === 'barter' ? 'Value' : 'Earnings'}
-                                                                                        </p>
-                                                                                    </div>
-                                                                                ) : (
-                                                                                    <div className="flex items-center gap-2">
-                                                                                        <p className={cn("text-[20px] font-black italic uppercase tracking-tighter leading-none font-outfit text-amber-500")}>
-                                                                                            Value Based
-                                                                                        </p>
-                                                                                        <div className="px-2 py-0.5 rounded-md bg-amber-500/10 border border-amber-500/20 text-[8px] font-black text-amber-500 uppercase tracking-widest">
-                                                                                            No Cash
-                                                                                        </div>
-                                                                                    </div>
-                                                                                )}
-                                                                            </div>
+                                                                            <button 
+                                                                                type="button"
+                                                                                className="w-full h-14 rounded-2xl bg-white text-black font-black uppercase tracking-widest text-[13px] flex items-center justify-center gap-2 shadow-2xl active:scale-95 transition-all duration-300"
+                                                                            >
+                                                                                View & Accept Offer
+                                                                                <ChevronRight className="w-5 h-5" strokeWidth={3} />
+                                                                            </button>
                                                                         </div>
                                                                     </div>
-
-                                                                    <div className="grid grid-cols-2 gap-3 mb-5">
-                                                                        <button
-                                                                            type="button"
-                                                                            onClick={async (e) => {
-                                                                                e.stopPropagation();
-                                                                                triggerHaptic();
-                                                                                if (req?.isDemo) {
-                                                                                    toast.message('This is a demo offer', { description: 'Accept is disabled for demo.' });
-                                                                                    return;
-                                                                                }
-                                                                                await handleAccept(req);
-                                                                            }}
-                                                                            className={cn(
-                                                                                "h-[54px] rounded-[20px] font-black uppercase tracking-widest text-[11px] flex items-center justify-center gap-2 active:scale-95 transition-all shadow-xl shadow-blue-600/20",
-                                                                                isDark ? "bg-blue-600 text-white" : "bg-blue-600 text-white hover:bg-blue-700"
-                                                                            )}
-                                                                        >
-                                                                            <Check className="w-4 h-4" strokeWidth={3} />
-                                                                            Accept
-                                                                        </button>
-                                                                        <button
-                                                                            type="button"
-                                                                            onClick={async (e) => {
-                                                                                e.stopPropagation();
-                                                                                triggerHaptic(HapticPatterns.error);
-                                                                                if (req?.isDemo) {
-                                                                                    toast.message('This is a demo offer', { description: 'Decline is disabled for demo.' });
-                                                                                    return;
-                                                                                }
-                                                                                if (onDeclineRequest) {
-                                                                                    try { await onDeclineRequest(req); } catch { }
-                                                                                }
-                                                                            }}
-                                                                            className={cn(
-                                                                                "h-[54px] rounded-[20px] font-black uppercase tracking-widest text-[11px] flex items-center justify-center gap-2 active:scale-95 transition-all border",
-                                                                                isDark ? "bg-white/5 border-white/10 text-white hover:bg-white/10" : "bg-white border-slate-200 text-slate-600 hover:bg-slate-50"
-                                                                            )}
-                                                                        >
-                                                                            <X className="w-4 h-4" strokeWidth={3} />
-                                                                            Decline
-                                                                        </button>
-                                                                    </div>
-
-                                                                    <button
-                                                                        type="button"
-                                                                        onClick={(e) => {
-                                                                            e.stopPropagation();
-                                                                            triggerHaptic();
-                                                                            setSelectedItem(req);
-                                                                            setSelectedType('offer');
-                                                                            toast.message('Counter Offer', { description: 'Open offer details to counter.' });
-                                                                        }}
-                                                                        className={cn("w-full py-1 text-center text-[10px] font-black uppercase tracking-[0.25em] opacity-30 hover:opacity-100 transition-opacity flex items-center justify-center gap-2", textColor)}
-                                                                        >
-                                                                            SEND COUNTER OFFER
-                                                                            <ArrowRight className="w-3 h-3" />
-                                                                        </button>
                                                                 </motion.div>
                                                             );
                                                         })}
@@ -6778,7 +6767,7 @@ const MobileDashboardDemo = ({
                                                                             {(() => {
                                                                                 const raw = selectedItem?.deliverables || selectedItem?.raw?.deliverables;
                                                                                 try {
-                                                                                    const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;
+                                                                                    const parsed = safeJsonParse(raw, raw);
                                                                                     if (Array.isArray(parsed) && parsed.length > 0) {
                                                                                         const first = parsed[0];
                                                                                         if (typeof first === 'string') return first.includes('Reel') ? 'Reel' : first;
@@ -7052,7 +7041,7 @@ const MobileDashboardDemo = ({
                                                                                     // Handle plain text deliverables
                                                                                     items = [raw];
                                                                                 } else {
-                                                                                    const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;
+                                                                                    const parsed = safeJsonParse(raw, raw);
                                                                                     if (Array.isArray(parsed) && parsed.length > 0) {
                                                                                         items = parsed.map((d: any) => {
                                                                                             if (typeof d === 'string') return d;
@@ -7304,7 +7293,7 @@ const MobileDashboardDemo = ({
                                                     const raw = selectedItem.deliverables || selectedItem.raw?.deliverables;
                                                     let items: any[] = [{ label: 'Instagram Reel', count: 1, type: 'reel' }, { label: 'Stories', count: 2, type: 'story' }];
                                                     try {
-                                                        const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;
+                                                        const parsed = safeJsonParse(raw, raw);
                                                         if (Array.isArray(parsed) && parsed.length > 0) {
                                                             items = parsed.map((d: any) => {
                                                                 if (typeof d === 'string') return { label: d, count: 1, type: 'other' };
@@ -8870,6 +8859,19 @@ const MobileDashboardDemo = ({
                         setShowDisputeModal(false);
                         if (onRefresh) onRefresh();
                     }}
+                />
+            )}
+
+            {/* Notification Pop-up */}
+            {showPushPrompt && (
+                <PushNotificationPrompt 
+                    onEnable={handleEnablePush}
+                    onDismiss={() => {
+                        dismissPushPrompt();
+                        setShowPushPrompt(false);
+                    }}
+                    isBusy={isPushBusy}
+                    isDark={isDark}
                 />
             )}
         </div>
