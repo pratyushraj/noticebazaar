@@ -146,6 +146,7 @@ interface SessionContextType {
   refetchProfile: () => void;
   trialStatus: TrialStatus;
   isLoadingProfile: boolean;
+  isFetchingProfile: boolean;
   isProfileSlow: boolean;
   profileError: Error | null;
 }
@@ -415,7 +416,13 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
     }
   }, [user?.id]); // Dependency for useCallback
 
-  const { data: profileData, isLoading: isLoadingProfile, error: profileQueryError, refetch: refetchProfileQuery } = useSupabaseQuery<Profile | null, Error>( // Destructure refetch
+  const { 
+    data: profileData, 
+    isLoading: isLoadingProfile, 
+    isFetching: isFetchingProfile,
+    error: profileQueryError, 
+    refetch: refetchProfileQuery 
+  } = useSupabaseQuery<Profile | null, Error>( // Destructure refetch
     ['userProfile', user?.id], // Query key depends on user ID
     profileQueryFn, // Pass memoized queryFn
     {
@@ -449,9 +456,9 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
     }
   }, [isLoadingProfile, !!profile]);
 
-  // Overall loading state: initial session not complete, OR profile loading when we have no profile yet.
-  // If profile is taking too long (isProfileSlow), we stop gating here and let ProtectedRoute handle the fallback/retry.
-  const loading = !initialLoadComplete || (isLoadingProfile && !profile);
+  // Overall loading state: initial session not complete, OR profile loading/fetching when we have no profile yet.
+  // We use isFetchingProfile so that we don't drop the loader during retries if the first attempt fails.
+  const loading = !initialLoadComplete || ((isLoadingProfile || isFetchingProfile) && !profile);
   const authStatus: AuthStatus = loading
     ? 'loading'
     : session
@@ -1057,6 +1064,7 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
     refetchProfile: refetchProfileQuery || (() => { }),
     trialStatus,
     isLoadingProfile,
+    isFetchingProfile,
     isProfileSlow,
     profileError: profileQueryError
   }), [
@@ -1073,6 +1081,7 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
     refetchProfileQuery,
     trialStatus,
     isLoadingProfile,
+    isFetchingProfile,
     isProfileSlow,
     profileQueryError
   ]);
@@ -1095,6 +1104,8 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
       refetchProfile: () => { },
       trialStatus: { isTrial: false, isExpired: false, daysLeft: 0, trialLocked: false, trialStartedAt: null, trialExpiresAt: null },
       isLoadingProfile: false,
+      isFetchingProfile: false,
+      isProfileSlow: false,
       profileError: null
     };
     return (
@@ -1137,6 +1148,10 @@ export const useSession = () => {
       organizationId: null,
       refetchProfile: () => { },
       trialStatus: { isTrial: false, isExpired: false, daysLeft: 0, trialLocked: false, trialStartedAt: null, trialExpiresAt: null },
+      isLoadingProfile: false,
+      isFetchingProfile: false,
+      isProfileSlow: false,
+      profileError: null
     };
   }
   return context;
