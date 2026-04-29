@@ -3,7 +3,7 @@ import { BottomSheet } from '../ui/bottom-sheet';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
-import { Loader2, Calendar, IndianRupee, Zap, Sparkles, CheckCircle2 } from 'lucide-react';
+import { Loader2, Calendar, IndianRupee, Zap, Sparkles, CheckCircle2, Truck, Package } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { getApiBaseUrl } from '@/lib/utils/api';
 import { toast } from 'sonner';
@@ -156,6 +156,7 @@ export const QuickOfferSheet: React.FC<QuickOfferSheetProps> = ({
     const [collabType, setCollabType] = useState<'paid' | 'barter'>('paid');
     const [deadline, setDeadline] = useState('');
     const [description, setDescription] = useState('');
+    const [requiresShipping, setRequiresShipping] = useState(false);
 
     useEffect(() => {
         if (creator && isOpen) {
@@ -170,6 +171,7 @@ export const QuickOfferSheet: React.FC<QuickOfferSheetProps> = ({
             setDeadline(date.toISOString().split('T')[0]);
             setIsSuccess(false);
             setDescription('');
+            setRequiresShipping(initialPackage?.type === 'barter');
         }
     }, [creator, isOpen]);
 
@@ -180,6 +182,7 @@ export const QuickOfferSheet: React.FC<QuickOfferSheetProps> = ({
             setBudget(String(selectedPackage.rate || ''));
             setDeliverables(selectedPackage.deliverables || []);
             setCollabType(selectedPackage.type === 'barter' ? 'barter' : 'paid');
+            if (selectedPackage.type === 'barter') setRequiresShipping(true);
         }
     };
 
@@ -212,7 +215,7 @@ export const QuickOfferSheet: React.FC<QuickOfferSheetProps> = ({
                 // These are required by the backend API 
                 campaign_category: 'General',
                 usage_rights: false,
-                requires_shipping: false
+                requires_shipping: requiresShipping
             };
 
             const submitHandle = creatorUsername;
@@ -400,6 +403,45 @@ export const QuickOfferSheet: React.FC<QuickOfferSheetProps> = ({
                                 className="h-14 rounded-2xl border border-slate-200 bg-white px-4 font-medium text-sm text-slate-900 shadow-sm focus:border-emerald-500/50"
                                 placeholder="Describe your requirements..."
                             />
+                        </div>
+
+                        {/* Shipping Toggle */}
+                        <div className="pt-2">
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    triggerHaptic(HapticPatterns.light);
+                                    setRequiresShipping(!requiresShipping);
+                                }}
+                                className={cn(
+                                    "w-full rounded-2xl p-4 flex items-center justify-between transition-all border",
+                                    requiresShipping 
+                                        ? "bg-blue-50 border-blue-200 shadow-sm" 
+                                        : "bg-white border-slate-200"
+                                )}
+                            >
+                                <div className="flex items-center gap-3">
+                                    <div className={cn(
+                                        "w-10 h-10 rounded-xl flex items-center justify-center transition-colors",
+                                        requiresShipping ? "bg-blue-500 text-white" : "bg-slate-100 text-slate-400"
+                                    )}>
+                                        <Truck className="w-5 h-5" />
+                                    </div>
+                                    <div className="text-left">
+                                        <p className="text-[14px] font-black text-slate-900">Physical Product Shipment</p>
+                                        <p className="text-[11px] font-bold text-slate-500">Brand will ship a product to the creator</p>
+                                    </div>
+                                </div>
+                                <div className={cn(
+                                    "w-12 h-6 rounded-full relative transition-all duration-300",
+                                    requiresShipping ? "bg-blue-500" : "bg-slate-200"
+                                )}>
+                                    <div className={cn(
+                                        "absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform duration-300 shadow-sm",
+                                        requiresShipping ? "translate-x-6" : "translate-x-0"
+                                    )} />
+                                </div>
+                            </button>
                         </div>
 
                         {/* Submit Button */}

@@ -2288,7 +2288,7 @@ const CollabLinkLanding = () => {
           usage_duration: null,
           payment_terms: null,
           approval_sla_hours: null,
-          requires_shipping: false,
+          requires_shipping: paymentType === 'barter' || includesProduct,
           shipping_timeline_days: null,
           cancellation_policy: null,
         }),

@@ -6,7 +6,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   ShieldCheck, UploadCloud, Loader2, CheckCircle2, Camera,
   ArrowRight, Sparkles, Send, User, IndianRupee, ChevronRight,
-  Building2, Briefcase, Image as ImageIcon, Trash2
+  Building2, Briefcase, Image as ImageIcon, Trash2, MapPin, Clock,
+  CheckCircle, Landmark
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useSession } from '@/contexts/SessionContext';
@@ -15,8 +16,10 @@ import { trackEvent } from '@/lib/utils/analytics';
 import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
 import { SmartIndustrySelector } from '@/components/brand/SmartIndustrySelector';
+import { fetchPincodeData } from '@/lib/utils/pincodeLookup';
+import { triggerHaptic, HapticPatterns } from '@/lib/utils/haptics';
 
-type OnboardingStep = 'logo' | 'budget' | 'ready';
+type OnboardingStep = 'logo' | 'budget' | 'address' | 'ready';
 
 const BUDGET_OPTIONS = [
   { label: '₹5K – ₹15K', value: '5k-15k', desc: 'Micro & nano creators', emoji: '🌱' },
@@ -44,6 +47,13 @@ export default function BrandOnboarding() {
 
   // Budget
   const [selectedBudget, setSelectedBudget] = useState('');
+
+  // Address state
+  const [addressLine, setAddressLine] = useState('');
+  const [city, setCity] = useState('');
+  const [stateName, setStateName] = useState('');
+  const [pincode, setPincode] = useState('');
+  const [isLookingUpPincode, setIsLookingUpPincode] = useState(false);
 
   const apiBase = useMemo(() => getApiBaseUrl(), []);
 
@@ -110,7 +120,20 @@ export default function BrandOnboarding() {
       return null;
     }
   };
-
+  const handlePincodeChange = async (val: string) => {
+    setPincode(val);
+    if (val.length !== 6 || !/^\d{6}$/.test(val)) return;
+    setIsLookingUpPincode(true);
+    try {
+      const data = await fetchPincodeData(val);
+      if (data?.city) {
+        if (!city.trim()) setCity(data.city);
+        if (!stateName.trim()) setStateName(data.state || "");
+        triggerHaptic(HapticPatterns.light);
+      }
+    } catch { /* silent */ }
+    finally { setIsLookingUpPincode(false); }
+  };
   const handleComplete = async () => {
     if (!session?.access_token) return;
     setIsSubmitting(true);
@@ -128,6 +151,11 @@ export default function BrandOnboarding() {
       if (industry) payload.industry = industry;
       if (logoUrl) payload.logo_url = logoUrl;
       if (selectedBudget) payload.budget_range = selectedBudget;
+      
+      const fullAddress = `${addressLine.trim()}, ${city.trim()}, ${stateName.trim()} - ${pincode.trim()}`;
+      if (addressLine && city && stateName && pincode) {
+        payload.company_address = fullAddress;
+      }
 
       if (Object.keys(payload).length > 0) {
         const profileRes = await fetch(`${apiBase}/api/brand-dashboard/profile`, {
@@ -184,8 +212,8 @@ export default function BrandOnboarding() {
     navigate('/brand-dashboard', { replace: true });
   };
 
-  const stepNumber = step === 'logo' ? 1 : step === 'budget' ? 2 : 3;
-  const totalSteps = 3;
+  const stepNumber = step === 'logo' ? 1 : step === 'budget' ? 2 : step === 'address' ? 3 : 4;
+  const totalSteps = 4;
 
   if (sessionLoading || !profile) {
     return (
@@ -425,7 +453,7 @@ export default function BrandOnboarding() {
                 <div className="mt-8 space-y-3">
                   <button
                     type="button"
-                    onClick={() => setStep('ready')}
+                    onClick={() => setStep('address')}
                     className="h-14 w-full rounded-2xl bg-slate-900 text-[13px] font-black uppercase tracking-[0.18em] text-white hover:bg-slate-800 transition-all flex items-center justify-center gap-2 shadow-lg"
                   >
                     Continue <ArrowRight className="w-4 h-4" />
@@ -442,7 +470,122 @@ export default function BrandOnboarding() {
             </motion.div>
           )}
 
-          {/* ── STEP 3: Ready / Send First Offer ── */}
+          {/* ── STEP 3: Shipping Address ── */}
+          {step === 'address' && (
+            <motion.div
+              key="address"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.35 }}
+              className="w-full"
+            >
+              <div className="bg-white rounded-[2rem] border border-slate-200 p-6 sm:p-8 shadow-xl">
+                <StepIndicator current={stepNumber} total={totalSteps} />
+
+                <p className="text-[11px] font-black uppercase tracking-[0.25em] text-emerald-600 mt-6">
+                  Logistics & Fulfillment
+                </p>
+                <h1 className="mt-3 text-3xl sm:text-4xl font-black tracking-tight text-slate-900">
+                  Business Address
+                </h1>
+                <p className="mt-3 text-base font-medium leading-relaxed text-slate-600">
+                  Used for shipping products to creators and legal contracts.
+                </p>
+
+                <div className="mt-8 space-y-5">
+                  {/* Street Address */}
+                  <div>
+                    <label className="text-[11px] font-black uppercase tracking-[0.18em] text-slate-500 mb-2 block">
+                      Street Address
+                    </label>
+                    <input
+                      value={addressLine}
+                      onChange={(e) => setAddressLine(e.target.value)}
+                      className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3.5 text-[16px] font-semibold text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 transition-all"
+                      placeholder="Building, Street, Area"
+                    />
+                  </div>
+
+                  {/* City + Pincode */}
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-[11px] font-black uppercase tracking-[0.18em] text-slate-500 mb-2 block">
+                        City
+                      </label>
+                      <input
+                        value={city}
+                        onChange={(e) => setCity(e.target.value)}
+                        className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3.5 text-[16px] font-semibold text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 transition-all"
+                        placeholder="Mumbai"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-[11px] font-black uppercase tracking-[0.18em] text-slate-500 mb-2 block">
+                        Pincode
+                      </label>
+                      <div className="relative">
+                        <input
+                          value={pincode}
+                          onChange={(e) => handlePincodeChange(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                          inputMode="numeric"
+                          className={cn(
+                            "w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3.5 text-[16px] font-semibold text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 transition-all",
+                            isLookingUpPincode && "pr-10"
+                          )}
+                          placeholder="400001"
+                        />
+                        {isLookingUpPincode && (
+                          <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                            <Loader2 className="w-4 h-4 animate-spin text-slate-400" />
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* State */}
+                  <div>
+                    <label className="text-[11px] font-black uppercase tracking-[0.18em] text-slate-500 mb-2 block">
+                      State
+                    </label>
+                    <input
+                      value={stateName}
+                      onChange={(e) => setStateName(e.target.value)}
+                      className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3.5 text-[16px] font-semibold text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 transition-all"
+                      placeholder="Maharashtra"
+                    />
+                  </div>
+                </div>
+
+                {/* CTA */}
+                <div className="mt-8 space-y-3">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (!addressLine.trim() || !city.trim() || !stateName.trim() || !pincode.trim()) {
+                        toast.error('Please complete all address fields');
+                        return;
+                      }
+                      setStep('ready');
+                    }}
+                    className="h-14 w-full rounded-2xl bg-slate-900 text-[13px] font-black uppercase tracking-[0.18em] text-white hover:bg-slate-800 transition-all flex items-center justify-center gap-2 shadow-lg"
+                  >
+                    Continue <ArrowRight className="w-4 h-4" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setStep('budget')}
+                    className="w-full text-center text-[12px] font-semibold text-slate-500 hover:text-slate-700 transition-colors py-2"
+                  >
+                    ← Back
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          )}
+
+          {/* ── STEP 4: Ready / Send First Offer ── */}
           {step === 'ready' && (
             <motion.div
               key="ready"
@@ -495,6 +638,14 @@ export default function BrandOnboarding() {
                       </p>
                     </div>
                   )}
+                  {addressLine && (
+                    <div className="flex items-start gap-2 px-3 py-2 bg-sky-50 rounded-xl border border-sky-100">
+                      <MapPin className="w-4 h-4 text-sky-600 mt-0.5" />
+                      <p className="text-[13px] font-semibold text-sky-700 leading-tight">
+                        Address: {addressLine}, {city}, {stateName} - {pincode}
+                      </p>
+                    </div>
+                  )}
                 </div>
 
                 {/* What next */}
@@ -530,7 +681,7 @@ export default function BrandOnboarding() {
                   </button>
                   <button
                     type="button"
-                    onClick={() => setStep('budget')}
+                    onClick={() => setStep('address')}
                     className="w-full text-center text-[12px] font-semibold text-slate-500 hover:text-slate-700 transition-colors py-2"
                   >
                     ← Back

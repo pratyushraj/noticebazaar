@@ -71,6 +71,7 @@ import { DiscoveryVideoUpload } from '@/components/dashboard/DiscoveryVideoUploa
 import { CreatorDiscoveryStack } from '@/components/creator-dashboard/CreatorDiscoveryStack';
 import { DisputeEscalationModal } from '@/components/deals/DisputeEscalationModal';
 import PushNotificationPrompt from '@/components/dashboard/PushNotificationPrompt';
+import { CreatorShippingConfirmationModal } from '@/components/deals/CreatorShippingConfirmationModal';
 
 interface MobileDashboardProps {
     profile?: any;
@@ -1099,6 +1100,10 @@ const MobileDashboardDemo = ({
     const [showItemMenu, setShowItemMenu] = useState(false);
     const [showProgressSheet, setShowProgressSheet] = useState(false);
     const [showPushPrompt, setShowPushPrompt] = useState(false);
+    
+    // Shipping Confirmation State
+    const [showCreatorShippingModal, setShowCreatorShippingModal] = useState(false);
+    const [pendingAcceptReq, setPendingAcceptReq] = useState<any>(null);
     const mainContainerRef = useRef<HTMLDivElement>(null);
     
     const totalFollowers = useMemo(() => (profile?.platforms || []).reduce((acc: number, p: any) => acc + (p.followers || 0), 0) || 50000, [profile?.platforms]);
@@ -2738,6 +2743,16 @@ const MobileDashboardDemo = ({
 
     const handleAccept = async (req: any) => {
         if (!onAcceptRequest) return;
+        
+        // If it's a barter-like deal, we MUST confirm shipping address first
+        const isBarter = isBarterLikeCollab(req);
+        if (isBarter) {
+            setPendingAcceptReq(req);
+            setShowCreatorShippingModal(true);
+            return;
+        }
+
+        // Otherwise proceed with normal accept
         triggerHaptic();
         setProcessingDeal(req.id);
         try {
@@ -2758,6 +2773,43 @@ const MobileDashboardDemo = ({
             }
         } finally {
             setProcessingDeal(null);
+        }
+    };
+
+    const handleConfirmCreatorShipping = async (addressData: { address: string; pincode: string }) => {
+        if (!pendingAcceptReq || !onAcceptRequest) return;
+        
+        setShowCreatorShippingModal(false);
+        triggerHaptic();
+        setProcessingDeal(pendingAcceptReq.id);
+        
+        try {
+            // 1. Update creator profile with new shipping address
+            const apiBase = getApiBaseUrl();
+            await fetch(`${apiBase}/api/profiles/${profile.id}`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${session.access_token}`,
+                },
+                body: JSON.stringify({
+                    shipping_address: addressData.address,
+                    pincode: addressData.pincode,
+                }),
+            });
+
+            // 2. Accept the deal
+            await onAcceptRequest(pendingAcceptReq);
+            closeItemDetail();
+            confetti({ particleCount: 80, spread: 60, origin: { y: 0.7 }, colors: ['#10B981', '#059669', '#34D399'] });
+            toast.success('🎉 Deal accepted! Shipping address confirmed.');
+            toast.message('Next: Submit content links in Active tab → Deliver Content', { description: 'Brand gets notified. Payment held until you deliver.' });
+        } catch (error: any) {
+            console.error("Accept error with shipping:", error);
+            toast.error('Failed to accept: ' + (error?.message || 'Unknown error'));
+        } finally {
+            setProcessingDeal(null);
+            setPendingAcceptReq(null);
         }
     };
 
@@ -7401,6 +7453,7 @@ const MobileDashboardDemo = ({
                                     </div>
                                 </div>
                             )}
+
                         </motion.div>
                     );
                 })()}
@@ -7428,6 +7481,18 @@ const MobileDashboardDemo = ({
                     }}
                     isBusy={isPushBusy}
                     isDark={isDark}
+                />
+            )}
+
+            {/* Creator Shipping Confirmation */}
+            {showCreatorShippingModal && pendingAcceptReq && (
+                <CreatorShippingConfirmationModal
+                    brandName={pendingAcceptReq.brand_name || 'the brand'}
+                    onClose={() => {
+                        setShowCreatorShippingModal(false);
+                        setPendingAcceptReq(null);
+                    }}
+                    onConfirm={handleConfirmCreatorShipping}
                 />
             )}
         </div>
