@@ -1,4 +1,4 @@
-import fetch from 'node-fetch';
+// Using native fetch available in Node 18+
 import { getEmailLayout, getPrimaryCTA } from './professionalEmailTemplates.js';
 
 const apiKey = process.env.RESEND_API_KEY;
