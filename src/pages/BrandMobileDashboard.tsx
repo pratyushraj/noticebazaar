@@ -1314,7 +1314,9 @@ const BrandMobileDashboard = ({
   const visibleCollabItems = useMemo(() => {
     if (activeCollabTab === 'active') return activeDealsList;
     if (activeCollabTab === 'completed') return completedDealsList;
-    return pendingOffersList;
+    // Include BOTH pending offers (requests) AND active deals that need brand attention (e.g. signature, review).
+    const needsActionDeals = activeDealsList.filter((d: any) => brandDealCardUi(d).needsAction);
+    return uniqById([...pendingOffersList, ...needsActionDeals]);
   }, [activeCollabTab, activeDealsList, completedDealsList, pendingOffersList]);
 
   useEffect(() => {
@@ -3576,7 +3578,7 @@ const BrandMobileDashboard = ({
                               isDark ? 'bg-white/[0.03] border-white/5 shadow-2xl shadow-black/40' : 'bg-white/60 border-slate-200 shadow-xl'
                             )}>
 	                            {[
-	                              { key: 'action_required', label: 'Action Needed', count: pendingOffersList.length },
+	                              { key: 'action_required', label: 'Action Needed', count: needsActionTotal },
 	                              { key: 'active', label: 'Active', count: activeDealsList.length },
 	                              { key: 'completed', label: 'History', count: completedDealsList.length },
 	                            ].map((item) => {
@@ -3663,7 +3665,7 @@ const BrandMobileDashboard = ({
                               </div>
                             ) : (
                               <div className="p-4 space-y-3">
-                                {visibleCollabItems.slice(0, 3).map((item: any, idx: number) => {
+                                {visibleCollabItems.slice(0, 10).map((item: any, idx: number) => {
                                   const itemKey = `collab-home-${item.id || idx}-${item.updated_at || ''}`;
                                   const isPendingItem = activeCollabTab === 'action_required';
                                   const isCompletedItem = activeCollabTab === 'completed';
@@ -3673,7 +3675,7 @@ const BrandMobileDashboard = ({
                                   const amount = Number(item?.deal_amount || item?.exact_budget || 0);
                                   const due = isPendingItem ? offerExpiryLabel(item) : deadlineLabel(item);
 
-                                  if (isPendingItem) {
+                                  if (isPendingItem && ['pending', 'countered', 'sent', 'offer_sent', 'submitted', 'action_required', 'action-required'].includes(normalizeStatus(item?.status))) {
                                     const sentIso = item?.created_at || item?.updated_at || null;
                                     const sentSince = sentIso ? timeSince(sentIso) : '';
                                     const sentHours = sentIso ? hoursSince(sentIso) : null;
@@ -4113,7 +4115,7 @@ const BrandMobileDashboard = ({
                         className={cn('w-full p-4 flex items-center justify-between transition-all active:scale-[0.995] backdrop-blur-md', isDark ? 'border-b border-border hover:bg-secondary/[0.06]' : 'border-b border-border/80 hover:bg-secondary/60')}
                       >
                         <p className={cn('text-[12px] font-bold', textColor)}>Awaiting Response</p>
-	                        <p className={cn('text-[12px] font-bold', textColor)}>{offers.length}</p>
+	                        <p className={cn('text-[12px] font-bold', textColor)}>{pendingOffersList.length + activeDealsList.filter((d: any) => brandDealCardUi(d).needsAction).length}</p>
                       </button>
 	                      <button
 	                        type="button"
@@ -4164,11 +4166,9 @@ const BrandMobileDashboard = ({
 	                    </div>
 	                  </div>
 
-		                  {/* Keep the summary pill in the header; avoid duplicating the same items again in a separate widget. */}
-
 		                  <div className={cn('mb-4 rounded-[22px] border p-1.5 flex gap-1.5 backdrop-blur-xl shadow-sm', isDark ? 'bg-secondary/[0.06] border-border/50' : 'bg-slate-100/80 border-slate-200/60')}>
 		                    {[
-			                      { key: 'action_required', label: 'Awaiting Response', count: pendingOffersList.length },
+			                      { key: 'action_required', label: 'Awaiting Response', count: pendingOffersList.length + activeDealsList.filter((d: any) => brandDealCardUi(d).needsAction).length },
 		                      { key: 'active', label: 'Active', count: activeDealsList.length },
 		                      { key: 'completed', label: 'Completed', count: completedDealsList.length },
 		                    ].map((item) => {
@@ -4231,7 +4231,7 @@ const BrandMobileDashboard = ({
                       </div>
                     ) : (
 	                      <div className="p-4 space-y-4 pb-44">
-	                        {visibleCollabItems.slice(0, 20).map((item: any, idx: number) => {
+	                        {visibleCollabItems.slice(0, 50).map((item: any, idx: number) => {
 	                          const itemKey = `collab-list-${item.id || idx}-${item.updated_at || ''}`;
 	                          const isPendingItem = activeCollabTab === 'action_required';
 	                          const isCompletedItem = activeCollabTab === 'completed';
@@ -4240,7 +4240,7 @@ const BrandMobileDashboard = ({
 	                          const creatorName = firstNameish(item?.profiles, item?.creator_name || item?.creator_email);
 	                          const creatorMeta = item?.profiles?.username || item?.creator_name || item?.creator_email || 'Creator';
 	                          const creatorAvatar = item?.profiles?.avatar_url || item?.profiles?.profile_image_url || item?.profiles?.instagram_profile_photo || item?.creator_avatar_url || item?.creator_photo_url || '';
-	                          if (isPendingItem) {
+	                          if (isPendingItem && ['pending', 'countered', 'sent', 'offer_sent', 'submitted', 'action_required', 'action-required'].includes(normalizeStatus(item?.status))) {
 	                            const sentIso = item?.created_at || item?.updated_at || null;
 	                            const sentSince = sentIso ? timeSince(sentIso) : '';
 	                            const sentHours = sentIso ? hoursSince(sentIso) : null;

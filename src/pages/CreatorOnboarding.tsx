@@ -1734,7 +1734,7 @@ export default function CreatorOnboarding() {
                         <Button
                           onClick={handleSendOtp}
                           disabled={isSendingOtp}
-                          className="w-full h-16 rounded-[24px] bg-white/10 hover:bg-white/20 text-white font-black uppercase tracking-widest border border-white/10 transition-all flex items-center justify-center gap-3"
+                          className="w-full h-16 rounded-[24px] bg-emerald-500 hover:bg-emerald-400 text-white font-black uppercase tracking-widest shadow-[0_15px_30px_rgba(16,185,129,0.2)] active:scale-95 transition-all flex items-center justify-center gap-3 border-none"
                         >
                           {isSendingOtp ? <Loader2 className="w-5 h-5 animate-spin" /> : <>Send OTP via Email <ArrowRight className="w-4 h-4" /></>}
                         </Button>
