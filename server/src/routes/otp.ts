@@ -741,9 +741,9 @@ router.post('/verify-creator', authMiddleware, async (req: AuthenticatedRequest,
   }
 });
 
-export default router;
 
 // --- ONBOARDING OTP ROUTES ---
+
 
 /**
  * Generate and send OTP for onboarding verification
@@ -752,14 +752,16 @@ export default router;
 router.post('/onboarding/send', authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
   try {
     const userId = req.user?.id;
-    const { phone } = req.body;
+    const { phone, email } = req.body;
+
+    console.log('[OTP] Onboarding send requested:', { userId, phone, email });
 
     if (!userId) {
       return res.status(401).json({ success: false, error: 'Unauthorized' });
     }
 
-    if (!phone) {
-      return res.status(400).json({ success: false, error: 'Phone number is required' });
+    if (!phone && !email) {
+      return res.status(400).json({ success: false, error: 'Phone or email is required' });
     }
 
     // Rate limiting (simple)
@@ -781,15 +783,17 @@ router.post('/onboarding/send', authMiddleware, async (req: AuthenticatedRequest
     const otpHash = hashOTP(otp);
     const expiresAt = new Date(now + 10 * 60 * 1000);
 
-    // Update profile with OTP hash
+    // Update profile with OTP hash using the new column names from migration 20260428000001
+    const updateData: any = {
+      profile_otp_hash: otpHash,
+      profile_otp_expires_at: expiresAt.toISOString(),
+      profile_otp_attempts: 0,
+    };
+    if (phone) updateData.phone = phone;
+
     const { error: updateError } = await supabase
       .from('profiles')
-      .update({
-        phone_otp_hash: otpHash,
-        phone_otp_expires_at: expiresAt.toISOString(),
-        phone_otp_attempts: 0,
-        phone: phone // Update phone as well if changed
-      })
+      .update(updateData)
       .eq('id', userId);
 
     if (updateError) {
@@ -797,21 +801,36 @@ router.post('/onboarding/send', authMiddleware, async (req: AuthenticatedRequest
       return res.status(500).json({ success: false, error: 'Failed to generate OTP' });
     }
 
-    // Send via WhatsApp (using msg91)
-    try {
-      const { sendOTPviaWhatsApp } = await import('../services/msg91Service.js');
-      const waResult = await sendOTPviaWhatsApp(phone, otp);
-      
-      if (!waResult.success) {
-        console.warn('[OTP] Failed to send WhatsApp OTP, falling back to console for demo:', waResult.error);
-        console.log(`[DEMO ONLY] Onboarding OTP for ${phone}: ${otp}`);
+    // Send via Email if provided
+    if (email) {
+      try {
+        await sendOTPEmail(email, otp);
+        console.log('[OTP] Onboarding OTP sent via email to:', email);
+      } catch (err) {
+        console.error('[OTP] Error sending onboarding email:', err);
+        return res.status(500).json({ success: false, error: 'Failed to send OTP email' });
       }
-    } catch (err) {
-      console.error('[OTP] Error importing msg91Service or sending WA:', err);
-      console.log(`[DEMO ONLY] Onboarding OTP for ${phone}: ${otp}`);
     }
 
-    logOnboardingAction(userId, 'otp_sent', { phone });
+    // Send via WhatsApp if phone provided
+    if (phone) {
+      try {
+        const { sendOTPviaWhatsApp } = await import('../services/msg91Service.js');
+        const waResult = await sendOTPviaWhatsApp(phone, otp);
+        
+        if (!waResult.success) {
+          console.warn('[OTP] Failed to send WhatsApp OTP, falling back to console for demo:', waResult.error);
+          console.log(`[DEMO ONLY] Onboarding OTP for ${phone}: ${otp}`);
+        } else {
+          console.log('[OTP] Onboarding OTP sent via WhatsApp to:', phone);
+        }
+      } catch (err) {
+        console.error('[OTP] Error importing msg91Service or sending WA:', err);
+        console.log(`[DEMO ONLY] Onboarding OTP for ${phone}: ${otp}`);
+      }
+    }
+
+    logOnboardingAction(userId, 'otp_sent', { phone, email });
 
     // Update rate store
     if (!entry || now > entry.resetAt) {
@@ -823,7 +842,7 @@ router.post('/onboarding/send', authMiddleware, async (req: AuthenticatedRequest
 
     res.json({
       success: true,
-      message: 'OTP sent successfully via WhatsApp',
+      message: email ? 'OTP sent successfully to your email' : 'OTP sent successfully via WhatsApp',
       expiresAt: expiresAt.toISOString()
     });
 
@@ -848,7 +867,7 @@ router.post('/onboarding/verify', authMiddleware, async (req: AuthenticatedReque
     // Fetch profile
     const { data: profile, error: fetchError } = await supabase
       .from('profiles')
-      .select('phone_otp_hash, phone_otp_expires_at, phone_otp_attempts')
+      .select('profile_otp_hash, profile_otp_expires_at, profile_otp_attempts')
       .eq('id', userId)
       .maybeSingle();
 
@@ -856,7 +875,7 @@ router.post('/onboarding/verify', authMiddleware, async (req: AuthenticatedReque
       return res.status(404).json({ success: false, error: 'Profile not found' });
     }
 
-    const { phone_otp_hash: storedHash, phone_otp_expires_at: storedExpires, phone_otp_attempts: storedAttempts } = profile;
+    const { profile_otp_hash: storedHash, profile_otp_expires_at: storedExpires, profile_otp_attempts: storedAttempts } = profile;
 
     if (!storedHash || !storedExpires) {
       return res.status(400).json({ success: false, error: 'No OTP found. Please request a new one.' });
@@ -875,7 +894,7 @@ router.post('/onboarding/verify', authMiddleware, async (req: AuthenticatedReque
     if (otpHash !== storedHash) {
       await supabase
         .from('profiles')
-        .update({ phone_otp_attempts: (storedAttempts || 0) + 1 })
+        .update({ profile_otp_attempts: (storedAttempts || 0) + 1 })
         .eq('id', userId);
 
       return res.status(400).json({
@@ -889,10 +908,10 @@ router.post('/onboarding/verify', authMiddleware, async (req: AuthenticatedReque
     const { error: updateError } = await supabase
       .from('profiles')
       .update({
-        phone_verified: true,
-        phone_verified_at: new Date().toISOString(),
-        phone_otp_hash: null, // Clear hash
-        is_verified: true // Also mark general verification if phone is verified
+        profile_otp_verified: true,
+        profile_otp_verified_at: new Date().toISOString(),
+        profile_otp_hash: null, // Clear hash
+        is_verified: true // Also mark general verification
       })
       .eq('id', userId);
 
@@ -910,3 +929,5 @@ router.post('/onboarding/verify', authMiddleware, async (req: AuthenticatedReque
     res.status(500).json({ success: false, error: 'Failed to verify OTP' });
   }
 });
+
+export default router;
