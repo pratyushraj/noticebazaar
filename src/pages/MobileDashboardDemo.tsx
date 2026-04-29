@@ -5523,7 +5523,7 @@ const MobileDashboardDemo = ({
                                                                     </div>
                                                                 )}
                                                                 {/* Premium Overlays */}
-                                                                <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/30 to-black/5" />
+                                                                <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/60 to-black/30" />
                                                             </div>
 
                                                             {/* Content Wrapper */}
@@ -5597,17 +5597,17 @@ const MobileDashboardDemo = ({
                                                                     {/* Progress Pill */}
                                                                     <div className="mb-4 flex items-center justify-between">
                                                                         <div className="flex items-center gap-2">
-                                                                            <span className={cn("text-[10px] font-black uppercase tracking-[0.2em]", isDark ? "text-white/50" : "text-slate-400")}>
+                                                                            <span className={cn("text-[10px] font-black uppercase tracking-[0.2em]", isDark ? "text-white/50" : "text-white/80 md:text-slate-400")}>
                                                                                 {inferCreatorRequiresPayment(deal) ? "Monetary Deal" : "Barter Deal"}
                                                                             </span>
                                                                             <span className="text-[11px] font-black text-emerald-400">{Math.round((Math.max(1, ux.progressStep) / 5) * 100)}%</span>
                                                                         </div>
-                                                                        <p className={cn("text-[18px] font-black tracking-tight md:hidden", isDark ? "text-white" : "text-slate-900")}>
+                                                                        <p className={cn("text-[18px] font-black tracking-tight md:hidden", isDark ? "text-white" : "text-white")}>
                                                                             {budget > 0 ? `₹${budget.toLocaleString()}` : 'BARTER'}
                                                                         </p>
                                                                     </div>
                                                                     
-                                                                    <div className={cn("h-1.5 w-full rounded-full mb-6 overflow-hidden", isDark ? "bg-white/10" : "bg-slate-100")}>
+                                                                    <div className={cn("h-1.5 w-full rounded-full mb-6 overflow-hidden", isDark ? "bg-white/10" : "bg-white/20 md:bg-slate-100")}>
                                                                         <motion.div 
                                                                             initial={{ width: 0 }}
                                                                             animate={{ width: `${(Math.max(1, ux.progressStep) / 5) * 100}%` }}
@@ -5615,10 +5615,10 @@ const MobileDashboardDemo = ({
                                                                         />
                                                                     </div>
 
-                                                                    <h2 className={cn("text-xl font-black tracking-tighter mb-2 uppercase italic whitespace-nowrap overflow-hidden text-ellipsis md:hidden", isDark ? "text-white" : "text-slate-900")}>
+                                                                    <h2 className={cn("text-xl font-black tracking-tighter mb-2 uppercase italic whitespace-nowrap overflow-hidden text-ellipsis md:hidden", isDark ? "text-white" : "text-white")}>
                                                                         {deal.company_name || deal.brand_name || 'Brand Partner'}
                                                                     </h2>
-                                                                    <p className={cn("text-sm font-semibold mb-8 line-clamp-2 leading-relaxed", isDark ? "text-white/70" : "text-slate-500")}>
+                                                                    <p className={cn("text-sm font-semibold mb-8 line-clamp-2 leading-relaxed", isDark ? "text-white/70" : "text-white/80 md:text-slate-500")}>
                                                                         {deliverablesContent} • {deal?.campaign_goal || deal?.campaign_category || 'Campaign Active'}
                                                                     </p>
 
@@ -5627,7 +5627,7 @@ const MobileDashboardDemo = ({
                                                                         type="button"
                                                                         className={cn(
                                                                             "w-full h-14 rounded-2xl font-black uppercase tracking-[0.15em] text-[13px] flex items-center justify-center gap-2 shadow-2xl active:scale-95 transition-all duration-300",
-                                                                            isDark ? "bg-white text-black shadow-white/5" : "bg-slate-900 text-white shadow-slate-900/10"
+                                                                            isDark ? "bg-white text-black shadow-white/5" : "bg-white text-black shadow-black/10 md:bg-slate-900 md:text-white md:shadow-slate-900/10"
                                                                         )}
                                                                     >
                                                                         {ux.progressStep <= 2 ? "Upload Deliverables" : "Manage Campaign"}

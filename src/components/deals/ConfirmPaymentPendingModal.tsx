@@ -104,7 +104,7 @@ export function ConfirmPaymentPendingModal({ dealId, dealAmount, creatorName, on
         handler: () => {
           triggerHaptic(HapticPatterns.success);
           toast.success('Payment submitted. We will update the deal once Razorpay confirms it.');
-          onClose();
+          window.location.reload();
         },
       };
 

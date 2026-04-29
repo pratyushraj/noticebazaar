@@ -124,7 +124,15 @@ export const getCanonicalDealStatus = (deal: any): CanonicalDealStatus => {
   if (lower.includes('content_making') || lower.includes('content making')) return 'CONTENT_MAKING';
 
   // New enforcement statuses
-  if (lower === 'payment_pending') return 'PAYMENT_PENDING';
+  if (lower === 'payment_pending') {
+    if (deal?.payment_status === 'captured' || deal?.amount_paid > 0) {
+      if (isBarter && !hasAddress) {
+        return 'AWAITING_BRAND_ADDRESS';
+      }
+      return 'CONTENT_MAKING';
+    }
+    return 'PAYMENT_PENDING';
+  }
   if (lower === 'awaiting_brand_address') return 'AWAITING_BRAND_ADDRESS';
   if (lower === 'dispute_arbitration') return 'DISPUTE_ARBITRATION';
   if (lower === 'dispute_partial_refund') return 'DISPUTE_PARTIAL_REFUND';
