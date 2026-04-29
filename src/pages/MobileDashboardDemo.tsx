@@ -4841,6 +4841,7 @@ const MobileDashboardDemo = ({
                             navigate={navigate} resolveCreatorDealProductImage={resolveCreatorDealProductImage}
                             getBrandIcon={getBrandIcon} TrendingUp={TrendingUp} ArrowRight={ArrowRight}
                             Clock={Clock} ChevronRight={ChevronRight} User={User} DollarSign={DollarSign} Zap={Zap}
+                            setSelectedItem={setSelectedItem} setSelectedType={setSelectedType}
                         />
                     )}
 
@@ -7640,7 +7641,8 @@ const DashboardTab = React.memo(({
     avatarUrl, avatarFallbackUrl, shouldShowPushPrompt, 
     isPushSubscribed, triggerHaptic, setActiveTab, 
     setCollabSubTab, navigate, resolveCreatorDealProductImage, getBrandIcon,
-    TrendingUp, ArrowRight, Clock, ChevronRight, User, DollarSign, Zap
+    TrendingUp, ArrowRight, Clock, ChevronRight, User, DollarSign, Zap,
+    setSelectedItem, setSelectedType
 }: any) => {
     const hasDeals = activeDealsCount > 0 || completedDealsCount > 0;
 
@@ -7791,7 +7793,8 @@ const DashboardTab = React.memo(({
                                         whileTap={{ scale: 0.98 }}
                                         onTap={() => {
                                             triggerHaptic();
-                                            navigate(`/offer/${req.id}`);
+                                            setSelectedItem(req);
+                                            setSelectedType('offer');
                                         }}
                                         className={cn(
                                             "relative w-full aspect-[1.2/1] md:aspect-auto rounded-[2.5rem] overflow-hidden transition-all duration-500 group cursor-pointer border-0 shadow-2xl shadow-black/20",
