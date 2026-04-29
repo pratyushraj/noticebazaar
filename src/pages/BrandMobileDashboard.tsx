@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import type { MouseEvent, MutableRefObject, ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { AlertTriangle, ArrowLeft, BarChart3, Bell, Briefcase, Calendar, Camera, Check, CheckCircle2, ChevronRight, Clock, Copy, CreditCard, ExternalLink, Eye, FileText, Globe, Handshake, History, Info, Landmark, LayoutDashboard, Loader2, Lock, Mail, MapPin, Menu, MessageSquare, Moon, MoreHorizontal, MoreVertical, PenTool, Play, PlayCircle, Plus, RefreshCw, RotateCcw, Search, Send, Settings, Shield, ShieldCheck, Sparkles, Sun, Truck, User, Video, Wallet, Zap } from 'lucide-react';
