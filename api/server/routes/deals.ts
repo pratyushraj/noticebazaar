@@ -40,13 +40,78 @@ const isBarterType = (deal: any): boolean => {
 };
 
 // Helper: determine if a deal is paid-type (requires monetary payment)
-const isPaidType = (deal: any): boolean => {
-  if (!deal) return false;
-  const type = String(deal?.deal_type || '').toLowerCase();
-  const amount = Number(deal?.deal_amount || 0);
-  if (amount > 0) return true;
-  return type === 'paid' || type.includes('paid');
+    return type === 'paid' || type.includes('paid');
 };
+
+/**
+ * Payment fee calculator — single source of truth.
+ * All amounts in PAISE (integers) for Razorpay, converted to rupees for display.
+ */
+const PLATFORM_FEE_PCT   = 0.10;  // 10%
+const GST_PCT            = 0.18;  // 18% on platform fee
+const RAZORPAY_MDR_PCT   = 0.02;  // 2%  — platform absorbs
+const RAZORPAY_MDR_GST   = 0.18;  // 18% on MDR — platform absorbs
+
+function calculatePaymentBreakdown(dealAmountRupees: number) {
+  const dealPaise        = Math.round(dealAmountRupees * 100);
+  const platformFeePaise = Math.round(dealPaise * PLATFORM_FEE_PCT);
+  const gstOnFeePaise    = Math.round(platformFeePaise * GST_PCT);
+  const brandTotalPaise  = dealPaise + platformFeePaise + gstOnFeePaise;
+
+  // Razorpay MDR is charged on the total collected amount (in Paise)
+  const mdrPaise         = Math.round(brandTotalPaise * RAZORPAY_MDR_PCT);
+  const mdrGstPaise      = Math.round(mdrPaise * RAZORPAY_MDR_GST);
+  const platformNetPaise = platformFeePaise + gstOnFeePaise - mdrPaise - mdrGstPaise;
+
+  return {
+    dealAmount:            dealPaise / 100,
+    platformFee:           platformFeePaise / 100,
+    gstOnFee:              gstOnFeePaise / 100,
+    brandTotal:            brandTotalPaise / 100,
+    razorpayChargeAmount:  brandTotalPaise / 100,
+    razorpayMdr:           mdrPaise / 100,
+    razorpayMdrGst:        mdrGstPaise / 100,
+    creatorPayout:         dealPaise / 100, 
+    platformNet:           platformNetPaise / 100,
+    amountPaise:           brandTotalPaise,
+  };
+}
+
+const fetchDealForBrandMutation = async (dealId: string) => {
+  const selectAttempts = [
+    'id, status, brand_address, brand_phone, contact_person, brand_id, brand_email, brand_name, creator_id, deal_type, deal_amount, progress_percentage, shipping_required, payment_id, payment_status, amount_paid, creator_amount, platform_fee',
+    'id, status, brand_address, brand_phone, contact_person, brand_id, brand_email, brand_name, creator_id, deal_type, deal_amount, progress_percentage, shipping_required, payment_id, payment_status',
+    'id, status, brand_address, brand_phone, contact_person, brand_id, brand_email, brand_name, creator_id, deal_type, deal_amount, shipping_required, payment_id',
+    'id, status, brand_address, brand_phone, contact_person, brand_id, brand_email, brand_name, creator_id, deal_type, deal_amount, progress_percentage, shipping_required',
+    'id, status, brand_address, brand_phone, contact_person, brand_id, brand_email, brand_name, creator_id, deal_type, deal_amount, shipping_required',
+    'id, status, brand_address, brand_phone, contact_person, brand_id, brand_email, brand_name, creator_id, deal_type, deal_amount, shipping_required',
+    'id, status, brand_address, brand_phone, contact_person, brand_id, brand_email, brand_name, creator_id, deal_type, deal_amount',
+    'id, status, brand_address, brand_phone, contact_person, brand_email, brand_name, creator_id, deal_type, deal_amount',
+    'id, status, brand_address, brand_phone, contact_person, brand_email, brand_name, creator_id',
+  ];
+
+  let lastError: any = null;
+  for (const select of selectAttempts) {
+    const { data, error } = await supabase
+      .from('brand_deals')
+      .select(select)
+      .eq('id', dealId)
+      .maybeSingle();
+
+    if (!error) {
+      return { deal: data, error: null };
+    }
+
+    lastError = error;
+    // Basic missing column error detection
+    if (error.message && (error.message.includes('column') || error.message.includes('does not exist'))) {
+      continue;
+    }
+    break;
+  }
+  return { deal: null, error: lastError };
+};
+
 
 // Helper: delegate generic push to Render server
 async function sendGenericPushViaRender(params: {
@@ -1829,6 +1894,200 @@ router.post('/:dealId/brand-shipping-address', async (req: AuthenticatedRequest,
   } catch (error: any) {
     console.error('[Deals] brand-shipping-address error:', error);
     return res.status(500).json({ success: false, error: error.message || 'Internal server error' });
+  }
+});
+
+/**
+ * POST /api/deals/:id/create-payment-order
+ * Creates a Razorpay order for in-app checkout modal flow.
+ */
+router.post('/:id/create-payment-order', async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const dealId = req.params.id;
+    const userId = req.user?.id;
+    const role = String(req.user?.role || '').toLowerCase();
+
+    if (!userId) return res.status(401).json({ success: false, error: 'Authentication required' });
+
+    const { deal, error: dealError } = await fetchDealForBrandMutation(dealId);
+    if (dealError || !deal) {
+      console.error("[Deals] create-payment-order 404", dealId, dealError);
+      return res.status(404).json({ success: false, error: 'Deal not found' });
+    }
+
+    const dealBrandId = String((deal as any).brand_id || '');
+    const dealBrandEmail = String((deal as any).brand_email || '').toLowerCase();
+    const userEmail = String(req.user?.email || '').toLowerCase();
+    const isOwner = (dealBrandId && dealBrandId === userId) || (dealBrandEmail && userEmail && dealBrandEmail === userEmail);
+    if (role !== 'brand' && role !== 'admin' && !isOwner) {
+      return res.status(403).json({ success: false, error: 'Brand access required' });
+    }
+
+    const current = normalizeStatus((deal as any).status);
+    // Allow if PAYMENT_PENDING or ACCEPTED (some flows transition to ACCEPTED before payment)
+    if (current !== 'PAYMENT_PENDING' && current !== 'ACCEPTED' && current !== 'CONTRACT_READY' && current !== 'SENT') {
+       // We'll be flexible here to avoid stuck states, but log it
+       console.log(`[Deals] Payment initiated from status: ${current}`);
+    }
+
+    const dealAmount = Number((deal as any).deal_amount || 0);
+    if (dealAmount <= 0) return res.status(400).json({ success: false, error: 'Deal has no valid amount.' });
+
+    const breakdown = calculatePaymentBreakdown(dealAmount);
+    const razorpayKeyId = process.env.RAZORPAY_KEY_ID;
+    const razorpayKeySecret = process.env.RAZORPAY_KEY_SECRET;
+    
+    if (!razorpayKeyId || !razorpayKeySecret) {
+      return res.status(500).json({
+        success: false,
+        error: 'Razorpay is not configured on this server. Set RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET.',
+      });
+    }
+
+    try {
+      const Razorpay = (await import('razorpay')).default;
+      const rzp = new Razorpay({
+        key_id: razorpayKeyId,
+        key_secret: razorpayKeySecret,
+      });
+
+      const order = await rzp.orders.create({
+        amount: breakdown.amountPaise,
+        currency: 'INR',
+        receipt: `deal_${dealId.replace(/-/g, '').slice(0, 20)}`,
+        notes: {
+          deal_id: dealId,
+          creator_id: (deal as any).creator_id,
+          brand_id: userId,
+        },
+      });
+
+      const updateData: any = {
+        updated_at: new Date().toISOString()
+      };
+      
+      // Hardening: only update columns if they exist in the schema
+      if ('payment_id' in (deal || {})) updateData.payment_id = order.id;
+      if ('amount_paid' in (deal || {})) updateData.amount_paid = breakdown.brandTotal;
+      if ('creator_amount' in (deal || {})) updateData.creator_amount = breakdown.creatorPayout;
+      if ('platform_fee' in (deal || {})) updateData.platform_fee = breakdown.platformFee;
+
+      const { error: updateError } = await supabase.from('brand_deals').update(updateData).eq('id', dealId);
+      if (updateError) {
+        console.error('[Razorpay] Failed to persist order metadata:', updateError);
+      }
+
+      return res.json({
+        success: true,
+        order_id: order.id,
+        amount: breakdown.brandTotal,
+        breakdown,
+        key_id: razorpayKeyId,
+        currency: 'INR',
+      });
+    } catch (rzpError: any) {
+      console.error('[Razorpay] Order creation failed:', rzpError);
+      return res.status(502).json({
+        success: false,
+        error: rzpError?.error?.description || rzpError?.message || 'Failed to create Razorpay order.',
+      });
+    }
+  } catch (error: any) {
+    console.error('[Deals] create-payment-order error:', error);
+    return res.status(500).json({ success: false, error: error?.message || 'Internal server error' });
+  }
+});
+
+/**
+ * POST /api/deals/:id/verify-payment
+ * Manually checks Razorpay for payment status.
+ */
+router.post('/:id/verify-payment', async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const dealId = req.params.id;
+    const userId = req.user?.id;
+    if (!userId) return res.status(401).json({ success: false, error: 'Authentication required' });
+
+    const { deal, error: dealError } = await fetchDealForBrandMutation(dealId);
+    if (dealError || !deal) return res.status(404).json({ success: false, error: 'Deal not found' });
+
+    const userEmail = String(req.user?.email || '').toLowerCase();
+    const dealBrandEmail = String((deal as any).brand_email || '').toLowerCase();
+    const isOwner = (deal as any).brand_id === userId || (dealBrandEmail && userEmail && dealBrandEmail === userEmail);
+    if (!isOwner && req.user?.role !== 'admin') {
+      return res.status(403).json({ success: false, error: 'Access denied' });
+    }
+
+    const current = String((deal as any).status || '').toLowerCase();
+    if (current === 'content_making' || current === 'content-making') {
+       return res.json({ success: true, status: 'content_making', message: 'Payment already confirmed' });
+    }
+
+    try {
+      const Razorpay = (await import('razorpay')).default;
+      const rzp = new Razorpay({
+        key_id: process.env.RAZORPAY_KEY_ID || 'rzp_test_fallback',
+        key_secret: process.env.RAZORPAY_KEY_SECRET || 'fallback_secret',
+      });
+
+      let isPaid = false;
+      let orderId = (deal as any).payment_id;
+
+      if (orderId) {
+        const order = await rzp.orders.fetch(orderId);
+        if (order.status === 'paid') isPaid = true;
+      }
+
+      if (!isPaid) {
+        const payments = await rzp.payments.all({ 'notes[deal_id]': dealId } as any);
+        const capturedPayment = (payments.items || []).find((p: any) => p.status === 'captured' || p.status === 'authorized');
+        
+        if (capturedPayment) {
+          isPaid = true;
+          orderId = capturedPayment.order_id || orderId;
+        } else {
+          const orders = await rzp.orders.all({ 'notes[deal_id]': dealId } as any);
+          const paidOrder = (orders.items || []).find((o: any) => o.status === 'paid');
+          if (paidOrder) {
+            isPaid = true;
+            orderId = paidOrder.id;
+          }
+        }
+      }
+      
+      if (isPaid) {
+        const now = new Date().toISOString();
+        const updateData: any = {
+          status: 'content_making',
+          updated_at: now
+        };
+        if ('payment_id' in (deal || {})) updateData.payment_id = orderId;
+        if ('payment_status' in (deal || {})) updateData.payment_status = 'captured';
+
+        await supabase.from('brand_deals').update(updateData).eq('id', dealId);
+
+        await supabase.from('deal_action_logs').insert({
+          deal_id: dealId,
+          user_id: userId,
+          event: 'PAYMENT_VERIFIED_MANUAL',
+          metadata: { order_id: orderId, source: 'manual_verification' }
+        });
+
+        return res.json({ success: true, status: 'content_making', message: 'Payment verified and deal updated!' });
+      } else {
+        return res.json({ 
+          success: true, 
+          status: (deal as any).status, 
+          message: 'No captured payment found yet. If you just paid, please wait 2-3 minutes.' 
+        });
+      }
+    } catch (rzpErr: any) {
+      console.error('[Razorpay] Manual verification failed:', rzpErr);
+      return res.status(502).json({ success: false, error: 'Failed to communicate with Razorpay' });
+    }
+  } catch (err: any) {
+    console.error('[Deals] verify-payment error:', err);
+    return res.status(500).json({ success: false, error: 'Internal server error' });
   }
 });
 
