@@ -6,6 +6,12 @@ window.addEventListener('vite:preloadError', () => {
 });
 
 window.addEventListener('error', (e) => {
+  // Ignore Vercel/Analytics internal IndexedDB race conditions (common during page teardown)
+  if (e.message?.includes('IDBDatabase') && e.message?.includes('closing')) {
+    e.stopImmediatePropagation();
+    return;
+  }
+
   if (
     e.message?.includes('Failed to fetch dynamically imported module') || 
     e.message?.includes('Importing a module script failed') ||
@@ -16,6 +22,12 @@ window.addEventListener('error', (e) => {
 });
 
 window.addEventListener('unhandledrejection', (e) => {
+  // Ignore Vercel/Analytics internal IndexedDB race conditions (common during page teardown)
+  if (e.reason?.message?.includes('IDBDatabase') && e.reason?.message?.includes('closing')) {
+    e.preventDefault();
+    return;
+  }
+
   if (
     e.reason?.message?.includes('Failed to fetch dynamically imported module') || 
     e.reason?.message?.includes('Importing a module script failed')
