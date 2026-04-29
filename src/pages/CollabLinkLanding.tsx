@@ -1185,7 +1185,7 @@ const CollabLinkLanding = () => {
             category: creator.category || 'Lifestyle',
             description:
               'Product unboxing or review with no paid usage rights. Best for authentic product proof.',
-            deliverables: ['Product unboxing / review', '1 Story mention', 'No paid usage rights'],
+            deliverables: ['Product Review / Unboxing', '1 Story mention', 'No paid usage rights'],
             quantities: { 'Unboxing Video': 1, Story: 1 },
             deadlineDays: 14,
             notes: 'Product must be shipped before shoot. Honest review only.',

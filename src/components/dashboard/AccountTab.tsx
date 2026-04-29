@@ -25,7 +25,7 @@ interface AccountTabProps {
     triggerHaptic: () => void;
 }
 
-export const AccountTab: React.FC<AccountTabProps> = ({
+export const AccountTab = React.memo(({
     isDark,
     textColor,
     secondaryTextColor,
@@ -38,7 +38,7 @@ export const AccountTab: React.FC<AccountTabProps> = ({
     setActiveSettingsPage,
     setActiveTab,
     triggerHaptic
-}) => {
+}: AccountTabProps) => {
     const navigate = useNavigate();
     const formatCompactNumber = (value: any) => {
         if (value === undefined || value === null || value === '') return '—';
@@ -346,4 +346,6 @@ export const AccountTab: React.FC<AccountTabProps> = ({
             </div>
         </motion.div>
     );
-};
+});
+
+AccountTab.displayName = 'AccountTab';

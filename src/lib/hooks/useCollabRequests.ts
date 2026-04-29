@@ -36,7 +36,7 @@ export interface CollabRequest {
 }
 
 const STALE_TIME_MS = 30 * 1000;   // 30 seconds – cache considered fresh
-const REFETCH_INTERVAL_MS = 20 * 1000; // 20 seconds – background refetch
+const REFETCH_INTERVAL_MS = 60 * 1000; // 60 seconds – background refetch
 const FAST_POLL_WINDOW_MS = 60 * 1000; // 60s burst
 const FAST_POLL_INTERVAL_MS = 5 * 1000; // 5s
 
@@ -94,6 +94,7 @@ export function useCollabRequests(creatorId: string | undefined) {
     queryFn: fetchCollabRequests,
     enabled: !!creatorId,
     staleTime: STALE_TIME_MS,
+    meta: { silent: true },
     refetchInterval: (query) => {
       if (typeof document !== 'undefined' && document.visibilityState === 'hidden') return false;
       // If realtime just fired, skip polling briefly to avoid double-fetch/flicker.

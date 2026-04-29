@@ -37,7 +37,7 @@ const BrandDashboard: React.FC = () => {
   const isBrandUser = profile?.role === 'brand' || metadataRole === 'brand';
   const isDemoBrand = String(user?.email || '').toLowerCase() === 'brand-demo@creatorarmour.com';
 
-  const loadBrandDashboard = useCallback(async () => {
+  const loadBrandDashboard = useCallback(async (isSilent = false) => {
     // Wait for session to be resolved
     if (sessionLoading) return;
 
@@ -48,7 +48,7 @@ const BrandDashboard: React.FC = () => {
       return;
     }
 
-    setIsLoading(true);
+    if (!isSilent) setIsLoading(true);
     try {
       const apiBase = getApiBaseUrl();
       const headers = { Authorization: `Bearer ${session.access_token}` };
@@ -83,19 +83,19 @@ const BrandDashboard: React.FC = () => {
       setDeals([]);
       setRequests([]);
     } finally {
-      setIsLoading(false);
+      if (!isSilent) setIsLoading(false);
     }
   }, [isBrandUser, session?.access_token, sessionLoading]);
 
   useEffect(() => {
-    void loadBrandDashboard();
+    void loadBrandDashboard(false); // Initial load: show skeletons
     
-    // Add polling fallback in case realtime fails
+    // Add polling fallback in case realtime fails - use longer interval to avoid churn
     const interval = setInterval(() => {
       if (document.visibilityState === 'visible') {
-        void loadBrandDashboard();
+        void loadBrandDashboard(true); // Background polling: silent
       }
-    }, 30000); // 30s polling
+    }, 120000); // 2 min polling (real-time handles immediate updates)
     
     return () => clearInterval(interval);
   }, [loadBrandDashboard]);
@@ -125,7 +125,7 @@ const BrandDashboard: React.FC = () => {
         },
         (payload) => {
           console.log('[Realtime] Brand collab request event received:', payload.eventType);
-          void loadBrandDashboardRef.current();
+          void loadBrandDashboardRef.current(true);
           
           if (document.visibilityState === 'visible') {
             triggerHaptic();
@@ -147,7 +147,7 @@ const BrandDashboard: React.FC = () => {
         },
         (payload) => {
           console.log('[Realtime] Brand deal event received:', payload.eventType);
-          void loadBrandDashboardRef.current();
+          void loadBrandDashboardRef.current(true);
           
           if (document.visibilityState === 'visible') {
             triggerHaptic();
@@ -225,7 +225,7 @@ const BrandDashboard: React.FC = () => {
       stats={stats as any}
       isLoading={isLoading}
       isDemoBrand={isDemoBrand}
-      onRefresh={loadBrandDashboard}
+      onRefresh={() => loadBrandDashboard(true)}
       onLogout={() => signOutMutation.mutate()}
     />
   );

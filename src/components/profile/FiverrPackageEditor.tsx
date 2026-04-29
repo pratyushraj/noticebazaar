@@ -98,7 +98,7 @@ const FiverrPackageEditor: React.FC<FiverrPackageEditorProps> = ({
           deliverables: t.deliverables || (
             t.id === 'basic' ? ['1 Reel (15-30s)', 'Organic reach focus', 'Basic editing'] :
             t.id === 'standard' ? ['1 Premium Reel (30-60s)', '30-day usage rights (for ads)', 'Script + hook optimization', '1 Story shoutout'] :
-            (t.id === 'barter' || t.id === 'product_review') ? ['Product unboxing / review', '1 Story mention', 'No paid usage rights'] : []
+            (t.id === 'barter' || t.id === 'product_review') ? ['Product Review / Unboxing', '1 Story mention', 'No paid usage rights'] : []
           ).filter((item): item is string => typeof item === 'string' && item.trim().length > 0 && !/^https?:\/\//i.test(item) && !item.includes('localhost:8080')),
           quantities: t.quantities || {},
         })
@@ -146,7 +146,7 @@ const FiverrPackageEditor: React.FC<FiverrPackageEditorProps> = ({
           budget: 0,
           type: 'barter',
           category: 'Unboxing',
-          deliverables: sanitizeDeliverables(['Product unboxing / review', '1 Story mention', 'No paid usage rights']),
+          deliverables: sanitizeDeliverables(['Product Review / Unboxing', '1 Story mention', 'No paid usage rights']),
           quantities: { 'Unboxing Video': 1, 'Instagram Story': 1 },
           deadlineDays: 14,
         }

@@ -80,7 +80,7 @@ const getFallbackOptions = (creator: any) => {
         key: 'barter',
         label: '🎁 Product Exchange',
         rate: barterValue > 0 ? barterValue : 0,
-        deliverables: ['Product unboxing / review', '1 Story mention', 'No paid usage rights'],
+        deliverables: ['Product Review / Unboxing', '1 Story mention', 'No paid usage rights'],
         type: 'barter',
         description: 'Product unboxing or review with no paid usage rights.',
     });

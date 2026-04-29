@@ -956,7 +956,7 @@ export default function CreatorOnboarding() {
         <div className="absolute bottom-[-10%] right-[-20%] w-[60%] h-[60%] bg-teal-500/5 rounded-full blur-[120px]" />
       </div>
 
-      <div className="mx-auto w-full max-w-xl flex-1 flex flex-col pt-6 pb-20 px-6 relative z-10">
+      <div className="mx-auto w-full max-w-xl flex-1 flex flex-col pt-6 pb-8 px-6 relative z-10">
         {/* Progress Indicator */}
         <div className="mb-8 flex items-center gap-3">
           <motion.button
@@ -1025,7 +1025,7 @@ export default function CreatorOnboarding() {
 
               </div>
 
-              <div className="mt-auto pt-12 w-full space-y-6">
+              <div className="sticky bottom-0 mt-auto pt-10 pb-10 w-[calc(100%+3rem)] -mx-6 px-6 bg-gradient-to-t from-[#0B0F14] via-[#0B0F14] to-transparent z-20 space-y-6">
                 <Button
                   onClick={handleNext}
                   disabled={isSubmitting}
@@ -1179,7 +1179,7 @@ export default function CreatorOnboarding() {
                 </div>
               </div>
 
-              <div className="mt-auto pt-12 w-full">
+              <div className="sticky bottom-0 mt-auto pt-10 pb-10 w-[calc(100%+3rem)] -mx-6 px-6 bg-gradient-to-t from-[#0B0F14] via-[#0B0F14] to-transparent z-20">
                 <Button
                   onClick={handleNext}
                   className="w-full h-[72px] rounded-[26px] bg-emerald-500 hover:bg-emerald-400 text-white font-black italic text-xl shadow-[0_20px_40px_rgba(16,185,129,0.2)] active:scale-95 transition-all flex items-center justify-center gap-3 border-none uppercase tracking-widest"
@@ -1266,7 +1266,7 @@ export default function CreatorOnboarding() {
                 </div>
               </div>
 
-              <div className="mt-auto pt-12 w-full">
+              <div className="sticky bottom-0 mt-auto pt-10 pb-10 w-[calc(100%+3rem)] -mx-6 px-6 bg-gradient-to-t from-[#0B0F14] via-[#0B0F14] to-transparent z-20">
                 <Button
                   onClick={handleNext}
                   className="w-full h-[72px] rounded-[26px] bg-emerald-500 hover:bg-emerald-400 text-white font-black italic text-xl shadow-[0_20px_40px_rgba(16,185,129,0.2)] active:scale-95 transition-all flex items-center justify-center gap-3 border-none uppercase tracking-widest"
@@ -1339,7 +1339,7 @@ export default function CreatorOnboarding() {
                 </div>
               </div>
 
-              <div className="mt-auto pt-12 w-full">
+              <div className="sticky bottom-0 mt-auto pt-10 pb-10 w-[calc(100%+3rem)] -mx-6 px-6 bg-gradient-to-t from-[#0B0F14] via-[#0B0F14] to-transparent z-20">
                 <Button
                   onClick={handleNext}
                   className="w-full h-[72px] rounded-[26px] bg-emerald-500 hover:bg-emerald-400 text-white font-black italic text-xl shadow-[0_20px_40px_rgba(16,185,129,0.2)] active:scale-95 transition-all flex items-center justify-center gap-3 border-none uppercase tracking-widest"
@@ -1492,7 +1492,7 @@ export default function CreatorOnboarding() {
                 </div>
               </div>
 
-              <div className="mt-auto pt-12 w-full">
+              <div className="sticky bottom-0 mt-auto pt-10 pb-10 w-[calc(100%+3rem)] -mx-6 px-6 bg-gradient-to-t from-[#0B0F14] via-[#0B0F14] to-transparent z-20">
                 <Button
                   onClick={handleNext}
                   disabled={isSubmitting || isUploading}
@@ -1537,7 +1537,7 @@ export default function CreatorOnboarding() {
                   </div>
                 </motion.div>
 
-                <div className="mt-auto pt-12 w-full">
+                <div className="sticky bottom-0 mt-auto pt-10 pb-10 w-[calc(100%+3rem)] -mx-6 px-6 bg-gradient-to-t from-[#0B0F14] via-[#0B0F14] to-transparent z-20">
                   <Button
                     onClick={() => { triggerHaptic?.(); setStep('payout'); }}
                     className="w-full h-[72px] rounded-[26px] bg-emerald-500 hover:bg-emerald-400 text-white font-black italic text-xl shadow-[0_20px_40px_rgba(16,185,129,0.2)] active:scale-95 transition-all"
@@ -1668,7 +1668,7 @@ export default function CreatorOnboarding() {
                 </div>
               </div>
 
-              <div className="mt-auto pt-12 w-full">
+              <div className="sticky bottom-0 mt-auto pt-10 pb-10 w-[calc(100%+3rem)] -mx-6 px-6 bg-gradient-to-t from-[#0B0F14] via-[#0B0F14] to-transparent z-20">
                 <Button
                   onClick={handleNext}
                   disabled={isSubmitting}
@@ -1793,7 +1793,7 @@ export default function CreatorOnboarding() {
                 )}
               </div>
 
-              <div className="mt-auto pt-12 w-full">
+              <div className="sticky bottom-0 mt-auto pt-10 pb-10 w-[calc(100%+3rem)] -mx-6 px-6 bg-gradient-to-t from-[#0B0F14] via-[#0B0F14] to-transparent z-20">
                 <Button
                   onClick={handleNext}
                   disabled={!isPhoneVerified}
@@ -1860,7 +1860,7 @@ export default function CreatorOnboarding() {
                   </div>
                 </div>
 
-                <div className="mt-auto pt-8 w-full space-y-6">
+                <div className="sticky bottom-0 mt-auto pt-8 pb-10 w-[calc(100%+3rem)] -mx-6 px-6 bg-gradient-to-t from-[#0B0F14] via-[#0B0F14] to-transparent z-20 space-y-6">
                   <Button
                     onClick={async () => {
                       triggerHaptic?.();

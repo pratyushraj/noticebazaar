@@ -61,6 +61,7 @@ const CreatorDashboard = () => {
     queryFn: fetchBrandDeals,
     enabled: !!user?.id && !isBrandSession && !isLoadingProfile,
     retry: false, // Don't retry — backend may be unavailable, fail fast
+    meta: { silent: true },
   });
   const brandDeals = (dealsQuery.data ?? []) as any[];
   const isLoadingBrandDeals = dealsQuery.isLoading;
@@ -88,6 +89,7 @@ const CreatorDashboard = () => {
     },
     enabled: !!user?.id && !isBrandSession && !isLoadingProfile,
     refetchInterval: 60000, // Refresh every minute
+    meta: { silent: true },
   });
   const profileViewsToday = viewsQuery.data ?? 0;
 

@@ -615,8 +615,7 @@ export const BrandSettingsPanel = ({
              <button
                type="button"
                onClick={() => fileRef.current?.click()}
-               className={cn("px-6 h-11 rounded-2xl text-[13px] font-black border transition-all active:scale-95", 
-                 isDark ? "bg-white/5 border-white/10 text-white" : "bg-white border-slate-200 text-slate-700 shadow-sm")}
+               className={cn("h-12 px-5 rounded-[2rem] border", isDark ? "bg-[#0B1324] border-white/10 text-white" : "bg-slate-50 border-slate-200 text-slate-700 shadow-sm")}
              >
                {logoPreview ? 'Change Logo' : 'Upload Logo'}
              </button>
@@ -725,7 +724,7 @@ export const BrandSettingsPanel = ({
                     setTags(p => active ? p.filter(t => t !== tag) : [...p, tag]);
                   }}
                   className={cn(
-                    "px-5 py-2.5 rounded-full text-[13px] font-black border transition-all active:scale-90",
+                    "h-12 px-5 rounded-[2rem] text-[13px] font-black border transition-all active:scale-90",
                     active 
                       ? (isDark ? "bg-emerald-500/20 border-emerald-500/40 text-emerald-400 shadow-lg shadow-emerald-500/10" : "bg-emerald-500 text-white border-emerald-500")
                       : (isDark ? "bg-white/[0.02] border-white/5 text-white/30" : "bg-white border-slate-200 text-slate-400 shadow-sm")

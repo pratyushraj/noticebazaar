@@ -191,7 +191,14 @@ function formatDeliverables(row: BrandDeal | null | undefined) {
     for (const p of parts) {
       const clean = String(p || '').trim();
       if (!clean) continue;
-      const key = clean.toLowerCase();
+      // Smarter normalization for duplicate detection (handles unboxing/review variants)
+      const key = clean.toLowerCase()
+        .replace(/unboxing \/ review/g, 'review / unboxing')
+        .replace(/unboxing or review/g, 'review / unboxing')
+        .replace(/product unboxing/g, 'product review')
+        .replace(/\//g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
       if (seen.has(key)) continue;
       seen.add(key);
       out.push(clean);
@@ -698,7 +705,7 @@ const BrandMobileDashboard = ({
   ), [isDark]);
 
   const Pill = useMemo(() => ({ children }: { children: ReactNode }) => (
-    <div className={cn('rounded-2xl border px-4 py-3 text-[14px] font-black', isDark ? 'bg-card border-border text-foreground' : 'bg-card border-border text-muted-foreground')}>
+    <div className={cn('rounded-[2rem] border px-4 py-3 text-[14px] font-black tracking-widest uppercase', isDark ? 'bg-card border-border text-foreground' : 'bg-card border-border text-muted-foreground')}>
       {children}
     </div>
   ), [isDark]);
@@ -2252,7 +2259,7 @@ const BrandMobileDashboard = ({
         {/* Sticky Header */}
         <div className={cn('px-4 py-3.5 flex items-center justify-between border-b sticky top-0 z-[210]', isDark ? 'bg-[#061318]/92 backdrop-blur-xl border-white/5' : 'bg-white/80 backdrop-blur-xl border-border/60')}>
           <div className="flex items-center gap-3">
-            <button type="button" onClick={() => { triggerHaptic(HapticPatterns.light); setSelectedDealPage(null); }} aria-label="Close deal detail" className={cn('w-10 h-10 rounded-2xl flex items-center justify-center border transition-all active:scale-90', borderColor, isDark ? 'bg-card hover:bg-secondary/50' : 'bg-white hover:bg-slate-50')}>
+            <button type="button" onClick={() => { triggerHaptic(HapticPatterns.light); setSelectedDealPage(null); }} aria-label="Close deal detail" className={cn('w-10 h-10 rounded-[1.25rem] flex items-center justify-center border transition-all active:scale-90', borderColor, isDark ? 'bg-card hover:bg-secondary/50' : 'bg-white hover:bg-slate-50')}>
               <ArrowLeft className="w-4 h-4" />
             </button>
             <div className="flex items-center gap-3">
@@ -2267,16 +2274,16 @@ const BrandMobileDashboard = ({
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <button type="button" onClick={() => { triggerHaptic(HapticPatterns.light); toast.info('Status History', { description: 'Chronology of deal events coming soon.' }); }} className={cn('w-10 h-10 rounded-2xl flex items-center justify-center border transition-all active:scale-90', borderColor, isDark ? 'bg-card' : 'bg-white shadow-sm')}>
-              <History className={cn('w-4 h-4 opacity-60', textColor)} />
+            <button type="button" onClick={() => { triggerHaptic(HapticPatterns.light); toast.info('Status History', { description: 'Chronology of deal events coming soon.' }); }} className={cn('w-10 h-10 rounded-[1.25rem] flex items-center justify-center border transition-all active:scale-90', borderColor, isDark ? 'bg-card' : 'bg-white shadow-sm')}>
+              <History className={cn('w-4.5 h-4.5', isDark ? 'text-white/40' : 'text-slate-400')} />
             </button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <button type="button" onClick={() => triggerHaptic(HapticPatterns.light)} className={cn('w-10 h-10 rounded-2xl flex items-center justify-center border transition-all active:scale-90', borderColor, isDark ? 'bg-card' : 'bg-white shadow-sm')}>
-                  <MoreVertical className={cn('w-4 h-4 opacity-60', textColor)} />
+                <button type="button" onClick={() => triggerHaptic(HapticPatterns.light)} className={cn('w-10 h-10 rounded-[1.25rem] flex items-center justify-center border transition-all active:scale-90', borderColor, isDark ? 'bg-card' : 'bg-white shadow-sm')}>
+                  <MoreHorizontal className={cn('w-4.5 h-4.5', isDark ? 'text-white/40' : 'text-slate-400')} />
                 </button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className={cn('w-56 rounded-2xl border p-2', isDark ? 'bg-[#0B0F14] border-white/5 shadow-2xl' : 'bg-white border-slate-200 shadow-xl')}>
+              <DropdownMenuContent align="end" className={cn('w-56 rounded-[1.75rem] border p-2', isDark ? 'bg-[#0B0F14] border-white/5 shadow-2xl' : 'bg-white border-slate-200 shadow-xl')}>
                 <DropdownMenuItem onClick={openContract} className="rounded-xl py-3 cursor-pointer">
                   <Eye className="w-4 h-4 mr-3 opacity-60" />
                   <span className="font-bold">View Contract</span>
@@ -3178,7 +3185,7 @@ const BrandMobileDashboard = ({
 
               {/* Brand Getting Started Banner — shown when no deals exist */}
               {!isLoading && deals.length === 0 && (
-                <div className="mb-5 p-4 rounded-2xl bg-gradient-to-r from-emerald-50 to-teal-50 border border-primary/20">
+                <div className="mb-5 p-4 rounded-[2.5rem] bg-gradient-to-r from-emerald-50 to-teal-50 border border-primary/20">
                   <div className="flex items-center gap-3 mb-3">
                     <div className="w-10 h-10 rounded-xl bg-primary/15 flex items-center justify-center">
                       <Sparkles className="w-5 h-5 text-foreground" />
@@ -3331,1221 +3338,84 @@ const BrandMobileDashboard = ({
                 </div>
               </div>
 
-              {activeTab === 'dashboard' && (
-                <div className="flex items-end justify-between gap-3">
-                  <div className="min-w-0">
 
-                    <h1 className={cn('text-[28px] font-black tracking-tight leading-none', textColor)}>
-                      {brandName}
-                    </h1>
-                    <p className={cn('text-[12px] mt-2 font-medium opacity-50', textColor)}>
-                      Your active brand console for creator collaborations.
-                    </p>
-                  </div>
-                </div>
-              )}
             </div>
 
-	            <div className="px-5">
-	              <>
-	              {activeTab === 'dashboard' && (
-	                <>
-
-                  {!hasUploadedBrandLogo && (
-                    <motion.div
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      className={cn(
-                        'mb-5 p-4 rounded-[24px] border shadow-sm',
-                        isDark ? 'bg-warning/10 border-warning/20' : 'bg-warning/80 border-warning'
-                      )}
-                    >
-                      <div className="flex items-start gap-3">
-                        <div className={cn('w-10 h-10 rounded-2xl flex items-center justify-center', isDark ? 'bg-warning/15' : 'bg-warning/10')}>
-                          <Camera className={cn('w-5 h-5', isDark ? 'text-warning' : 'text-warning')} />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className={cn('text-[13px] font-bold', textColor)}>Upload your brand logo</p>
-                          <p className={cn('text-[12px] mt-1 opacity-70', textColor)}>
-                            Required before sending offers—creators respond faster when they recognize you.
-                          </p>
-	                          <div className="flex gap-2 mt-3">
-	                            <button
-	                              type="button"
-	                              onClick={() => navigate('/brand-settings')}
-	                              className={cn('px-4 py-2 rounded-2xl text-[11px] font-black uppercase tracking-widest', isDark ? 'bg-secondary/50 text-foreground hover:bg-secondary/15' : 'bg-card text-muted-foreground border border-warning')}
-	                            >
-	                              Upload logo
-	                            </button>
-	                          </div>
-                        </div>
-                      </div>
-                    </motion.div>
-                  )}
-
-	                  {(() => {
-	                    const activeValue = (activeDealsList || []).reduce((sum: number, d: any) => sum + Number(d?.deal_amount || d?.exact_budget || 0), 0);
-	                    const pendingCounterCount = pendingOffersList.length;
-                      const offersExpiringSoon = pendingOffersList.filter((r: any) => {
-                        const raw = r?.offer_expires_at || r?.expires_at || null;
-                        const d = raw ? new Date(raw) : null;
-                        if (!d || Number.isNaN(d.getTime())) return false;
-                        const diffDays = Math.ceil((d.getTime() - Date.now()) / 86400000);
-                        return diffDays >= 0 && diffDays <= 2;
-                      }).length;
-                      const contractsWaitingSignature = activeDealsList.filter((d: any) => {
-                        const s = effectiveDealStatus(d);
-                        return s === 'CONTRACT_READY' || s === 'SENT' || s === 'AWAITING_BRAND_SIGNATURE';
-                      }).length;
-	                    const needsActionDeals = activeDealsList.filter((d: any) => brandDealCardUi(d).needsAction).length;
-	                    const needsActionTotal = pendingCounterCount + needsActionDeals;
-		                    const contentPendingReview = activeDealsList.filter((d: any) => {
-                          const s = effectiveDealStatus(d);
-                          return s === 'CONTENT_DELIVERED' || s === 'REVISION_DONE';
-                        }).length;
-                      const attentionTotal = pendingCounterCount + contractsWaitingSignature + contentPendingReview;
-	                    const newToday = activeDealsList.filter((d: any) => {
-	                      const created = d?.created_at ? new Date(d.created_at) : null;
-	                      if (!created || Number.isNaN(created.getTime())) return false;
-	                      const now = new Date();
-	                      return created.toDateString() === now.toDateString();
-	                    }).length;
-
-	                    return (
-	                      <>
-                        {/* Premium Campaign Center Widget */}
-                        <motion.div 
-                          initial={{ opacity: 0, y: 15 }} 
-                          animate={{ opacity: 1, y: 0 }} 
-                          transition={{ delay: 0.03, type: 'spring', damping: 20 }} 
-                          className={cn(
-                            'mb-6 rounded-[2.5rem] border overflow-hidden relative group', 
-                            isDark 
-                              ? 'border-emerald-500/30 bg-gradient-to-br from-emerald-500/10 via-emerald-950/20 to-[#020617] shadow-[0_30px_60px_rgba(0,0,0,0.4)]' 
-                              : 'border-primary/60 bg-gradient-to-br from-emerald-500 via-teal-500 to-blue-600 shadow-[0_25px_55px_rgba(16,185,129,0.22)]'
-                          )}
-                        >
-                          <div className={cn('absolute inset-0 pointer-events-none opacity-20', isDark ? 'bg-[radial-gradient(circle_at_top_right,rgba(16,185,129,0.3),transparent)]' : 'bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.4),transparent)]')} />
-                          
-                          <div className="relative p-6">
-                            <div className="flex flex-col gap-6">
-                              <div className="flex items-start justify-between">
-                                <div className="min-w-0">
-                                  <p className={cn('text-[10px] font-black uppercase tracking-widest', isDark ? 'text-emerald-400' : 'text-white/80')}>Active Investment</p>
-                                  <div className="flex items-baseline gap-2 mt-3">
-                                    <span className={cn('text-[38px] font-black tracking-tighter leading-none', isDark ? 'text-white' : 'text-white')}>
-                                      ₹<CountUp end={Number(activeValue) || 0} duration={1.5} separator="," decimals={0} />
-                                    </span>
-                                    {newToday > 0 && (
-                                      <span className={cn('px-2 py-0.5 rounded-full text-[10px] font-black bg-white/20 text-white backdrop-blur-md border border-white/20 animate-pulse')}>
-                                        +{newToday} Today
-                                      </span>
-                                    )}
-                                  </div>
-                                  <p className={cn('text-[13px] font-bold mt-3', isDark ? 'text-white/60' : 'text-white/90')}>
-                                    {activeDealsList.length} Collaboration{activeDealsList.length === 1 ? '' : 's'} running
-                                  </p>
-                                </div>
-                                <div className={cn('w-12 h-12 rounded-2xl flex items-center justify-center backdrop-blur-2xl border', isDark ? 'bg-white/5 border-white/10' : 'bg-white/20 border-white/30')}>
-                                  <BarChart3 className="w-6 h-6 text-white" />
-                                </div>
-                              </div>
-
-                              <div className={cn('p-4 rounded-[2rem] border backdrop-blur-md transition-all', isDark ? 'bg-white/5 border-white/10' : 'bg-white/15 border-white/20')}>
-                                <div className="flex items-center justify-between gap-4">
-                                  <div className="flex items-center gap-3">
-                                    <div className={cn('w-8 h-8 rounded-full flex items-center justify-center', isDark ? 'bg-emerald-500/20 text-emerald-400' : 'bg-white/20 text-white')}>
-                                      <Zap className="w-4 h-4" />
-                                    </div>
-                                    <p className={cn('text-[13px] font-black', isDark ? 'text-white' : 'text-white')}>
-                                      {attentionTotal > 0 ? `${attentionTotal} Actions Pending` : 'All caught up'}
-                                    </p>
-                                  </div>
-                                  <button
-                                    type="button"
-                                    onClick={() => {
-                                      triggerHaptic(HapticPatterns.light);
-                                      if (needsActionTotal > 0) setActiveTab('collabs', 'action_required');
-                                      else openCreateOfferSheet();
-                                    }}
-                                    className={cn(
-                                      'px-5 py-2.5 rounded-2xl text-[11px] font-black uppercase tracking-widest transition-all active:scale-95 shadow-xl',
-                                      isDark 
-                                        ? 'bg-emerald-500 text-white hover:bg-emerald-400' 
-                                        : 'bg-white text-emerald-600 hover:bg-emerald-50 shadow-emerald-900/10'
-                                    )}
-                                  >
-                                    {needsActionTotal > 0 ? 'Review Now' : 'New Offer'}
-                                  </button>
-                                </div>
-                                {attentionTotal > 0 && (
-                                  <div className="mt-3 flex flex-wrap gap-1.5 border-t border-white/5 pt-3">
-                                    {pendingCounterCount > 0 && (
-                                      <span className="text-[9px] font-black uppercase tracking-widest opacity-60 text-white">
-                                        {pendingCounterCount} Counters • 
-                                      </span>
-                                    )}
-                                    {contentPendingReview > 0 && (
-                                      <span className="text-[9px] font-black uppercase tracking-widest opacity-60 text-white">
-                                        {contentPendingReview} Review Items • 
-                                      </span>
-                                    )}
-                                    {contractsWaitingSignature > 0 && (
-                                      <span className="text-[9px] font-black uppercase tracking-widest opacity-60 text-white">
-                                        {contractsWaitingSignature} Signature Pending
-                                      </span>
-                                    )}
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-                          </div>
-                        </motion.div>
-
-                        {/* Secondary Stats Grid */}
-                        <div className="grid grid-cols-2 gap-3 mb-6">
-                          <div className={cn('p-5 rounded-[2.5rem] border transition-all hover:border-primary/30', isDark ? 'bg-card border-border/50' : 'bg-white border-border/60 shadow-sm')}>
-                            <p className={cn('text-[10px] font-black uppercase tracking-widest opacity-40', textColor)}>Active</p>
-                            <div className="flex items-baseline gap-1 mt-3">
-                              <span className={cn('text-[24px] font-black tracking-tight', textColor)}>{activeDealsList.length}</span>
-                              <span className={cn('text-[10px] font-black uppercase tracking-widest opacity-40', textColor)}>Deals</span>
-                            </div>
-                          </div>
-                          <div className={cn('p-5 rounded-[2.5rem] border transition-all hover:border-warning/30', isDark ? 'bg-card border-border/50' : 'bg-white border-border/60 shadow-sm')}>
-                            <p className={cn('text-[10px] font-black uppercase tracking-widest opacity-40', textColor)}>Pending</p>
-                            <div className="flex items-baseline gap-1 mt-3">
-                              <span className={cn('text-[24px] font-black tracking-tight', needsActionTotal > 0 ? 'text-warning' : textColor)}>{needsActionTotal}</span>
-                              <span className={cn('text-[10px] font-black uppercase tracking-widest opacity-40', textColor)}>Action</span>
-                            </div>
-                          </div>
-                        </div>
-
-	                        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.06 }} className="mb-10">
-	                          <div className="flex items-center justify-between mb-5">
-	                            <div>
-	                              <h3 className={cn(ds.typography.h3, isDark ? 'text-white' : 'text-slate-900')}>Collaborations</h3>
-	                              <p className={cn("text-[11px] font-medium uppercase tracking-widest mt-1", isDark ? 'text-white/40' : 'text-slate-500')}>
-	                                {activeCollabTab === 'action_required'
-	                                  ? 'Review pending pipeline'
-	                                  : activeCollabTab === 'active'
-	                                    ? 'Track active workflow'
-	                                    : 'Performance history'}
-	                              </p>
-	                            </div>
-                              {needsActionTotal > 0 && (
-                                <div className="px-3 py-1.5 bg-warning/10 border border-warning/20 rounded-full flex items-center gap-2 animate-pulse">
-                                  <div className="w-1.5 h-1.5 bg-warning rounded-full" />
-                                  <span className="text-[10px] font-black uppercase tracking-widest text-warning">
-                                    {needsActionTotal} Need Review
-                                  </span>
-                                </div>
-                              )}
-	                          </div>
-	                          <div className={cn(
-                              'mb-6 p-1.5 rounded-[2.5rem] border flex gap-1.5 backdrop-blur-3xl transition-all', 
-                              isDark ? 'bg-white/[0.03] border-white/5 shadow-2xl shadow-black/40' : 'bg-white/60 border-slate-200 shadow-xl'
-                            )}>
-	                            {[
-	                              { key: 'action_required', label: 'Action Needed', count: needsActionTotal },
-	                              { key: 'active', label: 'Active', count: activeDealsList.length },
-	                              { key: 'completed', label: 'History', count: completedDealsList.length },
-	                            ].map((item) => {
-	                              const isSelected = activeCollabTab === item.key;
-	                              return (
-	                                <button
-	                                  type="button"
-	                                  key={item.key}
-	                                  onClick={() => {
-	                                    triggerHaptic(HapticPatterns.light);
-	                                    setDashboardCollabTab(item.key as BrandCollabTab);
-	                                  }}
-	                                  className={cn(
-	                                    'flex-1 rounded-[26px] px-3 py-4 text-center transition-all duration-500 relative overflow-hidden group/tab',
-	                                    isSelected
-	                                      ? 'z-10'
-	                                      : 'hover:bg-white/[0.02]'
-	                                  )}
-	                                >
-                                    {isSelected && (
-                                      <motion.div 
-                                        layoutId="tab-active-bg"
-                                        className={cn(
-                                          "absolute inset-0 rounded-[26px] border",
-                                          isDark ? "bg-white/[0.08] border-white/10" : "bg-white border-slate-200 shadow-lg"
-                                        )}
-                                      />
-                                    )}
-	                                  <p className={cn(
-                                      'text-[10px] font-black uppercase tracking-[0.15em] relative z-10 transition-colors', 
-                                      isSelected 
-                                        ? (isDark ? 'text-white' : 'text-slate-900') 
-                                        : (isDark ? 'text-white/30 group-hover/tab:text-white/50' : 'text-slate-400 group-hover/tab:text-slate-600')
-                                    )}>
-                                      {item.label}
-                                    </p>
-	                                  <p className={cn(
-                                      "mt-1.5 text-[20px] font-black leading-none relative z-10 tracking-tighter transition-transform",
-                                      isSelected 
-                                        ? (isDark ? "scale-110 text-white" : "scale-110 text-slate-900") 
-                                        : (isDark ? "text-white/20 group-hover/tab:text-white/40" : "text-slate-300 group-hover/tab:text-slate-500")
-                                    )}>
-                                      {item.count}
-                                    </p>
-	                                </button>
-	                              );
-	                            })}
-	                          </div>
-		                          <div className={cn(
-                                'rounded-[32px] border overflow-hidden backdrop-blur-3xl transition-all', 
-                                isDark ? 'bg-white/[0.02] border-white/5 shadow-2xl' : 'bg-white/40 border-slate-200 shadow-sm'
-                              )}>
-	                            <div className={cn('px-6 py-5 border-b flex items-center justify-between', isDark ? 'border-white/5 bg-white/[0.02]' : 'border-slate-100 bg-slate-50/50')}>
-	                              <p className={cn("text-[11px] font-black uppercase tracking-widest", isDark ? 'opacity-40' : 'text-slate-500')}>
-	                                {activeCollabTab === 'action_required' ? 'Awaiting Response' : activeCollabTab === 'active' ? 'Active Deals' : 'Completed Archive'}
-	                              </p>
-                                <div className="flex items-center gap-2">
-                                  <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                                  <span className={cn("text-[10px] font-bold uppercase tracking-widest", isDark ? 'opacity-30' : 'text-slate-400')}>Live Updates</span>
-                                </div>
-	                            </div>
-	                            {visibleCollabItems.length === 0 ? (
-	                              <div className="p-8 text-center">
-                                <p className={cn('text-[13px] font-semibold', isDark ? 'text-foreground/75' : 'text-muted-foreground')}>
-                                  {activeCollabTab === 'action_required'
-                                    ? (pendingOffersList.length > 0
-                                        ? 'All caught up with offers needing your response — check the Active tab for pending requests.'
-                                        : 'All caught up! No pending offers right now.')
-                                    : activeCollabTab === 'active'
-                                      ? 'No active deals yet — finish a pending offer'
-                                      : 'No completed deals yet — check back on active ones'}
-                                </p>
-                                {activeCollabTab === 'active' && (
-                                  <Button type="button" onClick={() => setActiveTab('collabs', 'action_required')} className={cn('mt-4 rounded-2xl', isDark ? 'bg-primary hover:bg-primary text-foreground' : 'bg-primary hover:bg-primary text-foreground')}>
-                                    <Send className="w-4 h-4 mr-2" /> Review pending offers
-                                  </Button>
-                                )}
-                                {activeCollabTab === 'completed' && (
-                                  <Button type="button" onClick={() => setActiveTab('creators')} className={cn('mt-4 rounded-2xl', isDark ? 'bg-primary hover:bg-primary text-foreground' : 'bg-primary hover:bg-primary text-foreground')}>
-                                    <Send className="w-4 h-4 mr-2" /> Find creators
-                                  </Button>
-                                )}
-                                {activeCollabTab === 'action_required' && (
-                                  <Button type="button" onClick={() => openCreateOfferSheet()} className={cn('mt-4 rounded-2xl', isDark ? 'bg-primary hover:bg-primary text-foreground' : 'bg-primary hover:bg-primary text-foreground')}>
-                                    <Send className="w-4 h-4 mr-2" /> Send new offer
-                                  </Button>
-                                )}
-                              </div>
-                            ) : (
-                              <div className="p-4 space-y-3">
-                                {visibleCollabItems.slice(0, 10).map((item: any, idx: number) => {
-                                  const itemKey = `collab-home-${item.id || idx}-${item.updated_at || ''}`;
-                                  const isPendingItem = activeCollabTab === 'action_required';
-                                  const creatorName = firstNameish(item?.profiles, item?.creator_name || item?.creator_email);
-                                  const creatorMeta = item?.profiles?.username || item?.creator_name || item?.creator_email || 'Creator';
-                                  const creatorAvatar = item?.profiles?.avatar_url || item?.profiles?.profile_image_url || item?.profiles?.instagram_profile_photo || item?.creator_avatar_url || item?.creator_photo_url || '';
-                                  const amount = Number(item?.deal_amount || item?.exact_budget || 0);
-
-                                  if (isPendingItem && ['pending', 'countered', 'sent', 'offer_sent', 'submitted', 'action_required', 'action-required'].includes(normalizeStatus(item?.status))) {
-                                      const sentIso = item?.created_at || item?.updated_at || null;
-                                      const sentHours = sentIso ? hoursSince(sentIso) : null;
-                                      const exp = offerExpiryLabel(item);
-                                      const isCountered = normalizeStatus(item?.status) === 'countered';
-                                      const isNoResponse = !isCountered && sentHours !== null && sentHours >= 24;
-                                      const statusLabel = isCountered ? 'Creator Countered' : isNoResponse ? 'No Response Yet' : 'Awaiting Response';
-
-                                      const ui = {
-                                        needsAction: isCountered || isNoResponse,
-                                        statusLine: statusLabel,
-                                        step: 1,
-                                        primaryActionLabel: 'View Offer Details',
-                                        ctaTone: (isCountered || isNoResponse) ? 'action' : 'view' as any
-                                      };
-
-                                      return (
-                                        <motion.div
-                                          key={itemKey}
-                                          whileTap={{ scale: 0.985 }}
-                                          role="button"
-                                          tabIndex={0}
-                                          onClick={() => setSelectedOffer(item)}
-                                          className={cn(
-                                            'w-full rounded-[2.5rem] border transition-all duration-300 group relative text-left overflow-hidden cursor-pointer',
-                                            isDark 
-                                              ? 'bg-gradient-to-br from-white/[0.05] via-white/[0.02] to-transparent border-white/[0.08] shadow-2xl shadow-black/40' 
-                                              : 'bg-white border-[#E5E5EA] shadow-[0_8px_30px_rgba(0,0,0,0.04)]',
-                                            'backdrop-blur-2xl'
-                                          )}
-                                        >
-                                          {/* Subtle Gloss Effect */}
-                                          <div className="absolute inset-0 bg-gradient-to-tr from-white/[0.02] via-transparent to-transparent pointer-events-none" />
-                                          
-                                          <div className="p-5 relative z-10">
-                                            <div className="flex items-start justify-between gap-3 mb-5">
-                                              <div className="flex items-center gap-3 min-w-0">
-                                                <div className="relative">
-                                                  <Avatar className={cn('w-12 h-12 border-2 shadow-xl shrink-0', isDark ? 'border-white/10' : 'border-white')}>
-                                                    <AvatarImage src={safeImageSrc(creatorAvatar)} alt={creatorName} />
-                                                    <AvatarFallback className={cn(isDark ? 'bg-white/5 text-white' : 'bg-slate-100 text-slate-500')}>
-                                                      {creatorName.slice(0, 1).toUpperCase()}
-                                                    </AvatarFallback>
-                                                  </Avatar>
-                                                  {ui.needsAction && (
-                                                    <div className="absolute -top-1 -right-1 w-4 h-4 bg-blue-500 border-2 border-[#061318] rounded-full animate-pulse shadow-[0_0_10px_rgba(59,130,246,0.5)]" />
-                                                  )}
-                                                </div>
-                                                <div className="min-w-0">
-                                                  <h4 className={cn('text-[16px] font-black tracking-tight truncate leading-tight', textColor)}>{creatorName}</h4>
-                                                  <p className={cn('text-[11px] font-bold opacity-40 truncate uppercase tracking-[0.05em]', textColor)}>{creatorMeta}</p>
-                                                </div>
-                                              </div>
-                                              <div className="text-right shrink-0 flex flex-col items-end">
-                                                <p className={cn('text-[22px] font-black tracking-tighter leading-none', isDark ? 'text-white' : 'text-slate-900')}>
-                                                  {amount > 0 ? formatCompactINR(amount) : '—'}
-                                                </p>
-                                                <p className="text-[9px] font-black opacity-30 mt-1 uppercase tracking-widest">Est. Payout</p>
-                                              </div>
-                                            </div>
-
-                                            {resolveDealProductImageUrl(item) && (
-                                              <div className="mb-4 overflow-hidden rounded-[20px] border border-white/5 bg-black/20 group-hover:border-white/10 transition-colors">
-                                                <div className="relative aspect-[16/9] w-full">
-                                                  <img
-                                                    src={safeImageSrc(resolveDealProductImageUrl(item))}
-                                                    alt={`${creatorName} product preview`}
-                                                    className="absolute inset-0 h-full w-full object-cover group-hover:scale-105 transition-transform duration-700"
-                                                  />
-                                                  <div className="absolute left-3 top-3 rounded-full bg-black/60 px-3 py-1 text-[9px] font-black uppercase tracking-widest text-white backdrop-blur-md border border-white/10">
-                                                    Product Preview
-                                                  </div>
-                                                </div>
-                                              </div>
-                                            )}
-
-                                            <div className="flex items-center justify-between gap-3 text-[12px] font-bold mb-4">
-                                              <div className={cn('min-w-0 truncate px-2.5 py-1 bg-white/5 rounded-lg border border-white/5', secondaryTextColor)}>
-                                                {String(formatDeliverables(item) || item?.collab_type || 'Collaboration').replaceAll(',', ' • ')}
-                                              </div>
-                                              {exp?.text && (
-                                                <div className={cn(
-                                                  'shrink-0 flex items-center gap-1.5 px-2.5 py-1 rounded-lg border',
-                                                  exp.tone === 'danger'
-                                                    ? (isDark ? 'bg-rose-500/10 text-rose-300 border-rose-500/20' : 'bg-rose-50 text-rose-700 border-rose-100')
-                                                    : exp.tone === 'warn'
-                                                      ? (isDark ? 'bg-warning/10 text-warning border-warning/20' : 'bg-amber-50 text-amber-700 border-amber-100')
-                                                      : (isDark ? 'bg-white/5 text-white/50 border-white/5' : 'bg-slate-50 text-slate-500 border-slate-100')
-                                                )}>
-                                                  <Clock className="w-3.5 h-3.5" />
-                                                  <span className="font-black text-[10px] uppercase tracking-wider">{exp.text}</span>
-                                                </div>
-                                              )}
-                                            </div>
-
-                                            <div className={cn(
-                                              'group/status p-4 rounded-2xl mb-4 border transition-all duration-300 relative',
-                                              ui.needsAction
-                                                ? (isDark ? 'bg-warning/10 text-warning border-warning/20' : 'bg-amber-50 text-amber-700 border-amber-100')
-                                                : (isDark ? 'bg-white/5 text-white/60 border-white/5' : 'bg-slate-50 text-slate-500 border-slate-100')
-                                            )}>
-                                              <div className="flex items-center justify-between gap-3">
-                                                <div className="flex items-center gap-3">
-                                                  <div className={cn(
-                                                    "p-2 rounded-xl shrink-0 transition-transform group-hover/status:scale-110",
-                                                    ui.needsAction ? "bg-warning/20" : "bg-white/10"
-                                                  )}>
-                                                    {isCountered ? <Sparkles className="w-4 h-4" /> : <Info className="w-4 h-4" />}
-                                                  </div>
-                                                  <p className="text-[13px] font-black leading-tight">
-                                                    {ui.statusLine}
-                                                  </p>
-                                                </div>
-                                                <ChevronRight className="w-4 h-4 opacity-30 group-hover/status:opacity-100 transition-opacity" />
-                                              </div>
-
-                                              <div className="flex gap-1 mt-4">
-                                                {[1, 2, 3, 4, 5].map((s) => (
-                                                  <div 
-                                                    key={s} 
-                                                    className={cn(
-                                                      "h-1 flex-1 rounded-full transition-all duration-500",
-                                                      s <= ui.step 
-                                                        ? (isDark ? "bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.4)]" : "bg-emerald-500")
-                                                        : (isDark ? "bg-white/10" : "bg-slate-200")
-                                                    )}
-                                                  />
-                                                ))}
-                                              </div>
-                                            </div>
-
-                                            <button
-                                              type="button"
-                                              onClick={() => setSelectedOffer(item)}
-                                              className={cn(
-                                                'h-14 w-full rounded-2xl text-[14px] font-black transition-all active:scale-[0.98] uppercase tracking-widest shadow-xl',
-                                                dealPrimaryCtaButtonClass(ui.ctaTone),
-                                                'border border-white/5'
-                                              )}
-                                            >
-                                              {ui.primaryActionLabel}
-                                            </button>
-                                          </div>
-                                        </motion.div>
-                                      );
-                                  }
-                                   const ui = brandDealCardUi(item);
-		                                  return (
-		                                    <motion.div
-		                                      key={itemKey}
-		                                      whileTap={{ scale: 0.985 }}
-		                                      role="button"
-		                                      tabIndex={0}
-		                                      onClick={() => handleBrandDealPrimaryAction(undefined, item, ui)}
-		                                      className={cn(
-		                                        'w-full rounded-[2.5rem] border transition-all duration-300 group relative text-left overflow-hidden cursor-pointer',
-		                                        isDark 
-                                              ? 'bg-gradient-to-br from-white/[0.05] via-white/[0.02] to-transparent border-white/[0.08] shadow-2xl shadow-black/40' 
-                                              : 'bg-white border-[#E5E5EA] shadow-[0_8px_30px_rgba(0,0,0,0.04)]',
-                                            'backdrop-blur-2xl'
-		                                      )}
-		                                    >
-                                          {/* Subtle Gloss Effect */}
-                                          <div className="absolute inset-0 bg-gradient-to-tr from-white/[0.02] via-transparent to-transparent pointer-events-none" />
-                                          
-		                                      <div className="p-5 relative z-10">
-		                                        <div className="flex items-start justify-between gap-3 mb-4">
-		                                          <div className="flex items-center gap-3 min-w-0">
-                                                <div className="relative">
-                                                  <Avatar className={cn('w-12 h-12 border-2 shadow-xl shrink-0', isDark ? 'border-white/10' : 'border-white')}>
-                                                    <AvatarImage src={safeImageSrc(item?.profiles?.avatar_url || item?.profiles?.profile_image_url || item?.creator_avatar_url || item?.creator_photo_url || '')} alt={creatorName} />
-                                                    <AvatarFallback className={cn(isDark ? 'bg-white/5 text-white' : 'bg-slate-100 text-slate-500')}>
-                                                      {creatorName.slice(0, 1).toUpperCase()}
-                                                    </AvatarFallback>
-                                                  </Avatar>
-                                                  {ui.needsAction && (
-                                                    <div className="absolute -top-1 -right-1 w-4 h-4 bg-blue-500 border-2 border-[#061318] rounded-full animate-pulse shadow-[0_0_10px_rgba(59,130,246,0.5)]" />
-                                                  )}
-                                                </div>
-		                                            <div className="min-w-0">
-		                                              <h4 className={cn('text-[16px] font-black tracking-tight truncate leading-tight', textColor)}>{creatorName}</h4>
-		                                              <p className={cn('text-[11px] font-bold opacity-40 truncate uppercase tracking-[0.05em]', textColor)}>{creatorMeta}</p>
-		                                            </div>
-		                                          </div>
-		                                          <div className="text-right shrink-0 pl-3 flex flex-col items-end">
-		                                            <p className={cn('text-[22px] font-black tracking-tighter leading-none', isDark ? 'text-white' : 'text-slate-900')}>
-		                                              {amount > 0 ? formatCompactINR(amount) : '—'}
-		                                            </p>
-                                                <p className="text-[9px] font-black opacity-30 mt-1 uppercase tracking-widest">Est. Payout</p>
-		                                          </div>
-		                                        </div>
-		
-		                                        <div className="flex items-center justify-between gap-3 text-[12px] font-bold mb-4">
-		                                          <div className={cn('min-w-0 truncate px-2.5 py-1 bg-white/5 rounded-lg border border-white/5', secondaryTextColor)}>
-		                                            {String(formatDeliverables(item) || item?.collab_type || 'Collaboration').replaceAll(',', ' • ')}
-		                                          </div>
-		                                          {due?.text && (
-		                                            <div className={cn(
-		                                              'shrink-0 flex items-center gap-1.5 px-2.5 py-1 rounded-lg border',
-		                                              due.tone === 'danger'
-		                                                ? (isDark ? 'bg-rose-500/10 text-rose-300 border-rose-500/20' : 'bg-rose-50 text-rose-700 border-rose-100')
-		                                                : due.tone === 'warn'
-		                                                  ? (isDark ? 'bg-warning/10 text-warning border-warning/20' : 'bg-amber-50 text-amber-700 border-amber-100')
-		                                                  : (isDark ? 'bg-white/5 text-white/50 border-white/5' : 'bg-slate-50 text-slate-500 border-slate-100')
-		                                            )}>
-		                                              <Clock className="w-3.5 h-3.5" />
-		                                              <span className="font-black text-[10px] uppercase tracking-wider">{due.text}</span>
-		                                            </div>
-		                                          )}
-		                                        </div>
-		
-			                                  <div className={cn(
-			                                    'group/status p-4 rounded-2xl mb-4 border transition-all duration-300 relative',
-			                                    ui.needsAction
-			                                      ? (isDark ? 'bg-warning/10 text-warning border-warning/20' : 'bg-amber-50 text-amber-700 border-amber-100')
-			                                      : (isDark ? 'bg-white/5 text-white/60 border-white/5' : 'bg-slate-50 text-slate-500 border-slate-100')
-			                                  )}>
-                                            <div className="flex items-center justify-between gap-3">
-                                              <div className="flex items-center gap-3">
-                                                <div className={cn(
-                                                  "p-2 rounded-xl shrink-0 transition-transform group-hover/status:scale-110",
-                                                  ui.needsAction ? "bg-warning/20" : "bg-white/10"
-                                                )}>
-                                                  {ui.needsAction ? <Sparkles className="w-4 h-4" /> : <Info className="w-4 h-4" />}
-                                                </div>
-                                                <p className="text-[13px] font-black leading-tight">
-                                                  {ui.statusLine}
-                                                </p>
-                                              </div>
-                                              <ChevronRight className="w-4 h-4 opacity-30 group-hover/status:opacity-100 transition-opacity" />
-                                            </div>
-
-                                            {/* Progress Segments */}
-                                            <div className="flex gap-1 mt-4">
-                                              {[1, 2, 3, 4, 5].map((s) => (
-                                                <div 
-                                                  key={s} 
-                                                  className={cn(
-                                                    "h-1 flex-1 rounded-full transition-all duration-500",
-                                                    s <= ui.step 
-                                                      ? (isDark ? "bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.4)]" : "bg-emerald-500")
-                                                      : (isDark ? "bg-white/10" : "bg-slate-200")
-                                                  )}
-                                                />
-                                              ))}
-                                            </div>
-			                                  </div>
-		
-			                                  {showSignatureDebug && (
-			                                    <div className={cn('text-[11px] font-semibold mb-3 px-3 py-2 bg-black/40 rounded-xl border border-white/10', secondaryTextColor)}>
-			                                      {(() => {
-			                                        const hints = collectSignatureHints(item);
-			                                        const status = effectiveDealStatus(item);
-			                                        const raw = String(item?.status || item?.raw?.status || '—');
-			                                        const esign = String(item?.esign_status || item?.raw?.esign_status || item?.contract_status || item?.raw?.contract_status || '');
-			                                        return (
-			                                          <span className="font-mono">
-			                                            debugSig: status={status} raw={raw} esign={esign || '—'} brandKeys=[{hints.brand.join(',') || '—'}] creatorKeys=[{hints.creator.join(',') || '—'}]
-			                                          </span>
-			                                        );
-			                                      })()}
-			                                    </div>
-			                                  )}
-		
-		                                        <button
-		                                          type="button"
-		                                          onClick={(e) => handleBrandDealPrimaryAction(e, item, ui)}
-				                                      disabled={Boolean(ui?.ctaDisabled)}
-				                                      className={cn(
-				                                        'h-14 w-full rounded-2xl text-[14px] font-black transition-all active:scale-[0.98] uppercase tracking-widest shadow-xl',
-				                                        dealPrimaryCtaButtonClass(ui?.ctaTone || (ui.needsAction ? 'action' : 'view')),
-				                                        Boolean(ui?.ctaDisabled) && 'opacity-60 cursor-not-allowed active:scale-100'
-				                                      )}
-				                                    >
-				                                      {ui.primaryActionLabel}
-				                                    </button>
-		                                      </div>
-		                                    </motion.div>
-		                                  );
-			                                })}
-		                              </div>
-		                            )}
-	                          </div>
-	                        </motion.div>
-	                      </>
-	                    );
-	                  })()}
-
-                  <div className="mb-5">
-                    <div className="flex items-center justify-between mb-3">
-                      <div>
-                        <p className={cn('text-[11px] font-black uppercase tracking-widest opacity-50', textColor)}>Suggested creators</p>
-                        <p className={cn('text-[12px] opacity-60 mt-1', textColor)}>Pick based on reliability — not views.</p>
-                      </div>
-                      <button type="button" onClick={() => { triggerHaptic(HapticPatterns.light); setActiveTab('creators'); }} className={cn('text-[12px] font-bold', isDark ? 'text-info' : 'text-info')}>
-                        View all
-                      </button>
-                    </div>
-                    <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
-	                      {(isLoadingSuggestedCreators ? Array.from({ length: 3 }).map((_, i) => ({ id: `sk-${i}`, name: 'Creator' })) : suggestedCreators.slice(0, 6)).map((c: any) => (
-                         <motion.div 
-                           key={c.id} 
-                           whileTap={{ scale: 0.985 }}
-                           role="button"
-                           tabIndex={0}
-                           onClick={() => {
-                             const handle = String(c?.username || c?.handle || '').trim().replace(/^@+/, '');
-                             if (!handle) {
-                               triggerHaptic(HapticPatterns.light);
-                               setActiveTab('creators');
-                               return;
-                             }
-                             triggerHaptic(HapticPatterns.light);
-                             navigate(`/${handle}`);
-                           }}
-                           className={cn('min-w-[290px] p-5 rounded-[2.5rem] border cursor-pointer', cardBgColor, borderColor, isDark ? '' : 'shadow-[0_18px_45px_rgba(15,23,42,0.08)]')}
-                         >
-                          <div className="flex items-center gap-3">
-                            <Avatar className="w-11 h-11">
-                              <AvatarImage src={safeImageSrc(c.profile_photo || c.avatar_url)} alt={c.name} />
-                              <AvatarFallback>{String(c.name || 'C').slice(0, 1).toUpperCase()}</AvatarFallback>
-                            </Avatar>
-                            <div className="min-w-0 flex-1">
-                              <p className={cn('text-[13px] font-bold truncate', textColor)}>{c.name}</p>
-                              <p className={cn('text-[12px] opacity-60 truncate', textColor)}>
-                                {(c.category || 'Creator')}{c.followers ? ` • ${formatFollowers(c.followers)}` : ''}
-                              </p>
-                            </div>
-                            <div className="text-right">
-                              <p className={cn('text-[10px] font-black uppercase tracking-widest opacity-50', textColor)}>From</p>
-                              <p className={cn('text-[12px] font-bold', textColor)}>{formatCompactINR(c?.pricing?.avg ?? c?.pricing?.reel ?? 0)} / reel</p>
-                            </div>
-                          </div>
-
-                          <div className="mt-3 space-y-1">
-                            {getReliabilityLines(c).map((line) => (
-                              <p key={line} className={cn('text-[12px] opacity-70', textColor)}>{line}</p>
-                            ))}
-                          </div>
-
-                          <div className="flex flex-wrap gap-2 mt-3">
-                            {getSmartTags(c).map((t) => (
-                              <span key={t} className={cn('text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded-lg border', isDark ? 'border-border text-foreground/60 bg-card' : 'border-border text-muted-foreground bg-background')}>
-                                {t}
-                              </span>
-                            ))}
-                            {getSmartTags(c).length === 0 && (
-                              <span className={cn('text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded-lg border', isDark ? 'border-border text-foreground/60 bg-card' : 'border-border text-muted-foreground bg-background')}>
-                                ✔ Verified profile
-                              </span>
-                            )}
-                          </div>
-
-                          <div className="flex gap-2 mt-4">
-                            <button type="button"
-                              onClick={() => {
-                                const handle = String(c?.username || c?.handle || '').trim().replace(/^@+/, '');
-                                if (!handle) {
-                                  triggerHaptic(HapticPatterns.light);
-                                  setActiveTab('creators');
-                                  return;
-                                }
-                                triggerHaptic(HapticPatterns.light);
-                                navigate(`/${handle}`);
-                              }}
-                              className={cn('flex-1 py-2.5 rounded-2xl border text-[12px] font-bold transition-all active:scale-[0.98]', isDark ? 'border-border bg-card hover:bg-secondary/50 text-foreground' : 'border-border bg-card hover:bg-background text-muted-foreground')}
-                            >
-                              View profile
-                            </button>
-                            <button type="button"
-                              onClick={() => {
-                                const handle = String(c?.username || c?.handle || '').trim().replace(/^@+/, '');
-                                if (!handle) {
-                                  triggerHaptic(HapticPatterns.light);
-                                  toast.error('Creator username missing', { description: 'Please try another creator.' });
-                                  return;
-                                }
-                                triggerHaptic(HapticPatterns.success);
-                                navigate(`/${handle}?offer=true`);
-                              }}
-                              className={cn('flex-1 py-2.5 rounded-2xl text-[12px] font-black uppercase tracking-widest transition-all active:scale-[0.98]', isDark ? 'bg-gradient-to-br from-emerald-500 to-sky-500 hover:from-emerald-400 hover:to-sky-400 text-foreground' : 'bg-gradient-to-br from-emerald-600 to-sky-600 hover:from-emerald-500 hover:to-sky-500 text-foreground')}
-                            >
-                              Send offer
-                            </button>
-                          </div>
-                         </motion.div>
-                      ))}
-                    </div>
-                  </div>
-
-                  <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} className={cn('p-6 rounded-[2.5rem] border relative overflow-hidden mb-10', isDark ? 'bg-background border-border/5' : 'bg-card border-border shadow-sm')}>
-                    <div className="absolute top-0 right-0 p-8 opacity-[0.05]">
-                      <Plus size={120} />
-                    </div>
-                    <div className="flex items-center gap-3 mb-4">
-                      <div className="w-10 h-10 rounded-2xl bg-primary/12 flex items-center justify-center">
-                        <Plus className={cn('w-5 h-5', isDark ? 'text-primary' : 'text-primary')} />
-                      </div>
-                      <div>
-                        <h3 className={cn('text-[15px] font-bold tracking-tight', textColor)}>Quick actions</h3>
-                        <p className={cn('text-[11px] opacity-40 uppercase font-black tracking-widest', textColor)}>Shortcuts</p>
-                      </div>
-                    </div>
-                    <div className="grid grid-cols-2 gap-2.5">
-                      <button type="button"
-                        onClick={() => {
-                          triggerHaptic(HapticPatterns.light);
-                          setActiveTab('creators');
-                        }}
-                        className={cn('flex flex-col items-center justify-center py-4 rounded-[1.5rem] border transition-all active:scale-[0.97]', isDark ? 'bg-card border-border hover:bg-secondary/50' : 'bg-background border-border hover:bg-background shadow-sm')}
-                      >
-                        <User className={cn('w-4 h-4 mb-2', secondaryTextColor)} />
-                        <span className={cn('text-[11px] font-bold', textColor)}>Find creators</span>
-                      </button>
-                      <button type="button"
-                        onClick={() => { triggerHaptic(HapticPatterns.success); openCreateOfferSheet(); }}
-                        className={cn(
-                          'flex flex-col items-center justify-center py-4 rounded-[1.5rem] border transition-all active:scale-[0.97]',
-                          isDark ? 'bg-gradient-to-br from-emerald-500 to-sky-500 border-primary/30 hover:from-emerald-400 hover:to-sky-400 text-foreground shadow-[0_10px_35px_rgba(16,185,129,0.25)]' : 'bg-gradient-to-br from-emerald-600 to-sky-600 border-primary/40 hover:from-emerald-500 hover:to-sky-500 text-foreground shadow-lg'
-                        )}
-                      >
-                        <Send className="w-4 h-4 mb-2 opacity-90" />
-                        <span className="text-[11px] font-black uppercase tracking-widest">Send offer</span>
-                      </button>
-                      <button type="button" onClick={() => { triggerHaptic(HapticPatterns.light); setActiveTab('collabs'); }} className={cn('flex flex-col items-center justify-center py-4 rounded-[1.5rem] border transition-all active:scale-[0.97]', isDark ? 'bg-card border-border hover:bg-secondary/50' : 'bg-background border-border hover:bg-background shadow-sm')}>
-                        <Handshake className={cn('w-4 h-4 mb-2', secondaryTextColor)} />
-                        <span className={cn('text-[11px] font-bold', textColor)}>Collabs</span>
-                      </button>
-                      <button type="button" onClick={() => { triggerHaptic(HapticPatterns.light); toast.info('Payments', { description: 'Invoices, GST, UPI payouts — coming soon.' }); }} className={cn('flex flex-col items-center justify-center py-4 rounded-[1.5rem] border transition-all active:scale-[0.97]', isDark ? 'bg-card border-border hover:bg-secondary/50' : 'bg-background border-border hover:bg-background shadow-sm')}>
-                        <CreditCard className={cn('w-4 h-4 mb-2', secondaryTextColor)} />
-                        <span className={cn('text-[11px] font-bold', textColor)}>Payments</span>
-                      </button>
-                    </div>
-                  </motion.div>
-
-                  <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.18 }} className="mb-10">
-                    <div className="flex items-center justify-between mb-3">
-                      <div className="flex items-center gap-2">
-                        <Briefcase className={cn('w-4 h-4', secondaryTextColor)} strokeWidth={1.5} />
-                        <h2 className={cn('text-[16px] font-bold tracking-tight', textColor)}>Collaborations</h2>
-                      </div>
-                      <button type="button" onClick={() => setActiveTab('collabs', 'action_required')} className={cn('text-[12px] font-bold', isDark ? 'text-info' : 'text-info')}>
-                        View all
-                      </button>
-                    </div>
-	                    <div className={cn('rounded-[28px] border overflow-hidden backdrop-blur-xl shadow-[0_18px_45px_rgba(15,23,42,0.12)]', borderColor, isDark ? 'bg-secondary/[0.04] shadow-black/20' : 'bg-card shadow-sm')}>
-	                      <button
-	                        type="button"
-	                        onClick={() => {
-	                          triggerHaptic(HapticPatterns.light);
-	                          setActiveTab('collabs', 'action_required');
-	                        }}
-                        className={cn('w-full p-4 flex items-center justify-between transition-all active:scale-[0.995] backdrop-blur-md', isDark ? 'border-b border-border hover:bg-secondary/[0.06]' : 'border-b border-border/80 hover:bg-secondary/60')}
-                      >
-                        <p className={cn('text-[12px] font-bold', textColor)}>Awaiting Response</p>
-	                        <p className={cn('text-[12px] font-bold', textColor)}>{pendingOffersList.length + activeDealsList.filter((d: any) => brandDealCardUi(d).needsAction).length}</p>
-                      </button>
-	                      <button
-	                        type="button"
-	                        onClick={() => {
-	                          triggerHaptic(HapticPatterns.light);
-	                          setActiveTab('collabs', 'active');
-	                        }}
-                        className={cn('w-full p-4 flex items-center justify-between transition-all active:scale-[0.995] backdrop-blur-md', isDark ? 'border-b border-border hover:bg-secondary/[0.06]' : 'border-b border-border/80 hover:bg-secondary/60')}
-                      >
-                        <p className={cn('text-[12px] font-bold', textColor)}>Active</p>
-                        <p className={cn('text-[12px] font-bold', textColor)}>{activeDealsList.length}</p>
-                      </button>
-	                      <button
-	                        type="button"
-	                        onClick={() => {
-	                          triggerHaptic(HapticPatterns.light);
-	                          setActiveTab('collabs', 'completed');
-	                        }}
-                        className={cn('w-full p-4 flex items-center justify-between transition-all active:scale-[0.995]', isDark ? 'hover:bg-card' : 'hover:bg-background')}
-                      >
-                        <p className={cn('text-[12px] font-bold', textColor)}>Completed</p>
-                        <p className={cn('text-[12px] font-bold', textColor)}>{completedDealsList.length}</p>
-                      </button>
-                    </div>
-                  </motion.div>
-                </>
-              )}
-
-	              {activeTab === 'collabs' && (
-	                <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
-	                  {(() => {
-	                    const needsActionDeals = activeDealsList.filter((d: any) => brandDealCardUi(d).needsAction);
-	                    const needsActionOffers = pendingOffersList;
-	                    const needsActionTotal = needsActionDeals.length + needsActionOffers.length;
-	                    return (
-	                      <>
-	                  <div className="flex items-center justify-between mb-4">
-	                    <h2 className={cn('text-[16px] font-bold tracking-tight', textColor)}>Collaborations</h2>
-	                    <div className="flex items-center gap-3">
-	                      {needsActionTotal > 0 && (
-	                        <div className={cn('px-3 py-1.5 rounded-full border text-[10px] font-black uppercase tracking-widest shadow-sm', isDark ? 'bg-warning/10 text-warning border-warning/20' : 'bg-orange-50 text-orange-600 border-orange-200')}>
-	                          {needsActionTotal} need your review
-	                        </div>
-	                      )}
-	                      <button type="button" onClick={() => setActiveTab('dashboard')} className={cn('text-[12px] font-bold', isDark ? 'text-info' : 'text-info')}>
-	                      Back
-	                      </button>
-	                    </div>
-	                  </div>
-
-		                  <div className={cn('mb-4 rounded-[22px] border p-1.5 flex gap-1.5 backdrop-blur-xl shadow-sm', isDark ? 'bg-secondary/[0.06] border-border/50' : 'bg-slate-100/80 border-slate-200/60')}>
-		                    {[
-			                      { key: 'action_required', label: 'Awaiting Response', count: pendingOffersList.length + activeDealsList.filter((d: any) => brandDealCardUi(d).needsAction).length },
-		                      { key: 'active', label: 'Active', count: activeDealsList.length },
-		                      { key: 'completed', label: 'Completed', count: completedDealsList.length },
-		                    ].map((item) => {
-		                      const isSelected = activeCollabTab === item.key;
-		                      return (
-			                        <button
-			                          type="button"
-			                          key={item.key}
-			                          onClick={() => {
-			                            triggerHaptic(HapticPatterns.light);
-			                            setActiveTab('collabs', item.key as BrandCollabTab);
-			                          }}
-		                          className={cn(
-		                            'flex-1 h-11 rounded-[18px] px-3 transition-all active:scale-[0.98] flex items-center justify-center gap-2',
-		                            isSelected
-		                              ? isDark
-		                                ? 'bg-card text-foreground shadow-[0_10px_28px_rgba(255,255,255,0.06)]'
-		                                : 'bg-blue-600 text-white shadow-[0_12px_30px_rgba(37,99,235,0.25)]'
-		                              : isDark
-		                                ? 'text-foreground/60 hover:bg-secondary/[0.05]'
-		                                : 'text-muted-foreground hover:bg-secondary/40'
-		                          )}
-		                        >
-		                          <span className={cn('text-[11px] font-black uppercase tracking-widest', isSelected ? 'opacity-95' : 'opacity-70')}>{item.label}</span>
-		                                  <span
-		                                    className={cn(
-		                                      'px-2 py-0.5 rounded-full text-[10px] font-black tabular-nums transition-all duration-300',
-		                                      isSelected
-		                                        ? (isDark ? 'bg-white/10 text-white' : 'bg-white/20 text-white')
-		                                        : (isDark ? 'bg-white/5 text-foreground/40' : 'bg-black/5 text-muted-foreground/60')
-		                                    )}
-		                                  >
-		                            {item.count}
-		                          </span>
-		                        </button>
-		                      );
-		                    })}
-		                  </div>
-
-		                  <div className={cn('rounded-[28px] border overflow-hidden backdrop-blur-xl shadow-[0_18px_45px_rgba(15,23,42,0.12)]', borderColor, isDark ? 'bg-secondary/[0.04] shadow-black/20' : 'bg-card shadow-sm')}>
-	                    <div className={cn('p-4 backdrop-blur-md', isDark ? 'border-b border-border bg-secondary/[0.03]' : 'border-b border-border/80 bg-secondary/45')}>
-	                      <p className={cn('text-[12px] font-black uppercase tracking-widest opacity-50', textColor)}>
-	                        {activeCollabTab === 'action_required' ? 'Awaiting Response' : activeCollabTab === 'active' ? 'Active Deals' : 'Completed Deals'}
-	                      </p>
-	                    </div>
-                    {visibleCollabItems.length === 0 ? (
-                      <div className="p-8 text-center">
-                        <p className={cn('text-[12px] font-bold opacity-50', textColor)}>
-                          {activeCollabTab === 'action_required'
-                            ? 'All caught up! Send an offer to get started.'
-                            : activeCollabTab === 'active'
-                              ? 'No active collabs — complete a deal first'
-                              : 'No completed collabs yet — finish an active deal'}
-                        </p>
-                        {activeCollabTab === 'action_required' && (
-                          <Button type="button" onClick={() => openCreateOfferSheet()} className={cn('mt-4 rounded-2xl', isDark ? 'bg-primary hover:bg-primary text-foreground' : 'bg-primary hover:bg-primary text-foreground')}>
-                            <Send className="w-4 h-4 mr-2" /> Send new offer
-                          </Button>
-                        )}
-                      </div>
-                    ) : (
-	                      <div className="p-4 space-y-4 pb-24">
-	                        {visibleCollabItems.slice(0, 50).map((item: any, idx: number) => {
-	                          const itemKey = `collab-list-${item.id || idx}-${item.updated_at || ''}`;
-	                          const isPendingItem = activeCollabTab === 'action_required';
-		                          const due = isPendingItem ? offerExpiryLabel(item) : deadlineLabel(item);
-	                          const amount = Number(item?.deal_amount || item?.exact_budget || 0);
-	                          const creatorName = firstNameish(item?.profiles, item?.creator_name || item?.creator_email);
-	                          const creatorMeta = item?.profiles?.username || item?.creator_name || item?.creator_email || 'Creator';
-	                          const creatorAvatar = item?.profiles?.avatar_url || item?.profiles?.profile_image_url || item?.profiles?.instagram_profile_photo || item?.creator_avatar_url || item?.creator_photo_url || '';
-	                          
-                            if (isPendingItem && ['pending', 'countered', 'sent', 'offer_sent', 'submitted', 'action_required', 'action-required'].includes(normalizeStatus(item?.status))) {
-	                            const sentIso = item?.created_at || item?.updated_at || null;
-	                            const isCountered = normalizeStatus(item?.status) === 'countered';
-	                            const sentHours = sentIso ? hoursSince(sentIso) : null;
-	                            const isNoResponse = !isCountered && sentHours !== null && sentHours >= 24;
-	                            
-                              const statusLabel = isCountered ? 'CREATOR COUNTERED' : isNoResponse ? 'NO RESPONSE YET' : 'AWAITING RESPONSE';
-                              const statusLine = isCountered 
-                                ? 'Creator proposed changes — review and update the offer.' 
-                                : 'You can follow up or modify the offer.';
-
-                              const statusTone = isCountered
-                                ? (isDark ? 'bg-warning/10 text-warning border-warning/25' : 'bg-orange-50 text-orange-600 border-orange-200 shadow-sm')
-                                : isNoResponse
-                                  ? (isDark ? 'bg-warning/10 text-warning border-warning/25' : 'bg-orange-50 text-orange-600 border-orange-200 shadow-sm')
-                                  : (isDark ? 'bg-card text-foreground/70 border-border' : 'bg-card text-muted-foreground border-border');
-
-	                            return (
-	                              <motion.div
-	                                key={itemKey}
-	                                whileTap={{ scale: 0.985 }}
-	                                role="button"
-	                                tabIndex={0}
-	                                onClick={() => setSelectedOffer(item)}
-	                                className={cn(
-	                                  'w-full p-5 rounded-[2.5rem] border transition-all duration-500 backdrop-blur-2xl relative overflow-hidden group cursor-pointer',
-	                                  borderColor,
-	                                  isDark
-	                                    ? 'bg-gradient-to-br from-secondary/[0.08] via-secondary/[0.04] to-transparent shadow-[0_20px_50px_rgba(0,0,0,0.3)] hover:border-primary/20'
-	                                    : 'bg-white shadow-[0_15px_40px_rgba(15,23,42,0.06)] hover:shadow-[0_20px_50px_rgba(15,23,42,0.1)]'
-	                                )}
-	                              >
-                                  <div className="flex items-start justify-between mb-4 relative z-10">
-                                    <div className="flex items-center gap-3.5 min-w-0">
-                                      <div className="relative">
-                                        <Avatar className={cn('w-12 h-12 rounded-2xl border-2 shadow-xl shrink-0 transition-transform duration-500 group-hover:scale-105', isDark ? 'border-white/10 ring-4 ring-white/5' : 'border-white ring-4 ring-slate-100')}>
-                                          <AvatarImage 
-                                            src={safeImageSrc(item?.profiles?.instagram_profile_photo || creatorAvatar)} 
-                                            alt={creatorName} 
-                                            className="object-cover" 
-                                          />
-                                          <AvatarFallback className={cn('rounded-2xl font-black', isDark ? 'bg-secondary/20 text-foreground' : 'bg-slate-100 text-slate-400')}>
-                                            {creatorName.slice(0, 1).toUpperCase()}
-                                          </AvatarFallback>
-                                        </Avatar>
-                                       </div>
-                                      <div className="min-w-0">
-                                        <h4 className={cn('text-[17px] font-black tracking-tight truncate leading-tight', textColor)}>{creatorName}</h4>
-                                        <p className={cn('text-[11px] font-black uppercase tracking-widest opacity-40 truncate mt-1', textColor)}>{creatorMeta}</p>
-                                      </div>
-                                    </div>
-                                    <div className="text-right shrink-0 pl-3">
-                                      <p className={cn('text-[22px] font-black tracking-tighter leading-none', isDark ? 'text-white' : 'text-slate-900')}>
-                                        {amount > 0 ? formatCompactINR(amount) : '—'}
-                                      </p>
-                                    </div>
-                                  </div>
-
-                                  <div className="flex items-center justify-between gap-3 text-[12px] font-bold mb-4 relative z-10">
-                                    <div className={cn('min-w-0 truncate px-3 py-1.5 rounded-full border bg-white/5 border-white/5', secondaryTextColor)}>
-                                      {String(formatDeliverables(item) || item?.collab_type || 'Collaboration').replaceAll(',', ' • ')}
-                                    </div>
-                                    {due?.text && (
-                                      <div className={cn(
-                                        'shrink-0 flex items-center gap-2 px-3 py-1.5 rounded-full border shadow-sm',
-                                        due.tone === 'danger'
-                                          ? (isDark ? 'bg-rose-500/10 text-rose-200 border-rose-500/20' : 'bg-rose-50 text-rose-700 border-rose-100')
-                                          : due.tone === 'warn'
-                                            ? (isDark ? 'text-warning' : 'text-warning')
-                                            : (isDark ? 'bg-white/5 text-white/40 border-white/5' : 'bg-slate-50 text-slate-400 border-slate-100')
-                                      )}>
-                                        <Clock className="w-3.5 h-3.5" strokeWidth={3} />
-                                        <span className="text-[10px] uppercase tracking-widest">{due.text}</span>
-                                      </div>
-                                    )}
-                                  </div>
-
-                                  <div className={cn(
-                                    'flex items-center justify-between p-4 rounded-2xl border relative z-10 transition-colors',
-                                    isCountered || isNoResponse
-                                      ? (isDark ? 'bg-warning/10 border-warning/30' : 'bg-warning/5 border-warning/20')
-                                      : (isDark ? 'bg-white/5 border-white/5' : 'bg-slate-50/50 border-slate-100')
-                                  )}>
-                                    <div className="flex items-center gap-3">
-                                      <div className={cn(
-                                        'w-8 h-8 rounded-full flex items-center justify-center',
-                                        isCountered || isNoResponse ? 'bg-warning/20 text-warning' : 'bg-primary/20 text-primary'
-                                      )}>
-                                        {isCountered ? <AlertTriangle className="w-4 h-4" /> : <Zap className="w-4 h-4" />}
-                                      </div>
-                                      <p className={cn(
-                                        'text-[13px] font-black',
-                                        isCountered || isNoResponse
-                                          ? (isDark ? 'text-warning' : 'text-warning')
-                                          : (isDark ? 'text-white/80' : 'text-slate-700')
-                                      )}>
-                                        {statusLine}
-                                      </p>
-                                    </div>
-                                    <ChevronRight className={cn('w-4 h-4', secondaryTextColor)} />
-                                  </div>
-
-		                              <button
-		                                type="button"
-		                                onClick={(e) => {
-                                      e.stopPropagation();
-		                                  triggerHaptic(HapticPatterns.light);
-		                                  setSelectedOffer(item);
-		                                }}
-			                              className={cn(
-			                                'mt-4 h-12 w-full rounded-2xl text-[13px] font-black transition active:scale-[0.98]',
-				                               isCountered ? 'bg-primary text-foreground shadow-lg shadow-primary/20' : 'bg-secondary/50 text-foreground border border-border/40'
-			                              )}
-			                            >
-			                              {isCountered ? 'Review Counter' : 'View Offer'}
-			                            </button>
-                                  {(isNoResponse) && (
-                                    <div className="mt-4 pt-4 border-t border-border/10 flex items-start justify-between gap-3 relative z-10">
-                                      <p className={cn('text-[11px] font-bold opacity-60 leading-relaxed', secondaryTextColor)}>
-                                        Tip: Follow up after 24h for faster replies.
-                                      </p>
-                                      <button
-                                        type="button"
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          triggerHaptic(HapticPatterns.light);
-                                          toast.message('Send reminder', { description: 'Coming soon.' });
-                                        }}
-                                        className={cn('text-[11px] font-black uppercase tracking-widest shrink-0 px-3 py-1.5 rounded-lg border border-info/20 hover:bg-info/10 transition-colors', isDark ? 'text-info' : 'text-info')}
-                                      >
-                                        Reminder
-                                      </button>
-                                    </div>
-                                  )}
-	                              </motion.div>
-	                            );
-	                          }
-
-		                          const ui = brandDealCardUi(item);
-
-			                          return (
-                            <motion.div
-                              key={item.id}
-                              whileTap={{ scale: 0.985 }}
-                              role="button"
-                              tabIndex={0}
-                              onClick={() => handleBrandDealPrimaryAction(undefined, item, ui)}
-                              className={cn(
-                                'w-full p-5 rounded-[2.5rem] border transition-all duration-500 backdrop-blur-2xl relative overflow-hidden group cursor-pointer',
-                                borderColor,
-                                isDark
-                                  ? 'bg-gradient-to-br from-secondary/[0.08] via-secondary/[0.04] to-transparent shadow-[0_20px_50px_rgba(0,0,0,0.3)]'
-                                  : 'bg-gradient-to-br from-white/95 via-white/80 to-white/60 shadow-[0_20px_50px_rgba(15,23,42,0.08)]'
-                              )}
-                            >
-                              <div className="flex items-start justify-between mb-4 relative z-10">
-                                <div className="flex items-center gap-3.5 min-w-0">
-                                  <div className="relative">
-                                    <Avatar className={cn('w-12 h-12 rounded-2xl border-2 shadow-xl shrink-0 transition-transform duration-500 group-hover:scale-105', isDark ? 'border-white/10 ring-4 ring-white/5' : 'border-white ring-4 ring-slate-100')}>
-                                      <AvatarImage 
-                                        src={safeImageSrc(item?.profiles?.instagram_profile_photo || item?.profiles?.avatar_url || item?.profiles?.profile_image_url || item?.creator_avatar_url || item?.creator_photo_url || '')} 
-                                        alt={creatorName} 
-                                        className="object-cover" 
-                                      />
-                                      <AvatarFallback className={cn('rounded-2xl font-black', isDark ? 'bg-secondary/20 text-foreground' : 'bg-slate-100 text-slate-400')}>
-                                        {creatorName.slice(0, 1).toUpperCase()}
-                                      </AvatarFallback>
-                                    </Avatar>
-                                  </div>
-                                  <div className="min-w-0">
-                                    <h4 className={cn('text-[17px] font-black tracking-tight truncate leading-tight', textColor)}>{creatorName}</h4>
-                                    <p className={cn('text-[11px] font-black uppercase tracking-widest opacity-40 truncate mt-1', textColor)}>{creatorMeta}</p>
-                                  </div>
-                                </div>
-                                <div className="text-right shrink-0 pl-3">
-                                  <p className={cn('text-[22px] font-black tracking-tighter leading-none', isDark ? 'text-white' : 'text-slate-900')}>
-                                    {amount > 0 ? formatCompactINR(amount) : (isBarterLikeCollab(item) ? 'BARTER' : '—')}
-                                  </p>
-                                </div>
-                              </div>
-
-                              <div className="flex items-center justify-between gap-3 text-[12px] font-bold mb-4 relative z-10">
-                                <div className={cn('min-w-0 truncate px-3 py-1.5 rounded-full border bg-white/5 border-white/5', secondaryTextColor)}>
-                                  {String(formatDeliverables(item) || item?.collab_type || 'Collaboration').replaceAll(',', ' • ')}
-                                </div>
-                                {due?.text && (
-                                  <div className={cn(
-                                    'shrink-0 flex items-center gap-2 px-3 py-1.5 rounded-full border shadow-sm',
-                                    due.tone === 'danger'
-                                      ? (isDark ? 'bg-rose-500/10 text-rose-200 border-rose-500/20' : 'bg-rose-50 text-rose-700 border-rose-100')
-                                      : due.tone === 'warn'
-                                        ? (isDark ? 'text-warning' : 'text-warning')
-                                        : (isDark ? 'bg-white/5 text-white/40 border-white/5' : 'bg-slate-50 text-slate-400 border-slate-100')
-                                  )}>
-                                    <Clock className="w-3.5 h-3.5" strokeWidth={3} />
-                                    <span className="text-[10px] uppercase tracking-widest">{due.text}</span>
-                                  </div>
-                                )}
-                              </div>
-
-                              <div className={cn(
-                                'flex items-center justify-between p-4 rounded-2xl border relative z-10 transition-colors',
-                                ui.needsAction
-                                  ? (isDark ? 'bg-warning/10 border-warning/30' : 'bg-warning/5 border-warning/20')
-                                  : (isDark ? 'bg-white/5 border-white/5' : 'bg-slate-50/50 border-slate-100')
-                              )}>
-                                <div className="flex items-center gap-3">
-                                  <div className={cn(
-                                    'w-8 h-8 rounded-full flex items-center justify-center',
-                                    ui.needsAction ? 'bg-warning/20 text-warning' : 'bg-primary/20 text-primary'
-                                  )}>
-                                    <Zap className="w-4 h-4" />
-                                  </div>
-                                  <p className={cn(
-                                    'text-[13px] font-black',
-                                    ui.needsAction
-                                      ? (isDark ? 'text-warning' : 'text-warning')
-                                      : (isDark ? 'text-white/80' : 'text-slate-700')
-                                  )}>
-                                    {ui.statusLine}
-                                  </p>
-                                </div>
-                                <ChevronRight className={cn('w-4 h-4', secondaryTextColor)} />
-                              </div>
-
-		                              <div className="flex items-center justify-between">
-		                                <div className="flex items-center gap-1.5">
-		                                  {Array.from({ length: 5 }).map((_, i) => (
-		                                    <span
-		                                      key={i}
-		                                      className={cn(
-		                                        'h-1.5 w-6 rounded-full',
-		                                        i < ui.step
-		                                          ? (isDark ? 'bg-primary/80' : 'bg-primary')
-		                                          : (isDark ? 'bg-secondary/50' : 'bg-background')
-		                                      )}
-		                                    />
-		                                  ))}
-		                                </div>
-		                              </div>
-
-					                              <button
-					                                type="button"
-					                                onClick={(e) => handleBrandDealPrimaryAction(e, item, ui)}
-				                                disabled={Boolean(ui?.ctaDisabled)}
-			                                className={cn(
-			                                  'mt-4 h-12 w-full rounded-2xl text-[13px] font-black transition active:scale-[0.98]',
-				                                  dealPrimaryCtaButtonClass(ui?.ctaTone || (ui.needsAction ? 'action' : 'view')),
-				                                  Boolean(ui?.ctaDisabled) && 'opacity-60 cursor-not-allowed active:scale-100'
-			                                )}
-			                              >
-			                                {ui.primaryActionLabel}
-			                              </button>
-	                            </motion.div>
-	                          );
-	                        })}
-	                      </div>
-                    )}
-	                  </div>
-	                      </>
-	                    );
-	                  })()}
-	                </motion.div>
-	              )}
-
-              {activeTab === 'creators' && (
-                <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
-
-
-                  {/* Discovery Lab (The Swiping Interface) */}
-                  <div className="mb-10">
-                    <DiscoveryStack 
-                      isDark={isDark}
-                      triggerHaptic={(pattern) => {
-                        if (pattern === 'medium') triggerHaptic(HapticPatterns.medium);
-                        else triggerHaptic(HapticPatterns.light);
-                      }}
-                    />
-                  </div>
-                </motion.div>
-              )}
-
-              {activeTab === 'profile' && (
-                <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="pb-20">
-                  {(() => {
-                    const pendingNeedsAction = (pendingOffersList || []).filter((r: any) => normalizeStatus(r?.status) === 'countered').length;
-                    const activeNeedsAction = (activeDealsList || []).filter((d: any) => brandDealCardUi(d).needsAction).length;
-                    const needsActionTotal = pendingNeedsAction + activeNeedsAction;
-                    const contentPendingReview = (activeDealsList || []).filter((d: any) => {
-                      const s = effectiveDealStatus(d);
-                      return s === 'CONTENT_DELIVERED' || s === 'REVISION_DONE';
-                    }).length;
-
-                    return (
-                      <BrandSettingsPanel 
-                        embedded 
-                        onLogout={() => { void onLogout?.(); }} 
-                        activeCount={activeDealsList?.length || 0}
-                        neededActionCount={needsActionTotal}
-                        reviewCount={contentPendingReview}
-                      />
-                    );
-                  })()}
-                </motion.div>
-              )}
-
-              {activeTab === 'payments' && (
-                <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="pb-20">
-                  <div className={cn('mb-5 p-5 rounded-[2.5rem] border overflow-hidden', borderColor, isDark ? 'bg-secondary/[0.04]' : 'bg-secondary/80 backdrop-blur-xl shadow-[0_18px_45px_rgba(15,23,42,0.08)]')}>
-                    <h2 className={cn('text-[16px] font-bold tracking-tight mb-1', textColor)}>Payments</h2>
-                    <p className={cn('text-[13px] opacity-60', secondaryTextColor)}>Track your completed deal payouts below.</p>
-                  </div>
-                  <div className={cn('p-5 rounded-[2.5rem] border text-center', borderColor, isDark ? 'bg-card' : 'bg-secondary/80')}>
-                    <p className={cn('text-[13px] opacity-60', textColor)}>No completed payouts yet.</p>
-                    <p className={cn('text-[12px] mt-1 opacity-40', textColor)}>Payouts are processed after you mark a deal as complete.</p>
-                  </div>
-                </motion.div>
-              )}
-
-	              </>
-	            </div>
+            <div className="px-0">
+              <AnimatePresence mode="wait">
+                {activeTab === 'dashboard' && (
+                  <BrandDashboardTab 
+                    key="dashboard"
+                    isDark={isDark}
+                    textColor={textColor}
+                    secondaryTextColor={secondaryTextColor}
+                    borderColor={borderColor}
+                    cardBgColor={cardBgColor}
+                    brandName={brandName}
+                    brandLogo={brandLogo}
+                    hasUploadedBrandLogo={hasUploadedBrandLogo}
+                    navigate={navigate}
+                    activeDealsList={activeDealsList}
+                    pendingOffersList={pendingOffersList}
+                    completedDealsList={completedDealsList}
+                    activeCollabTab={activeCollabTab}
+                    setDashboardCollabTab={setDashboardCollabTab}
+                    visibleCollabItems={visibleCollabItems}
+                    setSelectedOffer={setSelectedOffer}
+                    handleBrandDealPrimaryAction={handleBrandDealPrimaryAction}
+                    showSignatureDebug={showSignatureDebug}
+                    isLoadingSuggestedCreators={isLoadingSuggestedCreators}
+                    suggestedCreators={suggestedCreators}
+                    getReliabilityLines={getReliabilityLines}
+                    getSmartTags={getSmartTags}
+                    setActiveTab={setActiveTab}
+                    openCreateOfferSheet={openCreateOfferSheet}
+                  />
+                )}
+                {activeTab === 'collabs' && (
+                  <BrandCollabsTab 
+                    key="collabs"
+                    isDark={isDark}
+                    textColor={textColor}
+                    secondaryTextColor={secondaryTextColor}
+                    borderColor={borderColor}
+                    activeCollabTab={activeCollabTab}
+                    setActiveTab={setActiveTab}
+                    pendingOffersList={pendingOffersList}
+                    activeDealsList={activeDealsList}
+                    completedDealsList={completedDealsList}
+                    visibleCollabItems={visibleCollabItems}
+                    setSelectedOffer={setSelectedOffer}
+                    handleBrandDealPrimaryAction={handleBrandDealPrimaryAction}
+                    openCreateOfferSheet={openCreateOfferSheet}
+                  />
+                )}
+                {activeTab === 'creators' && (
+                  <BrandCreatorsTab 
+                    key="creators"
+                    isDark={isDark}
+                  />
+                )}
+                {activeTab === 'profile' && (
+                  <BrandProfileTab 
+                    key="profile"
+                    isDark={isDark}
+                    pendingOffersList={pendingOffersList}
+                    activeDealsList={activeDealsList}
+                    onLogout={onLogout}
+                  />
+                )}
+                {activeTab === 'payments' && (
+                  <BrandPaymentsTab 
+                    key="payments"
+                    isDark={isDark}
+                    textColor={textColor}
+                    secondaryTextColor={secondaryTextColor}
+                    borderColor={borderColor}
+                  />
+                )}
+              </AnimatePresence>
+            </div>
             </motion.div>
           )}
         </div>
@@ -4831,3 +3701,1219 @@ const BrandMobileDashboard = ({
 };
 
 export default BrandMobileDashboard;
+
+const BrandDashboardTab = React.memo(({
+  isDark,
+  textColor,
+  secondaryTextColor,
+  borderColor,
+  cardBgColor,
+  brandName,
+  brandLogo,
+  hasUploadedBrandLogo,
+  navigate,
+  activeDealsList,
+  pendingOffersList,
+  completedDealsList,
+  activeCollabTab,
+  setDashboardCollabTab,
+  visibleCollabItems,
+  setSelectedOffer,
+  handleBrandDealPrimaryAction,
+  showSignatureDebug,
+  isLoadingSuggestedCreators,
+  suggestedCreators,
+  getReliabilityLines,
+  getSmartTags,
+  setActiveTab,
+  openCreateOfferSheet
+}: any) => {
+  const activeValue = (activeDealsList || []).reduce((sum: number, d: any) => sum + Number(d?.deal_amount || d?.exact_budget || 0), 0);
+  const pendingCounterCount = pendingOffersList.length;
+  
+  const contractsWaitingSignature = activeDealsList.filter((d: any) => {
+    const s = effectiveDealStatus(d);
+    return s === 'CONTRACT_READY' || s === 'SENT' || s === 'AWAITING_BRAND_SIGNATURE';
+  }).length;
+  
+  const needsActionDeals = activeDealsList.filter((d: any) => brandDealCardUi(d).needsAction).length;
+  const needsActionTotal = pendingCounterCount + needsActionDeals;
+  
+  const contentPendingReview = activeDealsList.filter((d: any) => {
+    const s = effectiveDealStatus(d);
+    return s === 'CONTENT_DELIVERED' || s === 'REVISION_DONE';
+  }).length;
+  
+  const attentionTotal = pendingCounterCount + contractsWaitingSignature + contentPendingReview;
+  
+  const newToday = activeDealsList.filter((d: any) => {
+    const created = d?.created_at ? new Date(d.created_at) : null;
+    if (!created || Number.isNaN(created.getTime())) return false;
+    const now = new Date();
+    return created.toDateString() === now.toDateString();
+  }).length;
+
+  return (
+    <>
+      {/* Welcome Header moved into Tab */}
+      <div className="relative z-10 -mt-2 mb-6">
+        <div className="px-5 pt-8 pb-4">
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex flex-col">
+              <motion.p 
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4 }}
+                className={cn(
+                  'text-[10px] font-black uppercase tracking-[0.3em] mb-1.5', 
+                  isDark ? 'text-blue-400' : 'text-blue-600'
+                )}
+              >
+                Brand Dashboard
+              </motion.p>
+              <motion.h1 
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, delay: 0.05 }}
+                className={cn('text-[26px] font-black tracking-tight leading-tight', textColor)}
+              >
+                Welcome back, {brandName || 'Partner'} 👋
+              </motion.h1>
+            </div>
+            {brandLogo && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="w-14 h-14 rounded-2xl overflow-hidden border-2 border-white/10 shadow-2xl"
+              >
+                <img src={brandLogo} alt="Brand Logo" className="w-full h-full object-cover" />
+              </motion.div>
+            )}
+          </div>
+          <motion.p 
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, delay: 0.1 }}
+            className={cn('text-[14px] opacity-60 leading-relaxed max-w-[280px]', secondaryTextColor)}
+          >
+            Your performance and incoming applications are ready for you below.
+          </motion.p>
+        </div>
+      </div>
+      {!hasUploadedBrandLogo && (
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className={cn(
+            'mb-5 p-4 rounded-[24px] border shadow-sm',
+            isDark ? 'bg-warning/10 border-warning/20' : 'bg-warning/80 border-warning'
+          )}
+        >
+          <div className="flex items-start gap-3">
+            <div className={cn('w-10 h-10 rounded-2xl flex items-center justify-center', isDark ? 'bg-warning/15' : 'bg-warning/10')}>
+              <Camera className={cn('w-5 h-5', isDark ? 'text-warning' : 'text-warning')} />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className={cn('text-[13px] font-bold', textColor)}>Upload your brand logo</p>
+              <p className={cn('text-[12px] mt-1 opacity-70', textColor)}>
+                Required before sending offers—creators respond faster when they recognize you.
+              </p>
+              <div className="flex gap-2 mt-3">
+                <button
+                  type="button"
+                  onClick={() => navigate('/brand-settings')}
+                  className={cn('px-4 py-2 rounded-2xl text-[11px] font-black uppercase tracking-widest', isDark ? 'bg-secondary/50 text-foreground hover:bg-secondary/15' : 'bg-card text-muted-foreground border border-warning')}
+                >
+                  Upload logo
+                </button>
+              </div>
+            </div>
+          </div>
+        </motion.div>
+      )}
+
+      {/* Premium Campaign Center Widget */}
+      <motion.div 
+        initial={{ opacity: 0, y: 15 }} 
+        animate={{ opacity: 1, y: 0 }} 
+        transition={{ delay: 0.03, type: 'spring', damping: 20 }} 
+        className={cn(
+          'mb-6 rounded-[2.5rem] border overflow-hidden relative group', 
+          isDark 
+            ? 'border-emerald-500/30 bg-gradient-to-br from-emerald-500/10 via-emerald-950/20 to-[#020617] shadow-[0_30px_60px_rgba(0,0,0,0.4)]' 
+            : 'border-primary/60 bg-gradient-to-br from-emerald-500 via-teal-500 to-blue-600 shadow-[0_25px_55px_rgba(16,185,129,0.22)]'
+        )}
+      >
+        <div className={cn('absolute inset-0 pointer-events-none opacity-20', isDark ? 'bg-[radial-gradient(circle_at_top_right,rgba(16,185,129,0.3),transparent)]' : 'bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.4),transparent)]')} />
+        
+        <div className="relative p-6">
+          <div className="flex flex-col gap-6">
+            <div className="flex items-start justify-between">
+              <div className="min-w-0">
+                <p className={cn('text-[10px] font-black uppercase tracking-widest', isDark ? 'text-emerald-400' : 'text-white/80')}>Active Investment</p>
+                <div className="flex items-baseline gap-2 mt-3">
+                  <span className={cn('text-[38px] font-black tracking-tighter leading-none', isDark ? 'text-white' : 'text-white')}>
+                    ₹<CountUp end={Number(activeValue) || 0} duration={1.5} separator="," decimals={0} />
+                  </span>
+                  {newToday > 0 && (
+                    <span className={cn('px-2 py-0.5 rounded-full text-[10px] font-black bg-white/20 text-white backdrop-blur-md border border-white/20 animate-pulse')}>
+                      +{newToday} Today
+                    </span>
+                  )}
+                </div>
+                <p className={cn('text-[13px] font-bold mt-3', isDark ? 'text-white/60' : 'text-white/90')}>
+                  {activeDealsList.length} Collaboration{activeDealsList.length === 1 ? '' : 's'} running
+                </p>
+              </div>
+              <div className={cn('w-12 h-12 rounded-2xl flex items-center justify-center backdrop-blur-2xl border', isDark ? 'bg-white/5 border-white/10' : 'bg-white/20 border-white/30')}>
+                <BarChart3 className="w-6 h-6 text-white" />
+              </div>
+            </div>
+
+            <div className={cn('p-4 rounded-[2rem] border backdrop-blur-md transition-all', isDark ? 'bg-white/5 border-white/10' : 'bg-white/15 border-white/20')}>
+              <div className="flex items-center justify-between gap-4">
+                <div className="flex items-center gap-3">
+                  <div className={cn('w-8 h-8 rounded-full flex items-center justify-center', isDark ? 'bg-emerald-500/20 text-emerald-400' : 'bg-white/20 text-white')}>
+                    <Zap className="w-4 h-4" />
+                  </div>
+                  <p className={cn('text-[13px] font-black', isDark ? 'text-white' : 'text-white')}>
+                    {attentionTotal > 0 ? `${attentionTotal} Actions Pending` : 'All caught up'}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    triggerHaptic(HapticPatterns.light);
+                    if (needsActionTotal > 0) setActiveTab('collabs', 'action_required');
+                    else openCreateOfferSheet();
+                  }}
+                  className={cn(
+                    'px-5 py-2.5 rounded-2xl text-[11px] font-black uppercase tracking-widest transition-all active:scale-95 shadow-xl',
+                    isDark 
+                      ? 'bg-emerald-500 text-white hover:bg-emerald-400' 
+                      : 'bg-white text-emerald-600 hover:bg-emerald-50 shadow-emerald-900/10'
+                  )}
+                >
+                  {needsActionTotal > 0 ? 'Review Now' : 'New Offer'}
+                </button>
+              </div>
+              {attentionTotal > 0 && (
+                <div className="mt-3 flex flex-wrap gap-1.5 border-t border-white/5 pt-3">
+                  {pendingCounterCount > 0 && (
+                    <span className="text-[9px] font-black uppercase tracking-widest opacity-60 text-white">
+                      {pendingCounterCount} Counters • 
+                    </span>
+                  )}
+                  {contentPendingReview > 0 && (
+                    <span className="text-[9px] font-black uppercase tracking-widest opacity-60 text-white">
+                      {contentPendingReview} Review Items • 
+                    </span>
+                  )}
+                  {contractsWaitingSignature > 0 && (
+                    <span className="text-[9px] font-black uppercase tracking-widest opacity-60 text-white">
+                      {contractsWaitingSignature} Signature Pending
+                    </span>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </motion.div>
+
+      {/* Secondary Stats Grid */}
+      <div className="grid grid-cols-2 gap-3 mb-6">
+        <div className={cn('p-5 rounded-[2.5rem] border transition-all hover:border-primary/30', isDark ? 'bg-card border-border/50' : 'bg-white border-border/60 shadow-sm')}>
+          <p className={cn('text-[10px] font-black uppercase tracking-widest opacity-40', textColor)}>Active</p>
+          <div className="flex items-baseline gap-1 mt-3">
+            <span className={cn('text-[24px] font-black tracking-tight', textColor)}>{activeDealsList.length}</span>
+            <span className={cn('text-[10px] font-black uppercase tracking-widest opacity-40', textColor)}>Deals</span>
+          </div>
+        </div>
+        <div className={cn('p-5 rounded-[2.5rem] border transition-all hover:border-warning/30', isDark ? 'bg-card border-border/50' : 'bg-white border-border/60 shadow-sm')}>
+          <p className={cn('text-[10px] font-black uppercase tracking-widest opacity-40', textColor)}>Pending</p>
+          <div className="flex items-baseline gap-1 mt-3">
+            <span className={cn('text-[24px] font-black tracking-tight', needsActionTotal > 0 ? 'text-warning' : textColor)}>{needsActionTotal}</span>
+            <span className={cn('text-[10px] font-black uppercase tracking-widest opacity-40', textColor)}>Action</span>
+          </div>
+        </div>
+      </div>
+
+      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.06 }} className="mb-10">
+        <div className="flex items-center justify-between mb-5">
+          <div>
+            <h3 className={cn(ds.typography.h3, isDark ? 'text-white' : 'text-slate-900')}>Collaborations</h3>
+            <p className={cn("text-[11px] font-medium uppercase tracking-widest mt-1", isDark ? 'text-white/40' : 'text-slate-500')}>
+              {activeCollabTab === 'action_required'
+                ? 'Review pending pipeline'
+                : activeCollabTab === 'active'
+                  ? 'Track active workflow'
+                  : 'Performance history'}
+            </p>
+          </div>
+          {needsActionTotal > 0 && (
+            <div className="px-3 py-1.5 bg-warning/10 border border-warning/20 rounded-full flex items-center gap-2 animate-pulse">
+              <div className="w-1.5 h-1.5 bg-warning rounded-full" />
+              <span className="text-[10px] font-black uppercase tracking-widest text-warning">
+                {needsActionTotal} Need Review
+              </span>
+            </div>
+          )}
+        </div>
+        <div className={cn(
+          'mb-6 p-1.5 rounded-[2.5rem] border flex gap-1.5 backdrop-blur-3xl transition-all', 
+          isDark ? 'bg-white/[0.03] border-white/5 shadow-2xl shadow-black/40' : 'bg-white/60 border-slate-200 shadow-xl'
+        )}>
+          {[
+            { key: 'action_required', label: 'Action Needed', count: needsActionTotal },
+            { key: 'active', label: 'Active', count: activeDealsList.length },
+            { key: 'completed', label: 'History', count: completedDealsList.length },
+          ].map((item) => {
+            const isSelected = activeCollabTab === item.key;
+            return (
+              <button
+                type="button"
+                key={item.key}
+                onClick={() => {
+                  triggerHaptic(HapticPatterns.light);
+                  setDashboardCollabTab(item.key as BrandCollabTab);
+                }}
+                className={cn(
+                  'flex-1 rounded-[2rem] px-3 py-4 text-center transition-all duration-500 relative overflow-hidden group/tab',
+                  isSelected
+                    ? 'z-10'
+                    : 'hover:bg-white/[0.02]'
+                )}
+              >
+                {isSelected && (
+                  <motion.div 
+                    layoutId="tab-active-bg"
+                    className={cn(
+                      "absolute inset-0 rounded-[2rem] border",
+                      isDark ? "bg-white/[0.08] border-white/10" : "bg-white border-slate-200 shadow-lg"
+                    )}
+                  />
+                )}
+                <p className={cn(
+                  'text-[10px] font-black uppercase tracking-[0.15em] relative z-10 transition-colors', 
+                  isSelected 
+                    ? (isDark ? 'text-white' : 'text-slate-900') 
+                    : (isDark ? 'text-white/30 group-hover/tab:text-white/50' : 'text-slate-400 group-hover/tab:text-slate-600')
+                )}>
+                  {item.label}
+                </p>
+                <p className={cn(
+                  "mt-1.5 text-[20px] font-black leading-none relative z-10 tracking-tighter transition-transform",
+                  isSelected 
+                    ? (isDark ? "scale-110 text-white" : "scale-110 text-slate-900") 
+                    : (isDark ? "text-white/20 group-hover/tab:text-white/40" : "text-slate-300 group-hover/tab:text-slate-500")
+                )}>
+                  {item.count}
+                </p>
+              </button>
+            );
+          })}
+        </div>
+        <div className={cn(
+          'rounded-[32px] border overflow-hidden backdrop-blur-3xl transition-all', 
+          isDark ? 'bg-white/[0.02] border-white/5 shadow-2xl' : 'bg-white/40 border-slate-200 shadow-sm'
+        )}>
+          <div className={cn('px-6 py-5 border-b flex items-center justify-between', isDark ? 'border-white/5 bg-white/[0.02]' : 'border-slate-100 bg-slate-50/50')}>
+            <p className={cn("text-[11px] font-black uppercase tracking-widest", isDark ? 'opacity-40' : 'text-slate-500')}>
+              {activeCollabTab === 'action_required' ? 'Awaiting Response' : activeCollabTab === 'active' ? 'Active Deals' : 'Completed Archive'}
+            </p>
+            <div className="flex items-center gap-2">
+              <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              <span className={cn("text-[10px] font-bold uppercase tracking-widest", isDark ? 'opacity-30' : 'text-slate-400')}>Live Updates</span>
+            </div>
+          </div>
+          {visibleCollabItems.length === 0 ? (
+            <div className="p-8 text-center">
+              <p className={cn('text-[13px] font-semibold', isDark ? 'text-foreground/75' : 'text-muted-foreground')}>
+                {activeCollabTab === 'action_required'
+                  ? (pendingOffersList.length > 0
+                      ? 'All caught up with offers needing your response — check the Active tab for pending requests.'
+                      : 'All caught up! No pending offers right now.')
+                  : activeCollabTab === 'active'
+                    ? 'No active deals yet — finish a pending offer'
+                    : 'No completed deals yet — check back on active ones'}
+              </p>
+              {activeCollabTab === 'active' && (
+                <Button type="button" onClick={() => setActiveTab('collabs', 'action_required')} className={cn('mt-4 rounded-2xl', isDark ? 'bg-primary hover:bg-primary text-foreground' : 'bg-primary hover:bg-primary text-foreground')}>
+                  <Send className="w-4 h-4 mr-2" /> Review pending offers
+                </Button>
+              )}
+              {activeCollabTab === 'completed' && (
+                <Button type="button" onClick={() => setActiveTab('creators')} className={cn('mt-4 rounded-2xl', isDark ? 'bg-primary hover:bg-primary text-foreground' : 'bg-primary hover:bg-primary text-foreground')}>
+                  <Send className="w-4 h-4 mr-2" /> Find creators
+                </Button>
+              )}
+              {activeCollabTab === 'action_required' && (
+                <Button type="button" onClick={() => openCreateOfferSheet()} className={cn('mt-4 rounded-2xl', isDark ? 'bg-primary hover:bg-primary text-foreground' : 'bg-primary hover:bg-primary text-foreground')}>
+                  <Send className="w-4 h-4 mr-2" /> Send new offer
+                </Button>
+              )}
+            </div>
+          ) : (
+            <div className="p-4 space-y-3">
+              {visibleCollabItems.slice(0, 10).map((item: any, idx: number) => {
+                const itemKey = `collab-home-${item.id || idx}-${item.updated_at || ''}`;
+                const isPendingItem = activeCollabTab === 'action_required';
+                const creatorName = firstNameish(item?.profiles, item?.creator_name || item?.creator_email);
+                const creatorMeta = item?.profiles?.username || item?.creator_name || item?.creator_email || 'Creator';
+                const creatorAvatar = item?.profiles?.avatar_url || item?.profiles?.profile_image_url || item?.profiles?.instagram_profile_photo || item?.creator_avatar_url || item?.creator_photo_url || '';
+                const amount = Number(item?.deal_amount || item?.exact_budget || 0);
+
+                if (isPendingItem && ['pending', 'countered', 'sent', 'offer_sent', 'submitted', 'action_required', 'action-required'].includes(normalizeStatus(item?.status))) {
+                    const sentIso = item?.created_at || item?.updated_at || null;
+                    const sentHours = sentIso ? hoursSince(sentIso) : null;
+                    const exp = offerExpiryLabel(item);
+                    const isCountered = normalizeStatus(item?.status) === 'countered';
+                    const isNoResponse = !isCountered && sentHours !== null && sentHours >= 24;
+                    const statusLabel = isCountered ? 'Creator Countered' : isNoResponse ? 'No Response Yet' : 'Awaiting Response';
+
+                    const ui = {
+                      needsAction: isCountered || isNoResponse,
+                      statusLine: statusLabel,
+                      step: 1,
+                      primaryActionLabel: 'View Offer Details',
+                      ctaTone: (isCountered || isNoResponse) ? 'action' : 'view' as any
+                    };
+
+                    return (
+                      <motion.div
+                        key={itemKey}
+                        whileTap={{ scale: 0.985 }}
+                        role="button"
+                        tabIndex={0}
+                        onClick={() => setSelectedOffer(item)}
+                        className={cn(
+                          'w-full rounded-[2.5rem] border transition-all duration-300 group relative text-left overflow-hidden cursor-pointer',
+                          isDark 
+                            ? 'bg-gradient-to-br from-white/[0.05] via-white/[0.02] to-transparent border-white/[0.08] shadow-2xl shadow-black/40' 
+                            : 'bg-white border-[#E5E5EA] shadow-[0_8px_30px_rgba(0,0,0,0.04)]',
+                          'backdrop-blur-2xl'
+                        )}
+                      >
+                        {/* Subtle Gloss Effect */}
+                        <div className="absolute inset-0 bg-gradient-to-tr from-white/[0.02] via-transparent to-transparent pointer-events-none" />
+                        
+                        <div className="p-5 relative z-10">
+                          <div className="flex items-start justify-between gap-3 mb-5">
+                            <div className="flex items-center gap-3 min-w-0">
+                              <div className="relative">
+                                <Avatar className={cn('w-12 h-12 border-2 shadow-xl shrink-0', isDark ? 'border-white/10' : 'border-white')}>
+                                  <AvatarImage src={safeImageSrc(creatorAvatar)} alt={creatorName} />
+                                  <AvatarFallback className={cn(isDark ? 'bg-white/5 text-white' : 'bg-slate-100 text-slate-500')}>
+                                    {creatorName.slice(0, 1).toUpperCase()}
+                                  </AvatarFallback>
+                                </Avatar>
+                                {ui.needsAction && (
+                                  <div className="absolute -top-1 -right-1 w-4 h-4 bg-blue-500 border-2 border-[#061318] rounded-full animate-pulse shadow-[0_0_10px_rgba(59,130,246,0.5)]" />
+                                )}
+                              </div>
+                              <div className="min-w-0">
+                                <h4 className={cn('text-[16px] font-black tracking-tight truncate leading-tight', textColor)}>{creatorName}</h4>
+                                <p className={cn('text-[11px] font-bold opacity-40 truncate uppercase tracking-[0.05em]', textColor)}>{creatorMeta}</p>
+                              </div>
+                            </div>
+                            <div className="text-right shrink-0 flex flex-col items-end">
+                              <p className={cn('text-[22px] font-black tracking-tighter leading-none', isDark ? 'text-white' : 'text-slate-900')}>
+                                {amount > 0 ? formatCompactINR(amount) : '—'}
+                              </p>
+                              <p className="text-[9px] font-black opacity-30 mt-1 uppercase tracking-widest">Est. Payout</p>
+                            </div>
+                          </div>
+
+                          {resolveDealProductImageUrl(item) && (
+                            <div className="mb-4 overflow-hidden rounded-[20px] border border-white/5 bg-black/20 group-hover:border-white/10 transition-colors">
+                              <div className="relative aspect-[16/9] w-full">
+                                <img
+                                  src={safeImageSrc(resolveDealProductImageUrl(item))}
+                                  alt={`${creatorName} product preview`}
+                                  className="absolute inset-0 h-full w-full object-cover group-hover:scale-105 transition-transform duration-700"
+                                />
+                                <div className="absolute left-3 top-3 rounded-full bg-black/60 px-3 py-1 text-[9px] font-black uppercase tracking-widest text-white backdrop-blur-md border border-white/10">
+                                  Product Preview
+                                </div>
+                              </div>
+                            </div>
+                          )}
+
+                          <div className="flex items-center justify-between gap-3 text-[12px] font-bold mb-4">
+                            <div className={cn('min-w-0 truncate px-2.5 py-1 bg-white/5 rounded-lg border border-white/5', secondaryTextColor)}>
+                              {String(formatDeliverables(item) || item?.collab_type || 'Collaboration').replaceAll(',', ' • ')}
+                            </div>
+                            {exp?.text && (
+                              <div className={cn(
+                                'shrink-0 flex items-center gap-1.5 px-2.5 py-1 rounded-lg border',
+                                exp.tone === 'danger'
+                                  ? (isDark ? 'bg-rose-500/10 text-rose-300 border-rose-500/20' : 'bg-rose-50 text-rose-700 border-rose-100')
+                                  : exp.tone === 'warn'
+                                    ? (isDark ? 'bg-warning/10 text-warning border-warning/20' : 'bg-amber-50 text-amber-700 border-amber-100')
+                                    : (isDark ? 'bg-white/5 text-white/50 border-white/5' : 'bg-slate-50 text-slate-500 border-slate-100')
+                              )}>
+                                <Clock className="w-3.5 h-3.5" />
+                                <span className="font-black text-[10px] uppercase tracking-wider">{exp.text}</span>
+                              </div>
+                            )}
+                          </div>
+
+                          <div className={cn(
+                            'group/status p-4 rounded-2xl mb-4 border transition-all duration-300 relative',
+                            ui.needsAction
+                              ? (isDark ? 'bg-warning/10 text-warning border-warning/20' : 'bg-amber-50 text-amber-700 border-amber-100')
+                              : (isDark ? 'bg-white/5 text-white/60 border-white/5' : 'bg-slate-50 text-slate-500 border-slate-100')
+                          )}>
+                            <div className="flex items-center justify-between gap-3">
+                              <div className="flex items-center gap-3">
+                                <div className={cn(
+                                  "p-2 rounded-xl shrink-0 transition-transform group-hover/status:scale-110",
+                                  ui.needsAction ? "bg-warning/20" : "bg-white/10"
+                                )}>
+                                  {isCountered ? <Sparkles className="w-4 h-4" /> : <Info className="w-4 h-4" />}
+                                </div>
+                                <p className="text-[13px] font-black leading-tight">
+                                  {ui.statusLine}
+                                </p>
+                              </div>
+                              <ChevronRight className="w-4 h-4 opacity-30 group-hover/status:opacity-100 transition-opacity" />
+                            </div>
+
+                            <div className="flex gap-1 mt-4">
+                              {[1, 2, 3, 4, 5].map((s) => (
+                                <div 
+                                  key={s} 
+                                  className={cn(
+                                    "h-1 flex-1 rounded-full transition-all duration-500",
+                                    s <= ui.step 
+                                      ? (isDark ? "bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.4)]" : "bg-emerald-500")
+                                      : (isDark ? "bg-white/10" : "bg-slate-200")
+                                  )}
+                                />
+                              ))}
+                            </div>
+                          </div>
+
+                          <button
+                            type="button"
+                            onClick={() => setSelectedOffer(item)}
+                            className={cn(
+                              'h-14 w-full rounded-2xl text-[14px] font-black transition-all active:scale-[0.98] uppercase tracking-widest shadow-xl',
+                              dealPrimaryCtaButtonClass(ui.ctaTone),
+                              'border border-white/5'
+                            )}
+                          >
+                            {ui.primaryActionLabel}
+                          </button>
+                        </div>
+                      </motion.div>
+                    );
+                }
+                 const ui = brandDealCardUi(item);
+                  return (
+                    <motion.div
+                      key={itemKey}
+                      whileTap={{ scale: 0.985 }}
+                      role="button"
+                      tabIndex={0}
+                      onClick={() => handleBrandDealPrimaryAction(undefined, item, ui)}
+                      className={cn(
+                        'w-full rounded-[2.5rem] border transition-all duration-300 group relative text-left overflow-hidden cursor-pointer',
+                        isDark 
+                          ? 'bg-gradient-to-br from-white/[0.05] via-white/[0.02] to-transparent border-white/[0.08] shadow-2xl shadow-black/40' 
+                          : 'bg-white border-[#E5E5EA] shadow-[0_8px_30px_rgba(0,0,0,0.04)]',
+                        'backdrop-blur-2xl'
+                      )}
+                    >
+                      {/* Subtle Gloss Effect */}
+                      <div className="absolute inset-0 bg-gradient-to-tr from-white/[0.02] via-transparent to-transparent pointer-events-none" />
+                      
+                      <div className="p-5 relative z-10">
+                        <div className="flex items-start justify-between gap-3 mb-4">
+                          <div className="flex items-center gap-3 min-w-0">
+                            <div className="relative">
+                              <Avatar className={cn('w-12 h-12 border-2 shadow-xl shrink-0', isDark ? 'border-white/10' : 'border-white')}>
+                                <AvatarImage src={safeImageSrc(item?.profiles?.avatar_url || item?.profiles?.profile_image_url || item?.creator_avatar_url || item?.creator_photo_url || '')} alt={creatorName} />
+                                <AvatarFallback className={cn(isDark ? 'bg-white/5 text-white' : 'bg-slate-100 text-slate-500')}>
+                                  {creatorName.slice(0, 1).toUpperCase()}
+                                </AvatarFallback>
+                              </Avatar>
+                              {ui.needsAction && (
+                                <div className="absolute -top-1 -right-1 w-4 h-4 bg-blue-500 border-2 border-[#061318] rounded-full animate-pulse shadow-[0_0_10px_rgba(59,130,246,0.5)]" />
+                              )}
+                            </div>
+                            <div className="min-w-0">
+                              <h4 className={cn('text-[16px] font-black tracking-tight truncate leading-tight', textColor)}>{creatorName}</h4>
+                              <p className={cn('text-[11px] font-bold opacity-40 truncate uppercase tracking-[0.05em]', textColor)}>{creatorMeta}</p>
+                            </div>
+                          </div>
+                          <div className="text-right shrink-0 pl-3 flex flex-col items-end">
+                            <p className={cn('text-[22px] font-black tracking-tighter leading-none', isDark ? 'text-white' : 'text-slate-900')}>
+                              {amount > 0 ? formatCompactINR(amount) : '—'}
+                            </p>
+                            <p className="text-[9px] font-black opacity-30 mt-1 uppercase tracking-widest">Est. Payout</p>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center justify-between gap-3 text-[12px] font-bold mb-4">
+                          <div className={cn('min-w-0 truncate px-2.5 py-1 bg-white/5 rounded-lg border border-white/5', secondaryTextColor)}>
+                            {String(formatDeliverables(item) || item?.collab_type || 'Collaboration').replaceAll(',', ' • ')}
+                          </div>
+                          {due?.text && (
+                            <div className={cn(
+                              'shrink-0 flex items-center gap-1.5 px-2.5 py-1 rounded-lg border',
+                              due.tone === 'danger'
+                                ? (isDark ? 'bg-rose-500/10 text-rose-300 border-rose-500/20' : 'bg-rose-50 text-rose-700 border-rose-100')
+                                : due.tone === 'warn'
+                                  ? (isDark ? 'bg-warning/10 text-warning border-warning/20' : 'bg-amber-50 text-amber-700 border-amber-100')
+                                  : (isDark ? 'bg-white/5 text-white/50 border-white/5' : 'bg-slate-50 text-slate-500 border-slate-100')
+                            )}>
+                              <Clock className="w-3.5 h-3.5" />
+                              <span className="font-black text-[10px] uppercase tracking-wider">{due.text}</span>
+                            </div>
+                          )}
+                        </div>
+
+                        <div className={cn(
+                          'group/status p-4 rounded-2xl mb-4 border transition-all duration-300 relative',
+                          ui.needsAction
+                            ? (isDark ? 'bg-warning/10 text-warning border-warning/20' : 'bg-amber-50 text-amber-700 border-amber-100')
+                            : (isDark ? 'bg-white/5 text-white/60 border-white/5' : 'bg-slate-50 text-slate-500 border-slate-100')
+                        )}>
+                          <div className="flex items-center justify-between gap-3">
+                            <div className="flex items-center gap-3">
+                              <div className={cn(
+                                "p-2 rounded-xl shrink-0 transition-transform group-hover/status:scale-110",
+                                ui.needsAction ? "bg-warning/20" : "bg-white/10"
+                              )}>
+                                {ui.needsAction ? <Sparkles className="w-4 h-4" /> : <Info className="w-4 h-4" />}
+                              </div>
+                              <p className="text-[13px] font-black leading-tight">
+                                {ui.statusLine}
+                              </p>
+                            </div>
+                            <ChevronRight className="w-4 h-4 opacity-30 group-hover/status:opacity-100 transition-opacity" />
+                          </div>
+
+                          {/* Progress Segments */}
+                          <div className="flex gap-1 mt-4">
+                            {[1, 2, 3, 4, 5].map((s) => (
+                              <div 
+                                key={s} 
+                                className={cn(
+                                  "h-1 flex-1 rounded-full transition-all duration-500",
+                                  s <= ui.step 
+                                    ? (isDark ? "bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.4)]" : "bg-emerald-500")
+                                    : (isDark ? "bg-white/10" : "bg-slate-200")
+                                )}
+                              />
+                            ))}
+                          </div>
+                        </div>
+
+                        {showSignatureDebug && (
+                          <div className={cn('text-[11px] font-semibold mb-3 px-3 py-2 bg-black/40 rounded-xl border border-white/10', secondaryTextColor)}>
+                            {(() => {
+                              const hints = collectSignatureHints(item);
+                              const status = effectiveDealStatus(item);
+                              const raw = String(item?.status || item?.raw?.status || '—');
+                              const esign = String(item?.esign_status || item?.raw?.esign_status || item?.contract_status || item?.raw?.contract_status || '');
+                              return (
+                                <span className="font-mono">
+                                  debugSig: status={status} raw={raw} esign={esign || '—'} brandKeys=[{hints.brand.join(',') || '—'}] creatorKeys=[{hints.creator.join(',') || '—'}]
+                                </span>
+                              );
+                            })()}
+                          </div>
+                        )}
+
+                        <button
+                          type="button"
+                          onClick={(e) => handleBrandDealPrimaryAction(e, item, ui)}
+                          disabled={Boolean(ui?.ctaDisabled)}
+                          className={cn(
+                            'h-14 w-full rounded-2xl text-[14px] font-black transition-all active:scale-[0.98] uppercase tracking-widest shadow-xl',
+                            dealPrimaryCtaButtonClass(ui?.ctaTone || (ui.needsAction ? 'action' : 'view')),
+                            Boolean(ui?.ctaDisabled) && 'opacity-60 cursor-not-allowed active:scale-100'
+                          )}
+                        >
+                          {ui.primaryActionLabel}
+                        </button>
+                      </div>
+                    </motion.div>
+                  );
+                })}
+            </div>
+          )}
+        </div>
+      </motion.div>
+
+      <div className="mb-5">
+        <div className="flex items-center justify-between mb-3">
+          <div>
+            <p className={cn('text-[11px] font-black uppercase tracking-widest opacity-50', textColor)}>Suggested creators</p>
+            <p className={cn('text-[12px] opacity-60 mt-1', textColor)}>Pick based on reliability — not views.</p>
+          </div>
+          <button type="button" onClick={() => { triggerHaptic(HapticPatterns.light); setActiveTab('creators'); }} className={cn('text-[12px] font-bold', isDark ? 'text-info' : 'text-info')}>
+            View all
+          </button>
+        </div>
+        <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
+            {(isLoadingSuggestedCreators ? Array.from({ length: 3 }).map((_, i) => ({ id: `sk-${i}`, name: 'Creator' })) : suggestedCreators.slice(0, 6)).map((c: any) => (
+             <motion.div 
+               key={c.id} 
+               whileTap={{ scale: 0.985 }}
+               role="button"
+               tabIndex={0}
+               onClick={() => {
+                 const handle = String(c?.username || c?.handle || '').trim().replace(/^@+/, '');
+                 if (!handle) {
+                   triggerHaptic(HapticPatterns.light);
+                   setActiveTab('creators');
+                   return;
+                 }
+                 triggerHaptic(HapticPatterns.light);
+                 navigate(`/${handle}`);
+               }}
+               className={cn('min-w-[290px] p-5 rounded-[2.5rem] border cursor-pointer', cardBgColor, borderColor, isDark ? '' : 'shadow-[0_18px_45px_rgba(15,23,42,0.08)]')}
+             >
+              <div className="flex items-center gap-3">
+                <Avatar className="w-11 h-11">
+                  <AvatarImage src={safeImageSrc(c.profile_photo || c.avatar_url)} alt={c.name} />
+                  <AvatarFallback>{String(c.name || 'C').slice(0, 1).toUpperCase()}</AvatarFallback>
+                </Avatar>
+                <div className="min-w-0 flex-1">
+                  <p className={cn('text-[13px] font-bold truncate', textColor)}>{c.name}</p>
+                  <p className={cn('text-[12px] opacity-60 truncate', textColor)}>
+                    {(c.category || 'Creator')}{c.followers ? ` • ${formatFollowers(c.followers)}` : ''}
+                  </p>
+                </div>
+                <div className="text-right">
+                  <p className={cn('text-[10px] font-black uppercase tracking-widest opacity-50', textColor)}>From</p>
+                  <p className={cn('text-[12px] font-bold', textColor)}>{formatCompactINR(c?.pricing?.avg ?? c?.pricing?.reel ?? 0)} / reel</p>
+                </div>
+              </div>
+
+              <div className="mt-3 space-y-1">
+                {getReliabilityLines(c).map((line: string) => (
+                  <p key={line} className={cn('text-[12px] opacity-70', textColor)}>{line}</p>
+                ))}
+              </div>
+
+              <div className="flex flex-wrap gap-2 mt-3">
+                {getSmartTags(c).map((t: string) => (
+                  <span key={t} className={cn('text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded-lg border', isDark ? 'border-border text-foreground/60 bg-card' : 'border-border text-muted-foreground bg-background')}>
+                    {t}
+                  </span>
+                ))}
+                {getSmartTags(c).length === 0 && (
+                  <span className={cn('text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded-lg border', isDark ? 'border-border text-foreground/60 bg-card' : 'border-border text-muted-foreground bg-background')}>
+                    ✔ Verified profile
+                  </span>
+                )}
+              </div>
+
+              <div className="flex gap-2 mt-4">
+                <button type="button"
+                  onClick={() => {
+                    const handle = String(c?.username || c?.handle || '').trim().replace(/^@+/, '');
+                    if (!handle) {
+                      triggerHaptic(HapticPatterns.light);
+                      setActiveTab('creators');
+                      return;
+                    }
+                    triggerHaptic(HapticPatterns.light);
+                    navigate(`/${handle}`);
+                  }}
+                  className={cn('flex-1 py-2.5 rounded-2xl border text-[12px] font-bold transition-all active:scale-[0.98]', isDark ? 'border-border bg-card hover:bg-secondary/50 text-foreground' : 'border-border bg-card hover:bg-background text-muted-foreground')}
+                >
+                  View profile
+                </button>
+                <button type="button"
+                  onClick={() => {
+                    const handle = String(c?.username || c?.handle || '').trim().replace(/^@+/, '');
+                    if (!handle) {
+                      triggerHaptic(HapticPatterns.light);
+                      toast.error('Creator username missing', { description: 'Please try another creator.' });
+                      return;
+                    }
+                    triggerHaptic(HapticPatterns.success);
+                    navigate(`/${handle}?offer=true`);
+                  }}
+                  className={cn('flex-1 py-2.5 rounded-2xl text-[12px] font-black uppercase tracking-widest transition-all active:scale-[0.98]', isDark ? 'bg-gradient-to-br from-emerald-500 to-sky-500 hover:from-emerald-400 hover:to-sky-400 text-foreground' : 'bg-gradient-to-br from-emerald-600 to-sky-600 hover:from-emerald-500 hover:to-sky-500 text-foreground')}
+                >
+                  Send offer
+                </button>
+              </div>
+             </motion.div>
+          ))}
+        </div>
+      </div>
+
+      <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} className={cn('p-6 rounded-[2.5rem] border relative overflow-hidden mb-10', isDark ? 'bg-background border-border/5' : 'bg-card border-border shadow-sm')}>
+        <div className="absolute top-0 right-0 p-8 opacity-[0.05]">
+          <Plus size={120} />
+        </div>
+        <div className="flex items-center gap-3 mb-4">
+          <div className="w-10 h-10 rounded-2xl bg-primary/12 flex items-center justify-center">
+            <Plus className={cn('w-5 h-5', isDark ? 'text-primary' : 'text-primary')} />
+          </div>
+          <div>
+            <h3 className={cn('text-[15px] font-bold tracking-tight', textColor)}>Quick actions</h3>
+            <p className={cn('text-[11px] opacity-40 uppercase font-black tracking-widest', textColor)}>Shortcuts</p>
+          </div>
+        </div>
+        <div className="grid grid-cols-2 gap-2.5">
+          <button type="button"
+            onClick={() => {
+              triggerHaptic(HapticPatterns.light);
+              setActiveTab('creators');
+            }}
+            className={cn('flex flex-col items-center justify-center py-4 rounded-[1.5rem] border transition-all active:scale-[0.97]', isDark ? 'bg-card border-border hover:bg-secondary/50' : 'bg-background border-border hover:bg-background shadow-sm')}
+          >
+            <User className={cn('w-4 h-4 mb-2', secondaryTextColor)} />
+            <span className={cn('text-[11px] font-bold', textColor)}>Find creators</span>
+          </button>
+          <button type="button"
+            onClick={() => { triggerHaptic(HapticPatterns.success); openCreateOfferSheet(); }}
+            className={cn(
+              'flex flex-col items-center justify-center py-4 rounded-[1.5rem] border transition-all active:scale-[0.97]',
+              isDark ? 'bg-gradient-to-br from-emerald-500 to-sky-500 border-primary/30 hover:from-emerald-400 hover:to-sky-400 text-foreground shadow-[0_10px_35px_rgba(16,185,129,0.25)]' : 'bg-gradient-to-br from-emerald-600 to-sky-600 border-primary/40 hover:from-emerald-500 hover:to-sky-500 text-foreground shadow-lg'
+            )}
+          >
+            <Send className="w-4 h-4 mb-2 opacity-90" />
+            <span className="text-[11px] font-black uppercase tracking-widest">Send offer</span>
+          </button>
+          <button type="button" onClick={() => { triggerHaptic(HapticPatterns.light); setActiveTab('collabs'); }} className={cn('flex flex-col items-center justify-center py-4 rounded-[1.5rem] border transition-all active:scale-[0.97]', isDark ? 'bg-card border-border hover:bg-secondary/50' : 'bg-background border-border hover:bg-background shadow-sm')}>
+            <Handshake className={cn('w-4 h-4 mb-2', secondaryTextColor)} />
+            <span className={cn('text-[11px] font-bold', textColor)}>Collabs</span>
+          </button>
+          <button type="button" onClick={() => { triggerHaptic(HapticPatterns.light); toast.info('Payments', { description: 'Invoices, GST, UPI payouts — coming soon.' }); }} className={cn('flex flex-col items-center justify-center py-4 rounded-[1.5rem] border transition-all active:scale-[0.97]', isDark ? 'bg-card border-border hover:bg-secondary/50' : 'bg-background border-border hover:bg-background shadow-sm')}>
+            <CreditCard className={cn('w-4 h-4 mb-2', secondaryTextColor)} />
+            <span className={cn('text-[11px] font-bold', textColor)}>Payments</span>
+          </button>
+        </div>
+      </motion.div>
+    </>
+  );
+});
+
+const BrandCollabsTab = React.memo(({
+  isDark,
+  textColor,
+  secondaryTextColor,
+  borderColor,
+  activeCollabTab,
+  setActiveTab,
+  pendingOffersList,
+  activeDealsList,
+  completedDealsList,
+  visibleCollabItems,
+  setSelectedOffer,
+  handleBrandDealPrimaryAction,
+  openCreateOfferSheet
+}: any) => {
+  const needsActionDeals = activeDealsList.filter((d: any) => brandDealCardUi(d).needsAction);
+  const needsActionOffers = pendingOffersList;
+  const needsActionTotal = needsActionDeals.length + needsActionOffers.length;
+
+  return (
+    <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
+      <div className="flex items-center justify-between mb-4">
+        <h2 className={cn('text-[16px] font-bold tracking-tight', textColor)}>Collaborations</h2>
+        <div className="flex items-center gap-3">
+          {needsActionTotal > 0 && (
+            <div className={cn('px-3 py-1.5 rounded-full border text-[10px] font-black uppercase tracking-widest shadow-sm', isDark ? 'bg-warning/10 text-warning border-warning/20' : 'bg-orange-50 text-orange-600 border-orange-200')}>
+              {needsActionTotal} need your review
+            </div>
+          )}
+          <button type="button" onClick={() => setActiveTab('dashboard')} className={cn('text-[12px] font-bold', isDark ? 'text-info' : 'text-info')}>
+          Back
+          </button>
+        </div>
+      </div>
+
+      <div className={cn('mb-4 rounded-[22px] border p-1.5 flex gap-1.5 backdrop-blur-xl shadow-sm', isDark ? 'bg-secondary/[0.06] border-border/50' : 'bg-slate-100/80 border-slate-200/60')}>
+        {[
+          { key: 'action_required', label: 'Awaiting Response', count: pendingOffersList.length + activeDealsList.filter((d: any) => brandDealCardUi(d).needsAction).length },
+          { key: 'active', label: 'Active', count: activeDealsList.length },
+          { key: 'completed', label: 'Completed', count: completedDealsList.length },
+        ].map((item) => {
+          const isSelected = activeCollabTab === item.key;
+          return (
+            <button
+              type="button"
+              key={item.key}
+              onClick={() => {
+                triggerHaptic(HapticPatterns.light);
+                setActiveTab('collabs', item.key as BrandCollabTab);
+              }}
+              className={cn(
+                'flex-1 h-11 rounded-[18px] px-3 transition-all active:scale-[0.98] flex items-center justify-center gap-2',
+                isSelected
+                  ? isDark
+                    ? 'bg-card text-foreground shadow-[0_10px_28px_rgba(255,255,255,0.06)]'
+                    : 'bg-blue-600 text-white shadow-[0_12px_30px_rgba(37,99,235,0.25)]'
+                  : isDark
+                    ? 'text-foreground/60 hover:bg-secondary/[0.05]'
+                    : 'text-muted-foreground hover:bg-secondary/40'
+              )}
+            >
+              <span className={cn('text-[11px] font-black uppercase tracking-widest', isSelected ? 'opacity-95' : 'opacity-70')}>{item.label}</span>
+              <span
+                className={cn(
+                  'px-2 py-0.5 rounded-full text-[10px] font-black tabular-nums transition-all duration-300',
+                  isSelected
+                    ? (isDark ? 'bg-white/10 text-white' : 'bg-white/20 text-white')
+                    : (isDark ? 'bg-white/5 text-foreground/40' : 'bg-black/5 text-muted-foreground/60')
+                )}
+              >
+                {item.count}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+
+      <div className={cn('rounded-[28px] border overflow-hidden backdrop-blur-xl shadow-[0_18px_45px_rgba(15,23,42,0.12)]', borderColor, isDark ? 'bg-secondary/[0.04] shadow-black/20' : 'bg-card shadow-sm')}>
+        <div className={cn('p-4 backdrop-blur-md', isDark ? 'border-b border-border bg-secondary/[0.03]' : 'border-b border-border/80 bg-secondary/45')}>
+          <p className={cn('text-[12px] font-black uppercase tracking-widest opacity-50', textColor)}>
+            {activeCollabTab === 'action_required' ? 'Awaiting Response' : activeCollabTab === 'active' ? 'Active Deals' : 'Completed Deals'}
+          </p>
+        </div>
+        {visibleCollabItems.length === 0 ? (
+          <div className="p-8 text-center">
+            <p className={cn('text-[12px] font-bold opacity-50', textColor)}>
+              {activeCollabTab === 'action_required'
+                ? 'All caught up! Send an offer to get started.'
+                : activeCollabTab === 'active'
+                  ? 'No active collabs — complete a deal first'
+                  : 'No completed collabs yet — finish an active deal'}
+            </p>
+            {activeCollabTab === 'action_required' && (
+              <Button type="button" onClick={() => openCreateOfferSheet()} className={cn('mt-4 rounded-2xl', isDark ? 'bg-primary hover:bg-primary text-foreground' : 'bg-primary hover:bg-primary text-foreground')}>
+                <Send className="w-4 h-4 mr-2" /> Send new offer
+              </Button>
+            )}
+          </div>
+        ) : (
+          <div className="p-4 space-y-4 pb-24">
+            {visibleCollabItems.slice(0, 50).map((item: any, idx: number) => {
+              const itemKey = `collab-list-${item.id || idx}-${item.updated_at || ''}`;
+              const isPendingItem = activeCollabTab === 'action_required';
+              const due = isPendingItem ? offerExpiryLabel(item) : deadlineLabel(item);
+              const amount = Number(item?.deal_amount || item?.exact_budget || 0);
+              const creatorName = firstNameish(item?.profiles, item?.creator_name || item?.creator_email);
+              const creatorMeta = item?.profiles?.username || item?.creator_name || item?.creator_email || 'Creator';
+              const creatorAvatar = item?.profiles?.avatar_url || item?.profiles?.profile_image_url || item?.profiles?.instagram_profile_photo || item?.creator_avatar_url || item?.creator_photo_url || '';
+              
+              if (isPendingItem && ['pending', 'countered', 'sent', 'offer_sent', 'submitted', 'action_required', 'action-required'].includes(normalizeStatus(item?.status))) {
+                const sentIso = item?.created_at || item?.updated_at || null;
+                const isCountered = normalizeStatus(item?.status) === 'countered';
+                const sentHours = sentIso ? hoursSince(sentIso) : null;
+                const isNoResponse = !isCountered && sentHours !== null && sentHours >= 24;
+                
+                const statusLine = isCountered 
+                  ? 'Creator proposed changes — review and update the offer.' 
+                  : 'You can follow up or modify the offer.';
+
+                return (
+                  <motion.div
+                    key={itemKey}
+                    whileTap={{ scale: 0.985 }}
+                    role="button"
+                    tabIndex={0}
+                    onClick={() => setSelectedOffer(item)}
+                    className={cn(
+                      'w-full p-5 rounded-[2.5rem] border transition-all duration-500 backdrop-blur-2xl relative overflow-hidden group cursor-pointer',
+                      borderColor,
+                      isDark
+                        ? 'bg-gradient-to-br from-secondary/[0.08] via-secondary/[0.04] to-transparent shadow-[0_20px_50px_rgba(0,0,0,0.3)] hover:border-primary/20'
+                        : 'bg-white shadow-[0_15px_40px_rgba(15,23,42,0.06)] hover:shadow-[0_20px_50px_rgba(15,23,42,0.1)]'
+                    )}
+                  >
+                    <div className="flex items-start justify-between mb-4 relative z-10">
+                      <div className="flex items-center gap-3.5 min-w-0">
+                        <div className="relative">
+                          <Avatar className={cn('w-12 h-12 rounded-2xl border-2 shadow-xl shrink-0 transition-transform duration-500 group-hover:scale-105', isDark ? 'border-white/10 ring-4 ring-white/5' : 'border-white ring-4 ring-slate-100')}>
+                            <AvatarImage 
+                              src={safeImageSrc(item?.profiles?.instagram_profile_photo || creatorAvatar)} 
+                              alt={creatorName} 
+                              className="object-cover" 
+                            />
+                            <AvatarFallback className={cn('rounded-2xl font-black', isDark ? 'bg-secondary/20 text-foreground' : 'bg-slate-100 text-slate-400')}>
+                              {creatorName.slice(0, 1).toUpperCase()}
+                            </AvatarFallback>
+                          </Avatar>
+                         </div>
+                        <div className="min-w-0">
+                          <h4 className={cn('text-[17px] font-black tracking-tight truncate leading-tight', textColor)}>{creatorName}</h4>
+                          <p className={cn('text-[11px] font-black uppercase tracking-widest opacity-40 truncate mt-1', textColor)}>{creatorMeta}</p>
+                        </div>
+                      </div>
+                      <div className="text-right shrink-0 pl-3">
+                        <p className={cn('text-[22px] font-black tracking-tighter leading-none', isDark ? 'text-white' : 'text-slate-900')}>
+                          {amount > 0 ? formatCompactINR(amount) : '—'}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-between gap-3 text-[12px] font-bold mb-4 relative z-10">
+                      <div className={cn('min-w-0 truncate px-3 py-1.5 rounded-full border bg-white/5 border-white/5', secondaryTextColor)}>
+                        {String(formatDeliverables(item) || item?.collab_type || 'Collaboration').replaceAll(',', ' • ')}
+                      </div>
+                      {due?.text && (
+                        <div className={cn(
+                          'shrink-0 flex items-center gap-2 px-3 py-1.5 rounded-full border shadow-sm',
+                          due.tone === 'danger'
+                            ? (isDark ? 'bg-rose-500/10 text-rose-200 border-rose-500/20' : 'bg-rose-50 text-rose-700 border-rose-100')
+                            : due.tone === 'warn'
+                              ? (isDark ? 'text-warning' : 'text-warning')
+                              : (isDark ? 'bg-white/5 text-white/40 border-white/5' : 'bg-slate-50 text-slate-400 border-slate-100')
+                        )}>
+                          <Clock className="w-3.5 h-3.5" strokeWidth={3} />
+                          <span className="text-[10px] uppercase tracking-widest">{due.text}</span>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className={cn(
+                      'flex items-center justify-between p-4 rounded-2xl border relative z-10 transition-colors',
+                      isCountered || isNoResponse
+                        ? (isDark ? 'bg-warning/10 border-warning/30' : 'bg-warning/5 border-warning/20')
+                        : (isDark ? 'bg-white/5 border-white/5' : 'bg-slate-50/50 border-slate-100')
+                    )}>
+                      <div className="flex items-center gap-3">
+                        <div className={cn(
+                          'w-8 h-8 rounded-full flex items-center justify-center',
+                          isCountered || isNoResponse ? 'bg-warning/20 text-warning' : 'bg-primary/20 text-primary'
+                        )}>
+                          {isCountered ? <AlertTriangle className="w-4 h-4" /> : <Zap className="w-4 h-4" />}
+                        </div>
+                        <p className={cn(
+                          'text-[13px] font-black',
+                          isCountered || isNoResponse
+                            ? (isDark ? 'text-warning' : 'text-warning')
+                            : (isDark ? 'text-white/80' : 'text-slate-700')
+                        )}>
+                          {statusLine}
+                        </p>
+                      </div>
+                      <ChevronRight className={cn('w-4 h-4', secondaryTextColor)} />
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        triggerHaptic(HapticPatterns.light);
+                        setSelectedOffer(item);
+                      }}
+                      className={cn(
+                        'mt-4 h-12 w-full rounded-2xl text-[13px] font-black transition active:scale-[0.98]',
+                         isCountered ? 'bg-primary text-foreground shadow-lg shadow-primary/20' : 'bg-secondary/50 text-foreground border border-border/40'
+                      )}
+                    >
+                      {isCountered ? 'Review Counter' : 'View Offer'}
+                    </button>
+                    {(isNoResponse) && (
+                      <div className="mt-4 pt-4 border-t border-border/10 flex items-start justify-between gap-3 relative z-10">
+                        <p className={cn('text-[11px] font-bold opacity-60 leading-relaxed', secondaryTextColor)}>
+                          Tip: Follow up after 24h for faster replies.
+                        </p>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            triggerHaptic(HapticPatterns.light);
+                            toast.message('Send reminder', { description: 'Coming soon.' });
+                          }}
+                          className={cn('text-[11px] font-black uppercase tracking-widest shrink-0 px-3 py-1.5 rounded-lg border border-info/20 hover:bg-info/10 transition-colors', isDark ? 'text-info' : 'text-info')}
+                        >
+                          Reminder
+                        </button>
+                      </div>
+                    )}
+                  </motion.div>
+                );
+              }
+
+              const ui = brandDealCardUi(item);
+
+              return (
+                <motion.div
+                  key={item.id}
+                  whileTap={{ scale: 0.985 }}
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => handleBrandDealPrimaryAction(undefined, item, ui)}
+                  className={cn(
+                    'w-full p-5 rounded-[2.5rem] border transition-all duration-500 backdrop-blur-2xl relative overflow-hidden group cursor-pointer',
+                    borderColor,
+                    isDark
+                      ? 'bg-gradient-to-br from-secondary/[0.08] via-secondary/[0.04] to-transparent shadow-[0_20px_50px_rgba(0,0,0,0.3)]'
+                      : 'bg-gradient-to-br from-white/95 via-white/80 to-white/60 shadow-[0_20px_50px_rgba(15,23,42,0.08)]'
+                  )}
+                >
+                  <div className="flex items-start justify-between mb-4 relative z-10">
+                    <div className="flex items-center gap-3.5 min-w-0">
+                      <div className="relative">
+                        <Avatar className={cn('w-12 h-12 rounded-2xl border-2 shadow-xl shrink-0 transition-transform duration-500 group-hover:scale-105', isDark ? 'border-white/10 ring-4 ring-white/5' : 'border-white ring-4 ring-slate-100')}>
+                          <AvatarImage 
+                            src={safeImageSrc(item?.profiles?.instagram_profile_photo || item?.profiles?.avatar_url || item?.profiles?.profile_image_url || item?.creator_avatar_url || item?.creator_photo_url || '')} 
+                            alt={creatorName} 
+                            className="object-cover" 
+                          />
+                          <AvatarFallback className={cn('rounded-2xl font-black', isDark ? 'bg-secondary/20 text-foreground' : 'bg-slate-100 text-slate-400')}>
+                            {creatorName.slice(0, 1).toUpperCase()}
+                          </AvatarFallback>
+                        </Avatar>
+                      </div>
+                      <div className="min-w-0">
+                        <h4 className={cn('text-[17px] font-black tracking-tight truncate leading-tight', textColor)}>{creatorName}</h4>
+                        <p className={cn('text-[11px] font-black uppercase tracking-widest opacity-40 truncate mt-1', textColor)}>{creatorMeta}</p>
+                      </div>
+                    </div>
+                    <div className="text-right shrink-0 pl-3">
+                      <p className={cn('text-[22px] font-black tracking-tighter leading-none', isDark ? 'text-white' : 'text-slate-900')}>
+                        {amount > 0 ? formatCompactINR(amount) : (isBarterLikeCollab(item) ? 'BARTER' : '—')}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between gap-3 text-[12px] font-bold mb-4 relative z-10">
+                    <div className={cn('min-w-0 truncate px-3 py-1.5 rounded-full border bg-white/5 border-white/5', secondaryTextColor)}>
+                      {String(formatDeliverables(item) || item?.collab_type || 'Collaboration').replaceAll(',', ' • ')}
+                    </div>
+                    {due?.text && (
+                      <div className={cn(
+                        'shrink-0 flex items-center gap-2 px-3 py-1.5 rounded-full border shadow-sm',
+                        due.tone === 'danger'
+                          ? (isDark ? 'bg-rose-500/10 text-rose-200 border-rose-500/20' : 'bg-rose-50 text-rose-700 border-rose-100')
+                          : due.tone === 'warn'
+                            ? (isDark ? 'text-warning' : 'text-warning')
+                            : (isDark ? 'bg-white/5 text-white/40 border-white/5' : 'bg-slate-50 text-slate-400 border-slate-100')
+                      )}>
+                        <Clock className="w-3.5 h-3.5" strokeWidth={3} />
+                        <span className="text-[10px] uppercase tracking-widest">{due.text}</span>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className={cn(
+                    'flex items-center justify-between p-4 rounded-[2rem] border relative z-10 transition-colors',
+                    ui.needsAction
+                      ? (isDark ? 'bg-warning/10 border-warning/30' : 'bg-warning/5 border-warning/20')
+                      : (isDark ? 'bg-white/5 border-white/5' : 'bg-slate-50/50 border-slate-100')
+                  )}>
+                    <div className="flex items-center gap-3">
+                      <div className={cn(
+                        'w-8 h-8 rounded-full flex items-center justify-center',
+                        ui.needsAction ? 'bg-warning/20 text-warning' : 'bg-primary/20 text-primary'
+                      )}>
+                        <Zap className="w-4 h-4" />
+                      </div>
+                      <p className={cn(
+                        'text-[13px] font-black',
+                        ui.needsAction
+                          ? (isDark ? 'text-warning' : 'text-warning')
+                          : (isDark ? 'text-white/80' : 'text-slate-700')
+                      )}>
+                        {ui.statusLine}
+                      </p>
+                    </div>
+                    <ChevronRight className={cn('w-4 h-4', secondaryTextColor)} />
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-1.5">
+                      {Array.from({ length: 5 }).map((_, i) => (
+                        <span
+                          key={i}
+                          className={cn(
+                            'h-1.5 w-6 rounded-full',
+                            i < ui.step
+                              ? (isDark ? 'bg-primary/80' : 'bg-primary')
+                              : (isDark ? 'bg-secondary/50' : 'bg-background')
+                          )}
+                        />
+                      ))}
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={(e) => handleBrandDealPrimaryAction(e, item, ui)}
+                    disabled={Boolean(ui?.ctaDisabled)}
+                    className={cn(
+                      'mt-4 h-12 w-full rounded-2xl text-[13px] font-black transition active:scale-[0.98]',
+                      dealPrimaryCtaButtonClass(ui?.ctaTone || (ui.needsAction ? 'action' : 'view')),
+                      Boolean(ui?.ctaDisabled) && 'opacity-60 cursor-not-allowed active:scale-100'
+                    )}
+                  >
+                    {ui.primaryActionLabel}
+                  </button>
+                </motion.div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    </motion.div>
+  );
+});
+
+const BrandCreatorsTab = React.memo(({ isDark }: any) => {
+  return (
+    <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
+      {/* Discovery Lab (The Swiping Interface) */}
+      <div className="mb-10">
+        <DiscoveryStack 
+          isDark={isDark}
+          triggerHaptic={(pattern) => {
+            if (pattern === 'medium') triggerHaptic(HapticPatterns.medium);
+            else triggerHaptic(HapticPatterns.light);
+          }}
+        />
+      </div>
+    </motion.div>
+  );
+});
+
+const BrandProfileTab = React.memo(({ isDark, pendingOffersList, activeDealsList, onLogout }: any) => {
+  const pendingNeedsAction = (pendingOffersList || []).filter((r: any) => normalizeStatus(r?.status) === 'countered').length;
+  const activeNeedsAction = (activeDealsList || []).filter((d: any) => brandDealCardUi(d).needsAction).length;
+  const needsActionTotal = pendingNeedsAction + activeNeedsAction;
+  const contentPendingReview = (activeDealsList || []).filter((d: any) => {
+    const s = effectiveDealStatus(d);
+    return s === 'CONTENT_DELIVERED' || s === 'REVISION_DONE';
+  }).length;
+
+  return (
+    <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="pb-20">
+      <BrandSettingsPanel 
+        embedded 
+        onLogout={() => { void onLogout?.(); }} 
+        activeCount={activeDealsList?.length || 0}
+        neededActionCount={needsActionTotal}
+        reviewCount={contentPendingReview}
+      />
+    </motion.div>
+  );
+});
+
+const BrandPaymentsTab = React.memo(({ isDark, textColor, secondaryTextColor, borderColor }: any) => {
+  return (
+    <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="pb-20">
+      <div className={cn('mb-5 p-5 rounded-[2.5rem] border overflow-hidden', borderColor, isDark ? 'bg-secondary/[0.04]' : 'bg-secondary/80 backdrop-blur-xl shadow-[0_18px_45px_rgba(15,23,42,0.08)]')}>
+        <h2 className={cn('text-[16px] font-bold tracking-tight mb-1', textColor)}>Payments</h2>
+        <p className={cn('text-[13px] opacity-60', secondaryTextColor)}>Track your completed deal payouts below.</p>
+      </div>
+      <div className={cn('p-5 rounded-[2.5rem] border text-center', borderColor, isDark ? 'bg-card' : 'bg-secondary/80')}>
+        <p className={cn('text-[13px] opacity-60', textColor)}>No completed payouts yet.</p>
+        <p className={cn('text-[12px] mt-1 opacity-40', textColor)}>Payouts are processed after you mark a deal as complete.</p>
+      </div>
+    </motion.div>
+  );
+});
