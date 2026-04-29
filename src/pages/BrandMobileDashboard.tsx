@@ -1422,13 +1422,14 @@ const BrandMobileDashboard = ({
 
   useEffect(() => {
     // Show prompt if supported, not subscribed, and not dismissed
-    if (isPushSupported && pushPermission === 'default' && !isPushSubscribed && !isPushPromptDismissed && !pushPromptDismissedLocal && !isPushBusy) {
+    const hasDeals = (deals?.length || 0) > 0 || (requests?.length || 0) > 0;
+    if (isPushSupported && hasVapidKey && pushPermission === 'default' && !isPushSubscribed && !isPushPromptDismissed && !pushPromptDismissedLocal && !isPushBusy && activeTab === 'dashboard' && !activeSettingsPage && hasDeals) {
         const timer = setTimeout(() => {
             setShowPushPrompt(true);
         }, 3000);
         return () => clearTimeout(timer);
     }
-  }, [isPushSupported, pushPermission, isPushSubscribed, isPushPromptDismissed, pushPromptDismissedLocal, isPushBusy]);
+  }, [isPushSupported, hasVapidKey, pushPermission, isPushSubscribed, isPushPromptDismissed, pushPromptDismissedLocal, isPushBusy, activeTab, activeSettingsPage, deals?.length, requests?.length]);
 
   const handleEnablePush = async () => {
     try {
@@ -1458,21 +1459,6 @@ const BrandMobileDashboard = ({
     setPushPromptDismissedLocal(true);
   };
 
-  const handleEnablePush = async () => {
-    try {
-      const result = await enableNotifications();
-      if (result?.success) {
-        toast.success('Notifications enabled');
-      } else {
-        const reason = result?.reason || 'unknown';
-        if (reason === 'missing_vapid_key') toast.error('Notifications not configured yet');
-        else if (reason === 'denied') toast.error('Notifications blocked in browser settings');
-        else toast.error('Failed to enable notifications');
-      }
-    } catch {
-      toast.error('Failed to enable notifications');
-    }
-  };
 
 
   const renderOfferDetailsSheet = (offer: any) => {
@@ -2872,15 +2858,6 @@ const BrandMobileDashboard = ({
     </motion.div>
   );
 
-  const showPushPrompt =
-    isPushSupported &&
-    hasVapidKey &&
-    !isPushSubscribed &&
-    !isPushPromptDismissed &&
-    !pushPromptDismissedLocal &&
-    activeTab === 'dashboard' &&
-    !activeSettingsPage &&
-    (deals.length > 0 || requests.length > 0);
 
   const renderBrandSigningPortal = (): ReactNode => {
     if (typeof document === 'undefined') return null;
