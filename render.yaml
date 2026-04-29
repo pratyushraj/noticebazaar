@@ -21,11 +21,11 @@ services:
     healthCheckPath: /health
 
   # Frontend Static Site
-  - type: static_site
+  - type: web
     name: creatorarmour-frontend
     env: static
     buildCommand: corepack enable && corepack prepare pnpm@latest --activate && pnpm install && pnpm run build
-    publishDir: dist
+    staticPublishPath: dist
     headers:
       - path: /*
         name: Cache-Control
