@@ -6273,7 +6273,7 @@ const MobileDashboardDemo = ({
                             )}
                         >
                             <LayoutDashboard className="w-[22px] h-[22px]" strokeWidth={activeTab === 'dashboard' ? 2.5 : 2} />
-                            <span className={cn('text-[10px] tracking-tight font-black uppercase', activeTab === 'dashboard' ? 'opacity-100' : 'opacity-70')}>Home</span>
+                            <span className={cn('text-[10px] tracking-tight font-black uppercase', activeTab === 'dashboard' ? 'opacity-100' : (isDark ? 'opacity-70' : 'opacity-100'))}>Home</span>
                         </motion.button>
 
                         <motion.button 
@@ -6289,7 +6289,7 @@ const MobileDashboardDemo = ({
                             )}
                         >
                             <Briefcase className="w-[22px] h-[22px]" strokeWidth={activeTab === 'deals' ? 2.5 : 2} />
-                            <span className={cn('text-[10px] tracking-tight font-black uppercase', activeTab === 'deals' ? 'opacity-100' : 'opacity-70')}>Deals</span>
+                            <span className={cn('text-[10px] tracking-tight font-black uppercase', activeTab === 'deals' ? 'opacity-100' : (isDark ? 'opacity-70' : 'opacity-100'))}>Deals</span>
                         </motion.button>
 
                         <div className="relative flex-1">
@@ -6309,7 +6309,7 @@ const MobileDashboardDemo = ({
                                 )}
                             >
                                 <Heart className="w-[22px] h-[22px]" strokeWidth={2} />
-                                <span className={cn('text-[10px] tracking-tight font-black uppercase opacity-70')}>Find</span>
+                                <span className={cn('text-[10px] tracking-tight font-black uppercase', isDark ? 'opacity-70' : 'opacity-100')}>Find</span>
                             </motion.button>
                             <div className={cn("absolute -top-1 -right-1 px-1.5 py-0.5 rounded-full text-[7px] font-black uppercase tracking-tighter border shadow-sm", isDark ? "bg-primary/20 border-primary/30 text-primary" : "bg-emerald-500 border-emerald-600 text-white")}>
                                 Soon
@@ -6329,7 +6329,7 @@ const MobileDashboardDemo = ({
                             )}
                         >
                             <CreditCard className="w-[22px] h-[22px]" strokeWidth={activeTab === 'payments' ? 2.5 : 2} />
-                            <span className={cn('text-[10px] tracking-tight font-black uppercase', activeTab === 'payments' ? 'opacity-100' : 'opacity-70')}>Pay</span>
+                            <span className={cn('text-[10px] tracking-tight font-black uppercase', activeTab === 'payments' ? 'opacity-100' : (isDark ? 'opacity-70' : 'opacity-100'))}>Pay</span>
                         </motion.button>
 
                         <motion.button 
@@ -6345,7 +6345,7 @@ const MobileDashboardDemo = ({
                             )}
                         >
                             <User className="w-[22px] h-[22px]" strokeWidth={activeTab === 'profile' ? 2.5 : 2} />
-                            <span className={cn('text-[10px] tracking-tight font-black uppercase', activeTab === 'profile' ? 'opacity-100' : 'opacity-70')}>Me</span>
+                            <span className={cn('text-[10px] tracking-tight font-black uppercase', activeTab === 'profile' ? 'opacity-100' : (isDark ? 'opacity-70' : 'opacity-100'))}>Me</span>
                         </motion.button>
                     </div>
                 </div>
