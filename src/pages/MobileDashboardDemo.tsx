@@ -7856,17 +7856,7 @@ const DashboardTab = React.memo(({
                 </div>
             )}
 
-            {/* Steps / Activity */}
-            <div className="px-5 grid grid-cols-2 gap-4">
-                <button onClick={() => { triggerHaptic(); setActiveTab('profile'); }} className={cn("p-5 rounded-[32px] border text-left", isDark ? "bg-[#0B1220] border-white/5" : "bg-white border-slate-200")}>
-                    <User className="w-5 h-5 text-indigo-500 mb-4" />
-                    <h4 className={cn("text-[15px] font-black italic uppercase", textColor)}>Setup Bio</h4>
-                </button>
-                <button onClick={() => { triggerHaptic(); setActiveTab('profile'); }} className={cn("p-5 rounded-[32px] border text-left", isDark ? "bg-[#0B1220] border-white/5" : "bg-white border-slate-200")}>
-                    <DollarSign className="w-5 h-5 text-rose-500 mb-4" />
-                    <h4 className={cn("text-[15px] font-black italic uppercase", textColor)}>Add Rates</h4>
-                </button>
-            </div>
+
         </motion.div>
     );
 });
