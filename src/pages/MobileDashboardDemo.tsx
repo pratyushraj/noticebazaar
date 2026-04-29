@@ -5499,7 +5499,7 @@ const MobileDashboardDemo = ({
                                                                 setSelectedType('deal');
                                                             }}
                                                             className={cn(
-                                                                "relative w-full aspect-[4/5] md:aspect-auto rounded-[40px] overflow-hidden transition-all duration-500 group cursor-pointer border-0 shadow-2xl shadow-black/20",
+                                                                "relative w-full aspect-[1.2/1] md:aspect-auto rounded-[32px] overflow-hidden transition-all duration-500 group cursor-pointer border-0 shadow-2xl shadow-black/20",
                                                                 isDark ? "bg-[#0B1220]" : "bg-white border border-slate-100"
                                                             )}
                                                         >
@@ -5527,7 +5527,7 @@ const MobileDashboardDemo = ({
                                                             </div>
 
                                                             {/* Content Wrapper */}
-                                                            <div className={cn("relative h-full p-6 flex flex-col justify-between z-10", !isDark && "md:bg-white")}>
+                                                            <div className={cn("relative h-full p-5 flex flex-col justify-between z-10", !isDark && "md:bg-white")}>
                                                                 {/* Desktop Header Layout */}
                                                                 <div className="hidden md:flex items-center justify-between mb-6">
                                                                     <div className="flex items-center gap-4">
