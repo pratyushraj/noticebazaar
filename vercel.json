@@ -17,7 +17,7 @@
   "rewrites": [
     {
       "source": "/api/:path*",
-      "destination": "/api/index.ts"
+      "destination": "https://creatorarmour-api-l6a9.onrender.com/api/:path*"
     },
     {
       "source": "/assets/:path*",
