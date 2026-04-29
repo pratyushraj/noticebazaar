@@ -7542,7 +7542,7 @@ const MobileDashboardDemo = ({
                                                                 <div className="w-8 h-8 rounded-xl bg-emerald-500/10 flex items-center justify-center">
                                                                     <ShieldCheck className="w-4 h-4 text-emerald-500" />
                                                                 </div>
-                                                                <p className={cn("text-[14px] font-black", isDark ? "text-emerald-300" : "text-emerald-800")}>{isPureBarter ? 'Fulfillment Protection' : 'Payment Protection'}</p>
+                                                                <p className={cn("text-[14px] font-black", isDark ? "text-emerald-300" : "text-emerald-800")}>{selectedIsPureBarter ? 'Fulfillment Protection' : 'Payment Protection'}</p>
                                                             </div>
                                                             {(() => {
                                                                 const status = normalizeDealStatus(selectedItem);
