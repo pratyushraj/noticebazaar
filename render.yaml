@@ -33,7 +33,7 @@ services:
     routes:
       - type: rewrite
         source: /api/*
-        destination: https://creatorarmour-api.onrender.com/api/*
+        destination: https://creatorarmour-api-l6a9.onrender.com/api/*
       - type: rewrite
         source: /*
         destination: /index.html
@@ -43,4 +43,4 @@ services:
       - key: VITE_SUPABASE_ANON_KEY
         sync: false
       - key: VITE_API_BASE_URL
-        value: https://creatorarmour-api.onrender.com
+        value: https://creatorarmour-api-l6a9.onrender.com
