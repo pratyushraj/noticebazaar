@@ -1,10 +1,10 @@
-// Service Worker v1.3.2 - Safer SPA caching
+// Service Worker v1.3.3 - Safer SPA caching
 // Precaches app shell for offline support
 
-const CACHE_NAME = 'creator-armour-v6';
-const STATIC_CACHE = 'creator-armour-static-v6';
-const IMAGE_CACHE = 'creator-armour-images-v6';
-const FONT_CACHE = 'creator-armour-fonts-v6';
+const CACHE_NAME = 'creator-armour-v7';
+const STATIC_CACHE = 'creator-armour-static-v7';
+const IMAGE_CACHE = 'creator-armour-images-v7';
+const FONT_CACHE = 'creator-armour-fonts-v7';
 
 // Files to precache for offline
 const PRECACHE_URLS = [
@@ -68,6 +68,13 @@ self.addEventListener('fetch', (event) => {
   // Let the browser handle external avatar generation (DiceBear).
   // Service-worker fetches can be blocked by CSP (`connect-src`) depending on environment.
   if (url.hostname === 'api.dicebear.com') {
+    return;
+  }
+
+  // Never intercept Razorpay requests.
+  // SW fetches are governed by `connect-src`, not `script-src`, so intercepting
+  // Razorpay scripts/APIs here causes CSP violations even though script-src allows them.
+  if (url.hostname.includes('razorpay.com')) {
     return;
   }
 
