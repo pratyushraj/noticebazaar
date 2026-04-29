@@ -157,11 +157,7 @@ const BrandDashboard: React.FC = () => {
 
     return () => {
       console.log('[BrandDashboard] Cleaning up real-time subscription');
-      // Use a timeout for cleanup to avoid the "WebSocket closed before established" warning
-      // if the component unmounts immediately after mounting.
-      setTimeout(() => {
-        void supabase.removeChannel(channel);
-      }, 100);
+      void supabase.removeChannel(channel);
     };
   }, [user?.id, isBrandUser, user?.email, sessionLoading]);
 

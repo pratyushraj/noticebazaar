@@ -797,13 +797,11 @@ export default function LawyerDashboard() {
       .subscribe();
 
     return () => {
-      setTimeout(() => {
-        void supabase.removeChannel(conversationsChannel);
-        if (participantsChannel) {
-          void supabase.removeChannel(participantsChannel);
-        }
-        void supabase.removeChannel(messagesChannel);
-      }, 100);
+      void supabase.removeChannel(conversationsChannel);
+      if (participantsChannel) {
+        void supabase.removeChannel(participantsChannel);
+      }
+      void supabase.removeChannel(messagesChannel);
     };
   }, [user?.id, selectedConversation]);
 

@@ -44,9 +44,7 @@ export function useRealtimeMessages(conversationId: string | null) {
       });
 
     return () => {
-      setTimeout(() => {
-        void supabase.removeChannel(channel);
-      }, 100);
+      void supabase.removeChannel(channel);
     };
   }, [conversationId]);
 
@@ -80,9 +78,7 @@ export function useRealtimePresence(conversationId: string | null, userId: strin
 
     return () => {
       void channel.untrack();
-      setTimeout(() => {
-        void supabase.removeChannel(channel);
-      }, 100);
+      void supabase.removeChannel(channel);
     };
   }, [conversationId, userId]);
 }
