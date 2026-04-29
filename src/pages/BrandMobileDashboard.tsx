@@ -3388,6 +3388,7 @@ const BrandMobileDashboard = ({
                     setSelectedOffer={setSelectedOffer}
                     handleBrandDealPrimaryAction={handleBrandDealPrimaryAction}
                     openCreateOfferSheet={openCreateOfferSheet}
+                    resolveDealProductImageUrl={resolveDealProductImageUrl}
                   />
                 )}
                 {activeTab === 'creators' && (
@@ -4512,7 +4513,8 @@ const BrandCollabsTab = React.memo(({
   visibleCollabItems,
   setSelectedOffer,
   handleBrandDealPrimaryAction,
-  openCreateOfferSheet
+  openCreateOfferSheet,
+  resolveDealProductImageUrl
 }: any) => {
   const needsActionDeals = activeDealsList.filter((d: any) => brandDealCardUi(d).needsAction);
   const needsActionOffers = pendingOffersList;

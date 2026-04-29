@@ -18,7 +18,7 @@ import {
     Sparkles, Youtube, Twitter, Heart, Trash2, Smartphone as SmartphoneIcon, Truck,
     Users, Calendar, ShoppingBag, Video, Film, BookOpen, GraduationCap, 
     Laugh, Coffee, Layers, Flame, Clapperboard, BadgeCheck, Check, 
-    IndianRupee, Utensils, Building2, Plane 
+    IndianRupee, Utensils, Building2, Plane, DollarSign
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useNavigate, useSearchParams } from 'react-router-dom';
