@@ -1731,7 +1731,7 @@ const BrandMobileDashboard = ({
 	                              enterKeyHint="done"
 	                              rows={3}
 	                              className={cn('mt-2 w-full bg-transparent text-[13px] font-semibold outline-none resize-none', textColor)}
-	                              placeholder="1 Reel, 2 Stories"
+	                              placeholder="e.g. 1 Reel, 1 Static Post, 2 Stories"
 	                            />
 	                          </div>
 	                        </div>

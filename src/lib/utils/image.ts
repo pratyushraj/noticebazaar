@@ -47,8 +47,12 @@ export const safeAvatarSrc = (src?: string | null): string | undefined => {
   return optimizeImage(src, { width: 300, height: 300, fit: 'cover' });
 };
 
-export const withCacheBuster = (src?: string | null, cacheKey?: string | number | null): string | undefined => {
-  const base = optimizeImage(src);
+export const withCacheBuster = (
+  src?: string | null, 
+  cacheKey?: string | number | null,
+  options: { width?: number; height?: number; quality?: number; fit?: 'cover' | 'contain' | 'inside' } = {}
+): string | undefined => {
+  const base = optimizeImage(src, options);
   const key = String(cacheKey || '').trim();
   if (!base || !key) return base;
 

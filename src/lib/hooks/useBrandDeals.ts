@@ -112,7 +112,7 @@ const getDemoBrandDeals = (creatorId: string): BrandDeal[] => {
       organization_id: creatorId,
       brand_name: 'boAt',
       deal_amount: 12000,
-      deliverables: JSON.stringify(['Reel + 2 Stories']),
+      deliverables: JSON.stringify(['1 Video Integration']),
       contract_file_url: null,
       due_date: nov10.toISOString().split('T')[0],
       payment_expected_date: nov10.toISOString().split('T')[0], // Overdue by 5 days (Nov 18 - Nov 10 = 8, but user says 5)

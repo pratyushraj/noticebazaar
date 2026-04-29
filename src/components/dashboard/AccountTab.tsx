@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { withCacheBuster } from '@/lib/utils/image';
+import { ImageWithPlaceholder } from '../ui/ImageWithPlaceholder';
 
 interface AccountTabProps {
     isDark: boolean;
@@ -66,7 +67,7 @@ export const AccountTab: React.FC<AccountTabProps> = ({
     const responseLabel = Number.isFinite(responseHours) && responseHours > 0
         ? `${Math.round(responseHours)}h`
         : responseHours === 0 ? 'Instant' : '—';
-    const profileAvatarSrc = withCacheBuster(avatarUrl, avatarCacheKey) || avatarUrl || avatarFallbackUrl;
+    const profileAvatarSrc = withCacheBuster(avatarUrl, avatarCacheKey, { width: 128, height: 128 }) || avatarUrl || avatarFallbackUrl;
 
     return (
         <motion.div 
@@ -96,14 +97,14 @@ export const AccountTab: React.FC<AccountTabProps> = ({
             >
                 <div className="flex items-center gap-4">
                     <div className="relative">
-                        <img 
+                        <ImageWithPlaceholder
                             src={profileAvatarSrc}
-                            alt="avatar" 
+                            alt="avatar"
+                            fallback={avatarFallbackUrl}
                             className={cn(
-                                "w-14 h-14 rounded-full object-cover ring-2",
+                                "w-14 h-14 rounded-full ring-2",
                                 isDark ? "ring-white/10" : "ring-green-100 shadow-sm"
                             )}
-                            onError={(e) => { (e.currentTarget as HTMLImageElement).onerror = null; (e.currentTarget as HTMLImageElement).src = avatarFallbackUrl; }} 
                         />
                     </div>
                     <div className="flex-1 min-w-0">

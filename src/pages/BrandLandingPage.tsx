@@ -258,7 +258,7 @@ const BrandLandingPage = () => {
 
                         <div className="space-y-3">
                           <div className="flex items-center justify-between text-sm font-bold text-white/60">
-                            <span>1 Reel + 2 Stories</span>
+                            <span>1 Integration + 2 Social Posts</span>
                             <span className="text-emerald-400">₹8,500</span>
                           </div>
                           <div className="h-2.5 rounded-full bg-white/5 overflow-hidden">

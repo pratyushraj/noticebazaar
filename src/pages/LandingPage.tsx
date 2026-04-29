@@ -248,6 +248,10 @@ const LandingPage = () => {
   }, [session, profile, loading, navigate]);
 
   useEffect(() => {
+    document.documentElement.classList.add('light');
+  }, []);
+
+  useEffect(() => {
     if (loading) return;
     const params = new URLSearchParams(location.search);
     const audience = params.get('audience');
@@ -270,7 +274,7 @@ const LandingPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#F8FAF9] text-[#0F172A] font-sans selection:bg-[#16A34A]/20 overflow-x-hidden">
+    <div className="min-h-dvh bg-[#F8FAF9] text-[#0F172A] font-sans selection:bg-[#16A34A]/20 overflow-x-hidden">
       <SEOHead
         title={seoTitle}
         description={seoDescription}

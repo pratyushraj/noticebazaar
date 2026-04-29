@@ -12,8 +12,8 @@
 
 /* Disable selection globally for a native app feel, except in inputs/textareas */
 html {
-  /* Fills the iOS PWA home indicator area with the app background so no gap shows */
-  background-color: #061318;
+  /* Inherit theme background to prevent visual mismatch during overscroll/PWA launch */
+  background-color: hsl(var(--background));
 }
 
 body {
@@ -21,9 +21,9 @@ body {
   -webkit-user-select: none;
   user-select: none;
   overscroll-behavior-y: none; /* Disable browser pull-to-refresh for custom implementation */
-  /* iOS PWA: extend background into safe area at bottom to prevent visible gap */
-  background-color: #061318;
-  padding-bottom: env(safe-area-inset-bottom);
+  /* iOS PWA: prevent hardcoded background mismatch */
+  background-color: hsl(var(--background));
+}
   .animate-loading-bar {
     animation: loading-slide 1.5s ease-in-out infinite;
   }

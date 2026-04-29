@@ -32,8 +32,14 @@ export const ImageWithPlaceholder: React.FC<ImageWithPlaceholderProps> = ({
   onLoad,
 }) => {
   const [isLoading, setIsLoading] = useState(true);
-  const [hasError, setHasError] = useState(false);
   const [currentSrc, setCurrentSrc] = useState(src);
+  const [hasError, setHasError] = useState(false);
+
+  React.useEffect(() => {
+    setCurrentSrc(src);
+    setIsLoading(true);
+    setHasError(false);
+  }, [src]);
 
   const aspectClasses = {
     square: 'aspect-square',

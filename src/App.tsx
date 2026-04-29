@@ -173,7 +173,7 @@ const App = () => {
 
           {/* Main App - Only show after splash is completely gone */}
           {splashComplete && (
-            <div className="min-h-screen">
+            <div className="min-h-dvh">
               <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
                 <RouterInstrumentation />
                 <ScrollToTop />
