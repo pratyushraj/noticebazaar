@@ -1,10 +1,10 @@
-// Service Worker v1.3.1 - Safer SPA caching
+// Service Worker v1.3.2 - Safer SPA caching
 // Precaches app shell for offline support
 
-const CACHE_NAME = 'creator-armour-v5';
-const STATIC_CACHE = 'creator-armour-static-v5';
-const IMAGE_CACHE = 'creator-armour-images-v5';
-const FONT_CACHE = 'creator-armour-fonts-v5';
+const CACHE_NAME = 'creator-armour-v6';
+const STATIC_CACHE = 'creator-armour-static-v6';
+const IMAGE_CACHE = 'creator-armour-images-v6';
+const FONT_CACHE = 'creator-armour-fonts-v6';
 
 // Files to precache for offline
 const PRECACHE_URLS = [
