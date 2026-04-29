@@ -4620,24 +4620,44 @@ const MobileDashboardDemo = ({
                                 </button>
 
                                 {/* Bell */}
-                                <button 
-                                    type="button" 
-                                    onClick={() => handleAction('notifications')} 
-                                    className={cn(
-                                        'relative w-10 h-10 rounded-xl flex items-center justify-center transition-all active:scale-95', 
-                                        isDark ? 'bg-white/5 text-foreground/70' : 'bg-white text-muted-foreground border'
+                                {/* Notification Toggle */}
+                                <div className="flex items-center gap-2 pr-1">
+                                    <Bell className={cn(
+                                        "w-[18px] h-[18px] transition-all",
+                                        isPushSubscribed ? "text-primary scale-110" : "opacity-30 scale-100"
+                                    )} />
+                                    <ToggleSwitch
+                                        active={isPushSubscribed}
+                                        onToggle={async () => {
+                                            triggerHaptic();
+                                            if (isPushSubscribed) {
+                                                toast.info("To disable, please use your browser settings.");
+                                            } else {
+                                                if (!isPushSupported) {
+                                                    toast.error("Push notifications aren't supported on this browser.");
+                                                    return;
+                                                }
+                                                if (isIOSNeedsInstall) {
+                                                    setShowPushInstallGuide(true);
+                                                    return;
+                                                }
+                                                const res = await enableNotifications();
+                                                if (res.success) {
+                                                    toast.success("Push notifications enabled!");
+                                                } else {
+                                                    const reason = String(res.reason || '');
+                                                    if (reason.toLowerCase() === 'default') toast.error("Permission not granted.");
+                                                    else if (reason.toLowerCase() === 'denied') toast.error("Permission denied in browser settings.");
+                                                    else toast.error("Failed to enable notifications.", { description: reason });
+                                                }
+                                            }
+                                        }}
+                                        isDark={isDark}
+                                    />
+                                    {shouldShowPushPrompt && !isPushSubscribed && (
+                                        <span className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-pulse" />
                                     )}
-                                >
-                                    <Bell className="w-[22px] h-[22px]" />
-                                    {collabRequests.length > 0 && (
-                                        <span className="absolute -top-1 -right-1 w-5 h-5 bg-destructive rounded-full border-2 text-[9px] font-black flex items-center justify-center text-white" style={{ borderColor: isDark ? '#0B0F14' : '#FFFFFF' }}>
-                                            {collabRequests.length}
-                                        </span>
-                                    )}
-                                    {shouldShowPushPrompt && (
-                                        <span className="absolute bottom-2.5 right-2.5 w-2 h-2 bg-blue-500 rounded-full animate-pulse border border-white" />
-                                    )}
-                                </button>
+                                </div>
 
                                 {/* Avatar */}
                                 <button 
@@ -6288,7 +6308,17 @@ const MobileDashboardDemo = ({
                                 activeTab === 'deals' ? (isDark ? 'text-white' : 'text-primary') : (isDark ? 'text-slate-400' : secondaryTextColor)
                             )}
                         >
-                            <Briefcase className="w-[22px] h-[22px]" strokeWidth={activeTab === 'deals' ? 2.5 : 2} />
+                            <div className="relative">
+                                <Briefcase className="w-[22px] h-[22px]" strokeWidth={activeTab === 'deals' ? 2.5 : 2} />
+                                {pendingOffersCount > 0 && (
+                                    <span className={cn(
+                                        "absolute -top-2 -right-2 w-5 h-5 rounded-full border-2 text-[9px] font-black flex items-center justify-center text-white bg-destructive animate-in zoom-in duration-300",
+                                        isDark ? "border-[#0B0F14]" : "border-white"
+                                    )}>
+                                        {pendingOffersCount}
+                                    </span>
+                                )}
+                            </div>
                             <span className={cn('text-[10px] tracking-tight font-black uppercase', activeTab === 'deals' ? 'opacity-100' : (isDark ? 'opacity-70' : 'opacity-100'))}>Deals</span>
                         </motion.button>
 
