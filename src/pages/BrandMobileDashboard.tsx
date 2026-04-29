@@ -3924,23 +3924,7 @@ const BrandDashboardTab = React.memo(({
         </div>
       </motion.div>
 
-      {/* Secondary Stats Grid */}
-      <div className="grid grid-cols-2 gap-3 mb-6">
-        <div className={cn('p-5 rounded-[2.5rem] border transition-all hover:border-primary/30', isDark ? 'bg-card border-border/50' : 'bg-white border-border/60 shadow-sm')}>
-          <p className={cn('text-[10px] font-black uppercase tracking-widest opacity-40', textColor)}>Active</p>
-          <div className="flex items-baseline gap-1 mt-3">
-            <span className={cn('text-[24px] font-black tracking-tight', textColor)}>{activeDealsList.length}</span>
-            <span className={cn('text-[10px] font-black uppercase tracking-widest opacity-40', textColor)}>Deals</span>
-          </div>
-        </div>
-        <div className={cn('p-5 rounded-[2.5rem] border transition-all hover:border-warning/30', isDark ? 'bg-card border-border/50' : 'bg-white border-border/60 shadow-sm')}>
-          <p className={cn('text-[10px] font-black uppercase tracking-widest opacity-40', textColor)}>Pending</p>
-          <div className="flex items-baseline gap-1 mt-3">
-            <span className={cn('text-[24px] font-black tracking-tight', needsActionTotal > 0 ? 'text-warning' : textColor)}>{needsActionTotal}</span>
-            <span className={cn('text-[10px] font-black uppercase tracking-widest opacity-40', textColor)}>Action</span>
-          </div>
-        </div>
-      </div>
+
 
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.06 }} className="mb-10">
         <div className="flex items-center justify-between mb-5">
