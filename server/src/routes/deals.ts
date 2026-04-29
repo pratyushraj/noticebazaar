@@ -1988,7 +1988,7 @@ router.post('/:id/confirm-payment-pending', authMiddleware, async (req: Authenti
     }
 
     const { deal, error: dealError } = await fetchDealForBrandMutation(dealId);
-    if (dealError || !deal) console.error("404 Deal not found", dealId, dealError); return res.status(404).json({ success: false, error: 'Deal not found' });
+    if (dealError || !deal) { console.error("404 Deal not found", dealId, dealError); return res.status(404).json({ success: false, error: 'Deal not found' }); }
 
     const dealBrandEmail = String((deal as any).brand_email || '').toLowerCase() || null;
     const hasAccess =
@@ -2055,7 +2055,7 @@ router.post('/:id/cancel-unpaid', authMiddleware, async (req: AuthenticatedReque
     if (!userId) return res.status(401).json({ success: false, error: 'Authentication required' });
 
     const { data: deal } = await supabase.from('brand_deals').select('status, creator_id, brand_id, created_at').eq('id', dealId).single();
-    if (!deal) console.error("404 Deal not found", dealId, dealError); return res.status(404).json({ success: false, error: 'Deal not found' });
+    if (!deal) { console.error("404 Deal not found", dealId, dealError); return res.status(404).json({ success: false, error: 'Deal not found' }); }
 
     // Only allow if it's PAYMENT_PENDING
     const current = normalizeStatus(deal.status);
@@ -2115,7 +2115,7 @@ router.post('/:id/create-payment-link', authMiddleware, async (req: Authenticate
 
     const { deal, error: dealError } = await fetchDealForBrandMutation(dealId);
 
-    if (dealError || !deal) console.error("404 Deal not found", dealId, dealError); return res.status(404).json({ success: false, error: 'Deal not found' });
+    if (dealError || !deal) { console.error("404 Deal not found", dealId, dealError); return res.status(404).json({ success: false, error: 'Deal not found' }); }
 
     // Authorization: allow if role=brand/admin, OR if the user is the brand who owns this deal
     // (checked by brand_id or brand_email, to handle older records created without brand_id).
@@ -2219,7 +2219,7 @@ router.post('/:id/create-payment-order', authMiddleware, async (req: Authenticat
     if (!userId) return res.status(401).json({ success: false, error: 'Authentication required' });
 
     const { deal, error: dealError } = await fetchDealForBrandMutation(dealId);
-    if (dealError || !deal) console.error("404 Deal not found", dealId, dealError); return res.status(404).json({ success: false, error: 'Deal not found' });
+    if (dealError || !deal) { console.error("404 Deal not found", dealId, dealError); return res.status(404).json({ success: false, error: 'Deal not found' }); }
 
     const dealBrandId = String((deal as any).brand_id || '');
     const dealBrandEmail = String((deal as any).brand_email || '').toLowerCase();
@@ -2318,7 +2318,7 @@ router.post('/:id/verify-payment', authMiddleware, async (req: AuthenticatedRequ
       .eq('id', dealId)
       .single();
 
-    if (error || !deal) console.error("404 Deal not found", dealId, dealError); return res.status(404).json({ success: false, error: 'Deal not found' });
+    if (error || !deal) { console.error("404 Deal not found", dealId, dealError); return res.status(404).json({ success: false, error: 'Deal not found' }); }
 
     // 2. Check permission (Brand or Admin)
     const userEmail = String(req.user?.email || '').toLowerCase();
@@ -2430,7 +2430,7 @@ router.post('/:id/refund', authMiddleware, async (req: AuthenticatedRequest, res
     }
 
     const { data: deal } = await supabase.from('brand_deals').select('status, payment_id, deal_amount').eq('id', dealId).single();
-    if (!deal) console.error("404 Deal not found", dealId, dealError); return res.status(404).json({ success: false, error: 'Deal not found' });
+    if (!deal) { console.error("404 Deal not found", dealId, dealError); return res.status(404).json({ success: false, error: 'Deal not found' }); }
     
     if (!deal.payment_id) return res.status(400).json({ success: false, error: 'No Razorpay payment ID found' });
 
@@ -2503,7 +2503,7 @@ router.post('/:id/escalate-dispute', authMiddleware, async (req: AuthenticatedRe
     const escalationNotes = String(req.body?.notes || '').trim() || null;
 
     const { deal, error: dealError } = await fetchDealForBrandMutation(dealId);
-    if (dealError || !deal) console.error("404 Deal not found", dealId, dealError); return res.status(404).json({ success: false, error: 'Deal not found' });
+    if (dealError || !deal) { console.error("404 Deal not found", dealId, dealError); return res.status(404).json({ success: false, error: 'Deal not found' }); }
 
     const dealBrandEmail = String((deal as any).brand_email || '').toLowerCase() || null;
     const hasAccess =
@@ -3189,7 +3189,7 @@ router.patch('/:id/unconfirm-payment-received', authMiddleware, async (req: Auth
     }
 
     const { deal, error: dealError } = await fetchDealForCreatorMutation(dealId);
-    if (dealError || !deal) console.error("404 Deal not found", dealId, dealError); return res.status(404).json({ success: false, error: 'Deal not found' });
+    if (dealError || !deal) { console.error("404 Deal not found", dealId, dealError); return res.status(404).json({ success: false, error: 'Deal not found' }); }
 
     const creatorId = String((deal as any).creator_id || '');
     if (role !== 'admin' && creatorId !== String(userId)) {
