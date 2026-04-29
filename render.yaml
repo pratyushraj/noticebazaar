@@ -15,9 +15,17 @@ services:
       - key: PUPPETEER_SKIP_CHROMIUM_DOWNLOAD
         value: "true"
       - key: SUPABASE_URL
-        sync: false
+        value: https://ooaxtwmqrvfzdqzoijcj.supabase.co
       - key: SUPABASE_SERVICE_ROLE_KEY
-        sync: false
+        value: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9vYXh0d21xcnZmemRxem9pamNqIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1OTUwMTI1NiwiZXhwIjoyMDc1MDc3MjU2fQ.hKeyfz-wZ6JOs3mupPDppKDYuHii0GRcxc04oRROD4c
+      - key: RESEND_API_KEY
+        value: re_3vCFXaJL_Gt3Y2z8Qc2nakcz5YDkbK5uH
+      - key: RAZORPAY_KEY_ID
+        value: rzp_live_SOpCNkp7Fe6nV8
+      - key: RAZORPAY_KEY_SECRET
+        value: dCrHBxEnRhBtw4dX4Ra1371C
+      - key: SUPABASE_ANON_KEY
+        value: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9vYXh0d21xcnZmemRxem9pamNqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk1MDEyNTYsImV4cCI6MjA3NTA3NzI1Nn0.xIIz_9W9PAnxTKDdJZ3_wQ6OO7NQJbiy4P_PP0CSVBQ
     healthCheckPath: /health
 
   # Frontend Static Site
