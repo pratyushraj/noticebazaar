@@ -27,7 +27,6 @@ body {
   .animate-loading-bar {
     animation: loading-slide 1.5s ease-in-out infinite;
   }
-}
 
 @keyframes loading-slide {
   0% { transform: translateX(-100%); }
