@@ -101,9 +101,18 @@ export function ConfirmPaymentPendingModal({ dealId, dealAmount, creatorName, on
           contact: '',
         },
         theme: { color: '#10b981' },
-        handler: () => {
+        handler: async () => {
           triggerHaptic(HapticPatterns.success);
-          toast.success('Payment submitted. We will update the deal once Razorpay confirms it.');
+          toast.success('Payment submitted. Processing securely...');
+          try {
+            const verifyRes = await fetch(`${getApiBaseUrl()}/api/deals/${dealId}/verify-payment`, {
+              method: 'POST',
+              headers: { Authorization: `Bearer ${session?.access_token}` }
+            });
+            await verifyRes.json();
+          } catch (e) {
+            // ignore silently, the reload will happen anyway
+          }
           window.location.reload();
         },
       };
