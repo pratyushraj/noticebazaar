@@ -4575,7 +4575,7 @@ const MobileDashboardDemo = ({
                             isDark ? "bg-[#03110C]/90 backdrop-blur-xl border-white/5" : "bg-white/90 backdrop-blur-xl border-slate-200"
                         )}
                         style={{ 
-                            paddingTop: 'max(env(safe-area-inset-top), 8px)'
+                            paddingTop: 'max(env(safe-area-inset-top), 16px)'
                         }}
                     >
                         <div className="flex items-center justify-between mb-1">

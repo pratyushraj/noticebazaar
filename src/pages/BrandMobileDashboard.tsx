@@ -3161,7 +3161,7 @@ const BrandMobileDashboard = ({
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
             >
-            <div className="px-5 pb-4 pt-safe" style={{ paddingTop: 'max(env(safe-area-inset-top), 8px)' }}>
+            <div className="px-5 pb-4 pt-safe" style={{ paddingTop: 'max(env(safe-area-inset-top), 16px)' }}>
 
               {/* Brand Getting Started Banner — shown when no deals exist */}
               {!isLoading && deals.length === 0 && (
