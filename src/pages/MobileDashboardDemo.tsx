@@ -4966,12 +4966,7 @@ const MobileDashboardDemo = ({
                         showShareSheet ||
                         showProgressSheet
                     }
-                />('text-[10px] tracking-tight font-black uppercase', effectiveTab === 'profile' ? 'opacity-100' : (isDark ? 'opacity-70' : 'opacity-100'))}>Me</span>
-                        </motion.button>
-                    </div>
-                </div>
-                    );
-                })()}
+                />
 
                 {/* ─── ACTION SHEET ─── */}
                 <AnimatePresence>
