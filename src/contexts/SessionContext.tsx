@@ -206,11 +206,13 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
         .eq('id', user.id)
         .maybeSingle();
 
+      if (coreError) {
         if ((coreError as any).code !== 'PGRST116') {
           logger.error('SessionContext: Error fetching profile', coreError);
           throw coreError; // Throw so React Query retries
         }
         return null; // Truly missing profile (PGRST116 is no rows found)
+      }
 
       if (!coreData) return null;
 
