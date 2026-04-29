@@ -92,11 +92,11 @@ const ProfileMenu: React.FC<ProfileMenuProps> = ({ profile, user, profilePath })
         </DropdownMenuItem>
         <DropdownMenuItem 
           onClick={async () => {
-            const referText = `Join CreatorArmour - Your complete legal and financial compliance platform! ${window.location.origin}`;
+            const referText = `Join NoticeBazaar - Your complete legal and financial compliance platform! ${window.location.origin}`;
             try {
               if (navigator.share) {
                 await navigator.share({
-                  title: 'Join CreatorArmour',
+                  title: 'Join NoticeBazaar',
                   text: referText,
                   url: window.location.origin,
                 });

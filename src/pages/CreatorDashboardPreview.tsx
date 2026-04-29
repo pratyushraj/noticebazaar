@@ -826,7 +826,7 @@ const CreatorDashboardPreview = () => {
           {/* Footer */}
           <footer className="mt-6 pb-6 text-center">
             <p className="text-[10px] sm:text-xs text-foreground/30">
-              Powered by CreatorArmour • Secure Legal Portal ©2025
+              Powered by NoticeBazaar • Secure Legal Portal ©2025
             </p>
           </footer>
               </div>

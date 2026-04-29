@@ -172,7 +172,7 @@ export const MILESTONE_REWARDS: MilestoneReward[] = [
  * Format referral link
  */
 export function formatReferralLink(code: string): string {
-  const baseUrl = import.meta.env.VITE_APP_URL || 'https://creatorarmour.com';
+  const baseUrl = import.meta.env.VITE_APP_URL || 'https://noticebazaar.com';
   return `${baseUrl}/p/${code}`;
 }
 

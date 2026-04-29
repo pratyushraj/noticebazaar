@@ -1,7 +1,7 @@
 /**
- * CreatorArmour API Documentation
+ * NoticeBazaar API Documentation
  *
- * This file contains comprehensive API documentation for the CreatorArmour platform.
+ * This file contains comprehensive API documentation for the NoticeBazaar platform.
  * All endpoints are organized by category and include request/response examples.
  */
 
@@ -477,7 +477,7 @@ export const generateAPIDocs = (format: 'json' | 'markdown' = 'json') => {
 };
 
 const generateMarkdownDocs = () => {
-  let markdown = '# CreatorArmour API Documentation\n\n';
+  let markdown = '# NoticeBazaar API Documentation\n\n';
 
   Object.entries(apiDocumentation).forEach(([sectionKey, section]) => {
     markdown += `## ${section.title}\n\n${section.description}\n\n`;

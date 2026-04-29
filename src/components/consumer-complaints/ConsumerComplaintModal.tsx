@@ -411,7 +411,7 @@ const ConsumerComplaintModal: React.FC<ConsumerComplaintModalProps> = ({
               {/* Disclaimer */}
               <div className="pt-2 border-t border-purple-500/20">
                 <p className="text-xs text-foreground/50 text-center">
-                  These services are complimentary during a limited pilot. CreatorArmour does not act as legal counsel unless explicitly agreed.
+                  These services are complimentary during a limited pilot. NoticeBazaar does not act as legal counsel unless explicitly agreed.
                 </p>
               </div>
 
@@ -453,7 +453,7 @@ const ConsumerComplaintModal: React.FC<ConsumerComplaintModalProps> = ({
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center gap-1.5 text-sm text-gray-400 hover:text-foreground hover:underline cursor-pointer flex-shrink-0 mt-1"
-                  aria-label="Learn how consumer complaints work on CreatorArmour"
+                  aria-label="Learn how consumer complaints work on NoticeBazaar"
                 >
                   <HelpCircle className="h-4 w-4" />
                   <span className="hidden sm:inline">How this works</span>

@@ -14,7 +14,7 @@ interface CreatorAppModeGateProps {
 }
 
 const CreatorAppModeGate: React.FC<CreatorAppModeGateProps> = ({ enabled, children }) => {
-  const BROWSER_BYPASS_KEY = 'creatorarmour.allow-browser-mode';
+  const BROWSER_BYPASS_KEY = 'noticebazaar.allow-browser-mode';
   const [isStandalone, setIsStandalone] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [isIOS, setIsIOS] = useState(false);
@@ -79,7 +79,7 @@ const CreatorAppModeGate: React.FC<CreatorAppModeGateProps> = ({ enabled, childr
       return;
     }
     if (isIOS) {
-      alert('Tap Share -> Add to Home Screen, then open CreatorArmour from your home screen.');
+      alert('Tap Share -> Add to Home Screen, then open NoticeBazaar from your home screen.');
       return;
     }
     alert('Open browser menu and choose "Install app" or "Add to home screen".');
@@ -95,7 +95,7 @@ const CreatorAppModeGate: React.FC<CreatorAppModeGateProps> = ({ enabled, childr
     return <>{children}</>;
   }
 
-  const title = isInstagramBrowser ? 'Best in Browser or App' : 'Open CreatorArmour App';
+  const title = isInstagramBrowser ? 'Best in Browser or App' : 'Open NoticeBazaar App';
   const description = isInstagramBrowser
     ? 'Instagram in-app browser can break login and sharing. Open in your browser or continue here if you need to finish quickly.'
     : 'For the smoothest creator experience, use the installed app. You can still continue in your browser.';
@@ -104,11 +104,11 @@ const CreatorAppModeGate: React.FC<CreatorAppModeGateProps> = ({ enabled, childr
   const quickSteps = isInstagramBrowser
     ? [
         'Tap the browser menu and open this page in Chrome or Safari.',
-        'If you want, install CreatorArmour from there later.',
+        'If you want, install NoticeBazaar from there later.',
         'You can also continue in browser right now.',
       ]
     : [
-        'Install CreatorArmour to Home Screen.',
+        'Install NoticeBazaar to Home Screen.',
         'Open from the Home Screen icon.',
         'Sign in once and continue.',
       ];

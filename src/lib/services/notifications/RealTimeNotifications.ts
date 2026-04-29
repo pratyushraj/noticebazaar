@@ -228,7 +228,7 @@ export const useRealTimeNotifications = () => {
       wsRef.current.send({
         type: 'test',
         title: 'Test Notification',
-        message: 'This is a test notification from CreatorArmour',
+        message: 'This is a test notification from NoticeBazaar',
         timestamp: new Date()
       });
     }

@@ -120,14 +120,14 @@ const CreatorProfilePage = () => {
   const metaTitle = `${creatorName} | ${creator.category || 'Creator'} Profile`;
   const metaDescription = `Brands can collaborate securely with ${creatorName}${creator.category ? `, ${creator.category} creator` : ''} ${followerText ? followerText : ''} on ${platformNames || 'social media'}. View profile, platforms, and collaboration details.`;
 
-  const canonicalUrl = `https://creatorarmour.com/creator/${creator.username}`;
+  const canonicalUrl = `https://noticebazaar.com/creator/${creator.username}`;
   const pageImage = creator.platforms.length > 0
-    ? `https://creatorarmour.com/og-creator-${creator.username}.png`
-    : 'https://creatorarmour.com/og-preview.png';
+    ? `https://noticebazaar.com/og-creator-${creator.username}.png`
+    : 'https://noticebazaar.com/og-preview.png';
 
   const breadcrumbItems = [
-    { name: 'Home', url: 'https://creatorarmour.com' },
-    { name: 'Creators', url: 'https://creatorarmour.com/creators' },
+    { name: 'Home', url: 'https://noticebazaar.com' },
+    { name: 'Creators', url: 'https://noticebazaar.com/creators' },
     { name: creatorName, url: canonicalUrl },
   ];
 
@@ -231,7 +231,7 @@ const CreatorProfilePage = () => {
                   {/* SEO Copy */}
                   <div className="bg-secondary/50 border border-purple-500/20 rounded-lg p-4 mt-4">
                     <p className="text-secondary leading-relaxed">
-                      <strong className="text-foreground">Brands can collaborate securely with {creator.name}</strong> through CreatorArmour's
+                      <strong className="text-foreground">Brands can collaborate securely with {creator.name}</strong> through NoticeBazaar's
                       secure collaboration system. Submit collaboration requests, manage contracts, and track payments all in one place.
                     </p>
                   </div>
@@ -300,7 +300,7 @@ const CreatorProfilePage = () => {
               <div className="flex flex-col sm:flex-row gap-4">
                 <div className="flex-1 flex items-center gap-2 bg-secondary/50 px-4 py-3 rounded-lg border border-border">
                   <code className="text-sm text-secondary flex-1">
-                    creatorarmour.com/{creator.username}
+                    noticebazaar.com/{creator.username}
                   </code>
                   <Button
                     variant="ghost"
@@ -333,13 +333,13 @@ const CreatorProfilePage = () => {
                 const instagramPlatform = creator.platforms.find(p => p.name.toLowerCase() === 'instagram');
                 const instagramHandle = instagramPlatform?.handle?.replace('@', '');
                 if (instagramHandle) {
-                  return `Instagram creator ${instagramHandle} (${creator.name}) is a verified ${creator.category || 'content'} creator based in India, working with brands to create authentic content and meaningful collaborations. Brands can collaborate securely with ${creator.name} through CreatorArmour's platform, which ensures proper contracts, payment protection, and professional workflow management.`;
+                  return `Instagram creator ${instagramHandle} (${creator.name}) is a verified ${creator.category || 'content'} creator based in India, working with brands to create authentic content and meaningful collaborations. Brands can collaborate securely with ${creator.name} through NoticeBazaar's platform, which ensures proper contracts, payment protection, and professional workflow management.`;
                 }
-                return `${creator.name} is a verified ${creator.category || 'content'} creator based in India, working with brands to create authentic content and meaningful collaborations. Brands can collaborate securely with ${creator.name} through CreatorArmour's platform, which ensures proper contracts, payment protection, and professional workflow management.`;
+                return `${creator.name} is a verified ${creator.category || 'content'} creator based in India, working with brands to create authentic content and meaningful collaborations. Brands can collaborate securely with ${creator.name} through NoticeBazaar's platform, which ensures proper contracts, payment protection, and professional workflow management.`;
               })()}
             </p>
             <p className="text-secondary leading-relaxed">
-              This creator profile is part of CreatorArmour's verified creator directory, helping brands discover and
+              This creator profile is part of NoticeBazaar's verified creator directory, helping brands discover and
               connect with influencers for marketing campaigns and brand partnerships.
             </p>
           </div>

@@ -20,7 +20,7 @@ export function createCalendarEvent(options: CreateCalendarEventOptions): Calend
     title,
     date,
     description = '',
-    location = 'CreatorArmour',
+    location = 'NoticeBazaar',
     duration = 60,
   } = options;
 

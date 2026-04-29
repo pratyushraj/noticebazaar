@@ -6,7 +6,7 @@
 
 import { logger } from './logger';
 
-const SEARCH_HISTORY_KEY = 'creatorarmour_search_history';
+const SEARCH_HISTORY_KEY = 'noticebazaar_search_history';
 const MAX_HISTORY_ITEMS = 10;
 
 export interface SearchHistoryItem {

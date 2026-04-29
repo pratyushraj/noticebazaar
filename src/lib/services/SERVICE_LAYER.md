@@ -1,6 +1,6 @@
 # Service Layer Architecture
 
-This document describes the service layer pattern used in the CreatorArmour codebase for better separation of concerns and maintainability.
+This document describes the service layer pattern used in the NoticeBazaar codebase for better separation of concerns and maintainability.
 
 ## Overview
 

@@ -2000,13 +2000,13 @@ const MobileDashboardDemo = ({
 
     useEffect(() => {
         const titles: Record<string, string> = {
-            dashboard: 'Dashboard | CreatorArmour',
-            analytics: 'Analytics | CreatorArmour',
-            collabs: 'Collabs | CreatorArmour',
-            payments: 'Payments | CreatorArmour',
-            profile: 'Profile | CreatorArmour',
+            dashboard: 'Dashboard | NoticeBazaar',
+            analytics: 'Analytics | NoticeBazaar',
+            collabs: 'Collabs | NoticeBazaar',
+            payments: 'Payments | NoticeBazaar',
+            profile: 'Profile | NoticeBazaar',
         };
-        document.title = titles[activeTab] || 'CreatorArmour';
+        document.title = titles[activeTab] || 'NoticeBazaar';
     }, [activeTab]);
 
     const [pullDistance, setPullDistance] = useState(0);
@@ -2388,7 +2388,7 @@ const MobileDashboardDemo = ({
 
     const handleCopyStorefront = async () => {
         try {
-            await navigator.clipboard.writeText(`creatorarmour.com/${username}`);
+            await navigator.clipboard.writeText(`noticebazaar.com/${username}`);
             toast.success("Link copied to clipboard!");
             triggerHaptic(HapticPatterns.success);
             trackEvent('collab_link_shared', { method: 'copy' });
@@ -2489,7 +2489,7 @@ const MobileDashboardDemo = ({
 
     const handleCopyDMReply = async () => {
         try {
-            const template = `Thanks for reaching out!\n\nFor collaboration proposals please submit your campaign here:\ncreatorarmour.com/${username}`;
+            const template = `Thanks for reaching out!\n\nFor collaboration proposals please submit your campaign here:\nnoticebazaar.com/${username}`;
             await navigator.clipboard.writeText(template);
             toast.success("DM template copied!");
             triggerHaptic(HapticPatterns.success);
@@ -2501,9 +2501,9 @@ const MobileDashboardDemo = ({
     const handleShareStorefront = async () => {
         try {
             const shareData = {
-                title: 'CreatorArmour Link',
+                title: 'NoticeBazaar Link',
                 text: 'Check out my official creator link!',
-                url: `https://creatorarmour.com/${username}`
+                url: `https://noticebazaar.com/${username}`
             };
             if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
                 await navigator.share(shareData);
@@ -2518,7 +2518,7 @@ const MobileDashboardDemo = ({
     };
 
     const handleShareOnWhatsApp = async () => {
-        const url = `https://creatorarmour.com/${username}`;
+        const url = `https://noticebazaar.com/${username}`;
         const text = `Hey! For collaborations, please send your brief here:\n${url}`;
 
         try {
@@ -3441,11 +3441,11 @@ const MobileDashboardDemo = ({
                                 <div className="w-20 h-20 bg-info/10 rounded-3xl flex items-center justify-center mx-auto mb-4">
                                     <Globe className="w-10 h-10 text-info" />
                                 </div>
-                                <h3 className={cn("text-xl font-bold tracking-tight mb-1", textColor)}>creatorarmour.com/{username}</h3>
+                                <h3 className={cn("text-xl font-bold tracking-tight mb-1", textColor)}>noticebazaar.com/{username}</h3>
                                 <p className={cn("text-[13px] opacity-40 mb-6", textColor)}>Your public intake storefront</p>
                                 <div className="flex gap-3">
                                     <button type="button" onClick={handleCopyStorefront} className="flex-1 bg-info text-foreground font-bold py-3.5 rounded-2xl text-[13px] active:scale-95 transition-all">Copy</button>
-                                    <button type="button" onClick={() => window.open(`https://creatorarmour.com/${username}`, '_blank')} className={cn("flex-1 font-bold py-3.5 rounded-2xl text-[13px] border active:scale-95 transition-all", isDark ? "border-border text-foreground" : "border-black/5 text-black")}>Preview</button>
+                                    <button type="button" onClick={() => window.open(`https://noticebazaar.com/${username}`, '_blank')} className={cn("flex-1 font-bold py-3.5 rounded-2xl text-[13px] border active:scale-95 transition-all", isDark ? "border-border text-foreground" : "border-black/5 text-black")}>Preview</button>
                                 </div>
                             </div>
                             <SectionHeader title="Storefront Controls" isDark={isDark} />
@@ -3522,17 +3522,17 @@ const MobileDashboardDemo = ({
                                     </div>
                                     <div className="flex-1 min-w-0">
                                         <p className={cn("text-[13px] font-black truncate opacity-50 uppercase tracking-widest", textColor)}>Public Link</p>
-                                        <p className={cn("text-[14px] font-black truncate", textColor)}>creatorarmour.com/{username}</p>
+                                        <p className={cn("text-[14px] font-black truncate", textColor)}>noticebazaar.com/{username}</p>
                                     </div>
                                     <div className="flex gap-2">
                                         <button type="button"
-                                            onClick={() => { triggerHaptic(); window.open(`https://creatorarmour.com/${username}`, '_blank'); }}
+                                            onClick={() => { triggerHaptic(); window.open(`https://noticebazaar.com/${username}`, '_blank'); }}
                                             className={cn("p-2.5 rounded-xl border transition-all active:scale-95", isDark ? "bg-white/5 border-white/10 text-white" : "bg-white border-slate-200 text-slate-700 shadow-sm")}
                                         >
                                             <ExternalLink className="w-4 h-4" />
                                         </button>
                                         <button type="button"
-                                            onClick={() => { navigator.clipboard.writeText(`creatorarmour.com/${username}`); toast.success('Link copied!'); triggerHaptic(); }}
+                                            onClick={() => { navigator.clipboard.writeText(`noticebazaar.com/${username}`); toast.success('Link copied!'); triggerHaptic(); }}
                                             className={cn("px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-wider shrink-0 transition-all active:scale-95 shadow-lg", isDark ? "bg-primary text-white shadow-primary/20" : "bg-emerald-600 text-white shadow-emerald-500/30")}
                                         >
                                             Copy
@@ -4101,7 +4101,7 @@ const MobileDashboardDemo = ({
                                     Refresh
                                 </button>
                             </div>
-                            <div className={cn("p-4 rounded-2xl flex items-start gap-3", isDark ? "bg-warning/5 text-warning/80" : "bg-warning text-white")}>
+                            <div className={cn("p-4 rounded-2xl flex items-start gap-3", isDark ? "bg-warning/5 text-warning/80" : "bg-emerald-50 text-emerald-900 border border-emerald-100")}>
                                 <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
                                 <p className="text-[11px] leading-relaxed font-medium">
                                     We use push notifications to alert you about new contracts and emergency payment updates.
@@ -4588,7 +4588,7 @@ const MobileDashboardDemo = ({
                             <div className="flex flex-col items-center gap-0">
                                 <div className="flex items-center gap-1.5 font-black text-[15px] tracking-tight">
                                     <ShieldCheck className={cn("w-4 h-4", isDark ? "text-primary" : "text-primary")} strokeWidth={2.5} />
-                                    <span className={cn(isDark ? "text-white" : "text-slate-900")}>CreatorArmour</span>
+                                    <span className={cn(isDark ? "text-white" : "text-slate-900")}>NoticeBazaar</span>
                                 </div>
                             </div>
 
@@ -4930,7 +4930,7 @@ const MobileDashboardDemo = ({
                                                 </p>
                                                 <button 
                                                     onClick={() => {
-                                                        const url = `https://creatorarmour.com/${profile?.username || 'creator'}`;
+                                                        const url = `https://noticebazaar.com/${profile?.username || 'creator'}`;
                                                         navigator.clipboard.writeText(url);
                                                         toast.success("Link copied!");
                                                         triggerHaptic('success');
@@ -4964,11 +4964,11 @@ const MobileDashboardDemo = ({
                                                         "flex-1 px-4 py-3 rounded-xl border font-medium text-sm truncate",
                                                         isDark ? "bg-black border-white/10" : "bg-slate-50 border-slate-200"
                                                     )}>
-                                                        creatorarmour.com/{profile?.username || 'creator'}
+                                                        noticebazaar.com/{profile?.username || 'creator'}
                                                     </div>
                                                     <button 
                                                         onClick={() => {
-                                                            navigator.clipboard.writeText(`https://creatorarmour.com/${profile?.username || 'creator'}`);
+                                                            navigator.clipboard.writeText(`https://noticebazaar.com/${profile?.username || 'creator'}`);
                                                             toast.success('Copied!');
                                                         }}
                                                         className={cn(
@@ -4982,7 +4982,7 @@ const MobileDashboardDemo = ({
                                             </div>
                                             <button 
                                                 onClick={() => {
-                                                    const url = `https://wa.me/?text=${encodeURIComponent(`Check out my creator profile: https://creatorarmour.com/${profile?.username || 'creator'}`)}`;
+                                                    const url = `https://wa.me/?text=${encodeURIComponent(`Check out my creator profile: https://noticebazaar.com/${profile?.username || 'creator'}`)}`;
                                                     window.open(url, '_blank');
                                                 }}
                                                 className="w-full bg-[#25D366] text-white font-black italic rounded-xl py-4 flex items-center justify-center gap-2 transition-all active:scale-[0.98]"
@@ -5147,7 +5147,7 @@ const MobileDashboardDemo = ({
                                                             Your bio link
                                                         </p>
                                                         <p className={cn("text-[12px] font-black break-all", textColor)}>
-                                                            creatorarmour.com/{username}
+                                                            noticebazaar.com/{username}
                                                         </p>
                                                     </div>
 
@@ -5202,7 +5202,7 @@ const MobileDashboardDemo = ({
 
                                     <div className="flex items-center gap-1.5 font-bold text-[16px] tracking-tight">
                                         <ShieldCheck className={cn("w-4 h-4", isDark ? "text-primary" : "text-primary")} strokeWidth={2.5} />
-                                        <span className={textColor}>CreatorArmour</span>
+                                        <span className={textColor}>NoticeBazaar</span>
                                     </div>
 
                                     <button type="button" onClick={() => setActiveTab('profile')} className={cn("w-10 h-10 rounded-xl border p-0.5 overflow-hidden transition-all active:scale-95 shadow-sm", isDark ? "border-white/10 bg-white/5" : "border-slate-200 bg-white")}>
@@ -6418,7 +6418,7 @@ const MobileDashboardDemo = ({
                                             className={cn('p-4 rounded-2xl border text-left transition-all active:scale-[0.99]', isDark ? 'bg-card border-border hover:bg-secondary/50' : 'bg-background border-border hover:bg-background')}
                                         >
                                             <p className={cn('text-[13px] font-bold', textColor)}>Copy deal page</p>
-                                            <p className={cn('text-[12px] opacity-60 mt-1', textColor)}>creatorarmour.com/{username}</p>
+                                            <p className={cn('text-[12px] opacity-60 mt-1', textColor)}>noticebazaar.com/{username}</p>
                                         </button>
 
                                         <button type="button"
@@ -7599,7 +7599,7 @@ const MobileDashboardDemo = ({
                                                         <ShieldCheck className="w-6 h-6 text-white" strokeWidth={2.5} />
                                                     </div>
                                                     <div className="flex-1 min-w-0">
-                                                        <p className={cn("font-black text-[17px] leading-tight tracking-tight", isDark ? "text-primary" : "text-emerald-800")}>Protected by CreatorArmour</p>
+                                                        <p className={cn("font-black text-[17px] leading-tight tracking-tight", isDark ? "text-primary" : "text-emerald-800")}>Protected by NoticeBazaar</p>
                                                         <p className={cn("text-[12px] font-bold mt-0.5 opacity-70", isDark ? "text-primary/90" : "text-emerald-700")}>Contract + rights + dispute support</p>
                                                     </div>
                                                 </div>
@@ -8332,7 +8332,7 @@ const MobileDashboardDemo = ({
 
                     <div className={cn("flex items-center gap-2 text-[10px] font-bold opacity-40 border-t px-6 py-5", isDark ? "border-border/5" : "border-border")}>
                         <ShieldCheck className="w-3.5 h-3.5 text-primary" />
-                        <span>Aadhar Verified · Secure E-signature by CreatorArmour</span>
+                        <span>Aadhar Verified · Secure E-signature by NoticeBazaar</span>
                     </div>
                 </DialogContent>
             </Dialog>
@@ -8346,7 +8346,7 @@ const MobileDashboardDemo = ({
                             Enable Deal Alerts
                         </DialogTitle>
                         <DialogDescription className="text-neutral-300 px-6 pb-2 text-base leading-relaxed">
-                            On iPhone and iPad, push notifications work only when CreatorArmour is installed to your Home Screen.
+                            On iPhone and iPad, push notifications work only when NoticeBazaar is installed to your Home Screen.
                         </DialogDescription>
                     </DialogHeader>
 
@@ -8356,7 +8356,7 @@ const MobileDashboardDemo = ({
                             <ol className="mt-2 space-y-1 text-sm text-foreground/80 list-decimal pl-5">
                                 <li>Tap the Share button in Safari</li>
                                 <li>Select “Add to Home Screen”</li>
-                                <li>Open CreatorArmour from your Home Screen</li>
+                                <li>Open NoticeBazaar from your Home Screen</li>
                             </ol>
                         </div>
 
@@ -8657,7 +8657,7 @@ const MobileDashboardDemo = ({
                                             <ShieldCheck className="w-5 h-5 text-white" strokeWidth={2.5} />
                                         </div>
                                         <div>
-                                            <p className={cn("text-[14px] font-black leading-tight", isDark ? "text-emerald-400" : "text-emerald-700")}>CreatorArmour Protected</p>
+                                            <p className={cn("text-[14px] font-black leading-tight", isDark ? "text-emerald-400" : "text-emerald-700")}>NoticeBazaar Protected</p>
                                             <p className={cn("text-[11px] font-semibold opacity-60", textColor)}>Content Rights Agreement</p>
                                         </div>
                                     </div>

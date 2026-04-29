@@ -11,10 +11,10 @@ interface PageHeadProps {
   noIndex?: boolean;
 }
 
-const DEFAULT_TITLE = 'CreatorArmour - Close Brand Deals Without Instagram DMs';
+const DEFAULT_TITLE = 'NoticeBazaar - Close Brand Deals Without Instagram DMs';
 const DEFAULT_DESCRIPTION = 'The smart platform for creators to manage collaborations, negotiate rates, and get paid faster. Stop chasing brand deals - let them come to you.';
 const DEFAULT_KEYWORDS = ['creator economy', 'brand deals', 'influencer marketing', 'creator tools', 'collaboration platform', 'influencer rates', 'brand collaboration'];
-const DEFAULT_OG_IMAGE = 'https://creatorarmour.com/og-image.png';
+const DEFAULT_OG_IMAGE = 'https://noticebazaar.com/og-image.png';
 
 export function PageHead({
   title,
@@ -26,7 +26,7 @@ export function PageHead({
   twitterCard = 'summary_large_image',
   noIndex = false
 }: PageHeadProps) {
-  const fullTitle = title ? `${title} | CreatorArmour` : DEFAULT_TITLE;
+  const fullTitle = title ? `${title} | NoticeBazaar` : DEFAULT_TITLE;
 
   useEffect(() => {
     // Update document title
@@ -73,7 +73,7 @@ export function PageHead({
     updateMeta('og:description', description, true);
     updateMeta('og:image', ogImage, true);
     updateMeta('og:type', ogType, true);
-    updateMeta('og:site_name', 'CreatorArmour', true);
+    updateMeta('og:site_name', 'NoticeBazaar', true);
     updateMeta('og:locale', 'en_IN', true);
     
     if (canonicalUrl) {
@@ -85,7 +85,7 @@ export function PageHead({
     updateMeta('twitter:title', fullTitle);
     updateMeta('twitter:description', description);
     updateMeta('twitter:image', ogImage);
-    updateMeta('twitter:site', '@creatorarmour');
+    updateMeta('twitter:site', '@noticebazaar');
 
     // Cleanup function - restore defaults when component unmounts
     return () => {

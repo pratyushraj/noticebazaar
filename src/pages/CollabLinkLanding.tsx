@@ -1695,7 +1695,7 @@ const CollabLinkLanding = () => {
       const fallbackApiBaseUrl = /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/i.test(
         primaryApiBaseUrl
       )
-        ? 'https://creatorarmour-api.onrender.com'
+        ? 'https://noticebazaar-api.onrender.com'
         : null
       const candidateApiBaseUrls = [primaryApiBaseUrl, fallbackApiBaseUrl].filter(
         (value, index, all): value is string => Boolean(value) && all.indexOf(value) === index
@@ -2304,11 +2304,15 @@ const CollabLinkLanding = () => {
         toast.success('Offer sent! Check your email to track it.')
         const requestId = String(data?.request?.id || data?.lead?.id || '').trim() || null
         const successParams = new URLSearchParams({
-          type: collabType,
           brand: brandName,
+          type: collabType,
+          requestId: requestId || '',
         })
         if (deadline) successParams.set('deadline', deadline)
-        if (requestId) successParams.set('requestId', requestId)
+        if (collabType === 'paid' && exactBudget) successParams.set('budget', exactBudget)
+        if (collabType === 'barter' && barterValue) successParams.set('budget', barterValue)
+        if (deliverables.length > 0) successParams.set('deliverables', deliverables.join(','))
+        
         navigate(`/${username}/success?${successParams.toString()}`)
       } else {
         toast.error(data.error || 'Failed to submit request')
@@ -2414,7 +2418,7 @@ const CollabLinkLanding = () => {
     username
   )
   const creatorHandle = normalizedHandle ? `@${normalizedHandle}` : ''
-  const metaTitle = `${creatorName}${creatorHandle ? ` (${creatorHandle})` : ''} Collab Link | CreatorArmour`
+  const metaTitle = `${creatorName}${creatorHandle ? ` (${creatorHandle})` : ''} Collab Link | NoticeBazaar`
   // const platformNames = platforms.map(p => p.name).join(', ');
   const followerCount = creator.platforms.reduce((sum, p) => sum + (p.followers || 0), 0)
   const trustStats = creator.trust_stats
@@ -2461,7 +2465,7 @@ const CollabLinkLanding = () => {
   }
 
   const estimatedAnalyticsTooltip =
-    'Estimated metric — real data will appear as the creator completes campaigns on CreatorArmour.'
+    'Estimated metric — real data will appear as the creator completes campaigns on NoticeBazaar.'
 
   const isDemoAnalytics = {
     brandsContactedThisWeek: creatorAnalytics.brandsContactedThisWeek === null,
@@ -2476,17 +2480,17 @@ const CollabLinkLanding = () => {
       ? `${followerCount >= 1000 ? `${(followerCount / 1000).toFixed(1)}K` : followerCount} followers`
       : ''
   const metaDescription =
-    `Book ${creatorName}${creatorHandle ? ` (${creatorHandle})` : ''}${creator.category ? `, ${creator.category} creator` : ''}${followerText ? ` • ${followerText}` : ''}. Share paid, barter, or hybrid briefs with contract-first protection via CreatorArmour.`.substring(
+    `Book ${creatorName}${creatorHandle ? ` (${creatorHandle})` : ''}${creator.category ? `, ${creator.category} creator` : ''}${followerText ? ` • ${followerText}` : ''}. Share paid, barter, or hybrid briefs with contract-first protection via NoticeBazaar.`.substring(
       0,
       158
     )
 
   // Use clean URL for SEO (no hash)
-  const canonicalUrl = `https://creatorarmour.com/${encodeURIComponent(normalizedHandle)}`
+  const canonicalUrl = `https://noticebazaar.com/${encodeURIComponent(normalizedHandle)}`
   const pageImage =
     creator.profile_photo && /^https?:\/\//i.test(creator.profile_photo)
       ? creator.profile_photo
-      : 'https://creatorarmour.com/og-preview.png'
+      : 'https://noticebazaar.com/og-preview.png'
   const imageAlt = `Collaborate with ${creatorName}${creatorHandle ? ` (${creatorHandle})` : ''}`
   const seoKeywords = Array.from(
     new Set(
@@ -2508,6 +2512,8 @@ const CollabLinkLanding = () => {
   const successType = searchParams.get('type')?.trim()
   const successDeadline = searchParams.get('deadline')?.trim()
   const successRequestId = searchParams.get('requestId')?.trim()
+  const successBudget = searchParams.get('budget')?.trim()
+  const successDeliverables = searchParams.get('deliverables')?.trim()?.split(',').filter(Boolean) || []
 
   const displayBudget = exactBudget
     ? `₹${Number(exactBudget || 0).toLocaleString('en-IN')}`
@@ -2635,7 +2641,7 @@ const CollabLinkLanding = () => {
     creator.collab_engagement_confidence_note?.trim() || 'Above-average engagement for creator size'
   const recentActivityNoteRaw =
     creator.past_brand_count === 0
-      ? 'New Creator on CreatorArmour'
+      ? 'New Creator on NoticeBazaar'
       : creator.collab_recent_activity_note?.trim() || 'Posting consistently'
   const recentActivityNote = withNeutralPrefix(recentActivityNoteRaw, 'Currently ')
   const campaignSlotNoteRaw =
@@ -2788,7 +2794,7 @@ const CollabLinkLanding = () => {
     const profilePageId = `${canonicalUrl}#profile-page`
     const personId = `${canonicalUrl}#creator`
     const serviceId = `${canonicalUrl}#collab-service`
-    const orgId = 'https://creatorarmour.com/#organization'
+    const orgId = 'https://noticebazaar.com/#organization'
 
     const sameAs = creator.platforms
       .map(p => {
@@ -2845,17 +2851,17 @@ const CollabLinkLanding = () => {
         {
           '@type': 'Organization',
           '@id': orgId,
-          name: 'CreatorArmour',
-          alternateName: 'CreatorArmour',
-          url: 'https://creatorarmour.com',
-          logo: 'https://creatorarmour.com/logo.png',
+          name: 'NoticeBazaar',
+          alternateName: 'NoticeBazaar',
+          url: 'https://noticebazaar.com',
+          logo: 'https://noticebazaar.com/logo.png',
         },
         {
           '@type': 'ProfilePage',
           '@id': profilePageId,
           url: canonicalUrl,
           name: `${creatorName}${creatorHandle ? ` (${creatorHandle})` : ''} Collab Profile`,
-          isPartOf: { '@id': 'https://creatorarmour.com/#website' },
+          isPartOf: { '@id': 'https://noticebazaar.com/#website' },
           about: { '@id': personId },
           mainEntity: { '@id': personId },
         },
@@ -2891,7 +2897,7 @@ const CollabLinkLanding = () => {
           serviceType: 'Creator Brand Collaboration',
           areaServed: audienceRegionLabel || 'India',
           offers: offerItems,
-          termsOfService: 'https://creatorarmour.com/terms-of-service',
+          termsOfService: 'https://noticebazaar.com/terms-of-service',
         },
       ],
     }
@@ -2901,141 +2907,165 @@ const CollabLinkLanding = () => {
     return (
       <>
         <SEOHead
-          title={`Offer Sent to ${creatorName} | CreatorArmour`}
+          title={`Offer Sent to ${creatorName} | NoticeBazaar`}
           description={`Your offer for ${creatorName} has been sent. The creator has been notified and can now accept, counter, or decline.`}
           keywords={['creator offer sent', creatorName, creatorHandle].filter(Boolean)}
           image={pageImage}
           imageAlt={imageAlt}
           type="website"
-          canonicalUrl={`https://creatorarmour.com/${encodeURIComponent(normalizedHandle)}/success`}
+          canonicalUrl={`https://noticebazaar.com/${encodeURIComponent(normalizedHandle)}/success`}
         />
 
-        <div className="light min-h-screen bg-[linear-gradient(180deg,#f7fafc_0%,#eef8f5_100%)] text-slate-900">
-          <div className="mx-auto flex min-h-screen max-w-3xl flex-col justify-center px-5 py-12 sm:px-8">
-            <div className="rounded-[32px] border border-emerald-200/80 bg-white/95 p-6 shadow-[0_24px_80px_rgba(15,118,110,0.12)] sm:p-10">
-              <div className="mb-6 inline-flex h-14 w-14 items-center justify-center rounded-full bg-emerald-100 text-emerald-700">
-                <CheckCircle2 className="h-8 w-8" />
-              </div>
+        <div className="light min-h-screen bg-[#F8FAFC] text-slate-900 selection:bg-emerald-500/10">
+          <div className="mx-auto flex min-h-screen max-w-4xl flex-col justify-center px-5 py-12 sm:px-8">
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="rounded-[40px] border border-slate-200 bg-white p-6 shadow-[0_32px_90px_-20px_rgba(0,0,0,0.08)] sm:p-12 relative overflow-hidden"
+            >
+              {/* Decorative accents */}
+              <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-50/50 rounded-full blur-3xl -mr-32 -mt-32 pointer-events-none" />
+              <div className="absolute bottom-0 left-0 w-64 h-64 bg-blue-50/50 rounded-full blur-3xl -ml-32 -mb-32 pointer-events-none" />
 
-              <p className="mb-3 text-[11px] font-black uppercase tracking-[0.28em] text-emerald-700">
-                Offer Sent
-              </p>
-              <h1 className="mb-3 text-4xl font-black tracking-tight text-slate-900 sm:text-5xl">
-                {creatorName} has your offer.
-              </h1>
-              <p className="max-w-2xl text-base leading-7 text-slate-600 sm:text-lg">
-                {successBrand ? `${successBrand}'s` : 'Your'} offer has been delivered. The creator
-                can now review it, accept it, counter it, or decline it.
-              </p>
+              <div className="relative z-10">
+                <div className="mb-8 inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-600 shadow-sm border border-emerald-100">
+                  <CheckCircle2 className="h-9 w-9" />
+                </div>
 
-              <div className="mt-8 grid gap-4 sm:grid-cols-3">
-                <div className="rounded-3xl border border-slate-200 bg-slate-50 p-4">
-                  <p className="text-[11px] font-black uppercase tracking-[0.22em] text-slate-400">
-                    Creator
-                  </p>
-                  <p className="mt-2 text-lg font-black text-slate-900">{creatorName}</p>
-                  <p className="text-sm text-slate-500">
-                    {creatorHandle || creator.category || 'Brand collaborations'}
+                <div className="flex items-center gap-3 mb-4">
+                  <span className="flex h-2 w-2 rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.4)]" />
+                  <p className="text-[11px] font-black uppercase tracking-[0.3em] text-emerald-600">
+                    Offer Delivered Successfully
                   </p>
                 </div>
-                <div className="rounded-3xl border border-slate-200 bg-slate-50 p-4">
-                  <p className="text-[11px] font-black uppercase tracking-[0.22em] text-slate-400">
-                    Offer Type
-                  </p>
-                  <p className="mt-2 text-lg font-black capitalize text-slate-900">
-                    {successType || collabType}
-                  </p>
-                  <p className="text-sm text-slate-500">Shared through CreatorArmour</p>
-                </div>
-                <div className="rounded-3xl border border-slate-200 bg-slate-50 p-4">
-                  <p className="text-[11px] font-black uppercase tracking-[0.22em] text-slate-400">
-                    Deadline
-                  </p>
-                  <p className="mt-2 text-lg font-black text-slate-900">
-                    {successDeadline || 'Shared with creator'}
-                  </p>
-                  <p className="text-sm text-slate-500">
-                    Legal details come later if they are interested
-                  </p>
-                </div>
-              </div>
 
-              <div className="mt-8 rounded-[28px] border border-teal-100 bg-teal-50/70 p-5">
-                <p className="text-[11px] font-black uppercase tracking-[0.24em] text-teal-700">
-                  What Happens Next
+                <h1 className="mb-6 text-4xl font-black tracking-tight text-slate-900 sm:text-6xl leading-[1.1]">
+                  {creatorName} has your offer.
+                </h1>
+                
+                <p className="max-w-2xl text-lg leading-relaxed text-slate-500 mb-10">
+                  {successBrand ? `${successBrand}'s` : 'Your'} collaboration offer has been sent to {creatorName}. 
+                  The creator has been notified via NoticeBazaar and will review your proposal shortly.
                 </p>
-                <div className="mt-4 grid gap-3 sm:grid-cols-3">
-                  <div className="rounded-2xl bg-white px-4 py-3">
-                    <p className="text-sm font-black text-slate-900">1. Creator reviews</p>
-                    <p className="mt-1 text-sm leading-6 text-slate-600">
-                      They see your brief, budget or product value, and timeline.
+
+                <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4 mb-10">
+                  <div className="rounded-3xl border border-slate-100 bg-slate-50/50 p-6 transition-all hover:bg-white hover:shadow-sm">
+                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-3">
+                      Creator
+                    </p>
+                    <p className="text-lg font-black text-slate-900 leading-tight">{creatorName}</p>
+                    <p className="text-xs font-bold text-slate-500 mt-1 opacity-60">
+                      @{normalizedHandle}
                     </p>
                   </div>
-                  <div className="rounded-2xl bg-white px-4 py-3">
-                    <p className="text-sm font-black text-slate-900">2. They respond</p>
-                    <p className="mt-1 text-sm leading-6 text-slate-600">
-                      They can accept, counter, or decline based on fit and availability.
+
+                  <div className="rounded-3xl border border-slate-100 bg-slate-50/50 p-6 transition-all hover:bg-white hover:shadow-sm">
+                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-3">
+                      Investment
+                    </p>
+                    <p className="text-lg font-black text-slate-900 leading-tight">
+                      {successType === 'barter' ? 'Barter' : (successBudget ? `₹${Number(successBudget).toLocaleString('en-IN')}` : 'Paid')}
+                    </p>
+                    <p className="text-xs font-bold text-slate-500 mt-1 opacity-60">
+                      {successType === 'barter' ? 'Product Value' : 'Standard Budget'}
                     </p>
                   </div>
-                  <div className="rounded-2xl bg-white px-4 py-3">
-                    <p className="text-sm font-black text-slate-900">3. Details follow</p>
-                    <p className="mt-1 text-sm leading-6 text-slate-600">
-                      Contract, shipping, and payment details are collected only after interest is
-                      confirmed.
+
+                  <div className="rounded-3xl border border-slate-100 bg-slate-50/50 p-6 transition-all hover:bg-white hover:shadow-sm">
+                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-3">
+                      Deadline
+                    </p>
+                    <p className="text-lg font-black text-slate-900 leading-tight">
+                      {successDeadline || 'No Limit'}
+                    </p>
+                    <p className="text-xs font-bold text-slate-500 mt-1 opacity-60">
+                      Response expected soon
+                    </p>
+                  </div>
+
+                  <div className="rounded-3xl border border-slate-100 bg-slate-50/50 p-6 transition-all hover:bg-white hover:shadow-sm">
+                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-3">
+                      Ref ID
+                    </p>
+                    <p className="text-lg font-black text-slate-900 leading-tight truncate">
+                      {successRequestId ? successRequestId.split('-')[0].toUpperCase() : 'NB-OFFER'}
+                    </p>
+                    <p className="text-xs font-bold text-slate-500 mt-1 opacity-60">
+                      Track in dashboard
                     </p>
                   </div>
                 </div>
-              </div>
 
-              <div className="mt-6 rounded-3xl border border-slate-200 bg-slate-50 p-5">
-                <p className="text-[11px] font-black uppercase tracking-[0.22em] text-slate-500">
-                  Track This Offer
-                </p>
-                <p className="mt-2 text-sm font-medium leading-6 text-slate-600">
-                  We emailed you a link to track replies and manage the deal. If you already have a
-                  brand account, you can also open your dashboard.
-                </p>
-                {successRequestId && (
-                  <p className="mt-3 text-xs font-bold text-slate-500">
-                    Reference ID:{' '}
-                    <span className="font-black text-slate-700">{successRequestId}</span>
-                  </p>
+                {successDeliverables.length > 0 && (
+                  <div className="mb-10 p-8 rounded-[32px] border border-slate-100 bg-slate-50/30">
+                    <p className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400 mb-5">
+                      Included Deliverables
+                    </p>
+                    <div className="flex flex-wrap gap-3">
+                      {successDeliverables.map((d, i) => (
+                        <div key={i} className="px-5 py-2.5 rounded-2xl bg-white border border-slate-100 shadow-sm flex items-center gap-2">
+                          <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                          <span className="text-sm font-black text-slate-800">{d}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                 )}
-                <div className="mt-4 flex flex-col gap-3 sm:flex-row">
+
+                <div className="grid gap-6 sm:grid-cols-3 mb-12">
+                  <div className="flex gap-4">
+                    <div className="h-10 w-10 shrink-0 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center font-black text-sm">1</div>
+                    <div>
+                      <p className="text-sm font-black text-slate-900">Review</p>
+                      <p className="mt-1 text-[13px] leading-relaxed text-slate-500 font-medium">
+                        Creator reviews your brief, budget, and requirements.
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex gap-4">
+                    <div className="h-10 w-10 shrink-0 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-black text-sm">2</div>
+                    <div>
+                      <p className="text-sm font-black text-slate-900">Decision</p>
+                      <p className="mt-1 text-[13px] leading-relaxed text-slate-500 font-medium">
+                        They can accept, counter, or decline based on availability.
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex gap-4">
+                    <div className="h-10 w-10 shrink-0 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center font-black text-sm">3</div>
+                    <div>
+                      <p className="text-sm font-black text-slate-900">Secure Deal</p>
+                      <p className="mt-1 text-[13px] leading-relaxed text-slate-500 font-medium">
+                        Escrow and contracts are handled once interest is confirmed.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex flex-col gap-4 sm:flex-row pt-8 border-t border-slate-100">
                   <Button
-                    type="button"
                     onClick={() => navigate('/brand-dashboard')}
-                    className="h-12 rounded-full bg-slate-900 px-6 text-sm font-black text-white hover:bg-black"
+                    className="h-14 px-10 rounded-2xl bg-slate-900 text-white font-black text-sm uppercase tracking-widest hover:bg-black transition-all shadow-xl shadow-slate-900/10 active:scale-95"
                   >
                     Open Brand Dashboard
                   </Button>
                   <Button
-                    type="button"
                     variant="outline"
-                    onClick={() => navigate('/login')}
-                    className="h-12 rounded-full border-slate-300 px-6 text-sm font-black text-slate-700 hover:bg-white"
+                    onClick={() => navigate(`/${username}`)}
+                    className="h-14 px-10 rounded-2xl border-slate-200 bg-white text-slate-700 font-black text-sm uppercase tracking-widest hover:bg-slate-50 transition-all active:scale-95"
                   >
-                    Log In
+                    Send Another Offer
                   </Button>
                 </div>
-              </div>
 
-              <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-                <Button
-                  onClick={() => navigate(`/${username}`)}
-                  className="h-12 rounded-full bg-teal-600 px-6 text-sm font-black text-white hover:bg-teal-700"
-                >
-                  Send Another Offer
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={() => navigate('/')}
-                  className="h-12 rounded-full border-slate-300 px-6 text-sm font-black text-slate-700 hover:bg-slate-50"
-                >
-                  Go to Homepage
-                </Button>
+                <div className="mt-12 flex items-center justify-center gap-3">
+                  <ShieldCheck className="w-5 h-5 text-emerald-500" />
+                  <p className="text-xs font-bold text-slate-400">
+                    Your offer is protected by NoticeBazaar Escrow and Verification systems.
+                  </p>
+                </div>
               </div>
-            </div>
+            </motion.div>
           </div>
         </div>
       </>
@@ -3056,7 +3086,7 @@ const CollabLinkLanding = () => {
 
       <BreadcrumbSchema
         items={[
-          { name: 'CreatorArmour', url: 'https://creatorarmour.com' },
+          { name: 'NoticeBazaar', url: 'https://noticebazaar.com' },
           { name: creatorHandle || creatorName, url: canonicalUrl },
         ]}
       />
@@ -3390,7 +3420,7 @@ const CollabLinkLanding = () => {
                         <ShieldCheck className="w-4 h-4 text-emerald-500" />
                       </div>
                       <span className="text-[10px] font-black uppercase tracking-[0.25em] text-slate-400">
-                        Secured by CreatorArmour
+                        Secured by NoticeBazaar
                       </span>
                     </div>
                     <p className="text-[11px] font-bold text-slate-400 max-w-[280px] mx-auto leading-relaxed">
@@ -4897,7 +4927,7 @@ const CollabLinkLanding = () => {
               <p className="text-center text-[10px] font-semibold text-slate-500 mt-1.5">
                 {showSubmittingTrust
                   ? 'Your offer is being processed securely'
-                  : '50+ brands have collaborated through CreatorArmour'}
+                  : '50+ brands have collaborated through NoticeBazaar'}
               </p>
               {showSubmittingTrust && (
                 <div className="mt-2 space-y-1.5 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2">

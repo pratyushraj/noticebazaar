@@ -157,7 +157,7 @@ export async function exportPaymentsReport(data: PaymentsReportData): Promise<vo
       pdf.setFontSize(8);
       pdf.setFont('helvetica', 'normal');
       pdf.text(
-        `Page ${i} of ${totalPages} - CreatorArmour Payments Report`,
+        `Page ${i} of ${totalPages} - NoticeBazaar Payments Report`,
         pageWidth / 2,
         pageHeight - 10,
         { align: 'center' }
@@ -180,7 +180,7 @@ export async function exportPaymentsReport(data: PaymentsReportData): Promise<vo
 export function exportPaymentsCSV(data: PaymentsReportData): void {
   try {
     const { brandDeals, expenses, stats } = data;
-    let csvContent = 'CreatorArmour Payments & Expenses Report\n';
+    let csvContent = 'NoticeBazaar Payments & Expenses Report\n';
     csvContent += `Generated: ${new Date().toLocaleDateString('en-US')}\n\n`;
 
     // Summary

@@ -19,8 +19,8 @@ const updateMetadata = (title: string, description: string) => {
   // Update OG tags dynamically (best effort without a dedicated library)
   document.querySelector('meta[property="og:title"]')?.setAttribute('content', title);
   document.querySelector('meta[property="og:description"]')?.setAttribute('content', description);
-  document.querySelector('meta[property="og:url"]')?.setAttribute('content', 'https://creatorarmour.com/free-legal-check');
-  document.querySelector('meta[property="og:image"]')?.setAttribute('content', 'https://creatorarmour.com/legal-check-banner.png'); // Updated image path
+  document.querySelector('meta[property="og:url"]')?.setAttribute('content', 'https://noticebazaar.com/free-legal-check');
+  document.querySelector('meta[property="og:image"]')?.setAttribute('content', 'https://noticebazaar.com/legal-check-banner.png'); // Updated image path
   document.querySelector('meta[name="twitter:card"]')?.setAttribute('content', 'summary_large_image');
 };
 
@@ -33,11 +33,11 @@ const FreeLegalCheck = () => {
 
   // Dynamic Metadata Update
   useEffect(() => {
-    // 1. Recommended New Title: Get Your Free Legal Health Check | CreatorArmour
-    // 2. Recommended New Description: Worried about due diligence? Get a free, 60-second Legal Health Check from CreatorArmour. We'll find your compliance gaps *before* investors do. Get your free report.
+    // 1. Recommended New Title: Get Your Free Legal Health Check | NoticeBazaar
+    // 2. Recommended New Description: Worried about due diligence? Get a free, 60-second Legal Health Check from NoticeBazaar. We'll find your compliance gaps *before* investors do. Get your free report.
     updateMetadata(
-      "Get Your Free Legal Health Check | CreatorArmour",
-      "Worried about due diligence? Get a free, 60-second Legal Health Check from CreatorArmour. We'll find your compliance gaps *before* investors do. Get your free report."
+      "Get Your Free Legal Health Check | NoticeBazaar",
+      "Worried about due diligence? Get a free, 60-second Legal Health Check from NoticeBazaar. We'll find your compliance gaps *before* investors do. Get your free report."
     );
     
     // Meta Pixel Event 1: ViewContent
@@ -48,7 +48,7 @@ const FreeLegalCheck = () => {
     // Cleanup function to reset title/description when component unmounts (or navigates away)
     return () => {
       updateMetadata(
-        "CreatorArmour: Legal & CA Services for SMEs | Compliance, Debt Recovery & Contracts", // Revert to default
+        "NoticeBazaar: Legal & CA Services for SMEs | Compliance, Debt Recovery & Contracts", // Revert to default
         "Get dedicated Advocates & CAs for compliance, debt recovery & contracts at ₹2,999/month. Trusted by 500+ SMEs. Free legal health check available."
       );
     };
@@ -104,7 +104,7 @@ const FreeLegalCheck = () => {
       "name": "Is the Legal Health Check free?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Yes. The Legal Health Check by CreatorArmour is completely free for a limited time."
+        "text": "Yes. The Legal Health Check by NoticeBazaar is completely free for a limited time."
       }
     }]
   };
@@ -112,10 +112,10 @@ const FreeLegalCheck = () => {
   return (
     <div className="nb-screen-height bg-background">
       <SEOHead
-        title="Free Legal Check for Influencer Contracts — CreatorArmour"
+        title="Free Legal Check for Influencer Contracts — NoticeBazaar"
         description="Upload your brand deal contract and get a free legal analysis. Check for red flags, unfair clauses, and payment risks before you sign."
         keywords={['influencer contract review', 'free legal check', 'brand deal contract analysis', 'contract red flags']}
-        canonicalUrl="https://creatorarmour.com/free-legal-check"
+        canonicalUrl="https://noticebazaar.com/free-legal-check"
       />
 
       {/* Inject FAQ Schema */}
@@ -128,7 +128,7 @@ const FreeLegalCheck = () => {
       <header className="sticky top-0 z-50 bg-card/90 backdrop-blur-sm border-b border-border">
         <div className="container mx-auto px-6 py-4 flex items-center justify-between">
           <Link to="/" className="text-xl font-bold text-primary">
-            CreatorArmour
+            NoticeBazaar
           </Link>
           <Button variant="outline" asChild className="text-primary border-border hover:bg-accent hover:text-foreground">
             <Link to="/login">
@@ -239,7 +239,7 @@ const FreeLegalCheck = () => {
       
       {/* Footer (Minimal) */}
       <footer className="border-t border-border mt-12 py-6 text-center text-xs text-gray-500">
-        <p>© 2025 CreatorArmour. All rights reserved. | <Link to="/privacy-policy" className="hover:text-primary">Privacy Policy</Link></p>
+        <p>© 2025 NoticeBazaar. All rights reserved. | <Link to="/privacy-policy" className="hover:text-primary">Privacy Policy</Link></p>
       </footer>
 
       {/* Floating CTA on Scroll */}

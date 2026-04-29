@@ -99,7 +99,7 @@ const ShareEarningsCard: React.FC<ShareEarningsCardProps> = ({
             )}
           </div>
           <div className="mt-auto pt-6">
-            <p className="text-xs text-foreground/40">Powered by CreatorArmour</p>
+            <p className="text-xs text-foreground/40">Powered by NoticeBazaar</p>
           </div>
         </div>
       </Card>

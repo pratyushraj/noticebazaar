@@ -143,8 +143,11 @@ interface SessionContextType {
   isCreator: boolean;
   isBrand: boolean;
   organizationId: string | null;
-  refetchProfile: () => void; // Add refetchProfile to the context type
-  trialStatus: TrialStatus; // NEW: Add trial status
+  refetchProfile: () => void;
+  trialStatus: TrialStatus;
+  isLoadingProfile: boolean;
+  isProfileSlow: boolean;
+  profileError: Error | null;
 }
 
 const SessionContext = createContext<SessionContextType | undefined>(undefined);
@@ -202,12 +205,11 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
         .eq('id', user.id)
         .maybeSingle();
 
-      if (coreError) {
         if ((coreError as any).code !== 'PGRST116') {
           logger.error('SessionContext: Error fetching profile', coreError);
+          throw coreError; // Throw so React Query retries
         }
-        return null;
-      }
+        return null; // Truly missing profile (PGRST116 is no rows found)
 
       if (!coreData) return null;
 
@@ -409,11 +411,11 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
       return finalProfile;
     } catch (err: any) {
       logger.error('SessionContext: Unexpected error fetching profile', err);
-      return null;
+      throw err; // Throw so React Query retries and sets error state
     }
   }, [user?.id]); // Dependency for useCallback
 
-  const { data: profileData, isLoading: isLoadingProfile, refetch: refetchProfileQuery } = useSupabaseQuery<Profile | null, Error>( // Destructure refetch
+  const { data: profileData, isLoading: isLoadingProfile, error: profileQueryError, refetch: refetchProfileQuery } = useSupabaseQuery<Profile | null, Error>( // Destructure refetch
     ['userProfile', user?.id], // Query key depends on user ID
     profileQueryFn, // Pass memoized queryFn
     {
@@ -421,6 +423,8 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
       staleTime: 5 * 60 * 1000, // Profile data can be considered fresh for 5 minutes
       refetchOnWindowFocus: false, // Don't refetch profile on window focus by default
       errorMessage: 'Failed to load user profile',
+      retry: 3, // Retry on failures
+      retryDelay: (attempt) => Math.min(1000 * Math.pow(2, attempt), 10000),
     }
   );
 
@@ -438,7 +442,7 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
     if (isLoadingProfile && !profile) {
       const timer = setTimeout(() => {
         setIsProfileSlow(true);
-      }, 7000);
+      }, 15000); // Increased from 7s to 15s
       return () => clearTimeout(timer);
     } else {
       setIsProfileSlow(false);
@@ -447,7 +451,7 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
 
   // Overall loading state: initial session not complete, OR profile loading when we have no profile yet.
   // If profile is taking too long (isProfileSlow), we stop gating here and let ProtectedRoute handle the fallback/retry.
-  const loading = !initialLoadComplete || (isLoadingProfile && !profile && !isProfileSlow);
+  const loading = !initialLoadComplete || (isLoadingProfile && !profile);
   const authStatus: AuthStatus = loading
     ? 'loading'
     : session
@@ -1050,9 +1054,28 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
     isCreator,
     isBrand,
     organizationId,
-    refetchProfile: refetchProfileQuery || (() => { }), // Expose refetch function with fallback
-    trialStatus, // Include trial status
-  }), [session, user, profile, loading, authStatus, isAuthInitializing, isAdmin, isCreator, organizationId, refetchProfileQuery, trialStatus]);
+    refetchProfile: refetchProfileQuery || (() => { }),
+    trialStatus,
+    isLoadingProfile,
+    isProfileSlow,
+    profileError: profileQueryError
+  }), [
+    session,
+    user,
+    profile,
+    loading,
+    authStatus,
+    isAuthInitializing,
+    isAdmin,
+    isCreator,
+    isBrand,
+    organizationId,
+    refetchProfileQuery,
+    trialStatus,
+    isLoadingProfile,
+    isProfileSlow,
+    profileQueryError
+  ]);
 
   // Ensure context value is always defined before rendering children
   // This prevents timing issues during React's initial render
@@ -1071,6 +1094,8 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
       organizationId: null,
       refetchProfile: () => { },
       trialStatus: { isTrial: false, isExpired: false, daysLeft: 0, trialLocked: false, trialStartedAt: null, trialExpiresAt: null },
+      isLoadingProfile: false,
+      profileError: null
     };
     return (
       <SessionContext.Provider value={fallbackValue}>

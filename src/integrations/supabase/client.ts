@@ -21,7 +21,7 @@ const getSupabaseUrl = () => {
 
   if (useProxy) {
     const apiBase = getApiBaseUrl();
-    // getApiBaseUrl returns "https://api.creatorarmour.com" (no trailing slash)
+    // getApiBaseUrl returns "https://api.noticebazaar.com" (no trailing slash)
     return `${apiBase}/supabase-proxy`;
   }
 

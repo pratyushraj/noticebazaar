@@ -68,7 +68,7 @@ export const COLLAB_NUDGE_RULES: Record<string, CollabNudgeRule> = {
     channels: ['in_app', 'whatsapp'],
     cooldownHours: 48,
     title: 'New collaboration request received',
-    message: 'Review it inside CreatorArmour.',
+    message: 'Review it inside NoticeBazaar.',
   },
   first_deal_completed: {
     key: 'first_deal_completed',

@@ -421,7 +421,7 @@ export const BrandSettingsPanel = ({
       <motion.div 
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
-        className="space-y-8 pb-72"
+        className="space-y-8 pb-32"
       >
         {/* ── Brand Hero Section (Identity Banner) ────────────────────────── */}
         <div className="relative pt-6">
@@ -739,7 +739,7 @@ export const BrandSettingsPanel = ({
         </div>
 
         {/* ── Session Hierarchy ─────────────────────────────────────────── */}
-        <div className="space-y-4 px-1 pt-8 pb-40 transition-opacity duration-500">
+        <div className="space-y-4 px-1 pt-8 pb-20 transition-opacity duration-500">
           <SectionHeader title="Advanced Ops" isDark={isDark} />
           <SettingsGroup isDark={isDark}>
             <SettingsRow 
@@ -759,7 +759,7 @@ export const BrandSettingsPanel = ({
       <div
         className="fixed bottom-0 inset-x-0 z-[100] px-6 pt-16"
         style={{
-          paddingBottom: 'max(env(safe-area-inset-bottom), 120px)',
+          paddingBottom: 'max(env(safe-area-inset-bottom), 100px)',
           background: isDark
             ? 'linear-gradient(to top, #0B1324 60%, rgba(11,19,36,0.95) 80%, transparent 100%)'
             : 'linear-gradient(to top, #F9FAFB 60%, rgba(249,250,251,0.95) 80%, transparent 100%)'

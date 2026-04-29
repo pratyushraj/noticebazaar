@@ -318,7 +318,7 @@ const RateCalculator = () => {
 
   const handleShareWhatsApp = () => {
     const rate = getDisplayRate();
-    const message = `Check out my content rate: ${currencySymbols[currency]}${rate.toLocaleString('en-IN')}\n\nCalculated using CreatorArmour Rate Calculator`;
+    const message = `Check out my content rate: ${currencySymbols[currency]}${rate.toLocaleString('en-IN')}\n\nCalculated using NoticeBazaar Rate Calculator`;
     const url = `https://wa.me/?text=${encodeURIComponent(message)}`;
     window.open(url, '_blank', 'noopener,noreferrer');
     toast.success('Opening WhatsApp...');
@@ -353,7 +353,7 @@ const RateCalculator = () => {
         title="Influencer Rate Calculator — Know What to Charge Brands"
         description="Free influencer rate calculator for Indian creators. Calculate fair rates based on followers, engagement, and content type. Used by 10,000+ creators."
         keywords={['influencer rate calculator', 'how much to charge brands', 'creator pricing tool', 'instagram rate card']}
-        canonicalUrl="https://creatorarmour.com/rate-calculator"
+        canonicalUrl="https://noticebazaar.com/rate-calculator"
       />
       {/* Header */}
       <div className="mb-6 pb-4 border-b border-border/5 shadow-[0_4px_20px_rgba(0,0,0,0.4)]">

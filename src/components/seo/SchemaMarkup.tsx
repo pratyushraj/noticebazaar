@@ -38,13 +38,13 @@ interface BreadcrumbSchemaProps {
 export const ArticleSchema: React.FC<ArticleSchemaProps> = ({
   title,
   description,
-  image = 'https://creatorarmour.com/og-preview.png',
+  image = 'https://noticebazaar.com/og-preview.png',
   datePublished,
   dateModified,
-  author = { name: 'CreatorArmour', type: 'Organization' },
+  author = { name: 'NoticeBazaar', type: 'Organization' },
   publisher = {
-    name: 'CreatorArmour',
-    logo: 'https://creatorarmour.com/logo.png',
+    name: 'NoticeBazaar',
+    logo: 'https://noticebazaar.com/logo.png',
   },
 }) => {
   useEffect(() => {
@@ -65,12 +65,12 @@ export const ArticleSchema: React.FC<ArticleSchemaProps> = ({
         name: publisher.name,
         logo: {
           '@type': 'ImageObject',
-          url: publisher.logo || 'https://creatorarmour.com/logo.png',
+          url: publisher.logo || 'https://noticebazaar.com/logo.png',
         },
       },
       mainEntityOfPage: {
         '@type': 'WebPage',
-        '@id': typeof window !== 'undefined' ? window.location.href : 'https://creatorarmour.com',
+        '@id': typeof window !== 'undefined' ? window.location.href : 'https://noticebazaar.com',
       },
     };
 

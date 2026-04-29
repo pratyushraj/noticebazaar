@@ -423,7 +423,7 @@ export const QuickOfferSheet: React.FC<QuickOfferSheetProps> = ({
                             </Button>
                             <p className="mt-4 flex items-center justify-center gap-2 text-center text-[10px] font-medium uppercase tracking-widest italic text-slate-400">
                                 <Sparkles className="w-3 h-3" />
-                                Protected by CreatorArmour
+                                Protected by NoticeBazaar
                             </p>
                         </div>
                     </>

@@ -11,14 +11,14 @@ const DynamicRateCalculator = () => {
   const platformName = platform.charAt(0).toUpperCase() + platform.slice(1);
   const nicheName = niche.charAt(0).toUpperCase() + niche.slice(1);
 
-  const seoTitle = `${nicheName} Creator Rate Calculator for ${platformName} | CreatorArmour`;
+  const seoTitle = `${nicheName} Creator Rate Calculator for ${platformName} | NoticeBazaar`;
   const seoDescription = `Find out how much ${niche} creators should charge on ${platformName}. Get accurate rate estimates based on followers, engagement, and deliverables.`;
 
-  const canonicalUrl = `https://creatorarmour.com/rate-calculator/${platform}/${niche}`;
+  const canonicalUrl = `https://noticebazaar.com/rate-calculator/${platform}/${niche}`;
 
   const breadcrumbItems = [
-    { name: 'Home', url: 'https://creatorarmour.com' },
-    { name: 'Rate Calculator', url: 'https://creatorarmour.com/rate-calculator' },
+    { name: 'Home', url: 'https://noticebazaar.com' },
+    { name: 'Rate Calculator', url: 'https://noticebazaar.com/rate-calculator' },
     { name: `${platformName} - ${nicheName}`, url: canonicalUrl },
   ];
 
@@ -70,7 +70,7 @@ const DynamicRateCalculator = () => {
               <div className="bg-card backdrop-blur-md rounded-2xl p-6 border border-border">
                 <h3 className="text-xl font-bold mb-3">Next Step: Protected Deal</h3>
                 <p className="text-muted-foreground text-sm leading-relaxed mb-4">
-                  Once you've calculated your rate, use CreatorArmour to share a collab link and manage collaborations professionally.
+                  Once you've calculated your rate, use NoticeBazaar to share a collab link and manage collaborations professionally.
                 </p>
                 <Link to="/signup" className="inline-flex items-center gap-2 bg-info hover:bg-info px-6 py-3 rounded-2xl font-bold text-xs uppercase tracking-widest transition-all">
                   Get Protected

@@ -144,7 +144,7 @@ export function CreatorProgressiveChecklist({
     }
 
     if (mode === 'whatsapp') {
-      window.open(`https://wa.me/?text=${encodeURIComponent(`Check my CreatorArmour collab page: ${collabUrl}`)}`, '_blank', 'noopener,noreferrer');
+      window.open(`https://wa.me/?text=${encodeURIComponent(`Check my NoticeBazaar collab page: ${collabUrl}`)}`, '_blank', 'noopener,noreferrer');
     }
 
     if (mode === 'open') {

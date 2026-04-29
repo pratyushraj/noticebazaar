@@ -35,9 +35,9 @@ export interface CollabRequest {
   };
 }
 
-const STALE_TIME_MS = 3 * 60 * 1000;   // 3 minutes – cache considered fresh, no refetch on remount
-const REFETCH_INTERVAL_MS = 5 * 60 * 1000; // 5 minutes – background refetch when on page
-const FAST_POLL_WINDOW_MS = 60 * 1000; // 60s burst on first dashboard view to surface new offers quickly
+const STALE_TIME_MS = 30 * 1000;   // 30 seconds – cache considered fresh
+const REFETCH_INTERVAL_MS = 20 * 1000; // 20 seconds – background refetch
+const FAST_POLL_WINDOW_MS = 60 * 1000; // 60s burst
 const FAST_POLL_INTERVAL_MS = 5 * 1000; // 5s
 
 async function fetchCollabRequests(): Promise<CollabRequest[]> {

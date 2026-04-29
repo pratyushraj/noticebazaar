@@ -223,9 +223,9 @@ const LandingPage = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const canonicalUrl = 'https://creatorarmour.com/';
-  const seoTitle = 'CreatorArmour - Close Brand Deals Without Instagram DMs';
-  const seoDescription = 'CreatorArmour gives you a professional collaboration page where brands send structured offers, contracts are generated automatically, and deals are tracked in your dashboard.';
+  const canonicalUrl = 'https://noticebazaar.com/';
+  const seoTitle = 'NoticeBazaar - Close Brand Deals Without Instagram DMs';
+  const seoDescription = 'NoticeBazaar gives you a professional collaboration page where brands send structured offers, contracts are generated automatically, and deals are tracked in your dashboard.';
   const seoKeywords = [
     'creator collab link',
     'brand deal management',
@@ -281,13 +281,13 @@ const LandingPage = () => {
           '@graph': [
             {
               '@type': 'WebSite',
-              name: 'CreatorArmour',
-              url: 'https://creatorarmour.com',
+              name: 'NoticeBazaar',
+              url: 'https://noticebazaar.com',
               description: seoDescription,
             },
             {
               '@type': 'SoftwareApplication',
-              name: 'CreatorArmour',
+              name: 'NoticeBazaar',
               applicationCategory: 'BusinessApplication',
               operatingSystem: 'Web',
               description: seoDescription,
@@ -314,7 +314,7 @@ const LandingPage = () => {
               <ShieldCheck className="w-5 h-5 text-white" />
             </div>
             <h1 className="text-[16px] sm:text-[17px] font-black tracking-tight text-[#0F172A] whitespace-nowrap hidden min-[380px]:block">
-              CreatorArmour
+              NoticeBazaar
             </h1>
           </Link>
 
@@ -691,10 +691,10 @@ const LandingPage = () => {
                   Add your link to your Instagram bio.
                 </h2>
                 <p className="text-xl text-[#64748B] font-medium leading-relaxed max-w-lg mx-auto lg:mx-0">
-                  Stop losing deals in the noise. Let brands send structured collaboration offers directly through your personal CreatorArmour page.
+                  Stop losing deals in the noise. Let brands send structured collaboration offers directly through your personal NoticeBazaar page.
                 </p>
                 <div className="bg-[#F8FAF9] border border-[#E5E7EB] p-4 rounded-xl inline-block mt-4 backdrop-blur-sm">
-                  <p className="font-mono text-[#16A34A] font-bold text-lg md:text-xl">creatorarmour.com/priyasharma</p>
+                  <p className="font-mono text-[#16A34A] font-bold text-lg md:text-xl">noticebazaar.com/priyasharma</p>
                 </div>
               </div>
 
@@ -819,20 +819,20 @@ const LandingPage = () => {
                 <div className="w-11 h-11 bg-[#16A34A] rounded-xl flex items-center justify-center shadow-lg shadow-[#16A34A]/25 transition-all group-hover:scale-105 group-hover:rotate-3">
                   <ShieldCheck className="w-6 h-6 text-white" />
                 </div>
-                <h3 className="text-[24px] font-black tracking-tight text-white italic uppercase">CreatorArmour</h3>
+                <h3 className="text-[24px] font-black tracking-tight text-white italic uppercase">NoticeBazaar</h3>
               </Link>
               <p className="max-w-md text-[17px] leading-relaxed font-medium text-slate-400">
                 The high-performance infrastructure for creators to close brand deals, manage contracts, and track revenue professionally.
               </p>
               
               <div className="flex items-center gap-4 pt-4">
-                <a href="https://www.instagram.com/creatorarmour" target="_blank" rel="noreferrer" className="w-12 h-12 rounded-2xl border border-white/10 bg-white/5 text-slate-400 hover:text-[#16A34A] hover:border-[#16A34A]/50 inline-flex items-center justify-center transition-all hover:-translate-y-1 hover:shadow-[0_0_20px_rgba(22,163,74,0.15)]" aria-label="Instagram">
+                <a href="https://www.instagram.com/noticebazaar" target="_blank" rel="noreferrer" className="w-12 h-12 rounded-2xl border border-white/10 bg-white/5 text-slate-400 hover:text-[#16A34A] hover:border-[#16A34A]/50 inline-flex items-center justify-center transition-all hover:-translate-y-1 hover:shadow-[0_0_20px_rgba(22,163,74,0.15)]" aria-label="Instagram">
                   <Instagram className="w-5.5 h-5.5" />
                 </a>
-                <a href="https://x.com/CreatorArmour" target="_blank" rel="noreferrer" className="w-12 h-12 rounded-2xl border border-white/10 bg-white/5 text-slate-400 hover:text-[#16A34A] hover:border-[#16A34A]/50 inline-flex items-center justify-center transition-all hover:-translate-y-1 hover:shadow-[0_0_20px_rgba(22,163,74,0.15)]" aria-label="X">
+                <a href="https://x.com/NoticeBazaar" target="_blank" rel="noreferrer" className="w-12 h-12 rounded-2xl border border-white/10 bg-white/5 text-slate-400 hover:text-[#16A34A] hover:border-[#16A34A]/50 inline-flex items-center justify-center transition-all hover:-translate-y-1 hover:shadow-[0_0_20px_rgba(22,163,74,0.15)]" aria-label="X">
                   <Twitter className="w-5.5 h-5.5" />
                 </a>
-                <a href="https://www.linkedin.com/company/creatorarmour/" target="_blank" rel="noreferrer" className="w-12 h-12 rounded-2xl border border-white/10 bg-white/5 text-slate-400 hover:text-[#16A34A] hover:border-[#16A34A]/50 inline-flex items-center justify-center transition-all hover:-translate-y-1 hover:shadow-[0_0_20px_rgba(22,163,74,0.15)]" aria-label="LinkedIn">
+                <a href="https://www.linkedin.com/company/noticebazaar/" target="_blank" rel="noreferrer" className="w-12 h-12 rounded-2xl border border-white/10 bg-white/5 text-slate-400 hover:text-[#16A34A] hover:border-[#16A34A]/50 inline-flex items-center justify-center transition-all hover:-translate-y-1 hover:shadow-[0_0_20px_rgba(22,163,74,0.15)]" aria-label="LinkedIn">
                   <Linkedin className="w-5.5 h-5.5" />
                 </a>
               </div>
@@ -868,7 +868,7 @@ const LandingPage = () => {
                 <p className="text-[13px] font-black uppercase tracking-[0.25em] text-white/30">Resources</p>
                 <div className="flex flex-col gap-4 text-[16px] font-bold text-slate-400">
                   <Link to="/signup" className="hover:text-white transition-colors w-fit">Creator Blog</Link>
-                  <a href="mailto:support@creatorarmour.com" className="hover:text-white transition-colors w-fit">Help Center</a>
+                  <a href="mailto:support@noticebazaar.com" className="hover:text-white transition-colors w-fit">Help Center</a>
                   <Link to="/signup" className="hover:text-white transition-colors w-fit">Contract Templates</Link>
                   <Link to="/signup" className="hover:text-white transition-colors w-fit">Rate Tool</Link>
                 </div>
@@ -879,7 +879,7 @@ const LandingPage = () => {
                   <Link to="/signup" className="hover:text-white transition-colors w-fit">About Us</Link>
                   <Link to="/privacy-policy" className="hover:text-white transition-colors w-fit">Privacy</Link>
                   <Link to="/terms-of-service" className="hover:text-white transition-colors w-fit">Terms</Link>
-                  <a href="mailto:support@creatorarmour.com" className="hover:text-white transition-colors w-fit">Contact</a>
+                  <a href="mailto:support@noticebazaar.com" className="hover:text-white transition-colors w-fit">Contact</a>
                 </div>
               </div>
             </div>
@@ -888,7 +888,7 @@ const LandingPage = () => {
           <div className="mt-16 flex flex-col lg:flex-row items-center justify-between gap-10">
             <div className="flex flex-col items-center lg:items-start gap-3">
               <p className="text-[15px] font-medium text-slate-500 text-center lg:text-left">
-                © 2026 CreatorArmour. All rights reserved. Built for professional creators.
+                © 2026 NoticeBazaar. All rights reserved. Built for professional creators.
               </p>
             </div>
             

@@ -361,7 +361,7 @@ export default function PremiumDrawer({
                 </div>
                 <div>
                   <p className="text-[15px] font-black tracking-tight text-foreground leading-none">
-                    CreatorArmour
+                    NoticeBazaar
                   </p>
                   <p className="text-[10px] font-black uppercase tracking-[0.25em] text-muted-foreground mt-0.5">
                     Console

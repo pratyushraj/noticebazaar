@@ -1,5 +1,5 @@
 /**
- * Centralized logging utility for CreatorArmour
+ * Centralized logging utility for NoticeBazaar
  * Provides consistent logging across the application with environment-aware output
  */
 

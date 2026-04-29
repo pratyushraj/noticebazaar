@@ -160,7 +160,7 @@ export const FullScreenLoader = ({
         className="absolute bottom-12 left-0 right-0 text-center"
       >
         <p className="text-[10px] uppercase font-black tracking-[0.5em] text-emerald-500/20">
-          CreatorArmour Enterprise
+          NoticeBazaar Enterprise
         </p>
       </motion.div>
     </div>

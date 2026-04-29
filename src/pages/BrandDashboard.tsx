@@ -35,7 +35,7 @@ const BrandDashboard: React.FC = () => {
         : '';
 
   const isBrandUser = profile?.role === 'brand' || metadataRole === 'brand';
-  const isDemoBrand = String(user?.email || '').toLowerCase() === 'brand-demo@creatorarmour.com';
+  const isDemoBrand = String(user?.email || '').toLowerCase() === 'brand-demo@noticebazaar.com';
 
   const loadBrandDashboard = useCallback(async () => {
     // Wait for session to be resolved
@@ -89,6 +89,15 @@ const BrandDashboard: React.FC = () => {
 
   useEffect(() => {
     void loadBrandDashboard();
+    
+    // Add polling fallback in case realtime fails
+    const interval = setInterval(() => {
+      if (document.visibilityState === 'visible') {
+        void loadBrandDashboard();
+      }
+    }, 30000); // 30s polling
+    
+    return () => clearInterval(interval);
   }, [loadBrandDashboard]);
 
   // Use a ref for the reload function so the real-time listener always has the latest 

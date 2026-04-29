@@ -53,11 +53,11 @@ const Signup = () => {
   const [signupPhase, setSignupPhase] = useState<'idle' | 'creating' | 'provisioning' | 'opening'>('idle');
 
   useEffect(() => {
-    document.title = accountMode === 'brand' ? 'Create Brand Account | CreatorArmour' : 'Create your creator link | CreatorArmour';
+    document.title = accountMode === 'brand' ? 'Create Brand Account | NoticeBazaar' : 'Create your creator link | NoticeBazaar';
     const meta = document.querySelector('meta[name="description"]');
     meta?.setAttribute('content', accountMode === 'brand'
-      ? 'Create a CreatorArmour brand account to send structured offers and manage creator deal workflows.'
-      : 'Create your CreatorArmour account and get your creator link ready in 2 minutes.');
+      ? 'Create a NoticeBazaar brand account to send structured offers and manage creator deal workflows.'
+      : 'Create your NoticeBazaar account and get your creator link ready in 2 minutes.');
   }, [accountMode]);
 
   const profilesTable = supabase.from('profiles') as unknown as {
@@ -677,7 +677,7 @@ const Signup = () => {
             <ShieldCheck className="h-8 w-8 text-white relative z-10" />
             <div className="absolute inset-0 bg-white/20 rounded-[22px] opacity-0 group-hover:opacity-100 transition-opacity" />
           </motion.div>
-          <h1 className="text-2xl font-black tracking-tighter text-white mb-1 uppercase italic">CreatorArmour</h1>
+          <h1 className="text-2xl font-black tracking-tighter text-white mb-1 uppercase italic">NoticeBazaar</h1>
           <div className="flex items-center gap-2">
             <span className="w-8 h-[1px] bg-emerald-500/30" />
             <p className="text-[10px] font-black uppercase tracking-[0.3em] text-emerald-500/80">Securing your future</p>
@@ -785,7 +785,7 @@ const Signup = () => {
                           Brand / Agency Name
                         </Label>
                         <Input
-                          placeholder="e.g. Nike, creatorarmour"
+                          placeholder="e.g. Nike, noticebazaar"
                           value={brandName}
                           onChange={(e) => setBrandName(e.target.value)}
                           onKeyDown={(e) => e.key === 'Enter' && e.currentTarget.blur()}

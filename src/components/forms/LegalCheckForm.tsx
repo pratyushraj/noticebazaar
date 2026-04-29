@@ -265,7 +265,7 @@ const LegalCheckForm = () => {
   return (
     <form onSubmit={handleSubmit} className="space-y-8 p-6 bg-card rounded-xl shadow-lg border border-border">
       <h3 className="text-2xl font-bold text-foreground">1. Tell Us About Your Creator Workflow</h3>
-      <p className="text-muted-foreground">Answer a few quick questions so CreatorArmour can flag your likely contract, payment, and proof risks. You will get a personalized summary with the next action to take first.</p>
+      <p className="text-muted-foreground">Answer a few quick questions so NoticeBazaar can flag your likely contract, payment, and proof risks. You will get a personalized summary with the next action to take first.</p>
 
       {/* Progress Bar and Step Indicators */}
       <div className="space-y-3">

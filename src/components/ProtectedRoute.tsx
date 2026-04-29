@@ -81,7 +81,7 @@ const inferRequestedRole = (
   const ProtectedRoute = ({ children, allowedRoles, requiredRole }: ProtectedRouteProps) => {
     const navigate = useNavigate();
     const location = useLocation();
-    const { session, authStatus, profile, refetchProfile, user, isAuthInitializing } = useSession();
+    const { session, authStatus, profile, refetchProfile, user, isAuthInitializing, isLoadingProfile, isProfileSlow, profileError } = useSession();
     const signOutMutation = useSignOut();
     // Do not infer role from path/metadata for authorization decisions.
     // `profiles.role` is the single source of truth.
@@ -132,10 +132,15 @@ const inferRequestedRole = (
   // --- Render logic ---
 
   // Unified loading gate to prevent screen flicker between different loaders
-  if (isAuthInitializing || isLoading) {
+  if (isAuthInitializing || isLoading || (isLoadingProfile && !profile && !profileError)) {
+    let loaderMessage = "";
+    if (isLoadingProfile) {
+      loaderMessage = isProfileSlow ? "Your profile is taking a bit longer to load..." : "Preparing your profile...";
+    }
+    
     return (
       <div className="min-h-[100dvh] flex flex-col items-center justify-center bg-[#020D0A]">
-        <FullScreenLoader message="" />
+        <FullScreenLoader message={loaderMessage} />
       </div>
     );
   }
@@ -144,7 +149,10 @@ const inferRequestedRole = (
   if (!session) return null;
 
   // Session but no profile — show error
-  if (session && !profile && user) {
+  // If loadingProfile is still true, we stay in the loading gate above.
+  // If profile is null but there's no error, it might be truly missing (which is an issue).
+  // But during slow loads, profileQueryError will be null until retry attempts fail.
+  if (session && !profile && user && !isLoadingProfile && (profileError || isProfileSlow)) {
     return (
       <div className="nb-screen-height flex flex-col items-center justify-center bg-[#020D0A] p-4 font-outfit relative overflow-hidden">
         {/* Emerald Background Accents */}

@@ -61,7 +61,7 @@ const Layout = ({ children }: LayoutProps) => {
           </main>
 
           <div className="hidden md:block text-center py-4 text-xs text-muted-foreground">
-            © 2026 CreatorArmour
+            © 2026 NoticeBazaar
           </div>
         </div>
 

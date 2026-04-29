@@ -10,12 +10,12 @@ interface LinkPreviewProps {
   domain?: string;
 }
 
-// CreatorArmour specific preview data
+// NoticeBazaar specific preview data
 const CREATORARMOUR_PREVIEW = {
-  title: 'CreatorArmour - Legal & Tax Services for Content Creators',
+  title: 'NoticeBazaar - Legal & Tax Services for Content Creators',
   description: 'Protect your brand deals, track payments, and get legal support. Free for early creators.',
   image: undefined, // Will show gradient background if image not available
-  domain: 'creatorarmour.com',
+  domain: 'noticebazaar.com',
 };
 
 // Extract domain from URL
@@ -28,10 +28,10 @@ const getDomain = (url: string): string => {
   }
 };
 
-// Check if URL is CreatorArmour
-const isCreatorArmourUrl = (url: string): boolean => {
+// Check if URL is NoticeBazaar
+const isNoticeBazaarUrl = (url: string): boolean => {
   const domain = getDomain(url);
-  return domain.includes('creatorarmour.com');
+  return domain.includes('noticebazaar.com');
 };
 
 export const LinkPreview: React.FC<LinkPreviewProps> = ({
@@ -41,9 +41,9 @@ export const LinkPreview: React.FC<LinkPreviewProps> = ({
   image,
   domain,
 }) => {
-  // Use CreatorArmour preview if it's a CreatorArmour URL
-  const isCreatorArmour = isCreatorArmourUrl(url);
-  const previewData = isCreatorArmour ? CREATORARMOUR_PREVIEW : {
+  // Use NoticeBazaar preview if it's a NoticeBazaar URL
+  const isNoticeBazaar = isNoticeBazaarUrl(url);
+  const previewData = isNoticeBazaar ? CREATORARMOUR_PREVIEW : {
     title: title || getDomain(url),
     description: description || 'Click to visit this website',
     image: image,
@@ -73,7 +73,7 @@ export const LinkPreview: React.FC<LinkPreviewProps> = ({
               }}
             />
           ) : (
-            <div className="text-foreground/80 text-xs font-medium">CreatorArmour</div>
+            <div className="text-foreground/80 text-xs font-medium">NoticeBazaar</div>
           )}
         </div>
         <div className="p-3">

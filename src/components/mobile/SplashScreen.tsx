@@ -57,7 +57,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete }) => {
                 CA
               </span>
             </div>
-            <h1 className="text-2xl font-bold text-foreground tracking-tight">CreatorArmour</h1>
+            <h1 className="text-2xl font-bold text-foreground tracking-tight">NoticeBazaar</h1>
           </motion.div>
         </motion.div>
       )}

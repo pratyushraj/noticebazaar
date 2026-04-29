@@ -25,11 +25,11 @@ export const SEOHead: React.FC<SEOHeadProps> = ({
   title,
   description,
   keywords = [],
-  image = 'https://creatorarmour.com/og-preview.png',
+  image = 'https://noticebazaar.com/og-preview.png',
   type = 'website',
   publishedTime,
   modifiedTime,
-  author = 'CreatorArmour',
+  author = 'NoticeBazaar',
   canonicalUrl,
   robots = 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1',
   imageAlt,
@@ -37,7 +37,7 @@ export const SEOHead: React.FC<SEOHeadProps> = ({
   jsonLd,
 }) => {
   const location = useLocation();
-  const baseUrl = 'https://creatorarmour.com';
+  const baseUrl = 'https://noticebazaar.com';
   const currentUrl = canonicalUrl || `${baseUrl}${location.pathname}`;
 
   useEffect(() => {
@@ -95,7 +95,7 @@ export const SEOHead: React.FC<SEOHeadProps> = ({
       updateMetaTag('og:image:alt', imageAlt);
     }
     updateMetaTag('og:url', currentUrl);
-    updateMetaTag('og:site_name', 'CreatorArmour');
+    updateMetaTag('og:site_name', 'NoticeBazaar');
     updateMetaTag('og:locale', locale);
 
     // Article-specific OG tags

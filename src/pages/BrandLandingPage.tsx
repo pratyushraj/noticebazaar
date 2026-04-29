@@ -83,10 +83,10 @@ const BrandLandingPage = () => {
   return (
     <>
       <SEOHead
-        title="CreatorArmour for Brands | Premium Influencer Management"
+        title="NoticeBazaar for Brands | Premium Influencer Management"
         description="Discover creators, send structured offers, and manage collaborations in one premium workflow. Built for modern brands scaling creator marketing."
         keywords={['brand collaboration platform', 'creator discovery', 'influencer marketing india', 'send offers to creators', 'creator campaign management']}
-        canonical="https://creatorarmour.com/brands"
+        canonical="https://noticebazaar.com/brands"
       />
 
       <div className="min-h-screen bg-[#05110E] text-white overflow-hidden selection:bg-emerald-500/30">
@@ -106,7 +106,7 @@ const BrandLandingPage = () => {
               </div>
               <div>
                 <p className="text-[10px] font-black uppercase tracking-[0.2em] text-emerald-400/70 leading-none mb-1">Brand mode</p>
-                <h1 className="text-xl font-black tracking-tight leading-none">CreatorArmour</h1>
+                <h1 className="text-xl font-black tracking-tight leading-none">NoticeBazaar</h1>
               </div>
             </Link>
 
@@ -449,7 +449,7 @@ const BrandLandingPage = () => {
                 <div className="w-8 h-8 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
                   <ShieldCheck className="w-4 h-4 text-emerald-400" />
                 </div>
-                <span className="font-black tracking-tight">CreatorArmour</span>
+                <span className="font-black tracking-tight">NoticeBazaar</span>
               </div>
               <p className="text-white/30 text-xs font-bold uppercase tracking-widest">
                 &copy; 2026 NoticeBazaar. All rights reserved.

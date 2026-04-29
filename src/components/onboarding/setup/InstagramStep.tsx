@@ -114,7 +114,7 @@ export const InstagramStep: React.FC<InstagramStepProps> = ({
             {normalized && (
               <div className="mt-2 space-y-1 text-center">
                 <p className="text-sm text-muted-foreground dark:text-foreground/60">
-                  Your link: <span className="text-info dark:text-secondary font-medium tracking-tight">creatorarmour.com/{normalized || 'username'}</span>
+                  Your link: <span className="text-info dark:text-secondary font-medium tracking-tight">noticebazaar.com/{normalized || 'username'}</span>
                 </p>
                 {availability === 'checking' && (
                   <p className="text-xs font-semibold text-muted-foreground inline-flex items-center gap-1">

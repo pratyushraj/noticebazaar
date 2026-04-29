@@ -13,18 +13,18 @@ interface OrganizationData {
 }
 
 const organizationData: OrganizationData = {
-  name: 'CreatorArmour',
-  url: 'https://creatorarmour.com',
-  logo: 'https://creatorarmour.com/creator-armour-icon.svg',
+  name: 'NoticeBazaar',
+  url: 'https://noticebazaar.com',
+  logo: 'https://noticebazaar.com/creator-armour-icon.svg',
   description: 'Close brand deals without Instagram DMs. The smart platform for creators to manage collaborations, negotiate rates, and get paid faster.',
   sameAs: [
-    'https://twitter.com/creatorarmour',
-    'https://linkedin.com/company/creatorarmour',
-    'https://instagram.com/creatorarmour'
+    'https://twitter.com/noticebazaar',
+    'https://linkedin.com/company/noticebazaar',
+    'https://instagram.com/noticebazaar'
   ],
   contactPoint: {
     contactType: 'customer support',
-    email: 'support@creatorarmour.com'
+    email: 'support@noticebazaar.com'
   }
 };
 

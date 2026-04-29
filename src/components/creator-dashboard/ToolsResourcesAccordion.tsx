@@ -79,7 +79,7 @@ const ToolsResourcesAccordion: React.FC = () => {
             Optimizing Instagram Bio
           </div>
           <div className="p-2 rounded-lg bg-card hover:bg-secondary/50 cursor-pointer">
-            Promoting Your CreatorArmour Link
+            Promoting Your NoticeBazaar Link
           </div>
           <div className="p-2 rounded-lg bg-card hover:bg-secondary/50 cursor-pointer">
             Professional Communication Templates

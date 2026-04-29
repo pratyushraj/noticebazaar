@@ -8,7 +8,7 @@
  * - FAQ schema at bottom
  * - Internal links to:
  *   - Free contract tool (/contract-upload or /contract-analyzer)
- *   - CreatorArmour homepage (/)
+ *   - NoticeBazaar homepage (/)
  *   - Collab link page (if applicable)
  */
 
@@ -109,7 +109,7 @@ export const blogPosts: BlogPost[] = [
         },
         {
           heading: 'Prevention: How to Avoid This Next Time',
-          content: 'The best way to handle non-payment is to prevent it: Always get a contract (even a simple one is better than nothing), include late payment penalties (18% per annum is standard in India), get partial payment upfront (30-50% before you start work protects you), research the brand (check if other creators have had payment issues), and use CreatorArmour (we track all your deals and alert you when payments are due or overdue).',
+          content: 'The best way to handle non-payment is to prevent it: Always get a contract (even a simple one is better than nothing), include late payment penalties (18% per annum is standard in India), get partial payment upfront (30-50% before you start work protects you), research the brand (check if other creators have had payment issues), and use NoticeBazaar (we track all your deals and alert you when payments are due or overdue).',
         },
       ],
     },
@@ -124,7 +124,7 @@ export const blogPosts: BlogPost[] = [
       },
       {
         question: 'How much does a legal notice cost?',
-        answer: 'A legal notice typically costs ₹1,000-2,000 when drafted by a lawyer. CreatorArmour Pro members get free legal notices as part of their subscription.',
+        answer: 'A legal notice typically costs ₹1,000-2,000 when drafted by a lawyer. NoticeBazaar Pro members get free legal notices as part of their subscription.',
       },
       {
         question: 'What if the brand still doesn\'t pay after a legal notice?',
@@ -132,7 +132,7 @@ export const blogPosts: BlogPost[] = [
       },
       {
         question: 'Can I file a consumer complaint myself?',
-        answer: 'Yes, consumer complaints can be filed online for free. You\'ll need your contract, invoices, communication records, and proof of delivery. CreatorArmour can help you file one.',
+        answer: 'Yes, consumer complaints can be filed online for free. You\'ll need your contract, invoices, communication records, and proof of delivery. NoticeBazaar can help you file one.',
       },
     ],
     internalLinks: {
@@ -140,7 +140,7 @@ export const blogPosts: BlogPost[] = [
       homepage: true,
     },
     author: {
-      name: 'CreatorArmour',
+      name: 'NoticeBazaar',
       type: 'Organization',
     },
   },
@@ -163,11 +163,11 @@ export const blogPosts: BlogPost[] = [
         },
         {
           heading: '2. Draft Protective Contracts',
-          content: 'A well-drafted contract is your first line of defense. Ensure your contract includes clear payment schedule (specify exact dates and amounts for each milestone), late payment penalties (include interest, typically 18% per annum, for delayed payments), content ownership (clearly state who owns the content and usage rights), dispute resolution (specify jurisdiction and method for resolving disputes), and termination clauses (define what happens if either party wants to end the agreement early). CreatorArmour\'s contract generator helps you create creator-friendly contracts with all these protections built-in.',
+          content: 'A well-drafted contract is your first line of defense. Ensure your contract includes clear payment schedule (specify exact dates and amounts for each milestone), late payment penalties (include interest, typically 18% per annum, for delayed payments), content ownership (clearly state who owns the content and usage rights), dispute resolution (specify jurisdiction and method for resolving disputes), and termination clauses (define what happens if either party wants to end the agreement early). NoticeBazaar\'s contract generator helps you create creator-friendly contracts with all these protections built-in.',
         },
         {
           heading: '3. Track Payments and Deadlines',
-          content: 'Once you\'ve signed a deal, don\'t just wait for payment. Actively track payment due dates (set reminders 7 days before each payment is due), deliverable deadlines (ensure you meet your commitments to avoid giving brands an excuse to delay payment), and payment status (follow up immediately if payment is even 1 day late). CreatorArmour\'s payment tracking dashboard automatically monitors all your deals and alerts you when payments are due or overdue.',
+          content: 'Once you\'ve signed a deal, don\'t just wait for payment. Actively track payment due dates (set reminders 7 days before each payment is due), deliverable deadlines (ensure you meet your commitments to avoid giving brands an excuse to delay payment), and payment status (follow up immediately if payment is even 1 day late). NoticeBazaar\'s payment tracking dashboard automatically monitors all your deals and alerts you when payments are due or overdue.',
         },
         {
           heading: '4. Take Action When Payment is Delayed',
@@ -178,7 +178,7 @@ export const blogPosts: BlogPost[] = [
     faqs: [
       {
         question: 'What should I include in a protective contract?',
-        answer: 'A protective contract should include clear payment schedules, late payment penalties (18% per annum), content ownership terms, dispute resolution clauses, and termination conditions. CreatorArmour\'s contract generator includes all these protections.',
+        answer: 'A protective contract should include clear payment schedules, late payment penalties (18% per annum), content ownership terms, dispute resolution clauses, and termination conditions. NoticeBazaar\'s contract generator includes all these protections.',
       },
       {
         question: 'How can I spot payment risks before signing?',
@@ -194,7 +194,7 @@ export const blogPosts: BlogPost[] = [
       homepage: true,
     },
     author: {
-      name: 'CreatorArmour',
+      name: 'NoticeBazaar',
       type: 'Organization',
     },
   },
@@ -232,7 +232,7 @@ export const blogPosts: BlogPost[] = [
       },
       {
         question: 'Can I negotiate contract terms?',
-        answer: 'Yes, you should always negotiate contract terms. Don\'t accept unfair clauses. If a brand refuses to negotiate, it\'s a red flag. Use CreatorArmour\'s contract analyzer to identify problematic clauses.',
+        answer: 'Yes, you should always negotiate contract terms. Don\'t accept unfair clauses. If a brand refuses to negotiate, it\'s a red flag. Use NoticeBazaar\'s contract analyzer to identify problematic clauses.',
       },
       {
         question: 'What if I already signed a contract with red flags?',
@@ -244,7 +244,7 @@ export const blogPosts: BlogPost[] = [
       homepage: true,
     },
     author: {
-      name: 'CreatorArmour',
+      name: 'NoticeBazaar',
       type: 'Organization',
     },
   },
@@ -285,7 +285,7 @@ export const blogPosts: BlogPost[] = [
         },
         {
           heading: 'One-Tap Decisions and Structured Counters',
-          content: 'The best setup is: see the full offer (brand, budget, deliverables, deadline), then in one move choose Accept, Counter, or Decline. Accept should mean “yes, let’s do it” and kick off the contract—no extra “review” step. Counter should open a clear form: your amount or product value, deliverables, timeline, and a short note. Everything in one place keeps negotiations fast and clear, and makes it easier for brands to say yes. Tools like CreatorArmour’s collab link and counter-offer flow are built for this: one page, one decision, no endless DMs.',
+          content: 'The best setup is: see the full offer (brand, budget, deliverables, deadline), then in one move choose Accept, Counter, or Decline. Accept should mean “yes, let’s do it” and kick off the contract—no extra “review” step. Counter should open a clear form: your amount or product value, deliverables, timeline, and a short note. Everything in one place keeps negotiations fast and clear, and makes it easier for brands to say yes. Tools like NoticeBazaar’s collab link and counter-offer flow are built for this: one page, one decision, no endless DMs.',
         },
       ],
       conclusion: 'Every offer is a small negotiation. Accept when it’s right, counter when it’s close, decline when it’s not—and do it all in a structured way so you and the brand are on the same page. Use your collab link so brands send real offers, not vague DMs, and counter with clear numbers and terms so you rarely leave money or good opportunities on the table.',
@@ -314,7 +314,7 @@ export const blogPosts: BlogPost[] = [
       collabLink: true,
     },
     author: {
-      name: 'CreatorArmour',
+      name: 'NoticeBazaar',
       type: 'Organization',
     },
   },
@@ -329,7 +329,7 @@ export const blogPosts: BlogPost[] = [
     summary: 'Most collabs still start in DMs and break when terms matter most. Here is why structured deal flow wins for both creators and brands.',
     keywords: ['creator economy', 'brand collaboration', 'contracts', 'payment tracking', 'collab workflow', 'India'],
     content: {
-      introduction: 'Most brand-creator deals still begin in DMs, then become messy when timelines, deliverables, and payments need clarity. CreatorArmour is built to turn that chaos into a professional, protected workflow.',
+      introduction: 'Most brand-creator deals still begin in DMs, then become messy when timelines, deliverables, and payments need clarity. NoticeBazaar is built to turn that chaos into a professional, protected workflow.',
       sections: [
         {
           heading: 'The Real Problem with DM-First Collaboration',
@@ -378,7 +378,7 @@ export const blogPosts: BlogPost[] = [
       contractTool: true,
     },
     author: {
-      name: 'CreatorArmour',
+      name: 'NoticeBazaar',
       type: 'Organization',
     },
   },
@@ -397,7 +397,7 @@ export const blogPosts: BlogPost[] = [
       sections: [
         {
           heading: '1. Ditch the PDF. Use a Live Link.',
-          content: 'PDFs are outdated the moment you export them. Your follower count changes, your engagement rate shifts, and that viral video from yesterday isn\'t in there. By the time a brand opens your PDF attached to an email, the file might be compressed, flagged as spam, or just annoying to read on a phone. Moving your media kit to a live link (like a Notion page, a link-in-bio tool, or your CreatorArmour collab page) means you can update it instantly, track who views it, and make it interactive.',
+          content: 'PDFs are outdated the moment you export them. Your follower count changes, your engagement rate shifts, and that viral video from yesterday isn\'t in there. By the time a brand opens your PDF attached to an email, the file might be compressed, flagged as spam, or just annoying to read on a phone. Moving your media kit to a live link (like a Notion page, a link-in-bio tool, or your NoticeBazaar collab page) means you can update it instantly, track who views it, and make it interactive.',
         },
         {
           heading: '2. The "3-Second Rule" Structure',
@@ -427,7 +427,7 @@ export const blogPosts: BlogPost[] = [
         },
         {
           heading: '5. The Call to Action',
-          content: 'Every media kit needs a clear next step. Don\'t just say "Email me." Give them a frictionless way to submit an offer or book a call. Integrating your CreatorArmour link at the bottom of your media kit allows the brand to submit a structured offer directly into your dashboard, kicking off the contract and payment workflow instantly.',
+          content: 'Every media kit needs a clear next step. Don\'t just say "Email me." Give them a frictionless way to submit an offer or book a call. Integrating your NoticeBazaar link at the bottom of your media kit allows the brand to submit a structured offer directly into your dashboard, kicking off the contract and payment workflow instantly.',
         }
       ],
       conclusion: 'Your media kit isn\'t a scrapbook; it\'s a sales document. Keep it concise, metric-driven, and easy to act upon. The easier you make it for a brand to understand your value and submit an offer, the more closed deals you\'ll see in your pipeline.',
@@ -451,7 +451,7 @@ export const blogPosts: BlogPost[] = [
       collabLink: true,
     },
     author: {
-      name: 'CreatorArmour',
+      name: 'NoticeBazaar',
       type: 'Organization',
     },
   },
@@ -469,7 +469,7 @@ export const blogPosts: BlogPost[] = [
       sections: [
         {
           heading: 'Instagram Rate Benchmarks (India 2026)',
-          content: 'Based on data from over 2,000 Indian creator-brand deals on CreatorArmour, here are the average rates by follower tier:',
+          content: 'Based on data from over 2,000 Indian creator-brand deals on NoticeBazaar, here are the average rates by follower tier:',
           subsections: [
             { heading: 'Nano (1K–10K followers)', content: '₹500–₹2,000 per reel. Best for barter deals and building a portfolio. Brands love nano creators for authentic, high-engagement content.' },
             { heading: 'Micro (10K–50K followers)', content: '₹2,000–₹10,000 per reel. This is the sweet spot for most Indian brands. High engagement, affordable rates, genuine audience trust.' },
@@ -496,7 +496,7 @@ export const blogPosts: BlogPost[] = [
     ],
     keywords: ['influencer rate card india', 'instagram creator rates', 'how much to charge brands', 'influencer pricing india 2026', 'creator rate calculator'],
     internalLinks: { homepage: true, collabLink: true, contractTool: true },
-    author: { name: 'CreatorArmour', type: 'Organization' },
+    author: { name: 'NoticeBazaar', type: 'Organization' },
   },
   {
     slug: 'how-to-get-brand-deals-on-instagram-india',
@@ -516,7 +516,7 @@ export const blogPosts: BlogPost[] = [
         },
         {
           heading: 'Step 2: Build a Collab Link (Your Digital Business Card)',
-          content: 'A collab link is a professional page where brands can see your rates, packages, past work, and send you structured offers — without DMs getting lost. CreatorArmour gives you one for free.',
+          content: 'A collab link is a professional page where brands can see your rates, packages, past work, and send you structured offers — without DMs getting lost. NoticeBazaar gives you one for free.',
         },
         {
           heading: 'Step 3: How to Pitch Brands (With Templates)',
@@ -535,7 +535,7 @@ export const blogPosts: BlogPost[] = [
     ],
     keywords: ['how to get brand deals instagram', 'instagram influencer india', 'brand collaboration instagram', 'pitch brands as creator', 'land first brand deal'],
     internalLinks: { homepage: true, collabLink: true },
-    author: { name: 'CreatorArmour', type: 'Organization' },
+    author: { name: 'NoticeBazaar', type: 'Organization' },
   },
   {
     slug: 'brand-deal-contract-template-india',
@@ -570,7 +570,7 @@ export const blogPosts: BlogPost[] = [
     ],
     keywords: ['brand deal contract template', 'influencer contract india', 'creator agreement template', 'brand collaboration contract', 'free contract template'],
     internalLinks: { homepage: true, contractTool: true },
-    author: { name: 'CreatorArmour', type: 'Organization' },
+    author: { name: 'NoticeBazaar', type: 'Organization' },
   },
   {
     slug: 'dmca-takedown-instagram-content-theft-india',
@@ -605,7 +605,7 @@ export const blogPosts: BlogPost[] = [
     ],
     keywords: ['dmca takedown instagram', 'content theft instagram', 'copyright infringement creator', 'instagram content protection', 'stolen content india'],
     internalLinks: { homepage: true },
-    author: { name: 'CreatorArmour', type: 'Organization' },
+    author: { name: 'NoticeBazaar', type: 'Organization' },
   },
 ];
 
