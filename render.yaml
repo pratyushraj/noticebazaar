@@ -5,8 +5,8 @@ services:
     env: node
     plan: free
     rootDir: server
-    buildCommand: npm install --no-optional --ignore-scripts && npm run build
-    startCommand: npm start
+    buildCommand: corepack enable && corepack prepare pnpm@latest --activate && pnpm install && pnpm run build
+    startCommand: pnpm start
     envVars:
       - key: NODE_ENV
         value: production
@@ -14,9 +14,33 @@ services:
         value: "10000"
       - key: PUPPETEER_SKIP_CHROMIUM_DOWNLOAD
         value: "true"
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
     healthCheckPath: /health
 
-# Note: Frontend static site must be deployed separately via Render Dashboard
-# (Render Blueprint doesn't support static_site type)
-# See RENDER_FRONTEND_DEPLOY.md for instructions
-
+  # Frontend Static Site
+  - type: static_site
+    name: creatorarmour-frontend
+    env: static
+    buildCommand: corepack enable && corepack prepare pnpm@latest --activate && pnpm install && pnpm run build
+    publishDir: dist
+    headers:
+      - path: /*
+        name: Cache-Control
+        value: public, max-age=31536000, immutable
+    routes:
+      - type: rewrite
+        source: /api/*
+        destination: https://creatorarmour-api.onrender.com/api/*
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    envVars:
+      - key: VITE_SUPABASE_URL
+        value: https://ooaxtwmqrvfzdqzoijcj.supabase.co
+      - key: VITE_SUPABASE_ANON_KEY
+        sync: false
+      - key: VITE_API_BASE_URL
+        value: https://creatorarmour-api.onrender.com
