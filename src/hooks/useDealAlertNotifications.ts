@@ -64,7 +64,7 @@ export const useDealAlertNotifications = () => {
       .trim()
       .replace(/\/$/, '');
     if (override) return override;
-    return 'https://creatorarmour-api.onrender.com';
+    return 'https://creatorarmour-api-l6a9.onrender.com';
   }, []);
 
   const hasVapidKey = !!import.meta.env.VITE_VAPID_PUBLIC_KEY;

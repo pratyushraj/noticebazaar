@@ -51,8 +51,8 @@ export function getApiBaseUrl(): string {
 
         // Ensure we don't force localhost on public domains even if localStorage was tampered with.
       if (isProduction) {
-        // Production: use tunnel while Render is down
-        apiUrl = 'https://ruled-qty-brad-examination.trycloudflare.com';
+        // Production: use the Render backend
+        apiUrl = 'https://creatorarmour-api-l6a9.onrender.com';
       } else if (isLocalhost) {
         // Localhost default: prefer local API for developer experience.
         // To force production API, set localStorage.useProdApi = 'true' (or ?prodApi=true).
@@ -114,7 +114,7 @@ export function getApiBaseUrl(): string {
       if (localhostPattern.test(cleanedUrl) || pointsToFrontendOrigin) {
         // Never allow localhost or same-origin API on public frontend hosts.
         // Route directly to production API domain.
-        cleanedUrl = 'https://noticebazaar-api.onrender.com';
+        cleanedUrl = 'https://creatorarmour-api-l6a9.onrender.com';
       }
     }
   }
