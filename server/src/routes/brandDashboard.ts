@@ -48,35 +48,20 @@ const linkOrphanedRecords = async (userId: string, email: string | null) => {
   const brandEmail = String(email).toLowerCase().trim();
   
   try {
-    // Only perform the update if there are records that actually need it.
-    // This saves unnecessary write locks on every request.
-    const { count: reqCount } = await supabase
-      .from('collab_requests')
-      .select('id', { count: 'exact', head: true })
-      .eq('brand_email', brandEmail)
-      .is('brand_id', null);
-      
-    if (reqCount && reqCount > 0) {
-      await supabase
+    // Perform direct updates. Postgres handles the case where no rows match efficiently.
+    // This reduces the number of roundtrips to Supabase from 4 down to 2.
+    await Promise.all([
+      supabase
         .from('collab_requests')
         .update({ brand_id: userId } as any)
         .eq('brand_email', brandEmail)
-        .is('brand_id', null);
-    }
-      
-    const { count: dealCount } = await supabase
-      .from('brand_deals')
-      .select('id', { count: 'exact', head: true })
-      .eq('brand_email', brandEmail)
-      .is('brand_id', null);
-      
-    if (dealCount && dealCount > 0) {
-      await supabase
+        .is('brand_id', null),
+      supabase
         .from('brand_deals')
         .update({ brand_id: userId } as any)
         .eq('brand_email', brandEmail)
-        .is('brand_id', null);
-    }
+        .is('brand_id', null)
+    ]);
   } catch (err) {
     // Non-fatal
     console.warn('[BrandDashboard] Record linking notice:', err?.message || err);
