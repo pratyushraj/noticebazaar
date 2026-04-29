@@ -107,7 +107,8 @@
     "tailwindcss-animate": "^1.0.7",
     "use-sync-external-store": "^1.6.0",
     "web-push": "^3.6.7",
-    "web-vitals": "^5.2.0"
+    "web-vitals": "^5.2.0",
+    "tsx": "^4.20.6"
   },
   "devDependencies": {
     "@dyad-sh/react-vite-component-tagger": "^0.8.0",
@@ -133,7 +134,6 @@
     "postcss": "^8.4.47",
     "tailwindcss": "^3.4.11",
     "terser": "^5.46.1",
-    "tsx": "^4.20.6",
     "typescript": "^5.5.3",
     "typescript-eslint": "^8.0.1",
     "vite": "^5.4.21"
