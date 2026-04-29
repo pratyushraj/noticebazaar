@@ -3370,6 +3370,7 @@ const BrandMobileDashboard = ({
                     getSmartTags={getSmartTags}
                     setActiveTab={setActiveTab}
                     openCreateOfferSheet={openCreateOfferSheet}
+                    resolveDealProductImageUrl={resolveDealProductImageUrl}
                   />
                 )}
                 {activeTab === 'collabs' && (
@@ -3727,7 +3728,8 @@ const BrandDashboardTab = React.memo(({
   getReliabilityLines,
   getSmartTags,
   setActiveTab,
-  openCreateOfferSheet
+  openCreateOfferSheet,
+  resolveDealProductImageUrl
 }: any) => {
   const activeValue = (activeDealsList || []).reduce((sum: number, d: any) => sum + Number(d?.deal_amount || d?.exact_budget || 0), 0);
   const pendingCounterCount = pendingOffersList.length;

@@ -4878,13 +4878,21 @@ const MobileDashboardDemo = ({
                             isLoadingDeals={isLoadingDeals} activeDealsCount={activeDealsCount}
                             completedDealsCount={completedDealsCount} pendingOffersCount={pendingOffersCount}
                             collabSubTab={collabSubTab} setCollabSubTab={setCollabSubTab}
+                            searchParams={searchParams} setSearchParams={setSearchParams}
+                            activeDealsList={activeDealsList} completedDealsList={completedDealsList}
                             pendingOffersDeduplicated={pendingOffersDeduplicated}
                             brandDeals={brandDeals} triggerHaptic={triggerHaptic}
+                            getCreatorDealCardUX={getCreatorDealCardUX}
+                            setSelectedItem={setSelectedItem} setSelectedType={setSelectedType}
                             navigate={navigate} resolveCreatorDealProductImage={resolveCreatorDealProductImage}
                             getBrandIcon={getBrandIcon} Sparkles={Sparkles} Clock={Clock}
                             ChevronRight={ChevronRight} Link2={Link2} profile={profile}
                             username={username} handleCopyStorefront={handleCopyStorefront}
                             setActiveTab={setActiveTab} setActiveSettingsPage={setActiveSettingsPage}
+                            dealsError={dealsError} onRefresh={onRefresh}
+                            safeJsonParse={safeJsonParse} inferCreatorRequiresPayment={inferCreatorRequiresPayment}
+                            safeParseArray={safeParseArray} CreditCard={CreditCard} AlertCircle={AlertCircle}
+                            Zap={Zap} CheckCircle2={CheckCircle2} Camera={Camera}
                         />
                     )}
 
