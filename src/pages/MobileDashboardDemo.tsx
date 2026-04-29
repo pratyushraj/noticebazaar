@@ -8102,12 +8102,28 @@ const DealsTab = React.memo(({
                          <h2 className={cn("text-[20px] font-bold tracking-tight mb-4", textColor)}>Completed</h2>
                          {completedDealsCount > 0 ? (
                              <div className="space-y-4">
-                                {completedDealsList.map((deal: any, idx: number) => (
-                                    <div key={deal.id || idx} className="p-4 rounded-2xl bg-card border border-border">
-                                        <h3 className="font-bold text-white">{deal.brand_name}</h3>
-                                        <p className="text-xs opacity-50">Deal closed successfully</p>
-                                    </div>
-                                ))}
+                                {completedDealsList.map((deal: any, idx: number) => {
+                                    const productImage = resolveCreatorDealProductImage(deal);
+                                    const budget = Number(deal?.deal_amount || deal?.exact_budget || 0);
+                                    return (
+                                        <motion.div key={deal.id || idx} whileTap={{ scale: 0.98 }} onClick={() => { triggerHaptic(); setSelectedItem(deal); setSelectedType('deal'); }} className={cn("relative w-full aspect-[1.2/1] rounded-[2.5rem] overflow-hidden bg-[#0B1220] border-0 shadow-2xl mb-6")}>
+                                            <div className="absolute inset-0">
+                                                {productImage && <img src={productImage} className="w-full h-full object-cover opacity-50" />}
+                                                <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/60 to-black/30" />
+                                            </div>
+                                            <div className="relative h-full p-5 flex flex-col justify-between z-10">
+                                                <div className="px-2.5 py-1.5 rounded-full bg-slate-500/10 border border-slate-500/20 self-start text-[11px] font-black text-slate-400 uppercase tracking-widest">Completed</div>
+                                                <div>
+                                                    <div className="flex justify-between items-end mb-2">
+                                                        <h2 className="text-xl font-black italic uppercase text-white">{deal.brand_name || 'Partner'}</h2>
+                                                        <p className="text-lg font-black text-white">₹{budget.toLocaleString()}</p>
+                                                    </div>
+                                                    <div className="h-1 w-full bg-emerald-500/30 rounded-full overflow-hidden"><div className="h-full bg-emerald-400 w-full" /></div>
+                                                </div>
+                                            </div>
+                                        </motion.div>
+                                    );
+                                })}
                              </div>
                          ) : <div className="p-10 text-center opacity-40">No completed deals</div>}
                     </motion.div>
@@ -8116,13 +8132,29 @@ const DealsTab = React.memo(({
                         <h2 className={cn("text-[20px] font-bold tracking-tight mb-4", textColor)}>Offers</h2>
                         {pendingOffersCount > 0 ? (
                             <div className="space-y-4">
-                                {pendingOffersDeduplicated.map((req: any, idx: number) => (
-                                    <div key={req.id || idx} onClick={() => { triggerHaptic(); setSelectedItem(req); setSelectedType('offer'); }} className="p-4 rounded-2xl bg-card border border-border">
-                                        <h3 className="font-bold text-white">{req.brand_name}</h3>
-                                        <p className="text-xs text-emerald-400">New Offer Received</p>
-                                    </div>
-                                ))}
-                            </div>
+                                {pendingOffersDeduplicated.map((req: any, idx: number) => {
+                                    const productImage = resolveCreatorDealProductImage(req);
+                                    const budget = Number(req?.budget_amount || req?.exact_budget || 0);
+                                    return (
+                                        <motion.div key={req.id || idx} whileTap={{ scale: 0.98 }} onClick={() => { triggerHaptic(); setSelectedItem(req); setSelectedType('offer'); }} className={cn("relative w-full aspect-[1.2/1] rounded-[2.5rem] overflow-hidden bg-[#0B1220] border-0 shadow-2xl mb-6")}>
+                                            <div className="absolute inset-0">
+                                                {productImage && <img src={productImage} className="w-full h-full object-cover" />}
+                                                <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/60 to-black/30" />
+                                            </div>
+                                            <div className="relative h-full p-5 flex flex-col justify-between z-10">
+                                                <div className="px-2.5 py-1.5 rounded-full bg-blue-500/10 border border-blue-500/20 self-start text-[11px] font-black text-blue-400 uppercase tracking-widest">New Offer</div>
+                                                <div>
+                                                    <div className="flex justify-between items-end mb-2">
+                                                        <h2 className="text-xl font-black italic uppercase text-white">{req.brand_name || 'Brand Partner'}</h2>
+                                                        <p className="text-lg font-black text-white">₹{budget.toLocaleString()}</p>
+                                                    </div>
+                                                    <div className="h-1 w-full bg-white/10 rounded-full overflow-hidden animate-pulse"><div className="h-full bg-blue-400 w-1/3" /></div>
+                                                </div>
+                                            </div>
+                                        </motion.div>
+                                    );
+                                })}
+                             </div>
                         ) : <div className="p-10 text-center opacity-40">No pending offers</div>}
                     </motion.div>
                 )}
