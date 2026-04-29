@@ -3444,16 +3444,16 @@ const BrandMobileDashboard = ({
 
           <motion.button 
             whileTap={{ scale: 0.9 }} 
-            onClick={() => { triggerHaptic(HapticPatterns.light); setActiveTab('creators'); }} 
+            onClick={() => { triggerHaptic(HapticPatterns.light); setActiveTab('collabs'); }} 
             className="flex flex-col items-center gap-1 w-12"
           >
             <div className={cn(
               "p-2 rounded-xl transition-all duration-300",
-              activeTab === 'creators' ? (isDark ? 'bg-blue-500/10' : 'bg-blue-50') : 'bg-transparent'
+              activeTab === 'collabs' ? (isDark ? 'bg-blue-500/10' : 'bg-blue-50') : 'bg-transparent'
             )}>
-              <User className={cn('w-[24px] h-[24px] transition-colors duration-300', activeTab === 'creators' ? (isDark ? 'text-blue-400' : 'text-blue-600') : secondaryTextColor)} />
+              <Handshake className={cn('w-[24px] h-[24px] transition-colors duration-300', activeTab === 'collabs' ? (isDark ? 'text-blue-400' : 'text-blue-600') : secondaryTextColor)} />
             </div>
-            <span className={cn('text-[9px] font-black uppercase tracking-widest transition-colors duration-300', activeTab === 'creators' ? (isDark ? 'text-blue-400' : 'text-blue-600') : secondaryTextColor)}>Find</span>
+            <span className={cn('text-[9px] font-black uppercase tracking-widest transition-colors duration-300', activeTab === 'collabs' ? (isDark ? 'text-blue-400' : 'text-blue-600') : secondaryTextColor)}>Deals</span>
           </motion.button>
 
           <motion.button 
@@ -3475,16 +3475,16 @@ const BrandMobileDashboard = ({
 
           <motion.button 
             whileTap={{ scale: 0.9 }} 
-            onClick={() => { triggerHaptic(HapticPatterns.light); setActiveTab('collabs'); }} 
+            onClick={() => { triggerHaptic(HapticPatterns.light); setActiveTab('creators'); }} 
             className="flex flex-col items-center gap-1 w-12"
           >
             <div className={cn(
               "p-2 rounded-xl transition-all duration-300",
-              activeTab === 'collabs' ? (isDark ? 'bg-blue-500/10' : 'bg-blue-50') : 'bg-transparent'
+              activeTab === 'creators' ? (isDark ? 'bg-blue-500/10' : 'bg-blue-50') : 'bg-transparent'
             )}>
-              <Handshake className={cn('w-[24px] h-[24px] transition-colors duration-300', activeTab === 'collabs' ? (isDark ? 'text-blue-400' : 'text-blue-600') : secondaryTextColor)} />
+              <User className={cn('w-[24px] h-[24px] transition-colors duration-300', activeTab === 'creators' ? (isDark ? 'text-blue-400' : 'text-blue-600') : secondaryTextColor)} />
             </div>
-            <span className={cn('text-[9px] font-black uppercase tracking-widest transition-colors duration-300', activeTab === 'collabs' ? (isDark ? 'text-blue-400' : 'text-blue-600') : secondaryTextColor)}>Deals</span>
+            <span className={cn('text-[9px] font-black uppercase tracking-widest transition-colors duration-300', activeTab === 'creators' ? (isDark ? 'text-blue-400' : 'text-blue-600') : secondaryTextColor)}>Find</span>
           </motion.button>
 
           <motion.button 
