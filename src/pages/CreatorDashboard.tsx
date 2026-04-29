@@ -67,6 +67,8 @@ const CreatorDashboard = () => {
   const isLoadingBrandDeals = dealsQuery.isLoading;
 
   // Real-time Profile Views tracking (from collab_link_events)
+  // REMOVED for performance — we no longer show visitor counts on home
+  /*
   const viewsQuery = useQuery({
     queryKey: ['profile-views-today', user?.id],
     queryFn: async () => {
@@ -92,6 +94,8 @@ const CreatorDashboard = () => {
     meta: { silent: true },
   });
   const profileViewsToday = viewsQuery.data ?? 0;
+  */
+  const profileViewsToday = 0;
 
   // Production safety: avoid partial render flicker on first load.
   // We only "release" the dashboard once both endpoints have settled (success or error).

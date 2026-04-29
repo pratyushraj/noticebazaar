@@ -1756,14 +1756,13 @@ const MobileDashboardDemo = ({
         
         return url;
     };
+    // No longer fetching live public profile for performance - using session profile directly
     const avatarUrl =
         resolveAvatarUrl(profile?.instagram_profile_photo) ||
         resolveAvatarUrl(profile?.avatar_url) ||
-        resolveAvatarUrl(liveCollabProfile?.profile_photo) ||
         avatarFallbackUrl;
     const avatarVersionedUrl = withCacheBuster(avatarUrl, profile?.last_instagram_sync || username) || avatarUrl;
-    const rawDisplayName = liveCollabProfile?.name || 
-        profile?.full_name || 
+    const rawDisplayName = profile?.full_name || 
         (profile?.first_name ? `${profile.first_name}${profile.last_name ? ' ' + profile.last_name : ''}` : null) || 
         profile?.username || 
         'Creator';
@@ -2022,40 +2021,7 @@ const MobileDashboardDemo = ({
         }, 0);
     }, [stats?.earnings, brandDeals]);
 
-    useEffect(() => {
-        const handle = (instagramHandle || '').trim();
-        if (!handle) {
-            setLiveCollabProfile(null);
-            return;
-        }
 
-        const controller = new AbortController();
-        const loadLiveCollabProfile = async () => {
-            try {
-                const response = await fetch(`${getApiBaseUrl()}/api/collab/${encodeURIComponent(handle)}`, {
-                    signal: controller.signal,
-                });
-                if (!response.ok) return;
-                const data = await response.json().catch(() => null);
-                const creator = data?.creator;
-                if (!creator) return;
-                const photoUrl = creator.profile_photo || null;
-                const proxiedPhoto = photoUrl && (photoUrl.includes('fbcdn.net') || photoUrl.includes('instagram.com'))
-                    ? `https://wsrv.nl/?url=${encodeURIComponent(photoUrl)}`
-                    : photoUrl;
-
-                setLiveCollabProfile({
-                    name: creator.name || null,
-                    profile_photo: proxiedPhoto,
-                });
-            } catch {
-                // Ignore transient failures; fallback profile data remains visible.
-            }
-        };
-
-        loadLiveCollabProfile();
-        return () => controller.abort();
-    }, [instagramHandle]);
 
     const yearlyRevenue = React.useMemo(() => {
         if (stats?.earnings > 0 && stats?.timeframe === 'year') return stats.earnings;
