@@ -75,7 +75,7 @@ TO public
 USING (bucket_id = 'creator-assets');
 
 -- Add comment for documentation
-COMMENT ON TABLE storage.buckets IS 'Storage buckets for NoticeBazaar application';
+COMMENT ON TABLE storage.buckets IS 'Storage buckets for Creator Armour application';
 COMMENT ON POLICY "Users can upload their own files" ON storage.objects IS 'Allows authenticated users to upload files to their own folder in creator-assets bucket';
 COMMENT ON POLICY "Users can read their own files" ON storage.objects IS 'Allows authenticated users to read files from their own folder in creator-assets bucket';
 COMMENT ON POLICY "Public can read files" ON storage.objects IS 'Allows public read access to all files in creator-assets bucket (for public URLs)';

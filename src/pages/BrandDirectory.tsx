@@ -114,7 +114,7 @@ const BrandDirectory = () => {
         title="Brand Directory — Find Brands for Creator Collaborations"
         description="Browse brands looking for Indian creators. Filter by industry, payment rating, and bookmark brands you want to work with."
         keywords={['brand directory', 'brands for influencers', 'brand collaboration india', 'find brand deals']}
-        canonicalUrl="https://noticebazaar.com/brand-directory"
+        canonicalUrl="https://creatorarmour.com/brand-directory"
       />
       {/* Header */}
       <div className="mb-6">

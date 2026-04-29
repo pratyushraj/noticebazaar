@@ -92,7 +92,7 @@ export function ConfirmPaymentPendingModal({ dealId, dealAmount, creatorName, on
         key: data.key_id,
         amount: data?.breakdown?.amountPaise,
         currency: data.currency || 'INR',
-        name: 'NoticeBazaar',
+        name: 'Creator Armour',
         description: creatorName ? `Escrow payment for ${creatorName}` : 'Escrow payment',
         order_id: data.order_id,
         prefill: {

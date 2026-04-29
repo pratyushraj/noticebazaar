@@ -13,9 +13,9 @@ interface SuccessStepProps {
   onGoToDashboard: () => void;
   onCompleteCollabProfile?: () => void;
   collabProfile?: Record<string, any> | null;
-  /** Full collab link (e.g. https://noticebazaar.com/collab/username) — when set, show Share your collab link card */
+  /** Full collab link (e.g. https://creatorarmour.com/collab/username) — when set, show Share your collab link card */
   collabLink?: string;
-  /** Short label for display (e.g. noticebazaar.com/collab/username) */
+  /** Short label for display (e.g. creatorarmour.com/collab/username) */
   collabShortLabel?: string;
 }
 
@@ -126,12 +126,12 @@ export const SuccessStep: React.FC<SuccessStepProps> = ({
 
         {/* Title */}
         <h1 className="text-3xl font-bold leading-tight mb-4 text-muted-foreground dark:text-foreground">
-          Your NoticeBazaar workspace is ready
+          Your Creator Armour workspace is ready
         </h1>
 
         {/* Subtitle */}
         <p className="text-xl font-semibold text-muted-foreground dark:text-foreground/80 mb-6">
-          Welcome to NoticeBazaar, {userName}.
+          Welcome to Creator Armour, {userName}.
         </p>
 
         {/* Share your collab link — prominent after onboarding */}

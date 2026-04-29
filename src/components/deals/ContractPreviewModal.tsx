@@ -322,7 +322,7 @@ export const ContractPreviewModal: React.FC<ContractPreviewModalProps> = ({
             {/* Philosophy Footer */}
             <div className="p-3 border-t border-border/5 bg-black/40 text-center flex-shrink-0">
               <p className="text-[10px] text-foreground/30 uppercase tracking-widest font-medium">
-                Actions on NoticeBazaar are recorded, timestamped, and legally enforceable.
+                Actions on Creator Armour are recorded, timestamped, and legally enforceable.
               </p>
             </div>
           </motion.div>

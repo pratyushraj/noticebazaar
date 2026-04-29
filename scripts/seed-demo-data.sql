@@ -1,4 +1,4 @@
--- Demo Seed Data for NoticeBazaar
+-- Demo Seed Data for Creator Armour
 -- Creates 2 creators, 2 advisors, demo conversations, messages, and contracts
 
 -- ============================================================================
@@ -6,22 +6,22 @@
 -- ============================================================================
 
 -- Creator 1: pratyushraj@outlook.com (existing)
--- Creator 2: demo.creator@noticebazaar.com
+-- Creator 2: demo.creator@creatorarmour.com
 INSERT INTO auth.users (id, email, encrypted_password, email_confirmed_at, created_at, updated_at)
 VALUES 
-  ('00000000-0000-0000-0000-000000000001', 'demo.creator@noticebazaar.com', crypt('demo123', gen_salt('bf')), NOW(), NOW(), NOW())
+  ('00000000-0000-0000-0000-000000000001', 'demo.creator@creatorarmour.com', crypt('demo123', gen_salt('bf')), NOW(), NOW(), NOW())
 ON CONFLICT (id) DO NOTHING;
 
 -- Advisor 1: Prateek Sharma (Legal)
 INSERT INTO auth.users (id, email, encrypted_password, email_confirmed_at, created_at, updated_at)
 VALUES 
-  ('00000000-0000-0000-0000-000000000002', 'prateek.sharma@noticebazaar.com', crypt('advisor123', gen_salt('bf')), NOW(), NOW(), NOW())
+  ('00000000-0000-0000-0000-000000000002', 'prateek.sharma@creatorarmour.com', crypt('advisor123', gen_salt('bf')), NOW(), NOW(), NOW())
 ON CONFLICT (id) DO NOTHING;
 
 -- Advisor 2: Anjali Sharma (CA)
 INSERT INTO auth.users (id, email, encrypted_password, email_confirmed_at, created_at, updated_at)
 VALUES 
-  ('00000000-0000-0000-0000-000000000003', 'anjali.sharma@noticebazaar.com', crypt('advisor123', gen_salt('bf')), NOW(), NOW(), NOW())
+  ('00000000-0000-0000-0000-000000000003', 'anjali.sharma@creatorarmour.com', crypt('advisor123', gen_salt('bf')), NOW(), NOW(), NOW())
 ON CONFLICT (id) DO NOTHING;
 
 -- ============================================================================

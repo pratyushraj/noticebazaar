@@ -9,10 +9,10 @@ const About = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 text-foreground">
       <SEOHead
-        title="About NoticeBazaar — Protecting Indian Creators"
-        description="NoticeBazaar helps Indian creators close brand deals professionally. Contracts, payments, and collaboration — all in one platform."
+        title="About Creator Armour — Protecting Indian Creators"
+        description="Creator Armour helps Indian creators close brand deals professionally. Contracts, payments, and collaboration — all in one platform."
         keywords={['about creator armour', 'creator platform india', 'influencer protection']}
-        canonicalUrl="https://noticebazaar.com/about"
+        canonicalUrl="https://creatorarmour.com/about"
       />
       <div className="container mx-auto px-6 py-12">
         <Button 
@@ -31,7 +31,7 @@ const About = () => {
               <Shield className="h-8 w-8 text-foreground" />
             </div>
             <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-purple-200 via-pink-200 to-purple-100 text-transparent bg-clip-text">
-              Why NoticeBazaar Exists
+              Why Creator Armour Exists
             </h1>
             <p className="text-lg text-secondary max-w-2xl mx-auto">
               A simple explanation of the problems creators face and how we're trying to help.
@@ -40,7 +40,7 @@ const About = () => {
 
           {/* Section 1: Why We Exist */}
           <section className="bg-secondary/50 backdrop-blur-md p-8 rounded-xl border border-border space-y-4">
-            <h2 className="text-2xl font-bold text-foreground">Why NoticeBazaar Exists</h2>
+            <h2 className="text-2xl font-bold text-foreground">Why Creator Armour Exists</h2>
             <p className="text-secondary leading-relaxed">
               Here's the thing: being a creator in India is hard. Not because creating content is hard—you're already doing that. But because the business side of being a creator is broken.
             </p>
@@ -48,7 +48,7 @@ const About = () => {
               Most creators we talk to are brilliant at making content, but they're not lawyers or accountants. Yet they're expected to negotiate contracts, chase payments, file taxes, and protect their rights—all while trying to grow their audience and create great content.
             </p>
             <p className="text-secondary leading-relaxed">
-              That's why we built NoticeBazaar. Not because we think creators are doing something wrong, but because the system isn't built for them. We're here to handle the stuff that shouldn't be your problem.
+              That's why we built Creator Armour. Not because we think creators are doing something wrong, but because the system isn't built for them. We're here to handle the stuff that shouldn't be your problem.
             </p>
           </section>
 
@@ -151,7 +151,7 @@ const About = () => {
           <section className="bg-gradient-to-r from-purple-600/30 to-pink-600/30 backdrop-blur-md p-8 rounded-xl border border-purple-400/30 space-y-4">
             <h2 className="text-2xl font-bold text-foreground">The Bottom Line</h2>
             <p className="text-secondary leading-relaxed">
-              NoticeBazaar exists because creators shouldn't have to be lawyers, accountants, and debt collectors just to get paid fairly. You should be able to focus on creating content, and we'll handle the rest.
+              Creator Armour exists because creators shouldn't have to be lawyers, accountants, and debt collectors just to get paid fairly. You should be able to focus on creating content, and we'll handle the rest.
             </p>
             <p className="text-secondary leading-relaxed">
               We're not here to sell you anything complicated. We're here to give you the tools and support you need to protect yourself—contracts, payment tracking, legal notices when needed, and someone to call when things go wrong.

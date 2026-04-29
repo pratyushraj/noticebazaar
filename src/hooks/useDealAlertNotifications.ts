@@ -49,12 +49,12 @@ export const useDealAlertNotifications = () => {
     if (typeof window === 'undefined') return getApiBaseUrl();
     const host = window.location.hostname.toLowerCase();
     const isPublicHost =
-      host.endsWith('noticebazaar.com') ||
-      host.endsWith('noticebazaar.com') ||
+      host.endsWith('creatorarmour.com') ||
+      host.endsWith('creatorarmour.com') ||
       host.endsWith('vercel.app');
     // On production Vercel, use RELATIVE paths so requests go through the
     // same-origin /api/push/* Vercel rewrite → Render. This avoids iOS Safari
-    // CSP cross-origin blocking of direct fetches to noticebazaar-api.onrender.com.
+    // CSP cross-origin blocking of direct fetches to creatorarmour-api.onrender.com.
     if (isPublicHost) return '';
     // Local/dev hosts: push endpoints should default to the Render API (most dev
     // flows don't run the backend locally). Avoid using getApiBaseUrl() here
@@ -64,7 +64,7 @@ export const useDealAlertNotifications = () => {
       .trim()
       .replace(/\/$/, '');
     if (override) return override;
-    return 'https://noticebazaar-api.onrender.com';
+    return 'https://creatorarmour-api.onrender.com';
   }, []);
 
   const hasVapidKey = !!import.meta.env.VITE_VAPID_PUBLIC_KEY;

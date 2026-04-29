@@ -23,12 +23,12 @@ const RefundPolicy = () => {
 
         <div className="prose dark:prose-invert max-w-none space-y-6 text-muted-foreground">
           <p>
-            This Refund Policy outlines the terms and conditions under which NoticeBazaar provides refunds for its subscription services. By subscribing to our services, you agree to this policy.
+            This Refund Policy outlines the terms and conditions under which Creator Armour provides refunds for its subscription services. By subscribing to our services, you agree to this policy.
           </p>
 
           <h2 className="text-2xl font-bold text-foreground">1. General Policy (Non-Refundable Fees)</h2>
           <p>
-            All subscription fees for NoticeBazaar services are generally non-refundable. We operate on a subscription model where access to our platform, dedicated advisors, and resources is provided immediately upon payment.
+            All subscription fees for Creator Armour services are generally non-refundable. We operate on a subscription model where access to our platform, dedicated advisors, and resources is provided immediately upon payment.
           </p>
           <ul className="list-disc list-inside ml-4 space-y-2">
             <li><strong>Monthly Subscriptions:</strong> Fees paid for monthly plans are non-refundable. If you cancel, your service will continue until the end of the current billing cycle.</li>
@@ -38,7 +38,7 @@ const RefundPolicy = () => {
 
           <h2 className="text-2xl font-bold text-foreground">2. Exceptions (Service Failure)</h2>
           <p>
-            A refund may be considered only in the event of a proven, critical failure of service delivery directly attributable to NoticeBazaar, and only if the issue cannot be resolved within a reasonable timeframe (15 business days).
+            A refund may be considered only in the event of a proven, critical failure of service delivery directly attributable to Creator Armour, and only if the issue cannot be resolved within a reasonable timeframe (15 business days).
           </p>
           <ul className="list-disc list-inside ml-4 space-y-2">
             <li><strong>Critical Failure Defined:</strong> This includes prolonged, complete inability to access the client portal or failure to assign a dedicated advisor within 7 days of successful onboarding.</li>
@@ -50,7 +50,7 @@ const RefundPolicy = () => {
             All refund requests must be submitted in writing within 7 days of the incident that constitutes a critical service failure.
           </p>
           <ul className="list-disc list-inside ml-4 space-y-2">
-            <li><strong>Submission:</strong> Email your detailed request, including the subscription ID and description of the service failure, to <a href="mailto:billing@noticebazaar.com" className="text-primary hover:underline">billing@noticebazaar.com</a>.</li>
+            <li><strong>Submission:</strong> Email your detailed request, including the subscription ID and description of the service failure, to <a href="mailto:billing@creatorarmour.com" className="text-primary hover:underline">billing@creatorarmour.com</a>.</li>
             <li><strong>Processing:</strong> Approved refunds will be processed within 30 business days and credited back to the original payment method.</li>
           </ul>
 

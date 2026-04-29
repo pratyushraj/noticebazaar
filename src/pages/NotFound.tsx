@@ -68,7 +68,7 @@ const NotFound = () => {
           <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center shadow-lg shadow-emerald-600/20">
             <ShieldCheck className="w-5 h-5 text-foreground" />
           </div>
-          <span className="text-lg font-black text-muted-foreground tracking-tight">NoticeBazaar</span>
+          <span className="text-lg font-black text-muted-foreground tracking-tight">Creator Armour</span>
         </div>
 
         <h1 className="text-5xl font-black text-slate-300 mb-3">404</h1>

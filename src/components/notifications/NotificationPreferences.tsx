@@ -180,7 +180,7 @@ export const NotificationPreferences: React.FC = () => {
           Notification Mode
         </h3>
         <p className="text-xs text-foreground/60 mb-4 mt-1">
-          Choose how often you want to receive updates from NoticeBazaar
+          Choose how often you want to receive updates from Creator Armour
         </p>
         
         {/* Segmented Control */}

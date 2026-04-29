@@ -40,7 +40,7 @@ const SoftwareApplicationSchema = ({
         priceCurrency: offers.priceCurrency,
       },
       featureList,
-      url: typeof window !== 'undefined' ? window.location.href : 'https://noticebazaar.com',
+      url: typeof window !== 'undefined' ? window.location.href : 'https://creatorarmour.com',
     };
 
     const existingScript = document.querySelector('script[data-schema="software"]');
@@ -108,7 +108,7 @@ const CollaborationAgreementGenerator = () => {
     },
     {
       question: 'Is this collaboration agreement generator free?',
-      answer: 'Yes, you can generate a collaboration agreement for free. To download the document, store it securely, track payments, and access legal support, upgrade to NoticeBazaar Pro.',
+      answer: 'Yes, you can generate a collaboration agreement for free. To download the document, store it securely, track payments, and access legal support, upgrade to Creator Armour Pro.',
     },
     {
       question: 'What\'s the difference between paid and barter collaborations?',
@@ -116,15 +116,15 @@ const CollaborationAgreementGenerator = () => {
     },
     {
       question: 'Do I need a lawyer to use this?',
-      answer: 'While our generator creates legally compliant agreements based on Indian contract law, we recommend consulting a lawyer for high-value deals or complex terms. NoticeBazaar Pro includes free legal consultations with verified lawyers.',
+      answer: 'While our generator creates legally compliant agreements based on Indian contract law, we recommend consulting a lawyer for high-value deals or complex terms. Creator Armour Pro includes free legal consultations with verified lawyers.',
     },
     {
       question: 'Can I edit the generated agreement?',
-      answer: 'Yes, the free version generates a standard agreement. NoticeBazaar Pro members can customize terms, add clauses, negotiate with brands, and get AI-powered contract analysis.',
+      answer: 'Yes, the free version generates a standard agreement. Creator Armour Pro members can customize terms, add clauses, negotiate with brands, and get AI-powered contract analysis.',
     },
   ];
 
-  const baseUrl = 'https://noticebazaar.com';
+  const baseUrl = 'https://creatorarmour.com';
   const canonicalUrl = `${baseUrl}/collaboration-agreement-generator`;
 
   return (
@@ -392,7 +392,7 @@ const CollaborationAgreementGenerator = () => {
               <div className="flex flex-col md:flex-row items-center justify-between gap-4">
                 <div>
                   <h3 className="text-xl font-bold text-foreground mb-2">
-                    Upgrade to NoticeBazaar for Full Protection
+                    Upgrade to Creator Armour for Full Protection
                   </h3>
                   <p className="text-secondary">
                     Download agreements, track collaborations, get legal support, and manage all your brand partnerships in one secure platform.

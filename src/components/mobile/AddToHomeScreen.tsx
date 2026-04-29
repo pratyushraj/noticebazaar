@@ -75,7 +75,7 @@ const AddToHomeScreen: React.FC = () => {
         platform: canShowIOSGuide ? 'ios' : 'android',
         route: location.pathname,
       });
-      toast.success('NoticeBazaar app installed');
+      toast.success('Creator Armour app installed');
       localStorage.setItem('pwa_show_install_success_toast', '1');
     };
 

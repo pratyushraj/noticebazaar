@@ -85,7 +85,7 @@ const ResetPassword = () => {
           <div className="w-10 h-10 bg-secondary rounded-lg flex items-center justify-center">
             <Scale className="h-6 w-6 text-foreground" />
           </div>
-          <h1 className="text-2xl font-bold text-foreground">NoticeBazaar</h1>
+          <h1 className="text-2xl font-bold text-foreground">Creator Armour</h1>
         </div>
 
         {!isLinkValid ? (
@@ -113,7 +113,7 @@ const ResetPassword = () => {
                 Set a New Password
               </h2>
               <p className="text-foreground/80 text-sm">
-                Enter a new password for your NoticeBazaar account.
+                Enter a new password for your Creator Armour account.
               </p>
             </div>
 

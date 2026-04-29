@@ -1,4 +1,4 @@
-// Public informational page: How Consumer Complaints Work on NoticeBazaar
+// Public informational page: How Consumer Complaints Work on Creator Armour
 // Route: /consumer-complaints/how-it-works
 // Audience: Creators, general consumers, non-lawyers
 
@@ -109,7 +109,7 @@ export default function ConsumerComplaintsHowItWorks() {
             Resolve Consumer Issues, the Right Way
           </h1>
           <p className="text-xl text-foreground/80 max-w-2xl mx-auto">
-            NoticeBazaar helps you draft and review consumer complaints before you take any formal legal step.
+            Creator Armour helps you draft and review consumer complaints before you take any formal legal step.
           </p>
           </div>
         </div>
@@ -193,10 +193,10 @@ export default function ConsumerComplaintsHowItWorks() {
           </div>
         </section>
 
-        {/* What NoticeBazaar Does */}
+        {/* What Creator Armour Does */}
         <section>
           <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-6 text-center">
-            What NoticeBazaar Does
+            What Creator Armour Does
           </h2>
           <div className="grid md:grid-cols-2 gap-4">
             {doesList.map((item, index) => (
@@ -220,10 +220,10 @@ export default function ConsumerComplaintsHowItWorks() {
           </div>
         </section>
 
-        {/* What NoticeBazaar Does NOT Do */}
+        {/* What Creator Armour Does NOT Do */}
         <section>
           <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-6 text-center">
-            What NoticeBazaar Does Not Do
+            What Creator Armour Does Not Do
           </h2>
           <Card className="bg-card backdrop-blur-md border-border">
             <CardContent className="p-6 md:p-8">

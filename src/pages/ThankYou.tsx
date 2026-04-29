@@ -9,7 +9,7 @@ import { Separator } from '@/components/ui/separator';
 
 const ThankYou = () => {
   // Define the Calendly link
-  const CALENDLY_LINK = 'https://calendly.com/noticebazaar/15-minute-legal-consultation';
+  const CALENDLY_LINK = 'https://calendly.com/creatorarmour/15-minute-legal-consultation';
 
   useEffect(() => {
     // Meta Pixel Event 3: Lead (Main Conversion Goal)
@@ -88,10 +88,10 @@ const ThankYou = () => {
         <div className="border-t border-border/50 pt-6">
           <h4 className="font-bold text-foreground mb-3">💙 Stay Connected</h4>
           <div className="flex justify-center space-x-6">
-            <a href="https://www.instagram.com/noticebazaar" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-colors flex items-center">
+            <a href="https://www.instagram.com/creatorarmour" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-colors flex items-center">
               <Instagram className="h-5 w-5 mr-1" /> Instagram
             </a>
-            <a href="https://www.linkedin.com/company/noticebazaar" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-colors flex items-center">
+            <a href="https://www.linkedin.com/company/creatorarmour" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-colors flex items-center">
               <Linkedin className="h-5 w-5 mr-1" /> LinkedIn
             </a>
           </div>

@@ -111,7 +111,7 @@ export function isValidUpiId(raw: string): boolean {
  */
 export function buildUpiVerificationDeeplink(upiId: string): string {
   const encoded = encodeURIComponent(upiId.toLowerCase().trim());
-  return `upi://pay?pa=${encoded}&pn=NoticeBazaar+UPI+Check&am=0&cu=INR&tn=Verify+UPI`;
+  return `upi://pay?pa=${encoded}&pn=Creator Armour+UPI+Check&am=0&cu=INR&tn=Verify+UPI`;
 }
 
 /**
@@ -119,5 +119,5 @@ export function buildUpiVerificationDeeplink(upiId: string): string {
  */
 export function buildGpayVerificationUrl(upiId: string): string {
   const encoded = encodeURIComponent(upiId.toLowerCase().trim());
-  return `tez://upi/pay?pa=${encoded}&pn=NoticeBazaar+UPI+Check&am=0&cu=INR`;
+  return `tez://upi/pay?pa=${encoded}&pn=Creator Armour+UPI+Check&am=0&cu=INR`;
 }

@@ -94,9 +94,9 @@ const Careers = () => {
   return (
     <div className="container mx-auto px-6 py-12 nb-screen-height bg-background">
       <SEOHead
-        title="Careers at NoticeBazaar — Join the Team"
-        description="Join NoticeBazaar and help build the future of creator-brand collaborations in India. Open positions in engineering, design, and growth."
-        canonicalUrl="https://noticebazaar.com/careers"
+        title="Careers at Creator Armour — Join the Team"
+        description="Join Creator Armour and help build the future of creator-brand collaborations in India. Open positions in engineering, design, and growth."
+        canonicalUrl="https://creatorarmour.com/careers"
       />
       <Button variant="outline" asChild className="mb-8 text-primary border-border hover:bg-accent hover:text-foreground">
         <Link to="/">
@@ -107,7 +107,7 @@ const Careers = () => {
       <Card className="max-w-4xl mx-auto bg-card p-8 rounded-xl shadow-lg border border-border">
         <header className="mb-8 border-b border-border/50 pb-4">
           <Briefcase className="h-8 w-8 text-primary mb-3" />
-          <h1 className="text-3xl font-bold text-foreground mb-2">Careers at NoticeBazaar</h1>
+          <h1 className="text-3xl font-bold text-foreground mb-2">Careers at Creator Armour</h1>
           <p className="text-sm text-muted-foreground">Join us in protecting and empowering content creators across India</p>
         </header>
 
@@ -115,7 +115,7 @@ const Careers = () => {
           <div className="space-y-4">
             <h2 className="text-2xl font-bold text-foreground">Why Work With Us</h2>
             <p>
-              NoticeBazaar is building the future of legal and financial protection for content creators. We're a fast-growing startup with a mission to democratize access to professional services for creators.
+              Creator Armour is building the future of legal and financial protection for content creators. We're a fast-growing startup with a mission to democratize access to professional services for creators.
             </p>
             <ul className="list-disc list-inside ml-4 space-y-2">
               <li><strong>Impact:</strong> Help thousands of creators protect their interests and grow their businesses</li>
@@ -162,7 +162,7 @@ const Careers = () => {
                 </div>
                 
                 <Button asChild className="w-full md:w-auto">
-                  <a href={`mailto:careers@noticebazaar.com?subject=Application for ${job.title}`}>
+                  <a href={`mailto:careers@creatorarmour.com?subject=Application for ${job.title}`}>
                     Apply Now <ExternalLink className="h-4 w-4 ml-2" />
                   </a>
                 </Button>
@@ -176,7 +176,7 @@ const Careers = () => {
               We're always looking for talented people who share our mission. If you're passionate about protecting creators and want to join our team, we'd love to hear from you.
             </p>
             <Button variant="outline" asChild>
-              <a href="mailto:careers@noticebazaar.com?subject=General Application">
+              <a href="mailto:careers@creatorarmour.com?subject=General Application">
                 Send Us Your Resume <ExternalLink className="h-4 w-4 ml-2" />
               </a>
             </Button>

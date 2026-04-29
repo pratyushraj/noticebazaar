@@ -38,8 +38,8 @@ const sanitizeMessage = (message: string, brandReplyLink: string): string => {
     return '';
   });
 
-  // Remove emails (except noticebazaar.com)
-  sanitized = sanitized.replace(/\b[A-Za-z0-9._%+-]+@(?!.*noticebazaar\.com)[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b/g, '[Email]');
+  // Remove emails (except creatorarmour.com)
+  sanitized = sanitized.replace(/\b[A-Za-z0-9._%+-]+@(?!.*creatorarmour\.com)[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b/g, '[Email]');
 
   // Remove phone numbers
   sanitized = sanitized.replace(/\b(?:\+91|91)?[6-9]\d{9}\b/g, '[Phone]');

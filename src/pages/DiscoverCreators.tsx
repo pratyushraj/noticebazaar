@@ -111,14 +111,14 @@ const DiscoverCreators = () => {
     };
 
     const pageTitle = category && category !== 'all'
-        ? `Discover ${category} Creators | NoticeBazaar`
-        : 'Discover Verified Creators | NoticeBazaar Directory';
+        ? `Discover ${category} Creators | Creator Armour`
+        : 'Discover Verified Creators | Creator Armour Directory';
 
     const metaDescription = category && category !== 'all'
         ? `Discover verified ${category} creators and book collaborations through structured offers, package previews, and secure workflows.`
-        : 'Discover verified creators across categories and collaborate through package-based offers on NoticeBazaar.';
+        : 'Discover verified creators across categories and collaborate through package-based offers on Creator Armour.';
 
-    const baseUrl = 'https://noticebazaar.com';
+    const baseUrl = 'https://creatorarmour.com';
     const canonicalUrl = `${baseUrl}/discover${category && category !== 'all' ? `/${category}` : ''}`;
 
     return (
@@ -390,7 +390,7 @@ const DiscoverCreators = () => {
                             {[
                                 { title: 'Bypass Agencies', desc: 'No middle layers. Connect directly with creators via their Armour collab links.' },
                                 { title: 'Structured Offers', desc: 'Send campaign details in a clean flow with package-first collaboration terms.' },
-                                { title: 'Creator Accountability', desc: 'Deliverables are tracked and verified by NoticeBazaar systems.' },
+                                { title: 'Creator Accountability', desc: 'Deliverables are tracked and verified by Creator Armour systems.' },
                             ].map((item, i) => (
                                 <div key={i}>
                                     <p className="text-[12px] font-black uppercase tracking-widest text-foreground/80 mb-2">{item.title}</p>
@@ -404,7 +404,7 @@ const DiscoverCreators = () => {
 
             <footer className="border-t border-border/5 text-center py-10">
                 <p className="text-[10px] font-black uppercase tracking-[0.3em] text-foreground/20">
-                    © {new Date().getFullYear()} NoticeBazaar Systems · Secure Discovery Protocol
+                    © {new Date().getFullYear()} Creator Armour Systems · Secure Discovery Protocol
                 </p>
             </footer>
         </div>

@@ -1,9 +1,9 @@
-# NoticeBazaar Build & Test Makefile
+# Creator Armour Build & Test Makefile
 
 .PHONY: help install migrate seed test test-unit test-integration test-e2e build dev clean
 
 help:
-	@echo "NoticeBazaar Development Commands:"
+	@echo "Creator Armour Development Commands:"
 	@echo "  make install       - Install all dependencies"
 	@echo "  make migrate       - Run database migrations"
 	@echo "  make seed          - Seed demo data"

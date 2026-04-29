@@ -47,7 +47,7 @@ Open `src/data/blogPosts.ts` and add a new entry to the `blogPosts` array.
     collabLink: false, // Link to collab link feature
   },
   author: {
-    name: 'NoticeBazaar',
+    name: 'Creator Armour',
     type: 'Organization',
   },
 }
@@ -87,12 +87,12 @@ Open `src/data/blogPosts.ts` and add a new entry to the `blogPosts` array.
 2. **Sections**: Break down into logical steps or topics
 3. **Conclusion**: Optional summary or call-to-action
 4. **FAQs**: 3-5 relevant questions
-5. **Internal Links**: Link to relevant NoticeBazaar features
+5. **Internal Links**: Link to relevant Creator Armour features
 6. **Disclaimer**: Automatically added
 
 #### Internal Links
 - **contractTool**: Link to `/contract-analyzer` (free contract analysis)
-- **homepage**: Link to `/` (NoticeBazaar homepage)
+- **homepage**: Link to `/` (Creator Armour homepage)
 - **collabLink**: Link to collab link feature (if relevant)
 
 ### Step 5: FAQ Section
@@ -157,7 +157,7 @@ A disclaimer is automatically added to every blog post. It includes:
         content: 'GST registration can be done online through the GST portal. You\'ll need your PAN, Aadhaar, bank account details, and business address. The process typically takes 3-7 working days.',
       },
     ],
-    conclusion: 'GST registration is straightforward once you understand the requirements. NoticeBazaar can help you track your revenue and determine when registration is needed.',
+    conclusion: 'GST registration is straightforward once you understand the requirements. Creator Armour can help you track your revenue and determine when registration is needed.',
   },
   faqs: [
     {
@@ -166,7 +166,7 @@ A disclaimer is automatically added to every blog post. It includes:
     },
     {
       question: 'How do I calculate my annual revenue for GST?',
-      answer: 'Add up all income from brand deals, sponsorships, affiliate marketing, platform revenue, and any other creator-related income. NoticeBazaar helps you track this automatically.',
+      answer: 'Add up all income from brand deals, sponsorships, affiliate marketing, platform revenue, and any other creator-related income. Creator Armour helps you track this automatically.',
     },
   ],
   internalLinks: {
@@ -174,7 +174,7 @@ A disclaimer is automatically added to every blog post. It includes:
     homepage: true,
   },
   author: {
-    name: 'NoticeBazaar',
+    name: 'Creator Armour',
     type: 'Organization',
   },
 }

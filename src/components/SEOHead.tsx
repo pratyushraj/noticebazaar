@@ -2,7 +2,7 @@ import React from 'react';
 import { Helmet } from 'react-helmet-async';
 
 /**
- * SEO-optimized meta tags and structured data for NoticeBazaar
+ * SEO-optimized meta tags and structured data for Creator Armour
  */
 
 interface SEOProps {
@@ -33,7 +33,7 @@ interface SEOProps {
 
 // Default SEO values
 const DEFAULT_SEO = {
-  title: 'NoticeBazaar - Safe Instagram Collaborations for Creators & Brands',
+  title: 'Creator Armour - Safe Instagram Collaborations for Creators & Brands',
   description: 'Connect Indian Instagram creators with brands for authentic collaborations. Get paid securely, protect your work with legal agreements, and grow your influence.',
   keywords: [
     'Instagram creators',
@@ -48,7 +48,7 @@ const DEFAULT_SEO = {
     'brand creator collaboration'
   ],
   image: '/og-image.jpg',
-  url: 'https://noticebazaar.com',
+  url: 'https://creatorarmour.com',
   type: 'website' as const,
 };
 
@@ -67,7 +67,7 @@ export const SEOHead: React.FC<SEOProps> = ({
   creator,
   brand,
 }) => {
-  const fullTitle = title.includes('NoticeBazaar') ? title : `${title} | NoticeBazaar`;
+  const fullTitle = title.includes('Creator Armour') ? title : `${title} | Creator Armour`;
   const fullUrl = url.startsWith('http') ? url : `${DEFAULT_SEO.url}${url}`;
   const fullImage = image.startsWith('http') ? image : `${DEFAULT_SEO.url}${image}`;
 
@@ -100,7 +100,7 @@ export const SEOHead: React.FC<SEOProps> = ({
       <meta property="og:image" content={fullImage} />
       <meta property="og:url" content={fullUrl} />
       <meta property="og:type" content={type} />
-      <meta property="og:site_name" content="NoticeBazaar" />
+      <meta property="og:site_name" content="Creator Armour" />
       <meta property="og:locale" content="en_IN" />
 
       {/* Twitter Card Tags */}
@@ -108,12 +108,12 @@ export const SEOHead: React.FC<SEOProps> = ({
       <meta name="twitter:title" content={fullTitle} />
       <meta name="twitter:description" content={description} />
       <meta name="twitter:image" content={fullImage} />
-      <meta name="twitter:site" content="@noticebazaar" />
+      <meta name="twitter:site" content="@creatorarmour" />
       {author && <meta name="twitter:creator" content={author} />}
 
       {/* Additional Meta Tags */}
       <meta name="robots" content="index, follow" />
-      <meta name="author" content="NoticeBazaar" />
+      <meta name="author" content="Creator Armour" />
       <meta name="language" content="English" />
       <meta name="geo.region" content="IN" />
       <meta name="geo.country" content="India" />
@@ -152,13 +152,13 @@ function generateStructuredData(props: SEOProps & { title: string; description: 
   const baseData = {
     '@context': 'https://schema.org',
     '@type': 'WebSite',
-    name: 'NoticeBazaar',
+    name: 'Creator Armour',
     description: DEFAULT_SEO.description,
     url: DEFAULT_SEO.url,
     logo: `${DEFAULT_SEO.url}/logo.png`,
     sameAs: [
-      'https://twitter.com/noticebazaar',
-      'https://www.instagram.com/noticebazaar',
+      'https://twitter.com/creatorarmour',
+      'https://www.instagram.com/creatorarmour',
       'https://www.linkedin.com/company/creator-armour'
     ],
   };
@@ -231,12 +231,12 @@ function generateStructuredData(props: SEOProps & { title: string; description: 
         name: author
       } : {
         '@type': 'Organization',
-        name: 'NoticeBazaar',
+        name: 'Creator Armour',
         url: DEFAULT_SEO.url
       },
       publisher: {
         '@type': 'Organization',
-        name: 'NoticeBazaar',
+        name: 'Creator Armour',
         logo: {
           '@type': 'ImageObject',
           url: `${DEFAULT_SEO.url}/logo.png`
@@ -261,7 +261,7 @@ function generateStructuredData(props: SEOProps & { title: string; description: 
 
 export const CreatorProfileSEO: React.FC<{ creator: NonNullable<SEOProps['creator']> }> = ({ creator }) => (
   <SEOHead
-    title={`${creator.name} - Instagram Creator | NoticeBazaar`}
+    title={`${creator.name} - Instagram Creator | Creator Armour`}
     description={`${creator.name} (@${creator.handle}) is an Instagram creator with ${creator.followers?.toLocaleString() || 'growing'} followers. Connect for authentic brand collaborations.`}
     keywords={[creator.name, creator.handle, 'Instagram creator', 'influencer', 'brand collaborations']}
     type="profile"
@@ -271,7 +271,7 @@ export const CreatorProfileSEO: React.FC<{ creator: NonNullable<SEOProps['creato
 
 export const BrandPageSEO: React.FC<{ brand: NonNullable<SEOProps['brand']> }> = ({ brand }) => (
   <SEOHead
-    title={`${brand.name} - Brand Collaborations | NoticeBazaar`}
+    title={`${brand.name} - Brand Collaborations | Creator Armour`}
     description={`Partner with ${brand.name} for authentic Instagram collaborations. Connect with verified creators in India.`}
     keywords={[brand.name, brand.industry || 'brand', 'Instagram marketing', 'influencer partnerships']}
     brand={brand}

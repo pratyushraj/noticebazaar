@@ -40,7 +40,7 @@ const SoftwareApplicationSchema = ({
         priceCurrency: offers.priceCurrency,
       },
       featureList,
-      url: typeof window !== 'undefined' ? window.location.href : 'https://noticebazaar.com',
+      url: typeof window !== 'undefined' ? window.location.href : 'https://creatorarmour.com',
     };
 
     const existingScript = document.querySelector('script[data-schema="software"]');
@@ -100,11 +100,11 @@ const FreeInfluencerContract = () => {
   const faqs = [
     {
       question: 'Is this contract generator free?',
-      answer: 'Yes, you can generate a contract for free. However, to download the contract document and access advanced features like contract storage, payment tracking, and legal support, you\'ll need to upgrade to NoticeBazaar Pro.',
+      answer: 'Yes, you can generate a contract for free. However, to download the contract document and access advanced features like contract storage, payment tracking, and legal support, you\'ll need to upgrade to Creator Armour Pro.',
     },
     {
       question: 'Are the generated contracts legally valid?',
-      answer: 'The contracts generated follow Indian contract law and include standard clauses for influencer collaborations. However, for complex deals or high-value contracts, we recommend consulting with a lawyer. NoticeBazaar Pro includes free legal consultations.',
+      answer: 'The contracts generated follow Indian contract law and include standard clauses for influencer collaborations. However, for complex deals or high-value contracts, we recommend consulting with a lawyer. Creator Armour Pro includes free legal consultations.',
     },
     {
       question: 'What information do I need to generate a contract?',
@@ -112,15 +112,15 @@ const FreeInfluencerContract = () => {
     },
     {
       question: 'Can I customize the contract terms?',
-      answer: 'Yes, the free version allows basic customization. NoticeBazaar Pro members can add custom clauses, negotiate terms, and get AI-powered contract analysis.',
+      answer: 'Yes, the free version allows basic customization. Creator Armour Pro members can add custom clauses, negotiate terms, and get AI-powered contract analysis.',
     },
     {
       question: 'What happens after I generate a contract?',
-      answer: 'With the free version, you can preview the contract. To download, sign, and manage contracts, upgrade to NoticeBazaar Pro. Pro members also get contract storage, payment tracking, and legal support.',
+      answer: 'With the free version, you can preview the contract. To download, sign, and manage contracts, upgrade to Creator Armour Pro. Pro members also get contract storage, payment tracking, and legal support.',
     },
   ];
 
-  const baseUrl = 'https://noticebazaar.com';
+  const baseUrl = 'https://creatorarmour.com';
   const canonicalUrl = `${baseUrl}/free-influencer-contract`;
 
   return (
@@ -128,7 +128,7 @@ const FreeInfluencerContract = () => {
       {/* SEO Meta Tags */}
       <SEOHead
         title="Free Influencer Contract Generator | Create Brand Deal Contracts"
-        description="Generate professional influencer contracts for free. Create legally compliant brand deal agreements with payment terms, deliverables, and IP rights. Download with NoticeBazaar Pro."
+        description="Generate professional influencer contracts for free. Create legally compliant brand deal agreements with payment terms, deliverables, and IP rights. Download with Creator Armour Pro."
         keywords={[
           'free influencer contract',
           'brand deal contract generator',
@@ -366,7 +366,7 @@ const FreeInfluencerContract = () => {
               <div className="flex flex-col md:flex-row items-center justify-between gap-4">
                 <div>
                   <h3 className="text-xl font-bold text-foreground mb-2">
-                    Upgrade to NoticeBazaar for Full Protection
+                    Upgrade to Creator Armour for Full Protection
                   </h3>
                   <p className="text-secondary">
                     Download contracts, track payments, get legal support, and protect all your brand deals in one place.

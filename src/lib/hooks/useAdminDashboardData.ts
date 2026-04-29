@@ -16,7 +16,7 @@ interface DateRange {
   endDate?: Date;
 }
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://noticebazaar-api.onrender.com';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://creatorarmour-api.onrender.com';
 
 // Fallback function to query directly from Supabase (used when backend endpoint is not available)
 async function fallbackDirectQuery(dateRange?: DateRange): Promise<AdminDashboardData> {

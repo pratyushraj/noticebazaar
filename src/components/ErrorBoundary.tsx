@@ -68,7 +68,7 @@ User Agent: ${navigator.userAgent}
 Please describe what you were doing when this error occurred:
 [Your description here]
     `.trim());
-    window.open(`mailto:support@noticebazaar.com?subject=${subject}&body=${body}`);
+    window.open(`mailto:support@creatorarmour.com?subject=${subject}&body=${body}`);
   };
 
   render() {

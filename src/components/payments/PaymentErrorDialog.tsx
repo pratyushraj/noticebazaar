@@ -100,7 +100,7 @@ export const PaymentErrorDialog: React.FC<PaymentErrorDialogProps> = ({
           <Button
             variant="outline"
             onClick={() => {
-              window.location.href = `mailto:support@noticebazaar.com?subject=Payment Issue&body=Payment ID: ${paymentId || 'N/A'}\nError: ${error || 'Unknown error'}`;
+              window.location.href = `mailto:support@creatorarmour.com?subject=Payment Issue&body=Payment ID: ${paymentId || 'N/A'}\nError: ${error || 'Unknown error'}`;
             }}
             className="bg-secondary/50 text-foreground hover:bg-secondary/20 border-border"
           >

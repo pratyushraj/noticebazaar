@@ -111,7 +111,7 @@ export const CollabPagePreview: React.FC<CollabPagePreviewProps> = ({ data, isVi
               <div className="flex items-center gap-2 px-4 py-3 bg-info dark:bg-info/10 rounded-2xl border border-info dark:border-info/20 mb-6">
                 <ShieldCheck className="w-4 h-4 text-info dark:text-info" />
                 <div className="text-[10px] font-semibold text-info dark:text-info">
-                  Secured by NoticeBazaar
+                  Secured by Creator Armour
                 </div>
               </div>
 
@@ -127,7 +127,7 @@ export const CollabPagePreview: React.FC<CollabPagePreviewProps> = ({ data, isVi
           
           <div className="mt-4 text-center">
             <p className="text-xs text-muted-foreground dark:text-foreground/40">
-              Generated at <span className="font-mono">noticebazaar.com/collab/{normalizedHandle || '...'}</span>
+              Generated at <span className="font-mono">creatorarmour.com/collab/{normalizedHandle || '...'}</span>
             </p>
           </div>
         </motion.div>

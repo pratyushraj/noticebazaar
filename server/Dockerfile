@@ -1,4 +1,4 @@
-# Dockerfile for NoticeBazaar API Server
+# Dockerfile for Creator Armour API Server
 FROM node:20-alpine
 
 WORKDIR /app

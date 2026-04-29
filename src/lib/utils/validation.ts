@@ -1,5 +1,5 @@
 /**
- * Shared validation helpers for noticebazaar.
+ * Shared validation helpers for creatorarmour.
  * Keep rules simple — Indian creator context, clear error messages.
  */
 

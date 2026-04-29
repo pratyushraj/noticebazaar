@@ -1695,7 +1695,7 @@ const CollabLinkLanding = () => {
       const fallbackApiBaseUrl = /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/i.test(
         primaryApiBaseUrl
       )
-        ? 'https://noticebazaar-api.onrender.com'
+        ? 'https://creatorarmour-api.onrender.com'
         : null
       const candidateApiBaseUrls = [primaryApiBaseUrl, fallbackApiBaseUrl].filter(
         (value, index, all): value is string => Boolean(value) && all.indexOf(value) === index
@@ -2418,7 +2418,7 @@ const CollabLinkLanding = () => {
     username
   )
   const creatorHandle = normalizedHandle ? `@${normalizedHandle}` : ''
-  const metaTitle = `${creatorName}${creatorHandle ? ` (${creatorHandle})` : ''} Collab Link | NoticeBazaar`
+  const metaTitle = `${creatorName}${creatorHandle ? ` (${creatorHandle})` : ''} Collab Link | Creator Armour`
   // const platformNames = platforms.map(p => p.name).join(', ');
   const followerCount = creator.platforms.reduce((sum, p) => sum + (p.followers || 0), 0)
   const trustStats = creator.trust_stats
@@ -2465,7 +2465,7 @@ const CollabLinkLanding = () => {
   }
 
   const estimatedAnalyticsTooltip =
-    'Estimated metric — real data will appear as the creator completes campaigns on NoticeBazaar.'
+    'Estimated metric — real data will appear as the creator completes campaigns on Creator Armour.'
 
   const isDemoAnalytics = {
     brandsContactedThisWeek: creatorAnalytics.brandsContactedThisWeek === null,
@@ -2480,17 +2480,17 @@ const CollabLinkLanding = () => {
       ? `${followerCount >= 1000 ? `${(followerCount / 1000).toFixed(1)}K` : followerCount} followers`
       : ''
   const metaDescription =
-    `Book ${creatorName}${creatorHandle ? ` (${creatorHandle})` : ''}${creator.category ? `, ${creator.category} creator` : ''}${followerText ? ` • ${followerText}` : ''}. Share paid, barter, or hybrid briefs with contract-first protection via NoticeBazaar.`.substring(
+    `Book ${creatorName}${creatorHandle ? ` (${creatorHandle})` : ''}${creator.category ? `, ${creator.category} creator` : ''}${followerText ? ` • ${followerText}` : ''}. Share paid, barter, or hybrid briefs with contract-first protection via Creator Armour.`.substring(
       0,
       158
     )
 
   // Use clean URL for SEO (no hash)
-  const canonicalUrl = `https://noticebazaar.com/${encodeURIComponent(normalizedHandle)}`
+  const canonicalUrl = `https://creatorarmour.com/${encodeURIComponent(normalizedHandle)}`
   const pageImage =
     creator.profile_photo && /^https?:\/\//i.test(creator.profile_photo)
       ? creator.profile_photo
-      : 'https://noticebazaar.com/og-preview.png'
+      : 'https://creatorarmour.com/og-preview.png'
   const imageAlt = `Collaborate with ${creatorName}${creatorHandle ? ` (${creatorHandle})` : ''}`
   const seoKeywords = Array.from(
     new Set(
@@ -2641,7 +2641,7 @@ const CollabLinkLanding = () => {
     creator.collab_engagement_confidence_note?.trim() || 'Above-average engagement for creator size'
   const recentActivityNoteRaw =
     creator.past_brand_count === 0
-      ? 'New Creator on NoticeBazaar'
+      ? 'New Creator on Creator Armour'
       : creator.collab_recent_activity_note?.trim() || 'Posting consistently'
   const recentActivityNote = withNeutralPrefix(recentActivityNoteRaw, 'Currently ')
   const campaignSlotNoteRaw =
@@ -2794,7 +2794,7 @@ const CollabLinkLanding = () => {
     const profilePageId = `${canonicalUrl}#profile-page`
     const personId = `${canonicalUrl}#creator`
     const serviceId = `${canonicalUrl}#collab-service`
-    const orgId = 'https://noticebazaar.com/#organization'
+    const orgId = 'https://creatorarmour.com/#organization'
 
     const sameAs = creator.platforms
       .map(p => {
@@ -2851,17 +2851,17 @@ const CollabLinkLanding = () => {
         {
           '@type': 'Organization',
           '@id': orgId,
-          name: 'NoticeBazaar',
-          alternateName: 'NoticeBazaar',
-          url: 'https://noticebazaar.com',
-          logo: 'https://noticebazaar.com/logo.png',
+          name: 'Creator Armour',
+          alternateName: 'Creator Armour',
+          url: 'https://creatorarmour.com',
+          logo: 'https://creatorarmour.com/logo.png',
         },
         {
           '@type': 'ProfilePage',
           '@id': profilePageId,
           url: canonicalUrl,
           name: `${creatorName}${creatorHandle ? ` (${creatorHandle})` : ''} Collab Profile`,
-          isPartOf: { '@id': 'https://noticebazaar.com/#website' },
+          isPartOf: { '@id': 'https://creatorarmour.com/#website' },
           about: { '@id': personId },
           mainEntity: { '@id': personId },
         },
@@ -2897,7 +2897,7 @@ const CollabLinkLanding = () => {
           serviceType: 'Creator Brand Collaboration',
           areaServed: audienceRegionLabel || 'India',
           offers: offerItems,
-          termsOfService: 'https://noticebazaar.com/terms-of-service',
+          termsOfService: 'https://creatorarmour.com/terms-of-service',
         },
       ],
     }
@@ -2907,13 +2907,13 @@ const CollabLinkLanding = () => {
     return (
       <>
         <SEOHead
-          title={`Offer Sent to ${creatorName} | NoticeBazaar`}
+          title={`Offer Sent to ${creatorName} | Creator Armour`}
           description={`Your offer for ${creatorName} has been sent. The creator has been notified and can now accept, counter, or decline.`}
           keywords={['creator offer sent', creatorName, creatorHandle].filter(Boolean)}
           image={pageImage}
           imageAlt={imageAlt}
           type="website"
-          canonicalUrl={`https://noticebazaar.com/${encodeURIComponent(normalizedHandle)}/success`}
+          canonicalUrl={`https://creatorarmour.com/${encodeURIComponent(normalizedHandle)}/success`}
         />
 
         <div className="light min-h-screen bg-[#F8FAFC] text-slate-900 selection:bg-emerald-500/10">
@@ -2945,7 +2945,7 @@ const CollabLinkLanding = () => {
                 
                 <p className="max-w-2xl text-lg leading-relaxed text-slate-500 mb-10">
                   {successBrand ? `${successBrand}'s` : 'Your'} collaboration offer has been sent to {creatorName}. 
-                  The creator has been notified via NoticeBazaar and will review your proposal shortly.
+                  The creator has been notified via Creator Armour and will review your proposal shortly.
                 </p>
 
                 <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4 mb-10">
@@ -3061,7 +3061,7 @@ const CollabLinkLanding = () => {
                 <div className="mt-12 flex items-center justify-center gap-3">
                   <ShieldCheck className="w-5 h-5 text-emerald-500" />
                   <p className="text-xs font-bold text-slate-400">
-                    Your offer is protected by NoticeBazaar Escrow and Verification systems.
+                    Your offer is protected by Creator Armour Escrow and Verification systems.
                   </p>
                 </div>
               </div>
@@ -3086,7 +3086,7 @@ const CollabLinkLanding = () => {
 
       <BreadcrumbSchema
         items={[
-          { name: 'NoticeBazaar', url: 'https://noticebazaar.com' },
+          { name: 'Creator Armour', url: 'https://creatorarmour.com' },
           { name: creatorHandle || creatorName, url: canonicalUrl },
         ]}
       />
@@ -3420,7 +3420,7 @@ const CollabLinkLanding = () => {
                         <ShieldCheck className="w-4 h-4 text-emerald-500" />
                       </div>
                       <span className="text-[10px] font-black uppercase tracking-[0.25em] text-slate-400">
-                        Secured by NoticeBazaar
+                        Secured by Creator Armour
                       </span>
                     </div>
                     <p className="text-[11px] font-bold text-slate-400 max-w-[280px] mx-auto leading-relaxed">
@@ -4927,7 +4927,7 @@ const CollabLinkLanding = () => {
               <p className="text-center text-[10px] font-semibold text-slate-500 mt-1.5">
                 {showSubmittingTrust
                   ? 'Your offer is being processed securely'
-                  : '50+ brands have collaborated through NoticeBazaar'}
+                  : '50+ brands have collaborated through Creator Armour'}
               </p>
               {showSubmittingTrust && (
                 <div className="mt-2 space-y-1.5 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2">

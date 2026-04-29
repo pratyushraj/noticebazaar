@@ -38,8 +38,8 @@ const ReferralCard: React.FC<ReferralCardProps> = ({ profile }) => {
     if (navigator.share) {
       try {
         await navigator.share({
-          title: 'Join NoticeBazaar',
-          text: `Use my referral code ${referralCode} to join NoticeBazaar!`,
+          title: 'Join Creator Armour',
+          text: `Use my referral code ${referralCode} to join Creator Armour!`,
           url: referralLink,
         });
       } catch (error) {

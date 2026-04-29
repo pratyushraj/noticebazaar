@@ -65,7 +65,7 @@ const Login = () => {
   }, [session, navigate, isLoading, profile?.role, profile?.onboarding_complete]);
 
   useEffect(() => {
-    document.title = 'Sign In | NoticeBazaar';
+    document.title = 'Sign In | Creator Armour';
     const meta = document.querySelector('meta[name="description"]');
     meta?.setAttribute('content', 'Sign in to see your brand offers, active deals, and payments in one place.');
   }, []);
@@ -193,7 +193,7 @@ const Login = () => {
             <div className="absolute inset-0 bg-white/20 rounded-[22px] opacity-0 group-hover:opacity-100 transition-opacity" />
           </motion.div>
           
-          <h1 className="text-2xl font-black tracking-tighter text-white mb-1 uppercase italic">NoticeBazaar</h1>
+          <h1 className="text-2xl font-black tracking-tighter text-white mb-1 uppercase italic">Creator Armour</h1>
           <div className="flex items-center gap-2">
             <span className="w-8 h-[1px] bg-emerald-500/30" />
             <p className="text-[10px] font-black uppercase tracking-[0.3em] text-emerald-500/80">Securing your deals</p>

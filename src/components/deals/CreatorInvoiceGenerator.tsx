@@ -122,9 +122,9 @@ export const InvoiceGeneratorModal: React.FC<InvoiceGeneratorProps> = ({ deal, i
                                 <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center">
                                     <span className="text-foreground font-bold text-sm">CA</span>
                                 </div>
-                                <h2 className="text-xl font-bold text-muted-foreground">NoticeBazaar</h2>
+                                <h2 className="text-xl font-bold text-muted-foreground">Creator Armour</h2>
                             </div>
-                            <p className="text-sm text-gray-500 max-w-[200px]">Generated via NoticeBazaar infrastructure for compliant creator payments.</p>
+                            <p className="text-sm text-gray-500 max-w-[200px]">Generated via Creator Armour infrastructure for compliant creator payments.</p>
                         </div>
                     </div>
 

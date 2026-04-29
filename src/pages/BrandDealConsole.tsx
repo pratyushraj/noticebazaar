@@ -885,7 +885,7 @@ const BrandDealConsole = () => {
                         <div className="p-6 rounded-2xl bg-gradient-to-br from-indigo-500/10 to-purple-500/10 border border-purple-500/20">
                             <div className="flex items-center gap-2 mb-3">
                                 <Shield className="w-4 h-4 text-secondary" />
-                                <h4 className="text-sm font-semibold text-foreground">NoticeBazaar Security</h4>
+                                <h4 className="text-sm font-semibold text-foreground">Creator Armour Security</h4>
                             </div>
                             <p className="text-xs text-muted-foreground leading-relaxed">
                                 All transitions in the console are cryptographically timestamped and logged.
@@ -903,7 +903,7 @@ const BrandDealConsole = () => {
             <footer className="mt-auto border-t border-border/5 py-8">
                 <div className="max-w-[1440px] mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4 text-[11px] text-muted-foreground font-medium">
                     <div className="flex items-center gap-4">
-                        <span>© 2025 NoticeBazaar</span>
+                        <span>© 2025 Creator Armour</span>
                         <span className="w-1 h-1 rounded-full bg-background" />
                         <a href="#" className="hover:text-foreground transition-colors">Legal Framework</a>
                         <a href="#" className="hover:text-foreground transition-colors">Audit Integrity</a>

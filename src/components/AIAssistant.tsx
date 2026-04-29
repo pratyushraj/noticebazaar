@@ -96,7 +96,7 @@ const getFaqAnswer = (question: string): string | null => {
 
 // Function to open Calendly widget (copied from ConsultationBookingForm)
 const openCalendlyWidget = () => {
-  const calendlyUrl = 'https://calendly.com/noticebazaar/15-minute-legal-consultation';
+  const calendlyUrl = 'https://calendly.com/creatorarmour/15-minute-legal-consultation';
   if (typeof (window as any).Calendly !== 'undefined') {
     (window as any).Calendly.initPopupWidget({ url: calendlyUrl });
   } else {
@@ -401,7 +401,7 @@ const AIAssistant = ({
           case 'general_query':
             addMessage('ai', (
               <>
-                Hi there 👋 I'm {LEXI_NAME}, your Digital Paralegal from NoticeBazaar.
+                Hi there 👋 I'm {LEXI_NAME}, your Digital Paralegal from Creator Armour.
                 I can help you upload case documents, schedule consultations, or track your case progress.
                 <br /><br />
                 What would you like to do today?
@@ -609,7 +609,7 @@ const AIAssistant = ({
 
           // --- Other existing states (omitted for brevity, but kept in the file) ---
           case 'onboarding_greeting':
-            addMessage('ai', `Welcome to NoticeBazaar, ${profile.first_name}! I'm your AI assistant. To get your profile set up, I just need to ask a few quick questions about your business.`, aiState.type);
+            addMessage('ai', `Welcome to Creator Armour, ${profile.first_name}! I'm your AI assistant. To get your profile set up, I just need to ask a few quick questions about your business.`, aiState.type);
             setAiState({ type: 'onboarding_ask_business_name' });
             break;
           case 'onboarding_ask_business_name':

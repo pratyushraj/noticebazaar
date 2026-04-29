@@ -35,7 +35,7 @@ const BrandDashboard: React.FC = () => {
         : '';
 
   const isBrandUser = profile?.role === 'brand' || metadataRole === 'brand';
-  const isDemoBrand = String(user?.email || '').toLowerCase() === 'brand-demo@noticebazaar.com';
+  const isDemoBrand = String(user?.email || '').toLowerCase() === 'brand-demo@creatorarmour.com';
 
   const loadBrandDashboard = useCallback(async () => {
     // Wait for session to be resolved

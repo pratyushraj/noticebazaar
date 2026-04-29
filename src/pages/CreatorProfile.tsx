@@ -1634,7 +1634,7 @@ const ProfileSettings = () => {
                 />
               </div>
               <p className="text-xs text-muted-foreground mt-2">
-                This creates your brand deal page: noticebazaar.com/{formData.instagramHandle || 'username'}
+                This creates your brand deal page: creatorarmour.com/{formData.instagramHandle || 'username'}
               </p>
             </div>
 
@@ -2372,7 +2372,7 @@ const ProfileSettings = () => {
                   const usernameForLink = formData.instagramHandle || profile?.instagram_handle || profile?.username;
                   const hasUsername = usernameForLink && usernameForLink.trim() !== '';
                   const collabLink = hasUsername ? `${window.location.origin}/${usernameForLink}` : '';
-                  const shortLink = hasUsername ? `noticebazaar.com/${usernameForLink}` : '';
+                  const shortLink = hasUsername ? `creatorarmour.com/${usernameForLink}` : '';
 
                   return hasUsername ? (
                     <>
@@ -2616,7 +2616,7 @@ const ProfileSettings = () => {
                 const usernameForLink = formData.instagramHandle || profile?.instagram_handle || profile?.username;
                 const hasUsername = usernameForLink && usernameForLink.trim() !== '';
                 const collabLink = hasUsername ? `${window.location.origin}/${usernameForLink}` : '';
-                const shortLink = hasUsername ? `noticebazaar.com/${usernameForLink}` : '';
+                const shortLink = hasUsername ? `creatorarmour.com/${usernameForLink}` : '';
 
                 if (!hasUsername) {
                   return (
@@ -3455,9 +3455,9 @@ const ProfileSettings = () => {
             {/* App Info - Muted and Centered */}
             <div className="bg-muted/10 rounded-lg p-3 border border-border/40">
               <div className="text-center text-sm text-muted-foreground/60">
-                <div className="font-bold text-foreground/40 mb-0.5 tracking-tight">NoticeBazaar</div>
+                <div className="font-bold text-foreground/40 mb-0.5 tracking-tight">Creator Armour</div>
                 <div className="text-[10px] mb-1 font-mono uppercase opacity-70">Version 1.0.0</div>
-                <div className="text-[10px] opacity-60">© 2024 NoticeBazaar. All rights reserved.</div>
+                <div className="text-[10px] opacity-60">© 2024 Creator Armour. All rights reserved.</div>
               </div>
             </div>
 

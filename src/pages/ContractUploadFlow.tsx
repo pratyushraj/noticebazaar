@@ -200,7 +200,7 @@ const ContractUploadFlow = () => {
           apiBaseUrl.includes('localhost')
         ) {
           console.warn('[ContractUploadFlow] Localhost API unavailable, trying production API...');
-          apiBaseUrl = 'https://noticebazaar-api.onrender.com';
+          apiBaseUrl = 'https://creatorarmour-api.onrender.com';
           try {
             response = await fetch(`${apiBaseUrl}/api/deal-details-tokens`, {
               method: 'POST',
@@ -238,7 +238,7 @@ const ContractUploadFlow = () => {
       }
 
       const baseUrl =
-        typeof window !== 'undefined' ? window.location.origin : 'https://noticebazaar.com';
+        typeof window !== 'undefined' ? window.location.origin : 'https://creatorarmour.com';
       const link = `${baseUrl}/deal/${data.token.id}`;
       setCollaborationLink(link);
       setIsGeneratingLink(false);
@@ -355,7 +355,7 @@ const ContractUploadFlow = () => {
     if (!collaborationLink) return;
     triggerHaptic(HapticPatterns.light);
     const subject = encodeURIComponent('Finalize Collaboration Details');
-    const shareMessage = `Hi 👋, sharing our collaboration details here on NoticeBazaar:\n\n🔐 Secure Deal Page:\n\n${collaborationLink}\n\nPlease review the terms and confirm so we can proceed smoothly 🙂`;
+    const shareMessage = `Hi 👋, sharing our collaboration details here on Creator Armour:\n\n🔐 Secure Deal Page:\n\n${collaborationLink}\n\nPlease review the terms and confirm so we can proceed smoothly 🙂`;
     const body = encodeURIComponent(shareMessage);
     window.location.href = `mailto:?subject=${subject}&body=${body}`;
   };
@@ -364,7 +364,7 @@ const ContractUploadFlow = () => {
   const handleShareWhatsApp = async () => {
     if (!collaborationLink) return;
     triggerHaptic(HapticPatterns.light);
-    const shareMessage = `Hi 👋, sharing our collaboration details here on NoticeBazaar:\n\n🔐 Secure Deal Page:\n\n${collaborationLink}\n\nPlease review the terms and confirm so we can proceed smoothly 🙂`;
+    const shareMessage = `Hi 👋, sharing our collaboration details here on Creator Armour:\n\n🔐 Secure Deal Page:\n\n${collaborationLink}\n\nPlease review the terms and confirm so we can proceed smoothly 🙂`;
 
     // Try Web Share API first (allows choosing contacts)
     if (navigator.share) {
@@ -398,7 +398,7 @@ const ContractUploadFlow = () => {
   const handleShareInstagram = async () => {
     if (!collaborationLink) return;
     triggerHaptic(HapticPatterns.light);
-    const shareMessage = `Hi 👋, sharing our collaboration details here on NoticeBazaar:\n\n🔐 Secure Deal Page:\n\n${collaborationLink}\n\nPlease review the terms and confirm so we can proceed smoothly 🙂`;
+    const shareMessage = `Hi 👋, sharing our collaboration details here on Creator Armour:\n\n🔐 Secure Deal Page:\n\n${collaborationLink}\n\nPlease review the terms and confirm so we can proceed smoothly 🙂`;
 
     // Try Web Share API first (allows choosing Instagram from share sheet)
     if (navigator.share) {
@@ -671,7 +671,7 @@ ${creatorName}`;
       }
 
       const baseUrl =
-        typeof window !== 'undefined' ? window.location.origin : 'https://noticebazaar.com';
+        typeof window !== 'undefined' ? window.location.origin : 'https://creatorarmour.com';
       const link = `${baseUrl}/contract-ready/${data.token.id}`;
       setBrandReplyLink(link);
       return link;
@@ -1203,9 +1203,9 @@ ${creatorName}`;
 
     try {
       const apiBaseUrl = import.meta.env.VITE_API_BASE_URL ||
-        (typeof window !== 'undefined' && window.location.origin.includes('noticebazaar.com')
-          ? 'https://api.noticebazaar.com'
-          : 'https://noticebazaar-api.onrender.com');
+        (typeof window !== 'undefined' && window.location.origin.includes('creatorarmour.com')
+          ? 'https://api.creatorarmour.com'
+          : 'https://creatorarmour-api.onrender.com');
       const response = await fetch(`${apiBaseUrl}/api/protection/send-negotiation-email`, {
         method: 'POST',
         headers: {
@@ -1279,9 +1279,9 @@ ${creatorName}`;
 
     try {
       const apiBaseUrl = import.meta.env.VITE_API_BASE_URL ||
-        (typeof window !== 'undefined' && window.location.origin.includes('noticebazaar.com')
-          ? 'https://api.noticebazaar.com'
-          : 'https://noticebazaar-api.onrender.com');
+        (typeof window !== 'undefined' && window.location.origin.includes('creatorarmour.com')
+          ? 'https://api.creatorarmour.com'
+          : 'https://creatorarmour-api.onrender.com');
       const response = await fetch(`${apiBaseUrl}/api/protection/generate-fix`, {
         method: 'POST',
         headers: {
@@ -1351,8 +1351,8 @@ ${creatorName}`;
     // Max 1500 characters (WhatsApp limit is ~4096, but we use 1500 for safety)
     let sanitized = text.substring(0, 1500);
 
-    // Remove URLs except platform links (noticebazaar.com, app.noticebazaar.com)
-    sanitized = sanitized.replace(/https?:\/\/(?!.*noticebazaar\.com)[^\s]+/gi, '[Link removed]');
+    // Remove URLs except platform links (creatorarmour.com, app.creatorarmour.com)
+    sanitized = sanitized.replace(/https?:\/\/(?!.*creatorarmour\.com)[^\s]+/gi, '[Link removed]');
 
     // Remove monetary hallucinations (suspicious amounts that might be AI errors)
     // Keep legitimate amounts like ₹75,000, $500, etc. but remove extreme values
@@ -1365,8 +1365,8 @@ ${creatorName}`;
       return match;
     });
 
-    // Remove email addresses (except noticebazaar domains)
-    sanitized = sanitized.replace(/\b[A-Za-z0-9._%+-]+@(?!.*noticebazaar\.com)[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b/g, '[Email]');
+    // Remove email addresses (except creatorarmour domains)
+    sanitized = sanitized.replace(/\b[A-Za-z0-9._%+-]+@(?!.*creatorarmour\.com)[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b/g, '[Email]');
 
     // Remove phone numbers (except in specific contexts)
     sanitized = sanitized.replace(/\b(?:\+91|91)?[6-9]\d{9}\b/g, '[Phone]');
@@ -2119,7 +2119,7 @@ ${creatorName}`;
         }
 
         // If api subdomain fails and we're on production, try same origin
-        if (apiBaseUrl.includes('api.noticebazaar.com') && typeof window !== 'undefined') {
+        if (apiBaseUrl.includes('api.creatorarmour.com') && typeof window !== 'undefined') {
           console.warn('[ContractUploadFlow] API subdomain failed, trying same origin:', fetchError);
           const sameOriginUrl = `${window.location.origin}/api/protection/analyze`;
           console.log('[ContractUploadFlow] Retrying with same origin:', sameOriginUrl);
@@ -3460,9 +3460,9 @@ ${creatorName}`;
                             setIsGeneratingMessage(true);
                             try {
                               const apiBaseUrl = import.meta.env.VITE_API_BASE_URL ||
-                                (typeof window !== 'undefined' && window.location.origin.includes('noticebazaar.com')
-                                  ? 'https://api.noticebazaar.com'
-                                  : 'https://noticebazaar-api.onrender.com');
+                                (typeof window !== 'undefined' && window.location.origin.includes('creatorarmour.com')
+                                  ? 'https://api.creatorarmour.com'
+                                  : 'https://creatorarmour-api.onrender.com');
                               const requestBody: any = { brandName: 'the Brand' };
                               if (reportId) {
                                 requestBody.reportId = reportId;
@@ -4332,9 +4332,9 @@ ${creatorName}`;
 
                                           try {
                                             const apiBaseUrl = import.meta.env.VITE_API_BASE_URL ||
-                                              (typeof window !== 'undefined' && window.location.origin.includes('noticebazaar.com')
-                                                ? 'https://api.noticebazaar.com'
-                                                : 'https://noticebazaar-api.onrender.com');
+                                              (typeof window !== 'undefined' && window.location.origin.includes('creatorarmour.com')
+                                                ? 'https://api.creatorarmour.com'
+                                                : 'https://creatorarmour-api.onrender.com');
 
                                             const requestBody: any = {
                                               brandName: 'the Brand'
@@ -4585,9 +4585,9 @@ ${creatorName}`;
 
                           try {
                             const apiBaseUrl = import.meta.env.VITE_API_BASE_URL ||
-                              (typeof window !== 'undefined' && window.location.origin.includes('noticebazaar.com')
-                                ? 'https://api.noticebazaar.com'
-                                : 'https://noticebazaar-api.onrender.com');
+                              (typeof window !== 'undefined' && window.location.origin.includes('creatorarmour.com')
+                                ? 'https://api.creatorarmour.com'
+                                : 'https://creatorarmour-api.onrender.com');
 
                             const requestBody: any = {
                               brandName: 'the Brand'
@@ -5056,9 +5056,9 @@ ${creatorName}${session?.user?.email ? `\n${session.user.email}` : ''}`;
 
                                   try {
                                     const apiBaseUrl = import.meta.env.VITE_API_BASE_URL ||
-                                      (typeof window !== 'undefined' && window.location.origin.includes('noticebazaar.com')
-                                        ? 'https://api.noticebazaar.com'
-                                        : 'https://noticebazaar-api.onrender.com');
+                                      (typeof window !== 'undefined' && window.location.origin.includes('creatorarmour.com')
+                                        ? 'https://api.creatorarmour.com'
+                                        : 'https://creatorarmour-api.onrender.com');
 
                                     // Generate clauses for all unresolved issues
                                     const clausePromises = unresolvedIssues.slice(0, 5).map(async (issue) => {
@@ -5130,9 +5130,9 @@ ${creatorName}${session?.user?.email ? `\n${session.user.email}` : ''}`;
                                       setIsGeneratingMessage(true);
                                       try {
                                         const apiBaseUrl = import.meta.env.VITE_API_BASE_URL ||
-                                          (typeof window !== 'undefined' && window.location.origin.includes('noticebazaar.com')
-                                            ? 'https://api.noticebazaar.com'
-                                            : 'https://noticebazaar-api.onrender.com');
+                                          (typeof window !== 'undefined' && window.location.origin.includes('creatorarmour.com')
+                                            ? 'https://api.creatorarmour.com'
+                                            : 'https://creatorarmour-api.onrender.com');
                                         const response = await fetch(`${apiBaseUrl}/api/protection/generate-negotiation-message`, {
                                           method: 'POST',
                                           headers: {
@@ -5676,9 +5676,9 @@ ${creatorName}${session?.user?.email ? `\n${session.user.email}` : ''}`;
 
                             try {
                               const apiBaseUrl = import.meta.env.VITE_API_BASE_URL ||
-                                (typeof window !== 'undefined' && window.location.origin.includes('noticebazaar.com')
-                                  ? 'https://api.noticebazaar.com'
-                                  : 'https://noticebazaar-api.onrender.com');
+                                (typeof window !== 'undefined' && window.location.origin.includes('creatorarmour.com')
+                                  ? 'https://api.creatorarmour.com'
+                                  : 'https://creatorarmour-api.onrender.com');
 
                               const requestBody: any = {
                                 brandName: 'the Brand'
@@ -5771,9 +5771,9 @@ ${creatorName}${session?.user?.email ? `\n${session.user.email}` : ''}`;
 
                             try {
                               const apiBaseUrl = import.meta.env.VITE_API_BASE_URL ||
-                                (typeof window !== 'undefined' && window.location.origin.includes('noticebazaar.com')
-                                  ? 'https://api.noticebazaar.com'
-                                  : 'https://noticebazaar-api.onrender.com');
+                                (typeof window !== 'undefined' && window.location.origin.includes('creatorarmour.com')
+                                  ? 'https://api.creatorarmour.com'
+                                  : 'https://creatorarmour-api.onrender.com');
                               const response = await fetch(`${apiBaseUrl}/api/protection/send-for-legal-review`, {
                                 method: 'POST',
                                 headers: {
@@ -5845,9 +5845,9 @@ ${creatorName}${session?.user?.email ? `\n${session.user.email}` : ''}`;
 
                             try {
                               const apiBaseUrl = import.meta.env.VITE_API_BASE_URL ||
-                                (typeof window !== 'undefined' && window.location.origin.includes('noticebazaar.com')
-                                  ? 'https://api.noticebazaar.com'
-                                  : 'https://noticebazaar-api.onrender.com');
+                                (typeof window !== 'undefined' && window.location.origin.includes('creatorarmour.com')
+                                  ? 'https://api.creatorarmour.com'
+                                  : 'https://creatorarmour-api.onrender.com');
                               // Validate creator address and phone before generating contract
                               const validation = validateCreatorContactInfo();
                               if (!validation.isValid) {
@@ -6115,9 +6115,9 @@ ${creatorName}${session?.user?.email ? `\n${session.user.email}` : ''}`;
 
                       try {
                         const apiBaseUrl = import.meta.env.VITE_API_BASE_URL ||
-                          (typeof window !== 'undefined' && window.location.origin.includes('noticebazaar.com')
-                            ? 'https://api.noticebazaar.com'
-                            : 'https://noticebazaar-api.onrender.com');
+                          (typeof window !== 'undefined' && window.location.origin.includes('creatorarmour.com')
+                            ? 'https://api.creatorarmour.com'
+                            : 'https://creatorarmour-api.onrender.com');
 
                         // Prepare request body - send issues if reportId is not available
                         const requestBody: any = {
@@ -6336,9 +6336,9 @@ ${creatorName}${session?.user?.email ? `\n${session.user.email}` : ''}`;
 
                             try {
                               const apiBaseUrl = import.meta.env.VITE_API_BASE_URL ||
-                                (typeof window !== 'undefined' && window.location.origin.includes('noticebazaar.com')
-                                  ? 'https://api.noticebazaar.com'
-                                  : 'https://noticebazaar-api.onrender.com');
+                                (typeof window !== 'undefined' && window.location.origin.includes('creatorarmour.com')
+                                  ? 'https://api.creatorarmour.com'
+                                  : 'https://creatorarmour-api.onrender.com');
                               // Validate creator address and phone before generating contract
                               const validation = validateCreatorContactInfo();
                               if (!validation.isValid) {

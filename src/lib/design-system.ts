@@ -1,5 +1,5 @@
 /**
- * NoticeBazaar Design System
+ * Creator Armour Design System
  * 
  * Consistent design tokens for premium UI across all dashboard pages
  */

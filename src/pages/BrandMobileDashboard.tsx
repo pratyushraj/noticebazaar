@@ -490,7 +490,7 @@ const brandDealCardUi = (row: BrandDeal | null | undefined) => {
     s === 'DISPUTED'
       ? 'Dispute raised — your action is required'
       : s === 'DISPUTE_ARBITRATION'
-      ? 'Under arbitration — NoticeBazaar team reviewing'
+      ? 'Under arbitration — Creator Armour team reviewing'
       : s === 'DISPUTE_PARTIAL_REFUND'
         ? 'Partial refund is currently processing'
       : s === 'PAYMENT_PENDING'
@@ -3002,7 +3002,7 @@ const BrandMobileDashboard = ({
 
               <div className="flex items-center gap-2 text-[11px] text-neutral-400 border-t border-border px-6 py-4">
                 <Lock className="w-3.5 h-3.5" />
-                <span>Secure OTP-based e-signature powered by NoticeBazaar</span>
+                <span>Secure OTP-based e-signature powered by Creator Armour</span>
               </div>
               </motion.div>
             </div>
