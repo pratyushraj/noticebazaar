@@ -1467,7 +1467,7 @@ const MobileDashboardDemo = ({
     }, [selectedItem, selectedType]);
 
     const selectedDealStatus = normalizeDealStatus(selectedItem);
-    const selectedIsPureBarter = selectedType === 'deal' && String(selectedItem?.collab_type || selectedItem?.deal_type || selectedItem?.raw?.collab_type || '').trim().toLowerCase() === 'barter';
+    const selectedIsPureBarter = (selectedType === 'deal' || selectedType === 'offer') && String(selectedItem?.collab_type || selectedItem?.deal_type || selectedItem?.raw?.collab_type || '').trim().toLowerCase() === 'barter';
     const selectedRequiresPayment = selectedType === 'deal' && !!selectedItem ? inferCreatorRequiresPayment(selectedItem) : false;
     const selectedRequiresShipping = selectedType === 'deal' && !!selectedItem ? isBarterLikeCollab(selectedItem) : false;
     const selectedShippingStatus = String(selectedItem?.shipping_status || '').trim().toLowerCase() || 'pending';
@@ -5417,7 +5417,7 @@ const MobileDashboardDemo = ({
                                                                         <div className="flex flex-col gap-1 overflow-hidden">
                                                                             {/* Inverted Hierarchy (P1 Fix) */}
                                                                             <p className="text-amber-500 font-black text-[12px] uppercase tracking-widest mb-[-4px]">Free Product</p>
-                                                                            <p className={cn("text-[32px] sm:text-[44px] leading-[0.9] font-black tracking-tight truncate", textColor)}>
+                                                                            <p className={cn("text-[32px] sm:text-[44px] leading-[0.9] font-black tracking-tight truncate", isDark ? "text-amber-400" : "text-amber-600")}>
                                                                                 Worth {renderBudgetValue(selectedItem)}
                                                                             </p>
                                                                             <p className={cn("text-[13px] font-bold mt-1 inline-flex items-center gap-2 text-amber-400/80")}>
@@ -5898,7 +5898,7 @@ const MobileDashboardDemo = ({
                                                 <div className={cn("rounded-[28px] border p-6 relative overflow-hidden", isDark ? "bg-[#0C1320]/80 border-white/5" : "bg-white border-slate-200/60 shadow-sm")}>
                                                     {(() => {
                                                         const steps = selectedIsPureBarter
-                                                            ? ['Accept', 'Contract', 'Ship', 'Receive', 'Content']
+                                                            ? ['Accept', 'Ship', 'Deliver', 'Content', 'Release']
                                                             : ['Accept', 'Fund', 'Content', 'Release'];
                                                         let currentStep = 0;
                                                         
@@ -6010,7 +6010,7 @@ const MobileDashboardDemo = ({
                                         )}
 
 	                                        {/* ── DELIVERABLES ── */}
-	                                        {selectedType !== 'offer' && (
+	                                        {(selectedType === 'offer' || selectedType === 'deal') && (
 	                                        <div className="mb-8">
 	                                            <h4 className={cn("text-[12px] font-black uppercase tracking-[0.2em] mb-4 opacity-40 px-1", textColor)}>Deliverables</h4>
 	                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
@@ -6266,7 +6266,7 @@ const MobileDashboardDemo = ({
                                             </div>
                                         </div>
 
-                                        {selectedType !== 'offer' && (
+                                        {(selectedType === 'offer' || selectedType === 'deal') && (
                                             <>
                                                 {/* ── PAYMENT ── */}
                                                 <div className="mb-6 grid grid-cols-2 gap-3">

@@ -244,15 +244,20 @@ export const getDealPrimaryCta = (params: { role: DealRole; deal: any }): DealPr
       if (brandSigned && !creatorSigned) {
         return { status, label: 'Waiting for Creator', disabled: true, tone: 'waiting', action: 'none' };
       }
+      // For barter deals: only show shipping address CTA if address is missing.
+      // After address is provided, the next action is to review & sign the contract.
       if (requiresShipping && !hasReceivedShipment && isPureBarter) {
         const hasAddress = !!String(deal?.brand_address || '').trim();
-        return { 
-          status, 
-          label: hasAddress ? 'Edit Shipping Details' : 'Add Shipping Details', 
-          disabled: false, 
-          tone: 'action', 
-          action: 'provide_shipping_address' 
-        };
+        if (!hasAddress) {
+          return { 
+            status, 
+            label: 'Add Shipping Details', 
+            disabled: false, 
+            tone: 'action', 
+            action: 'provide_shipping_address' 
+          };
+        }
+        // Address exists — fall through to contract signing
       }
       return { status, label: 'Review & Sign Contract', disabled: false, tone: 'action', action: 'review_sign_contract' };
     }

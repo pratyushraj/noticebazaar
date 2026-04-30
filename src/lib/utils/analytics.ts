@@ -191,16 +191,19 @@ async function trackEventToSupabase(
       if (
         error.code === '42P01' || // undefined_table
         error.message?.includes('not found') ||
-        error.status === 404
+        error.status === 404 ||
+        error.message?.includes('fetch') ||
+        error.status === 0 // Network error
       ) {
         isSupabaseAnalyticsDisabled = true;
         if (import.meta.env.DEV) {
-          console.warn('Supabase analytics disabled: analytics_events table not found');
+          console.warn('Supabase analytics disabled due to error:', error.message);
         }
       }
     }
   } catch (error) {
-    // Fail silently
+    // On any network-level exception, disable future attempts to prevent console spam
+    isSupabaseAnalyticsDisabled = true;
   }
 }
 
