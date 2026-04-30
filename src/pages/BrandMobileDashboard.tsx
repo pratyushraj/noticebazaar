@@ -3904,7 +3904,7 @@ const BrandDashboardTab = React.memo(({
                 <div className="mt-3 flex flex-wrap gap-1.5 border-t border-white/5 pt-3">
                   {pendingCounterCount > 0 && (
                     <span className="text-[9px] font-black uppercase tracking-widest opacity-60 text-white">
-                      {pendingCounterCount} Counters • 
+                      {pendingCounterCount} Pending Offers • 
                     </span>
                   )}
                   {contentPendingReview > 0 && (
