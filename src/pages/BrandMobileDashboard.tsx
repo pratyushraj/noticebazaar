@@ -3181,7 +3181,7 @@ const BrandMobileDashboard = ({
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
             >
-            <div className="px-5 pb-4 pt-safe" style={{ paddingTop: 'max(env(safe-area-inset-top), 16px)' }}>
+            <div className="px-6 pb-4 pt-safe" style={{ paddingTop: 'max(env(safe-area-inset-top), 16px)' }}>
 
               {/* Brand Getting Started Banner — shown when no deals exist */}
               {!isLoading && deals.length === 0 && (
@@ -3341,7 +3341,7 @@ const BrandMobileDashboard = ({
 
             </div>
 
-            <div className="px-0">
+            <div className="px-6 pb-20">
               <AnimatePresence mode="wait">
                 {activeTab === 'dashboard' && (
                   <BrandDashboardTab 
@@ -3760,7 +3760,7 @@ const BrandDashboardTab = React.memo(({
     <>
       {/* Welcome Header moved into Tab */}
       <div className="relative z-10 -mt-2 mb-6">
-        <div className="px-5 pt-8 pb-4">
+        <div className="pt-8 pb-4">
           <div className="flex items-center justify-between mb-2">
             <div className="flex flex-col">
               <motion.p 

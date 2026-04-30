@@ -45,23 +45,34 @@ async function fetchBrandCollabRequests(): Promise<BrandCollabRequest[]> {
     throw new Error('Not authenticated');
   }
 
-  const response = await fetch(`${getApiBaseUrl()}/api/brand-dashboard/requests`, {
-    headers: {
-      Authorization: `Bearer ${sessionData.session.access_token}`,
-      'Content-Type': 'application/json',
-    },
-  });
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 15000); // 15s for Render
+  
+  try {
+    const response = await fetch(`${getApiBaseUrl()}/api/brand-dashboard/requests`, {
+      headers: {
+        Authorization: `Bearer ${sessionData.session.access_token}`,
+        'Content-Type': 'application/json',
+      },
+      signal: controller.signal,
+    });
 
-  if (response.status === 401) {
-    throw new Error('Session expired');
+    if (response.status === 401) {
+      throw new Error('Session expired');
+    }
+
+    const data = await response.json();
+    if (!data.success) {
+      throw new Error(data.error || 'Failed to load offers');
+    }
+
+    return data.requests || [];
+  } catch (err: any) {
+    if (err.name === 'AbortError') throw new Error('API_TIMEOUT');
+    throw err;
+  } finally {
+    clearTimeout(timeoutId);
   }
-
-  const data = await response.json();
-  if (!data.success) {
-    throw new Error(data.error || 'Failed to load offers');
-  }
-
-  return data.requests || [];
 }
 
 export function useBrandCollabRequests() {
@@ -75,6 +86,7 @@ export function useBrandCollabRequests() {
     retry: (failureCount, error: unknown) => {
       const err = error as { message?: string };
       if (err?.message === 'Session expired' || err?.message === 'Not authenticated') return false;
+      if (err?.message === 'API_TIMEOUT') return failureCount < 3;
       return failureCount < 2;
     },
   });

@@ -49,7 +49,7 @@ async function fetchCollabRequests(): Promise<CollabRequest[]> {
   }
 
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 5000); // 5s timeout
+  const timeoutId = setTimeout(() => controller.abort(), 15000); // Increased to 15s for Render spin-up
   let response: Response;
   try {
     response = await fetch(`${getApiBaseUrl()}/api/collab-requests`, {
@@ -108,9 +108,10 @@ export function useCollabRequests(creatorId: string | undefined) {
     },
     retry: (failureCount, error: unknown) => {
       const err = error as { message?: string };
-      // Don't retry auth errors or timeout errors (backend likely down)
-      if (err?.message === 'Session expired' || err?.message === 'Not authenticated' || err?.message === 'API_TIMEOUT') return false;
-      return failureCount < 1;
+      // Don't retry auth errors, but DO retry timeouts (backend likely spinning up)
+      if (err?.message === 'Session expired' || err?.message === 'Not authenticated') return false;
+      if (err?.message === 'API_TIMEOUT') return failureCount < 3;
+      return failureCount < 2;
     },
   });
 
