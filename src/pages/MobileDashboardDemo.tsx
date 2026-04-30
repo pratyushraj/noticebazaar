@@ -8295,7 +8295,15 @@ const DealsTab = React.memo(({
                                     return (
                                         <motion.div key={deal.id || idx} whileTap={{ scale: 0.98 }} onClick={() => { triggerHaptic(); setSelectedItem(deal); setSelectedType('deal'); }} className={cn("relative w-full aspect-[1.2/1] rounded-[2.5rem] overflow-hidden bg-[#0B1220] border-0 shadow-2xl mb-6")}>
                                             <div className="absolute inset-0">
-                                                {productImage && <img src={productImage} className="w-full h-full object-cover" />}
+                                                {productImage && (
+                                                    <img 
+                                                        src={productImage} 
+                                                        className="w-full h-full object-cover" 
+                                                        onError={(e) => {
+                                                            (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&q=80&w=500';
+                                                        }}
+                                                    />
+                                                )}
                                                 <div className={cn(
                                                     "absolute inset-0 bg-gradient-to-t from-black/95 via-black/60 to-black/30",
                                                     isBarter && "bg-amber-950/40"
@@ -8314,11 +8322,14 @@ const DealsTab = React.memo(({
                                                     </div>
                                                 </div>
                                                 <div>
-                                                    <div className="flex justify-between items-end mb-2">
-                                                        <h2 className="text-xl font-black italic uppercase text-white">{deal.brand_name || 'Partner'}</h2>
-                                                        <p className={cn("text-lg font-black", isBarter ? "text-amber-400" : "text-white")}>
-                                                            {isBarter ? `🎁 FREE + ₹${budget.toLocaleString()} product` : `₹${budget.toLocaleString()}`}
-                                                        </p>
+                                                    <div className="mb-3">
+                                                        <h2 className="text-xl font-black italic uppercase text-white truncate mb-0.5">{deal.brand_name || 'Partner'}</h2>
+                                                        <div className="flex items-baseline gap-1.5 flex-wrap">
+                                                            <p className={cn("text-lg font-black leading-none", isBarter ? "text-amber-400" : "text-white")}>
+                                                                {isBarter ? `🎁 FREE + ₹${budget.toLocaleString()}` : `₹${budget.toLocaleString()}`}
+                                                            </p>
+                                                            {isBarter && <span className="text-[10px] font-black uppercase tracking-widest text-amber-400/60">product</span>}
+                                                        </div>
                                                     </div>
                                                     <div className="h-1 w-full bg-white/10 rounded-full overflow-hidden">
                                                         <div className={cn(
@@ -8346,7 +8357,15 @@ const DealsTab = React.memo(({
                                     return (
                                         <motion.div key={deal.id || idx} whileTap={{ scale: 0.98 }} onClick={() => { triggerHaptic(); setSelectedItem(deal); setSelectedType('deal'); }} className={cn("relative w-full aspect-[1.2/1] rounded-[2.5rem] overflow-hidden bg-[#0B1220] border-0 shadow-2xl mb-6")}>
                                             <div className="absolute inset-0">
-                                                {productImage && <img src={productImage} className="w-full h-full object-cover opacity-50" />}
+                                                {productImage && (
+                                                    <img 
+                                                        src={productImage} 
+                                                        className="w-full h-full object-cover opacity-50" 
+                                                        onError={(e) => {
+                                                            (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&q=80&w=500';
+                                                        }}
+                                                    />
+                                                )}
                                                 <div className={cn(
                                                     "absolute inset-0 bg-gradient-to-t from-black/95 via-black/60 to-black/30",
                                                     isBarter && "bg-amber-950/40"
@@ -8365,11 +8384,14 @@ const DealsTab = React.memo(({
                                                     </div>
                                                 </div>
                                                 <div>
-                                                    <div className="flex justify-between items-end mb-2">
-                                                        <h2 className="text-xl font-black italic uppercase text-white">{deal.brand_name || 'Partner'}</h2>
-                                                        <p className={cn("text-lg font-black", isBarter ? "text-amber-400" : "text-white")}>
-                                                            {isBarter ? `🎁 FREE + ₹${budget.toLocaleString()} product` : `₹${budget.toLocaleString()}`}
-                                                        </p>
+                                                    <div className="mb-3">
+                                                        <h2 className="text-xl font-black italic uppercase text-white truncate mb-0.5">{deal.brand_name || 'Partner'}</h2>
+                                                        <div className="flex items-baseline gap-1.5 flex-wrap">
+                                                            <p className={cn("text-lg font-black leading-none", isBarter ? "text-amber-400" : "text-white")}>
+                                                                {isBarter ? `🎁 FREE + ₹${budget.toLocaleString()}` : `₹${budget.toLocaleString()}`}
+                                                            </p>
+                                                            {isBarter && <span className="text-[10px] font-black uppercase tracking-widest text-amber-400/60">product</span>}
+                                                        </div>
                                                     </div>
                                                     <div className="h-1 w-full bg-emerald-500/30 rounded-full overflow-hidden"><div className={cn("h-full w-full", isBarter ? "bg-amber-400" : "bg-emerald-400")} /></div>
                                                 </div>
@@ -8392,7 +8414,15 @@ const DealsTab = React.memo(({
                                     return (
                                         <motion.div key={req.id || idx} whileTap={{ scale: 0.98 }} onClick={() => { triggerHaptic(); setSelectedItem(req); setSelectedType('offer'); }} className={cn("relative w-full aspect-[1.2/1] rounded-[2.5rem] overflow-hidden bg-[#0B1220] border-0 shadow-2xl mb-6")}>
                                             <div className="absolute inset-0">
-                                                {productImage && <img src={productImage} className="w-full h-full object-cover" />}
+                                                {productImage && (
+                                                    <img 
+                                                        src={productImage} 
+                                                        className="w-full h-full object-cover" 
+                                                        onError={(e) => {
+                                                            (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&q=80&w=500';
+                                                        }}
+                                                    />
+                                                )}
                                                 <div className={cn(
                                                     "absolute inset-0 bg-gradient-to-t from-black/95 via-black/60 to-black/30",
                                                     isBarter && "bg-amber-950/40"
@@ -8410,12 +8440,15 @@ const DealsTab = React.memo(({
                                                         {isBarter ? 'Free Product Collab' : 'Paid'}
                                                     </div>
                                                 </div>
-                                                <div>
-                                                    <div className="flex justify-between items-end mb-4">
-                                                        <h2 className="text-xl font-black italic uppercase text-white truncate max-w-[60%]">{req.brand_name || 'Brand Partner'}</h2>
-                                                        <p className={cn("text-lg font-black", isBarter ? "text-amber-400" : "text-white")}>
-                                                            {isBarter ? `🎁 FREE + ₹${budget.toLocaleString()} product` : `₹${budget.toLocaleString()}`}
-                                                        </p>
+                                                <div className="mt-auto">
+                                                    <div className="mb-4">
+                                                        <h2 className="text-xl font-black italic uppercase text-white truncate mb-0.5">{req.brand_name || 'Brand Partner'}</h2>
+                                                        <div className="flex items-baseline gap-1.5 flex-wrap">
+                                                            <p className={cn("text-lg font-black leading-none", isBarter ? "text-amber-400" : "text-white")}>
+                                                                {isBarter ? `🎁 FREE + ₹${budget.toLocaleString()}` : `₹${budget.toLocaleString()}`}
+                                                            </p>
+                                                            {isBarter && <span className="text-[10px] font-black uppercase tracking-widest text-amber-400/60">product</span>}
+                                                        </div>
                                                     </div>
                                                     
                                                     <div className="flex gap-2">
