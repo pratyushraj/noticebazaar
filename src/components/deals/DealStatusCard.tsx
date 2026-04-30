@@ -8,7 +8,8 @@ import {
     Download,
     Link2,
     FileText,
-    Copy
+    Copy,
+    Package
 } from 'lucide-react';
 import { toast } from 'sonner';
 import confetti from 'canvas-confetti';
@@ -55,6 +56,8 @@ export const DealStatusCard = ({
     onGenerateInvoice
 }: DealStatusCardProps) => {
 
+    const isBarter = String(deal?.collab_type || deal?.deal_type || deal?.raw?.collab_type || '').toLowerCase().includes('barter');
+
     // Calculate current step
     const step = (bothSigned || (isSigned && isCreatorSigned && isBrandSigned)) ? 3 : (isCreatorSigned ? 2 : 1);
 
@@ -87,17 +90,20 @@ export const DealStatusCard = ({
     }, [step]);
 
     // If none of the show conditions are met, null is returned so this component doesn't render
-    // Logic from original file:
-    // const showContractCard = (isContractReady && hasContract) || (isSigned && isCreatorSigned) || ((isCreatorSigned || signedContractUrl) && hasContract);
     const showContractCard = (isContractReady && hasContract) || (isSigned && isCreatorSigned) || ((isCreatorSigned || signedContractUrl) && hasContract);
 
     if (!showContractCard) return null;
 
     return (
-        <div className="bg-gradient-to-br from-blue-500/20 to-indigo-500/20 backdrop-blur-xl border-2 border-info/30 rounded-2xl p-6 shadow-lg relative overflow-hidden">
+        <div className={cn(
+            "backdrop-blur-xl border-2 rounded-2xl p-6 shadow-lg relative overflow-hidden transition-all duration-500",
+            isBarter 
+                ? "bg-gradient-to-br from-amber-500/20 to-orange-500/20 border-amber-500/30" 
+                : "bg-gradient-to-br from-blue-500/20 to-indigo-500/20 border-info/30"
+        )}>
             {/* Subtle background glow for active state */}
             {step === 3 && (
-                <div className="absolute inset-0 bg-primary/5 pointer-events-none" />
+                <div className={cn("absolute inset-0 pointer-events-none", isBarter ? "bg-amber-500/5" : "bg-primary/5")} />
             )}
 
             {/* Header & Steps */}
@@ -106,15 +112,23 @@ export const DealStatusCard = ({
                     <h2 className="text-2xl font-bold text-foreground mb-1 flex items-center gap-2">
                         {step === 3 ? (
                             <>
-                                Deal Active & Signed
-                                <span className="inline-flex items-center justify-center bg-primary/20 text-primary text-xs px-2 py-0.5 rounded-full border border-primary/30">
+                                {isBarter ? 'Product Secured' : 'Deal Active & Signed'}
+                                <span className={cn(
+                                    "inline-flex items-center justify-center text-xs px-2 py-0.5 rounded-full border",
+                                    isBarter ? "bg-amber-500/20 text-amber-400 border-amber-500/30" : "bg-primary/20 text-primary border-primary/30"
+                                )}>
                                     Live
                                 </span>
                             </>
-                        ) : (step === 2 ? 'Waiting for Brand Signature' : 'Contract Ready for Signature')}
+                        ) : (step === 2 ? 'Waiting for Brand Signature' : (isBarter ? 'Ready to Claim Product' : 'Contract Ready for Signature'))}
                     </h2>
                     <p className="text-foreground/60 text-sm">
-                        {step === 3 ? 'Legally executed agreement. You are protected.' : (step === 2 ? 'Your signature is secure. Awaiting brand signature.' : 'Brand identity verified. Ready to sign.')}
+                        {step === 3 
+                            ? (isBarter ? 'Agreement executed. Your product shipment is protected.' : 'Legally executed agreement. You are protected.') 
+                            : (step === 2 
+                                ? 'Your signature is secure. Awaiting brand signature.' 
+                                : (isBarter ? 'Sign agreement to secure your product delivery.' : 'Brand identity verified. Ready to sign.'))
+                        }
                     </p>
                 </div>
                 {/* Step Tracker */}
@@ -126,14 +140,14 @@ export const DealStatusCard = ({
                     </div>
                     <div className="w-4 h-0.5 bg-secondary/50" />
                     {/* Step 2: Brand */}
-                    <div className={cn("flex items-center gap-1.5 px-2 py-1 rounded transition-colors", step >= 2 ? (step > 2 ? "text-green-400 bg-green-400/10" : "text-info bg-info/10") : "text-foreground/30")}>
+                    <div className={cn("flex items-center gap-1.5 px-2 py-1 rounded transition-colors", step >= 2 ? (step > 2 ? "text-green-400 bg-green-400/10" : (isBarter ? "text-amber-400 bg-amber-400/10" : "text-info bg-info/10")) : "text-foreground/30")}>
                         {step > 2 ? <CheckCircle className="w-4 h-4" /> : <span className="text-xs font-bold border border-current w-4 h-4 rounded-full flex items-center justify-center">2</span>}
                         <span className="text-xs font-bold">Brand</span>
                     </div>
                     <div className="w-4 h-0.5 bg-secondary/50" />
                     {/* Step 3: Active */}
-                    <div className={cn("flex items-center gap-1.5 px-2 py-1 rounded transition-colors", step >= 3 ? "text-primary bg-primary/10" : "text-foreground/30")}>
-                        <ShieldCheck className="w-4 h-4" />
+                    <div className={cn("flex items-center gap-1.5 px-2 py-1 rounded transition-colors", step >= 3 ? (isBarter ? "text-amber-500 bg-amber-500/10" : "text-primary bg-primary/10") : "text-foreground/30")}>
+                        {isBarter ? <Package className="w-4 h-4" /> : <ShieldCheck className="w-4 h-4" />}
                         <span className="text-xs font-bold">Active</span>
                     </div>
                 </div>
@@ -149,10 +163,15 @@ export const DealStatusCard = ({
                                 onSignCreator();
                             }}
                             whileTap={{ scale: 0.98 }}
-                            className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 px-6 py-4 rounded-xl font-semibold text-foreground transition-all flex items-center justify-center gap-3 shadow-lg shadow-green-500/20 group"
+                            className={cn(
+                                "w-full px-6 py-4 rounded-xl font-semibold text-foreground transition-all flex items-center justify-center gap-3 shadow-lg group",
+                                isBarter 
+                                    ? "bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 shadow-amber-500/20" 
+                                    : "bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 shadow-green-500/20"
+                            )}
                         >
                             <PenTool className="w-5 h-5 group-hover:rotate-12 transition-transform" />
-                            E-Sign Agreement as Creator
+                            {isBarter ? 'E-Sign Agreement to Claim Product' : 'E-Sign Agreement as Creator'}
                         </motion.button>
 
                         <div className="text-center space-y-2 pt-2">
@@ -162,7 +181,7 @@ export const DealStatusCard = ({
                                 className="text-foreground/40 hover:text-foreground text-xs underline decoration-white/20 hover:decoration-white transition-colors flex items-center justify-center gap-1 mx-auto"
                             >
                                 <Download className="w-3 h-3" />
-                                View Contract PDF
+                                View Agreement PDF
                             </button>
                         </div>
                     </>
@@ -187,11 +206,15 @@ export const DealStatusCard = ({
                                 if (link) {
                                     const success = await copyToClipboard(link);
                                     if (success) toast.success('Brand signing link copied!');
-                                    // window.open(link, '_blank', 'noopener,noreferrer'); // Optional: open for them
                                 }
                             }}
                             whileTap={{ scale: 0.98 }}
-                            className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 px-6 py-3 rounded-xl font-bold text-foreground transition-all flex items-center justify-center gap-2 shadow-lg shadow-blue-500/20"
+                            className={cn(
+                                "w-full px-6 py-3 rounded-xl font-bold text-foreground transition-all flex items-center justify-center gap-2 shadow-lg",
+                                isBarter 
+                                    ? "bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 shadow-amber-500/20" 
+                                    : "bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 shadow-blue-500/20"
+                            )}
                         >
                             <Link2 className="w-4 h-4" />
                             Send Signature Link to Brand
@@ -200,22 +223,34 @@ export const DealStatusCard = ({
                 )}
 
                 {step === 3 && (
-                    <div className="bg-primary/10 border border-primary/20 rounded-xl p-4 animate-in fade-in zoom-in-95 duration-500">
+                    <div className={cn(
+                        "border rounded-xl p-4 animate-in fade-in zoom-in-95 duration-500",
+                        isBarter ? "bg-amber-500/10 border-amber-500/20" : "bg-primary/10 border-primary/20"
+                    )}>
                         <div className="flex items-center gap-3 mb-2">
-                            <ShieldCheck className="w-6 h-6 text-primary" />
-                            <h3 className="font-bold text-primary text-lg">Terms Locked & Active</h3>
+                            {isBarter ? <Package className="w-6 h-6 text-amber-500" /> : <ShieldCheck className="w-6 h-6 text-primary" />}
+                            <h3 className={cn("font-bold text-lg", isBarter ? "text-amber-500" : "text-primary")}>
+                                {isBarter ? 'Product Secured' : 'Terms Locked & Active'}
+                            </h3>
                         </div>
-                        <p className="text-sm text-primary/80 mb-4">
-                            Both parties have signed. Funds are secured in escrow/audit log.
+                        <p className={cn("text-sm mb-4", isBarter ? "text-amber-500/80" : "text-primary/80")}>
+                            {isBarter 
+                                ? 'Both parties have signed. Brand is notified to initiate shipping.' 
+                                : 'Both parties have signed. Funds are secured in escrow/audit log.'
+                            }
                         </p>
                         <div className="grid grid-cols-2 gap-3">
-                            <div className="bg-primary/10 rounded-lg p-3">
-                                <p className="text-xs text-primary/60 uppercase font-bold">Total Value</p>
-                                <p className="text-xl font-bold text-primary">₹{Math.round(dealAmount).toLocaleString('en-IN')}</p>
+                            <div className={cn("rounded-lg p-3", isBarter ? "bg-amber-500/10" : "bg-primary/10")}>
+                                <p className={cn("text-[10px] uppercase font-black tracking-widest opacity-60", isBarter ? "text-amber-500" : "text-primary")}>
+                                    {isBarter ? 'Product Value' : 'Total Payout'}
+                                </p>
+                                <p className={cn("text-xl font-black", isBarter ? "text-amber-500" : "text-primary")}>
+                                    ₹{Math.round(dealAmount).toLocaleString('en-IN')}
+                                </p>
                             </div>
-                            <div className="bg-primary/10 rounded-lg p-3">
-                                <p className="text-xs text-primary/60 uppercase font-bold">Signed On</p>
-                                <p className="text-sm font-bold text-primary">
+                            <div className={cn("rounded-lg p-3", isBarter ? "bg-amber-500/10" : "bg-primary/10")}>
+                                <p className={cn("text-[10px] uppercase font-black tracking-widest opacity-60", isBarter ? "text-amber-500" : "text-primary")}>Signed On</p>
+                                <p className={cn("text-sm font-black", isBarter ? "text-amber-500" : "text-primary")}>
                                     {(() => {
                                         const dateToUse = signedAtDate || deal?.updated_at;
                                         if (!dateToUse) return 'N/A';
@@ -226,14 +261,23 @@ export const DealStatusCard = ({
                             </div>
                         </div>
                         <div className="grid grid-cols-2 gap-3 mt-4">
-                            <button type="button" onClick={onDownloadContract} className="w-full bg-primary/20 hover:bg-primary/30 text-primary font-bold py-3 rounded-lg flex items-center justify-center gap-2 transition-colors text-sm">
+                            <button type="button" onClick={onDownloadContract} className={cn(
+                                "w-full font-bold py-3 rounded-lg flex items-center justify-center gap-2 transition-colors text-sm",
+                                isBarter ? "bg-amber-500/20 hover:bg-amber-500/30 text-amber-400" : "bg-primary/20 hover:bg-primary/30 text-primary"
+                            )}>
                                 <Download className="w-4 h-4" />
-                                Contract PDF
+                                Agreement
                             </button>
-                            {onGenerateInvoice && (
+                            {onGenerateInvoice && !isBarter && (
                                 <button type="button" onClick={onGenerateInvoice} className="w-full bg-indigo-500/20 hover:bg-indigo-500/30 text-indigo-300 font-bold py-3 rounded-lg flex items-center justify-center gap-2 transition-colors text-sm">
                                     <FileText className="w-4 h-4" />
-                                    Generate Invoice
+                                    Invoice
+                                </button>
+                            )}
+                            {isBarter && (
+                                <button type="button" onClick={() => window.open('https://wa.me/919999999999', '_blank')} className="w-full bg-amber-500/10 hover:bg-amber-500/20 text-amber-500 font-bold py-3 rounded-lg flex items-center justify-center gap-2 transition-colors text-sm">
+                                    <ShieldCheck className="w-4 h-4" />
+                                    Support
                                 </button>
                             )}
                         </div>
@@ -247,9 +291,8 @@ export const DealStatusCard = ({
                     <div className="flex items-center gap-2 text-foreground/40 overflow-hidden">
                         <FileText className="w-4 h-4 shrink-0" />
                         <span className="text-xs font-mono truncate">
-                            {/* Filename with middle truncation */}
                             {(() => {
-                                const name = (deal?.contract_file_url || signedContractUrl || '').split('/').pop() || 'contract.pdf';
+                                const name = (deal?.contract_file_url || signedContractUrl || '').split('/').pop() || 'agreement.pdf';
                                 if (name.length > 25) {
                                     return name.substring(0, 12) + '...' + name.slice(-8);
                                 }
@@ -261,7 +304,7 @@ export const DealStatusCard = ({
                         <span className="text-[10px] text-foreground/30 uppercase font-bold px-2 py-0.5 bg-card rounded border border-border/5">PDF</span>
                         <button type="button" onClick={() => {
                             copyToClipboard(deal?.contract_file_url || signedContractUrl || '');
-                            toast.success('Contract link copied');
+                            toast.success('Agreement link copied');
                         }} className="text-foreground/20 hover:text-foreground transition-colors p-1">
                             <Copy className="w-3 h-3" />
                         </button>
