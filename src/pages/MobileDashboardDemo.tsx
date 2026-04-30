@@ -4917,6 +4917,7 @@ const MobileDashboardDemo = ({
                             setShowShareSheet={setShowShareSheet} handleCopyStorefront={handleCopyStorefront}
                             Instagram={Instagram} Copy={Copy} Eye={Eye}
                             handleAccept={handleAccept} onDeclineRequest={onDeclineRequest}
+                            analyticsSummary={analyticsSummary} analyticsLoading={analyticsLoading}
                         />
                     )}
 
@@ -7731,7 +7732,8 @@ const DashboardTab = React.memo(({
     setCollabSubTab, navigate, resolveCreatorDealProductImage, getBrandIcon,
     TrendingUp, ArrowRight, Clock, ChevronRight, User, DollarSign, Zap,
     setSelectedItem, setSelectedType, setShowShareSheet, handleCopyStorefront,
-    Instagram, Copy, Eye, handleAccept, onDeclineRequest
+    Instagram, Copy, Eye, handleAccept, onDeclineRequest,
+    analyticsSummary, analyticsLoading
 }: any) => {
     const hasDeals = activeDealsCount > 0 || completedDealsCount > 0;
 
