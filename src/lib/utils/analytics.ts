@@ -177,7 +177,7 @@ async function trackEventToSupabase(
     
     if (!supabaseUrl || !supabaseKey) return;
 
-    const url = `${supabaseUrl}/rest/v1/analytics_events?v=fixed_${Date.now()}`;
+    const url = `${supabaseUrl}/rest/v1/analytics_events`;
     const body = JSON.stringify({
       user_id: session.user.id,
       event_name: event,

@@ -12,7 +12,7 @@ import {
     ChevronRight, ChevronLeft, Zap, Rocket, Link2, CheckCircle2, Download, Clock, 
     Info, Globe, Star, LogOut, Copy, Share2, QrCode, Eye, MoreHorizontal, AlignLeft, 
     Landmark, FileText, Smartphone, TrendingUp, BarChart3, Mail, Phone, 
-    MessageCircle, MessageSquare, Edit3, Send, X, XCircle, ExternalLink, 
+    MessageCircle, MessageCircleMore, MessageSquare, Edit3, Send, X, XCircle, ExternalLink, 
     AlertCircle, AlertTriangle, ArrowRight, Package, Flag, MapPin, 
     Languages, Lock as LockIcon, ArrowUpRight, Wallet, HelpCircle, 
     Sparkles, Youtube, Twitter, Heart, Trash2, Smartphone as SmartphoneIcon, Truck,
