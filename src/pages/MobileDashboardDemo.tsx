@@ -4970,6 +4970,7 @@ const MobileDashboardDemo = ({
                             safeJsonParse={safeJsonParse} inferCreatorRequiresPayment={inferCreatorRequiresPayment}
                             safeParseArray={safeParseArray} CreditCard={CreditCard} AlertCircle={AlertCircle}
                             Zap={Zap} CheckCircle2={CheckCircle2} Camera={Camera}
+                            handleAccept={handleAccept} onDeclineRequest={onDeclineRequest}
                         />
                     )}
 
@@ -8201,7 +8202,7 @@ const DealsTab = React.memo(({
     setSelectedType, navigate, handleCopyStorefront, dealsError, onRefresh,
     pendingOffersCount, safeJsonParse, inferCreatorRequiresPayment,
     safeParseArray, ChevronRight, Clock, CreditCard, AlertCircle, Zap, 
-    CheckCircle2, Camera
+    CheckCircle2, Camera, handleAccept, onDeclineRequest
 }: any) => {
     return (
         <div className={cn("px-5 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-20", isDark ? "" : "bg-slate-50")}>
@@ -8310,11 +8311,32 @@ const DealsTab = React.memo(({
                                             <div className="relative h-full p-5 flex flex-col justify-between z-10">
                                                 <div className="px-2.5 py-1.5 rounded-full bg-blue-500/10 border border-blue-500/20 self-start text-[11px] font-black text-blue-400 uppercase tracking-widest">New Offer</div>
                                                 <div>
-                                                    <div className="flex justify-between items-end mb-2">
+                                                    <div className="flex justify-between items-end mb-4">
                                                         <h2 className="text-xl font-black italic uppercase text-white">{req.brand_name || 'Brand Partner'}</h2>
                                                         <p className="text-lg font-black text-white">₹{budget.toLocaleString()}</p>
                                                     </div>
-                                                    <div className="h-1 w-full bg-white/10 rounded-full overflow-hidden animate-pulse"><div className="h-full bg-blue-400 w-1/3" /></div>
+                                                    
+                                                    <div className="flex gap-2">
+                                                        <button 
+                                                            onClick={(e) => { 
+                                                                e.stopPropagation(); 
+                                                                handleAccept(req); 
+                                                            }}
+                                                            className="flex-1 h-11 rounded-xl bg-white text-black font-black uppercase tracking-widest text-[10px] flex items-center justify-center gap-2 active:scale-95 transition-all"
+                                                        >
+                                                            Accept
+                                                        </button>
+                                                        <button 
+                                                            onClick={(e) => { 
+                                                                e.stopPropagation(); 
+                                                                triggerHaptic(); 
+                                                                if (onDeclineRequest) onDeclineRequest(req.id);
+                                                            }}
+                                                            className="flex-1 h-11 rounded-xl bg-white/10 border border-white/10 text-white font-black uppercase tracking-widest text-[10px] flex items-center justify-center active:scale-95 transition-all"
+                                                        >
+                                                            Decline
+                                                        </button>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </motion.div>
