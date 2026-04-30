@@ -8291,7 +8291,7 @@ const DealsTab = React.memo(({
                                     const ux = getCreatorDealCardUX(deal);
                                     const productImage = resolveCreatorDealProductImage(deal);
                                     const isBarter = String(deal?.collab_type || deal?.deal_type || deal?.raw?.collab_type || '').toLowerCase().includes('barter');
-                                    const budget = Number(deal?.deal_amount || deal?.budget_amount || deal?.exact_budget || deal?.product_value || 0);
+                                    const budget = Number(deal?.deal_amount || deal?.budget_amount || deal?.exact_budget || deal?.product_value || deal?.barter_value || deal?.raw?.product_value || deal?.raw?.barter_value || 0);
                                     return (
                                         <motion.div key={deal.id || idx} whileTap={{ scale: 0.98 }} onClick={() => { triggerHaptic(); setSelectedItem(deal); setSelectedType('deal'); }} className={cn("relative w-full aspect-[1.2/1] rounded-[2.5rem] overflow-hidden bg-[#0B1220] border-0 shadow-2xl mb-6")}>
                                             <div className="absolute inset-0">
@@ -8410,7 +8410,7 @@ const DealsTab = React.memo(({
                                 {pendingOffersDeduplicated.map((req: any, idx: number) => {
                                     const productImage = resolveCreatorDealProductImage(req);
                                     const isBarter = String(req?.collab_type || req?.deal_type || req?.raw?.collab_type || '').toLowerCase().includes('barter');
-                                    const budget = Number(req?.budget_amount || req?.exact_budget || req?.deal_amount || req?.product_value || 0);
+                                    const budget = Number(req?.budget_amount || req?.exact_budget || req?.deal_amount || req?.product_value || req?.barter_value || req?.raw?.product_value || req?.raw?.barter_value || req?.form_data?.product_value || req?.form_data?.barter_value || 0);
                                     return (
                                         <motion.div key={req.id || idx} whileTap={{ scale: 0.98 }} onClick={() => { triggerHaptic(); setSelectedItem(req); setSelectedType('offer'); }} className={cn("relative w-full aspect-[1.2/1] rounded-[2.5rem] overflow-hidden bg-[#0B1220] border-0 shadow-2xl mb-6")}>
                                             <div className="absolute inset-0">
