@@ -168,11 +168,9 @@ async function trackEventToSupabase(
   try {
     if (shouldSkipClientAnalytics()) return;
 
-    // Small delay to ensure any immediate navigation has settled or to avoid race conditions
-    await new Promise(resolve => setTimeout(resolve, 100));
-
-    // Use a background-safe approach to get session
-    const { data: { session } } = await supabase.auth.getSession();
+    // Direct fetch approach for maximum reliability during background/unloading
+    const { data: sessionData } = await supabase.auth.getSession();
+    const session = sessionData?.session;
     if (!session?.user?.id || !session?.access_token) return;
 
     const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;

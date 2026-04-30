@@ -99,8 +99,12 @@ export const usePerformanceMonitoring = () => {
       }
     };
 
-    // Track memory every 30 seconds
-    const memoryInterval = setInterval(trackMemoryUsage, 30000);
+    // Track memory usage only when tab is active and every 60 seconds
+    const memoryInterval = setInterval(() => {
+      if (document.visibilityState === 'visible') {
+        trackMemoryUsage();
+      }
+    }, 60000);
 
     return () => clearInterval(memoryInterval);
   }, [location.pathname]);
