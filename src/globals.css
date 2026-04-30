@@ -144,10 +144,19 @@ body {
 #root, .app-scroll-root {
   height: 100%;
   width: 100%;
+  /* Mobile-first: scroll inside the root to allow for custom pull-to-refresh */
   overflow-y: auto;
   overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior-y: contain;
+}
+
+/* Desktop Fix: Restore native window scrolling for better performance and compatibility */
+@media (min-width: 1024px) {
+  #root, .app-scroll-root {
+    height: auto !important;
+    overflow: visible !important;
+  }
 }
 
 /* Calendar-specific fixes */
@@ -178,10 +187,11 @@ body {
    The mobile scrolling fixes set `overflow-*` on `body`, which creates an overflow ancestor that breaks sticky
    when the document scrolls on `html` (Chromium behavior). */
 @media (min-width: 1024px) {
-  body {
-    overflow-x: visible;
-    overflow-y: visible;
-    overscroll-behavior-y: auto;
+  html, body {
+    overflow-x: visible !important;
+    overflow-y: visible !important;
+    overscroll-behavior-y: auto !important;
+    height: auto !important;
   }
 }
 
@@ -221,7 +231,7 @@ body {
     height: auto;
     min-height: 100dvh;
     overflow-x: hidden;
-    overscroll-behavior-y: none;
+    /* overscroll-behavior-y: none is handled conditionally or via desktop override */
   }
 
   html {
