@@ -292,6 +292,8 @@ interface UpdateProfileVariables {
   discovery_video_url?: string | null;
   payout_upi?: string | null;
   address?: string | null;
+  shipping_address?: string | null;
+  pincode?: string | null;
   // NEW: Profile fields
   phone?: string | null;
   location?: string | null;
@@ -420,6 +422,8 @@ export const useUpdateProfile = () => {
       facebook_followers,
       discovery_video_url,
       payout_upi,
+      shipping_address,
+      pincode,
       // NEW: Profile fields
       phone,
       location,
@@ -615,6 +619,8 @@ export const useUpdateProfile = () => {
         storefront_completion?: number | null;
         discovery_video_url?: string | null;
         payout_upi?: string | null;
+        shipping_address?: string | null;
+        pincode?: string | null;
       } = {
         updated_at: new Date().toISOString(),
       };
@@ -718,6 +724,12 @@ export const useUpdateProfile = () => {
       }
       if (payout_upi !== undefined) {
         updateData.payout_upi = payout_upi;
+      }
+      if (shipping_address !== undefined) {
+        updateData.shipping_address = shipping_address;
+      }
+      if (pincode !== undefined) {
+        updateData.pincode = pincode;
       }
       if (phone !== undefined) {
         // Only include phone if it's not null or empty (null is valid to clear the field)
