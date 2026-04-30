@@ -5,18 +5,6 @@ import { cn } from '@/lib/utils';
 
 // ─── Pure helper functions ───
 
-export const DashboardLoadingStage = ({ isDark }: { isDark: boolean }) => {
-    return (
-        <div className="space-y-6 animate-in fade-in duration-500">
-            <div className={cn("h-32 rounded-3xl border relative overflow-hidden", isDark ? "bg-white/5 border-white/5" : "bg-white border-slate-200")}>
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent animate-shimmer" />
-            </div>
-            <div className={cn("h-12 rounded-2xl border", isDark ? "bg-white/5 border-white/5" : "bg-white border-slate-200")} />
-            <div className={cn("h-48 rounded-[32px] border", isDark ? "bg-white/5 border-white/5" : "bg-white border-slate-200")} />
-        </div>
-    );
-};
-
 export const StatusBadge = ({ status }: { status: string }) => {
     const config: Record<string, { bg: string; text: string; label: string }> = {
         'new': { bg: 'bg-background dark:bg-secondary/50', text: 'text-muted-foreground dark:text-muted-foreground', label: 'NEW' },

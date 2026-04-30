@@ -205,47 +205,12 @@ self.addEventListener('push', (event) => {
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
   if (event.action === 'dismiss') return;
-  
-  const notificationData = event.notification?.data || {};
-  let targetUrl = notificationData.url || '/creator-dashboard?tab=deals&subtab=pending';
-  const requestId = notificationData.requestId;
-
-  // Enhance URL with requestId for deep-linking if available
-  if (requestId && !targetUrl.includes('requestId=')) {
-    try {
-      // Handle relative URLs by using self.location.origin as base
-      const url = new URL(targetUrl, self.location.origin);
-      url.searchParams.set('requestId', requestId);
-      // Ensure we are on the deals tab
-      url.searchParams.set('tab', 'deals');
-      url.searchParams.set('subtab', 'pending');
-      targetUrl = url.pathname + url.search;
-    } catch (e) {
-      // Fallback if URL parsing fails
-      if (targetUrl.includes('?')) {
-        targetUrl += `&requestId=${requestId}`;
-      } else {
-        targetUrl += `?requestId=${requestId}`;
-      }
-    }
-  }
-
+  const targetUrl = event.notification?.data?.url || '/creator-dashboard?tab=deals&subtab=pending';
   event.waitUntil(
     clients.matchAll({ type: 'window' }).then((windowClients) => {
-      // If there's already a window open with this exact URL, focus it
       for (const client of windowClients) {
         if (client.url === targetUrl && 'focus' in client) return client.focus();
       }
-      
-      // Otherwise, if any app window is open, navigate it
-      if (windowClients.length > 0) {
-        const client = windowClients[0];
-        if ('navigate' in client) {
-          return client.navigate(targetUrl).then(c => c?.focus());
-        }
-      }
-
-      // If no window is open, open a new one
       return clients.openWindow ? clients.openWindow(targetUrl) : undefined;
     })
   );

@@ -8,7 +8,6 @@ import { getApiBaseUrl } from '@/lib/utils/api';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { triggerHaptic } from '@/lib/utils/haptics';
-import { Zap, ChevronRight, Bell } from 'lucide-react';
 
 async function fetchBrandDeals() {
   const { data: sessionData } = await supabase.auth.getSession();
@@ -139,35 +138,10 @@ const CreatorDashboard = () => {
           // Also toast for visibility if the tab is active
           if (document.visibilityState === 'visible') {
             triggerHaptic();
-            const brandName = payload.new?.brand_name || 'A brand';
-            const offerId = payload.new?.id;
-            
-            toast.custom((t) => (
-              <div 
-                className="w-full max-w-[360px] bg-[#0F172A] border border-blue-500/30 rounded-[28px] p-4 shadow-[0_25px_50px_rgba(0,0,0,0.5)] flex items-center gap-4 animate-in fade-in slide-in-from-top-4 duration-500 cursor-pointer active:scale-95 transition-transform"
-                onClick={() => {
-                  toast.dismiss(t);
-                  if (offerId) navigate(`/dashboard?requestId=${offerId}`);
-                }}
-              >
-                <div className="w-12 h-12 rounded-2xl bg-blue-500/20 flex items-center justify-center shrink-0 relative overflow-hidden group">
-                  <div className="absolute inset-0 bg-gradient-to-br from-blue-400/20 to-transparent opacity-50" />
-                  <Zap className="w-6 h-6 text-blue-400 fill-blue-400/20 relative z-10" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
-                    <p className="text-[14px] font-black text-white leading-tight tracking-tight uppercase italic">New Offer!</p>
-                  </div>
-                  <p className="text-[13px] text-white/70 font-bold truncate mt-1">
-                    <span className="text-white">{brandName}</span> sent a collaboration.
-                  </p>
-                </div>
-                <div className="w-9 h-9 rounded-full bg-white/5 flex items-center justify-center border border-white/10">
-                  <ChevronRight className="w-5 h-5 text-white/40" />
-                </div>
-              </div>
-            ), { duration: 6000, position: 'top-center' });
+            toast.success('🔥 New offer received!', {
+              description: 'A brand just sent you a new collaboration request.',
+              duration: 5000,
+            });
           }
         }
       )

@@ -1797,15 +1797,11 @@ const CollabLinkLanding = () => {
 
               // Try by username first
               if (handle) {
-                const { data: rowByUsername, error: errByUsername } = await Promise.race([
-                  (supabase as any)
-                    .from('profiles')
-                    .select('portfolio_links, media_kit_url, discovery_video_url, portfolio_videos')
-                    .eq('username', handle)
-                    .maybeSingle(),
-                  new Promise<any>((_, reject) => setTimeout(() => reject(new Error('Timeout')), 10000))
-                ]).catch(err => ({ data: null, error: err }))
-
+                const { data: rowByUsername, error: errByUsername } = await (supabase as any)
+                  .from('profiles')
+                  .select('portfolio_links, media_kit_url, discovery_video_url, portfolio_videos')
+                  .eq('username', handle)
+                  .maybeSingle()
                 if (!errByUsername && rowByUsername) {
                   portfolioRow = rowByUsername
                 } else if (errByUsername) {
@@ -1821,15 +1817,11 @@ const CollabLinkLanding = () => {
                 data.creator.id || ''
               )
               if (!portfolioRow && isUuid) {
-                const { data: rowById, error: errById } = await Promise.race([
-                  (supabase as any)
-                    .from('profiles')
-                    .select('portfolio_links, media_kit_url, discovery_video_url, portfolio_videos')
-                    .eq('id', data.creator.id)
-                    .maybeSingle(),
-                  new Promise<any>((_, reject) => setTimeout(() => reject(new Error('Timeout')), 10000))
-                ]).catch(err => ({ data: null, error: err }))
-                
+                const { data: rowById, error: errById } = await (supabase as any)
+                  .from('profiles')
+                  .select('portfolio_links, media_kit_url, discovery_video_url, portfolio_videos')
+                  .eq('id', data.creator.id)
+                  .maybeSingle()
                 if (!errById && rowById) {
                   portfolioRow = rowById
                 } else if (errById) {
@@ -1872,32 +1864,26 @@ const CollabLinkLanding = () => {
           // Direct recording to collab_link_events for the real-time dashboard
           if (data.creator?.id) {
             const searchParams = new URLSearchParams(window.location.search)
-            const eventUrl = `${import.meta.env.VITE_SUPABASE_URL}/rest/v1/collab_link_events`
-            const eventBody = JSON.stringify({
-              creator_id: data.creator.id,
-              event_type: 'view',
-              utm_source: searchParams.get('utm_source') || 'direct',
-              utm_medium: searchParams.get('utm_medium') || null,
-              utm_campaign: searchParams.get('utm_campaign') || null,
-              device_type: /mobile|android|iphone/i.test(navigator.userAgent)
-                ? 'mobile'
-                : /tablet|ipad/i.test(navigator.userAgent)
-                  ? 'tablet'
-                  : 'desktop',
-            })
-
-            fetch(eventUrl, {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
-                'Prefer': 'return=minimal'
-              },
-              body: eventBody,
-              keepalive: true,
-            }).catch(() => {
-              // Ignore analytics failures
-            })
+            supabase
+              .from('collab_link_events')
+              .insert({
+                creator_id: data.creator.id,
+                event_type: 'view',
+                utm_source: searchParams.get('utm_source') || 'direct',
+                utm_medium: searchParams.get('utm_medium') || null,
+                utm_campaign: searchParams.get('utm_campaign') || null,
+                device_type: /mobile|android|iphone/i.test(navigator.userAgent)
+                  ? 'mobile'
+                  : /tablet|ipad/i.test(navigator.userAgent)
+                    ? 'tablet'
+                    : 'desktop',
+              })
+              .then(({ error }) => {
+                if (error) {
+                  // If this fails, it might be due to RLS or schema mismatch.
+                  console.warn('[CollabLinkLanding] Direct event recording skipped:', error.message)
+                }
+              })
           }
 
           // Track page view event (anonymous, no auth required) via analytics service
@@ -1921,7 +1907,6 @@ const CollabLinkLanding = () => {
                 utm_medium: utmMedium || null,
                 utm_campaign: utmCampaign || null,
               }),
-              keepalive: true,
             })
 
             if (!trackResponse.ok) {
@@ -3113,19 +3098,6 @@ const CollabLinkLanding = () => {
           0% { transform: scale(1); box-shadow: 0 14px 30px rgba(15,164,127,0.16); }
           45% { transform: scale(1.012); box-shadow: 0 18px 44px rgba(15,164,127,0.22); }
           100% { transform: scale(1); box-shadow: 0 14px 30px rgba(15,164,127,0.16); }
-        }
-        
-        /* Force native document scrolling for this public landing page */
-        /* This overrides the nested #root scrolling used in the dashboard */
-        html, body {
-          height: auto !important;
-          overflow: visible !important;
-          -webkit-overflow-scrolling: touch;
-        }
-        
-        #root {
-          height: auto !important;
-          overflow: visible !important;
         }
       `}</style>
 
@@ -4370,8 +4342,8 @@ const CollabLinkLanding = () => {
                                   </span>
                                 )}
                               </div>
-                               <p className="mb-3 text-[12px] font-medium text-slate-500">
-                                Upload a clear image (rectangle/landscape preferred) or{' '}
+                              <p className="mb-3 text-[12px] font-medium text-slate-500">
+                                Upload a clear image or{' '}
                                 <span className="font-bold text-slate-700">Paste (Ctrl+V)</span>{' '}
                                 from clipboard.
                               </p>
