@@ -7885,127 +7885,75 @@ const DashboardTab = React.memo(({
                 </motion.div>
             )}
 
-            {/* Total Earnings Section */}
-            {completedDealsCount > 0 && (
-                <div className="px-5">
-                    <motion.div
-                        initial={{ scale: 0.97, opacity: 0 }}
-                        animate={{ scale: 1, opacity: 1 }}
-                        transition={{ delay: 0.08 }}
-                        className={cn(
-                            "p-6 rounded-[32px] overflow-hidden border relative",
-                            isDark ? "bg-[#0B1220] border-[#223046]" : "bg-white border-[#E5E7EB] shadow-sm"
-                        )}
-                    >
-                        <div className={cn(
-                            "absolute inset-0",
-                            isDark
-                                ? "bg-[linear-gradient(135deg,rgba(16,185,129,0.25),rgba(14,165,233,0.18),rgba(37,99,235,0.25))]"
-                                : "bg-[linear-gradient(135deg,#10B981_0%,#0EA5E9_50%,#2563EB_100%)] opacity-95"
-                        )} />
-                        <div className="absolute inset-0 opacity-30" style={{ background: "radial-gradient(800px 220px at 20% 0%, rgba(255,255,255,0.35), transparent 60%)" }} />
-
-                        <div className="relative z-10 text-white">
-                            <div className="flex items-center justify-between gap-3">
-                                <p className="text-[10px] font-black uppercase tracking-[0.2em] opacity-90">TOTAL EARNINGS</p>
-                                <button
-                                    type="button"
-                                    onClick={() => { triggerHaptic(); setActiveTab('payments'); }}
-                                    className="h-8 px-3 rounded-full bg-black/20 backdrop-blur-md border border-white/15 text-[10px] font-black uppercase tracking-widest flex items-center gap-2 active:scale-95"
-                                >
-                                    Details
-                                    <ArrowRight className="w-3.5 h-3.5" />
-                                </button>
-                            </div>
-
-                            <div className="mt-4 text-[32px] leading-none font-black font-outfit tabular-nums">
-                                ₹{monthlyRevenue.toLocaleString()}
-                            </div>
-
-                            <div className="mt-4 flex items-center gap-3">
-                                <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/15 border border-white/15 text-[11px] font-black">
-                                    <TrendingUp className="w-3.5 h-3.5" />
-                                    Performance Up
-                                </span>
-                            </div>
-                        </div>
-                    </motion.div>
-                </div>
-            )}
-
-            {/* Incoming Offers Preview */}
-            {pendingOffersCount > 0 ? (
-                <div className="px-5">
-                    <div className={cn(
-                        "p-6 rounded-[32px] border relative overflow-hidden",
-                        isDark ? "bg-[#0B1220] border-[#223046]" : "bg-white border-[#E5E7EB] shadow-sm"
-                    )}>
-                        <div className={cn(
-                            "absolute inset-0",
-                            isDark
-                                ? "bg-[linear-gradient(135deg,rgba(16,185,129,0.15),rgba(14,165,233,0.1),rgba(37,99,235,0.15))]"
-                                : "bg-[linear-gradient(135deg,#F0F9FF_0%,#E0F2FE_100%)] opacity-95"
-                        )} />
-                        
-                        <div className="relative z-10">
-                            <div className="flex items-center justify-between mb-6">
-                                <p className={cn(
-                                    "text-[10px] font-black uppercase tracking-[0.2em]",
-                                    isDark ? "text-emerald-400" : "text-emerald-600"
-                                )}>
-                                    INCOMING OFFERS ({pendingOffersCount})
-                                </p>
-                                <button
-                                    type="button"
-                                    onClick={() => { triggerHaptic(); setActiveTab('deals'); setCollabSubTab('pending'); }}
-                                    className={cn(
-                                        "h-8 px-3 rounded-full border text-[10px] font-black uppercase tracking-widest flex items-center gap-2 active:scale-95",
-                                        isDark ? "bg-white/5 border-white/15 text-white" : "bg-white border-slate-200 text-slate-900 shadow-sm"
+            {/* Premium Earnings & Offers Hub */}
+            <div className="px-5 mb-5">
+                <motion.div
+                    initial={{ y: 20, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    className={cn(
+                        "p-6 rounded-[2.5rem] border overflow-hidden relative group",
+                        isDark 
+                          ? "border-emerald-500/30 bg-gradient-to-br from-emerald-500/10 via-emerald-950/20 to-[#020617] shadow-[0_30px_60px_rgba(0,0,0,0.4)]" 
+                          : "border-primary/60 bg-gradient-to-br from-emerald-500 via-teal-500 to-blue-600 shadow-[0_25px_55px_rgba(16,185,129,0.22)]"
+                    )}
+                >
+                    <div className={cn("absolute inset-0 pointer-events-none opacity-20", isDark ? "bg-[radial-gradient(circle_at_top_right,rgba(16,185,129,0.3),transparent)]" : "bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.4),transparent)]")} />
+                    
+                    <div className="relative z-10 flex flex-col gap-6">
+                        <div className="flex items-start justify-between">
+                            <div className="min-w-0">
+                                <p className={cn("text-[10px] font-black uppercase tracking-widest", isDark ? "text-emerald-400" : "text-white/80")}>Total Earnings</p>
+                                <div className="flex items-baseline gap-2 mt-3">
+                                    <span className="text-[38px] font-black tracking-tighter leading-none text-white">
+                                        ₹{monthlyRevenue.toLocaleString()}
+                                    </span>
+                                    {completedDealsCount > 0 && (
+                                        <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-white/20 text-white backdrop-blur-md border border-white/20">
+                                            +{(completedDealsCount > 5 ? 3 : 1)} Today
+                                        </span>
                                     )}
-                                >
-                                    View All
-                                    <ArrowRight className="w-3.5 h-3.5" />
-                                </button>
+                                </div>
+                                <p className="text-[13px] font-bold mt-3 text-white/90">
+                                    {activeDeals.length} Collaboration{activeDeals.length === 1 ? '' : 's'} running
+                                </p>
                             </div>
-
-                            <div className="space-y-4">
-                                {pendingOffersDeduplicated.slice(0, 1).map((req: any) => {
-                                    const amount = Number(req?.exact_budget || req?.deal_amount || req?.barter_value || 0);
-                                    const isBarter = String(req?.collab_type || '').toLowerCase().includes('barter');
-                                    
-                                    return (
-                                        <div key={req.id} className="space-y-4">
-                                            <div className="flex items-start justify-between gap-4">
-                                                <div className="flex-1 min-w-0">
-                                                    <h2 className={cn("text-[24px] font-black tracking-tight leading-none italic truncate", textColor)}>
-                                                        {req.brand_name || 'Brand Partner'}
-                                                    </h2>
-                                                    <p className={cn("text-xs font-bold uppercase tracking-widest mt-2 opacity-40", textColor)}>
-                                                        {isBarter ? 'Barter Offer' : 'Paid Offer'} • ₹{amount.toLocaleString()}
-                                                    </p>
-                                                </div>
-                                                <div className="w-12 h-12 rounded-2xl bg-white/10 backdrop-blur-md border border-white/10 flex items-center justify-center p-2">
-                                                    {getBrandIcon(req.brand_logo_url, req.campaign_category, req.brand_name)}
-                                                </div>
-                                            </div>
-
-                                            <div className="h-1 w-full bg-white/10 rounded-full overflow-hidden animate-pulse"><div className="h-full bg-blue-400 w-1/3" /></div>
-                                        </div>
-                                    );
-                                })}
+                            <div className={cn("w-12 h-12 rounded-2xl flex items-center justify-center backdrop-blur-2xl border", isDark ? "bg-white/5 border-white/10" : "bg-white/20 border-white/30")}>
+                                <BarChart3 className="w-6 h-6 text-white" />
                             </div>
                         </div>
+
+                        {/* Integrated Actions Card if pending offers exist */}
+                        {pendingOffersCount > 0 && (
+                            <div className={cn("p-4 rounded-[2rem] border backdrop-blur-md transition-all", isDark ? "bg-white/5 border-white/10" : "bg-white/15 border-white/20")}>
+                                <div className="flex items-center justify-between gap-4">
+                                    <div className="flex items-center gap-3">
+                                        <div className={cn("w-10 h-10 rounded-2xl flex items-center justify-center", isDark ? "bg-emerald-500/20 text-emerald-400" : "bg-white/20 text-white")}>
+                                            <Zap className="w-5 h-5" />
+                                        </div>
+                                        <div>
+                                            <p className="text-[14px] font-black text-white">{pendingOffersCount} Actions Pending</p>
+                                            <p className="text-[11px] text-white/60 font-bold">New offers waiting for you</p>
+                                        </div>
+                                    </div>
+                                    <button 
+                                        onClick={() => { triggerHaptic(); setActiveTab('deals'); }}
+                                        className="px-5 py-2.5 rounded-2xl bg-white text-black text-[11px] font-black uppercase tracking-widest shadow-xl active:scale-95 transition-all"
+                                    >
+                                        Review
+                                    </button>
+                                </div>
+                                
+                                <div className="mt-3 flex flex-wrap gap-1.5 border-t border-white/5 pt-3">
+                                    <span className="text-[9px] font-black uppercase tracking-widest text-white/40">
+                                        {pendingOffersCount} Incoming Offers • 0 Counters
+                                    </span>
+                                </div>
+                            </div>
+                        )}
                     </div>
-                </div>
-            ) : (
-                <div className="px-5">
-                    <div className={cn("p-8 rounded-[40px] border text-center relative overflow-hidden group", isDark ? "bg-[#111820] border-white/5" : "bg-white border-slate-200")}>
-                        <Zap className="w-8 h-8 text-emerald-500 mx-auto mb-4" />
-                        <h3 className={cn("text-2xl font-black italic uppercase mb-3", textColor)}>Get Your First Deal</h3>
-                        <button onClick={() => triggerHaptic()} className="h-14 px-8 rounded-2xl bg-emerald-500 text-white font-black uppercase tracking-widest text-[13px]">Share Collab Link</button>
-                    </div>
-                </div>
-            )}
+                </motion.div>
+            </div>
+
 
 
         </motion.div>
