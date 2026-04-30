@@ -2846,7 +2846,7 @@ const MobileDashboardDemo = ({
             } as any);
 
             // 2. Accept the deal
-            await onAcceptRequest(pendingAcceptReq);
+            await onAcceptRequest(pendingAcceptReq, addressData);
             closeItemDetail();
             confetti({ particleCount: 80, spread: 60, origin: { y: 0.7 }, colors: ['#10B981', '#059669', '#34D399'] });
             toast.success('🎉 Deal accepted! Shipping address confirmed.');

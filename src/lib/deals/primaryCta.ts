@@ -95,7 +95,7 @@ export const getCanonicalDealStatus = (deal: any): CanonicalDealStatus => {
     lower.includes('paid') || 
     lower.includes('dispute');
 
-  if (isBarter && hasAddress && !isPostContractStatus) {
+  if (isBarter && (hasAddress || brandSigned || creatorSigned) && !isPostContractStatus) {
     return 'CONTENT_MAKING';
   }
 
@@ -213,6 +213,16 @@ export const getDealPrimaryCta = (params: { role: DealRole; deal: any }): DealPr
     if (status === 'PAYMENT_PENDING') {
       if (isPureBarter && requiresShipping) {
         const hasAddress = !!String(deal?.brand_address || '').trim();
+        // If contract is signed, move to shipping/tracking instead of just address collection
+        if (brandSigned || creatorSigned) {
+           return { 
+            status, 
+            label: 'Ship Product', 
+            disabled: false, 
+            tone: 'action', 
+            action: 'track_progress' 
+          };
+        }
         return { 
           status, 
           label: hasAddress ? 'Edit Shipping Details' : 'Add Shipping Details', 
@@ -262,13 +272,20 @@ export const getDealPrimaryCta = (params: { role: DealRole; deal: any }): DealPr
       return { status, label: 'Review & Sign Contract', disabled: false, tone: 'action', action: 'review_sign_contract' };
     }
     if (status === 'FULLY_EXECUTED') {
+      if (isPureBarter && requiresShipping) {
+        return { 
+          status, 
+          label: 'Ship Product', 
+          disabled: false, 
+          tone: 'action', 
+          action: 'track_progress' 
+        };
+      }
       return { status, label: 'View Collaboration', disabled: false, tone: 'view', action: 'view_collaboration' };
     }
     if (status === 'CONTENT_MAKING') {
       if (requiresShipping && shippingStatus !== 'shipped' && shippingStatus !== 'delivered' && shippingStatus !== 'received') {
-        return isPureBarter
-          ? { status, label: 'Confirm Product Receipt', disabled: false, tone: 'action', action: 'track_progress' }
-          : { status, label: 'Ship Product', disabled: false, tone: 'action', action: 'track_progress' };
+        return { status, label: 'Ship Product', disabled: false, tone: 'action', action: 'track_progress' };
       }
       return { status, label: 'Track Progress', disabled: false, tone: 'view', action: 'track_progress' };
     }

@@ -175,7 +175,7 @@ const CreatorDashboard = () => {
     queryClient.invalidateQueries({ queryKey: ['brand-deals'] });
   };
 
-  const handleAcceptRequest = async (req: any) => {
+  const handleAcceptRequest = async (req: any, addressData?: { address: string; pincode: string }) => {
     const { data: sessionData } = await supabase.auth.getSession();
     if (!sessionData.session) throw new Error('Not authenticated');
 
@@ -185,6 +185,10 @@ const CreatorDashboard = () => {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${sessionData.session.access_token}`,
       },
+      body: JSON.stringify({
+        shipping_address: addressData?.address,
+        pincode: addressData?.pincode,
+      }),
     });
     const data = await res.json();
     // Always invalidate so list refreshes even on "already processed" errors

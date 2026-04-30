@@ -136,7 +136,7 @@ const dealFingerprint = (row: BrandDeal | null | undefined) => {
   const contractKey = row?.safe_contract_url || row?.contract_file_url || null;
   if (contractKey) return `contract:${String(contractKey)}`;
   const creator = String(row?.creator_id || row?.profiles?.id || '');
-  const amount = String(row?.deal_amount || row?.exact_budget || '');
+  const amount = String(row?.deal_amount || row?.exact_budget || row?.barter_value || row?.product_value || '');
   const due = String(row?.due_date || row?.deadline || '');
   const deliverables = String(formatDeliverables(row) || row?.deliverables || row?.collab_type || '').toLowerCase();
   // Important: do NOT include created_at here. Some environments duplicate the same deal with different ids/timestamps.
@@ -525,7 +525,7 @@ const brandDealCardUi = (row: BrandDeal | null | undefined) => {
                     : 'Creator is now crafting your content')
               : (s === 'FULLY_EXECUTED' || s === 'CONTRACT_READY')
                 ? (isBarterDeal 
-                    ? (row?.brand_address ? 'Creator is now crafting your content' : 'Contract signed — add shipping details to continue') 
+                    ? (row?.brand_address ? 'Creator is now crafting your content' : 'Contract signed — please ship the product') 
                     : 'Contract signed — awaiting content')
                 : s === 'AWAITING_CREATOR_SIGNATURE' || s === 'SENT'
                   ? "Waiting for creator's signature"
@@ -1170,7 +1170,7 @@ const BrandMobileDashboard = ({
     const monthStart = startOfLocalMonth(now);
     return (deals || []).reduce((acc: number, d: any) => {
       const createdAt = d?.created_at ? new Date(d.created_at) : null;
-      const amount = Number(d?.deal_amount) || 0;
+      const amount = Number(d?.deal_amount || d?.exact_budget || d?.barter_value || d?.product_value) || 0;
       if (!createdAt || !(amount > 0)) return acc;
       if (createdAt >= monthStart && sameLocalMonth(createdAt, now)) return acc + amount;
       return acc;
@@ -2104,7 +2104,7 @@ const BrandMobileDashboard = ({
     const creatorName = firstNameish(offer?.profiles, offer?.creator_name || offer?.creator_email);
     const creatorUsername = String(offer?.profiles?.username || '').trim();
     const deliverables = formatDeliverables(offer) || offer?.collab_type || 'Collaboration';
-    const amount = Number(offer?.deal_amount || offer?.exact_budget || 0);
+    const amount = Number(offer?.deal_amount || offer?.exact_budget || offer?.barter_value || offer?.product_value || 0);
     const deadlineValue = offer?.due_date || offer?.deadline;
     const deadline = deadlineValue ? new Date(deadlineValue) : null;
     const deadlineText = deadline && !Number.isNaN(deadline.getTime())
@@ -4197,7 +4197,7 @@ const BrandCollabsTab = React.memo(({
               const itemKey = `collab-list-${item.id || idx}-${item.updated_at || ''}`;
               const isPendingItem = activeCollabTab === 'action_required';
               const due = isPendingItem ? offerExpiryLabel(item) : deadlineLabel(item);
-              const amount = Number(item?.deal_amount || item?.exact_budget || 0);
+              const amount = Number(item?.deal_amount || item?.exact_budget || item?.barter_value || item?.product_value || 0);
               const creatorName = firstNameish(item?.profiles, item?.creator_name || item?.creator_email);
               const creatorMeta = item?.profiles?.username || item?.creator_name || item?.creator_email || 'Creator';
               const creatorAvatar = item?.profiles?.avatar_url || item?.profiles?.profile_image_url || item?.profiles?.instagram_profile_photo || item?.creator_avatar_url || item?.creator_photo_url || '';
