@@ -4860,6 +4860,8 @@ const MobileDashboardDemo = ({
                             getBrandIcon={getBrandIcon} TrendingUp={TrendingUp} ArrowRight={ArrowRight}
                             Clock={Clock} ChevronRight={ChevronRight} User={User} DollarSign={DollarSign} Zap={Zap}
                             setSelectedItem={setSelectedItem} setSelectedType={setSelectedType}
+                            setShowShareSheet={setShowShareSheet} handleCopyStorefront={handleCopyStorefront}
+                            Instagram={Instagram} Copy={Copy}
                         />
                     )}
 
@@ -7740,6 +7742,53 @@ const DashboardTab = React.memo(({
                 </div>
             </div>
 
+            {/* Link to Instagram Bio Widget */}
+            <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1 }}
+                className="px-5"
+            >
+                <div className={cn(
+                    "p-6 rounded-[32px] border relative overflow-hidden group",
+                    isDark ? "bg-[#0B1324] border-white/5 shadow-2xl" : "bg-white border-slate-200 shadow-xl shadow-slate-200/40"
+                )}>
+                    <div className="flex items-center gap-4 relative z-10">
+                        <div className="w-12 h-12 bg-pink-500/10 rounded-2xl flex items-center justify-center text-pink-500">
+                            <Instagram className="w-6 h-6" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                            <p className={cn("text-[11px] font-black uppercase tracking-widest opacity-40 mb-0.5", textColor)}>Profile Visibility</p>
+                            <h3 className={cn("text-lg font-black tracking-tight italic uppercase", textColor)}>Link to Instagram</h3>
+                        </div>
+                    </div>
+                    <p className={cn("text-xs font-medium opacity-40 leading-relaxed mt-4 relative z-10", textColor)}>
+                        Add your collab link to your Instagram bio to start receiving offers directly.
+                    </p>
+                    <div className="flex gap-3 mt-6 relative z-10">
+                        <button 
+                            onClick={() => { triggerHaptic(); setShowShareSheet(true); }}
+                            className="flex-1 bg-gradient-to-r from-pink-500 to-purple-600 text-white font-black italic py-3 rounded-xl text-xs uppercase tracking-widest active:scale-95 transition-all shadow-lg shadow-pink-500/20"
+                        >
+                            Add to Bio
+                        </button>
+                        <button 
+                            onClick={() => {
+                                triggerHaptic();
+                                handleCopyStorefront();
+                            }}
+                            className={cn(
+                                "px-5 py-3 rounded-xl border flex items-center justify-center transition-all active:scale-95",
+                                isDark ? "bg-white/5 border-white/10 text-white" : "bg-white border-slate-200 text-slate-900"
+                            )}
+                        >
+                            <Copy className="w-4 h-4" />
+                        </button>
+                    </div>
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-pink-500/5 blur-3xl rounded-full -mr-16 -mt-16 group-hover:bg-pink-500/10 transition-colors" />
+                </div>
+            </motion.div>
+
             {/* Total Earnings Section */}
             {completedDealsCount > 0 && (
                 <div className="px-5">
@@ -7808,7 +7857,7 @@ const DashboardTab = React.memo(({
                             </button>
                         </div>
                         <div className="space-y-4">
-                            {pendingOffersDeduplicated.slice(0, 3).map((req: any) => {
+                            {pendingOffersDeduplicated.slice(0, 1).map((req: any) => {
                                 const amount = Number(req?.exact_budget || req?.deal_amount || req?.barter_value || 0);
                                 const productImage = resolveCreatorDealProductImage(req);
                                 const isBarter = String(req?.collab_type || '').toLowerCase().includes('barter');
