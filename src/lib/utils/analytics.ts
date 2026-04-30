@@ -168,31 +168,40 @@ async function trackEventToSupabase(
   try {
     if (shouldSkipClientAnalytics()) return;
 
-    // Use a background-safe approach
+    // Use a background-safe approach to get session
     const { data: { session } } = await supabase.auth.getSession();
-    if (!session?.user?.id) return;
+    if (!session?.user?.id || !session?.access_token) return;
 
-    // Use a non-blocking background task
-    void (async () => {
-      try {
-        const { error } = await supabase
-          .from('analytics_events')
-          .insert({
-            user_id: session.user.id,
-            event_name: event,
-            metadata: properties || {},
-            created_at: new Date().toISOString(),
-          } as any);
+    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+    const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+    
+    if (!supabaseUrl || !supabaseKey) return;
 
-        if (error && import.meta.env.DEV) {
-          console.warn('Analytics log insert failed:', error);
-        }
-      } catch (e) {
-        // Silently ignore connection errors during navigation
-      }
-    })();
+    const url = `${supabaseUrl}/rest/v1/analytics_events`;
+    const body = JSON.stringify({
+      user_id: session.user.id,
+      event_name: event,
+      metadata: properties || {},
+      created_at: new Date().toISOString(),
+    });
+
+    // Use native fetch with keepalive: true to survive page transitions/navigation
+    // This is much more resilient than the Supabase client for analytics logs
+    fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': supabaseKey,
+        'Authorization': `Bearer ${session.access_token}`,
+        'Prefer': 'return=minimal'
+      },
+      body,
+      keepalive: true,
+    }).catch(() => {
+      // Silently ignore failures - analytics is best-effort
+    });
   } catch (error) {
-    // Silently handle session fetch errors
+    // Silently handle errors
   }
 }
 
