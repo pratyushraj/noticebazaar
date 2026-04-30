@@ -7827,7 +7827,7 @@ const DashboardTab = React.memo(({
                 </div>
             </div>
 
-            {/* Link to Instagram Bio Widget */}
+            {/* Link to Instagram Bio Widget (Redesigned) */}
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -7835,27 +7835,35 @@ const DashboardTab = React.memo(({
                 className="px-5"
             >
                 <div className={cn(
-                    "p-6 rounded-[32px] border relative overflow-hidden group",
+                    "p-7 rounded-[2.5rem] border relative overflow-hidden group transition-all duration-500",
                     isDark ? "bg-[#0B1324] border-white/5 shadow-2xl" : "bg-white border-slate-200 shadow-xl shadow-slate-200/40"
                 )}>
-                    <div className="flex items-center gap-4 relative z-10">
-                        <div className="w-12 h-12 bg-emerald-500/10 rounded-2xl flex items-center justify-center text-emerald-500">
-                            <Zap className="w-6 h-6" />
+                    {/* Background Decorative Element */}
+                    <div className="absolute top-0 right-0 w-48 h-48 bg-emerald-500/5 blur-[60px] rounded-full -mr-24 -mt-24 group-hover:bg-emerald-500/10 transition-colors duration-700" />
+                    
+                    <div className="flex items-center gap-5 relative z-10">
+                        <div className="w-14 h-14 bg-emerald-500/10 rounded-2xl flex items-center justify-center text-emerald-500 shadow-inner group-hover:scale-110 transition-transform duration-500">
+                            <Link2 className="w-7 h-7" />
                         </div>
                         <div className="flex-1 min-w-0">
-                            <p className={cn("text-[11px] font-black uppercase tracking-widest opacity-40 mb-0.5", textColor)}>Profile Visibility</p>
-                            <h3 className={cn("text-lg font-black tracking-tight italic uppercase", textColor)}>Share Collab Link</h3>
+                            <div className="flex items-center gap-2 mb-1">
+                                <p className={cn("text-[10px] font-black uppercase tracking-[0.2em] opacity-40", textColor)}>Profile Visibility</p>
+                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                            </div>
+                            <h3 className={cn("text-[20px] font-black tracking-tighter italic uppercase leading-none", textColor)}>Share Collab Link</h3>
                         </div>
                     </div>
-                    <p className={cn("text-xs font-medium opacity-40 leading-relaxed mt-4 relative z-10", textColor)}>
-                        Add your link to your Instagram bio to start receiving brand offers directly.
+
+                    <p className={cn("text-[13px] font-medium opacity-50 leading-relaxed mt-5 relative z-10 max-w-[90%]", textColor)}>
+                        Add your link to your Instagram bio to start receiving brand offers directly to your inbox.
                     </p>
-                    <div className="flex gap-3 mt-6 relative z-10">
+
+                    <div className="flex gap-3 mt-7 relative z-10">
                         <button 
                             onClick={() => { triggerHaptic(); setShowShareSheet(true); }}
-                            className="flex-1 bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-black italic py-3 rounded-xl text-xs uppercase tracking-widest active:scale-95 transition-all shadow-lg shadow-emerald-500/20"
+                            className="flex-[2] bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-600 text-white font-black italic py-4 rounded-2xl text-[11px] uppercase tracking-[0.2em] active:scale-95 transition-all shadow-lg shadow-emerald-500/30 hover:shadow-emerald-500/40"
                         >
-                            Get Link
+                            Get My Link
                         </button>
                         <button 
                             onClick={() => {
@@ -7863,18 +7871,17 @@ const DashboardTab = React.memo(({
                                 handleCopyStorefront();
                             }}
                             className={cn(
-                                "px-5 py-3 rounded-xl border flex items-center justify-center transition-all active:scale-95",
-                                isDark ? "bg-white/5 border-white/10 text-white" : "bg-white border-slate-200 text-slate-900"
+                                "flex-1 px-5 py-4 rounded-2xl border flex items-center justify-center transition-all active:scale-95 group/btn",
+                                isDark ? "bg-white/5 border-white/10 text-white hover:bg-white/10" : "bg-slate-50 border-slate-200 text-slate-900 hover:bg-slate-100"
                             )}
                         >
-                            <Copy className="w-4 h-4" />
+                            <Copy className="w-5 h-5 group-hover/btn:scale-110 transition-transform" />
                         </button>
                     </div>
-                    <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/5 blur-3xl rounded-full -mr-16 -mt-16 group-hover:bg-emerald-500/10 transition-colors" />
                 </div>
             </motion.div>
 
-            {/* Link Visits Widget */}
+            {/* Link Visits Widget (Redesigned) */}
             {(analyticsSummary?.weeklyViews || 0) > 0 && (
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
@@ -7883,27 +7890,27 @@ const DashboardTab = React.memo(({
                     className="px-5"
                 >
                     <div className={cn(
-                        "p-6 rounded-[32px] border relative overflow-hidden group",
+                        "p-7 rounded-[2.5rem] border relative overflow-hidden group transition-all duration-500",
                         isDark ? "bg-[#0B1324] border-white/5 shadow-2xl" : "bg-white border-slate-200 shadow-xl"
                     )}>
                         <div className="flex items-center justify-between relative z-10">
-                            <div className="flex items-center gap-4">
-                                <div className="w-12 h-12 bg-emerald-500/10 rounded-2xl flex items-center justify-center text-emerald-500">
-                                    <Eye className="w-6 h-6" />
+                            <div className="flex items-center gap-5">
+                                <div className="w-14 h-14 bg-blue-500/10 rounded-2xl flex items-center justify-center text-blue-500 shadow-inner group-hover:rotate-12 transition-transform duration-500">
+                                    <Eye className="w-7 h-7" />
                                 </div>
                                 <div className="flex-1 min-w-0">
-                                    <p className={cn("text-[11px] font-black uppercase tracking-widest opacity-40 mb-0.5", textColor)}>Profile Traffic</p>
-                                    <h3 className={cn("text-lg font-black tracking-tight italic uppercase", textColor)}>Link Visits</h3>
+                                    <p className={cn("text-[10px] font-black uppercase tracking-[0.2em] opacity-40 mb-1", textColor)}>Profile Traffic</p>
+                                    <h3 className={cn("text-[20px] font-black tracking-tighter italic uppercase leading-none", textColor)}>Link Visits</h3>
                                 </div>
                             </div>
                             <div className="text-right">
-                                <div className="text-2xl font-black italic tracking-tighter text-emerald-500">
+                                <div className="text-[32px] font-black italic tracking-tighter text-emerald-500 leading-none mb-1">
                                     {analyticsSummary?.weeklyViews}
                                 </div>
-                                <p className="text-[9px] font-bold uppercase tracking-widest opacity-30">THIS WEEK</p>
+                                <p className="text-[9px] font-black uppercase tracking-[0.2em] opacity-30">THIS WEEK</p>
                             </div>
                         </div>
-                        <p className={cn("text-xs font-medium opacity-40 leading-relaxed mt-4 relative z-10", textColor)}>
+                        <p className={cn("text-[13px] font-medium opacity-50 leading-relaxed mt-5 relative z-10 max-w-[85%]", textColor)}>
                             Your profile is gaining traction! {analyticsSummary?.weeklyViews === 1 ? 'A brand' : 'Brands'} checked out your work recently.
                         </p>
                         <div className="absolute bottom-0 right-0 w-32 h-32 bg-emerald-500/5 blur-3xl rounded-full -mr-16 -mb-16 pointer-events-none" />
