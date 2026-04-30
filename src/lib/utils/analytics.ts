@@ -168,30 +168,31 @@ async function trackEventToSupabase(
   try {
     if (shouldSkipClientAnalytics()) return;
 
+    // Use a background-safe approach
     const { data: { session } } = await supabase.auth.getSession();
     if (!session?.user?.id) return;
 
-    // Check if analytics_events table exists, if not, just return
-    const { error } = await (supabase
-      .from('analytics_events')
-      .insert({
-        user_id: session.user.id,
-        event_name: event,
-        metadata: properties || {},
-        created_at: new Date().toISOString(),
-      } as any));
+    // Use a non-blocking background task
+    void (async () => {
+      try {
+        const { error } = await supabase
+          .from('analytics_events')
+          .insert({
+            user_id: session.user.id,
+            event_name: event,
+            metadata: properties || {},
+            created_at: new Date().toISOString(),
+          } as any);
 
-    if (error) {
-      // Table might not exist, that's okay
-      if (import.meta.env.DEV) {
-        console.warn('Analytics log insert failed (table may not exist):', error);
+        if (error && import.meta.env.DEV) {
+          console.warn('Analytics log insert failed:', error);
+        }
+      } catch (e) {
+        // Silently ignore connection errors during navigation
       }
-    }
+    })();
   } catch (error) {
-    // Silently handle errors
-    if (import.meta.env.DEV) {
-      console.warn('Supabase analytics tracking failed:', error);
-    }
+    // Silently handle session fetch errors
   }
 }
 

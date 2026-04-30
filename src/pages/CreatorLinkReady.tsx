@@ -116,8 +116,8 @@ export default function CreatorLinkReady() {
                 <Link2 className="h-3.5 w-3.5" />
                 Your link
               </div>
-              <div className="mt-3 rounded-[22px] bg-white px-4 py-4 ring-1 ring-slate-200">
-                <p className="break-all text-xl font-black leading-snug text-slate-950 sm:text-[1.7rem]">{collabUrl.replace(/^https?:\/\//, "")}</p>
+              <div className="mt-3 rounded-[22px] bg-white px-4 py-4 ring-1 ring-slate-200 overflow-hidden">
+                <p className="whitespace-nowrap overflow-x-auto scrollbar-hide text-[15px] font-black leading-none text-slate-950 sm:text-[1.5rem] tracking-tight">{collabUrl.replace(/^https?:\/\//, "")}</p>
               </div>
             </div>
 
