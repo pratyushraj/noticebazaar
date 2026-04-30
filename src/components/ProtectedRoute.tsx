@@ -173,15 +173,6 @@ const inferRequestedRole = (
            <button 
              onClick={() => {
                triggerHaptic?.();
-               refetchProfile?.();
-             }} 
-             className="w-full max-w-[200px] px-6 py-3 bg-emerald-500 text-white rounded-xl text-[11px] font-black uppercase tracking-widest transition-all shadow-lg shadow-emerald-500/20 active:scale-95"
-           >
-             Retry Connection
-           </button>
-           <button 
-             onClick={() => {
-               triggerHaptic?.();
                signOutMutation.mutateAsync(undefined).catch(() => {
                  // If signOut fails, still force reload as fallback
                  window.location.reload();

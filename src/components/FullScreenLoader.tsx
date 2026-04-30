@@ -128,28 +128,6 @@ export const FullScreenLoader = ({
           </motion.div>
         </div>
 
-        {/* Retry Actions */}
-        <AnimatePresence>
-          {showRetry && (
-            <motion.div 
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="mt-16 flex flex-col items-center gap-4"
-            >
-              <button
-                onClick={() => {
-                  triggerHaptic?.();
-                  if (refetchProfile) refetchProfile();
-                  else window.location.reload();
-                }}
-                className="group relative px-8 py-3.5 bg-white/5 hover:bg-emerald-500/10 text-emerald-400 border border-white/10 rounded-2xl text-[11px] font-black uppercase tracking-widest transition-all backdrop-blur-sm overflow-hidden"
-              >
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:animate-shine" />
-                <span className="relative">Retry Connection</span>
-              </button>
-            </motion.div>
-          )}
-        </AnimatePresence>
       </div>
 
       {/* OS Branding */}

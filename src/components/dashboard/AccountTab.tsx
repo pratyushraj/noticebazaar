@@ -110,7 +110,7 @@ export const AccountTab = React.memo(({
                     <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-0.5">
                             <h2 className={cn("text-[20px] font-black tracking-tight", isDark ? "text-white" : "text-slate-900")}>
-                                {profile?.first_name || username || 'Creator'}
+                                {profile?.full_name || profile?.first_name || username || 'Creator'}
                             </h2>
                             <span className={cn(
                                 "px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border",

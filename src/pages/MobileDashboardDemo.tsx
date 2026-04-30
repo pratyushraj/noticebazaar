@@ -1831,7 +1831,7 @@ const MobileDashboardDemo = ({
                         .replace(/&#([0-9]+);/g, (_, dec) => String.fromCodePoint(parseInt(dec, 10)))
         : rawDisplayName;
     
-    const displayName = (typeof decodedName === 'string' ? decodedName.trim().split(/\s+/)[0] : decodedName) || 'Creator';
+    const displayName = (typeof decodedName === 'string' ? decodedName.trim() : decodedName) || 'Creator';
 
     const uniqBy = <T,>(items: T[], keyFn: (row: T) => string) => {
         const seen = new Set<string>();
@@ -7762,42 +7762,68 @@ const DashboardTab = React.memo(({
                     <div className="absolute inset-0 bg-[url('/noise.png')] opacity-[0.03] mix-blend-overlay pointer-events-none" />
                 </div>
 
-                <div className="px-6 pt-8 pb-12">
-                    <motion.p 
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.4 }}
-                        className={cn(
-                            'text-[11px] font-black uppercase tracking-[0.3em] mb-1', 
-                            isDark ? "text-emerald-400" : "text-emerald-100/80"
-                        )}
+                <div className="px-6 pt-10 pb-12 flex items-start justify-between gap-6">
+                    <div className="flex-1 min-w-0">
+                        <motion.p 
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.4 }}
+                            className={cn(
+                                'text-[11px] font-black uppercase tracking-[0.3em] mb-1', 
+                                isDark ? "text-emerald-400" : "text-emerald-100/80"
+                            )}
+                        >
+                            {hasDeals ? "CREATOR DASHBOARD" : "GET STARTED"}
+                        </motion.p>
+                        <motion.h1 
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.4, delay: 0.05 }}
+                            className={cn(
+                                "text-[28px] font-black tracking-tighter leading-tight italic mb-3", 
+                                isDark ? "text-white" : "text-white"
+                            )}
+                        >
+                            {hasDeals ? `Welcome back, ${displayName} 👋` : `Welcome, ${displayName} 👋`}
+                        </motion.h1>
+                        <motion.p 
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.4, delay: 0.1 }}
+                            className={cn(
+                                "text-[15px] font-medium leading-relaxed opacity-80", 
+                                isDark ? "text-emerald-100/70" : "text-emerald-50/90"
+                            )}
+                        >
+                            {hasDeals 
+                                ? "Your performance and incoming offers are ready for you below."
+                                : "Let's get your creator profile live and ready to receive brand deals."}
+                        </motion.p>
+                    </div>
+
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.8, rotate: -10 }}
+                        animate={{ opacity: 1, scale: 1, rotate: 0 }}
+                        transition={{ duration: 0.6, type: "spring" }}
+                        className="flex-shrink-0"
                     >
-                        {hasDeals ? "CREATOR DASHBOARD" : "GET STARTED"}
-                    </motion.p>
-                    <motion.h1 
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.4, delay: 0.05 }}
-                        className={cn(
-                            "text-[26px] font-black tracking-tighter leading-tight italic mb-2 truncate w-full whitespace-nowrap", 
-                            isDark ? "text-white" : "text-white"
-                        )}
-                    >
-                        {hasDeals ? `Welcome back, ${displayName} 👋` : `Welcome, ${displayName} 👋`}
-                    </motion.h1>
-                    <motion.p 
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.4, delay: 0.1 }}
-                        className={cn(
-                            "text-[15px] font-medium leading-relaxed", 
-                            isDark ? "text-emerald-100/70" : "text-emerald-50/90"
-                        )}
-                    >
-                        {hasDeals 
-                            ? "Your performance and incoming offers are ready for you below."
-                            : "Let's get your creator profile live and ready to receive brand deals."}
-                    </motion.p>
+                        <div className={cn(
+                            "w-16 h-16 rounded-[1.5rem] p-0.5 border-2 relative group",
+                            isDark ? "bg-white/5 border-white/10" : "bg-white/20 border-white/30"
+                        )}>
+                            <div className="w-full h-full rounded-[1.3rem] overflow-hidden">
+                                <img 
+                                    src={withCacheBuster(avatarUrl, null, { width: 128, height: 128 })} 
+                                    alt="Profile" 
+                                    className="w-full h-full object-cover transition-transform group-hover:scale-110 duration-500"
+                                    loading="eager"
+                                />
+                            </div>
+                            <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-emerald-500 rounded-full border-2 border-[#020D0A] flex items-center justify-center shadow-lg">
+                                <div className="w-2 h-2 bg-white rounded-full animate-pulse" />
+                            </div>
+                        </div>
+                    </motion.div>
                 </div>
             </div>
 
@@ -7914,7 +7940,7 @@ const DashboardTab = React.memo(({
                                     )}
                                 </div>
                                 <p className="text-[13px] font-bold mt-3 text-white/90">
-                                    {activeDeals.length} Collaboration{activeDeals.length === 1 ? '' : 's'} running
+                                    {activeDealsList.length} Collaboration{activeDealsList.length === 1 ? '' : 's'} running
                                 </p>
                             </div>
                             <div className={cn("w-12 h-12 rounded-2xl flex items-center justify-center backdrop-blur-2xl border", isDark ? "bg-white/5 border-white/10" : "bg-white/20 border-white/30")}>
