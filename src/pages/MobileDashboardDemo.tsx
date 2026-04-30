@@ -8293,7 +8293,27 @@ const DealsTab = React.memo(({
                                                         <p className="text-lg font-black text-white">₹{budget.toLocaleString()}</p>
                                                     </div>
                                                     
-                                                    <div className="h-1 w-full bg-white/10 rounded-full overflow-hidden animate-pulse"><div className="h-full bg-blue-400 w-1/3" /></div>
+                                                    <div className="flex gap-2">
+                                                        <button 
+                                                            onClick={(e) => { 
+                                                                e.stopPropagation(); 
+                                                                handleAccept(req); 
+                                                            }}
+                                                            className="flex-1 h-11 rounded-xl bg-white text-black font-black uppercase tracking-widest text-[10px] flex items-center justify-center gap-2 active:scale-95 transition-all"
+                                                        >
+                                                            Accept
+                                                        </button>
+                                                        <button 
+                                                            onClick={(e) => { 
+                                                                e.stopPropagation(); 
+                                                                triggerHaptic(); 
+                                                                if (onDeclineRequest) onDeclineRequest(req.id);
+                                                            }}
+                                                            className="flex-1 h-11 rounded-xl bg-white/10 border border-white/10 text-white font-black uppercase tracking-widest text-[10px] flex items-center justify-center active:scale-95 transition-all"
+                                                        >
+                                                            Decline
+                                                        </button>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </motion.div>
