@@ -177,13 +177,17 @@ async function trackEventToSupabase(
     
     if (!supabaseUrl || !supabaseKey) return;
 
-    const url = `${supabaseUrl}/rest/v1/analytics_events`;
+    const url = `${supabaseUrl}/rest/v1/analytics_events?v=fixed_${Date.now()}`;
     const body = JSON.stringify({
       user_id: session.user.id,
       event_name: event,
       metadata: properties || {},
       created_at: new Date().toISOString(),
     });
+
+    if (import.meta.env.DEV) {
+      console.log('🚀 [Analytics] Sending resilient event:', event);
+    }
 
     // Use native fetch with keepalive: true to survive page transitions/navigation
     // This is much more resilient than the Supabase client for analytics logs
