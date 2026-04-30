@@ -158,6 +158,8 @@ export async function trackEvent(
   }
 }
 
+let isSupabaseAnalyticsDisabled = false;
+
 /**
  * Track event to Supabase logs table
  */
@@ -166,44 +168,39 @@ async function trackEventToSupabase(
   properties?: AnalyticsProperties
 ): Promise<void> {
   try {
-    if (shouldSkipClientAnalytics()) return;
+    if (shouldSkipClientAnalytics() || isSupabaseAnalyticsDisabled) return;
 
-    // Small delay to ensure any immediate navigation has settled or to avoid race conditions
+    // Small delay to ensure any immediate navigation has settled
     await new Promise(resolve => setTimeout(resolve, 100));
 
-    // Use a background-safe approach to get session
+    // Get current session
     const { data: { session } } = await supabase.auth.getSession();
-    if (!session?.user?.id || !session?.access_token) return;
+    if (!session?.user?.id) return;
 
-    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-    const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-    
-    if (!supabaseUrl || !supabaseKey) return;
+    const { error } = await supabase
+      .from('analytics_events' as any)
+      .insert({
+        user_id: session.user.id,
+        event_name: event,
+        metadata: properties || {},
+        created_at: new Date().toISOString(),
+      });
 
-    const url = `${supabaseUrl}/rest/v1/analytics_events`;
-    const body = JSON.stringify({
-      user_id: session.user.id,
-      event_name: event,
-      metadata: properties || {},
-      created_at: new Date().toISOString(),
-    });
-
-    // Use native fetch with keepalive: true to survive page transitions/navigation
-    fetch(url, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'apikey': supabaseKey,
-        'Authorization': `Bearer ${session.access_token}`,
-        'Prefer': 'return=minimal'
-      },
-      body,
-      keepalive: true,
-    }).catch(() => {
-      // Silently ignore failures
-    });
+    if (error) {
+      // If table doesn't exist or we get a persistent error, disable further attempts
+      if (
+        error.code === '42P01' || // undefined_table
+        error.message?.includes('not found') ||
+        error.status === 404
+      ) {
+        isSupabaseAnalyticsDisabled = true;
+        if (import.meta.env.DEV) {
+          console.warn('Supabase analytics disabled: analytics_events table not found');
+        }
+      }
+    }
   } catch (error) {
-    // Silently handle errors
+    // Fail silently
   }
 }
 
