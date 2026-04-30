@@ -4889,6 +4889,7 @@ const MobileDashboardDemo = ({
                                             src={avatarUrl}
                                             alt="avatar"
                                             className="w-full h-full object-cover"
+                                            loading="eager"
                                             onError={(e) => {
                                                 (e.currentTarget as HTMLImageElement).onerror = null;
                                                 (e.currentTarget as HTMLImageElement).src = avatarFallbackUrl;
@@ -4906,7 +4907,7 @@ const MobileDashboardDemo = ({
                             isLoadingDeals={isLoadingDeals} activeDealsCount={activeDealsCount}
                             completedDealsCount={completedDealsCount} monthlyRevenue={monthlyRevenue}
                             pendingOffersCount={pendingOffersCount} pendingOffersDeduplicated={pendingOffersDeduplicated}
-                            displayName={displayName} avatarUrl={avatarVersionedUrl}
+                            displayName={displayName} username={username} avatarUrl={avatarVersionedUrl}
                             avatarFallbackUrl={avatarFallbackUrl} shouldShowPushPrompt={shouldShowPushPrompt}
                             isPushSubscribed={isPushSubscribed} triggerHaptic={triggerHaptic}
                             setActiveTab={setActiveTab} setCollabSubTab={setCollabSubTab}
@@ -4915,7 +4916,7 @@ const MobileDashboardDemo = ({
                             Clock={Clock} ChevronRight={ChevronRight} User={User} DollarSign={DollarSign} Zap={Zap}
                             setSelectedItem={setSelectedItem} setSelectedType={setSelectedType}
                             setShowShareSheet={setShowShareSheet} handleCopyStorefront={handleCopyStorefront}
-                            Instagram={Instagram} Copy={Copy} Eye={Eye}
+                            Instagram={Instagram} Copy={Copy} Eye={Eye} MessageCircleMore={MessageCircleMore}
                             handleAccept={handleAccept} onDeclineRequest={onDeclineRequest}
                             analyticsSummary={analyticsSummary} analyticsLoading={analyticsLoading}
                         />
@@ -7727,13 +7728,13 @@ BottomNavigationBar.displayName = 'BottomNavigationBar';
 const DashboardTab = React.memo(({ 
     isDark, textColor, secondaryTextColor, isLoadingDeals, 
     activeDealsCount, completedDealsCount, monthlyRevenue, 
-    pendingOffersCount, pendingOffersDeduplicated, displayName, 
+    pendingOffersCount, pendingOffersDeduplicated, displayName, username,
     avatarUrl, avatarFallbackUrl, shouldShowPushPrompt, 
     isPushSubscribed, triggerHaptic, setActiveTab, 
     setCollabSubTab, navigate, resolveCreatorDealProductImage, getBrandIcon,
     TrendingUp, ArrowRight, Clock, ChevronRight, User, DollarSign, Zap,
     setSelectedItem, setSelectedType, setShowShareSheet, handleCopyStorefront,
-    Instagram, Copy, Eye, handleAccept, onDeclineRequest,
+    Instagram, Copy, Eye, MessageCircleMore, handleAccept, onDeclineRequest,
     analyticsSummary, analyticsLoading
 }: any) => {
     const hasDeals = activeDealsCount > 0 || completedDealsCount > 0;
@@ -7854,16 +7855,33 @@ const DashboardTab = React.memo(({
                         </div>
                     </div>
 
-                    <p className={cn("text-[13px] font-medium opacity-50 leading-relaxed mt-5 relative z-10 max-w-[90%]", textColor)}>
-                        Add your link to your Instagram bio to start receiving brand offers directly to your inbox.
-                    </p>
+                    <div className={cn(
+                        "mt-5 p-4 rounded-2xl border relative z-10 group/link overflow-hidden",
+                        isDark ? "bg-white/5 border-white/10" : "bg-slate-50 border-slate-100 shadow-inner"
+                    )}>
+                        <p className={cn("text-[14px] font-black tracking-tighter truncate", textColor)}>
+                            creatorarmour.com/{username}
+                        </p>
+                    </div>
 
-                    <div className="flex gap-3 mt-7 relative z-10">
+                    <div className="flex gap-3 mt-6 relative z-10">
                         <button 
                             onClick={() => { triggerHaptic(); setShowShareSheet(true); }}
                             className="flex-[2] bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-600 text-white font-black italic py-4 rounded-2xl text-[11px] uppercase tracking-[0.2em] active:scale-95 transition-all shadow-lg shadow-emerald-500/30 hover:shadow-emerald-500/40"
                         >
                             Get My Link
+                        </button>
+                        <button 
+                            onClick={() => {
+                                triggerHaptic();
+                                const msg = `Check out my creator profile: https://creatorarmour.com/${username}`;
+                                window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
+                            }}
+                            className={cn(
+                                "flex-1 px-5 py-4 rounded-2xl border flex items-center justify-center transition-all active:scale-95 group/btn bg-[#25D366]/10 border-[#25D366]/20 text-[#25D366] hover:bg-[#25D366]/20",
+                            )}
+                        >
+                            <MessageCircleMore className="w-5 h-5 group-hover/btn:scale-110 transition-transform" />
                         </button>
                         <button 
                             onClick={() => {
