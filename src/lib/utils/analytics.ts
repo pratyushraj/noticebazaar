@@ -168,6 +168,9 @@ async function trackEventToSupabase(
   try {
     if (shouldSkipClientAnalytics()) return;
 
+    // Small delay to ensure any immediate navigation has settled or to avoid race conditions
+    await new Promise(resolve => setTimeout(resolve, 100));
+
     // Use a background-safe approach to get session
     const { data: { session } } = await supabase.auth.getSession();
     if (!session?.user?.id || !session?.access_token) return;
@@ -185,12 +188,7 @@ async function trackEventToSupabase(
       created_at: new Date().toISOString(),
     });
 
-    if (import.meta.env.DEV) {
-      console.log('🚀 [Analytics] Sending resilient event:', event);
-    }
-
     // Use native fetch with keepalive: true to survive page transitions/navigation
-    // This is much more resilient than the Supabase client for analytics logs
     fetch(url, {
       method: 'POST',
       headers: {
@@ -202,7 +200,7 @@ async function trackEventToSupabase(
       body,
       keepalive: true,
     }).catch(() => {
-      // Silently ignore failures - analytics is best-effort
+      // Silently ignore failures
     });
   } catch (error) {
     // Silently handle errors
