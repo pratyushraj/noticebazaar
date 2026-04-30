@@ -8174,7 +8174,17 @@ const DealsTab = React.memo(({
                                                 <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/60 to-black/30" />
                                             </div>
                                             <div className="relative h-full p-5 flex flex-col justify-between z-10">
-                                                <div className="px-2.5 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 self-start text-[11px] font-black text-emerald-400 uppercase tracking-widest">{ux.stagePill}</div>
+                                                <div className="flex items-center gap-2">
+                                                    <div className="px-2.5 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 self-start text-[11px] font-black text-emerald-400 uppercase tracking-widest">{ux.stagePill}</div>
+                                                    <div className={cn(
+                                                        "px-2.5 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border",
+                                                        String(deal?.deal_type || '').toLowerCase().includes('barter') 
+                                                            ? "bg-orange-500/10 border-orange-500/20 text-orange-400" 
+                                                            : "bg-blue-500/10 border-blue-500/20 text-blue-400"
+                                                    )}>
+                                                        {String(deal?.deal_type || '').toLowerCase().includes('barter') ? 'Barter' : 'Paid'}
+                                                    </div>
+                                                </div>
                                                 <div>
                                                     <div className="flex justify-between items-end mb-2">
                                                         <h2 className="text-xl font-black italic uppercase text-white">{deal.brand_name || 'Partner'}</h2>
@@ -8204,7 +8214,17 @@ const DealsTab = React.memo(({
                                                 <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/60 to-black/30" />
                                             </div>
                                             <div className="relative h-full p-5 flex flex-col justify-between z-10">
-                                                <div className="px-2.5 py-1.5 rounded-full bg-slate-500/10 border border-slate-500/20 self-start text-[11px] font-black text-slate-400 uppercase tracking-widest">Completed</div>
+                                                <div className="flex items-center gap-2">
+                                                    <div className="px-2.5 py-1.5 rounded-full bg-slate-500/10 border border-slate-500/20 self-start text-[11px] font-black text-slate-400 uppercase tracking-widest">Completed</div>
+                                                    <div className={cn(
+                                                        "px-2.5 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border",
+                                                        String(deal?.deal_type || '').toLowerCase().includes('barter') 
+                                                            ? "bg-orange-500/10 border-orange-500/20 text-orange-400" 
+                                                            : "bg-blue-500/10 border-blue-500/20 text-blue-400"
+                                                    )}>
+                                                        {String(deal?.deal_type || '').toLowerCase().includes('barter') ? 'Barter' : 'Paid'}
+                                                    </div>
+                                                </div>
                                                 <div>
                                                     <div className="flex justify-between items-end mb-2">
                                                         <h2 className="text-xl font-black italic uppercase text-white">{deal.brand_name || 'Partner'}</h2>
@@ -8234,7 +8254,17 @@ const DealsTab = React.memo(({
                                                 <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/60 to-black/30" />
                                             </div>
                                             <div className="relative h-full p-5 flex flex-col justify-between z-10">
-                                                <div className="px-2.5 py-1.5 rounded-full bg-blue-500/10 border border-blue-500/20 self-start text-[11px] font-black text-blue-400 uppercase tracking-widest">New Offer</div>
+                                                <div className="flex items-center gap-2">
+                                                    <div className="px-2.5 py-1.5 rounded-full bg-blue-500/10 border border-blue-500/20 self-start text-[11px] font-black text-blue-400 uppercase tracking-widest">New Offer</div>
+                                                    <div className={cn(
+                                                        "px-2.5 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border",
+                                                        String(req?.collab_type || '').toLowerCase().includes('barter') 
+                                                            ? "bg-orange-500/10 border-orange-500/20 text-orange-400" 
+                                                            : "bg-blue-500/10 border-blue-500/20 text-blue-400"
+                                                    )}>
+                                                        {String(req?.collab_type || '').toLowerCase().includes('barter') ? 'Barter' : 'Paid'}
+                                                    </div>
+                                                </div>
                                                 <div>
                                                     <div className="flex justify-between items-end mb-4">
                                                         <h2 className="text-xl font-black italic uppercase text-white">{req.brand_name || 'Brand Partner'}</h2>
