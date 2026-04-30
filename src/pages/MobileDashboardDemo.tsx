@@ -8313,7 +8313,6 @@ const DealsTab = React.memo(({
                                     const isBarter = String(deal?.collab_type || deal?.deal_type || deal?.raw?.collab_type || '').toLowerCase().includes('barter');
                                     const budget = Number(deal?.deal_amount || deal?.budget_amount || deal?.exact_budget || deal?.product_value || 0);
                                     return (
-                                    return (
                                         <motion.div key={deal.id || idx} whileTap={{ scale: 0.98 }} onClick={() => { triggerHaptic(); setSelectedItem(deal); setSelectedType('deal'); }} className={cn("relative w-full aspect-[1.2/1] rounded-[2.5rem] overflow-hidden bg-[#0B1220] border-0 shadow-2xl mb-6")}>
                                             <div className="absolute inset-0">
                                                 {productImage && <img src={productImage} className="w-full h-full object-cover opacity-50" />}
@@ -8344,7 +8343,6 @@ const DealsTab = React.memo(({
                                             </div>
                                         </motion.div>
                                     );
-                                    );
                                 })}
                              </div>
                          ) : <div className="p-10 text-center opacity-40">No completed deals</div>}
@@ -8358,7 +8356,6 @@ const DealsTab = React.memo(({
                                     const productImage = resolveCreatorDealProductImage(req);
                                     const isBarter = String(req?.collab_type || req?.deal_type || req?.raw?.collab_type || '').toLowerCase().includes('barter');
                                     const budget = Number(req?.budget_amount || req?.exact_budget || req?.deal_amount || req?.product_value || 0);
-                                    return (
                                     return (
                                         <motion.div key={req.id || idx} whileTap={{ scale: 0.98 }} onClick={() => { triggerHaptic(); setSelectedItem(req); setSelectedType('offer'); }} className={cn("relative w-full aspect-[1.2/1] rounded-[2.5rem] overflow-hidden bg-[#0B1220] border-0 shadow-2xl mb-6")}>
                                             <div className="absolute inset-0">
@@ -8413,7 +8410,6 @@ const DealsTab = React.memo(({
                                                 </div>
                                             </div>
                                         </motion.div>
-                                    );
                                     );
                                 })}
                              </div>

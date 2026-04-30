@@ -348,7 +348,7 @@ export function BrandShippingAddressModal({ dealId, creatorName, onClose, onSucc
               <button
                 type="button"
                 onClick={() => {
-                  triggerHaptic(ds.HapticPatterns.light);
+                  triggerHaptic(HapticPatterns.light);
                   setSaveAsDefault(!saveAsDefault);
                 }}
                 className="flex items-center gap-3 group"
