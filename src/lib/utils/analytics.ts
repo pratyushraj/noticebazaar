@@ -148,8 +148,8 @@ export async function trackEvent(
       }
     }
 
-    // Fallback to Supabase logs
-    await trackEventToSupabase(event, properties);
+    // Fallback to Supabase logs - non-blocking
+    void trackEventToSupabase(event, properties);
   } catch (error) {
     // Silently fail in production, log in development
     if (import.meta.env.DEV) {
