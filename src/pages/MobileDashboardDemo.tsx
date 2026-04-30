@@ -7940,7 +7940,7 @@ const DashboardTab = React.memo(({
                                     )}
                                 </div>
                                 <p className="text-[13px] font-bold mt-3 text-white/90">
-                                    {activeDealsList.length} Collaboration{activeDealsList.length === 1 ? '' : 's'} running
+                                    {activeDealsCount} Collaboration{activeDealsCount === 1 ? '' : 's'} running
                                 </p>
                             </div>
                             <div className={cn("w-12 h-12 rounded-2xl flex items-center justify-center backdrop-blur-2xl border", isDark ? "bg-white/5 border-white/10" : "bg-white/20 border-white/30")}>
