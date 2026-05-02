@@ -400,6 +400,45 @@ const resolveCreatorByPublicHandle = async (handle: string, selectColumns: strin
   };
 };
 
+const humanizePublicHandle = (handle: string | null | undefined) => {
+  const clean = String(handle || '').trim().replace(/^@/, '');
+  if (!clean) return null;
+  const words = clean
+    .split(/[._-]+/)
+    .map((part) => part.trim())
+    .filter(Boolean);
+  if (words.length === 0 || words.some((word) => /\d/.test(word))) return null;
+  return words.map((word) => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+};
+
+const resolvePublicCreatorName = ({
+  profileName,
+  businessName,
+  publicHandle,
+}: {
+  profileName?: string | null;
+  businessName?: string | null;
+  publicHandle?: string | null;
+}) => {
+  const business = String(businessName || '').trim();
+  if (business) return business;
+
+  const handleName = humanizePublicHandle(publicHandle);
+  const storedName = String(profileName || '').trim();
+  if (!storedName) return handleName || null;
+  if (!handleName) return storedName;
+
+  const storedTokens = new Set(storedName.toLowerCase().split(/\s+/).filter(Boolean));
+  const handleTokens = handleName.toLowerCase().split(/\s+/).filter(Boolean);
+  const hasNameOverlap = handleTokens.some((handleToken) =>
+    Array.from(storedTokens).some((storedToken) =>
+      handleToken === storedToken || handleToken.includes(storedToken) || storedToken.includes(handleToken)
+    )
+  );
+
+  return hasNameOverlap ? storedName : handleName;
+};
+
 const isGeneratedCreatorHandle = (value?: string | null) => {
   if (!value) return false;
   return /^creator-[a-z0-9]{6,}$/i.test(value.trim());
@@ -1554,9 +1593,11 @@ router.get('/:username', async (req: Request, res: Response) => {
       }
     }
 
-    if (!resolvedName && profile.business_name) {
-      resolvedName = profile.business_name;
-    }
+    resolvedName = resolvePublicCreatorName({
+      profileName: resolvedName,
+      businessName: profile.business_name,
+      publicHandle: primaryPublicHandle,
+    });
 
     if (primaryPublicHandle) {
       platforms.push({

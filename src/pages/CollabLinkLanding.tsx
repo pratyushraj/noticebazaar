@@ -852,7 +852,7 @@ const CollabLinkLanding = () => {
     (selectedTemplateId ? deliverables.length > 0 : campaignDescription.trim().length >= 10)
   )
   const isValidBrandEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(brandEmail)
-  const isProductImageRequired = Boolean(selectedTemplateId) || isBarterLikeCollab(collabType)
+  const isProductImageRequired = isBarterLikeCollab(collabType) || includesProduct
   const isProductImageReady = isProductImageRequired
     ? Boolean(String(barterProductImageUrl || '').trim())
     : true

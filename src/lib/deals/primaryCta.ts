@@ -212,23 +212,12 @@ export const getDealPrimaryCta = (params: { role: DealRole; deal: any }): DealPr
     // ── Payment pending gate: brand must confirm payment ──────────────────────
     if (status === 'PAYMENT_PENDING') {
       if (isPureBarter && requiresShipping) {
-        const hasAddress = !!String(deal?.brand_address || '').trim();
-        // If contract is signed, move to shipping/tracking instead of just address collection
-        if (brandSigned || creatorSigned) {
-           return { 
-            status, 
-            label: 'Ship Product', 
-            disabled: false, 
-            tone: 'action', 
-            action: 'track_progress' 
-          };
-        }
         return { 
           status, 
-          label: hasAddress ? 'Edit Shipping Details' : 'Add Shipping Details', 
+          label: 'Add Tracking Details',
           disabled: false, 
           tone: 'action', 
-          action: 'provide_shipping_address' 
+          action: 'track_progress'
         };
       }
       return requiresShipping
@@ -238,6 +227,15 @@ export const getDealPrimaryCta = (params: { role: DealRole; deal: any }): DealPr
     // ── Shipping address gate: brand must provide address ─────────────────────
     if (status === 'AWAITING_BRAND_ADDRESS') {
       const hasAddress = !!String(deal?.brand_address || '').trim();
+      if (isPureBarter && requiresShipping) {
+        return {
+          status,
+          label: 'Add Tracking Details',
+          disabled: false,
+          tone: 'action',
+          action: 'track_progress',
+        };
+      }
       return requiresShipping
         ? { 
             status, 
@@ -257,17 +255,7 @@ export const getDealPrimaryCta = (params: { role: DealRole; deal: any }): DealPr
       // For barter deals: only show shipping address CTA if address is missing.
       // After address is provided, the next action is to review & sign the contract.
       if (requiresShipping && !hasReceivedShipment && isPureBarter) {
-        const hasAddress = !!String(deal?.brand_address || '').trim();
-        if (!hasAddress) {
-          return { 
-            status, 
-            label: 'Add Shipping Details', 
-            disabled: false, 
-            tone: 'action', 
-            action: 'provide_shipping_address' 
-          };
-        }
-        // Address exists — fall through to contract signing
+        return { status, label: 'Review & Sign Contract', disabled: false, tone: 'action', action: 'review_sign_contract' };
       }
       return { status, label: 'Review & Sign Contract', disabled: false, tone: 'action', action: 'review_sign_contract' };
     }

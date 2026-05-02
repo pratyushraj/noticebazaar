@@ -4692,6 +4692,8 @@ const MobileDashboardDemo = ({
     const closeItemDetail = () => {
         triggerHaptic();
         setShowItemMenu(false);
+        setShowCreatorShippingModal(false);
+        setPendingAcceptReq(null);
         setSelectedItem(null);
         setSelectedType(null);
     };
@@ -6292,6 +6294,33 @@ const MobileDashboardDemo = ({
                                                 </div>
                                             </div>
                                         </div>
+
+                                        {selectedIsPureBarter && (
+                                            <div className="mb-6">
+                                                <button
+                                                    type="button"
+                                                    onClick={() => {
+                                                        if (processingDeal) return;
+                                                        handleOpenBarterShippingFlow(selectedItem);
+                                                    }}
+                                                    className={cn(
+                                                        "w-full h-18 rounded-[26px] px-5 flex items-center justify-between border active:scale-[0.99] transition-all shadow-sm",
+                                                        isDark ? "bg-[#151922] border-amber-500/20 text-amber-300 hover:bg-amber-500/5" : "bg-white border-amber-100 text-amber-700 hover:bg-amber-50/70"
+                                                    )}
+                                                >
+                                                    <span className="flex items-center gap-3">
+                                                        <div className={cn("w-10 h-10 rounded-full flex items-center justify-center", isDark ? "bg-amber-500/10" : "bg-amber-100")}>
+                                                            <MapPin className="w-4.5 h-4.5" />
+                                                        </div>
+                                                        <span className="text-left">
+                                                            <span className="font-black text-[15px] tracking-tight block">Add Shipping Address</span>
+                                                            <span className="text-[11px] font-bold opacity-60 block">Open the address step from this collaboration</span>
+                                                        </span>
+                                                    </span>
+                                                    <ChevronRight className="w-5 h-5 opacity-40" />
+                                                </button>
+                                            </div>
+                                        )}
 
                                         {(selectedType === 'offer' || selectedType === 'deal') && (
                                             <>

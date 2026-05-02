@@ -53,6 +53,45 @@ async function sendCollabPushViaRender(params: {
 
 const router = express.Router();
 
+const humanizePublicHandle = (handle: string | null | undefined) => {
+  const clean = String(handle || '').trim().replace(/^@/, '');
+  if (!clean) return null;
+  const words = clean
+    .split(/[._-]+/)
+    .map((part) => part.trim())
+    .filter(Boolean);
+  if (words.length === 0 || words.some((word) => /\d/.test(word))) return null;
+  return words.map((word) => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+};
+
+const resolvePublicCreatorName = ({
+  profileName,
+  businessName,
+  publicHandle,
+}: {
+  profileName?: string | null;
+  businessName?: string | null;
+  publicHandle?: string | null;
+}) => {
+  const business = String(businessName || '').trim();
+  if (business) return business;
+
+  const handleName = humanizePublicHandle(publicHandle);
+  const storedName = String(profileName || '').trim();
+  if (!storedName) return handleName || null;
+  if (!handleName) return storedName;
+
+  const storedTokens = new Set(storedName.toLowerCase().split(/\s+/).filter(Boolean));
+  const handleTokens = handleName.toLowerCase().split(/\s+/).filter(Boolean);
+  const hasNameOverlap = handleTokens.some((handleToken) =>
+    Array.from(storedTokens).some((storedToken) =>
+      handleToken === storedToken || handleToken.includes(storedToken) || storedToken.includes(handleToken)
+    )
+  );
+
+  return hasNameOverlap ? storedName : handleName;
+};
+
 // Multer for optional barter product image (in-memory, max 5MB; mimetype validated in handler)
 const barterImageUpload = multer({
   storage: multer.memoryStorage(),
@@ -495,12 +534,12 @@ router.get('/:username', async (req: Request, res: Response) => {
       });
     }
 
-    // Get creator name
     const fullName = `${profile.first_name || ''} ${profile.last_name || ''}`.trim();
-    const creatorName = fullName ||
-      primaryPublicHandle ||
-      profile.business_name ||
-      'Creator';
+    const creatorName = resolvePublicCreatorName({
+      profileName: fullName,
+      businessName: profile.business_name,
+      publicHandle: primaryPublicHandle,
+    }) || primaryPublicHandle || 'Creator';
 
     res.json({
       success: true,

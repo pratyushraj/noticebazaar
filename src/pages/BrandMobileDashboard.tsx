@@ -812,8 +812,21 @@ const BrandMobileDashboard = ({
     }
 
     if (action === 'provide_shipping_address') {
+      if (item && isBarterLikeCollab(item) && !isPaidLikeCollab(item)) {
+        setSelectedDealPage(item);
+        setDdShowShippingBox(true);
+        return;
+      }
       setOverlayDeal(item);
       setShowBrandShippingModal(true);
+      return;
+    }
+
+    if (action === 'track_progress') {
+      setSelectedDealPage(item);
+      if (item && isBarterLikeCollab(item) && !isPaidLikeCollab(item)) {
+        setDdShowShippingBox(true);
+      }
       return;
     }
 
@@ -2504,26 +2517,28 @@ const BrandMobileDashboard = ({
                 {/* Address managed via Edit button below */}
 
                 {!shippingDelivered && (
-                  <div className="flex gap-3">
-                    <button 
-                      type="button" 
-                      onClick={() => {
-                        setOverlayDeal(offer);
-                        setShowBrandShippingModal(true);
-                      }} 
-                      className={cn('flex-1 h-12 rounded-2xl text-[13px] font-black uppercase tracking-widest transition-all active:scale-[0.98] flex items-center justify-center gap-2', isDark ? 'bg-white/5 border border-white/10 hover:bg-white/10' : 'bg-white border border-slate-200 shadow-sm hover:bg-slate-50')}
-                    >
-                      <MapPin className="w-4 h-4 opacity-40" />
-                      {offer?.brand_address ? 'Edit Address' : 'Add Address'}
-                    </button>
-                    
+                  <div className={cn('flex gap-3', isPureBarter && 'grid grid-cols-1')}>
+                    {!isPureBarter && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setOverlayDeal(offer);
+                          setShowBrandShippingModal(true);
+                        }}
+                        className={cn('flex-1 h-12 rounded-2xl text-[13px] font-black uppercase tracking-widest transition-all active:scale-[0.98] flex items-center justify-center gap-2', isDark ? 'bg-white/5 border border-white/10 hover:bg-white/10' : 'bg-white border border-slate-200 shadow-sm hover:bg-slate-50')}
+                      >
+                        <MapPin className="w-4 h-4 opacity-40" />
+                        {offer?.brand_address ? 'Edit Address' : 'Add Address'}
+                      </button>
+                    )}
+
                     <button 
                       type="button" 
                       onClick={() => setShowShippingBox(true)} 
                       className={cn('flex-1 h-12 rounded-2xl text-[13px] font-black uppercase tracking-widest transition-all active:scale-[0.98] flex items-center justify-center gap-2', isDark ? 'bg-white/5 border border-white/10 hover:bg-white/10' : 'bg-white border border-slate-200 shadow-sm hover:bg-slate-50')}
                     >
                       <Truck className="w-4 h-4 opacity-40" />
-                      {trackingNumber ? 'Update Tracking' : 'Add Tracking'}
+                      {trackingNumber ? 'Update Tracking' : isPureBarter ? 'Add Dispatch Details' : 'Add Tracking'}
                     </button>
                   </div>
                 )}
