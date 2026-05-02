@@ -214,6 +214,65 @@ const notifyBrandOnCreatorAcceptance = async ({
   });
 };
 
+const createBrandAcceptanceNotification = async ({
+  brandId,
+  brandEmail,
+  creatorName,
+  dealId,
+  requestId,
+  isBarter,
+}: {
+  brandId?: string | null;
+  brandEmail?: string | null;
+  creatorName: string;
+  dealId: string;
+  requestId: string;
+  isBarter: boolean;
+}) => {
+  const targetBrandUserId = await resolveBrandUserIdForPush(brandId, brandEmail);
+  if (!targetBrandUserId) {
+    console.log('[CollabRequests] Skipping brand notification: no brand user id found', { requestId, brandEmail });
+    return;
+  }
+
+  const title = 'Creator accepted your offer';
+  const message = isBarter
+    ? `${creatorName} accepted. Add shipping details to keep the barter collaboration moving.`
+    : `${creatorName} accepted. Review the deal and complete the next step.`;
+  const actionLink = `/brand-dashboard?tab=collabs&subtab=active&dealId=${encodeURIComponent(dealId)}`;
+
+  const { error } = await supabase.from('notifications').insert({
+    user_id: targetBrandUserId,
+    type: 'deal',
+    category: 'collab_request',
+    title,
+    message,
+    data: {
+      type: 'brand_offer_accepted',
+      requestId,
+      dealId,
+      collab_type: isBarter ? 'barter' : 'paid',
+    },
+    link: actionLink,
+    priority: 'high',
+    icon: 'CheckCircle',
+    action_label: isBarter ? 'Add shipping details' : 'Review deal',
+    action_link: actionLink,
+    read: false,
+  });
+
+  if (error) {
+    console.warn('[CollabRequests] Failed to create brand acceptance notification:', error.message);
+    return;
+  }
+
+  console.log('[CollabRequests] Brand acceptance notification created:', {
+    requestId,
+    dealId,
+    brandUserId: targetBrandUserId,
+  });
+};
+
 const isMissingColumnError = (error: any): boolean => {
   if (!error) return false;
   return (
@@ -2742,13 +2801,11 @@ router.get('/', async (req: AuthenticatedRequest, res: Response) => {
       return res.json(cached);
     }
 
-    // Best-effort auto-attach so the dashboard immediately sees lead-captured barter offers
-    // and other pending requests after creator login.
-    try {
-      await attachPendingCollabLeadsForCreator(userId);
-    } catch (attachError) {
+    // Best-effort auto-attach so the dashboard sees lead-captured barter offers
+    // without blocking the initial dashboard response.
+    void attachPendingCollabLeadsForCreator(userId).catch((attachError) => {
       console.warn('[CollabRequests] Auto-attach leads failed (non-fatal):', attachError);
-    }
+    });
 
     // Deduplicate: keep most recent request per unique (brand_name, collab_type, exact_budget)
     // Only applied when filtering by status=pending to avoid hiding legitimate history entries
@@ -3034,6 +3091,16 @@ router.post('/accept/confirm', async (req: AuthenticatedRequest, res: Response) 
       isBarter,
     }).catch((pushError) => {
       console.error('[CollabRequests] Accept confirm: brand push failed (non-fatal):', pushError);
+    });
+    createBrandAcceptanceNotification({
+      brandId: request.brand_id || null,
+      brandEmail: request.brand_email || null,
+      creatorName: creatorNameForBrandPush,
+      dealId: deal.id,
+      requestId: id,
+      isBarter,
+    }).catch((notificationError) => {
+      console.error('[CollabRequests] Accept confirm: brand notification failed (non-fatal):', notificationError);
     });
 
     await recordMarketplaceEvent(supabase, {
@@ -3435,6 +3502,16 @@ router.patch('/:id/accept', async (req: AuthenticatedRequest, res: Response) => 
       isBarter,
     }).catch((pushError) => {
       console.error('[CollabRequests] PATCH accept: brand push failed (non-fatal):', pushError);
+    });
+    createBrandAcceptanceNotification({
+      brandId: request.brand_id || null,
+      brandEmail: request.brand_email || null,
+      creatorName: creatorNameForBrandPush,
+      dealId: deal.id,
+      requestId: id,
+      isBarter,
+    }).catch((notificationError) => {
+      console.error('[CollabRequests] PATCH accept: brand notification failed (non-fatal):', notificationError);
     });
 
     // Barter: require delivery details before contract generation. Redirect creator to delivery-details screen.

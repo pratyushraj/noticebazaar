@@ -2830,6 +2830,13 @@ const MobileDashboardDemo = ({
         }
     };
 
+    const handleOpenBarterShippingFlow = (req: any) => {
+        if (!req) return;
+        if (processingDeal) return;
+        setPendingAcceptReq(req);
+        setShowCreatorShippingModal(true);
+    };
+
     const handleConfirmCreatorShipping = async (addressData: { address: string; pincode: string }) => {
         if (!pendingAcceptReq || !onAcceptRequest) return;
         
@@ -5541,18 +5548,22 @@ const MobileDashboardDemo = ({
                                                 </div>
 
                                                 <div className="mt-4 space-y-3">
-                                                    <button
-                                                        type="button"
-                                                        data-testid="offer-brief-accept"
-                                                        onClick={() => {
-                                                            if (processingDeal) return;
-                                                            if (selectedItem?.isDemo) {
-                                                                toast.success("This is a demo offer! Complete your profile to get real brand deals.");
-                                                                triggerHaptic(HapticPatterns.success);
-                                                                return;
-                                                            }
-                                                            handleAccept(selectedItem);
-                                                        }}
+                                                            <button
+                                                                type="button"
+                                                                data-testid="offer-brief-accept"
+                                                                onClick={() => {
+                                                                    if (processingDeal) return;
+                                                                    if (selectedItem?.isDemo) {
+                                                                        toast.success("This is a demo offer! Complete your profile to get real brand deals.");
+                                                                        triggerHaptic(HapticPatterns.success);
+                                                                        return;
+                                                                    }
+                                                                    if (selectedIsPureBarter) {
+                                                                        handleOpenBarterShippingFlow(selectedItem);
+                                                                        return;
+                                                                    }
+                                                                    handleAccept(selectedItem);
+                                                                }}
                                                         className={cn(
                                                             "w-full min-h-[112px] rounded-[32px] px-8 py-6 flex items-center justify-between relative overflow-hidden group active:scale-[0.97] transition-all duration-500",
                                                             selectedIsPureBarter

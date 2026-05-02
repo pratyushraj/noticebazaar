@@ -21,6 +21,10 @@ const REQUIRED_CREATOR_PROFILE_COLUMNS = new Set([
   'collab_region_label',
 ]);
 
+const OPTIONAL_PROFILE_FALLBACK_COLUMNS = new Set([
+  'pincode',
+]);
+
 const loadUnsupportedProfileColumns = () => {
   // Avoid crashing in non-browser contexts/tests.
   if (typeof window === 'undefined') return;
@@ -1068,6 +1072,7 @@ export const useUpdateProfile = () => {
             'repeat_brands',
             'on_time_delivery_rate',
             'conversion_rate',
+            'pincode',
             'creator_stage',
             'link_shared_at',
             'first_offer_at',
@@ -1096,6 +1101,14 @@ export const useUpdateProfile = () => {
           for (let i = 0; i < maxRetries; i++) {
             const missingColumn = extractMissingColumn(String(retryError?.message || ''));
 
+            if (missingColumn && OPTIONAL_PROFILE_FALLBACK_COLUMNS.has(missingColumn) && missingColumn in safeUpdateData) {
+              delete safeUpdateData[missingColumn];
+              droppedFields.add(missingColumn);
+              if (!unsupportedProfileColumns.has(missingColumn)) {
+                unsupportedProfileColumns.add(missingColumn);
+                persistUnsupportedProfileColumns();
+              }
+            } else
             if (missingColumn && optionalExtensionFields.has(missingColumn) && missingColumn in safeUpdateData) {
               delete safeUpdateData[missingColumn];
               droppedFields.add(missingColumn);
