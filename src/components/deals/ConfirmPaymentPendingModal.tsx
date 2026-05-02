@@ -289,7 +289,7 @@ export function ConfirmPaymentPendingModal({ dealId, dealAmount, creatorName, on
                 disabled={isLoading}
                 className="w-full py-2 text-[11px] font-black uppercase tracking-widest text-white/30 hover:text-white/60 transition-colors"
               >
-                Already paid? Verify status
+                Paid in Razorpay? Verify capture status
               </button>
             </div>
 

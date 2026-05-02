@@ -826,6 +826,13 @@ const BrandMobileDashboard = ({
       setSelectedDealPage(item);
       if (item && isBarterLikeCollab(item) && !isPaidLikeCollab(item)) {
         setDdShowShippingBox(true);
+        setTimeout(() => {
+          shippingSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 0);
+      } else {
+        setTimeout(() => {
+          progressSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 0);
       }
       return;
     }
@@ -2251,10 +2258,24 @@ const BrandMobileDashboard = ({
     };
 
     const onPrimaryCta = () => {
-      if (primaryCta.action === 'review_sign_contract') openContract();
-      else if (primaryCta.action === 'review_content') contentSectionRef.current?.scrollIntoView({ behavior: 'smooth' });
-      else if (primaryCta.action === 'track_progress') progressSectionRef.current?.scrollIntoView({ behavior: 'smooth' });
-      else toast.message(primaryCta.label);
+      if (primaryCta.action === 'review_sign_contract') {
+        openContract();
+        return;
+      }
+      if (primaryCta.action === 'review_content') {
+        contentSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        return;
+      }
+      if (primaryCta.action === 'track_progress') {
+        if (isPureBarter) {
+          setDdShowShippingBox(true);
+          shippingSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          return;
+        }
+        progressSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        return;
+      }
+      toast.message(primaryCta.label);
     };
 
     const scrollToRef = (ref: any) => ref.current?.scrollIntoView({ behavior: 'smooth' });
