@@ -22,6 +22,7 @@ const REQUIRED_CREATOR_PROFILE_COLUMNS = new Set([
 ]);
 
 const OPTIONAL_PROFILE_FALLBACK_COLUMNS = new Set([
+  'shipping_address',
   'pincode',
 ]);
 
@@ -1073,6 +1074,7 @@ export const useUpdateProfile = () => {
             'on_time_delivery_rate',
             'conversion_rate',
             'pincode',
+            'shipping_address',
             'creator_stage',
             'link_shared_at',
             'first_offer_at',

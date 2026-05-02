@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { MapPin, X, Lock, CheckCircle2, Loader2, ArrowRight } from "lucide-react";
+import { MapPin, X, Lock, CheckCircle2, Loader2, ArrowRight, ChevronLeft } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import { getApiBaseUrl } from "@/lib/utils/api";
@@ -218,6 +218,16 @@ export function CreatorShippingConfirmationModal({ brandName, onClose, onConfirm
               )}
             >
               Accept & Confirm Address <ArrowRight className="w-4 h-4 ml-2" />
+            </Button>
+
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={onClose}
+              className="w-full h-12 rounded-2xl text-white/70 hover:text-white hover:bg-white/5 font-black uppercase tracking-widest"
+            >
+              <ChevronLeft className="w-4 h-4 mr-2" />
+              Back to Offer
             </Button>
           </form>
         </motion.div>
