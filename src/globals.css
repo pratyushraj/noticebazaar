@@ -137,7 +137,7 @@ input, textarea, [contenteditable="true"], .selectable {
 html,
 body {
   width: 100%;
-  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none; /* Firefox */
 }
 
 /* Main scrollable container in the app */
@@ -147,7 +147,6 @@ body {
   /* Mobile-first: scroll inside the root to allow for custom pull-to-refresh */
   overflow-y: auto;
   overflow-x: hidden;
-  -webkit-overflow-scrolling: touch;
   overscroll-behavior-y: contain;
 }
 

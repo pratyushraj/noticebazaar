@@ -2,6 +2,7 @@
 
 import React, { useEffect, useMemo, useState } from 'react';
 import { Download, Smartphone, ShieldCheck, Share, Plus, MoreVertical, Zap, Bell } from 'lucide-react';
+import { usePwaInstall } from '@/hooks/usePwaInstall';
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
@@ -14,13 +15,13 @@ interface CreatorAppModeGateProps {
 }
 
 const CreatorAppModeGate: React.FC<CreatorAppModeGateProps> = ({ enabled, children }) => {
+  const { deferredPrompt, promptInstall } = usePwaInstall();
   const BROWSER_BYPASS_KEY = 'creatorarmour.allow-browser-mode';
   const [isStandalone, setIsStandalone] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [isIOS, setIsIOS] = useState(false);
   const [isAndroid, setIsAndroid] = useState(false);
   const [isInstagramBrowser, setIsInstagramBrowser] = useState(false);
-  const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [allowBrowserMode, setAllowBrowserMode] = useState(false);
 
   useEffect(() => {
@@ -41,18 +42,10 @@ const CreatorAppModeGate: React.FC<CreatorAppModeGateProps> = ({ enabled, childr
 
     updateMode();
     window.addEventListener('resize', updateMode);
-
-    const handleBeforeInstallPrompt = (event: Event) => {
-      event.preventDefault();
-      setDeferredPrompt(event as BeforeInstallPromptEvent);
-    };
-
-    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt as EventListener);
     window.addEventListener('appinstalled', updateMode);
 
     return () => {
       window.removeEventListener('resize', updateMode);
-      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt as EventListener);
       window.removeEventListener('appinstalled', updateMode);
     };
   }, []);
@@ -74,17 +67,16 @@ const CreatorAppModeGate: React.FC<CreatorAppModeGateProps> = ({ enabled, childr
   }, [allowBrowserMode, enabled, isMobile, isStandalone]);
 
   const handleInstall = async () => {
-    if (deferredPrompt) {
-      await deferredPrompt.prompt();
-      await deferredPrompt.userChoice;
-      setDeferredPrompt(null);
-      return;
-    }
+    const success = await promptInstall();
+    if (success) return;
+    
     if (isIOS) {
       alert('Tap Share -> Add to Home Screen, then open Creator Armour from your home screen.');
       return;
     }
-    alert('Open browser menu and choose "Install app" or "Add to home screen".');
+    if (!deferredPrompt) {
+      alert('Open browser menu and choose "Install app" or "Add to home screen".');
+    }
   };
 
   const handleContinueAnyway = () => {

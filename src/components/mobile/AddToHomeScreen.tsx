@@ -7,10 +7,11 @@ import { trackEvent } from '@/lib/utils/analytics';
 import { triggerHaptic, HapticPatterns } from '@/lib/utils/haptics';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import { usePwaInstall } from '@/hooks/usePwaInstall';
 
 const AddToHomeScreen: React.FC = () => {
   const location = useLocation();
-  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+  const { deferredPrompt, canInstall } = usePwaInstall();
   const [showBanner, setShowBanner] = useState(false);
   const [isAndroid, setIsAndroid] = useState(false);
   const [isIOSDevice, setIsIOSDevice] = useState(false);
@@ -34,8 +35,19 @@ const AddToHomeScreen: React.FC = () => {
     const shouldForceShow = forceInstallPreview || forceInstallIntent;
 
     // Only show the banner where it makes product sense
-    const eligiblePrefixes = ['/deal/', '/creator-dashboard', '/brand-dashboard', '/dashboard-preview', '/creator-link-ready'];
-    const isEligibleRoute = eligiblePrefixes.some(prefix => location.pathname.startsWith(prefix));
+    const eligiblePrefixes = [
+      '/deal/', 
+      '/creator-dashboard', 
+      '/brand-dashboard', 
+      '/dashboard-preview', 
+      '/creator-link-ready',
+      '/collab-requests',
+      '/brand-offers',
+      '/payment/',
+      '/deal-delivery-details'
+    ];
+    const isEligibleRoute = eligiblePrefixes.some(prefix => location.pathname.startsWith(prefix))
+      || (location.pathname.length > 1 && !location.pathname.includes('.') && !location.pathname.includes('/')); // Handle /username landing pages
 
     const canShowIOSGuide = isIOS && isSafari;
     const canShowAndroidPrompt = androidDevice;
@@ -63,11 +75,6 @@ const AddToHomeScreen: React.FC = () => {
       source: params.get('source') || null,
     });
 
-    const handleBeforeInstallPrompt = (e: Event) => {
-      e.preventDefault();
-      setDeferredPrompt(e);
-    };
-
     const handleAppInstalled = () => {
       setShowBanner(false);
       localStorage.setItem(INSTALL_DISMISS_KEY, Date.now().toString());
@@ -79,13 +86,11 @@ const AddToHomeScreen: React.FC = () => {
       localStorage.setItem('pwa_show_install_success_toast', '1');
     };
 
-    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
     window.addEventListener('appinstalled', handleAppInstalled);
     return () => {
-      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
       window.removeEventListener('appinstalled', handleAppInstalled);
     };
-  }, [location.pathname]);
+  }, [location.pathname, canInstall]);
 
   const handleInstall = async () => {
     trackEvent('pwa_install_cta_clicked', {

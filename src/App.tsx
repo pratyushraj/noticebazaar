@@ -54,30 +54,24 @@ const App = () => {
   // Enhanced accessibility with keyboard navigation
   useKeyboardNavigation();
 
-  // Local dev safety: if a service worker was previously registered, it can cache `/api/*` and
-  // serve stale responses (including 404s), making auth and dashboard data look broken.
-  // On localhost, proactively unregister SW and clear our Workbox caches.
+  // Service Worker Registration and Version Management
   useEffect(() => {
-    if (typeof window === "undefined") return;
-    if (!("serviceWorker" in navigator)) return;
+    if (typeof window === "undefined" || !("serviceWorker" in navigator)) return;
 
-    const previousVersion = window.localStorage.getItem('app_shell_version');
-    if (previousVersion === APP_SHELL_VERSION) return;
-
-    navigator.serviceWorker.getRegistrations()
-      .then((regs) => Promise.all(regs.map((r) => r.unregister())))
-      .catch(() => { /* ignore */ });
-
-    // Best-effort cache cleanup. This is safe to do once per app-shell version
-    // because stale HTML can pin old chunk URLs and produce MIME errors.
-    const c: any = (window as any).caches;
-    if (c?.keys && c?.delete) {
-      c.keys()
-        .then((keys: string[]) => Promise.all(keys.map((k) => c.delete(k))))
-        .catch(() => { /* ignore */ });
-    }
-
-    window.localStorage.setItem('app_shell_version', APP_SHELL_VERSION);
+    // Register service worker unconditionally for offline support
+    navigator.serviceWorker.register('/sw.js')
+      .then((registration) => {
+        // If a new version is available, the browser will handle the update in the background.
+        // We can explicitly trigger an update check if needed.
+        const previousVersion = window.localStorage.getItem('app_shell_version');
+        if (previousVersion !== APP_SHELL_VERSION) {
+          registration.update().catch(() => {});
+          window.localStorage.setItem('app_shell_version', APP_SHELL_VERSION);
+        }
+      })
+      .catch((error) => {
+        console.error('[App] Service worker registration failed:', error);
+      });
   }, []);
 
   // Removed the temporary useEffect block for role update
