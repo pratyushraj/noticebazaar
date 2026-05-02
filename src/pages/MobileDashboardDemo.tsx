@@ -34,7 +34,6 @@ import { triggerHaptic as globalTriggerHaptic, HapticPatterns } from '@/lib/util
 import PremiumDrawer from '@/components/drawer/PremiumDrawer';
 import { supabase } from '@/integrations/supabase/client';
 import { DealStage, getDealStageFromStatus, STAGE_TO_PROGRESS, STAGE_TO_STATUS, useUpdateDealProgress } from '@/lib/hooks/useBrandDeals';
-import { useUpdateProfile } from '@/lib/hooks/useProfiles';
 import { dealPrimaryCtaButtonClass, getDealPrimaryCta, getCanonicalDealStatus } from '@/lib/deals/primaryCta';
 import { isBarterLikeCollab, isPaidLikeCollab } from '@/lib/deals/collabType';
 import FiverrPackageEditor from '@/components/profile/FiverrPackageEditor';
@@ -939,7 +938,6 @@ const MobileDashboardDemo = ({
     const queryClient = useQueryClient();
     const signOutMutation = useSignOut();
     const updateDealProgress = useUpdateDealProgress();
-    const updateProfile = useUpdateProfile();
     const { session, user, refetchProfile } = useSession();
     const userId = user?.id || session?.user?.id || '';
     
@@ -2845,14 +2843,7 @@ const MobileDashboardDemo = ({
         setProcessingDeal(pendingAcceptReq.id);
         
         try {
-            // 1. Update creator profile with new shipping address
-            await updateProfile.mutateAsync({
-                id: profile.id,
-                shipping_address: addressData.address,
-                pincode: addressData.pincode,
-            } as any);
-
-            // 2. Accept the deal
+            // Accept the deal and pass the shipping details through the accept flow.
             await onAcceptRequest(pendingAcceptReq, addressData);
             closeItemDetail();
             confetti({ particleCount: 80, spread: 60, origin: { y: 0.7 }, colors: ['#10B981', '#059669', '#34D399'] });
@@ -5548,11 +5539,11 @@ const MobileDashboardDemo = ({
                                                 </div>
 
                                                 <div className="mt-4 space-y-3">
-                                                            <button
-                                                                type="button"
-                                                                data-testid="offer-brief-accept"
-                                                                onClick={() => {
-                                                                    if (processingDeal) return;
+                                                    <button
+                                                        type="button"
+                                                        data-testid="offer-brief-accept"
+                                                        onClick={() => {
+                                                            if (processingDeal) return;
                                                                     if (selectedItem?.isDemo) {
                                                                         toast.success("This is a demo offer! Complete your profile to get real brand deals.");
                                                                         triggerHaptic(HapticPatterns.success);
@@ -5599,6 +5590,31 @@ const MobileDashboardDemo = ({
                                                             <ChevronRight className="w-7 h-7 text-white" />
                                                         </div>
                                                     </button>
+
+                                                    {selectedIsPureBarter && (
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => {
+                                                                if (processingDeal) return;
+                                                                handleOpenBarterShippingFlow(selectedItem);
+                                                            }}
+                                                            className={cn(
+                                                                "w-full mt-3 h-16 rounded-[24px] px-5 flex items-center justify-between border active:scale-[0.99] transition-all shadow-sm",
+                                                                isDark ? "bg-[#151922] border-amber-500/20 text-amber-300 hover:bg-amber-500/5" : "bg-white border-amber-100 text-amber-700 hover:bg-amber-50/70"
+                                                            )}
+                                                        >
+                                                            <span className="flex items-center gap-3">
+                                                                <div className={cn("w-10 h-10 rounded-full flex items-center justify-center", isDark ? "bg-amber-500/10" : "bg-amber-100")}>
+                                                                    <MapPin className="w-4.5 h-4.5" />
+                                                                </div>
+                                                                <span className="text-left">
+                                                                    <span className="font-black text-[15px] tracking-tight block">Add Shipping Address</span>
+                                                                    <span className="text-[11px] font-bold opacity-60 block">Open the address step from this offer</span>
+                                                                </span>
+                                                            </span>
+                                                            <ChevronRight className="w-5 h-5 opacity-40" />
+                                                        </button>
+                                                    )}
 
                                                         <div className="grid grid-cols-1">
                                                             <button
