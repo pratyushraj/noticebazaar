@@ -29,21 +29,30 @@ export function CreatorShippingConfirmationModal({ brandName, onClose, onConfirm
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLookingUpPincode, setIsLookingUpPincode] = useState(false);
 
+  const profileAddressFallback =
+    (profile as any)?.shipping_address ||
+    (profile as any)?.address ||
+    (profile as any)?.location ||
+    "";
+  const profilePincodeFallback =
+    (profile as any)?.pincode ||
+    "";
+
   // Pre-fill from profile
   useEffect(() => {
     if (profile) {
-      setAddressLine((profile as any)?.shipping_address || "");
-      setPincode((profile as any)?.pincode || "");
+      setAddressLine(profileAddressFallback);
+      setPincode(profilePincodeFallback);
       // If we have address but not city/state, try to parse or lookup
-      if ((profile as any)?.shipping_address && !(profile as any)?.city) {
+      if (profileAddressFallback && !(profile as any)?.city) {
          // Simple parse attempt if it's a comma separated string
-         const parts = (profile as any).shipping_address.split(",");
+         const parts = String(profileAddressFallback).split(",");
          if (parts.length > 1) {
             setCity(parts[parts.length - 1].trim());
          }
       }
     }
-  }, [profile]);
+  }, [profile, profileAddressFallback, profilePincodeFallback]);
 
   const handlePincodeChange = async (val: string) => {
     setPincode(val);
@@ -63,6 +72,15 @@ export function CreatorShippingConfirmationModal({ brandName, onClose, onConfirm
   const pincodeValid = /^\d{6}$/.test(pincode.trim());
   const addressValid = addressLine.trim().length > 5 && pincodeValid;
   const canSubmit = addressValid && !isSubmitting;
+
+  const useSavedAddress = () => {
+    const savedAddress = profileAddressFallback;
+    const savedPincode = profilePincodeFallback;
+    if (savedAddress) setAddressLine(String(savedAddress));
+    if (savedPincode) setPincode(String(savedPincode));
+    if ((profile as any)?.city) setCity(String((profile as any).city));
+    if ((profile as any)?.state) setState(String((profile as any).state));
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -143,10 +161,19 @@ export function CreatorShippingConfirmationModal({ brandName, onClose, onConfirm
                 <Input
                   value={addressLine}
                   onChange={(e) => setAddressLine(e.target.value)}
-                  placeholder="Flat No, Building, Street, Area"
+                  placeholder={profileAddressFallback ? "Use your saved address or edit it here" : "Flat No, Building, Street, Area"}
                   className={fieldClass}
                   required
                 />
+                {profileAddressFallback && (
+                  <button
+                    type="button"
+                    onClick={useSavedAddress}
+                    className="text-[11px] font-black uppercase tracking-widest text-blue-300 hover:text-blue-200 transition-colors"
+                  >
+                    Use saved creator address
+                  </button>
+                )}
               </div>
 
               <div className="grid grid-cols-2 gap-4">
@@ -157,7 +184,7 @@ export function CreatorShippingConfirmationModal({ brandName, onClose, onConfirm
                       value={pincode}
                       onChange={(e) => handlePincodeChange(e.target.value.replace(/\D/g, "").slice(0, 6))}
                       inputMode="numeric"
-                      placeholder="400001"
+                      placeholder={profilePincodeFallback ? String(profilePincodeFallback) : "400001"}
                       className={fieldClass}
                       required
                     />
