@@ -908,7 +908,7 @@ router.post('/barter/delivery-details', authMiddleware, async (req: Authenticate
 
 /**
  * PATCH /api/deals/:dealId/delivery-details
- * Save delivery details for a barter deal (post-acceptance). Generates contract and sets status to Awaiting Product Shipment.
+ * Save delivery details for a barter deal (post-acceptance). Generates contract and sets status to CONTRACT_READY.
  */
 router.patch('/:dealId/delivery-details', async (req: AuthenticatedRequest, res: Response) => {
   try {
@@ -959,7 +959,7 @@ router.patch('/:dealId/delivery-details', async (req: AuthenticatedRequest, res:
         delivery_phone: delivery_phone.trim(),
         delivery_address: delivery_address.trim(),
         delivery_notes: delivery_notes ? String(delivery_notes).trim() : null,
-        status: 'Awaiting Product Shipment',
+        status: 'Drafting',
         shipping_required: true,
         shipping_status: 'pending',
         updated_at: new Date().toISOString(),
@@ -983,6 +983,20 @@ router.patch('/:dealId/delivery-details', async (req: AuthenticatedRequest, res:
 
       if (existingDeal?.contract_file_url) {
         contractUrl = existingDeal.contract_file_url;
+        const token = await createContractReadyToken({
+          dealId,
+          creatorId: userId,
+          expiresAt: null,
+        });
+        contractReadyToken = token.id;
+
+        await supabase
+          .from('brand_deals')
+          .update({
+            status: 'CONTRACT_READY',
+            updated_at: new Date().toISOString(),
+          } as any)
+          .eq('id', dealId);
       } else {
         const { data: creatorProfile } = await supabase
           .from('profiles')
@@ -1068,8 +1082,22 @@ router.patch('/:dealId/delivery-details', async (req: AuthenticatedRequest, res:
           creatorEmail &&
           creatorAddress;
 
-        if (canGenerateContract) {
-          const contractResult = await generateContractFromScratch({
+        if (!canGenerateContract) {
+          console.log('[Deals] Skipping contract generation due to missing info:', {
+            hasBrandName: !!deal.brand_name,
+            hasBrandEmail: !!deal.brand_email,
+            hasBrandAddress: !!(deal as any).brand_address,
+            hasCreatorName: !!creatorName,
+            hasCreatorEmail: !!creatorEmail,
+            hasCreatorAddress: !!delivery_address.trim()
+          });
+          return res.status(400).json({
+            success: false,
+            error: 'Delivery details saved, but contract generation needs complete brand and creator details.',
+          });
+        }
+
+        const contractResult = await generateContractFromScratch({
             brandName: deal.brand_name,
             creatorName,
             creatorEmail,
@@ -1095,7 +1123,7 @@ router.patch('/:dealId/delivery-details', async (req: AuthenticatedRequest, res:
             terminationNoticeDays: 7,
             jurisdictionCity: 'Mumbai',
             additionalTerms: productDeliveryTerms,
-          });
+        });
 
           const storagePath = `contracts/${dealId}/${Date.now()}_${contractResult.fileName}`;
           const { error: uploadError } = await supabase.storage
@@ -1107,19 +1135,10 @@ router.patch('/:dealId/delivery-details', async (req: AuthenticatedRequest, res:
 
           if (uploadError) {
             console.error('[Deals] delivery-details contract upload error:', uploadError);
-            // Don't fail the whole request if only contract failed
+            throw new Error('Failed to upload barter contract');
           } else {
             const { data: publicUrlData } = supabase.storage.from('creator-assets').getPublicUrl(storagePath);
             contractUrl = publicUrlData?.publicUrl || null;
-
-            await supabase
-              .from('brand_deals')
-              .update({
-                contract_file_url: contractUrl,
-                contract_file_path: storagePath, // Use new secure path column
-                updated_at: new Date().toISOString(),
-              } as any)
-              .eq('id', dealId);
 
             const token = await createContractReadyToken({
               dealId,
@@ -1127,6 +1146,16 @@ router.patch('/:dealId/delivery-details', async (req: AuthenticatedRequest, res:
               expiresAt: null,
             });
             contractReadyToken = token.id;
+
+            await supabase
+              .from('brand_deals')
+              .update({
+                contract_file_url: contractUrl,
+                contract_file_path: storagePath, // Use new secure path column
+                status: 'CONTRACT_READY',
+                updated_at: new Date().toISOString(),
+              } as any)
+              .eq('id', dealId);
 
             if (deal.brand_email && contractReadyToken && contractUrl) {
               sendCollabRequestAcceptedEmail(deal.brand_email, {
@@ -1140,17 +1169,6 @@ router.patch('/:dealId/delivery-details', async (req: AuthenticatedRequest, res:
               }).catch((e) => console.error('[Deals] delivery-details acceptance email failed:', e));
             }
           }
-        } else {
-          console.log('[Deals] Skipping contract generation due to missing info:', {
-            hasBrandName: !!deal.brand_name,
-            hasBrandEmail: !!deal.brand_email,
-            hasBrandAddress: !!(deal as any).brand_address,
-            hasCreatorName: !!creatorName,
-            hasCreatorEmail: !!creatorEmail,
-            hasCreatorAddress: !!delivery_address.trim()
-          });
-        }
-
         // Barter shipping: create token and send brand "Update Shipping Details" email (link valid 14 days)
         try {
           const { token: shippingToken } = await createShippingToken({ dealId });

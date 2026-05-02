@@ -5898,7 +5898,7 @@ const MobileDashboardDemo = ({
                                                 <div className={cn("rounded-[28px] border p-6 relative overflow-hidden", isDark ? "bg-[#0C1320]/80 border-white/5" : "bg-white border-slate-200/60 shadow-sm")}>
                                                     {(() => {
                                                         const steps = selectedIsPureBarter
-                                                            ? ['Accept', 'Ship', 'Deliver', 'Content', 'Release']
+                                                            ? ['Accept', 'Ship', 'Deliver', 'Content', 'Complete']
                                                             : ['Accept', 'Fund', 'Content', 'Release'];
                                                         let currentStep = 0;
                                                         
@@ -8326,9 +8326,9 @@ const DealsTab = React.memo(({
                                                         <h2 className="text-xl font-black italic uppercase text-white truncate mb-0.5">{deal.brand_name || 'Partner'}</h2>
                                                         <div className="flex items-baseline gap-1.5 flex-wrap">
                                                             <p className={cn("text-lg font-black leading-none", isBarter ? "text-amber-400" : "text-white")}>
-                                                                {isBarter ? `🎁 FREE + ₹${budget.toLocaleString()}` : `₹${budget.toLocaleString()}`}
+                                                                {isBarter ? 'Free product' : `₹${budget.toLocaleString()}`}
                                                             </p>
-                                                            {isBarter && <span className="text-[10px] font-black uppercase tracking-widest text-amber-400/60">product</span>}
+                                                            {isBarter && <span className="text-[10px] font-black uppercase tracking-widest text-amber-400/60">est. value ₹{budget.toLocaleString()}</span>}
                                                         </div>
                                                     </div>
                                                     <div className="h-1 w-full bg-white/10 rounded-full overflow-hidden">
@@ -8388,9 +8388,9 @@ const DealsTab = React.memo(({
                                                         <h2 className="text-xl font-black italic uppercase text-white truncate mb-0.5">{deal.brand_name || 'Partner'}</h2>
                                                         <div className="flex items-baseline gap-1.5 flex-wrap">
                                                             <p className={cn("text-lg font-black leading-none", isBarter ? "text-amber-400" : "text-white")}>
-                                                                {isBarter ? `🎁 FREE + ₹${budget.toLocaleString()}` : `₹${budget.toLocaleString()}`}
+                                                                {isBarter ? 'Free product' : `₹${budget.toLocaleString()}`}
                                                             </p>
-                                                            {isBarter && <span className="text-[10px] font-black uppercase tracking-widest text-amber-400/60">product</span>}
+                                                            {isBarter && <span className="text-[10px] font-black uppercase tracking-widest text-amber-400/60">est. value ₹{budget.toLocaleString()}</span>}
                                                         </div>
                                                     </div>
                                                     <div className="h-1 w-full bg-emerald-500/30 rounded-full overflow-hidden"><div className={cn("h-full w-full", isBarter ? "bg-amber-400" : "bg-emerald-400")} /></div>
@@ -8445,9 +8445,9 @@ const DealsTab = React.memo(({
                                                         <h2 className="text-xl font-black italic uppercase text-white truncate mb-0.5">{req.brand_name || 'Brand Partner'}</h2>
                                                         <div className="flex items-baseline gap-1.5 flex-wrap">
                                                             <p className={cn("text-lg font-black leading-none", isBarter ? "text-amber-400" : "text-white")}>
-                                                                {isBarter ? `🎁 FREE + ₹${budget.toLocaleString()}` : `₹${budget.toLocaleString()}`}
+                                                                {isBarter ? 'Free product' : `₹${budget.toLocaleString()}`}
                                                             </p>
-                                                            {isBarter && <span className="text-[10px] font-black uppercase tracking-widest text-amber-400/60">product</span>}
+                                                            {isBarter && <span className="text-[10px] font-black uppercase tracking-widest text-amber-400/60">est. value ₹{budget.toLocaleString()}</span>}
                                                         </div>
                                                     </div>
                                                     
@@ -8490,4 +8490,3 @@ const DealsTab = React.memo(({
 });
 
 export default MobileDashboardDemo;
-

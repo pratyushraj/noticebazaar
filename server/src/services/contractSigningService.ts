@@ -322,7 +322,7 @@ export async function signContractAsBrand(
            if (freshDeal) {
              const normalizeCollabKind = (raw: any) => String(raw || '').trim().toLowerCase();
              const kind = normalizeCollabKind(freshDeal.collab_type || freshDeal.deal_type);
-             const requiresPayment = (kind === 'paid' || kind === 'both' || kind === 'hybrid' || kind === 'paid_barter') || Number(freshDeal.deal_amount || 0) > 0;
+             const requiresPayment = kind === 'paid' || kind === 'both' || kind === 'hybrid' || kind === 'paid_barter' || (!kind && Number(freshDeal.deal_amount || 0) > 0);
              
              if (requiresPayment) {
                 console.log(`[ContractSigningService] Transitioning deal ${request.dealId} to PAYMENT_PENDING`);
@@ -689,7 +689,7 @@ export async function signContractAsCreator(
          if (freshDeal) {
            const normalizeCollabKind = (raw: any) => String(raw || '').trim().toLowerCase();
            const kind = normalizeCollabKind(freshDeal.collab_type || freshDeal.deal_type);
-           const requiresPayment = (kind === 'paid' || kind === 'both' || kind === 'hybrid' || kind === 'paid_barter') || Number(freshDeal.deal_amount || 0) > 0;
+           const requiresPayment = kind === 'paid' || kind === 'both' || kind === 'hybrid' || kind === 'paid_barter' || (!kind && Number(freshDeal.deal_amount || 0) > 0);
            
            if (requiresPayment) {
               console.log(`[ContractSigningService] Transitioning deal ${request.dealId} to PAYMENT_PENDING (creator signed)`);
@@ -851,4 +851,3 @@ export async function getSignature(
     return null;
   }
 }
-

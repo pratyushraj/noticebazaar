@@ -3281,7 +3281,7 @@ router.patch('/:id/accept', async (req: AuthenticatedRequest, res: Response) => 
        due_date: request.deadline || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
        payment_expected_date: request.deadline || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
        platform: 'Other',
-       status: 'CONTRACT_READY',
+       status: 'Drafting',
        deal_type: isBarter ? 'barter' : 'paid',
        collab_type: normalizeCollabTypeForApi(request.collab_type) || request.collab_type,
        shipping_required: isBarterLikeCollab(request.collab_type),
@@ -3352,21 +3352,6 @@ router.patch('/:id/accept', async (req: AuthenticatedRequest, res: Response) => 
       });
     }
 
-    if (!isBarter) {
-      const { error: paidStageError } = await supabase
-        .from('brand_deals')
-        .update({
-          status: 'PAYMENT_PENDING',
-          progress_percentage: 10,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', deal.id);
-
-      if (paidStageError) {
-        console.error('[CollabRequests] Error updating paid deal stage after accept:', paidStageError);
-      }
-    }
-
     // Link deal to canonical brand for agency
     const dealBrandContactId = await resolveOrCreateBrandContact({
       legalName: request.brand_name || '',
@@ -3425,14 +3410,14 @@ router.patch('/:id/accept', async (req: AuthenticatedRequest, res: Response) => 
     await supabase.from('deal_action_logs').insert({
       deal_id: deal.id,
       user_id: userId,
-      event: 'CONTRACT_READY',
+      event: isBarter ? 'AWAITING_DELIVERY_DETAILS' : 'DEAL_ACCEPTED',
       metadata: {
         collab_request_id: id,
         auth_method: 'session',
         ip_address: clientIp,
         user_agent: userAgent,
         collab_type: normalizeCollabTypeForApi(request.collab_type) || request.collab_type,
-        status: 'CONTRACT_READY'
+        status: isBarter ? 'Drafting' : 'Drafting'
       },
     }).then(({ error: logErr }) => {
       if (logErr) console.warn('[CollabRequests] Audit log insert failed:', logErr);
@@ -3587,6 +3572,7 @@ router.patch('/:id/accept', async (req: AuthenticatedRequest, res: Response) => 
             hasBrandAddress: !!brandAddress,
             hasCreatorAddress: !!creatorAddress,
           });
+          throw new Error('Missing required information for paid contract generation.');
         } else {
           // Generate contract
           const contractResult = await generateContractFromScratch({
@@ -3650,67 +3636,63 @@ router.patch('/:id/accept', async (req: AuthenticatedRequest, res: Response) => 
             throw new Error('Failed to get contract URL');
           }
 
-          // Update deal with contract URL
+          const token = await createContractReadyToken({
+            dealId: deal.id,
+            creatorId: userId,
+            expiresAt: null, // No expiry
+          });
+          contractReadyToken = token.id;
+
           const { error: contractUpdateError } = await supabase
             .from('brand_deals')
             .update({
               contract_file_url: contractUrl,
-              status: 'CONTRACT_READY', // Contract is ready, awaiting brand signature
+              status: 'CONTRACT_READY',
               updated_at: new Date().toISOString(),
             })
             .eq('id', deal.id);
 
           if (contractUpdateError) {
             console.error('[CollabRequests] Error updating deal with contract:', contractUpdateError);
-            // Contract was uploaded, so continue anyway
+            throw new Error('Failed to mark deal contract ready');
           }
 
-          // Create contract ready token for brand signing
-          try {
-            const token = await createContractReadyToken({
-              dealId: deal.id,
-              creatorId: userId,
-              expiresAt: null, // No expiry
-            });
-            contractReadyToken = token.id;
-
-            // Send acceptance email to brand (async, don't await)
-            if (request.brand_email && contractReadyToken) {
-              sendCollabRequestAcceptedEmail(request.brand_email, {
-                creatorName,
-                brandName: request.brand_name,
-                dealAmount,
-                dealType: normalizeCollabTypeForDb(request.collab_type) === 'barter' ? 'barter' : 'paid',
-                deliverables: deliverablesArray.length > 0 ? deliverablesArray : ['As per agreement'],
-                contractReadyToken,
-                contractUrl: contractUrl || undefined,
-              }).catch((emailError) => {
-                console.error('[CollabRequests] Acceptance email sending failed (non-fatal):', emailError);
-              });
-            }
-
-            // Send confirmation to creator (async, don't await)
-            const { sendCreatorAcceptanceProcessingEmail } = await import('../services/collabRequestEmailService.js');
-            sendCreatorAcceptanceProcessingEmail(
-              creatorEmail || '',
+          // Send acceptance email to brand (async, don't await)
+          if (request.brand_email && contractReadyToken) {
+            sendCollabRequestAcceptedEmail(request.brand_email, {
               creatorName,
-              request.brand_name,
-              deal.id
-            ).catch((emailError) => {
-              console.error('[CollabRequests] Creator acceptance confirmation failed (non-fatal):', emailError);
+              brandName: request.brand_name,
+              dealAmount,
+              dealType: normalizeCollabTypeForDb(request.collab_type) === 'barter' ? 'barter' : 'paid',
+              deliverables: deliverablesArray.length > 0 ? deliverablesArray : ['As per agreement'],
+              contractReadyToken,
+              contractUrl: contractUrl || undefined,
+            }).catch((emailError) => {
+              console.error('[CollabRequests] Acceptance email sending failed (non-fatal):', emailError);
             });
-          } catch (tokenError) {
-            console.error('[CollabRequests] Error creating contract ready token:', tokenError);
-            // Contract was created, so continue anyway
           }
+
+          // Send confirmation to creator (async, don't await)
+          const { sendCreatorAcceptanceProcessingEmail } = await import('../services/collabRequestEmailService.js');
+          sendCreatorAcceptanceProcessingEmail(
+            creatorEmail || '',
+            creatorName,
+            request.brand_name,
+            deal.id
+          ).catch((emailError) => {
+            console.error('[CollabRequests] Creator acceptance confirmation failed (non-fatal):', emailError);
+          });
 
           console.log('[CollabRequests] Contract generated successfully for deal:', deal.id);
         }
       }
     } catch (contractError: any) {
-      // Log error but don't fail the request - deal was created successfully
       console.error('[CollabRequests] Error generating contract:', contractError);
-      // Continue - deal exists, creator can generate contract manually if needed
+      return res.status(500).json({
+        success: false,
+        deal: { id: deal.id },
+        error: contractError?.message || 'Deal accepted, but contract generation failed.',
+      });
     }
 
     // Invalidate caches for the creator

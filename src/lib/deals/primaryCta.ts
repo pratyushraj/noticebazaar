@@ -81,6 +81,19 @@ export const getCanonicalDealStatus = (deal: any): CanonicalDealStatus => {
 
   const isBarter = isBarterLikeCollab(deal);
   const hasAddress = !!String(deal?.brand_address || '').trim();
+  const signatureSources = [
+    deal,
+    deal?.raw,
+    deal?.contract,
+    deal?.contract_data,
+    deal?.contract_metadata,
+    deal?.esign,
+    deal?.signature,
+    deal?.signatures,
+  ].filter((x) => x && typeof x === 'object');
+
+  const creatorSigned = hasTruthyKeyMatch(signatureSources, /(creator.*signed|signed.*creator|creator_signature|creator_esign|creator_signed_at)/i);
+  const brandSigned = hasTruthyKeyMatch(signatureSources, /(brand.*signed|signed.*brand|brand_signature|brand_esign|brand_signed_at)/i);
 
   // For barter deals, once the address is provided, we effectively move to the active stage
   // unless it's already completed or disputed, or content has already been delivered.
@@ -158,19 +171,6 @@ export const getCanonicalDealStatus = (deal: any): CanonicalDealStatus => {
 
   // Signature-driven override (prevents "signature required" when already signed).
   // IMPORTANT: Only apply when we couldn't derive a later-stage status from `deal.status`.
-  const signatureSources = [
-    deal,
-    deal?.raw,
-    deal?.contract,
-    deal?.contract_data,
-    deal?.contract_metadata,
-    deal?.esign,
-    deal?.signature,
-    deal?.signatures,
-  ].filter((x) => x && typeof x === 'object');
-
-  const creatorSigned = hasTruthyKeyMatch(signatureSources, /(creator.*signed|signed.*creator|creator_signature|creator_esign|creator_signed_at)/i);
-  const brandSigned = hasTruthyKeyMatch(signatureSources, /(brand.*signed|signed.*brand|brand_signature|brand_esign|brand_signed_at)/i);
   if (creatorSigned && brandSigned) return 'FULLY_EXECUTED';
 
   return 'UNKNOWN';
@@ -180,7 +180,7 @@ export const getDealPrimaryCta = (params: { role: DealRole; deal: any }): DealPr
   const { role, deal } = params;
   const status = getCanonicalDealStatus(deal);
   const requiresShipping = isBarterLikeCollab(deal);
-  const collabType = String(deal?.collab_type || deal?.deal_type || deal?.raw?.collab_type || '').trim().toLowerCase();
+  const collabType = String(deal?.collab_type || deal?.deal_type || deal?.raw?.collab_type || deal?.raw?.deal_type || '').trim().toLowerCase();
   const isPureBarter = collabType === 'barter';
   const requiresPayment = isPaidLikeCollab(deal) && !isPureBarter;
   const shippingStatus = String(deal?.shipping_status || deal?.raw?.shipping_status || '').trim().toLowerCase();
