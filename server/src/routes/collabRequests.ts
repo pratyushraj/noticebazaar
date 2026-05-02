@@ -520,7 +520,23 @@ const insertUnclaimedCollabRequest = async (payload: Record<string, unknown>) =>
 
   for (const table of insertOrder) {
     const candidatePayload = { ...payload };
-    const optionalColumns = ['request_payload', 'target_channel', 'brand_phone', 'brand_website', 'brand_instagram', 'submitted_ip', 'submitted_user_agent'];
+    const optionalColumns = [
+      'request_payload',
+      'target_channel',
+      'brand_phone',
+      'brand_website',
+      'brand_instagram',
+      'submitted_ip',
+      'submitted_user_agent',
+      'selected_package_id',
+      'selected_package_label',
+      'selected_package_type',
+      'selected_addons',
+      'content_quantity',
+      'content_duration',
+      'content_requirements',
+      'barter_types',
+    ];
 
     for (;;) {
       const { data, error } = await supabase
@@ -540,7 +556,10 @@ const insertUnclaimedCollabRequest = async (payload: Record<string, unknown>) =>
 
       if (isMissingColumnError(error)) {
         lastError = error;
-        const missingColumn = optionalColumns.find((column) => new RegExp(`column .*${column}.* does not exist`, 'i').test(error.message || ''));
+        const missingColumn = optionalColumns.find((column) =>
+          new RegExp(`column .*${column}.* does not exist`, 'i').test(error.message || '') ||
+          new RegExp(`could not find the ['"]${column}['"] column`, 'i').test(error.message || '')
+        );
         if (missingColumn && missingColumn in candidatePayload) {
           delete candidatePayload[missingColumn];
           continue;
@@ -697,6 +716,14 @@ async function attachPendingCollabLeadsForCreator(creatorId: string): Promise<{ 
         campaign_description: claimedLead.campaign_description,
         campaign_category: claimedLead.campaign_category || null,
         campaign_goal: claimedLead.campaign_goal || null,
+        selected_package_id: claimedLead.selected_package_id || null,
+        selected_package_label: claimedLead.selected_package_label || null,
+        selected_package_type: claimedLead.selected_package_type || null,
+        selected_addons: Array.isArray(claimedLead.selected_addons) ? claimedLead.selected_addons : [],
+        content_quantity: claimedLead.content_quantity || null,
+        content_duration: claimedLead.content_duration || null,
+        content_requirements: Array.isArray(claimedLead.content_requirements) ? claimedLead.content_requirements : [],
+        barter_types: Array.isArray(claimedLead.barter_types) ? claimedLead.barter_types : [],
         deliverables: claimedLead.deliverables || [],
         usage_rights: claimedLead.usage_rights === true,
         deadline: claimedLead.deadline || null,
@@ -705,12 +732,57 @@ async function attachPendingCollabLeadsForCreator(creatorId: string): Promise<{ 
         ...(brandContactId ? { brand_contact_id: brandContactId } : {}),
       };
 
+      const optionalRequestColumns = [
+        'source_lead_id',
+        'brand_address',
+        'brand_gstin',
+        'brand_phone',
+        'brand_website',
+        'brand_instagram',
+        'barter_product_image_url',
+        'campaign_category',
+        'campaign_goal',
+        'selected_package_id',
+        'selected_package_label',
+        'selected_package_type',
+        'selected_addons',
+        'content_quantity',
+        'content_duration',
+        'content_requirements',
+        'barter_types',
+        'brand_contact_id',
+      ];
+
       let requestId: string | null = null;
-      const { data: insertedRequest, error: insertError } = await supabase
-        .from('collab_requests')
-        .insert(insertData)
-        .select('id')
-        .maybeSingle();
+      let requestInsertPayload: any = { ...insertData };
+      let insertedRequest: any = null;
+      let insertError: any = null;
+
+      for (let attempt = 0; attempt < 8; attempt++) {
+        const result = await supabase
+          .from('collab_requests')
+          .insert(requestInsertPayload)
+          .select('id')
+          .maybeSingle();
+
+        insertedRequest = result.data;
+        insertError = result.error;
+
+        if (!insertError) break;
+
+        if (isMissingColumnError(insertError)) {
+          const missingColumn = optionalRequestColumns.find((column) =>
+            new RegExp(`column .*${column}.* does not exist`, 'i').test(insertError.message || '') ||
+            new RegExp(`could not find the ['"]${column}['"] column`, 'i').test(insertError.message || '')
+          );
+          if (missingColumn && missingColumn in requestInsertPayload) {
+            delete requestInsertPayload[missingColumn];
+            continue;
+          }
+        }
+
+        break;
+      }
 
       if (insertError) {
         const isDuplicateSourceLead = insertError.code === '23505' || /source_lead_id/i.test(insertError.message || '');
@@ -1951,6 +2023,14 @@ router.post('/:username/submit', async (req: Request, res: Response) => {
       barter_product_category,
       barter_value,
       barter_product_image_url,
+      selected_package_id,
+      selected_package_label,
+      selected_package_type,
+      selected_addons,
+      content_quantity,
+      content_duration,
+      content_requirements,
+      barter_types,
       campaign_category,
       campaign_goal,
       campaign_description,
@@ -2028,6 +2108,15 @@ router.post('/:username/submit', async (req: Request, res: Response) => {
     if (cancellation_policy) extraTermsLines.push(`Cancellation/reschedule policy: ${String(cancellation_policy).trim()}`);
     if (barter_product_name) extraTermsLines.push(`Product for collab: ${String(barter_product_name).trim()}`);
     if (barter_product_category) extraTermsLines.push(`Product category: ${String(barter_product_category).trim()}`);
+    if (selected_package_label) extraTermsLines.push(`Selected package: ${String(selected_package_label).trim()}`);
+    if (content_quantity) extraTermsLines.push(`Content quantity: ${String(content_quantity).trim()}`);
+    if (content_duration) extraTermsLines.push(`Content duration: ${String(content_duration).trim()}`);
+    if (Array.isArray(content_requirements) && content_requirements.length > 0) {
+      extraTermsLines.push(`Content requirements: ${content_requirements.map(String).join(', ')}`);
+    }
+    if (Array.isArray(barter_types) && barter_types.length > 0) {
+      extraTermsLines.push(`Barter value type: ${barter_types.map(String).join(', ')}`);
+    }
 
     const campaignDescriptionWithTerms = extraTermsLines.length > 0
       ? `${campaign_description.trim()}\n\nAdditional Commercial Terms:\n- ${extraTermsLines.join('\n- ')}`
@@ -2052,6 +2141,14 @@ router.post('/:username/submit', async (req: Request, res: Response) => {
       shipping_required: requires_shipping === true || requires_shipping === 'true',
       campaign_category: campaign_category?.trim() || null,
       campaign_goal: campaign_goal?.trim() || null,
+      selected_package_id: typeof selected_package_id === 'string' ? selected_package_id.trim() || null : null,
+      selected_package_label: typeof selected_package_label === 'string' ? selected_package_label.trim() || null : null,
+      selected_package_type: typeof selected_package_type === 'string' ? selected_package_type.trim() || null : null,
+      selected_addons: Array.isArray(selected_addons) ? selected_addons : [],
+      content_quantity: content_quantity != null ? String(content_quantity).trim() || null : null,
+      content_duration: typeof content_duration === 'string' ? content_duration.trim() || null : null,
+      content_requirements: Array.isArray(content_requirements) ? content_requirements.map(String).filter(Boolean) : [],
+      barter_types: Array.isArray(barter_types) ? barter_types.map(String).filter(Boolean) : [],
     };
 
     if (isPaidLikeCollab(collabTypeForDb)) {
@@ -2175,6 +2272,14 @@ router.post('/:username/submit', async (req: Request, res: Response) => {
         campaign_description: basePayload.campaign_description,
         campaign_category: basePayload.campaign_category,
         campaign_goal: basePayload.campaign_goal,
+        selected_package_id: basePayload.selected_package_id,
+        selected_package_label: basePayload.selected_package_label,
+        selected_package_type: basePayload.selected_package_type,
+        selected_addons: basePayload.selected_addons,
+        content_quantity: basePayload.content_quantity,
+        content_duration: basePayload.content_duration,
+        content_requirements: basePayload.content_requirements,
+        barter_types: basePayload.barter_types,
         deliverables: basePayload.deliverables,
         usage_rights: basePayload.usage_rights,
         deadline: basePayload.deadline,
@@ -2290,6 +2395,14 @@ router.post('/:username/submit', async (req: Request, res: Response) => {
       campaign_description: basePayload.campaign_description,
       campaign_category: basePayload.campaign_category,
       campaign_goal: basePayload.campaign_goal,
+      selected_package_id: basePayload.selected_package_id,
+      selected_package_label: basePayload.selected_package_label,
+      selected_package_type: basePayload.selected_package_type,
+      selected_addons: basePayload.selected_addons,
+      content_quantity: basePayload.content_quantity,
+      content_duration: basePayload.content_duration,
+      content_requirements: basePayload.content_requirements,
+      barter_types: basePayload.barter_types,
       deliverables: basePayload.deliverables,
       usage_rights: basePayload.usage_rights,
       deadline: basePayload.deadline,
@@ -2317,6 +2430,14 @@ router.post('/:username/submit', async (req: Request, res: Response) => {
       'brand_id',
       'submitted_ip',
       'submitted_user_agent',
+      'selected_package_id',
+      'selected_package_label',
+      'selected_package_type',
+      'selected_addons',
+      'content_quantity',
+      'content_duration',
+      'content_requirements',
+      'barter_types',
     ]);
 
     const extractMissingColumn = (message: string): string | null => {
@@ -2334,7 +2455,7 @@ router.post('/:username/submit', async (req: Request, res: Response) => {
     let collabRequest: any = null;
     let insertError: any = null;
 
-    for (let attempt = 0; attempt < 6; attempt++) {
+    for (let attempt = 0; attempt < 16; attempt++) {
       const result = await supabase
         .from('collab_requests')
         .insert(requestInsertPayload)
@@ -3030,15 +3151,26 @@ router.post('/accept/confirm', async (req: AuthenticatedRequest, res: Response) 
       request && typeof (request as any).form_data === 'object' && (request as any).form_data !== null
         ? { ...(request as any).form_data }
         : {};
-    const persistedFormData = normalizedProductImage
-      ? {
-          ...requestFormData,
-          barter_product_image_url: normalizedProductImage,
-          product_image_url: normalizedProductImage,
-        }
-      : Object.keys(requestFormData).length > 0
-        ? requestFormData
-        : undefined;
+    const offerDetailFormData = {
+      ...requestFormData,
+      selected_package_id: (request as any).selected_package_id || undefined,
+      selected_package_label: (request as any).selected_package_label || undefined,
+      selected_package_type: (request as any).selected_package_type || undefined,
+      selected_addons: (request as any).selected_addons || undefined,
+      content_quantity: (request as any).content_quantity || undefined,
+      content_duration: (request as any).content_duration || undefined,
+      content_requirements: (request as any).content_requirements || undefined,
+      barter_types: (request as any).barter_types || undefined,
+      ...(normalizedProductImage
+        ? {
+            barter_product_image_url: normalizedProductImage,
+            product_image_url: normalizedProductImage,
+          }
+        : {}),
+    };
+    const persistedFormData = Object.values(offerDetailFormData).some(value => value !== undefined && value !== null && value !== '')
+      ? offerDetailFormData
+      : undefined;
     const dealData: any = {
       creator_id: userId,
       brand_id: request.brand_id || null,
@@ -3368,15 +3500,26 @@ router.patch('/:id/accept', async (req: AuthenticatedRequest, res: Response) => 
       request && typeof (request as any).form_data === 'object' && (request as any).form_data !== null
         ? { ...(request as any).form_data }
         : {};
-    const persistedFormData = normalizedProductImage
-      ? {
-          ...requestFormData,
-          barter_product_image_url: normalizedProductImage,
-          product_image_url: normalizedProductImage,
-        }
-      : Object.keys(requestFormData).length > 0
-        ? requestFormData
-        : undefined;
+    const offerDetailFormData = {
+      ...requestFormData,
+      selected_package_id: (request as any).selected_package_id || undefined,
+      selected_package_label: (request as any).selected_package_label || undefined,
+      selected_package_type: (request as any).selected_package_type || undefined,
+      selected_addons: (request as any).selected_addons || undefined,
+      content_quantity: (request as any).content_quantity || undefined,
+      content_duration: (request as any).content_duration || undefined,
+      content_requirements: (request as any).content_requirements || undefined,
+      barter_types: (request as any).barter_types || undefined,
+      ...(normalizedProductImage
+        ? {
+            barter_product_image_url: normalizedProductImage,
+            product_image_url: normalizedProductImage,
+          }
+        : {}),
+    };
+    const persistedFormData = Object.values(offerDetailFormData).some(value => value !== undefined && value !== null && value !== '')
+      ? offerDetailFormData
+      : undefined;
 
     // Create brand deal
      const dealData: any = {

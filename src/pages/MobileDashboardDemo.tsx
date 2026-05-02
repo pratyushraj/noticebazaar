@@ -184,6 +184,40 @@ const renderBudgetValue = (item: any) => {
     return 'Barter Collaboration';
 };
 
+const parseStringList = (value: any): string[] => {
+    if (!value) return [];
+    if (Array.isArray(value)) return value.map(String).filter(Boolean);
+    if (typeof value === 'string') {
+        try {
+            const parsed = JSON.parse(value);
+            return Array.isArray(parsed) ? parsed.map(String).filter(Boolean) : [value].filter(Boolean);
+        } catch {
+            return [value].filter(Boolean);
+        }
+    }
+    return [];
+};
+
+const getOfferPackageLabel = (item: any) =>
+    String(item?.selected_package_label || item?.form_data?.selected_package_label || item?.raw?.selected_package_label || item?.raw?.form_data?.selected_package_label || item?.campaign_goal || item?.raw?.campaign_goal || '').trim();
+
+const getOfferRequirements = (item: any) =>
+    parseStringList(item?.content_requirements || item?.form_data?.content_requirements || item?.raw?.content_requirements || item?.raw?.form_data?.content_requirements);
+
+const getOfferBarterTypes = (item: any) =>
+    parseStringList(item?.barter_types || item?.form_data?.barter_types || item?.raw?.barter_types || item?.raw?.form_data?.barter_types);
+
+const getOfferAddons = (item: any) => {
+    const raw = item?.selected_addons || item?.form_data?.selected_addons || item?.raw?.selected_addons || item?.raw?.form_data?.selected_addons;
+    if (!Array.isArray(raw)) return [];
+    return raw.map((addon: any) => {
+        const label = String(addon?.label || '').trim();
+        if (!label) return '';
+        const price = Number(addon?.price || 0);
+        return price > 0 ? `${label} (+₹${price.toLocaleString('en-IN')})` : label;
+    }).filter(Boolean);
+};
+
 const parseDealDate = (value: any): Date | null => {
     if (!value) return null;
     if (value instanceof Date) return Number.isNaN(value.getTime()) ? null : value;
@@ -1581,9 +1615,12 @@ const MobileDashboardDemo = ({
                 return;
             }
 
-            if (requiresShipping && (!selectedItem?.brand_address || String(selectedItem.brand_address).length < 5)) {
-                toast.error('Address Required', {
-                    description: 'The brand must provide a shipping address before you can deliver content. Please remind them to update their address.'
+            const shippingStatus = String(selectedItem?.shipping_status || '').toLowerCase();
+            const hasReceivedShipment = shippingStatus === 'delivered' || shippingStatus === 'received';
+
+            if (requiresShipping && !hasReceivedShipment) {
+                toast.error('Product Not Received', {
+                    description: 'You must confirm product receipt before you can deliver content.'
                 });
                 return;
             }
@@ -1637,6 +1674,65 @@ const MobileDashboardDemo = ({
             setSelectedItem(previousItemSnapshot);
             queryClient.invalidateQueries({ queryKey: ['brand_deals'], exact: false });
             toast.error(e?.message || 'Failed to update progress');
+        }
+    };
+
+    const handleConfirmReceipt = async () => {
+        const dealId = String(selectedItem?.id || '').trim();
+        if (!dealId) {
+            toast.error('Deal details unavailable');
+            return;
+        }
+
+        setProcessingDeal(dealId);
+        triggerHaptic(HapticPatterns.light);
+
+        try {
+            const { data: { session } } = await supabase.auth.getSession();
+            const apiBase = getApiBaseUrl();
+            const response = await fetch(`${apiBase}/api/deals/${dealId}/shipping/update`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${session?.access_token}`
+                },
+                body: JSON.stringify({ 
+                    status: 'received',
+                    shipping_status: 'received'
+                })
+            });
+
+            const data = await response.json();
+
+            if (response.ok && data.success) {
+                toast.success('Product receipt confirmed!', {
+                    description: 'You can now start making content.'
+                });
+                triggerHaptic(HapticPatterns.success);
+                
+                // Optimistic UI update
+                setSelectedItem((prev: any) => ({
+                    ...prev,
+                    shipping_status: 'received',
+                    status: 'content_making', // Usually receipt moves it to making
+                }));
+                
+                patchDealInCache(dealId, { 
+                    shipping_status: 'received',
+                    status: 'content_making'
+                });
+                
+                await onRefresh?.();
+            } else {
+                toast.error(data.error || 'Failed to confirm receipt');
+                triggerHaptic(HapticPatterns.error);
+            }
+        } catch (error) {
+            console.error('Error confirming receipt:', error);
+            toast.error('Error confirming receipt');
+            triggerHaptic(HapticPatterns.error);
+        } finally {
+            setProcessingDeal(null);
         }
     };
 
@@ -1819,9 +1915,11 @@ const MobileDashboardDemo = ({
         resolveAvatarUrl(profile?.avatar_url) ||
         avatarFallbackUrl;
     const avatarVersionedUrl = withCacheBuster(avatarUrl, profile?.last_instagram_sync || username) || avatarUrl;
-    const rawDisplayName = profile?.full_name || 
-        (profile?.first_name ? `${profile.first_name}${profile.last_name ? ' ' + profile.last_name : ''}` : null) || 
-        profile?.username || 
+    const rawDisplayName = username ||
+        profile?.username ||
+        profile?.instagram_handle ||
+        profile?.full_name ||
+        (profile?.first_name ? `${profile.first_name}${profile.last_name ? ' ' + profile.last_name : ''}` : null) ||
         'Creator';
     
     const decodedName = typeof rawDisplayName === 'string' 
@@ -6026,6 +6124,32 @@ const MobileDashboardDemo = ({
                                             <div className="mb-6">
                                                 <h4 className={cn("text-[13px] font-black uppercase tracking-widest mb-3 opacity-50 px-1", textColor)}>Campaign Brief</h4>
                                                 <div className={cn("rounded-[24px] border p-5 relative overflow-hidden", cardBgColor, borderColor)}>
+                                                    {(() => {
+                                                        const packageLabel = getOfferPackageLabel(selectedItem);
+                                                        const requirementsList = getOfferRequirements(selectedItem);
+                                                        const barterTypesList = getOfferBarterTypes(selectedItem);
+                                                        const addonsList = getOfferAddons(selectedItem);
+                                                        const contentQuantity = selectedItem?.content_quantity || selectedItem?.form_data?.content_quantity || selectedItem?.raw?.content_quantity || selectedItem?.raw?.form_data?.content_quantity;
+                                                        const contentDuration = selectedItem?.content_duration || selectedItem?.form_data?.content_duration || selectedItem?.raw?.content_duration || selectedItem?.raw?.form_data?.content_duration;
+                                                        const chips = [
+                                                            packageLabel ? `Package: ${packageLabel}` : '',
+                                                            contentQuantity ? `Qty: ${contentQuantity}` : '',
+                                                            contentDuration ? `Duration: ${contentDuration}` : '',
+                                                            ...requirementsList,
+                                                            ...addonsList.map(label => `Add-on: ${label}`),
+                                                            ...barterTypesList.map(label => `Barter: ${label}`),
+                                                        ].filter(Boolean);
+                                                        if (chips.length === 0) return null;
+                                                        return (
+                                                            <div className="flex flex-wrap gap-2 mb-4">
+                                                                {chips.map((chip) => (
+                                                                    <span key={chip} className={cn("px-3 py-1.5 rounded-xl text-[10px] font-black border", isDark ? "bg-white/[0.04] border-white/10 text-white/80" : "bg-slate-50 border-slate-200 text-slate-700")}>
+                                                                        {chip}
+                                                                    </span>
+                                                                ))}
+                                                            </div>
+                                                        );
+                                                    })()}
                                                     <div className="flex items-start gap-4">
                                                         <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center shrink-0 bg-info/10")}>
                                                             <AlignLeft className="w-5 h-5 text-info" />
@@ -6517,6 +6641,11 @@ const MobileDashboardDemo = ({
                                                     triggerHaptic();
 
                                                     if (cta.disabled) return;
+
+                                                    if (cta.action === 'confirm_receipt') {
+                                                        void handleConfirmReceipt();
+                                                        return;
+                                                    }
 
                                                     if (cta.action === 'mark_delivered' || cta.action === 'upload_revision') {
                                                         setShowDeliverContentModal(true);
@@ -8464,10 +8593,15 @@ const DealsTab = React.memo(({
                         {pendingOffersCount > 0 ? (
                             <div className="space-y-4">
                                 {pendingOffersDeduplicated.map((req: any, idx: number) => {
-                                    const productImage = resolveCreatorDealProductImage(req);
-                                    const isBarter = String(req?.collab_type || req?.deal_type || req?.raw?.collab_type || '').toLowerCase().includes('barter');
-                                    const budget = Number(req?.budget_amount || req?.exact_budget || req?.deal_amount || req?.product_value || req?.barter_value || req?.raw?.product_value || req?.raw?.barter_value || req?.form_data?.product_value || req?.form_data?.barter_value || 0);
-                                    return (
+	                                    const productImage = resolveCreatorDealProductImage(req);
+	                                    const isBarter = String(req?.collab_type || req?.deal_type || req?.raw?.collab_type || '').toLowerCase().includes('barter');
+	                                    const budget = Number(req?.budget_amount || req?.exact_budget || req?.deal_amount || req?.product_value || req?.barter_value || req?.raw?.product_value || req?.raw?.barter_value || req?.form_data?.product_value || req?.form_data?.barter_value || 0);
+	                                    const packageLabel = getOfferPackageLabel(req);
+	                                    const requirementsList = getOfferRequirements(req);
+	                                    const addonsList = getOfferAddons(req);
+	                                    const contentQuantity = req?.content_quantity || req?.form_data?.content_quantity || req?.raw?.content_quantity || req?.raw?.form_data?.content_quantity;
+	                                    const contentDuration = req?.content_duration || req?.form_data?.content_duration || req?.raw?.content_duration || req?.raw?.form_data?.content_duration;
+	                                    return (
                                         <motion.div key={req.id || idx} whileTap={{ scale: 0.98 }} onClick={() => { triggerHaptic(); setSelectedItem(req); setSelectedType('offer'); }} className={cn("relative w-full aspect-[1.2/1] rounded-[2.5rem] overflow-hidden bg-[#0B1220] border-0 shadow-2xl mb-6")}>
                                             <div className="absolute inset-0">
                                                 {productImage && (
@@ -8503,9 +8637,22 @@ const DealsTab = React.memo(({
                                                             <p className={cn("text-lg font-black leading-none", isBarter ? "text-amber-400" : "text-white")}>
                                                                 {isBarter ? 'Free product' : `₹${budget.toLocaleString()}`}
                                                             </p>
-                                                            {isBarter && <span className="text-[10px] font-black uppercase tracking-widest text-amber-400/60">est. value ₹{budget.toLocaleString()}</span>}
-                                                        </div>
-                                                    </div>
+	                                                            {isBarter && <span className="text-[10px] font-black uppercase tracking-widest text-amber-400/60">est. value ₹{budget.toLocaleString()}</span>}
+	                                                        </div>
+	                                                        {(packageLabel || contentQuantity || contentDuration || requirementsList.length > 0 || addonsList.length > 0) && (
+	                                                            <div className="mt-3 flex flex-wrap gap-1.5">
+	                                                                {packageLabel && <span className="px-2.5 py-1 rounded-lg bg-white/10 text-white text-[10px] font-black border border-white/10">{packageLabel}</span>}
+	                                                                {contentQuantity && <span className="px-2.5 py-1 rounded-lg bg-white/10 text-white/80 text-[10px] font-black border border-white/10">Qty {contentQuantity}</span>}
+	                                                                {contentDuration && <span className="px-2.5 py-1 rounded-lg bg-white/10 text-white/80 text-[10px] font-black border border-white/10">{contentDuration}</span>}
+	                                                                {requirementsList.slice(0, 2).map((label) => (
+	                                                                    <span key={label} className="px-2.5 py-1 rounded-lg bg-emerald-500/20 text-emerald-100 text-[10px] font-black border border-emerald-400/20">{label}</span>
+	                                                                ))}
+	                                                                {addonsList.slice(0, 1).map((label) => (
+	                                                                    <span key={label} className="px-2.5 py-1 rounded-lg bg-sky-500/20 text-sky-100 text-[10px] font-black border border-sky-400/20">{label}</span>
+	                                                                ))}
+	                                                            </div>
+	                                                        )}
+	                                                    </div>
                                                     
                                                     <div className="flex gap-2">
                                                         <button 

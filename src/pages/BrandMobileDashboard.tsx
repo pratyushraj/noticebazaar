@@ -21,7 +21,7 @@ import { getApiBaseUrl } from '@/lib/utils/api';
 import { supabase } from '@/integrations/supabase/client';
 import * as ds from '@/lib/design-system';
 const { buttons: dsButtons } = ds;
-import { dealPrimaryCtaButtonClass, getDealPrimaryCta } from '@/lib/deals/primaryCta';
+import { dealPrimaryCtaButtonClass, getDealPrimaryCta, getCanonicalDealStatus } from '@/lib/deals/primaryCta';
 import { CREATOR_ASSETS_BUCKET } from '@/lib/constants/storage';
 import { isBarterLikeCollab, isPaidLikeCollab } from '@/lib/deals/collabType';
 import { BrandSettingsPanel } from '@/pages/BrandSettings';
@@ -253,146 +253,7 @@ const formatBudget = (row: BrandDeal | null | undefined) => {
 };
 
 const effectiveDealStatus = (row: BrandDeal | null | undefined) => {
-  const raw = String(row?.status || '').trim();
-  const lower = raw.toLowerCase();
-  const upper = raw.toUpperCase();
-
-  // If the stored status is already in a later stage (content/payment/completion),
-  // prefer that over signature-derived "fully executed". Signatures indicate the
-  // contract is binding, but the deal lifecycle continues beyond signing.
-  if (lower.includes('dispute') || lower.includes('disputed')) return 'DISPUTED';
-  if (lower === 'dispute_arbitration') return 'DISPUTE_ARBITRATION';
-  if (lower === 'dispute_partial_refund') return 'DISPUTE_PARTIAL_REFUND';
-  // New enforcement gate statuses
-  if (lower === 'payment_pending') return 'PAYMENT_PENDING';
-  if (lower === 'awaiting_brand_address') return 'AWAITING_BRAND_ADDRESS';
-  if (lower.includes('content_making') || lower.includes('content making') || lower === 'making' || lower === 'active') return 'CONTENT_MAKING';
-  if (
-    lower.includes('content_delivered') ||
-    lower.includes('content delivered') ||
-    lower === 'delivered' ||
-    lower.includes('awaiting_review') ||
-    lower.includes('waiting_for_review') ||
-    lower.includes('waiting for review')
-  ) {
-    return 'CONTENT_DELIVERED';
-  }
-  if (lower.includes('revision_requested') || lower.includes('revision requested') || lower.includes('changes_requested') || lower.includes('changes requested')) return 'REVISION_REQUESTED';
-  if (lower.includes('revision_done') || lower.includes('revision done') || lower.includes('revision_submitted') || lower.includes('revision submitted')) return 'REVISION_DONE';
-  if (lower.includes('content_approved') || lower.includes('content approved') || lower === 'approved' || lower === 'content_approved') return 'CONTENT_APPROVED';
-  if (lower.includes('payment_released') || lower.includes('payment released') || lower === 'released') return 'PAYMENT_RELEASED';
-  if (lower === 'completed' || lower.includes('completed') || lower === 'finished') return 'COMPLETED';
-
-  // "Accepted" usually means the offer was accepted, but contract isn't fully signed yet.
-  if (lower === 'accepted') {
-    if (isBarterLikeCollab(row) && !!String(row?.brand_address || '').trim()) return 'CONTENT_MAKING';
-    return 'CONTRACT_READY';
-  }
-
-  // Barter override: if address is provided, it's effectively active
-  if (isBarterLikeCollab(row) && !!String(row?.brand_address || '').trim() && lower !== 'completed' && !lower.includes('dispute')) {
-    return 'CONTENT_MAKING';
-  }
-
-  // Prefer signature signals over the raw status when present.
-  const signatureSources = [
-    row,
-    row?.raw,
-    row?.contract,
-    row?.contract_data,
-    row?.contract_metadata,
-    row?.esign,
-    row?.signature,
-    row?.signatures,
-  ].filter((x) => x && typeof x === 'object');
-
-  const hasTruthyKeyMatch = (sources: any[], pattern: RegExp) => {
-    for (const src of sources) {
-      for (const key of Object.keys(src)) {
-        if (!pattern.test(key)) continue;
-        const v = (src as any)[key];
-        if (v === true) return true;
-        if (typeof v === 'number' && Number.isFinite(v) && v > 0) return true;
-        if (typeof v === 'string' && v.trim().length > 0) return true;
-        if (v instanceof Date && !Number.isNaN(v.getTime())) return true;
-      }
-    }
-    return false;
-  };
-
-  // Note: backend may attach `brand_signed_at` / `creator_signed_at` fields (e.g. derived from `contract_signatures`).
-  // Include those here so already-signed deals never show "Signature required" incorrectly.
-  const creatorSigned = hasTruthyKeyMatch(
-    signatureSources,
-    /(creator.*signed|signed.*creator|creator_signature|creator_esign|creator_signed_at|creatorSignedAt)/i
-  );
-  const brandSigned = hasTruthyKeyMatch(
-    signatureSources,
-    /(brand.*signed|signed.*brand|brand_signature|brand_esign|brand_signed_at|brandSignedAt)/i
-  );
-  if (creatorSigned && brandSigned) return 'FULLY_EXECUTED';
-  if (creatorSigned && !brandSigned) return 'AWAITING_BRAND_SIGNATURE';
-  if (brandSigned && !creatorSigned) return 'AWAITING_CREATOR_SIGNATURE';
-
-  const contractState = String(row?.contract_status || row?.contractStatus || row?.contract_state || row?.contractState || '').trim().toLowerCase();
-  const signingState = String(row?.contract_signing_status || row?.signing_status || row?.signature_status || '').trim().toLowerCase();
-  const esign = String(row?.esign_status || '').trim().toLowerCase();
-
-  const resolveFromText = (text: string) => {
-    if (!text) return null;
-    const t = text.toLowerCase();
-    const hasSigned = t.includes('signed') || t.includes('sign');
-    if (t.includes('fully_executed') || t.includes('fully executed') || t.includes('fully-signed') || t.includes('fully_signed') || t.includes('executed')) {
-      return 'FULLY_EXECUTED' as const;
-    }
-    if (t === 'signed') return 'FULLY_EXECUTED' as const;
-    if (!hasSigned) return null;
-
-    const brandToken = t.includes('brand') || t.includes('client');
-    const creatorToken = t.includes('creator') || t.includes('influencer') || t.includes('talent');
-
-    if (brandToken && creatorToken) return 'FULLY_EXECUTED' as const;
-    if (brandToken && !creatorToken) return 'AWAITING_CREATOR_SIGNATURE' as const;
-    if (creatorToken && !brandToken) return 'AWAITING_BRAND_SIGNATURE' as const;
-    return null;
-  };
-
-  const resolvedText = resolveFromText(contractState) || resolveFromText(signingState) || resolveFromText(esign);
-  if (resolvedText) return resolvedText;
-
-  const exec = String(row?.deal_execution_status || '').trim().toLowerCase();
-  if (exec === 'signed' || exec === 'completed') return 'FULLY_EXECUTED';
-
-  const contractUrl = String(row?.safe_contract_url || row?.signed_contract_url || row?.contract_file_url || '').toLowerCase();
-  const hasSignedContract = Boolean(
-    row?.signed_contract_url ||
-    row?.signed_contract_path ||
-    row?.signed_pdf_url ||
-    row?.signed_at ||
-    row?.contract_signed_at ||
-    row?.executed_contract_url ||
-    row?.fully_executed_contract_url ||
-    row?.final_contract_url ||
-    row?.executed_at ||
-    row?.fully_executed_at ||
-    esign === 'signed' ||
-    // Heuristic for older schemas: signed contracts often include these tokens in the storage path / filename.
-    contractUrl.includes('signed-contract') ||
-    contractUrl.includes('signed-contracts')
-  );
-  if (hasSignedContract) return 'FULLY_EXECUTED';
-
-  if (lower === 'fully_executed' || lower === 'executed' || lower.includes('fully_executed')) return 'FULLY_EXECUTED';
-  if (lower === 'live' || lower.includes('live_deal') || lower.includes('legally active') || lower.includes('live')) return 'FULLY_EXECUTED';
-
-  if (lower === 'signed_by_brand' || lower.includes('signed_by_brand')) return 'AWAITING_CREATOR_SIGNATURE';
-  if (lower === 'signed_by_creator' || lower.includes('signed_by_creator')) return 'AWAITING_BRAND_SIGNATURE';
-
-  // Some environments still use drafting/shipment-ish states for the contract step.
-  if (lower === 'drafting' || lower.includes('shipment') || lower.includes('transit') || lower.includes('received')) return 'CONTRACT_READY';
-
-  // Default to the raw enum-like value.
-  return upper;
+  return getCanonicalDealStatus(row);
 };
 
 const collectSignatureHints = (row: BrandDeal | null | undefined) => {
@@ -827,7 +688,7 @@ const BrandMobileDashboard = ({
       if (item && isBarterLikeCollab(item) && !isPaidLikeCollab(item)) {
         setDdShowShippingBox(true);
         setTimeout(() => {
-          shippingSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          dealDetailShippingRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }, 0);
       } else {
         setTimeout(() => {
@@ -2232,6 +2093,13 @@ const BrandMobileDashboard = ({
         });
         toast.success('Shipping updated');
         setShowShippingBox(false);
+        // Optimistic update
+        setSelectedDealPage(prev => prev ? { 
+            ...prev, 
+            shipping_status: 'shipped',
+            tracking_number: trackingNumberDraft,
+            courier_name: courierNameDraft
+        } : prev);
         await onRefresh?.();
       } finally { setIsUpdatingShipping(false); }
     };

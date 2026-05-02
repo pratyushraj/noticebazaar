@@ -15,6 +15,7 @@ import { logger } from '@/lib/utils/logger';
 import { cn } from '@/lib/utils';
 
 import { optimizeImage } from '@/lib/utils/image';
+import { buildCollabLink, normalizeCollabHandle } from '@/lib/utils/collabLink';
 import FiverrPackageEditor from '@/components/profile/FiverrPackageEditor';
 import { DealTemplate } from '@/types';
 import { fetchPincodeData, parseLocationString, formatLocationString } from '@/lib/utils/pincodeLookup';
@@ -2369,9 +2370,9 @@ const ProfileSettings = () => {
               </p>
               <div className="space-y-5">
                 {(() => {
-                  const usernameForLink = formData.instagramHandle || profile?.instagram_handle || profile?.username;
-                  const hasUsername = usernameForLink && usernameForLink.trim() !== '';
-                  const collabLink = hasUsername ? `${window.location.origin}/${usernameForLink}` : '';
+                  const usernameForLink = normalizeCollabHandle(formData.instagramHandle || profile?.instagram_handle || profile?.username);
+                  const hasUsername = usernameForLink.trim() !== '';
+                  const collabLink = hasUsername ? buildCollabLink(usernameForLink) : '';
                   const shortLink = hasUsername ? `creatorarmour.com/${usernameForLink}` : '';
 
                   return hasUsername ? (
@@ -2613,10 +2614,10 @@ const ProfileSettings = () => {
               <p className="text-xs text-muted-foreground/80 mb-1.5">This replaces DM negotiations.</p>
               <p className="text-xs text-primary dark:text-primary font-medium mb-3">Verified deal flow — no agency middle layer</p>
               {(() => {
-                const usernameForLink = formData.instagramHandle || profile?.instagram_handle || profile?.username;
-                const hasUsername = usernameForLink && usernameForLink.trim() !== '';
-                const collabLink = hasUsername ? `${window.location.origin}/${usernameForLink}` : '';
-                const shortLink = hasUsername ? `creatorarmour.com/${usernameForLink}` : '';
+                  const usernameForLink = normalizeCollabHandle(formData.instagramHandle || profile?.instagram_handle || profile?.username);
+                  const hasUsername = usernameForLink.trim() !== '';
+                  const collabLink = hasUsername ? buildCollabLink(usernameForLink) : '';
+                  const shortLink = hasUsername ? `creatorarmour.com/${usernameForLink}` : '';
 
                 if (!hasUsername) {
                   return (

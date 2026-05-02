@@ -25,6 +25,7 @@ import { CreatorNavigationWrapper } from '@/components/navigation/CreatorNavigat
 import { cn } from '@/lib/utils';
 import { spacing } from '@/lib/design-system';
 import { useCollabRequests, type CollabRequest } from '@/lib/hooks/useCollabRequests';
+import { buildCollabLink, normalizeCollabHandle } from '@/lib/utils/collabLink';
 
 const isHybrid = (collabType: CollabRequest['collab_type']) => collabType === 'hybrid' || collabType === 'both';
 const isPaidLike = (collabType: CollabRequest['collab_type']) => collabType === 'paid' || isHybrid(collabType);
@@ -103,6 +104,32 @@ const CollabRequestsPage = () => {
     return coerceToList(deliverables).map(normalizeDeliverable).filter(Boolean);
   };
 
+  const parseStringList = (value: any): string[] => {
+    if (!value) return [];
+    if (Array.isArray(value)) return value.map(String).filter(Boolean);
+    if (typeof value === 'string') {
+      try {
+        const parsed = JSON.parse(value);
+        return Array.isArray(parsed) ? parsed.map(String).filter(Boolean) : [value].filter(Boolean);
+      } catch {
+        return [value].filter(Boolean);
+      }
+    }
+    return [];
+  };
+
+  const parseAddons = (value: any): string[] => {
+    const list = Array.isArray(value) ? value : [];
+    return list
+      .map((addon: any) => {
+        const label = String(addon?.label || '').trim();
+        if (!label) return '';
+        const price = Number(addon?.price || 0);
+        return price > 0 ? `${label} (+₹${price.toLocaleString('en-IN')})` : label;
+      })
+      .filter(Boolean);
+  };
+
   const formatBudget = (request: CollabRequest): string => {
     if (isPaidLike(request.collab_type)) {
       if (request.exact_budget) {
@@ -170,9 +197,9 @@ const CollabRequestsPage = () => {
   };
 
   const copyCollabLink = () => {
-    const usernameForLink = profile?.instagram_handle || profile?.username;
+    const usernameForLink = normalizeCollabHandle(profile?.instagram_handle || profile?.username);
     if (usernameForLink) {
-      const link = `${window.location.origin}/${usernameForLink}`;
+      const link = buildCollabLink(usernameForLink);
       navigator.clipboard.writeText(link).then(() => {
         toast.success('Collab link copied to clipboard!');
       }).catch(() => {
@@ -198,8 +225,8 @@ const CollabRequestsPage = () => {
     );
   }
 
-  const usernameForLink = profile?.instagram_handle || profile?.username;
-  const hasUsername = usernameForLink && usernameForLink.trim() !== '';
+  const usernameForLink = normalizeCollabHandle(profile?.instagram_handle || profile?.username);
+  const hasUsername = Boolean(usernameForLink);
 
 
 
@@ -260,6 +287,10 @@ const CollabRequestsPage = () => {
           <div className="space-y-4">
             {pendingRequests.map((request) => {
               const deliverablesList = parseDeliverables(request.deliverables);
+              const requirementsList = parseStringList(request.content_requirements);
+              const barterTypesList = parseStringList(request.barter_types);
+              const addonsList = parseAddons(request.selected_addons);
+              const packageLabel = String(request.selected_package_label || request.campaign_goal || '').trim();
               const isDescriptionExpanded = !!expandedDescriptions[request.id];
               const productImageUrl = getProductImageUrl(request);
               return (
@@ -305,6 +336,46 @@ const CollabRequestsPage = () => {
                         {formatBudget(request)}
                       </span>
                     </div>
+
+                    {(packageLabel || request.content_quantity || request.content_duration || requirementsList.length > 0 || barterTypesList.length > 0 || addonsList.length > 0) && (
+                      <div className="rounded-xl border border-border bg-secondary/[0.06] p-3 space-y-2">
+                        {packageLabel && (
+                          <div className="flex items-center justify-between gap-3">
+                            <span className="text-[11px] font-semibold uppercase tracking-wide text-foreground/50">Package</span>
+                            <span className="text-sm font-bold text-foreground text-right">{packageLabel}</span>
+                          </div>
+                        )}
+                        {(request.content_quantity || request.content_duration) && (
+                          <div className="flex flex-wrap gap-1.5">
+                            {request.content_quantity && (
+                              <span className="inline-flex px-2.5 py-1 rounded-full text-[11px] font-semibold bg-card border border-border">
+                                Qty: {request.content_quantity}
+                              </span>
+                            )}
+                            {request.content_duration && (
+                              <span className="inline-flex px-2.5 py-1 rounded-full text-[11px] font-semibold bg-card border border-border">
+                                Duration: {request.content_duration}
+                              </span>
+                            )}
+                          </div>
+                        )}
+                        {requirementsList.length > 0 && (
+                          <p className="text-xs leading-relaxed text-foreground/75">
+                            Requirements: {requirementsList.join(', ')}
+                          </p>
+                        )}
+                        {addonsList.length > 0 && (
+                          <p className="text-xs leading-relaxed text-foreground/75">
+                            Add-ons: {addonsList.join(', ')}
+                          </p>
+                        )}
+                        {barterTypesList.length > 0 && (
+                          <p className="text-xs leading-relaxed text-foreground/75">
+                            Barter value: {barterTypesList.join(', ')}
+                          </p>
+                        )}
+                      </div>
+                    )}
 
                     {/* Deadline */}
                     {request.deadline && (

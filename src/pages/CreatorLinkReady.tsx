@@ -9,6 +9,7 @@ import { useUpdateProfile } from "@/lib/hooks/useProfiles";
 import { getCreatorProgressPatch } from "@/lib/creatorProfileCompletion";
 import { OnboardingContainer } from "@/components/onboarding/OnboardingContainer";
 import { Button } from "@/components/ui/button";
+import { buildCollabLink, normalizeCollabHandle } from "@/lib/utils/collabLink";
 
 export default function CreatorLinkReady() {
   const { profile, user, loading: sessionLoading, refetchProfile } = useSession();
@@ -27,18 +28,18 @@ export default function CreatorLinkReady() {
       navigate("/login", { replace: true });
       return;
     }
-    const handle = String(profile.instagram_handle || profile.username || "").replace(/^@+/, "").trim();
+    const handle = normalizeCollabHandle(profile.instagram_handle || profile.username || "");
     if (!handle) {
       navigate("/creator-onboarding", { replace: true });
     }
   }, [sessionLoading, profile, navigate]);
 
   const handle = useMemo(
-    () => String(profile?.instagram_handle || profile?.username || "").replace(/^@+/, "").trim().toLowerCase(),
+    () => normalizeCollabHandle(profile?.instagram_handle || profile?.username || ""),
     [profile?.instagram_handle, profile?.username]
   );
 
-  const collabUrl = useMemo(() => (handle ? `${window.location.origin}/${handle}` : ""), [handle]);
+  const collabUrl = useMemo(() => (handle ? buildCollabLink(handle) : ""), [handle]);
 
   const markShared = async () => {
     if (!profile?.id) return;

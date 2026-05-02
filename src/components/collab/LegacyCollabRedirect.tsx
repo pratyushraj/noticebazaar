@@ -1,5 +1,6 @@
 
 import { useParams, Navigate } from 'react-router-dom';
+import { normalizeCollabHandle } from '@/lib/utils/collabLink';
 
 /**
  * Legacy redirect component for /collab/:username → /:username
@@ -12,7 +13,7 @@ const LegacyCollabRedirect = () => {
     return <Navigate to="/" replace />;
   }
   
-  return <Navigate to={`/${username}`} replace />;
+  return <Navigate to={`/${normalizeCollabHandle(username)}`} replace />;
 };
 
 export default LegacyCollabRedirect;

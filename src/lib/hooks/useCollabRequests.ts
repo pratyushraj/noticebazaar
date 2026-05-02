@@ -23,6 +23,14 @@ export interface CollabRequest {
   deadline: string | null;
   campaign_category: string | null;
   campaign_goal: string | null;
+  selected_package_id?: string | null;
+  selected_package_label?: string | null;
+  selected_package_type?: string | null;
+  selected_addons?: { id?: string; label: string; price?: number }[] | null;
+  content_quantity?: string | null;
+  content_duration?: string | null;
+  content_requirements?: string[] | null;
+  barter_types?: string[] | null;
   status: CollabRequestStatus;
   created_at: string;
   updated_at?: string;

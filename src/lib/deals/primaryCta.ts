@@ -35,6 +35,7 @@ export type DealPrimaryCtaAction =
   | 'view_summary'
   | 'view_issue'
   | 'view_details'
+  | 'confirm_receipt'
   | 'none';
 
 export interface DealPrimaryCta {
@@ -163,7 +164,7 @@ export const getCanonicalDealStatus = (deal: any): CanonicalDealStatus => {
     return 'SENT';
   }
   if (lower.includes('sent')) return 'SENT';
-  if (lower.includes('contract_ready') || lower.includes('drafting') || lower.includes('shipment') || lower.includes('transit') || lower.includes('received')) {
+  if (lower.includes('contract_ready') || lower.includes('drafting') || lower.includes('shipment') || lower.includes('transit')) {
     return 'CONTRACT_READY';
   }
 
@@ -299,6 +300,9 @@ export const getDealPrimaryCta = (params: { role: DealRole; deal: any }): DealPr
   // Shipping deals: never show "Mark as Delivered" until the product shipment is received.
   // (Some legacy states incorrectly set status=CONTENT_MAKING for barter/shipping deals.)
   if (requiresShipping && !hasReceivedShipment) {
+    if (shippingStatus === 'shipped') {
+      return { status, label: 'Confirm Product Received', disabled: false, tone: 'action', action: 'confirm_receipt' };
+    }
     // If the brand hasn't provided their address yet, show a specific gate message
     if (status === 'AWAITING_BRAND_ADDRESS' || status === 'FULLY_EXECUTED') {
       return { status, label: 'Waiting for Shipping Details', disabled: true, tone: 'waiting', action: 'none' };
@@ -336,7 +340,10 @@ export const getDealPrimaryCta = (params: { role: DealRole; deal: any }): DealPr
   }
   if (status === 'FULLY_EXECUTED') {
     if (requiresPayment) {
-      const hasPayment = (deal?.amount_paid && deal.amount_paid > 0);
+      const hasPayment = (deal?.amount_paid && deal.amount_paid > 0) || 
+                         deal?.payment_id || 
+                         deal?.payment_status === 'captured' || 
+                         deal?.raw?.payment_status === 'captured';
       if (!hasPayment) {
         return { status, label: 'Awaiting Payment', disabled: true, tone: 'waiting', action: 'none' };
       }

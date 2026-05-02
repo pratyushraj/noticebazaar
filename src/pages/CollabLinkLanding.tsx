@@ -83,6 +83,7 @@ import { useUpdateProfile } from '@/lib/hooks/useProfiles'
 import { useSignOut } from '@/lib/hooks/useAuth'
 import { supabase } from '@/integrations/supabase/client'
 import { normalizeLogoUrl } from '@/lib/deals/format'
+import { isBarterLikeCollab } from '@/lib/deals/collabType'
 import { optimizeImage, safeAvatarSrc } from '@/lib/utils/image'
 import type { PortfolioItem } from '@/types'
 
@@ -349,6 +350,13 @@ const BARTER_OPTIONS = [
   { id: 'experience', label: '🎟️ Experience / Event Access' },
   { id: 'custom', label: '✍️ Custom Offer' },
 ]
+
+const CONTENT_REQUIREMENT_LABELS: Record<string, string> = {
+  hook: 'Hook in first 3 sec',
+  voiceover: 'Voiceover included',
+  cta: 'Strong Call to Action',
+  tag: 'Brand Tagging',
+}
 
 const DELIVERABLE_OPTIONS = [
   { label: 'Reel', value: 'Instagram Reel', icon: <span className="mr-1.5">🎬</span> },
@@ -842,12 +850,11 @@ const CollabLinkLanding = () => {
           : collabType === 'hybrid'
             ? Number(exactBudget) > 0 && Number(barterValue) > 0
             : true
-  const isBarterLikeCollab = (type: string | null | undefined) =>
-    type === 'barter' || type === 'hybrid' || type === 'both'
 
   const isStep1Ready = Boolean(
     collabType &&
     campaignGoal &&
+    isBudgetProvided &&
     (paymentType === 'barter' ? barterTypes.length > 0 : true) &&
     (selectedTemplateId ? deliverables.length > 0 : campaignDescription.trim().length >= 10)
   )
@@ -960,6 +967,11 @@ const CollabLinkLanding = () => {
         if (data.brandInstagram && !brandInstagram) setBrandInstagram(data.brandInstagram)
         if (data.campaignDescription) setCampaignDescription(data.campaignDescription)
         if (data.exactBudget) setExactBudget(data.exactBudget)
+        if (data.barterValue) setBarterValue(data.barterValue)
+        if (data.barterProductName) setBarterProductName(data.barterProductName)
+        if (data.barterTypes) setBarterTypes(data.barterTypes)
+        if (data.contentRequirements) setContentRequirements(data.contentRequirements)
+        if (data.selectedTemplateId) setSelectedTemplateId(data.selectedTemplateId)
         if (data.deadline) setDeadline(data.deadline)
 
         // Only show toast if there's significant progress
@@ -988,6 +1000,11 @@ const CollabLinkLanding = () => {
         brandInstagram,
         campaignDescription,
         exactBudget,
+        barterValue,
+        barterProductName,
+        barterTypes,
+        contentRequirements,
+        selectedTemplateId,
         deadline,
         timestamp: Date.now(),
       }
@@ -2160,7 +2177,7 @@ const CollabLinkLanding = () => {
       newErrors.barterTypes = 'Please specify what you are offering'
     }
 
-    if (!String(barterProductName || '').trim()) {
+    if (isProductImageRequired && !String(barterProductName || '').trim()) {
       newErrors.barterProductName = 'Please specify the product name'
     }
 
@@ -2179,12 +2196,11 @@ const CollabLinkLanding = () => {
       newErrors.deliverables = 'Please select at least one thing'
     }
 
-    if (collabType === 'paid' && !budgetRange && !exactBudget) {
-      newErrors.budget = 'Enter your budget'
-    }
-
-    if (collabType === 'barter' && !barterValue) {
-      newErrors.budget = 'Enter estimated product value'
+    if (collabType === 'paid' && !exactBudget) return { valid: false, firstErrorMessage: 'Please specify your budget' }
+    if (collabType === 'barter' && !barterValue) return { valid: false, firstErrorMessage: 'Please specify the estimated product value' }
+    if (collabType === 'hybrid') {
+      if (!exactBudget) return { valid: false, firstErrorMessage: 'Please specify the paid budget portion' }
+      if (!barterValue) return { valid: false, firstErrorMessage: 'Please specify the estimated product value' }
     }
 
     if (isProductImageRequired && !String(barterProductImageUrl || '').trim()) {
@@ -2261,17 +2277,33 @@ const CollabLinkLanding = () => {
           campaign_category: campaignCategory || 'General',
           campaign_goal: campaignGoal || null,
           barter_value: barterValue ? parseFloat(barterValue) : null,
-          barter_description: barterProductName || (paymentType === 'barter' 
-            ? `Barter: ${barterTypes.map(t => BARTER_OPTIONS.find(o => o.id === t)?.label || t).join(', ')}`
-            : 'Paid Collaboration'),
+          barter_description: paymentType === 'barter'
+            ? [
+                barterProductName ? `Product: ${barterProductName}` : '',
+                barterTypes.length > 0
+                  ? `Value offered: ${barterTypes.map(t => BARTER_OPTIONS.find(o => o.id === t)?.label || t).join(', ')}`
+                  : '',
+              ].filter(Boolean).join(' | ')
+            : includesProduct && barterProductName
+              ? `Product included: ${barterProductName}`
+              : 'Paid Collaboration',
           barter_product_name: barterProductName || null,
           barter_product_category: barterProductCategory || null,
           barter_product_image_url: barterProductImageUrl
             ? String(barterProductImageUrl).trim()
             : null,
+          selected_package_id: selectedTemplate?.id || null,
+          selected_package_label: selectedTemplate?.label || null,
+          selected_package_type: selectedTemplate?.type || null,
+          selected_addons: selectedTemplate?.addons || [],
+          content_quantity: String(contentQuantity || ''),
+          content_duration: contentDuration || null,
+          content_requirements: contentRequirements.map(r => CONTENT_REQUIREMENT_LABELS[r] || r),
+          barter_types: barterTypes.map(t => BARTER_OPTIONS.find(o => o.id === t)?.label || t),
           campaign_description: [
             campaignDescription,
-            contentRequirements.length > 0 ? `\nRequirements: ${contentRequirements.map(r => ({ hook: 'Hook in first 3 sec', voiceover: 'Voiceover included', cta: 'Strong Call to Action', tag: 'Brand Tagging' } as Record<string,string>)[r] || r).join(', ')}` : '',
+            selectedTemplate ? `\nSelected package: ${selectedTemplate.label}` : '',
+            contentRequirements.length > 0 ? `\nRequirements: ${contentRequirements.map(r => CONTENT_REQUIREMENT_LABELS[r] || r).join(', ')}` : '',
             contentQuantity !== 1 ? `\nQuantity: ${contentQuantity}` : '',
             contentDuration ? `\nDuration: ${contentDuration}` : '',
           ].filter(Boolean).join(''),
