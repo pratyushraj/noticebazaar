@@ -1,9 +1,8 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { MapPin, X, Lock, CheckCircle2, Loader2, ArrowRight, ChevronLeft } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import { getApiBaseUrl } from "@/lib/utils/api";
-import { useSession } from "@/contexts/SessionContext";
 import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,39 +19,12 @@ interface Props {
 }
 
 export function CreatorShippingConfirmationModal({ brandName, onClose, onConfirm }: Props) {
-  const { session, profile } = useSession();
-  
   const [addressLine, setAddressLine] = useState("");
   const [city, setCity] = useState("");
   const [state, setState] = useState("");
   const [pincode, setPincode] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLookingUpPincode, setIsLookingUpPincode] = useState(false);
-
-  const profileAddressFallback =
-    (profile as any)?.shipping_address ||
-    (profile as any)?.address ||
-    (profile as any)?.location ||
-    "";
-  const profilePincodeFallback =
-    (profile as any)?.pincode ||
-    "";
-
-  // Pre-fill from profile
-  useEffect(() => {
-    if (profile) {
-      setAddressLine(profileAddressFallback);
-      setPincode(profilePincodeFallback);
-      // If we have address but not city/state, try to parse or lookup
-      if (profileAddressFallback && !(profile as any)?.city) {
-         // Simple parse attempt if it's a comma separated string
-         const parts = String(profileAddressFallback).split(",");
-         if (parts.length > 1) {
-            setCity(parts[parts.length - 1].trim());
-         }
-      }
-    }
-  }, [profile, profileAddressFallback, profilePincodeFallback]);
 
   const handlePincodeChange = async (val: string) => {
     setPincode(val);
@@ -72,15 +44,6 @@ export function CreatorShippingConfirmationModal({ brandName, onClose, onConfirm
   const pincodeValid = /^\d{6}$/.test(pincode.trim());
   const addressValid = addressLine.trim().length > 5 && pincodeValid;
   const canSubmit = addressValid && !isSubmitting;
-
-  const useSavedAddress = () => {
-    const savedAddress = profileAddressFallback;
-    const savedPincode = profilePincodeFallback;
-    if (savedAddress) setAddressLine(String(savedAddress));
-    if (savedPincode) setPincode(String(savedPincode));
-    if ((profile as any)?.city) setCity(String((profile as any).city));
-    if ((profile as any)?.state) setState(String((profile as any).state));
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -141,6 +104,7 @@ export function CreatorShippingConfirmationModal({ brandName, onClose, onConfirm
             </div>
             <button 
               onClick={onClose} 
+              aria-label="Close shipping confirmation"
               className="p-2 hover:bg-white/10 rounded-full transition-colors"
             >
               <X className="h-5 w-5 text-white/40" />
@@ -157,34 +121,27 @@ export function CreatorShippingConfirmationModal({ brandName, onClose, onConfirm
 
             <div className="space-y-4">
               <div className="space-y-2">
-                <Label className={labelClass}>Street Address</Label>
+                <Label htmlFor="creator-shipping-address" className={labelClass}>Street Address</Label>
                 <Input
+                  id="creator-shipping-address"
                   value={addressLine}
                   onChange={(e) => setAddressLine(e.target.value)}
-                  placeholder={profileAddressFallback ? "Use your saved address or edit it here" : "Flat No, Building, Street, Area"}
+                  placeholder="Flat No, Building, Street, Area"
                   className={fieldClass}
                   required
                 />
-                {profileAddressFallback && (
-                  <button
-                    type="button"
-                    onClick={useSavedAddress}
-                    className="text-[11px] font-black uppercase tracking-widest text-blue-300 hover:text-blue-200 transition-colors"
-                  >
-                    Use saved creator address
-                  </button>
-                )}
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label className={labelClass}>Pincode</Label>
+                  <Label htmlFor="creator-shipping-pincode" className={labelClass}>Pincode</Label>
                   <div className="relative">
                     <Input
+                      id="creator-shipping-pincode"
                       value={pincode}
                       onChange={(e) => handlePincodeChange(e.target.value.replace(/\D/g, "").slice(0, 6))}
                       inputMode="numeric"
-                      placeholder={profilePincodeFallback ? String(profilePincodeFallback) : "400001"}
+                      placeholder="400001"
                       className={fieldClass}
                       required
                     />
@@ -197,8 +154,9 @@ export function CreatorShippingConfirmationModal({ brandName, onClose, onConfirm
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <Label className={labelClass}>City (Auto-filled)</Label>
+                  <Label htmlFor="creator-shipping-city" className={labelClass}>City (Auto-filled)</Label>
                   <Input
+                    id="creator-shipping-city"
                     value={city}
                     onChange={(e) => setCity(e.target.value)}
                     placeholder="Mumbai"
@@ -224,6 +182,7 @@ export function CreatorShippingConfirmationModal({ brandName, onClose, onConfirm
               type="button"
               variant="ghost"
               onClick={onClose}
+              aria-label="Return to offer details"
               className="w-full h-12 rounded-2xl text-white/70 hover:text-white hover:bg-white/5 font-black uppercase tracking-widest"
             >
               <ChevronLeft className="w-4 h-4 mr-2" />
