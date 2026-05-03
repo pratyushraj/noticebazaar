@@ -5525,8 +5525,8 @@ const MobileDashboardDemo = ({
                                                                     Due 08 May
                                                                 </span>
                                                             </div>
-                                                        </div>
                                                     </div>
+                                                </div>
 
                                                 {/* ── ELITE ROADMAP ── */}
                                                 <div className="mt-8 mb-4">
@@ -5695,8 +5695,7 @@ const MobileDashboardDemo = ({
                                                         </button>
                                                     </div>
                                                 </div>
-                                            </div>
-                                        ) : (
+                                            ) : (
                                             <div className={cn("rounded-[36px] border p-1 mb-7 relative overflow-hidden group transition-all duration-500", 
                                                 isDark ? "bg-[#0A0D14] border-white/5 shadow-2xl" : "bg-white border-[#E2E8F0] shadow-[0_20px_50px_rgba(0,0,0,0.05)]")}>
                                                 
@@ -6022,8 +6021,14 @@ const MobileDashboardDemo = ({
                                                         <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center shrink-0 bg-info/10")}>
                                                             <AlignLeft className="w-5 h-5 text-info" />
                                                         </div>
-                                                        <p className={cn("text-[14px] leading-relaxed font-bold flex-1 pt-1.5", isDark ? "text-foreground/90" : "text-muted-foreground")}>
-                                                            {selectedItem.campaign_descript                                        {/* ── DELIVERABLES ── */}
+                                                            {selectedItem.campaign_description || selectedItem.description || 'Campaign information not provided.'}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {/* ── DELIVERABLES ── */}
                                         {(selectedType === 'offer' || selectedType === 'deal') && (
                                             <div className="mb-10">
                                                 <div className="flex items-center justify-between mb-5 px-1">
