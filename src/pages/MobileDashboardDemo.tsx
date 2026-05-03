@@ -9,7 +9,7 @@ import {
     Tag, User, Search, ShieldCheck, Shield, Scale, Handshake, Camera, Plus, 
     LayoutDashboard, CreditCard, Briefcase, Menu, Instagram, Target, 
     Dumbbell, Shirt, Sun, Moon, RefreshCw, Loader2, Bell, 
-    ChevronRight, ChevronLeft, Zap, Rocket, Link2, CheckCircle2, Download, Clock, 
+    ChevronDown, ChevronRight, ChevronLeft, Zap, Rocket, Link2, CheckCircle2, Download, Clock, 
     Info, Globe, Star, LogOut, Copy, Share2, QrCode, Eye, MoreHorizontal, AlignLeft, 
     Landmark, FileText, Smartphone, TrendingUp, BarChart3, Mail, Phone, 
     MessageCircle, MessageCircleMore, MessageSquare, Edit3, Send, X, XCircle, ExternalLink, 
