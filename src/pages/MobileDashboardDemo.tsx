@@ -4864,21 +4864,42 @@ const MobileDashboardDemo = ({
                 >
                     <div style={{ height: isRefreshingProp ? '60px' : '0' }} className="transition-all duration-300" />
 
-                    {/* PWA Install Banner (Android only) - Now Common */}
+                    {/* PWA Install Banner - Fixed Contrast & Theme (P0) */}
                     {canInstall && (
-                        <div className="mx-5 mb-4 p-3 rounded-2xl bg-gradient-to-r from-emerald-50 to-teal-50 border border-primary/30 flex items-center justify-between">
-                            <div className="flex items-center gap-3">
-                                <div className="w-9 h-9 rounded-xl bg-info flex items-center justify-center">
-                                    <Download className="w-4 h-4 text-foreground" />
+                        <div className={cn(
+                            "mx-5 mb-5 p-3.5 rounded-[2.5rem] border flex items-center justify-between transition-all duration-300",
+                            isDark 
+                                ? "bg-white/5 border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.3)] backdrop-blur-xl" 
+                                : "bg-gradient-to-r from-emerald-50/95 to-teal-50/95 border-emerald-200/60 shadow-[0_15px_35px_rgba(16,185,129,0.08)]"
+                        )}>
+                            <div className="flex items-center gap-3.5">
+                                <div className={cn(
+                                    "w-11 h-11 rounded-2xl flex items-center justify-center shadow-lg transition-transform active:scale-95",
+                                    isDark ? "bg-primary/20" : "bg-primary"
+                                )}>
+                                    <Download className={cn("w-5 h-5", isDark ? "text-primary" : "text-white")} />
                                 </div>
                                 <div>
-                                    <p className="text-[13px] font-bold text-foreground">Add to home screen</p>
-                                    <p className="text-[11px] text-muted-foreground">Add to home screen for faster access</p>
+                                    <p className={cn("text-[15px] font-black tracking-tight", isDark ? "text-white" : "text-slate-900")}>
+                                        Add to home screen
+                                    </p>
+                                    <p className={cn("text-[11px] font-bold", isDark ? "text-white/40" : "text-slate-500")}>
+                                        Add to home screen for faster access
+                                    </p>
                                 </div>
                             </div>
-                            <button onClick={promptInstall} className="text-[11px] font-bold px-4 py-2 rounded-full bg-info text-foreground active:scale-95">Install</button>
+                            <button 
+                                onClick={promptInstall} 
+                                className={cn(
+                                    "text-[12px] font-black uppercase tracking-widest px-6 py-3 rounded-full transition-all active:scale-90 shadow-xl",
+                                    isDark ? "bg-primary text-foreground" : "bg-primary text-white"
+                                )}
+                            >
+                                Install
+                            </button>
                         </div>
                     )}
+
 
                     {/* Command Header - Now Sticky and Common across all tabs */}
                     <div 

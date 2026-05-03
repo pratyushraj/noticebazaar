@@ -3183,6 +3183,8 @@ const CollabLinkLanding = () => {
                           src={safeAvatarSrc(creator.profile_photo)}
                           alt={displayCreatorName}
                           className="w-full h-full object-cover"
+                          fetchPriority="high"
+                          loading="eager"
                         />
                         <AvatarFallback className="w-full h-full flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100 text-slate-400 font-bold text-4xl">
                           {displayCreatorName.charAt(0)}
@@ -4209,10 +4211,12 @@ const CollabLinkLanding = () => {
                                 <div className="flex items-center gap-3 bg-white p-2.5 rounded-2xl shadow-sm border border-slate-200 animate-in fade-in zoom-in-95 duration-200">
                                   <Avatar className="h-12 w-12 rounded-[14px] bg-slate-50 border border-slate-100 overflow-hidden flex-shrink-0">
                                     <AvatarImage
-                                      src={failedLogos.has(brandLogoUrl) ? undefined : brandLogoUrl}
+                                      src={failedLogos.has(brandLogoUrl) ? undefined : safeAvatarSrc(brandLogoUrl)}
                                       alt="Brand Logo"
                                       className="w-full h-full object-contain"
                                       referrerPolicy="no-referrer"
+                                      fetchPriority="high"
+                                      loading="eager"
                                       onLoadingStatusChange={status => {
                                         if (status === 'error') {
                                           console.log(

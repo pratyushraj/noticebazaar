@@ -1991,6 +1991,8 @@ const ProfileSettings = () => {
                         src={optimizeImage((profile.instagram_profile_photo || profile.avatar_url) ?? '', { width: 300, height: 300 }) ?? ''}
                         alt={userData.name}
                         className="w-full h-full object-cover"
+                        loading="eager"
+                        fetchpriority="high"
                         onError={() => setProfilePhotoError(true)}
                       />
                     ) : (

@@ -1018,7 +1018,8 @@ const BrandMobileDashboard = ({
 	  }, [profile?.id]);
 
   const brandLogo = useMemo(() => {
-    const src = brandLogoDbUrl || profile?.logo_url || profile?.avatar_url;
+    const rawSrc = brandLogoDbUrl || profile?.logo_url || profile?.avatar_url;
+    const src = optimizeImage(rawSrc, { width: 200, height: 200 });
     return src || null; // Let AvatarFallback render initials — avoids ui-avatars.com CORS issues
   }, [brandLogoDbUrl, profile?.avatar_url, profile?.logo_url]);
 
@@ -3713,6 +3714,7 @@ const BrandDashboardTab = React.memo(({
                       alt="Brand Logo" 
                       className="w-full h-full object-cover transition-transform group-hover:scale-110 duration-500" 
                       loading="eager"
+                      fetchpriority="high"
                     />
                   </div>
                   <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-blue-500 rounded-full border-2 border-[#020D0A] flex items-center justify-center shadow-lg">
