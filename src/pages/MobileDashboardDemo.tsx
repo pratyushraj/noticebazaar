@@ -5568,7 +5568,7 @@ const MobileDashboardDemo = ({
                                                                     const durationMatch = rawDesc.match(/Collab Duration:\s*(.*?)(?=\s*Additional|$)/i);
                                                                     const extractedDuration = durationMatch ? durationMatch[1].trim() : null;
                                                                     
-                                                                    const cleanDesc = rawDesc || "High-energy Reel showcasing unboxing and key features.";
+                                                                    const cleanDesc = rawDesc.split(/Selected package:|Collab Duration:|Additional Commercial Terms:|Collab content category:|Product for collab:/i)[0].trim() || "High-energy Reel showcasing unboxing and key features.";
                                                                     const packageIcon = extractedPackageName?.toLowerCase().includes('starter') ? "🚀" : extractedPackageName?.toLowerCase().includes('growth') ? "📈" : "📄";
 
                                                                     return (
@@ -6155,7 +6155,7 @@ const MobileDashboardDemo = ({
                                                                      <div className="space-y-4">
                                                                          {description && (
                                                                              <p className={cn("text-[14px] leading-relaxed font-bold whitespace-pre-wrap", isDark ? "text-foreground/90" : "text-muted-foreground")}>
-                                                                                 {description}
+                                                                                 {description.split(/Selected package:|Collab Duration:|Additional Commercial Terms:|Collab content category:|Product for collab:/i)[0].trim()}
                                                                              </p>
                                                                          )}
 
