@@ -647,7 +647,6 @@ const DashboardLoadingStage = ({ isDark, tab = 'analytics' }: { isDark: boolean;
                                                  </button>
                                              </div>
                                          </div>
-                                 </motion.div>
                     </div>
                 </>
             )}
