@@ -6069,9 +6069,51 @@ const MobileDashboardDemo = ({
                                                         <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center shrink-0 bg-info/10")}>
                                                             <AlignLeft className="w-5 h-5 text-info" />
                                                         </div>
-                                                        <p className={cn("text-[14px] leading-relaxed font-bold flex-1 pt-1.5", isDark ? "text-foreground/90" : "text-muted-foreground")}>
-                                                            {selectedItem.campaign_description || selectedItem.raw?.campaign_description || 'Ensure high-quality lighting, no competitor branding, and a clear product focus in your content.'}
-                                                        </p>
+                                                        <div className="flex-1">
+                                                            {(() => {
+                                                                const rawReqs = selectedItem.requirements || selectedItem.raw?.requirements;
+                                                                let requirementsList = [];
+                                                                try {
+                                                                    if (typeof rawReqs === 'string') {
+                                                                        const parsed = JSON.parse(rawReqs);
+                                                                        if (Array.isArray(parsed)) requirementsList = parsed;
+                                                                    } else if (Array.isArray(rawReqs)) {
+                                                                        requirementsList = rawReqs;
+                                                                    }
+                                                                } catch (e) {}
+
+                                                                const description = selectedItem.campaign_description || selectedItem.raw?.campaign_description || selectedItem.description || selectedItem.raw?.description;
+
+                                                                return (
+                                                                    <div className="space-y-4">
+                                                                        {description && (
+                                                                            <p className={cn("text-[14px] leading-relaxed font-bold", isDark ? "text-foreground/90" : "text-muted-foreground")}>
+                                                                                {description}
+                                                                            </p>
+                                                                        )}
+                                                                        
+                                                                        {requirementsList.length > 0 && (
+                                                                            <div className={cn("space-y-3 pt-2", description ? "border-t border-white/5 mt-4" : "")}>
+                                                                                {requirementsList.map((req: string, i: number) => (
+                                                                                    <div key={i} className="flex items-start gap-3">
+                                                                                        <div className="mt-1 w-4 h-4 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0">
+                                                                                            <Check className="w-2.5 h-2.5 text-emerald-500" strokeWidth={4} />
+                                                                                        </div>
+                                                                                        <p className={cn("text-[13px] font-bold leading-tight opacity-80", textColor)}>{req}</p>
+                                                                                    </div>
+                                                                                ))}
+                                                                            </div>
+                                                                        )}
+
+                                                                        {!description && requirementsList.length === 0 && (
+                                                                             <p className={cn("text-[14px] leading-relaxed font-bold", isDark ? "text-foreground/90" : "text-muted-foreground")}>
+                                                                                Ensure high-quality lighting, no competitor branding, and a clear product focus in your content.
+                                                                            </p>
+                                                                        )}
+                                                                    </div>
+                                                                );
+                                                            })()}
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
