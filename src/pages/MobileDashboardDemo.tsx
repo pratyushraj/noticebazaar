@@ -6222,7 +6222,7 @@ const MobileDashboardDemo = ({
                                                                     <ChevronDown className={cn("w-6 h-6 opacity-20 transition-transform", showBrief && "rotate-180")} />
                                                                 </div>
                                                             </button>
-
+                                                            {showBrief && (
                                                             <div className="px-6 pb-10">
                                                                 <p className={cn("text-[15px] font-medium leading-relaxed opacity-70 mb-10 whitespace-pre-wrap px-1", textColor)}>
                                                                     {cleanDesc}
