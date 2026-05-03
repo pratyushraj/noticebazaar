@@ -5515,16 +5515,23 @@ const MobileDashboardDemo = ({
                                                                             <ShieldCheck className="w-3 h-3" />
                                                                             <span className="text-[10px] font-black uppercase tracking-wider">{isBarterLikeCollab(selectedItem) ? 'Product Secured' : `${renderBudgetValue(selectedItem)} Secured`}</span>
                                                                         </div>
-                                                                        <h2 className={cn("text-[44px] leading-none font-black tracking-tighter", textColor)}>
-                                                                            {renderBudgetValue(selectedItem)}
-                                                                        </h2>
-                                                                        <p className={cn("text-[11px] font-bold opacity-40 mt-1 uppercase tracking-widest", textColor)}>{isBarterLikeCollab(selectedItem) ? "Est. Product Value" : "Net Payout"}</p>
-                                                                    </div>
-                                                                    <div className={cn("w-18 h-18 rounded-2xl overflow-hidden border shrink-0 shadow-2xl transition-transform hover:scale-105", isDark ? "bg-white/10 border-white/20" : "bg-white border-slate-200")}>
-                                                                        <img 
-                                                                            src={selectedItem.brand_logo || selectedItem.raw?.brand_logo || `https://ui-avatars.com/api/?name=${encodeURIComponent(selectedItem.brand_name || 'B')}&background=random`} 
-                                                                            className="w-full h-full object-cover" 
-                                                                        />
+                                                                         <h2 className={cn("text-[44px] leading-none font-black tracking-tighter uppercase", textColor)}>
+                                                                             {isBarterLikeCollab(selectedItem) ? "Free Product" : renderBudgetValue(selectedItem)}
+                                                                         </h2>
+                                                                         <p className={cn("text-[11px] font-bold opacity-40 mt-1 uppercase tracking-widest", textColor)}>
+                                                                             {isBarterLikeCollab(selectedItem) ? `Est. Value ${renderBudgetValue(selectedItem)}` : "Net Payout"}
+                                                                         </p>
+                                                                     </div>
+                                                                     <div className={cn("w-18 h-18 rounded-2xl overflow-hidden border shrink-0 shadow-2xl transition-transform hover:scale-105 flex items-center justify-center", 
+                                                                         isDark ? "bg-white/10 border-white/20" : "bg-white border-slate-200"
+                                                                     )}>
+                                                                         <img 
+                                                                             src={selectedItem.brand_logo_url || selectedItem.brand_logo || selectedItem.logo_url || selectedItem.raw?.brand_logo_url || selectedItem.raw?.brand_logo || `https://ui-avatars.com/api/?name=${encodeURIComponent(selectedItem.brand_name || 'B')}&background=random`} 
+                                                                             className="w-full h-full object-cover" 
+                                                                             onError={(e) => {
+                                                                                 (e.target as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${encodeURIComponent(selectedItem.brand_name || 'B')}&background=random`;
+                                                                             }}
+                                                                         />
                                                                     </div>
                                                                 </div>
 
@@ -5556,7 +5563,7 @@ const MobileDashboardDemo = ({
                                                                     ) : (
                                                                         <>
                                                                             <Zap className="w-4 h-4 fill-current" />
-                                                                            Accept & Earn {renderBudgetValue(selectedItem)}
+                                                                            {isBarterLikeCollab(selectedItem) ? "Accept & Receive Product" : `Accept & Earn ${renderBudgetValue(selectedItem)}`}
                                                                         </>
                                                                     )}
                                                                 </button>
@@ -5591,9 +5598,9 @@ const MobileDashboardDemo = ({
                                                                 <div className="space-y-4">
                                                                     {[
                                                                         { step: 1, label: "Accept this deal", status: "current" },
-                                                                        { step: 2, label: selectedIsPureBarter ? "Wait for shipping" : "Brand funds deal", status: "upcoming" },
+                                                                        { step: 2, label: isBarterLikeCollab(selectedItem) ? "Wait for shipping" : "Brand funds deal", status: "upcoming" },
                                                                         { step: 3, label: "Submit content", status: "upcoming" },
-                                                                        { step: 4, label: "Get paid", status: "upcoming" },
+                                                                        { step: 4, label: isBarterLikeCollab(selectedItem) ? "Deal complete" : "Get paid", status: "upcoming" },
                                                                     ].map((item, i) => (
                                                                         <div key={i} className="flex items-center gap-4">
                                                                             <div className={cn(
@@ -5676,7 +5683,9 @@ const MobileDashboardDemo = ({
                                                                 {selectedIsPureBarter ? (
                                                                     <div className="space-y-1">
                                                                         <div className="flex flex-col">
-                                                                            <span className="text-amber-500 font-black text-[10px] uppercase tracking-widest">Free Product Worth</span>
+                                                                            <h2 className={cn("text-[44px] leading-none font-black tracking-tighter uppercase", textColor)}>
+                                                                                {isBarterLikeCollab(selectedItem) ? "Free Product" : renderBudgetValue(selectedItem)}
+                                                                            </h2>
                                                                             <span className={cn("text-[38px] sm:text-[48px] leading-[0.9] font-black tracking-tighter", textColor)}>
                                                                                 {renderBudgetValue(selectedItem)}
                                                                             </span>
