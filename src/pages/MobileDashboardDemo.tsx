@@ -5502,23 +5502,10 @@ const MobileDashboardDemo = ({
                                                             <div className={cn("rounded-[32px] border p-6 relative overflow-hidden min-h-[240px] flex flex-col justify-end",
                                                                 isDark ? "bg-[#0B0F14] border-white/6" : "bg-white border-slate-200 shadow-sm")}>
                                                                 
-                                                                {/* Product Photo Background */}
-                                                                {(() => {
-                                                                    const productImage = resolveCreatorDealProductImage(selectedItem);
-                                                                    if (!productImage) return null;
-                                                                    return (
-                                                                        <div className="absolute inset-0 z-0">
-                                                                            <img 
-                                                                                src={optimizeImage(productImage, 800)} 
-                                                                                className="w-full h-full object-cover"
-                                                                                alt="Product"
-                                                                            />
-                                                                            <div className={cn("absolute inset-0 bg-gradient-to-t from-transparent to-transparent", 
-                                                                                isDark ? "from-[#0B0F14] via-[#0B0F14]/60" : "from-white via-white/40"
-                                                                            )} />
-                                                                        </div>
-                                                                    );
-                                                                })()}
+                                                                {/* Premium Background Glow */}
+                                                                <div className={cn("absolute inset-0 z-0", 
+                                                                    isDark ? "bg-[radial-gradient(circle_at_top_right,rgba(16,185,129,0.08),transparent)]" : "bg-[radial-gradient(circle_at_top_right,rgba(16,185,129,0.05),transparent)]"
+                                                                )} />
 
                                                                 <div className="flex items-center justify-between gap-6 relative z-10">
                                                                     <div className="flex-1 min-w-0">
