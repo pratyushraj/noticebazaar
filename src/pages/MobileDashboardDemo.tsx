@@ -6446,6 +6446,8 @@ const MobileDashboardDemo = ({
                                                         )}
                                                     </div>
                                                 </div>
+                                            </>
+                                        )}
 
 	                                        {/* ── EARNINGS BREAKDOWN (Offers) ── */}
 	                                        {false && selectedType === 'offer' && (
