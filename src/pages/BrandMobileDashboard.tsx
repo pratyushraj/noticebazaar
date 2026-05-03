@@ -2216,7 +2216,7 @@ const BrandMobileDashboard = ({
           </div>
         </div>
 
-        <div className="px-5 pt-5 pb-40 max-w-md md:max-w-2xl mx-auto">
+        <div className="px-5 pt-5 pb-dashboard max-w-md md:max-w-2xl mx-auto">
           {/* Hero Section */}
           <div className="mb-5 relative">
             <div className={cn(
@@ -3038,7 +3038,7 @@ const BrandMobileDashboard = ({
       </div>
 
       <div
-        className="h-full overflow-y-auto overflow-x-hidden relative z-10 pb-[110px] scrollbar-hide"
+        className="h-full overflow-y-auto overflow-x-hidden relative z-10 pb-dashboard scrollbar-hide"
         onTouchStart={(e) => {
           if (isRefreshing) return;
           const target = e.currentTarget as HTMLDivElement;

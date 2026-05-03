@@ -1,9 +1,10 @@
 
 
-import React, { useEffect } from 'react';
+import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useScrollLock } from '@/hooks/useScrollLock';
 
 interface BottomSheetProps {
   open: boolean;
@@ -20,17 +21,8 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
   children,
   className,
 }) => {
-  // Prevent body scroll when sheet is open
-  useEffect(() => {
-    if (open) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
-    }
-    return () => {
-      document.body.style.overflow = '';
-    };
-  }, [open]);
+  // Prevent background scroll when sheet is open (targets #root on mobile)
+  useScrollLock(open);
 
   return (
     <AnimatePresence>

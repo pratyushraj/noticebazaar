@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { MapPin, X, Lock, CheckCircle2, Loader2, ArrowRight, ChevronLeft } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
@@ -25,6 +26,12 @@ export function CreatorShippingConfirmationModal({ brandName, onClose, onConfirm
   const [pincode, setPincode] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLookingUpPincode, setIsLookingUpPincode] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+    return () => setMounted(false);
+  }, []);
 
   const handlePincodeChange = async (val: string) => {
     setPincode(val);
@@ -63,7 +70,7 @@ export function CreatorShippingConfirmationModal({ brandName, onClose, onConfirm
 
   const labelClass = ds.typography.label;
 
-  return (
+  const modalContent = (
     <AnimatePresence>
       <div className="fixed inset-0 z-[10000] flex items-end sm:items-center justify-center p-4">
         {/* Backdrop */}
@@ -193,4 +200,7 @@ export function CreatorShippingConfirmationModal({ brandName, onClose, onConfirm
       </div>
     </AnimatePresence>
   );
+
+  if (!mounted) return null;
+  return createPortal(modalContent, document.body);
 }

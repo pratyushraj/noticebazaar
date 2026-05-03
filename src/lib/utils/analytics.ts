@@ -159,6 +159,36 @@ export async function trackEvent(
 }
 
 let isSupabaseAnalyticsDisabled = false;
+let isSupabaseAnalyticsInitializing = false;
+let supabaseAnalyticsPromise: Promise<boolean> | null = null;
+
+/**
+ * Helper to check if Supabase analytics table is available
+ */
+async function checkSupabaseAnalytics(): Promise<boolean> {
+  if (isSupabaseAnalyticsDisabled) return false;
+  if (supabaseAnalyticsPromise) return supabaseAnalyticsPromise;
+  
+  isSupabaseAnalyticsInitializing = true;
+  supabaseAnalyticsPromise = new Promise(async (resolve) => {
+    try {
+      const { error } = await supabase.from('analytics_events' as any).select('id').limit(1);
+      if (error && (error.code === '42P01' || error.status === 0 || error.message?.includes('fetch'))) {
+        isSupabaseAnalyticsDisabled = true;
+        resolve(false);
+      } else {
+        resolve(true);
+      }
+    } catch (e) {
+      isSupabaseAnalyticsDisabled = true;
+      resolve(false);
+    } finally {
+      isSupabaseAnalyticsInitializing = false;
+    }
+  });
+  
+  return supabaseAnalyticsPromise;
+}
 
 /**
  * Track event to Supabase logs table
@@ -169,6 +199,10 @@ async function trackEventToSupabase(
 ): Promise<void> {
   try {
     if (shouldSkipClientAnalytics() || isSupabaseAnalyticsDisabled) return;
+
+    // Wait to see if analytics is available (prevents concurrent fetch spam if blocked by ad-blocker)
+    const isAvailable = await checkSupabaseAnalytics();
+    if (!isAvailable || isSupabaseAnalyticsDisabled) return;
 
     // Small delay to ensure any immediate navigation has settled
     await new Promise(resolve => setTimeout(resolve, 100));

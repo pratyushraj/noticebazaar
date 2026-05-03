@@ -3073,7 +3073,7 @@ const MobileDashboardDemo = ({
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        className="pb-36 touch-pan-y"
+                        className="pb-dashboard touch-pan-y"
                     >
                         <div className="px-6 pt-4 pb-2 flex items-center justify-between">
                             <div className="flex items-center gap-4">
@@ -4859,7 +4859,7 @@ const MobileDashboardDemo = ({
                     onTouchMove={handleTouchMove}
                     onTouchEnd={handleTouchEnd}
                     onScroll={e => { if (e.currentTarget.scrollTop > 10 && pullDistance > 0) { setPullDistance(0); setStartY(0); } }}
-                    className="flex-1 overflow-y-auto overflow-x-hidden pb-[140px] scrollbar-hide"
+                    className="flex-1 overflow-y-auto overflow-x-hidden pb-dashboard scrollbar-hide"
                     style={{ WebkitOverflowScrolling: 'touch' }}
                 >
                     <div style={{ height: isRefreshingProp ? '60px' : '0' }} className="transition-all duration-300" />
@@ -5438,7 +5438,7 @@ const MobileDashboardDemo = ({
                                         </button>
                                     </div>
 
-                                    <div className="flex-1 overflow-y-auto px-4 sm:px-5 pt-4 sm:pt-5 pb-40 relative z-10">
+                                    <div className="flex-1 overflow-y-auto px-4 sm:px-5 pt-4 sm:pt-5 pb-dashboard relative z-10">
 
                                         {/* ── OFFER BRIEF HERO ── */}
                                         {selectedType === 'offer' ? (
@@ -7446,7 +7446,7 @@ const MobileDashboardDemo = ({
                             </div>
 
                             {/* Scrollable body */}
-                            <div className="flex-1 overflow-y-auto px-5 pt-4 pb-40 space-y-6">
+                            <div className="flex-1 overflow-y-auto px-5 pt-4 pb-dashboard space-y-6">
 
                                 {/* ── BRAND IDENTITY BANNER ── */}
                                 <div className="relative mb-6">

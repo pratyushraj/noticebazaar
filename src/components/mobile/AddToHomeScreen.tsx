@@ -141,8 +141,8 @@ const AddToHomeScreen: React.FC = () => {
         <div className="max-w-screen-sm mx-auto pointer-events-auto">
           <div
             className={cn(
-              "relative overflow-hidden rounded-[2rem] border backdrop-blur-3xl px-5 py-4 shadow-[0_24px_48px_rgba(0,0,0,0.6)]",
-              "bg-gradient-to-br from-slate-900/90 via-slate-950/95 to-black/98 border-white/10"
+              "relative overflow-hidden rounded-[2.5rem] border backdrop-blur-3xl px-5 py-4 shadow-[0_24px_48px_rgba(0,0,0,0.6)]",
+              "bg-gradient-to-br from-slate-900/95 via-slate-950/98 to-black border-emerald-500/20 shadow-[0_0_20px_rgba(16,185,129,0.1)]"
             )}
             style={{ paddingTop: 'max(12px, env(safe-area-inset-top, 0px))' }}
           >

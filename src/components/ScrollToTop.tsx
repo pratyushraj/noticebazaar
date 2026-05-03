@@ -28,15 +28,18 @@ const ScrollToTop = () => {
       behavior: 'instant' as ScrollBehavior, // Use instant for immediate scroll
     });
 
-    // Also try scrolling the main content container if it exists
-    const mainContent = document.getElementById('main-content');
-    if (mainContent) {
-      mainContent.scrollTo({
-        top: 0,
-        left: 0,
-        behavior: 'instant' as ScrollBehavior,
-      });
-    }
+    // Also try scrolling the main content containers if they exist
+    const scrollContainers = ['root', 'main-content'];
+    scrollContainers.forEach(id => {
+      const container = document.getElementById(id);
+      if (container) {
+        container.scrollTo({
+          top: 0,
+          left: 0,
+          behavior: 'instant' as ScrollBehavior,
+        });
+      }
+    });
   }, [pathname, hash]);
 
   return null;

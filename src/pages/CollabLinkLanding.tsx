@@ -741,12 +741,14 @@ const CollabLinkLanding = () => {
       // Restore classes if they were set before entering this page
       if (hadDark) html.classList.add('dark')
       if (!hadLight) html.classList.remove('light')
-      html.style.overflow = previousHtmlOverflow
-      html.style.overflowY = previousHtmlOverflowY
+      
+      // Safety: Never restore a 'hidden' state as it creates scroll lock time-bombs
+      html.style.overflow = previousHtmlOverflow === 'hidden' ? '' : previousHtmlOverflow
+      html.style.overflowY = previousHtmlOverflowY === 'hidden' ? '' : previousHtmlOverflowY
       html.style.height = previousHtmlHeight
       html.style.minHeight = previousHtmlMinHeight
-      body.style.overflow = previousBodyOverflow
-      body.style.overflowY = previousBodyOverflowY
+      body.style.overflow = previousBodyOverflow === 'hidden' ? '' : previousBodyOverflow
+      body.style.overflowY = previousBodyOverflowY === 'hidden' ? '' : previousBodyOverflowY
       body.style.height = previousBodyHeight
       body.style.minHeight = previousBodyMinHeight
       body.style.position = previousBodyPosition

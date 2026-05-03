@@ -20,7 +20,7 @@ body {
   -webkit-touch-callout: none;
   -webkit-user-select: none;
   user-select: none;
-  overscroll-behavior-y: none; /* Disable browser pull-to-refresh for custom implementation */
+  /* overscroll-behavior-y: contain is handled in the main scroller block (#root) */
   /* iOS PWA: prevent hardcoded background mismatch */
   background-color: #020D0A;
 }
@@ -137,7 +137,9 @@ input, textarea, [contenteditable="true"], .selectable {
 html,
 body {
   width: 100%;
-  scrollbar-width: none; /* Firefox */
+  height: 100%; /* Default for app-like behavior */
+  margin: 0;
+  padding: 0;
 }
 
 /* Main scrollable container in the app */
@@ -147,11 +149,16 @@ body {
   /* Mobile-first: scroll inside the root to allow for custom pull-to-refresh */
   overflow-y: auto;
   overflow-x: hidden;
-  overscroll-behavior-y: contain;
+  overscroll-behavior-y: contain; /* Isolate bounce to this container */
 }
 
 /* Desktop Fix: Restore native window scrolling for better performance and compatibility */
 @media (min-width: 1024px) {
+  html, body {
+    height: auto;
+    overflow: visible;
+  }
+  
   #root, .app-scroll-root {
     height: auto !important;
     overflow: visible !important;
@@ -201,6 +208,11 @@ body {
   }
 }
 
+/* Centralized dashboard bottom padding utility to account for Bottom Nav + Safe Area */
+.pb-dashboard {
+  padding-bottom: calc(100px + env(safe-area-inset-bottom, 0px)) !important;
+}
+
 /* Force bottom nav to be on top layer */
 [data-bottom-nav] {
   /* Keep nav anchored to viewport bottom without affecting layout of content */
@@ -227,10 +239,9 @@ body {
 
   html,
   body {
-    height: auto;
+    height: 100%;
     min-height: 100dvh;
-    overflow-x: hidden;
-    /* overscroll-behavior-y: none is handled conditionally or via desktop override */
+    /* overflow-x: hidden is handled in the main scroller block (#root) */
   }
 
   html {
