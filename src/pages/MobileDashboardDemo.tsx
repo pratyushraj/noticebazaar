@@ -5537,39 +5537,10 @@ const MobileDashboardDemo = ({
 
                                                                 <div className="grid grid-cols-2 gap-2 mt-5">
                                                                     <div className={cn("flex items-center gap-2 px-3 py-2.5 rounded-xl border", isDark ? "bg-white/[0.04] border-white/8" : "bg-slate-50 border-slate-200")}>
-                                                                        <Film className="w-3.5 h-3.5 opacity-40" />
-                                                                        <span className={cn("text-[11px] font-bold truncate", textColor)}>{primaryLabel}</span>
-                                                                    </div>
-                                                                    <div className={cn("flex items-center gap-2 px-3 py-2.5 rounded-xl border", isDark ? "bg-rose-500/5 border-rose-500/15" : "bg-rose-50 border-rose-100")}>
+                                            <div className={cn("flex items-center gap-2 px-3 py-2.5 rounded-xl border", isDark ? "bg-rose-500/5 border-rose-500/15" : "bg-rose-50 border-rose-100")}>
                                                                         <Clock className="w-3.5 h-3.5 text-rose-500/60" />
                                                                         <span className={cn("text-[11px] font-bold", isDark ? "text-rose-300" : "text-rose-700")}>By {new Date(selectedItem?.due_date || Date.now()).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}</span>
                                                                     </div>
-                                                                </div>
-                                                            </div>
-
-                                                            {/* ── PRIMARY CTA (UPPER PLACEMENT) ── */}
-                                                            <div className="space-y-2.5">
-                                                                <button
-                                                                    type="button"
-                                                                    disabled={processingDeal === selectedItem.id}
-                                                                    onClick={() => handleAccept(selectedItem)}
-                                                                    className={cn(
-                                                                        "w-full h-15 py-4 rounded-[22px] font-black text-[16px] tracking-tight active:scale-[0.98] transition-all shadow-xl flex items-center justify-center gap-3",
-                                                                        isDark ? "bg-emerald-500 text-white shadow-emerald-500/20" : "bg-emerald-600 text-white shadow-emerald-600/20"
-                                                                    )}
-                                                                >
-                                                                    {processingDeal === selectedItem.id ? (
-                                                                        <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                                                                    ) : (
-                                                                        <>
-                                                                            <Zap className="w-4 h-4 fill-current" />
-                                                                            {isBarterLikeCollab(selectedItem) ? "Accept & Receive Product" : `Accept & Earn ${renderBudgetValue(selectedItem)}`}
-                                                                        </>
-                                                                    )}
-                                                                </button>
-                                                                <div className="flex gap-2">
-                                                                    <button className={cn("flex-1 h-11 rounded-xl border font-black text-[12px] uppercase tracking-wider", isDark ? "bg-white/5 border-white/8 text-white/40" : "bg-white border-slate-200 text-slate-500")}>Counter</button>
-                                                                    <button className={cn("flex-1 h-11 rounded-xl border font-black text-[12px] uppercase tracking-wider", isDark ? "bg-white/5 border-white/8 text-white/40" : "bg-white border-slate-200 text-slate-500")}>Decline</button>
                                                                 </div>
                                                             </div>
 
@@ -5587,7 +5558,38 @@ const MobileDashboardDemo = ({
                                                                         <p className={cn("text-[13px] font-medium leading-relaxed opacity-60", textColor)}>
                                                                             {selectedItem.campaign_description || selectedItem.description || selectedItem.raw?.campaign_description || selectedItem.raw?.description || "High-energy Reel showcasing unboxing and key features."}
                                                                         </p>
-                                                                        {/* Removed redundant deliverables mapping */}
+
+                                                                        {/* WHAT THE BRAND GETS (Checklist Style) */}
+                                                                        <div className={cn("mt-6 rounded-3xl p-5 border", isDark ? "bg-white/[0.03] border-white/6" : "bg-slate-50 border-slate-100")}>
+                                                                            <h4 className={cn("text-[10px] font-black uppercase tracking-[0.15em] mb-4 opacity-40", textColor)}>What the Brand Gets</h4>
+                                                                            <div className="space-y-3">
+                                                                                {/* Primary */}
+                                                                                <div className="flex items-start gap-3">
+                                                                                    <div className="mt-0.5 w-4 h-4 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0">
+                                                                                        <Check className="w-2.5 h-2.5 text-emerald-500" strokeWidth={4} />
+                                                                                    </div>
+                                                                                    <p className={cn("text-[13px] font-bold leading-none", textColor)}>{primaryLabel}</p>
+                                                                                </div>
+                                                                                {/* Secondary */}
+                                                                                {secondaryDeliverables.filter(d => d.label || d.name).map((d, i) => (
+                                                                                    <div key={i} className="flex items-start gap-3">
+                                                                                        <div className="mt-0.5 w-4 h-4 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0">
+                                                                                            <Check className="w-2.5 h-2.5 text-emerald-500" strokeWidth={4} />
+                                                                                        </div>
+                                                                                        <p className={cn("text-[13px] font-bold leading-none", textColor)}>{d.label || d.name}</p>
+                                                                                    </div>
+                                                                                ))}
+                                                                                {/* Requirements */}
+                                                                                {requirementsList.map((req, i) => (
+                                                                                    <div key={i} className="flex items-start gap-3">
+                                                                                        <div className="mt-0.5 w-4 h-4 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0">
+                                                                                            <Check className="w-2.5 h-2.5 text-emerald-500" strokeWidth={4} />
+                                                                                        </div>
+                                                                                        <p className={cn("text-[13px] font-bold leading-none opacity-70", textColor)}>{req}</p>
+                                                                                    </div>
+                                                                                ))}
+                                                                            </div>
+                                                                        </div>
                                                                     </div>
                                                                 )}
                                                             </div>
@@ -6039,7 +6041,6 @@ const MobileDashboardDemo = ({
                                                 <h4 className={cn("text-[11px] font-black uppercase tracking-[0.2em] mb-4 opacity-50 px-1", textColor)}>Campaign Brief</h4>
                                                 <div className={cn("rounded-[32px] border p-6 relative overflow-hidden backdrop-blur-xl shadow-2xl", 
                                                     isDark ? "bg-[#0C1320]/80 border-white/10" : "bg-white border-slate-200/60 shadow-sm")}>
-                                                     {/* Removed redundant chips here as per user request */}
                                                     <div className="flex items-start gap-4">
                                                         <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center shrink-0 bg-info/10")}>
                                                             <AlignLeft className="w-5 h-5 text-info" />
@@ -6052,102 +6053,102 @@ const MobileDashboardDemo = ({
                                             </div>
                                         )}
 
-	                                        {/* ── DELIVERABLES (Deals only — offers show checklist inline) ── */}
-	                                        {selectedType === 'deal' && (
-	                                        <div className="mb-8">
-	                                            <h4 className={cn("text-[11px] font-black uppercase tracking-[0.2em] mb-4 opacity-50 px-1", textColor)}>Deliverables</h4>
-	                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-	                                                {(() => {
-                                                    const raw = selectedItem.deliverables || selectedItem.raw?.deliverables;
-                                                    let items: any[] = [{ label: 'Instagram Reel', count: 1, type: 'reel' }, { label: 'Stories', count: 2, type: 'story' }];
-                                                    try {
-                                                        const parsed = safeJsonParse(raw, raw);
-                                                        if (Array.isArray(parsed) && parsed.length > 0) {
-                                                            items = parsed.map((d: any) => {
-                                                                if (typeof d === 'string') return { label: d, count: 1, type: 'other' };
-                                                                const ct = (d.contentType || d.type || '').toLowerCase();
-                                                                const count = d.count || d.quantity || 1;
-                                                                let type = 'other', label = 'Content';
-                                                                if (ct.includes('reel')) { type = 'reel'; label = 'Instagram Reel'; }
-                                                                else if (ct.includes('story')) { type = 'story'; label = 'Instagram Story'; }
-                                                                else if (ct.includes('post')) { type = 'post'; label = 'Static Post'; }
-                                                                return { label, count, type };
-                                                            });
-                                                        }
-                                                    } catch (_) { }
-                                                    return items.map((d, i) => (
-                                                        <div key={i} className={cn(
-                                                            "px-5 py-4 rounded-[24px] border flex items-center gap-4 group transition-all duration-300",
-                                                            isDark ? "bg-[#0B0F14] border-white/5" : "bg-white border-slate-200 shadow-sm"
-                                                        )}>
-                                                            <div className={cn(
-                                                                "w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 relative",
-                                                                d.type === 'reel' ? "bg-purple-500/10 text-purple-400" : 
-                                                                d.type === 'story' ? "bg-rose-500/10 text-rose-400" : 
-                                                                "bg-blue-500/10 text-blue-400"
+                                        {/* ── DELIVERABLES (Deals only — offers show checklist inline) ── */}
+                                        {selectedType === 'deal' && (
+                                            <div className="mb-8">
+                                                <h4 className={cn("text-[11px] font-black uppercase tracking-[0.2em] mb-4 opacity-50 px-1", textColor)}>Deliverables</h4>
+                                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                                                    {(() => {
+                                                        const raw = selectedItem.deliverables || selectedItem.raw?.deliverables;
+                                                        let items: any[] = [{ label: 'Instagram Reel', count: 1, type: 'reel' }, { label: 'Stories', count: 2, type: 'story' }];
+                                                        try {
+                                                            const parsed = safeJsonParse(raw, raw);
+                                                            if (Array.isArray(parsed) && parsed.length > 0) {
+                                                                items = parsed.map((d: any) => {
+                                                                    if (typeof d === 'string') return { label: d, count: 1, type: 'other' };
+                                                                    const ct = (d.contentType || d.type || '').toLowerCase();
+                                                                    const count = d.count || d.quantity || 1;
+                                                                    let type = 'other', label = 'Content';
+                                                                    if (ct.includes('reel')) { type = 'reel'; label = 'Instagram Reel'; }
+                                                                    else if (ct.includes('story')) { type = 'story'; label = 'Instagram Story'; }
+                                                                    else if (ct.includes('post')) { type = 'post'; label = 'Static Post'; }
+                                                                    return { label, count, type };
+                                                                });
+                                                            }
+                                                        } catch (_) { }
+                                                        return items.map((d, i) => (
+                                                            <div key={i} className={cn(
+                                                                "px-5 py-4 rounded-[24px] border flex items-center gap-4 group transition-all duration-300",
+                                                                isDark ? "bg-[#0B0F14] border-white/5" : "bg-white border-slate-200 shadow-sm"
                                                             )}>
-                                                                {d.type === 'reel' ? <Film className="w-5 h-5" /> : 
-                                                                 d.type === 'story' ? <Smartphone className="w-5 h-5" /> : 
-                                                                 <FileText className="w-5 h-5" />}
+                                                                <div className={cn(
+                                                                    "w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 relative",
+                                                                    d.type === 'reel' ? "bg-purple-500/10 text-purple-400" : 
+                                                                    d.type === 'story' ? "bg-rose-500/10 text-rose-400" : 
+                                                                    "bg-blue-500/10 text-blue-400"
+                                                                )}>
+                                                                    {d.type === 'reel' ? <Film className="w-5 h-5" /> : 
+                                                                     d.type === 'story' ? <Smartphone className="w-5 h-5" /> : 
+                                                                     <FileText className="w-5 h-5" />}
+                                                                </div>
+                                                                <div className="flex-1 min-w-0">
+                                                                    <p className={cn("text-[14px] font-black tracking-tight", textColor)}>{d.label}</p>
+                                                                    <p className={cn("text-[11px] font-bold opacity-40 uppercase tracking-widest mt-0.5", textColor)}>{d.count} Required</p>
+                                                                </div>
+                                                                <div className={cn(
+                                                                    "w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all",
+                                                                    isDark ? "border-white/10" : "border-slate-200"
+                                                                )}>
+                                                                    <div className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
+                                                                </div>
                                                             </div>
-                                                            <div className="flex-1 min-w-0">
-                                                                <p className={cn("text-[14px] font-black tracking-tight", textColor)}>{d.label}</p>
-                                                                <p className={cn("text-[11px] font-bold opacity-40 uppercase tracking-widest mt-0.5", textColor)}>{d.count} Required</p>
-                                                            </div>
-                                                            <div className={cn(
-                                                                "w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all",
-                                                                isDark ? "border-white/10" : "border-slate-200"
-                                                            )}>
-                                                                <div className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
-                                                            </div>
-                                                        </div>
-                                                    ));
-                                                })()}
-	                                            </div>
-	                                        </div>
-	                                        )}
+                                                        ));
+                                                    })()}
+                                                </div>
+                                            </div>
+                                        )}
 
-	                                        {/* ── PRODUCT PREVIEW (IF BARTER) ── */}
-	                                        {selectedType !== 'offer' && selectedRequiresShipping && (
-	                                            <div className="mb-8">
-	                                                <h4 className={cn("text-[12px] font-black uppercase tracking-[0.2em] mb-4 opacity-40 px-1", textColor)}>Product Included</h4>
-	                                                <div className={cn(
-                                                        "rounded-[2.5rem] border p-5 flex items-center gap-6 relative overflow-hidden group transition-all duration-500", 
-                                                        isDark ? "bg-white/[0.03] border-white/5" : "bg-white border-slate-200 shadow-sm"
+                                        {/* ── PRODUCT PREVIEW (IF BARTER) ── */}
+                                        {selectedType !== 'offer' && selectedRequiresShipping && (
+                                            <div className="mb-8">
+                                                <h4 className={cn("text-[12px] font-black uppercase tracking-[0.2em] mb-4 opacity-40 px-1", textColor)}>Product Included</h4>
+                                                <div className={cn(
+                                                    "rounded-[2.5rem] border p-5 flex items-center gap-6 relative overflow-hidden group transition-all duration-500", 
+                                                    isDark ? "bg-white/[0.03] border-white/5" : "bg-white border-slate-200 shadow-sm"
+                                                )}>
+                                                    <div className={cn(
+                                                        "w-24 h-24 rounded-[2rem] shrink-0 overflow-hidden border-2 shadow-xl relative",
+                                                        isDark ? "bg-[#1C212B] border-white/10" : "bg-slate-100 border-white"
                                                     )}>
-                                                        <div className={cn(
-                                                            "w-24 h-24 rounded-[2rem] shrink-0 overflow-hidden border-2 shadow-xl relative",
-                                                            isDark ? "bg-[#1C212B] border-white/10" : "bg-slate-100 border-white"
-                                                        )}>
-                                                            <img 
-                                                                src={resolveCreatorDealProductImage(selectedItem) || "https://images.unsplash.com/photo-1556821840-3a63f95609a7?auto=format&fit=crop&q=80&w=300"} 
-                                                                alt="Product" 
-                                                                className="w-full h-full object-cover transition-transform group-hover:scale-110 duration-700" 
-                                                            />
-                                                            <div className="absolute inset-0 bg-gradient-to-tr from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                                                        </div>
-                                                        <div className="flex-1 min-w-0">
-                                                            <p className={cn("text-[18px] font-black leading-tight tracking-tight", textColor)}>
-                                                                {selectedItem.product_name || (selectedItem.brand_name?.toLowerCase().includes('mellow') ? 'Signature Product' : 'Signature Hoodie + Apparel Box')}
-                                                            </p>
-                                                            <div className="flex flex-col gap-2 mt-3">
-                                                                <div className="flex items-center gap-2.5">
-                                                                    <div className={cn("w-5 h-5 rounded-lg flex items-center justify-center", isDark ? "bg-amber-500/20" : "bg-amber-50")}>
-                                                                        <Zap className="w-3 h-3 text-amber-500" />
-                                                                    </div>
-                                                                    <p className={cn("text-[13px] font-black tracking-tight", isDark ? "text-amber-200/70" : "text-amber-700")}>Value {renderBudgetValue(selectedItem)}</p>
+                                                        <img 
+                                                            src={resolveCreatorDealProductImage(selectedItem) || "https://images.unsplash.com/photo-1556821840-3a63f95609a7?auto=format&fit=crop&q=80&w=300"} 
+                                                            alt="Product" 
+                                                            className="w-full h-full object-cover transition-transform group-hover:scale-110 duration-700" 
+                                                        />
+                                                        <div className="absolute inset-0 bg-gradient-to-tr from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                                                    </div>
+                                                    <div className="flex-1 min-w-0">
+                                                        <p className={cn("text-[18px] font-black leading-tight tracking-tight", textColor)}>
+                                                            {selectedItem.product_name || (selectedItem.brand_name?.toLowerCase().includes('mellow') ? 'Signature Product' : 'Signature Hoodie + Apparel Box')}
+                                                        </p>
+                                                        <div className="flex flex-col gap-2 mt-3">
+                                                            <div className="flex items-center gap-2.5">
+                                                                <div className={cn("w-5 h-5 rounded-lg flex items-center justify-center", isDark ? "bg-amber-500/20" : "bg-amber-50")}>
+                                                                    <Zap className="w-3 h-3 text-amber-500" />
                                                                 </div>
-                                                                <div className="flex items-center gap-2.5">
-                                                                    <div className={cn("w-5 h-5 rounded-lg flex items-center justify-center", isDark ? "bg-sky-500/20" : "bg-sky-50")}>
-                                                                        <Truck className="w-3 h-3 text-sky-500" />
-                                                                    </div>
-                                                                    <p className={cn("text-[13px] font-black tracking-tight", isDark ? "text-sky-200/70" : "text-sky-700")}>Ships within 3 days</p>
+                                                                <p className={cn("text-[13px] font-black tracking-tight", isDark ? "text-amber-200/70" : "text-amber-700")}>Value {renderBudgetValue(selectedItem)}</p>
+                                                            </div>
+                                                            <div className="flex items-center gap-2.5">
+                                                                <div className={cn("w-5 h-5 rounded-lg flex items-center justify-center", isDark ? "bg-sky-500/20" : "bg-sky-50")}>
+                                                                    <Truck className="w-3 h-3 text-sky-500" />
                                                                 </div>
+                                                                <p className={cn("text-[13px] font-black tracking-tight", isDark ? "text-sky-200/70" : "text-sky-700")}>Ships within 3 days</p>
                                                             </div>
                                                         </div>
                                                     </div>
-	                                            </div>
-	                                        )}
+                                                </div>
+                                            </div>
+                                        )}
 
                                         {selectedType === 'deal' && selectedRequiresShipping && (
                                             <div className="mb-6">
@@ -6443,38 +6444,47 @@ const MobileDashboardDemo = ({
                                                 </div>
                                             </>
                                         )}
-
-	                                        {/* ── EARNINGS BREAKDOWN (Offers) ── */}
-	                                        {false && selectedType === 'offer' && (
-	                                            <div className="mb-6">
-	                                                <h4 className={cn("text-[13px] font-black uppercase tracking-wider mb-3 opacity-50", textColor)}>Earnings Breakdown</h4>
-	                                                <div className={cn("rounded-2xl border p-4", isDark ? "bg-card border-border" : "bg-card border-border shadow-sm")}>
-                                                    <div className="mb-5">
-                                                        <p className={cn("text-[11px] font-black uppercase tracking-wider mb-1", isDark ? "text-primary" : "text-primary")}>You Receive</p>
-                                                        <p className={cn("text-[32px] font-black leading-none", textColor)}>{renderBudgetValue(selectedItem)}</p>
-                                                    </div>
-
-                                                    <div className="space-y-2.5 text-[12px]">
-                                                        <div className="flex items-center justify-between">
-                                                            <span className={cn("font-medium opacity-70", textColor)}>Offer budget</span>
-                                                            <span className={cn("font-bold", textColor)}>{renderBudgetValue(selectedItem)}</span>
-                                                        </div>
-                                                        <div className="flex items-center justify-between">
-                                                            <span className={cn("font-medium opacity-70", textColor)}>Platform fee</span>
-                                                            <span className={cn("font-bold text-primary")}>₹0</span>
-                                                        </div>
-                                                        <div className="flex items-center justify-between mt-2 pt-2 border-t border-border">
-                                                            <span className={cn("font-medium opacity-70", textColor)}>{selectedRequiresPayment ? 'Payment Method' : 'Fulfillment Method'}</span>
-                                                            <span className={cn("font-bold", textColor)}>Bank Transfer</span>
-                                                        </div>
-                                                    </div>
-                                                </div>
-	                                            </div>
-	                                        )}
                                     </div>
                                     
                                     {/* ── STICKY CTA BAR ── */}
-                                    {selectedType !== 'offer' && (() => {
+                                    {(() => {
+                                        if (selectedType === 'offer') {
+                                            return (
+                                              <div className={cn(
+                                                 "px-5 pb-9 pt-4 border-t z-20 relative overflow-hidden",
+                                                 isDark 
+                                                     ? "bg-[#0B0F14]/90 backdrop-blur-2xl border-white/5" 
+                                                     : "bg-white/95 backdrop-blur-xl border-slate-200 shadow-[0_-12px_40px_rgba(0,0,0,0.08)]"
+                                             )}>
+                                                 <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-emerald-500/20 to-transparent" />
+                                                 <div className="max-w-md mx-auto space-y-2.5">
+                                                     <button
+                                                         type="button"
+                                                         disabled={processingDeal === selectedItem.id}
+                                                         onClick={() => handleAccept(selectedItem)}
+                                                         className={cn(
+                                                             "w-full h-15 py-4 rounded-[22px] font-black text-[16px] tracking-tight active:scale-[0.98] transition-all shadow-xl flex items-center justify-center gap-3",
+                                                             isDark ? "bg-emerald-500 text-white shadow-emerald-500/20" : "bg-emerald-600 text-white shadow-emerald-600/20"
+                                                         )}
+                                                     >
+                                                         {processingDeal === selectedItem.id ? (
+                                                             <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                                         ) : (
+                                                             <>
+                                                                 <Zap className="w-4 h-4 fill-current" />
+                                                                 {isBarterLikeCollab(selectedItem) ? "Accept & Receive Product" : `Accept & Earn ${renderBudgetValue(selectedItem)}`}
+                                                             </>
+                                                         )}
+                                                     </button>
+                                                     <div className="flex gap-2">
+                                                         <button className={cn("flex-1 h-11 rounded-xl border font-black text-[12px] uppercase tracking-wider", isDark ? "bg-white/5 border-white/8 text-white/40" : "bg-white border-slate-200 text-slate-500")}>Counter</button>
+                                                         <button className={cn("flex-1 h-11 rounded-xl border font-black text-[12px] uppercase tracking-wider", isDark ? "bg-white/5 border-white/8 text-white/40" : "bg-white border-slate-200 text-slate-500")}>Decline</button>
+                                                     </div>
+                                                 </div>
+                                              </div>
+                                            );
+                                        }
+
                                        const cta = getDealPrimaryCta({ role: 'creator', deal: selectedItem });
                                        const isWaiting = cta.tone === 'waiting';
                                        return (
