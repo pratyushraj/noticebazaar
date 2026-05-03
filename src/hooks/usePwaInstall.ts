@@ -16,9 +16,20 @@ const listeners = new Set<(prompt: BeforeInstallPromptEvent | null) => void>();
 // Initial global listener (setup once)
 if (typeof window !== 'undefined') {
   window.addEventListener('beforeinstallprompt', (e: Event) => {
+    // Prevent the mini-infobar from appearing on mobile
     e.preventDefault();
+    
+    console.debug('[PWA] beforeinstallprompt event captured');
     globalDeferredPrompt = e as BeforeInstallPromptEvent;
+    
+    // Notify all active hook instances
     listeners.forEach(l => l(globalDeferredPrompt));
+  });
+
+  window.addEventListener('appinstalled', (e) => {
+    console.debug('[PWA] App installed successfully');
+    globalDeferredPrompt = null;
+    listeners.forEach(l => l(null));
   });
 }
 

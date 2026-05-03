@@ -120,7 +120,7 @@ ${stats.collectionRate}%
     URL.revokeObjectURL(url);
     
     toast.success('Financial summary exported!', {
-      description: 'A text file has been downloaded. PDF export coming soon.',
+      description: 'A summary report has been downloaded as a text file.',
     });
   };
 

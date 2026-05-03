@@ -5491,10 +5491,8 @@ const MobileDashboardDemo = ({
                                                             {(() => {
                                                                 const src = resolveCreatorDealProductImage(selectedItem) || 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&q=80&w=500';
                                                                 return (
-                                                                    <>
                                                                         <img src={src} alt="" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" loading="lazy" />
-                                                                        <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-60" />
-                                                                    </>
+
                                                                 );
                                                             })()}
                                                         </div>
@@ -5794,10 +5792,8 @@ const MobileDashboardDemo = ({
                                                             {(() => {
                                                                 const src = resolveCreatorDealProductImage(selectedItem) || 'https://images.unsplash.com/photo-1524169358666-79f22534bc6b?auto=format&fit=crop&q=80&w=1200';
                                                                 return (
-                                                                    <>
                                                                         <img src={src} alt="" className="w-full h-full object-cover transition-all duration-1000 group-hover:scale-110" loading="lazy" />
-                                                                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-60" />
-                                                                    </>
+
                                                                 );
                                                             })()}
                                                             

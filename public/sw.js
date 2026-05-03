@@ -1,10 +1,10 @@
-// Service Worker v1.3.3 - Safer SPA caching
+// Service Worker v1.3.4 - Safer SPA caching
 // Precaches app shell for offline support
 
-const CACHE_NAME = 'creator-armour-v7';
-const STATIC_CACHE = 'creator-armour-static-v7';
-const IMAGE_CACHE = 'creator-armour-images-v7';
-const FONT_CACHE = 'creator-armour-fonts-v7';
+const CACHE_NAME = 'creator-armour-v8';
+const STATIC_CACHE = 'creator-armour-static-v8';
+const IMAGE_CACHE = 'creator-armour-images-v8';
+const FONT_CACHE = 'creator-armour-fonts-v8';
 
 // Files to precache for offline
 const PRECACHE_URLS = [
@@ -94,7 +94,7 @@ self.addEventListener('fetch', (event) => {
           return fetch(request).then((response) => {
             if (response.ok) cache.put(request, response.clone());
             return response;
-          }).catch(() => new Response('', { status: 408 }));
+          }).catch(() => cached || new Response(null, { status: 404 }));
         })
       )
     );
@@ -110,7 +110,7 @@ self.addEventListener('fetch', (event) => {
           return fetch(request).then((response) => {
             if (response.ok) cache.put(request, response.clone());
             return response;
-          }).catch(() => new Response('', { status: 408 }));
+          }).catch(() => cached || new Response(null, { status: 404 }));
         })
       )
     );
@@ -131,7 +131,7 @@ self.addEventListener('fetch', (event) => {
           return response;
         })
         .catch(() =>
-          caches.open(STATIC_CACHE).then((cache) => cache.match('/index.html')).then((cached) => cached || new Response('', { status: 408 }))
+          caches.open(STATIC_CACHE).then((cache) => cache.match('/index.html')).then((cached) => cached || new Response('Offline: Resource not in cache', { status: 504 }))
         )
     );
     return;
@@ -148,7 +148,7 @@ self.addEventListener('fetch', (event) => {
             }
             return response;
           })
-          .catch(() => cached || new Response('', { status: 408 }));
+          .catch(() => cached || new Response('Offline: Network failure', { status: 504 }));
         return cached || fetchPromise;
       })
     )

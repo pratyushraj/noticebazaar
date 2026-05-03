@@ -80,11 +80,12 @@ export async function generateContractDocx(schema: ContractSchema): Promise<Buff
         ? schema.creator_address.trim() 
         : '',
       creator_email: schema.creator_email?.trim() || '',
+      creator_gstin: (schema as any).creator_gstin?.trim() || '',
       deliverables: formatDeliverables(deliverablesArray),
       delivery_deadline: formatDate(schema.delivery_deadline) || 'As mutually agreed',
       deal_amount_formatted: schema.deal_amount_formatted,
       payment_method: schema.payment_method || 'Bank Transfer',
-      payment_timeline: schema.payment_timeline || 'Within 7 days of content delivery',
+      payment_timeline: schema.payment_timeline || (schema.deal_type === 'barter' ? 'Upon delivery of product' : 'Within 7 days of content delivery'),
       late_payment_clause: 'If payment is delayed beyond 7 days from the due date, the Brand shall be liable to pay interest at 18% per annum, calculated daily until settlement. The Creator reserves the right to initiate legal recovery proceedings for unpaid dues.',
       usage_type: schema.usage_type || 'Non-exclusive',
       usage_platforms: schema.usage_platforms || 'Instagram',
@@ -92,8 +93,8 @@ export async function generateContractDocx(schema: ContractSchema): Promise<Buff
       paid_ads_allowed: schema.paid_ads_allowed || 'No',
       whitelisting_allowed: schema.whitelisting_allowed || 'No',
       exclusivity_clause: schema.exclusivity_clause || 'No exclusivity period applies.',
-      termination_notice_days: schema.termination_notice_days || 30,
-      termination_clause: `Either party may terminate this Agreement with ${schema.termination_notice_days || 30} days written notice.`,
+      termination_notice_days: schema.termination_notice_days || 14,
+      termination_clause: `Either party may terminate this Agreement with ${schema.termination_notice_days || 14} days written notice.`,
       jurisdiction_city: schema.jurisdiction_city.trim(),
       governing_law_clause: `This Agreement shall be governed by the laws of India. Any disputes shall be subject to the exclusive jurisdiction of the courts of ${schema.jurisdiction_city.trim()}, India.`,
       additional_terms: schema.additional_terms?.trim() || '',
@@ -342,7 +343,6 @@ export async function generateContractDocx(schema: ContractSchema): Promise<Buff
             alignment: AlignmentType.JUSTIFIED,
             spacing: { after: PARAGRAPH_SPACING_AFTER / 2, line: LINE_SPACING },
           }),
-          
           new Paragraph({
             children: [
               new TextRun({
@@ -355,8 +355,35 @@ export async function generateContractDocx(schema: ContractSchema): Promise<Buff
               }),
             ],
             alignment: AlignmentType.JUSTIFIED,
+            spacing: { after: PARAGRAPH_SPACING_AFTER / 2, line: LINE_SPACING },
+          }),
+          ...(data.creator_gstin ? [
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: `GSTIN: ${data.creator_gstin}`,
+                font: 'Times New Roman',
+                size: BODY_FONT_SIZE,
+                underline: {
+                  type: UnderlineType.NONE,
+                },
+              }),
+            ],
+            alignment: AlignmentType.JUSTIFIED,
             spacing: { after: PARAGRAPH_SPACING_AFTER * 2, line: LINE_SPACING },
           }),
+          ] : [
+            new Paragraph({
+              children: [
+                new TextRun({
+                  text: '',
+                  font: 'Times New Roman',
+                  size: BODY_FONT_SIZE,
+                }),
+              ],
+              spacing: { after: PARAGRAPH_SPACING_AFTER * 2 },
+            })
+          ]),
           
           // ============================================
           // 1. SCOPE OF WORK

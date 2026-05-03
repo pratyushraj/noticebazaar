@@ -2453,9 +2453,7 @@ Best regards`;
                   alt={`${deal.brand_name} product preview`}
                   className="absolute inset-0 h-full w-full object-cover"
                 />
-                <div className="absolute left-3 top-3 rounded-full bg-black/55 px-2.5 py-1 text-[10px] font-black uppercase tracking-widest text-white backdrop-blur-sm">
-                  Product image
-                </div>
+
               </div>
             </div>
           )}

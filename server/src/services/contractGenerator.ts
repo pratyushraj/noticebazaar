@@ -31,6 +31,7 @@ export interface ContractGenerationRequest {
   brandAddress?: string;
   brandGstin?: string;
   creatorAddress?: string;
+  creatorGstin?: string;
   usageType?: 'Exclusive' | 'Non-exclusive';
   usagePlatforms?: string[];
   usageDuration?: string;
@@ -163,6 +164,7 @@ export async function generateContractFromScratch(
         name: request.creatorName,
         address: request.creatorAddress || '',
         email: request.creatorEmail || '',
+        gstin: request.creatorGstin?.trim() || undefined,
       }
     );
 

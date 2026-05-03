@@ -197,8 +197,8 @@ export const QuickOfferSheet: React.FC<QuickOfferSheetProps> = ({
 
         try {
             const apiBaseUrl = getApiBaseUrl();
-            const brandName = profile?.business_name || profile?.first_name || profile?.full_name || 'Brand';
             const brandEmail = profile?.email || session?.user?.email || '';
+            const brandName = profile?.business_name || profile?.first_name || profile?.full_name || (brandEmail ? brandEmail.split('@')[0] : 'Brand');
             const descriptionValue = description || `Marketing collaboration for ${brandName}`;
 
             const payload = {

@@ -11,7 +11,7 @@ import { usePwaInstall } from '@/hooks/usePwaInstall';
 
 const AddToHomeScreen: React.FC = () => {
   const location = useLocation();
-  const { deferredPrompt, canInstall } = usePwaInstall();
+  const { deferredPrompt, canInstall, promptInstall } = usePwaInstall();
   const [showBanner, setShowBanner] = useState(false);
   const [isAndroid, setIsAndroid] = useState(false);
   const [isIOSDevice, setIsIOSDevice] = useState(false);
@@ -110,15 +110,12 @@ const AddToHomeScreen: React.FC = () => {
     }
 
     triggerHaptic(HapticPatterns.success);
-    deferredPrompt.prompt();
-    const { outcome } = await deferredPrompt.userChoice;
+    const success = await promptInstall();
     
-    if (outcome === 'accepted') {
+    if (success) {
       setShowBanner(false);
       localStorage.setItem(INSTALL_DISMISS_KEY, Date.now().toString());
     }
-    
-    setDeferredPrompt(null);
   };
 
   const handleDismiss = () => {

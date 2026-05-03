@@ -13,6 +13,7 @@ import CreatorBottomNav from '@/components/creator-dashboard/CreatorBottomNav';
 import { gradients, spacing } from '@/lib/design-system';
 import { cn } from '@/lib/utils';
 import { useSignOut } from '@/lib/hooks/useAuth';
+import { useNotifications } from '@/lib/hooks/useNotifications';
 import { triggerHaptic, HapticPatterns } from '@/lib/utils/haptics';
 import {
   AlertDialog,
@@ -86,6 +87,7 @@ export const CreatorNavigationWrapper: React.FC<CreatorNavigationWrapperProps> =
   const isCreator = profile?.role === 'creator';
   const isOnboarding = location.pathname === '/creator-onboarding';
   const shouldShowBottomNav = isCreator && !isOnboarding && !hideBottomNav;
+  const { unreadCount } = useNotifications();
 
   return (
     <div className={cn("nb-screen-height", gradients.page, "text-foreground overflow-x-hidden", className)}>
@@ -117,7 +119,7 @@ export const CreatorNavigationWrapper: React.FC<CreatorNavigationWrapperProps> =
           setShowLogoutDialog(true);
         }}
         activeItem={activeTab}
-        counts={{ messages: 3 }} // TODO: Get real count
+        counts={{ messages: unreadCount }} 
       />
 
       {/* Logout Confirmation Dialog */}

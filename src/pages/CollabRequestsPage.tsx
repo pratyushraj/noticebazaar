@@ -400,10 +400,8 @@ const CollabRequestsPage = () => {
                       <div className="w-full rounded-lg overflow-hidden bg-secondary/[0.08] border border-border aspect-[4/3] min-h-[120px] relative">
                         {productImageUrl && !failedBarterImages[request.id] ? (
                           <>
-                            <span className="absolute bottom-2 left-2 z-10 px-2 py-1 rounded-lg text-[10px] font-medium text-foreground/95 bg-black/50 backdrop-blur-sm">
-                              Product preview
-                            </span>
                             <img
+
                               src={productImageUrl}
                               alt="Barter product"
                               className="w-full h-full object-cover"

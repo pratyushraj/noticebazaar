@@ -69,9 +69,19 @@ const DualKPISnapshot = () => {
     documentsAwaitingReviewCount = documentsAwaitingReviewData?.data?.length || 0;
     pendingConsultationsCount = pendingConsultationsData?.data?.length || 0;
     
-    // Use hardcoded dates for non-demo users if real compliance data isn't available
-    nextGSTFilingDateStr = "2025-10-26"; 
-    tdsPaymentDueDateStr = "2025-11-08";
+    // Calculate dynamic compliance dates based on current month if real data isn't available
+    const today = new Date();
+    const currentMonth = today.getMonth();
+    const currentYear = today.getFullYear();
+
+    // GST Filing: Usually 20th of the following month for the previous month
+    // We'll show the upcoming one (if today is < 20th, show this month's 20th, else next month)
+    const nextGstDate = new Date(currentYear, today.getDate() < 20 ? currentMonth : currentMonth + 1, 20);
+    nextGSTFilingDateStr = nextGstDate.toISOString().split('T')[0];
+
+    // TDS Payment: Usually 7th of the following month
+    const nextTdsDate = new Date(currentYear, today.getDate() < 7 ? currentMonth : currentMonth + 1, 7);
+    tdsPaymentDueDateStr = nextTdsDate.toISOString().split('T')[0];
   }
 
   const isLoading = sessionLoading || (!isDemoUser && (isLoadingCases || isLoadingDocuments || isLoadingConsultations));

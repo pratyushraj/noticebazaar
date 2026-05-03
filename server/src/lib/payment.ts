@@ -51,7 +51,7 @@ export function calculatePaymentBreakdown(dealAmountRupees: number): PaymentBrea
   // Razorpay MDR is charged on the total collected amount (in Paise)
   const mdrPaise         = Math.round(brandTotalPaise * RAZORPAY_MDR_PCT);
   const mdrGstPaise      = Math.round(mdrPaise * RAZORPAY_MDR_GST);
-  const platformNetPaise = platformFeePaise + gstOnFeePaise - mdrPaise - mdrGstPaise;
+  const platformNetPaise = platformFeePaise - mdrPaise - mdrGstPaise;
 
   return {
     dealAmount:            dealPaise / 100,

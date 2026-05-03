@@ -75,7 +75,7 @@ export async function getShippingTokenInfo(token: string): Promise<{
 
   const { data: deal, error: dealError } = await (supabase as any)
     .from('brand_deals')
-    .select('id, brand_name, deliverables, creator_id')
+    .select('id, brand_name, deliverables, creator_id, collab_request_id')
     .eq('id', row.deal_id)
     .maybeSingle();
 
@@ -94,11 +94,34 @@ export async function getShippingTokenInfo(token: string): Promise<{
       creatorCity = profile.location || null;
     }
   }
-  let productDescription = typeof deal.deliverables === 'string'
-    ? deal.deliverables
-    : Array.isArray(deal.deliverables)
-      ? deal.deliverables.join(', ')
-      : 'Product';
+
+  let productDescription = 'Product';
+  
+  // Try to get barter description from collab request first (Fix #3)
+  if (deal.collab_request_id) {
+    const { data: request } = await (supabase as any)
+      .from('collab_requests')
+      .select('barter_description, deal_type')
+      .eq('id', deal.collab_request_id)
+      .maybeSingle();
+    
+    if (request?.barter_description) {
+      productDescription = request.barter_description;
+    } else {
+      // Fallback to deliverables if no barter description
+      productDescription = typeof deal.deliverables === 'string'
+        ? deal.deliverables
+        : Array.isArray(deal.deliverables)
+          ? deal.deliverables.join(', ')
+          : 'Product';
+    }
+  } else {
+    productDescription = typeof deal.deliverables === 'string'
+      ? deal.deliverables
+      : Array.isArray(deal.deliverables)
+        ? deal.deliverables.join(', ')
+        : 'Product';
+  }
 
   return {
     dealId: deal.id,

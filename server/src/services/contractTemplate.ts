@@ -53,6 +53,7 @@ export interface ContractVariables {
   creator_name: string;
   creator_address?: string;
   creator_email?: string;
+  creator_gstin?: string;
   deliverables_list: string;
   delivery_deadline: string;
   deal_amount: number;
@@ -89,6 +90,7 @@ export function mapDealSchemaToContractVariables(
     name: string;
     address?: string;
     email?: string;
+    gstin?: string;
   }
 ): ContractVariables {
   const today = new Date();
@@ -123,7 +125,7 @@ export function mapDealSchemaToContractVariables(
 
   let shippingClause = '';
   if (dealSchema.shipping_required) {
-    shippingClause = "The Brand agrees to ship the required product(s) to the Creator's registered address at the Brand's sole expense. The Creator is not liable for lost or damaged goods during transit.";
+    shippingClause = dealSchema.shipping_clause || "The Brand agrees to ship the required product(s) to the Creator's registered address at the Brand's sole expense. The Creator is not liable for lost or damaged goods during transit.";
   }
 
   // Usage rights - validate and format
@@ -232,6 +234,7 @@ export function mapDealSchemaToContractVariables(
     creator_name: creatorInfo.name,
     creator_address: creatorInfo.address || '',
     creator_email: creatorInfo.email || '',
+    creator_gstin: creatorInfo.gstin?.trim() || undefined,
     deliverables_list: deliverablesList,
     delivery_deadline: deliveryDeadline,
     deal_amount: dealSchema.deal_amount, // Keep raw amount for calculations if needed

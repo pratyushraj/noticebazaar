@@ -42,8 +42,8 @@ const EarningsNanoMetrics: React.FC<EarningsNanoMetricsProps> = ({ brandDeals = 
       ? Math.round(paymentCycles.reduce((sum, days) => sum + days, 0) / paymentCycles.length)
       : 35; // Demo value
 
-    // For demo mode, use demo values
-    if (brandDeals.length <= 6) {
+    // Only use demo values if there are absolutely no deals
+    if (brandDeals.length === 0) {
       return {
         avgDealSize: 71425,
         onTimeRate: 92,
