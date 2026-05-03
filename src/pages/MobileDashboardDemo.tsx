@@ -5569,41 +5569,52 @@ const MobileDashboardDemo = ({
                                                                     const extractedDuration = durationMatch ? durationMatch[1].trim() : null;
                                                                     
                                                                     const cleanDesc = rawDesc || "High-energy Reel showcasing unboxing and key features.";
+                                                                    const packageIcon = extractedPackageName?.toLowerCase().includes('starter') ? "🚀" : extractedPackageName?.toLowerCase().includes('growth') ? "📈" : "📄";
 
                                                                     return (
-                                                                        <div className={cn("rounded-[24px] border overflow-hidden", isDark ? "bg-white/[0.02] border-white/6" : "bg-white border-slate-200")}>
+                                                                        <div className={cn("rounded-[32px] border overflow-hidden", isDark ? "bg-white/[0.02] border-white/6" : "bg-white border-slate-200")}>
                                                                             <button 
                                                                                 onClick={() => setShowBrief(v => !v)}
-                                                                                className="w-full px-5 py-5 flex items-center justify-between text-left"
+                                                                                className="w-full px-6 py-7 flex items-center justify-between text-left"
                                                                             >
                                                                                 <div className="flex flex-col">
-                                                                                    <span className={cn("text-[17px] font-black tracking-tight", textColor)}>
-                                                                                        {extractedPackageName || "Campaign Brief"}
-                                                                                    </span>
-                                                                                    {extractedPackageName && (
-                                                                                        <span className={cn("text-[10px] font-black uppercase tracking-[0.15em] opacity-30 mt-1", textColor)}>
-                                                                                            Standard Delivery
+                                                                                    <div className="flex items-center gap-3 mb-1.5">
+                                                                                        <span className="text-2xl">{packageIcon}</span>
+                                                                                        <span className={cn("text-[26px] font-black tracking-tighter leading-none", textColor)}>
+                                                                                            {extractedPackageName || "Campaign Brief"}
                                                                                         </span>
-                                                                                    )}
+                                                                                    </div>
+                                                                                    <span className={cn("text-[10px] font-black uppercase tracking-[0.3em] opacity-30 px-1", textColor)}>
+                                                                                        STANDARD DELIVERY
+                                                                                    </span>
                                                                                 </div>
-                                                                                <ChevronDown className={cn("w-5 h-5 opacity-30 transition-transform", showBrief && "rotate-180")} />
+                                                                                <div className="flex items-center gap-5">
+                                                                                    {extractedPackageName && (
+                                                                                        <div className={cn("w-14 h-14 rounded-full flex items-center justify-center shadow-xl border shrink-0", 
+                                                                                            isDark ? "bg-[#1A2235] border-white/10" : "bg-slate-50 border-slate-100")}>
+                                                                                            <span className="text-2xl filter drop-shadow-md">{packageIcon}</span>
+                                                                                        </div>
+                                                                                    )}
+                                                                                    <ChevronDown className={cn("w-6 h-6 opacity-20 transition-transform", showBrief && "rotate-180")} />
+                                                                                </div>
                                                                             </button>
                                                                             {showBrief && (
-                                                                                <div className="px-5 pb-6">
-                                                                                    <p className={cn("text-[14px] font-medium leading-relaxed opacity-60 mb-8 whitespace-pre-wrap", textColor)}>
+                                                                                <div className="px-6 pb-10">
+                                                                                    <p className={cn("text-[15px] font-medium leading-relaxed opacity-70 mb-10 whitespace-pre-wrap px-1", textColor)}>
                                                                                         {cleanDesc}
                                                                                     </p>
             
-                                                                                    {/* WHAT THE BRAND GETS (Checklist Style) */}
-                                                                                    <div className={cn("rounded-[32px] p-6 border", isDark ? "bg-white/[0.03] border-white/6" : "bg-slate-50 border-slate-100")}>
-                                                                                        <h4 className={cn("text-[11px] font-black uppercase tracking-[0.2em] mb-5 opacity-40", textColor)}>What the Brand Gets</h4>
-                                                                                        <div className="space-y-4">
+                                                                                    {/* WHAT THE BRAND GETS (Exactly like screenshot) */}
+                                                                                    <div className={cn("rounded-[32px] p-8 border", 
+                                                                                        isDark ? "bg-[#0C1320]/80 border-white/5" : "bg-slate-50/50 border-slate-200/60 shadow-sm")}>
+                                                                                        <h4 className={cn("text-[11px] font-black uppercase tracking-[0.25em] mb-6 opacity-40 px-1", textColor)}>WHAT THE BRAND GETS</h4>
+                                                                                        <div className="space-y-5">
                                                                                             {/* Primary */}
-                                                                                            <div className="flex items-center gap-3.5">
+                                                                                            <div className="flex items-center gap-4">
                                                                                                 <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0">
-                                                                                                    <Check className="w-3 h-3 text-emerald-500" strokeWidth={4} />
+                                                                                                    <Check className="w-3.5 h-3.5 text-emerald-500" strokeWidth={4} />
                                                                                                 </div>
-                                                                                                <p className={cn("text-[14px] font-bold tracking-tight", textColor)}>
+                                                                                                <p className={cn("text-[15px] font-bold tracking-tight", textColor)}>
                                                                                                     {primaryLabel} {extractedDuration ? `(${extractedDuration})` : ""}
                                                                                                 </p>
                                                                                             </div>
@@ -5611,54 +5622,53 @@ const MobileDashboardDemo = ({
                                                                                             {/* Package Specific Deliverables */}
                                                                                             {extractedPackageName?.toLowerCase().includes('starter') && (
                                                                                                 <>
-                                                                                                    <div className="flex items-center gap-3.5">
+                                                                                                    <div className="flex items-center gap-4">
                                                                                                         <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0">
-                                                                                                            <Check className="w-3 h-3 text-emerald-500" strokeWidth={4} />
+                                                                                                            <Check className="w-3.5 h-3.5 text-emerald-500" strokeWidth={4} />
                                                                                                         </div>
-                                                                                                        <p className={cn("text-[14px] font-bold tracking-tight opacity-90", textColor)}>Organic reach focus</p>
+                                                                                                        <p className={cn("text-[15px] font-bold tracking-tight", textColor)}>Organic reach focus</p>
                                                                                                     </div>
-                                                                                                    <div className="flex items-center gap-3.5">
+                                                                                                    <div className="flex items-center gap-4">
                                                                                                         <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0">
-                                                                                                            <Check className="w-3 h-3 text-emerald-500" strokeWidth={4} />
+                                                                                                            <Check className="w-3.5 h-3.5 text-emerald-500" strokeWidth={4} />
                                                                                                         </div>
-                                                                                                        <p className={cn("text-[14px] font-bold tracking-tight opacity-90", textColor)}>Basic editing</p>
+                                                                                                        <p className={cn("text-[15px] font-bold tracking-tight", textColor)}>Basic editing</p>
                                                                                                     </div>
                                                                                                 </>
                                                                                             )}
-
+                                                                                            
                                                                                             {extractedPackageName?.toLowerCase().includes('growth') && (
                                                                                                 <>
-                                                                                                    <div className="flex items-center gap-3.5">
+                                                                                                    <div className="flex items-center gap-4">
                                                                                                         <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0">
-                                                                                                            <Check className="w-3 h-3 text-emerald-500" strokeWidth={4} />
+                                                                                                            <Check className="w-3.5 h-3.5 text-emerald-500" strokeWidth={4} />
                                                                                                         </div>
-                                                                                                        <p className={cn("text-[14px] font-bold tracking-tight opacity-90", textColor)}>SEO + Hook Optimization</p>
+                                                                                                        <p className={cn("text-[15px] font-bold tracking-tight", textColor)}>SEO + Hook Optimization</p>
                                                                                                     </div>
-                                                                                                    <div className="flex items-center gap-3.5">
+                                                                                                    <div className="flex items-center gap-4">
                                                                                                         <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0">
-                                                                                                            <Check className="w-3 h-3 text-emerald-500" strokeWidth={4} />
+                                                                                                            <Check className="w-3.5 h-3.5 text-emerald-500" strokeWidth={4} />
                                                                                                         </div>
-                                                                                                        <p className={cn("text-[14px] font-bold tracking-tight opacity-90", textColor)}>1 Story shoutout</p>
+                                                                                                        <p className={cn("text-[15px] font-bold tracking-tight", textColor)}>1 Story shoutout</p>
                                                                                                     </div>
                                                                                                 </>
                                                                                             )}
 
-                                                                                            {/* Secondary */}
                                                                                             {secondaryDeliverables.filter(d => d.label || d.name).map((d, i) => (
-                                                                                                <div key={i} className="flex items-center gap-3.5">
+                                                                                                <div key={i} className="flex items-center gap-4">
                                                                                                     <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0">
-                                                                                                        <Check className="w-3 h-3 text-emerald-500" strokeWidth={4} />
+                                                                                                        <Check className="w-3.5 h-3.5 text-emerald-500" strokeWidth={4} />
                                                                                                     </div>
-                                                                                                    <p className={cn("text-[14px] font-bold tracking-tight", textColor)}>{d.label || d.name}</p>
+                                                                                                    <p className={cn("text-[15px] font-bold tracking-tight", textColor)}>{d.label || d.name}</p>
                                                                                                 </div>
                                                                                             ))}
                                                                                             {/* Requirements */}
                                                                                             {requirementsList.map((req, i) => (
-                                                                                                <div key={i} className="flex items-center gap-3.5">
+                                                                                                <div key={i} className="flex items-center gap-4">
                                                                                                     <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0">
-                                                                                                        <Check className="w-3 h-3 text-emerald-500" strokeWidth={4} />
+                                                                                                        <Check className="w-3.5 h-3.5 text-emerald-500" strokeWidth={4} />
                                                                                                     </div>
-                                                                                                    <p className={cn("text-[14px] font-bold tracking-tight opacity-80", textColor)}>{req}</p>
+                                                                                                    <p className={cn("text-[15px] font-bold tracking-tight opacity-80", textColor)}>{req}</p>
                                                                                                 </div>
                                                                                             ))}
                                                                                         </div>
