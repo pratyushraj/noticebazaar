@@ -5480,6 +5480,19 @@ const MobileDashboardDemo = ({
                                                     
                                                     const primaryLabel = primaryDeliverable.label || primaryDeliverable.name || primaryDeliverable.type || 'Instagram Reel';
                                                     const secondaryDeliverables = parsedDeliverables.filter(d => d !== primaryDeliverable);
+                                                    
+                                                    // Parse Requirements
+                                                    const requirementsList = [];
+                                                    const rawReqs = selectedItem.requirements || selectedItem.raw?.requirements;
+                                                    try {
+                                                        if (typeof rawReqs === 'string') {
+                                                            const parsed = JSON.parse(rawReqs);
+                                                            if (Array.isArray(parsed)) requirementsList.push(...parsed);
+                                                        } else if (Array.isArray(rawReqs)) {
+                                                            requirementsList.push(...rawReqs);
+                                                        }
+                                                    } catch (e) {}
+
                                                     const expiryDate = selectedItem.expiry_date || selectedItem.raw?.expiry_date;
                                                     const daysLeft = expiryDate ? Math.max(0, Math.ceil((new Date(expiryDate).getTime() - Date.now()) / (1000 * 60 * 60 * 24))) : null;
 
