@@ -1936,7 +1936,6 @@ const ProfileSettings = () => {
               You can always update these details later from your profile settings.
             </p>
           </div>
-        </div>
       ) : (
         <>
       {/* Floating Cinematic Navigation Dock */}
@@ -2366,240 +2365,12 @@ const ProfileSettings = () => {
                       )}
                     </div>
                   );
+                })}
               </div>
             </motion.div>
 
-            {/* Global Presence - Glass Card */}
-            <motion.div 
-              initial={{ y: 20, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: 0.4 }}
-              className={cn(
-                "rounded-[2.5rem] p-8 border backdrop-blur-2xl transition-all duration-500",
-                isDark ? "bg-white/[0.02] border-white/10 shadow-2xl" : "bg-white border-slate-200 shadow-xl shadow-slate-200/30"
-              )}
-            >
-              <div className="flex items-center gap-3 mb-8">
-                <div className="w-10 h-10 rounded-2xl bg-emerald-500/10 flex items-center justify-center">
-                  <Link2 className="w-5 h-5 text-emerald-500" />
-                </div>
-                <h2 className={cn("text-lg font-black tracking-tight", isDark ? "text-white" : "text-slate-900")}>Global Presence</h2>
-              </div>
 
-              <div className="space-y-6">
-                {(() => {
-                  const usernameForLink = normalizeCollabHandle(formData.instagramHandle || profile?.instagram_handle || profile?.username);
-                  const hasUsername = usernameForLink.trim() !== '';
-                  const collabLink = hasUsername ? buildCollabLink(usernameForLink) : '';
-                  const shortLink = hasUsername ? `creatorarmour.com/${usernameForLink}` : '';
 
-                  return hasUsername ? (
-                    <div className="space-y-6">
-                      <div className={cn("p-6 rounded-[2rem] border relative group transition-all duration-500", isDark ? "bg-white/[0.03] border-white/5" : "bg-slate-50 border-slate-100")}>
-                        <div className="flex flex-col gap-1 mb-6">
-                          <span className={cn("text-[10px] font-black uppercase tracking-widest opacity-40", isDark ? "text-white" : "text-slate-900")}>Creator Gateway</span>
-                          <span className={cn("text-xl font-black tracking-tighter truncate", isDark ? "text-white" : "text-slate-900")}>{shortLink}</span>
-                        </div>
-                        
-                        <button
-                          type="button"
-                          onClick={async () => {
-                            try {
-                              await navigator.clipboard.writeText(collabLink);
-                              setCopiedLink(true);
-                              toast.success('Link copied');
-                              setTimeout(() => setCopiedLink(false), COPY_CONFIRM_MS);
-                            } catch {
-                              toast.error('Failed to copy');
-                            }
-                          }}
-                          className={cn(
-                            "w-full py-4 rounded-2xl text-[13px] font-black uppercase tracking-[0.2em] transition-all active:scale-95 flex items-center justify-center gap-2",
-                            copiedLink 
-                              ? "bg-emerald-500 text-white shadow-lg shadow-emerald-500/20" 
-                              : (isDark ? "bg-white/10 text-white hover:bg-white/20" : "bg-slate-900 text-white shadow-lg shadow-slate-900/20")
-                          )}
-                        >
-                          {copiedLink ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-                          {copiedLink ? 'Copied' : 'Copy Gateway'}
-                        </button>
-                      </div>
-
-                      <div className={cn("p-5 rounded-3xl border", isDark ? "bg-white/5 border-white/10" : "bg-blue-50/50 border-blue-100")}>
-                        <div className="flex items-start gap-4">
-                          <div className="w-10 h-10 rounded-2xl bg-blue-500 flex items-center justify-center shrink-0 shadow-lg shadow-blue-500/20">
-                            <Zap className="w-5 h-5 text-white fill-current" />
-                          </div>
-                          <div>
-                            <p className={cn("text-[13px] font-black tracking-tight mb-1", isDark ? "text-blue-400" : "text-blue-700")}>Professional Blueprint</p>
-                            <p className={cn("text-[11px] font-bold leading-relaxed opacity-60", isDark ? "text-white" : "text-slate-600")}>
-                              This link is your official secure inbox. Share it in your Instagram bio to receive professional offers directly.
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className={cn("p-8 rounded-[2rem] border border-dashed text-center", isDark ? "border-white/10" : "border-slate-200")}>
-                       <p className={cn("text-sm font-bold opacity-40", isDark ? "text-white" : "text-slate-900")}>Complete your identity dossier to generate your Gateway.</p>
-                    </div>
-                  );
-                })()}
-              </div>
-            </motion.div>on-all"
-                            aria-label="Copy creator link"
-                          >
-                            {copiedLink ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-                            <span className="ml-1.5">{copiedLink ? 'Copied' : 'Copy'}</span>
-                          </Button>
-                        </div>
-                        <p className="text-[11px] text-muted-foreground px-3 py-1.5 flex items-center gap-1 bg-muted/30">
-                          <Lock className="h-3 w-3" />
-                          Legally protected · Contracts & payments enabled
-                        </p>
-                      </div>
-
-                      {/* 2. Share via — compact icon row */}
-                      <div>
-                        <p className="text-xs text-muted-foreground mb-2">Share via</p>
-                        <div className="grid grid-cols-3 gap-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => {
-                              const message = encodeURIComponent(`For collaborations, submit here:\n\n${collabLink}`);
-                              window.open(`https://wa.me/?text=${message}`, '_blank', 'noopener,noreferrer');
-                              toast.success('Opening WhatsApp…');
-                            }}
-                            className="h-9 text-xs bg-muted border-border text-foreground/80 hover:bg-muted/80"
-                            aria-label="Share via WhatsApp"
-                          >
-                            <MessageCircle className="h-3.5 w-3.5 mr-1" />
-                            WhatsApp
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={async () => {
-                              try {
-                                await navigator.clipboard.writeText(collabLink);
-                                toast.success('Link copied. Paste in bio or DMs.');
-                              } catch {
-                                toast.error('Failed to copy');
-                              }
-                            }}
-                            className="h-9 text-xs bg-muted border-border text-foreground/80 hover:bg-muted/80"
-                            aria-label="Share via Instagram"
-                          >
-                            <Instagram className="h-3.5 w-3.5 mr-1" />
-                            Instagram
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => {
-                              const subject = encodeURIComponent('Collaboration request');
-                              const body = encodeURIComponent(`For collaborations, submit here:\n\n${collabLink}`);
-                              window.location.href = `mailto:?subject=${subject}&body=${body}`;
-                              toast.success('Opening email…');
-                            }}
-                            className="h-9 text-xs bg-muted border-border text-foreground/80 hover:bg-muted/80"
-                            aria-label="Share via Email"
-                          >
-                            <Mail className="h-3.5 w-3.5 mr-1" />
-                            Email
-                          </Button>
-                        </div>
-                        <p className="text-[11px] text-muted-foreground/60 mt-1.5 font-medium">Perfect for Instagram bio.</p>
-                      </div>
-
-                      {/* 3. Primary CTA — view public page */}
-                      <div className="space-y-1">
-                        <Button
-                          variant="outline"
-                          className="w-full h-11 bg-muted/40 border-border text-foreground font-medium hover:bg-muted/60"
-                          onClick={() => {
-                            if (usernameForLink) {
-                              window.open(`/${usernameForLink}`, '_blank', 'noopener,noreferrer');
-                            } else {
-                              toast.error('Please set your Instagram username first');
-                            }
-                          }}
-                          aria-label="View how brands see your creator link profile"
-                        >
-                          <ExternalLink className="h-4 w-4 mr-2" />
-                          View how brands see your link
-                        </Button>
-                        <p className="text-[11px] text-muted-foreground text-center">Preview your creator profile</p>
-                      </div>
-
-                      {/* 4. How it works — accordion, collapsed by default, 3 steps */}
-                      <Collapsible open={showHowItWorks} onOpenChange={setShowHowItWorks}>
-                        <CollapsibleTrigger
-                          className="w-full rounded-xl border border-border bg-muted/40 hover:bg-muted/60 transition-colors"
-                          aria-expanded={showHowItWorks}
-                          aria-label={showHowItWorks ? 'How it works, collapse' : 'How it works, expand for steps'}
-                        >
-                          <div className="p-3 flex items-center justify-between">
-                            <div className="flex items-center gap-2">
-                              <HelpCircle className="h-4 w-4 text-muted-foreground" />
-                              <span className="text-sm font-medium text-foreground/90">How it works</span>
-                            </div>
-                            <ChevronDown className={cn("h-4 w-4 text-muted-foreground/50 transition-transform", showHowItWorks && "rotate-180")} />
-                          </div>
-                        </CollapsibleTrigger>
-                        <CollapsibleContent>
-                          <div className="rounded-b-xl border border-t-0 border-border bg-muted/20 p-3">
-                            <ol className="space-y-2 text-xs text-muted-foreground">
-                              <li className="flex gap-2"><span className="text-muted-foreground/50 font-medium flex-shrink-0">1.</span> Brand opens your link</li>
-                              <li className="flex gap-2"><span className="text-muted-foreground/50 font-medium flex-shrink-0">2.</span> Submits deal details</li>
-                              <li className="flex gap-2"><span className="text-muted-foreground/50 font-medium flex-shrink-0">3.</span> You accept → contract generated</li>
-                            </ol>
-                          </div>
-                        </CollapsibleContent>
-                      </Collapsible>
-
-                      {/* 5. One compact trust card */}
-                      <div className="rounded-xl border border-border bg-muted/30 p-3 flex items-start gap-2">
-                        <Shield className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
-                        <div>
-                          <p className="text-xs font-medium text-foreground/90">This link replaces DMs</p>
-                          <p className="text-[11px] text-muted-foreground mt-0.5">All brand requests are logged, timestamped, and legally protected.</p>
-                        </div>
-                      </div>
-
-                      {/* 6. Performance — soft empty state */}
-                      <div className="rounded-xl border border-border bg-muted/30 p-3">
-                        <div className="flex items-center gap-2">
-                          <Eye className="h-4 w-4 text-muted-foreground/60 flex-shrink-0" />
-                          {analyticsLoading ? (
-                            <span className="text-xs text-muted-foreground flex items-center gap-2">
-                              <Loader2 className="h-3 w-3 animate-spin" /> Loading…
-                            </span>
-                          ) : analyticsSummary && analyticsSummary.weeklyViews > 0 ? (
-                            <p className="text-xs text-muted-foreground">
-                              {analyticsSummary.weeklyViews} {analyticsSummary.weeklyViews === 1 ? 'brand' : 'brands'} viewed your link this week
-                            </p>
-                          ) : (
-                            <p className="text-xs text-muted-foreground/80">
-                              No brand visits yet. Share your link in bio to start receiving requests.
-                            </p>
-                          )}
-                        </div>
-                      </div>
-                    </>
-                  ) : (
-                    <div className="rounded-xl border border-border bg-muted/40 p-3 flex items-start gap-2">
-                      <AlertCircle className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
-                      <div>
-                        <p className="text-sm font-medium text-foreground/80">Complete your profile to activate your collab link</p>
-                        <p className="text-xs text-muted-foreground mt-0.5">Save your profile and your link will be generated automatically.</p>
-                      </div>
-                    </div>
-                  );
-                })()}
-              </div>
-            </div>
 
             {/* Logout Button - At Bottom of Profile Section */}
             <div className="mt-6 mb-4">
@@ -2754,8 +2525,8 @@ const ProfileSettings = () => {
                             Quick Share
                           </div>
                         </button>
+                        </div>
                       </div>
-                    </div>
                   );
                 })()}
               </div>
@@ -3331,7 +3102,7 @@ const ProfileSettings = () => {
               </div>
             </motion.div>
 
-            {/* Notifica            {/* Asset Tier - Glass Card */}
+            {/* Asset Tier - Glass Card */}
             <motion.div 
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
@@ -3438,10 +3209,13 @@ const ProfileSettings = () => {
                       <div className="text-[9px] font-bold opacity-40 uppercase tracking-widest text-red-500">Permanently remove profile</div>
                     </div>
                   </div>
-                  <ChevronRight className="w-4 h-4 text-red-500/20" />
                 </button>
               </div>
-          {/* Support Section - Command Bridge */}
+            </motion.div>
+          </div>
+        )}
+
+        {/* Support Section - Command Bridge */}
         {activeSection === 'support' && (
           <div className="space-y-6 pb-20">
             {/* Support Intelligence - Glass Card */}
@@ -3513,43 +3287,39 @@ const ProfileSettings = () => {
                   <ChevronRight className="w-4 h-4 text-blue-500/20" />
                 </button>
               </div>
-              {/* Legal Subsection - Minimalist */}
+            </motion.div>
+
+            {/* Legal Subsection - Minimalist */}
             <div className="px-4 py-8 space-y-4">
               <div className="flex flex-wrap gap-6 justify-center">
-                <button className="text-[9px] font-black uppercase tracking-[0.2em] opacity-40 hover:opacity-100 transition-opacity">Terms of Service</button>
-                <button className="text-[9px] font-black uppercase tracking-[0.2em] opacity-40 hover:opacity-100 transition-opacity">Privacy Protocol</button>
+                <button type="button" className="text-[9px] font-black uppercase tracking-[0.2em] opacity-40 hover:opacity-100 transition-opacity">Terms of Service</button>
+                <button type="button" className="text-[9px] font-black uppercase tracking-[0.2em] opacity-40 hover:opacity-100 transition-opacity">Privacy Protocol</button>
               </div>
             </div>
           </div>
         )}
 
-            {/* Divider before About */}
-            <div className="border-t border-border my-4"></div>
+        {/* Final Footer Intelligence */}
+        <div className="text-center pt-8 pb-4">
+          <div className={cn("text-[10px] font-black tracking-[0.3em] uppercase mb-1", isDark ? "text-white/20" : "text-slate-900/20")}>Creator Armour Elite</div>
+          <div className="text-[8px] font-bold opacity-20 uppercase tracking-widest">Version 2.0.4 • Alpha Flux</div>
+        </div>
 
-            {/* Final Footer Intelligence */}
-            <div className="text-center pt-8 pb-4">
-              <div className={cn("text-[10px] font-black tracking-[0.3em] uppercase mb-1", isDark ? "text-white/20" : "text-slate-900/20")}>Creator Armour Elite</div>
-              <div className="text-[8px] font-bold opacity-20 uppercase tracking-widest">Version 2.0.4 • Alpha Flux</div>
-            </div>
-
-            {/* Final Disconnect - Cinematic */}
-            <div className="px-4 pt-4 pb-12">
-              <button
-                type="button"
-                onClick={() => setShowLogoutDialog(true)}
-                className={cn(
-                  "w-full py-5 rounded-[2rem] text-[11px] font-black uppercase tracking-[0.4em] transition-all active:scale-95 border border-red-500/20 text-red-500 hover:bg-red-500/5",
-                )}
-              >
-                Disconnect Session
-              </button>
-            </div>
-
-          </div>
-        )}
+        {/* Final Disconnect - Cinematic */}
+        <div className="px-4 pt-4 pb-12">
+          <button
+            type="button"
+            onClick={() => setShowLogoutDialog(true)}
+            className={cn(
+              "w-full py-5 rounded-[2rem] text-[11px] font-black uppercase tracking-[0.4em] transition-all active:scale-95 border border-red-500/20 text-red-500 hover:bg-red-500/5",
+            )}
+          >
+            Disconnect Session
+          </button>
+        </div>
       </div>
-        </>
-      )}
+      </>
+    )}
 
       {/* Logout Confirmation Dialog - Always rendered outside conditionals */}
       <AlertDialog open={showLogoutDialog} onOpenChange={(open) => setShowLogoutDialog(open)}>
