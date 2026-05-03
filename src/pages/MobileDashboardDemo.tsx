@@ -5663,58 +5663,41 @@ const MobileDashboardDemo = ({
                                                         }}
                                                         disabled={processingDeal === selectedItem?.id}
                                                         className={cn(
-                                                            "w-full min-h-[120px] rounded-[36px] px-8 py-6 flex items-center justify-between relative overflow-hidden group active:scale-[0.97] transition-all duration-500",
-                                                            "bg-gradient-to-r from-emerald-600 via-emerald-500 to-sky-600 text-white shadow-[0_25px_50px_-12px_rgba(16,185,129,0.5)]",
-                                                            processingDeal === selectedItem?.id && "opacity-90 pointer-events-none"
+                                                            "w-full rounded-[24px] px-6 py-5 flex items-center justify-between relative overflow-hidden group active:scale-[0.97] transition-all duration-300",
+                                                            "bg-gradient-to-br from-emerald-500 to-emerald-600 text-white shadow-[0_12px_32px_-8px_rgba(16,185,129,0.45)]",
+                                                            processingDeal === selectedItem?.id && "opacity-80 pointer-events-none"
                                                         )}
                                                     >
-                                                        {/* Dynamic Background Effects */}
-                                                        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(255,255,255,0.2),transparent)] opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
-                                                        <div className="absolute inset-0 bg-emerald-400/10 opacity-0 group-hover:opacity-20 transition-opacity" />
-                                                        
-                                                        {/* Shimmer Effect */}
-                                                        <div className="absolute inset-0 translate-x-[-100%] bg-gradient-to-r from-transparent via-white/20 to-transparent animate-[shimmer_2s_infinite] pointer-events-none" />
-
-                                                        {/* Pulsing Glow Animation */}
-                                                        <div className="absolute inset-0 bg-emerald-400/20 animate-pulse opacity-30" />
-
-                                                        <div className="absolute -top-6 -right-6 p-3 opacity-10 rotate-12 group-hover:rotate-45 group-hover:scale-125 transition-all duration-700">
-                                                            <Zap className="w-24 h-24 text-white" />
-                                                        </div>
+                                                        <div className="absolute inset-0 bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                                                         
                                                         <div className="text-left relative z-10">
-                                                            <p className="text-[26px] sm:text-[28px] font-black leading-tight tracking-tight drop-shadow-md flex items-center gap-3">
+                                                            <p className="text-[22px] font-black leading-tight tracking-tight">
                                                                 {processingDeal === selectedItem?.id ? (
                                                                     <>
-                                                                        <Loader2 className="w-8 h-8 animate-spin" />
-                                                                        Syncing...
+                                                                        <Loader2 className="w-5 h-5 animate-spin inline mr-2" />
+                                                                        Accepting...
                                                                     </>
                                                                 ) : (
-                                                                    <>Accept → Earn {renderBudgetValue(selectedItem)}</>
+                                                                    <>Accept · Earn {renderBudgetValue(selectedItem)}</>
                                                                 )}
                                                             </p>
-                                                            <div className="text-[12px] sm:text-[13px] font-bold opacity-90 mt-1 flex items-center gap-2">
-                                                                <div className="w-5 h-5 rounded-lg bg-white/20 flex items-center justify-center shrink-0">
-                                                                    <IndianRupee className="w-3 h-3" />
-                                                                </div>
-                                                                {processingDeal === selectedItem?.id ? "Initializing smart contract..." : "💰 Payment secured • Releases after approval"}
-                                                            </div>
+                                                            <p className="text-[11px] font-bold opacity-70 mt-1">
+                                                                {processingDeal === selectedItem?.id ? "Setting up contract..." : "Payment secured · Releases after approval"}
+                                                            </p>
                                                         </div>
-                                                        <div className="w-14 h-14 rounded-full bg-white/25 flex items-center justify-center backdrop-blur-md relative z-10 shadow-lg border border-white/20 transition-transform group-hover:translate-x-1">
+                                                        <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center relative z-10 transition-transform group-hover:translate-x-0.5">
                                                             {processingDeal === selectedItem?.id ? (
-                                                                <RefreshCw className="w-7 h-7 text-white animate-spin" />
+                                                                <Loader2 className="w-5 h-5 text-white animate-spin" />
                                                             ) : (
-                                                                <ChevronRight className="w-7 h-7 text-white" />
+                                                                <ChevronRight className="w-5 h-5 text-white" />
                                                             )}
                                                         </div>
                                                     </button>
 
-                                                    <div className="mt-4 flex flex-col items-center gap-3">
-                                                        <div className="flex items-center gap-2 text-[11px] font-black uppercase tracking-[0.2em] opacity-40">
-                                                            <div className="w-1 h-1 rounded-full bg-emerald-500" />
-                                                            50+ creators completed deals successfully
-                                                            <div className="w-1 h-1 rounded-full bg-emerald-500" />
-                                                        </div>
+                                                    <div className="mt-3 flex items-center justify-center gap-2 text-[10px] font-black uppercase tracking-[0.18em] opacity-30">
+                                                        <div className="w-1 h-1 rounded-full bg-current" />
+                                                        50+ creators completed deals successfully
+                                                        <div className="w-1 h-1 rounded-full bg-current" />
                                                     </div>
 
                                                     {selectedIsPureBarter && (
@@ -5750,8 +5733,8 @@ const MobileDashboardDemo = ({
                                                                     window.open('https://wa.me/919999999999', '_blank');
                                                                 }}
                                                                 className={cn(
-                                                                    "w-full h-20 rounded-[24px] px-6 flex items-center justify-between border active:scale-[0.99] transition-all shadow-sm",
-                                                                    isDark ? "bg-[#151922] border-white/10 text-foreground hover:bg-white/5" : "bg-white border-slate-200 text-slate-900"
+                                                                    "w-full h-14 rounded-[18px] px-5 flex items-center justify-between border active:scale-[0.99] transition-all",
+                                                                    isDark ? "bg-white/[0.03] border-white/10 text-foreground hover:bg-white/[0.05]" : "bg-slate-50 border-slate-200 text-slate-900 hover:bg-slate-100"
                                                                 )}
                                                             >
                                                                 <span className="flex items-center gap-4">
@@ -5775,8 +5758,8 @@ const MobileDashboardDemo = ({
                                                                 toast.message('Counter Offer', { description: 'Open offer details to counter.' });
                                                             }}
                                                             className={cn(
-                                                                "h-20 rounded-[24px] border font-black text-[16px] tracking-tight active:scale-[0.99] transition-all flex items-center justify-center gap-3 shadow-sm",
-                                                                isDark ? "bg-[#151922] border-blue-500/20 text-blue-400 hover:bg-blue-500/5" : "bg-white border-blue-100 text-blue-600 hover:bg-blue-50/50"
+                                                                "h-14 rounded-[18px] border font-bold text-[14px] tracking-tight active:scale-[0.99] transition-all flex items-center justify-center gap-2",
+                                                                isDark ? "bg-white/[0.03] border-white/10 text-white/70 hover:bg-white/[0.06]" : "bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100"
                                                             )}
                                                         >
                                                             <Edit3 className="w-5 h-5" />
@@ -5796,8 +5779,8 @@ const MobileDashboardDemo = ({
                                                                 closeItemDetail();
                                                             }}
                                                             className={cn(
-                                                                "h-20 rounded-[24px] border font-black text-[16px] tracking-tight active:scale-[0.99] transition-all flex items-center justify-center gap-3 shadow-sm",
-                                                                isDark ? "bg-[#151922] border-rose-500/20 text-rose-400 hover:bg-rose-500/5" : "bg-white border-rose-100 text-rose-600 hover:bg-rose-50/50"
+                                                                "h-14 rounded-[18px] border font-bold text-[14px] tracking-tight active:scale-[0.99] transition-all flex items-center justify-center gap-2",
+                                                                isDark ? "bg-white/[0.03] border-rose-500/15 text-rose-400/80 hover:bg-rose-500/5" : "bg-slate-50 border-rose-100 text-rose-500 hover:bg-rose-50"
                                                             )}
                                                         >
                                                             <XCircle className="w-5 h-5" />
@@ -6211,26 +6194,26 @@ const MobileDashboardDemo = ({
                                                     } catch (_) { }
                                                     return items.map((d, i) => (
                                                         <div key={i} className={cn(
-                                                            "px-5 py-5 rounded-[2.5rem] border flex items-center gap-5 transition-all duration-500 hover:translate-y-[-4px] group",
-                                                            isDark ? "bg-white/[0.03] border-white/10 hover:bg-white/[0.06] hover:border-white/20" : "bg-white border-slate-200 hover:shadow-xl"
+                                                            "px-4 py-4 rounded-[20px] border flex items-center gap-4 transition-all duration-300 hover:translate-y-[-2px]",
+                                                            isDark ? "bg-white/[0.03] border-white/8 hover:bg-white/[0.05]" : "bg-white border-slate-200 hover:shadow-md"
                                                         )}>
                                                             <div className={cn(
-                                                                "w-14 h-14 rounded-[1.25rem] flex items-center justify-center shrink-0 shadow-lg transition-all duration-500 group-hover:scale-110 group-hover:rotate-3",
-                                                                d.type === 'reel' ? "bg-gradient-to-br from-purple-500 to-indigo-600 text-white" : 
-                                                                d.type === 'story' ? "bg-gradient-to-br from-orange-400 to-rose-500 text-white" : 
-                                                                "bg-gradient-to-br from-blue-400 to-cyan-500 text-white"
+                                                                "w-10 h-10 rounded-2xl flex items-center justify-center shrink-0",
+                                                                d.type === 'reel' ? "bg-gradient-to-br from-purple-500/80 to-indigo-600/80 text-white" : 
+                                                                d.type === 'story' ? "bg-gradient-to-br from-orange-400/80 to-rose-500/80 text-white" : 
+                                                                "bg-gradient-to-br from-blue-400/80 to-cyan-500/80 text-white"
                                                             )}>
-                                                                {d.type === 'reel' ? <Film className="w-6 h-6" /> : 
-                                                                 d.type === 'story' ? <Smartphone className="w-6 h-6" /> : 
-                                                                 <FileText className="w-6 h-6" />}
+                                                                {d.type === 'reel' ? <Film className="w-4 h-4" /> : 
+                                                                 d.type === 'story' ? <Smartphone className="w-4 h-4" /> : 
+                                                                 <FileText className="w-4 h-4" />}
                                                             </div>
                                                             <div className="flex-1 min-w-0">
-                                                                <p className={cn("text-[15px] font-black leading-tight tracking-tight", textColor)}>{d.label}</p>
-                                                                <p className={cn("text-[12px] font-black uppercase tracking-widest opacity-30 mt-1", textColor)}>{d.count} {d.count === 1 ? 'Unit' : 'Units'}</p>
+                                                                <p className={cn("text-[13px] font-black leading-tight tracking-tight", textColor)}>{d.label}</p>
+                                                                <p className={cn("text-[11px] font-bold opacity-30 mt-0.5", textColor)}>{d.count} {d.count === 1 ? 'unit' : 'units'}</p>
                                                             </div>
                                                         </div>
                                                     ));
-	                                                })()}
+                                                })()}
 	                                            </div>
 	                                        </div>
 	                                        )}
@@ -6581,37 +6564,34 @@ const MobileDashboardDemo = ({
                                         <div className="mb-6">
                                             <h4 className={cn("text-[11px] font-black uppercase tracking-[0.2em] mb-4 opacity-50 px-1", textColor)}>Legal Protection</h4>
                                             <div className={cn(
-                                                "rounded-[32px] border p-7 relative overflow-hidden transition-all duration-500 hover:shadow-2xl",
-                                                isDark ? "bg-emerald-500/5 border-emerald-500/20" : "bg-emerald-50 border-emerald-200"
+                                                "rounded-[24px] border p-5 relative overflow-hidden",
+                                                isDark ? "bg-emerald-500/[0.04] border-emerald-500/15" : "bg-emerald-50/80 border-emerald-200/70"
                                             )}>
-                                                {/* Decorative background elements */}
-                                                <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/20 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none" />
-                                                <div className="absolute inset-y-0 left-0 w-1.5 bg-emerald-500 rounded-r-full shadow-[0_0_20px_rgba(16,185,129,0.5)]" />
+                                                <div className="absolute inset-y-0 left-0 w-1 bg-emerald-500/60 rounded-r-full" />
                                                 
-                                                <div className="flex items-center gap-4 relative mb-6">
-                                                    <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-emerald-500 to-primary flex items-center justify-center shrink-0 shadow-[0_10px_25px_rgba(16,185,129,0.4)] border border-white/20">
-                                                        <ShieldCheck className="w-7 h-7 text-white" strokeWidth={2.5} />
+                                                <div className="flex items-center gap-3 relative pl-4 mb-4">
+                                                    <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center shrink-0 shadow-md">
+                                                        <ShieldCheck className="w-5 h-5 text-white" strokeWidth={2.5} />
                                                     </div>
                                                     <div className="flex-1 min-w-0">
-                                                        <p className={cn("font-black text-[17px] leading-tight tracking-tight", isDark ? "text-primary" : "text-emerald-800")}>Protected by Creator Armour</p>
-                                                        <p className={cn("text-[12px] font-bold mt-0.5 opacity-70", isDark ? "text-primary/90" : "text-emerald-700")}>Contract + rights + dispute support</p>
+                                                        <p className={cn("font-black text-[14px] leading-tight tracking-tight", isDark ? "text-primary" : "text-emerald-800")}>Protected by Creator Armour</p>
+                                                        <p className={cn("text-[11px] font-bold mt-0.5 opacity-60", isDark ? "text-primary/90" : "text-emerald-700")}>Contract + rights + dispute support</p>
                                                     </div>
                                                 </div>
-
-                                                <div className="space-y-3 relative z-10">
+                                                
+                                                <div className="space-y-2 pl-4">
                                                     {[
                                                         'Contract auto-generated & legally binding',
                                                         '72h Auto-release Guarantee after approval',
                                                         'Full dispute protection & legal mediation',
                                                     ].map((t) => (
                                                         <div key={t} className={cn(
-                                                            "flex items-center gap-3 p-3 rounded-2xl border transition-all hover:translate-x-1",
-                                                            isDark ? "bg-white/5 border-white/5" : "bg-white/60 border-emerald-100/50 shadow-sm"
+                                                            "flex items-center gap-2.5"
                                                         )}>
-                                                            <div className="w-6 h-6 rounded-full bg-emerald-500 flex items-center justify-center shrink-0 shadow-sm">
-                                                                <CheckCircle2 className="w-3.5 h-3.5 text-white" />
+                                                            <div className="w-4 h-4 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0">
+                                                                <Check className="w-2.5 h-2.5 text-emerald-500" />
                                                             </div>
-                                                            <span className={cn("text-[13px] font-black tracking-tight", isDark ? "text-primary/90" : "text-emerald-800/90")}>{t}</span>
+                                                            <span className={cn("text-[12px] font-semibold opacity-80", isDark ? "text-primary/80" : "text-emerald-800")}>{t}</span>
                                                         </div>
                                                     ))}
                                                 </div>
@@ -6706,7 +6686,7 @@ const MobileDashboardDemo = ({
                                                 }}
                                                 disabled={processingDeal === selectedItem.id || getDealPrimaryCta({ role: 'creator', deal: selectedItem }).disabled}
                                                 className={cn(
-                                                    "w-full py-5 rounded-[1.5rem] shadow-2xl transition-all flex flex-col items-center justify-center active:scale-[0.98] border-2 disabled:opacity-50 relative overflow-hidden group",
+                                                    "w-full py-4 rounded-[18px] shadow-lg transition-all flex flex-col items-center justify-center active:scale-[0.98] disabled:opacity-50 relative overflow-hidden group",
                                                     dealPrimaryCtaButtonClass(getDealPrimaryCta({ role: 'creator', deal: selectedItem }).tone),
                                                     !isDark && "border-white/20"
                                                 )}
