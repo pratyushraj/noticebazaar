@@ -8150,11 +8150,11 @@ const DashboardTab = React.memo(({
                         <div className="relative z-10">
                             <div className="flex items-center gap-4 mb-8">
                                 <div className={cn("w-12 h-12 rounded-2xl flex items-center justify-center overflow-hidden border", isDark ? "bg-white/5 border-white/10" : "bg-slate-50 border-slate-100")}>
-                                    <img 
-                                        src={getBrandIcon(featuredDeal)} 
-                                        alt="Brand" 
-                                        className="w-full h-full object-cover"
-                                    />
+                                    {getBrandIcon(
+                                        featuredDeal.brand_logo_url || featuredDeal.brand_logo || featuredDeal.logo_url || featuredDeal.raw?.brand_logo_url || featuredDeal.raw?.brand_logo,
+                                        featuredDeal.category,
+                                        featuredDeal.brand_name || featuredDeal.company_name
+                                    )}
                                 </div>
                                 <div className="flex-1 min-w-0">
                                     <div className="flex items-center gap-2 mb-0.5">
