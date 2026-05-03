@@ -5523,10 +5523,11 @@ const MobileDashboardDemo = ({
                                                                          </p>
                                                                      </div>
                                                                      
-                                                                     {/* Square Product Photo Container */}
-                                                                     <div className={cn("w-32 h-32 rounded-[2rem] overflow-hidden border shrink-0 shadow-2xl transition-all duration-500 hover:scale-105 group/product", 
-                                                                         isDark ? "bg-white/10 border-white/20" : "bg-white border-slate-200"
+                                                                     {/* Enhanced Product Photo Container */}
+                                                                     <div className={cn("w-40 h-40 rounded-[2.5rem] overflow-hidden border shrink-0 shadow-[0_20px_50px_rgba(0,0,0,0.3)] transition-all duration-500 hover:scale-105 group/product relative", 
+                                                                         isDark ? "bg-white/5 border-white/10" : "bg-white border-slate-200"
                                                                      )}>
+                                                                         <div className="absolute inset-0 bg-gradient-to-tr from-black/20 to-transparent z-10" />
                                                                          {(() => {
                                                                              const productImage = resolveCreatorDealProductImage(selectedItem) || selectedItem.brand_logo_url || selectedItem.brand_logo;
                                                                              return (
