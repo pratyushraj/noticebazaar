@@ -8384,7 +8384,6 @@ const DashboardTab = React.memo(({
                                             <Zap className="w-5 h-5" />
                                         </div>
                                         <div>
-                                        <div>
                                             <p className="text-[14px] font-black text-white">
                                                 🔥 {pendingOffersCount} {pendingOffersCount === 1 ? 'Brand wants' : 'Brands want'} to work with you
                                             </p>
