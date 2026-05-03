@@ -5579,7 +5579,8 @@ const MobileDashboardDemo = ({
                                                                     const pkgLower = (resolvedPackageName || "").toLowerCase();
                                                                     const isStarter = pkgLower.includes('starter');
                                                                     const isGrowth = pkgLower.includes('growth');
-                                                                    const packageIcon = isStarter ? "🚀" : isGrowth ? "📈" : "📄";
+                                                                    const packageIcon = isStarter ? "🚀" : isGrowth ? "📈" : "";
+                                                                    const displayPackageName = (resolvedPackageName || "Campaign Brief").replace(/^[🚀📈🎯💼📄]\s*/u, "");
 
                                                                     // Format primary deliverable with count + duration
                                                                     const rawCount = parsedDeliverables[0]?.count || parsedDeliverables[0]?.quantity || 1;
@@ -5594,9 +5595,9 @@ const MobileDashboardDemo = ({
                                                                             >
                                                                                 <div className="flex flex-col">
                                                                                     <div className="flex items-center gap-3 mb-1.5">
-                                                                                        <span className="text-2xl">{packageIcon}</span>
+                                                                                        {packageIcon && <span className="text-2xl">{packageIcon}</span>}
                                                                                         <span className={cn("text-[26px] font-black tracking-tighter leading-none", textColor)}>
-                                                                                            {resolvedPackageName || "Campaign Brief"}
+                                                                                            {displayPackageName}
                                                                                         </span>
                                                                                     </div>
                                                                                     <span className={cn("text-[10px] font-black uppercase tracking-[0.3em] opacity-30 px-1", textColor)}>
@@ -5604,10 +5605,12 @@ const MobileDashboardDemo = ({
                                                                                     </span>
                                                                                 </div>
                                                                                 <div className="flex items-center gap-5">
-                                                                                    <div className={cn("w-14 h-14 rounded-full flex items-center justify-center shadow-xl border shrink-0", 
-                                                                                        isDark ? "bg-[#1A2235] border-white/10" : "bg-slate-50 border-slate-100")}>
-                                                                                        <span className="text-2xl filter drop-shadow-md">{packageIcon}</span>
-                                                                                    </div>
+                                                                                    {packageIcon && (
+                                                                    <div className={cn("w-14 h-14 rounded-full flex items-center justify-center shadow-xl border shrink-0", 
+                                                                        isDark ? "bg-[#1A2235] border-white/10" : "bg-slate-50 border-slate-100")}>
+                                                                        <span className="text-2xl filter drop-shadow-md">{packageIcon}</span>
+                                                                    </div>
+                                                                )}
                                                                                     <ChevronDown className={cn("w-6 h-6 opacity-20 transition-transform", showBrief && "rotate-180")} />
                                                                                 </div>
                                                                             </button>
@@ -6152,8 +6155,10 @@ const MobileDashboardDemo = ({
                                                      const pkgLower = (resolvedPackageName || "").toLowerCase();
                                                      const isStarter = pkgLower.includes('starter');
                                                      const isGrowth = pkgLower.includes('growth');
-                                                     const packageIcon = isStarter ? "🚀" : isGrowth ? "📈" : "📄";
-                                                     const cleanDesc = rawDesc.split(/Selected package:|Collab Duration:|Additional Commercial Terms:|Collab content category:|Product for collab:/i)[0].trim() || "High-energy Reel optimized for organic reach. Best for first-time brand discovery.";
+                                                     const packageIcon = isStarter ? "🚀" : isGrowth ? "📈" : "";
+
+                                                      const displayPackageName = (resolvedPackageName || "Campaign Brief").replace(/^[🚀📈🎯💼📄]\s*/u, "");
+                                                      const cleanDesc = rawDesc.split(/Selected package:|Collab Duration:|Additional Commercial Terms:|Collab content category:|Product for collab:/i)[0].trim() || "High-energy Reel optimized for organic reach. Best for first-time brand discovery.";
 
                                                      const reelDuration = extractedDuration || (isStarter ? "15-30s" : isGrowth ? "30-60s" : null);
                                                      const formattedPrimary = `1 ${primaryLabel}${reelDuration ? ` (${reelDuration})` : ""}`;
@@ -6175,19 +6180,21 @@ const MobileDashboardDemo = ({
                                                             <div className="px-6 py-7 flex items-center justify-between">
                                                                 <div className="flex flex-col">
                                                                     <div className="flex items-center gap-3 mb-1.5">
-                                                                        <span className="text-2xl">{packageIcon}</span>
+                                                                        {packageIcon && <span className="text-2xl">{packageIcon}</span>}
                                                                         <span className={cn("text-[26px] font-black tracking-tighter leading-none", textColor)}>
-                                                                            {resolvedPackageName || "Campaign Brief"}
+                                                                            {displayPackageName}
                                                                         </span>
                                                                     </div>
                                                                     <span className={cn("text-[10px] font-black uppercase tracking-[0.3em] opacity-30 px-1", textColor)}>
                                                                         STANDARD DELIVERY
                                                                     </span>
                                                                 </div>
+                                                                    {packageIcon && (
                                                                     <div className={cn("w-14 h-14 rounded-full flex items-center justify-center shadow-xl border shrink-0", 
                                                                         isDark ? "bg-[#1A2235] border-white/10" : "bg-slate-50 border-slate-100")}>
                                                                         <span className="text-2xl filter drop-shadow-md">{packageIcon}</span>
                                                                     </div>
+                                                                )}
                                                             </div>
 
                                                             <div className="px-6 pb-10">
@@ -6506,34 +6513,6 @@ const MobileDashboardDemo = ({
                                                         </div>
                                                     )}
                                                 </div>
-                                            </div>
-                                        )}
-
-
-                                        {selectedIsPureBarter && (
-                                            <div className="mb-6">
-                                                <button
-                                                    type="button"
-                                                    onClick={() => {
-                                                        if (processingDeal) return;
-                                                        handleOpenBarterShippingFlow(selectedItem);
-                                                    }}
-                                                    className={cn(
-                                                        "w-full h-18 rounded-[26px] px-5 flex items-center justify-between border active:scale-[0.99] transition-all shadow-sm",
-                                                        isDark ? "bg-[#151922] border-amber-500/20 text-amber-300 hover:bg-amber-500/5" : "bg-white border-amber-100 text-amber-700 hover:bg-amber-50/70"
-                                                    )}
-                                                >
-                                                    <span className="flex items-center gap-3">
-                                                        <div className={cn("w-10 h-10 rounded-full flex items-center justify-center", isDark ? "bg-amber-500/10" : "bg-amber-100")}>
-                                                            <MapPin className="w-4.5 h-4.5" />
-                                                        </div>
-                                                        <span className="text-left">
-                                                            <span className="font-black text-[15px] tracking-tight block">Add Shipping Address</span>
-                                                            <span className="text-[11px] font-bold opacity-60 block">Open the address step from this collaboration</span>
-                                                        </span>
-                                                    </span>
-                                                    <ChevronRight className="w-5 h-5 opacity-40" />
-                                                </button>
                                             </div>
                                         )}
 
