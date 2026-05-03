@@ -5556,58 +5556,97 @@ const MobileDashboardDemo = ({
                                                             </div>
 
                                                             {/* ── COLLAPSIBLE BRIEF ── */}
-                                                            <div className={cn("rounded-[24px] border overflow-hidden", isDark ? "bg-white/[0.02] border-white/6" : "bg-white border-slate-200")}>
-                                                                <button 
-                                                                    onClick={() => setShowBrief(v => !v)}
-                                                                    className="w-full px-5 py-4 flex items-center justify-between text-left"
-                                                                >
-                                                                    <span className={cn("text-[13px] font-black uppercase tracking-widest opacity-40", textColor)}>Campaign Brief</span>
-                                                                    <ChevronDown className={cn("w-4 h-4 transition-transform", showBrief && "rotate-180")} />
-                                                                </button>
-                                                                {showBrief && (
-                                                                    <div className="px-5 pb-5">
-                                                                        <p className={cn("text-[13px] font-medium leading-relaxed opacity-60", textColor)}>
-                                                                            {(() => {
-                                                                                const rawDesc = selectedItem.campaign_description || selectedItem.description || selectedItem.raw?.campaign_description || selectedItem.raw?.description || "High-energy Reel showcasing unboxing and key features.";
-                                                                                // Clean up auto-generated metadata strings
-                                                                                return rawDesc.split(/Selected package:|Collab Duration:|Additional Commercial Terms:|Collab content category:|Product for collab:/i)[0].trim();
-                                                                            })()}
-                                                                        </p>
+                                                            {(() => {
+                                                                    const rawDesc = selectedItem.campaign_description || selectedItem.description || selectedItem.raw?.campaign_description || selectedItem.raw?.description || "";
+                                                                    const packageMatch = rawDesc.match(/Selected package:\s*(.*?)(?=\s*Collab Duration:|Additional|$)/i);
+                                                                    const extractedPackageName = packageMatch ? packageMatch[1].trim() : null;
+                                                                    
+                                                                    const durationMatch = rawDesc.match(/Collab Duration:\s*(.*?)(?=\s*Additional|$)/i);
+                                                                    const extractedDuration = durationMatch ? durationMatch[1].trim() : null;
+                                                                    
+                                                                    const cleanDesc = rawDesc.split(/Selected package:|Collab Duration:|Additional Commercial Terms:|Collab content category:|Product for collab:/i)[0].trim() || "High-energy Reel showcasing unboxing and key features.";
 
-                                                                        {/* WHAT THE BRAND GETS (Checklist Style) */}
-                                                                        <div className={cn("mt-6 rounded-3xl p-5 border", isDark ? "bg-white/[0.03] border-white/6" : "bg-slate-50 border-slate-100")}>
-                                                                            <h4 className={cn("text-[10px] font-black uppercase tracking-[0.15em] mb-4 opacity-40", textColor)}>What the Brand Gets</h4>
-                                                                            <div className="space-y-3">
-                                                                                {/* Primary */}
-                                                                                <div className="flex items-start gap-3">
-                                                                                    <div className="mt-0.5 w-4 h-4 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0">
-                                                                                        <Check className="w-2.5 h-2.5 text-emerald-500" strokeWidth={4} />
-                                                                                    </div>
-                                                                                    <p className={cn("text-[13px] font-bold leading-none", textColor)}>{primaryLabel}</p>
+                                                                    return (
+                                                                        <div className={cn("rounded-[24px] border overflow-hidden", isDark ? "bg-white/[0.02] border-white/6" : "bg-white border-slate-200")}>
+                                                                            <button 
+                                                                                onClick={() => setShowBrief(v => !v)}
+                                                                                className="w-full px-5 py-5 flex items-center justify-between text-left"
+                                                                            >
+                                                                                <div className="flex flex-col">
+                                                                                    <span className={cn("text-[17px] font-black tracking-tight", textColor)}>
+                                                                                        {extractedPackageName || "Campaign Brief"}
+                                                                                    </span>
+                                                                                    {extractedPackageName && (
+                                                                                        <span className={cn("text-[10px] font-black uppercase tracking-[0.15em] opacity-30 mt-1", textColor)}>
+                                                                                            Standard Delivery
+                                                                                        </span>
+                                                                                    )}
                                                                                 </div>
-                                                                                {/* Secondary */}
-                                                                                {secondaryDeliverables.filter(d => d.label || d.name).map((d, i) => (
-                                                                                    <div key={i} className="flex items-start gap-3">
-                                                                                        <div className="mt-0.5 w-4 h-4 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0">
-                                                                                            <Check className="w-2.5 h-2.5 text-emerald-500" strokeWidth={4} />
+                                                                                <ChevronDown className={cn("w-5 h-5 opacity-30 transition-transform", showBrief && "rotate-180")} />
+                                                                            </button>
+                                                                            {showBrief && (
+                                                                                <div className="px-5 pb-6">
+                                                                                    <p className={cn("text-[14px] font-medium leading-relaxed opacity-60 mb-8", textColor)}>
+                                                                                        {cleanDesc}
+                                                                                    </p>
+            
+                                                                                    {/* WHAT THE BRAND GETS (Checklist Style) */}
+                                                                                    <div className={cn("rounded-[32px] p-6 border", isDark ? "bg-white/[0.03] border-white/6" : "bg-slate-50 border-slate-100")}>
+                                                                                        <h4 className={cn("text-[11px] font-black uppercase tracking-[0.2em] mb-5 opacity-40", textColor)}>What the Brand Gets</h4>
+                                                                                        <div className="space-y-4">
+                                                                                            {/* Primary */}
+                                                                                            <div className="flex items-center gap-3.5">
+                                                                                                <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0">
+                                                                                                    <Check className="w-3 h-3 text-emerald-500" strokeWidth={4} />
+                                                                                                </div>
+                                                                                                <p className={cn("text-[14px] font-bold tracking-tight", textColor)}>
+                                                                                                    {primaryLabel} {extractedDuration ? `(${extractedDuration})` : ""}
+                                                                                                </p>
+                                                                                            </div>
+                                                                                            
+                                                                                            {/* Fallback items if it's a known package type but checklist is empty */}
+                                                                                            {extractedPackageName?.toLowerCase().includes('starter') && requirementsList.length === 0 && (
+                                                                                                <>
+                                                                                                    <div className="flex items-center gap-3.5">
+                                                                                                        <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0">
+                                                                                                            <Check className="w-3 h-3 text-emerald-500" strokeWidth={4} />
+                                                                                                        </div>
+                                                                                                        <p className={cn("text-[14px] font-bold tracking-tight opacity-90", textColor)}>Organic reach focus</p>
+                                                                                                    </div>
+                                                                                                    <div className="flex items-center gap-3.5">
+                                                                                                        <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0">
+                                                                                                            <Check className="w-3 h-3 text-emerald-500" strokeWidth={4} />
+                                                                                                        </div>
+                                                                                                        <p className={cn("text-[14px] font-bold tracking-tight opacity-90", textColor)}>Basic editing</p>
+                                                                                                    </div>
+                                                                                                </>
+                                                                                            )}
+
+                                                                                            {/* Secondary */}
+                                                                                            {secondaryDeliverables.filter(d => d.label || d.name).map((d, i) => (
+                                                                                                <div key={i} className="flex items-center gap-3.5">
+                                                                                                    <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0">
+                                                                                                        <Check className="w-3 h-3 text-emerald-500" strokeWidth={4} />
+                                                                                                    </div>
+                                                                                                    <p className={cn("text-[14px] font-bold tracking-tight", textColor)}>{d.label || d.name}</p>
+                                                                                                </div>
+                                                                                            ))}
+                                                                                            {/* Requirements */}
+                                                                                            {requirementsList.map((req, i) => (
+                                                                                                <div key={i} className="flex items-center gap-3.5">
+                                                                                                    <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0">
+                                                                                                        <Check className="w-3 h-3 text-emerald-500" strokeWidth={4} />
+                                                                                                    </div>
+                                                                                                    <p className={cn("text-[14px] font-bold tracking-tight opacity-80", textColor)}>{req}</p>
+                                                                                                </div>
+                                                                                            ))}
                                                                                         </div>
-                                                                                        <p className={cn("text-[13px] font-bold leading-none", textColor)}>{d.label || d.name}</p>
                                                                                     </div>
-                                                                                ))}
-                                                                                {/* Requirements */}
-                                                                                {requirementsList.map((req, i) => (
-                                                                                    <div key={i} className="flex items-start gap-3">
-                                                                                        <div className="mt-0.5 w-4 h-4 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0">
-                                                                                            <Check className="w-2.5 h-2.5 text-emerald-500" strokeWidth={4} />
-                                                                                        </div>
-                                                                                        <p className={cn("text-[13px] font-bold leading-none opacity-70", textColor)}>{req}</p>
-                                                                                    </div>
-                                                                                ))}
-                                                                            </div>
+                                                                                </div>
+                                                                            )}
                                                                         </div>
-                                                                    </div>
-                                                                )}
-                                                            </div>
+                                                                    );
+                                                                })()}
 
                                                             {/* ── ROADMAP ── */}
                                                             <div className={cn("rounded-[24px] border p-5", isDark ? "bg-white/[0.02] border-white/6" : "bg-white border-slate-200")}>
@@ -6053,7 +6092,13 @@ const MobileDashboardDemo = ({
                                         {/* ── CAMPAIGN BRIEF (Deals only — offers show brief inline in hero) ── */}
                                         {selectedType === 'deal' && (
                                             <div className="mb-6">
-                                                <h4 className={cn("text-[11px] font-black uppercase tracking-[0.2em] mb-4 opacity-50 px-1", textColor)}>Campaign Brief</h4>
+                                                <h4 className={cn("text-[11px] font-black uppercase tracking-[0.2em] mb-4 opacity-50 px-1", textColor)}>
+                                                    {(() => {
+                                                        const rawDesc = selectedItem.campaign_description || selectedItem.raw?.campaign_description || selectedItem.description || selectedItem.raw?.description || "";
+                                                        const packageMatch = rawDesc.match(/Selected package:\s*(.*?)(?=\s*Collab Duration:|Additional|$)/i);
+                                                        return packageMatch ? packageMatch[1].trim() : "Campaign Brief";
+                                                    })()}
+                                                </h4>
                                                 <div className={cn("rounded-[32px] border p-6 relative overflow-hidden backdrop-blur-xl shadow-2xl", 
                                                     isDark ? "bg-[#0C1320]/80 border-white/10" : "bg-white border-slate-200/60 shadow-sm")}>
                                                     <div className="flex items-start gap-4">
