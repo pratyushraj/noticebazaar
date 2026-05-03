@@ -5486,13 +5486,27 @@ const MobileDashboardDemo = ({
                                                     return (
                                                         <div className="space-y-4">
                                                             {/* ── COMPACT HERO ── */}
-                                                            <div className={cn("rounded-[32px] border p-5 relative overflow-hidden",
+                                                            <div className={cn("rounded-[32px] border p-5 relative overflow-hidden min-h-[160px] flex flex-col justify-end",
                                                                 isDark ? "bg-[#0B0F14] border-white/6" : "bg-white border-slate-200 shadow-sm")}>
                                                                 
-                                                                <div className="flex items-start justify-between gap-4">
+                                                                {/* Product Photo Background */}
+                                                                {(selectedItem.product_image || selectedItem.raw?.product_image || selectedItem.product_photo) && (
+                                                                    <div className="absolute inset-0 z-0">
+                                                                        <img 
+                                                                            src={optimizeImage(selectedItem.product_image || selectedItem.raw?.product_image || selectedItem.product_photo, 800)} 
+                                                                            className="w-full h-full object-cover"
+                                                                            alt="Product"
+                                                                        />
+                                                                        <div className={cn("absolute inset-0 bg-gradient-to-t", 
+                                                                            isDark ? "from-[#0B0F14] via-[#0B0F14]/60 to-transparent" : "from-white via-white/40 to-transparent"
+                                                                        )} />
+                                                                    </div>
+                                                                )}
+
+                                                                <div className="flex items-start justify-between gap-4 relative z-10">
                                                                     <div className="flex-1">
                                                                         <div className={cn("inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full mb-3 border",
-                                                                            isDark ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400" : "bg-emerald-50 border-emerald-100 text-emerald-700"
+                                                                            isDark ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400" : "bg-emerald-50 border-emerald-100 text-emerald-700 shadow-sm"
                                                                         )}>
                                                                             <ShieldCheck className="w-3 h-3" />
                                                                             <span className="text-[10px] font-black uppercase tracking-wider">{renderBudgetValue(selectedItem)} Secured</span>
@@ -5502,7 +5516,7 @@ const MobileDashboardDemo = ({
                                                                         </h2>
                                                                         <p className={cn("text-[11px] font-bold opacity-40 mt-1 uppercase tracking-widest", textColor)}>Net Payout</p>
                                                                     </div>
-                                                                    <div className="w-14 h-14 rounded-2xl overflow-hidden border border-white/10 shrink-0">
+                                                                    <div className="w-14 h-14 rounded-2xl overflow-hidden border border-white/10 shrink-0 shadow-lg">
                                                                         <img 
                                                                             src={selectedItem.brand_logo || selectedItem.raw?.brand_logo || `https://ui-avatars.com/api/?name=${encodeURIComponent(selectedItem.brand_name || 'B')}&background=random`} 
                                                                             className="w-full h-full object-cover" 
