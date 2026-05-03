@@ -5460,16 +5460,16 @@ const MobileDashboardDemo = ({
 
                                         {/* ── OFFER / DEAL HERO ── */}
                                         {selectedType === 'offer' ? (
-                                            <div className="mb-5 space-y-3.5">
+                                            <div className="mb-5 space-y-3">
 
-                                                {/* STATUS PILLS */}
-                                                <div className="flex flex-wrap items-center gap-2 pt-1">
+                                                {/* ── STATUS PILLS ── */}
+                                                <div className="flex flex-wrap items-center gap-2 pt-0.5">
                                                     <div className={cn(
                                                         "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-[0.12em] whitespace-nowrap border",
                                                         isDark ? "bg-amber-500/10 text-amber-300 border-amber-400/15" : "bg-amber-50 text-amber-700 border-amber-200/50"
                                                     )}>
                                                         <span>🔥</span>
-                                                        <span>Expires in 5 days</span>
+                                                        <span>Accept within 5 days</span>
                                                     </div>
                                                     {String(selectedItem?.collab_type || '').toLowerCase().includes('barter') ? (
                                                         <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-[0.12em] whitespace-nowrap border bg-orange-500/10 text-orange-300 border-orange-400/20">
@@ -5486,78 +5486,71 @@ const MobileDashboardDemo = ({
                                                     )}
                                                 </div>
 
-                                                {/* HERO CARD — price + image + tags */}
+                                                {/* ── HERO CARD: PRICE FIRST ── */}
                                                 <div className={cn(
                                                     "rounded-[28px] border overflow-hidden",
                                                     isDark ? "bg-[#0C1320] border-white/8" : "bg-white border-slate-200 shadow-sm"
                                                 )}>
-                                                    {/* Product image */}
-                                                    <div className="relative w-full h-44 overflow-hidden">
-                                                        {(() => {
-                                                            const src = resolveCreatorDealProductImage(selectedItem) || 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&q=80&w=800';
-                                                            return <img src={src} alt="" className="w-full h-full object-cover" loading="lazy" />;
-                                                        })()}
-                                                        <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/10 to-transparent" />
-                                                        <div className="absolute top-3.5 left-3.5">
-                                                            <div className={cn(
-                                                                "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-[10px] font-black uppercase tracking-wide backdrop-blur-md border",
-                                                                "bg-white/10 border-white/15 text-white"
-                                                            )}>
+                                                    {/* Price section — dominates */}
+                                                    <div className="px-5 pt-5 pb-4">
+                                                        {/* Escrow guarantee — stronger than a tag */}
+                                                        <div className={cn(
+                                                            "inline-flex items-center gap-2 px-3 py-1.5 rounded-xl border mb-3",
+                                                            isDark ? "bg-emerald-500/[0.08] border-emerald-500/20" : "bg-emerald-50 border-emerald-100"
+                                                        )}>
+                                                            <ShieldCheck className={cn("w-3.5 h-3.5", isDark ? "text-emerald-400" : "text-emerald-600")} />
+                                                            <span className={cn("text-[11px] font-black", isDark ? "text-emerald-300" : "text-emerald-700")}>
+                                                                {renderBudgetValue(selectedItem)} {selectedIsPureBarter ? 'product secured' : 'locked in escrow'}
+                                                            </span>
+                                                        </div>
+
+                                                        {/* Price — DOMINANT */}
+                                                        <p className={cn("text-[10px] font-black uppercase tracking-[0.22em] opacity-40 mb-0.5", textColor)}>
+                                                            {selectedIsPureBarter ? 'Free Product Worth' : 'Pending Payout'}
+                                                        </p>
+                                                        <p className={cn("text-[52px] leading-none font-black tracking-tight mb-1", textColor)}>
+                                                            {renderBudgetValue(selectedItem)}
+                                                        </p>
+                                                        <p className={cn("text-[12px] font-bold", isDark ? "text-emerald-400/80" : "text-emerald-700")}>
+                                                            💰 Releases after approval
+                                                        </p>
+
+                                                        {/* Deliverable + deadline row */}
+                                                        <div className="flex flex-wrap items-center gap-2 mt-3.5">
+                                                            <div className={cn("inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border text-[10px] font-bold",
+                                                                isDark ? "bg-white/[0.04] border-white/8 text-white/60" : "bg-slate-50 border-slate-200 text-slate-600")}>
                                                                 <Film className="w-3 h-3" />
                                                                 Instagram Reel
                                                             </div>
-                                                        </div>
-                                                    </div>
-
-                                                    {/* Price row */}
-                                                    <div className="px-5 pt-4 pb-5">
-                                                        <div className="flex items-start justify-between gap-3 mb-3">
-                                                            <div>
-                                                                <p className={cn("text-[10px] font-black uppercase tracking-[0.2em] opacity-40 mb-0.5", textColor)}>
-                                                                    {selectedIsPureBarter ? 'Free Product Worth' : 'Pending Payout'}
-                                                                </p>
-                                                                <p className={cn("text-[44px] leading-none font-black tracking-tight", textColor)}>
-                                                                    {renderBudgetValue(selectedItem)}
-                                                                </p>
-                                                                <p className={cn("text-[11px] font-bold mt-1", isDark ? "text-emerald-400/80" : "text-emerald-700")}>
-                                                                    💰 Releases after approval
-                                                                </p>
-                                                            </div>
-                                                            <div className={cn(
-                                                                "shrink-0 flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border mt-1",
-                                                                isDark ? "bg-emerald-500/10 border-emerald-500/20" : "bg-emerald-50 border-emerald-100"
-                                                            )}>
-                                                                <ShieldCheck className={cn("w-3.5 h-3.5", isDark ? "text-emerald-400" : "text-emerald-600")} />
-                                                                <span className={cn("text-[10px] font-black uppercase tracking-wider", isDark ? "text-emerald-400" : "text-emerald-700")}>
-                                                                    {selectedIsPureBarter ? 'Product Linked' : 'Payment Secured'}
-                                                                </span>
-                                                            </div>
-                                                        </div>
-                                                        {/* Tags */}
-                                                        <div className="flex flex-wrap gap-2">
-                                                            <div className={cn("flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[10px] font-bold border", isDark ? "bg-emerald-500/8 border-emerald-500/15 text-emerald-400" : "bg-emerald-50 border-emerald-100 text-emerald-700")}>
-                                                                <Package className="w-3 h-3" />
-                                                                Product secured
-                                                            </div>
                                                             {(() => {
                                                                 const rawDeadline = selectedItem?.due_date || selectedItem?.deadline;
-                                                                const deadlineLabel = rawDeadline
+                                                                const label = rawDeadline
                                                                     ? new Date(rawDeadline).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })
                                                                     : '08 May';
                                                                 return (
-                                                                    <div className={cn("flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[10px] font-bold border", isDark ? "bg-rose-500/8 border-rose-500/15 text-rose-400" : "bg-rose-50 border-rose-100 text-rose-600")}>
+                                                                    <div className={cn("inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border text-[10px] font-bold",
+                                                                        isDark ? "bg-rose-500/8 border-rose-500/15 text-rose-400" : "bg-rose-50 border-rose-100 text-rose-600")}>
                                                                         <Clock className="w-3 h-3" />
-                                                                        Submit by {deadlineLabel}
+                                                                        Submit by {label}
                                                                     </div>
                                                                 );
                                                             })()}
                                                         </div>
                                                     </div>
+
+                                                    {/* Product image — below price, context not focus */}
+                                                    <div className="relative w-full h-36 overflow-hidden">
+                                                        {(() => {
+                                                            const src = resolveCreatorDealProductImage(selectedItem) || 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&q=80&w=800';
+                                                            return <img src={src} alt="" className="w-full h-full object-cover" loading="lazy" />;
+                                                        })()}
+                                                        <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-black/20" />
+                                                    </div>
                                                 </div>
 
-                                                {/* DECISION HELPER — 2x2 compact grid */}
+                                                {/* ── WHY THIS IS GOOD: 2x2 GRID ── */}
                                                 <div className={cn(
-                                                    "rounded-[20px] border px-4 py-3.5 grid grid-cols-2 gap-x-4 gap-y-2.5",
+                                                    "rounded-[20px] border px-4 py-3 grid grid-cols-2 gap-x-4 gap-y-2.5",
                                                     isDark ? "bg-white/[0.025] border-white/6" : "bg-slate-50 border-slate-200"
                                                 )}>
                                                     {[
@@ -5573,38 +5566,82 @@ const MobileDashboardDemo = ({
                                                     ))}
                                                 </div>
 
-                                                {/* DELIVERABLES CHECKLIST */}
-                                                <div className={cn("rounded-[20px] border px-4 py-4", isDark ? "bg-white/[0.025] border-white/6" : "bg-white border-slate-200")}>
-                                                    <p className={cn("text-[10px] font-black uppercase tracking-[0.2em] opacity-40 mb-3", textColor)}>Deliverables</p>
-                                                    <div className="space-y-2.5">
+                                                {/* ── WHAT TO DO NEXT: checkbox-style ── */}
+                                                <div className={cn(
+                                                    "rounded-[20px] border px-4 py-3.5",
+                                                    isDark ? "bg-amber-500/[0.04] border-amber-500/15" : "bg-amber-50/80 border-amber-200/70"
+                                                )}>
+                                                    <div className="flex items-center gap-2 mb-3">
+                                                        <span className="text-[13px]">🎯</span>
+                                                        <p className={cn("text-[10px] font-black uppercase tracking-widest", isDark ? "text-amber-400" : "text-amber-700")}>
+                                                            What to do next
+                                                        </p>
+                                                    </div>
+                                                    <div className="space-y-2">
                                                         {[
-                                                            { icon: <Film className="w-3.5 h-3.5" />, label: "1 Premium Reel (30–60s)" },
-                                                            { icon: <FileText className="w-3.5 h-3.5" />, label: "Script + hook optimization" },
-                                                            { icon: <Smartphone className="w-3.5 h-3.5" />, label: "1 Story shoutout" },
-                                                            { icon: <Image className="w-3.5 h-3.5" />, label: "High-res files included" },
-                                                        ].map((d, i) => (
+                                                            { label: "Accept this offer to lock the deal", done: false },
+                                                            { label: "Brand funds → payment locked in escrow", done: false },
+                                                            { label: "Create & submit your content", done: false },
+                                                            { label: "Earn ₹" + (selectedItem?.budget || selectedItem?.raw?.budget || '4,000') + " after approval", done: false },
+                                                        ].map((item, i) => (
                                                             <div key={i} className={cn("flex items-center gap-2.5 text-[12px] font-semibold", textColor)}>
-                                                                <div className={cn("w-7 h-7 rounded-lg flex items-center justify-center shrink-0", isDark ? "bg-white/5" : "bg-slate-100")}>
-                                                                    <span className={isDark ? "text-white/50" : "text-slate-500"}>{d.icon}</span>
+                                                                <div className={cn(
+                                                                    "w-4 h-4 rounded-full flex items-center justify-center shrink-0 border-2",
+                                                                    item.done
+                                                                        ? "bg-emerald-500 border-emerald-500"
+                                                                        : (isDark ? "border-amber-500/40" : "border-amber-400/60")
+                                                                )}>
+                                                                    {item.done && <Check className="w-2.5 h-2.5 text-white" />}
                                                                 </div>
-                                                                <span className="opacity-75">{d.label}</span>
+                                                                <span className={item.done ? "opacity-40 line-through" : "opacity-80"}>{item.label}</span>
                                                             </div>
                                                         ))}
                                                     </div>
                                                 </div>
 
-                                                {/* USAGE RIGHTS */}
-                                                <div className={cn("rounded-[20px] border px-4 py-3.5 flex items-center gap-3.5", isDark ? "bg-white/[0.02] border-white/6" : "bg-white border-slate-200")}>
-                                                    <div className={cn("w-9 h-9 rounded-xl flex items-center justify-center shrink-0", isDark ? "bg-sky-500/10" : "bg-sky-50")}>
-                                                        <ScrollText className={cn("w-4 h-4", isDark ? "text-sky-400" : "text-sky-600")} />
-                                                    </div>
-                                                    <div>
-                                                        <p className={cn("text-[11px] font-black", textColor)}>Usage Rights</p>
-                                                        <p className={cn("text-[10px] font-semibold opacity-50 mt-0.5", textColor)}>Organic social only · 90 days · No 3rd-party</p>
+                                                {/* ── DELIVERABLES: primary highlighted ── */}
+                                                <div className={cn("rounded-[20px] border px-4 py-4", isDark ? "bg-white/[0.025] border-white/6" : "bg-white border-slate-200")}>
+                                                    <p className={cn("text-[10px] font-black uppercase tracking-[0.2em] opacity-40 mb-3", textColor)}>Deliverables</p>
+                                                    <div className="space-y-2">
+                                                        {/* Primary deliverable — highlighted */}
+                                                        <div className={cn(
+                                                            "flex items-center gap-3 px-3 py-2.5 rounded-[14px] border",
+                                                            isDark ? "bg-white/[0.04] border-white/10" : "bg-slate-50 border-slate-200"
+                                                        )}>
+                                                            <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center shrink-0">
+                                                                <Film className="w-3.5 h-3.5 text-white" />
+                                                            </div>
+                                                            <div>
+                                                                <p className={cn("text-[13px] font-black tracking-tight", textColor)}>1 Premium Reel (30–60s)</p>
+                                                                <p className={cn("text-[10px] font-bold opacity-40 mt-0.5", textColor)}>Primary deliverable</p>
+                                                            </div>
+                                                        </div>
+                                                        {/* Secondary deliverables */}
+                                                        {[
+                                                            { icon: <FileText className="w-3 h-3" />, label: "Script + hook optimization" },
+                                                            { icon: <Smartphone className="w-3 h-3" />, label: "1 Story shoutout" },
+                                                            { icon: <Image className="w-3 h-3" />, label: "High-res files included" },
+                                                        ].map((d, i) => (
+                                                            <div key={i} className={cn("flex items-center gap-2.5 px-1 text-[12px] font-semibold", textColor)}>
+                                                                <span className={cn("shrink-0 opacity-40", textColor)}>{d.icon}</span>
+                                                                <span className="opacity-60">{d.label}</span>
+                                                            </div>
+                                                        ))}
                                                     </div>
                                                 </div>
 
-                                                {/* TRUST BLOCK */}
+                                                {/* ── USAGE RIGHTS (single, compact) ── */}
+                                                <div className={cn("rounded-[20px] border px-4 py-3.5 flex items-center gap-3.5", isDark ? "bg-white/[0.02] border-white/6" : "bg-white border-slate-200")}>
+                                                    <div className={cn("w-8 h-8 rounded-xl flex items-center justify-center shrink-0", isDark ? "bg-sky-500/10" : "bg-sky-50")}>
+                                                        <ScrollText className={cn("w-3.5 h-3.5", isDark ? "text-sky-400" : "text-sky-600")} />
+                                                    </div>
+                                                    <div>
+                                                        <p className={cn("text-[11px] font-black", textColor)}>Usage Rights</p>
+                                                        <p className={cn("text-[10px] font-semibold opacity-50 mt-0.5", textColor)}>Organic social only · 90 days · No 3rd-party licensing</p>
+                                                    </div>
+                                                </div>
+
+                                                {/* ── TRUST BLOCK ── */}
                                                 <div className={cn(
                                                     "rounded-[20px] border p-4 flex items-start gap-3.5",
                                                     isDark ? "bg-emerald-500/[0.04] border-emerald-500/12" : "bg-emerald-50/80 border-emerald-200/60"
@@ -5631,13 +5668,15 @@ const MobileDashboardDemo = ({
                                                     </div>
                                                 </div>
 
-                                                {/* PRIMARY CTA + secondary actions */}
-                                                <div className="space-y-2 pt-1 pb-1">
-                                                    {/* Social proof */}
-                                                    <div className={cn("text-center text-[10px] font-black uppercase tracking-[0.18em] opacity-30 pb-1", textColor)}>
-                                                        ⭐ 50+ creators completed deals successfully
+                                                {/* ── CTA AREA ── */}
+                                                <div className="space-y-2.5 pt-0.5 pb-1">
+                                                    {/* Urgency line */}
+                                                    <div className={cn("flex items-center justify-center gap-2 text-[11px] font-bold", isDark ? "text-amber-400/80" : "text-amber-700")}>
+                                                        <span>🔥</span>
+                                                        <span>Accept within 5 days to secure this deal</span>
                                                     </div>
 
+                                                    {/* Primary CTA */}
                                                     <button
                                                         type="button"
                                                         data-testid="offer-brief-accept"
@@ -5657,22 +5696,17 @@ const MobileDashboardDemo = ({
                                                         disabled={processingDeal === selectedItem?.id}
                                                         className={cn(
                                                             "w-full rounded-[20px] px-6 py-5 flex items-center justify-between relative overflow-hidden active:scale-[0.97] transition-all duration-200 group",
-                                                            "bg-gradient-to-br from-emerald-500 to-emerald-600 text-white shadow-[0_8px_24px_-6px_rgba(16,185,129,0.40)]",
+                                                            "bg-gradient-to-br from-emerald-500 to-emerald-600 text-white shadow-[0_8px_28px_-6px_rgba(16,185,129,0.45)]",
                                                             processingDeal === selectedItem?.id && "opacity-80 pointer-events-none"
                                                         )}
                                                     >
                                                         <div className="absolute inset-0 bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                                                         <div className="text-left relative z-10">
-                                                            <p className="text-[19px] font-black leading-tight tracking-tight">
-                                                                {processingDeal === selectedItem?.id
-                                                                    ? "Accepting..."
-                                                                    : <>Accept · Earn {renderBudgetValue(selectedItem)}</>
-                                                                }
+                                                            <p className="text-[20px] font-black leading-tight tracking-tight">
+                                                                {processingDeal === selectedItem?.id ? "Accepting..." : <>Accept · Earn {renderBudgetValue(selectedItem)}</>}
                                                             </p>
                                                             <p className="text-[11px] font-bold opacity-70 mt-0.5">
-                                                                {processingDeal === selectedItem?.id
-                                                                    ? "Setting up contract..."
-                                                                    : "💰 Payment secured · Releases after approval"}
+                                                                {processingDeal === selectedItem?.id ? "Setting up contract..." : "💰 Payment secured · Releases after approval"}
                                                             </p>
                                                         </div>
                                                         <div className="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center relative z-10 shrink-0">
@@ -5683,12 +5717,23 @@ const MobileDashboardDemo = ({
                                                         </div>
                                                     </button>
 
+                                                    {/* Forward momentum */}
+                                                    <div className={cn("text-center text-[10px] font-semibold opacity-40", textColor)}>
+                                                        💡 Complete this deal → unlock more brand offers
+                                                    </div>
+
+                                                    {/* Social proof */}
+                                                    <div className={cn("text-center text-[10px] font-black uppercase tracking-[0.15em] opacity-25", textColor)}>
+                                                        ⭐ 50+ creators completed deals successfully
+                                                    </div>
+
+                                                    {/* Barter: shipping address */}
                                                     {selectedIsPureBarter && (
                                                         <button
                                                             type="button"
                                                             onClick={() => { if (processingDeal) return; handleOpenBarterShippingFlow(selectedItem); }}
                                                             className={cn(
-                                                                "w-full h-14 rounded-[18px] px-5 flex items-center justify-between border active:scale-[0.99] transition-all",
+                                                                "w-full h-13 rounded-[18px] px-5 flex items-center justify-between border active:scale-[0.99] transition-all",
                                                                 isDark ? "bg-[#151922] border-amber-500/20 text-amber-300" : "bg-white border-amber-100 text-amber-700"
                                                             )}
                                                         >
@@ -5705,40 +5750,40 @@ const MobileDashboardDemo = ({
                                                         </button>
                                                     )}
 
-                                                    <div className="grid grid-cols-2 gap-2.5">
-                                                        <button
-                                                            type="button"
-                                                            onClick={() => { triggerHaptic(); toast.message('Counter Offer', { description: 'Open offer details to counter.' }); }}
-                                                            className={cn(
-                                                                "h-12 rounded-[16px] border font-bold text-[13px] tracking-tight active:scale-[0.99] transition-all flex items-center justify-center gap-2",
-                                                                isDark ? "bg-white/[0.03] border-white/10 text-white/60" : "bg-white border-slate-200 text-slate-600"
-                                                            )}
-                                                        >
-                                                            <Edit3 className="w-3.5 h-3.5" />
-                                                            Counter
-                                                        </button>
-                                                        <button
-                                                            type="button"
-                                                            onClick={async () => {
-                                                                triggerHaptic(HapticPatterns.error);
-                                                                if (selectedItem?.isDemo) {
-                                                                    toast.message('This is a demo offer', { description: 'Decline is disabled for demo.' });
-                                                                    return;
-                                                                }
-                                                                if (onDeclineRequest) {
-                                                                    try { await onDeclineRequest(selectedItem); } catch { }
-                                                                }
-                                                                closeItemDetail();
-                                                            }}
-                                                            className={cn(
-                                                                "h-12 rounded-[16px] border font-bold text-[13px] tracking-tight active:scale-[0.99] transition-all flex items-center justify-center gap-2",
-                                                                isDark ? "bg-white/[0.03] border-rose-500/15 text-rose-400/70" : "bg-white border-rose-100 text-rose-500"
-                                                            )}
-                                                        >
-                                                            <XCircle className="w-3.5 h-3.5" />
-                                                            Decline
-                                                        </button>
-                                                    </div>
+                                                    {/* Counter — outline, medium emphasis */}
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => { triggerHaptic(); toast.message('Counter Offer', { description: 'Negotiate terms with the brand.' }); }}
+                                                        className={cn(
+                                                            "w-full h-12 rounded-[16px] border font-bold text-[13px] tracking-tight active:scale-[0.99] transition-all flex items-center justify-center gap-2",
+                                                            isDark ? "bg-white/[0.03] border-white/10 text-white/60" : "bg-white border-slate-200 text-slate-600"
+                                                        )}
+                                                    >
+                                                        <Edit3 className="w-3.5 h-3.5" />
+                                                        Counter Offer
+                                                    </button>
+
+                                                    {/* Decline — text-only, minimal emphasis */}
+                                                    <button
+                                                        type="button"
+                                                        onClick={async () => {
+                                                            triggerHaptic(HapticPatterns.error);
+                                                            if (selectedItem?.isDemo) {
+                                                                toast.message('This is a demo offer', { description: 'Decline is disabled for demo.' });
+                                                                return;
+                                                            }
+                                                            if (onDeclineRequest) {
+                                                                try { await onDeclineRequest(selectedItem); } catch { }
+                                                            }
+                                                            closeItemDetail();
+                                                        }}
+                                                        className={cn(
+                                                            "w-full py-2 text-[12px] font-semibold tracking-tight active:scale-[0.99] transition-all text-center",
+                                                            isDark ? "text-white/30 hover:text-rose-400/60" : "text-slate-400 hover:text-rose-500"
+                                                        )}
+                                                    >
+                                                        Not interested in this deal
+                                                    </button>
                                                 </div>
 
                                             </div>
@@ -5917,7 +5962,7 @@ const MobileDashboardDemo = ({
                                                     <p className={cn("text-[13px] font-black leading-tight tracking-tighter whitespace-nowrap", textColor)}>
                                                         {selectedItem.company_name || selectedItem.brand_name || selectedItem.brand?.name || selectedItem.raw?.brand_name || 'Brand Information'}
                                                     </p>
-                                                    <p className={cn("text-[11px] mt-1 font-bold opacity-50", textColor)}>Verified Business · ⭐ 12 deals completed</p>
+                                                    <p className={cn("text-[11px] mt-1 font-bold opacity-50", textColor)}>Verified Business · ⭐ 12 deals · 4.8 rating</p>
                                                 </div>
                                                 <motion.div
                                                     animate={{ rotate: showBrandDetails ? 90 : 0 }}
@@ -6074,6 +6119,13 @@ const MobileDashboardDemo = ({
                                                                         })}
                                                                     </div>
                                                                 </div>
+                                                                {/* "Next" hint — eliminates confusion */}
+                                                                {isPaymentPending && (
+                                                                    <div className={cn("mt-3 flex items-center gap-2 px-1 text-[11px] font-bold", isDark ? "text-sky-400/70" : "text-sky-700/80")}>
+                                                                        <ArrowRight className="w-3 h-3 shrink-0" />
+                                                                        <span>Next: Brand funds deal → you create content → get paid</span>
+                                                                    </div>
+                                                                )}
                                                                 {/* What to do next — context-aware guidance */}
                                                                 {!isBarterDeal && (
                                                                     <div className={cn(
