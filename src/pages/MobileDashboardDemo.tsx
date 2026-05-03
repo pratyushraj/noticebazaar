@@ -5548,11 +5548,11 @@ const MobileDashboardDemo = ({
                                                                 </div>
 
                                                                 <div className="grid grid-cols-2 gap-2 mt-5">
-                                                                    <div className={cn("flex items-center gap-2 px-3 py-2.5 rounded-xl border", isDark ? "bg-white/[0.04] border-white/8" : "bg-slate-50 border-slate-200")}>
+                                                                    <div className={cn("flex items-center gap-2 px-3 py-2.5 rounded-xl border backdrop-blur-xl transition-all", isDark ? "bg-white/[0.04] border-white/8" : "bg-white/40 border-slate-200/50 shadow-sm")}>
                                                                         <Film className="w-3.5 h-3.5 opacity-40" />
                                                                         <span className={cn("text-[11px] font-bold truncate", textColor)}>{primaryLabel}</span>
                                                                     </div>
-                                                                    <div className={cn("flex items-center gap-2 px-3 py-2.5 rounded-xl border", isDark ? "bg-rose-500/5 border-rose-500/15" : "bg-rose-50 border-rose-100")}>
+                                                                    <div className={cn("flex items-center gap-2 px-3 py-2.5 rounded-xl border backdrop-blur-xl transition-all", isDark ? "bg-rose-500/5 border-rose-500/15" : "bg-rose-50/40 border-rose-100/50 shadow-sm")}>
                                                                         <Clock className="w-3.5 h-3.5 text-rose-500/60" />
                                                                         <span className={cn("text-[11px] font-bold", isDark ? "text-rose-300" : "text-rose-700")}>By {new Date(selectedItem?.due_date || Date.now()).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}</span>
                                                                     </div>
@@ -5572,7 +5572,7 @@ const MobileDashboardDemo = ({
                                                                     const packageIcon = extractedPackageName?.toLowerCase().includes('starter') ? "🚀" : extractedPackageName?.toLowerCase().includes('growth') ? "📈" : "📄";
 
                                                                     return (
-                                                                        <div className={cn("rounded-[32px] border overflow-hidden", isDark ? "bg-white/[0.02] border-white/6" : "bg-white border-slate-200")}>
+                                                                        <div className={cn("rounded-[32px] border overflow-hidden backdrop-blur-2xl transition-all", isDark ? "bg-white/[0.02] border-white/6" : "bg-white/60 border-slate-200/60 shadow-xl")}>
                                                                             <button 
                                                                                 onClick={() => setShowBrief(v => !v)}
                                                                                 className="w-full px-6 py-7 flex items-center justify-between text-left"
@@ -5605,8 +5605,8 @@ const MobileDashboardDemo = ({
                                                                                     </p>
             
                                                                                     {/* WHAT THE BRAND GETS (Exactly like screenshot) */}
-                                                                                    <div className={cn("rounded-[32px] p-8 border", 
-                                                                                        isDark ? "bg-[#0C1320]/80 border-white/5" : "bg-slate-50/50 border-slate-200/60 shadow-sm")}>
+                                                                                    <div className={cn("rounded-[32px] p-8 border backdrop-blur-md", 
+                                                                                        isDark ? "bg-[#0C1320]/80 border-white/5" : "bg-slate-50/30 border-slate-200/40")}>
                                                                                         <h4 className={cn("text-[11px] font-black uppercase tracking-[0.25em] mb-6 opacity-40 px-1", textColor)}>WHAT THE BRAND GETS</h4>
                                                                                         <div className="space-y-5">
                                                                                             {/* Primary */}
