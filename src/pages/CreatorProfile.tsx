@@ -215,6 +215,7 @@ const buildNoteValue = (preset: string, custom: string) => {
 };
 
 const ProfileSettings = () => {
+  const isDark = true; // Elite interface uses dark mode for premium aesthetic
   const navigate = useNavigate();
   const location = useLocation();
   const { profile, user, loading: sessionLoading, refetchProfile } = useSession();

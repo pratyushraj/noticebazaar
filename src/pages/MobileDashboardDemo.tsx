@@ -5528,201 +5528,85 @@ const MobileDashboardDemo = ({
                                                         </div>
                                                     </div>
 
-                                                    {/* Decision helpers 2x2 grid */}
+                                                {/* ── ELITE ROADMAP ── */}
+                                                <div className="mt-8 mb-4">
                                                     <div className={cn(
-                                                        "grid grid-cols-2 gap-px",
-                                                        isDark ? "bg-white/[0.04]" : "bg-slate-100"
+                                                        "rounded-[2.5rem] border p-6 relative overflow-hidden transition-all shadow-xl",
+                                                        isDark ? "bg-[#0d1219] border-white/5 shadow-black/40" : "bg-white border-slate-100 shadow-slate-200/50"
                                                     )}>
-                                                        {[
-                                                            { label: "Great deal for you", icon: <Zap className="w-3.5 h-3.5" /> },
-                                                            { label: "Payment guaranteed", icon: <CheckCircle2 className="w-3.5 h-3.5" /> },
-                                                            { label: "1 Revision included", icon: <Edit3 className="w-3.5 h-3.5" /> },
-                                                            { label: "No hidden tasks", icon: <ShieldCheck className="w-3.5 h-3.5" /> }
-                                                        ].map((helper, i) => (
-                                                            <div key={i} className={cn(
-                                                                "flex items-center gap-2 px-4 py-3.5 text-[11px] font-semibold",
-                                                                isDark ? "bg-[#0d1219] text-white/60" : "bg-white text-slate-600"
-                                                            )}>
-                                                                <span className="text-emerald-500 shrink-0">{helper.icon}</span>
-                                                                {helper.label}
-                                                            </div>
-                                                        ))}
-                                                    </div>
-                                                </div>
-
-                                                {/* ── DEAL LIFECYCLE TIMELINE ── */}
-                                                <div className={cn(
-                                                    "mt-4 px-5 pt-4 pb-5 rounded-[28px] border",
-                                                    isDark ? "bg-[#0d1219] border-white/[0.06]" : "bg-white border-slate-100 shadow-sm"
-                                                )}>
-                                                    <p className={cn("text-[10px] font-black uppercase tracking-[0.18em] mb-5", isDark ? "text-white/30" : "text-slate-400")}>
-                                                        Deal Lifecycle
-                                                    </p>
-                                                    <div className="flex items-center">
-                                                        {[
-                                                            { label: 'Accept', sub: 'Secure deal', active: true, Icon: Zap },
-                                                            { label: 'Fund', sub: 'Locked in', active: false, Icon: ShieldCheck },
-                                                            { label: 'Content', sub: 'You create', active: false, Icon: Camera },
-                                                            { label: 'Paid', sub: 'Get paid', active: false, Icon: DollarSign }
-                                                        ].map((step, i, arr) => (
-                                                            <React.Fragment key={i}>
-                                                                <div className="flex flex-col items-center gap-2 flex-shrink-0">
-                                                                    <div className={cn(
-                                                                        "w-9 h-9 rounded-2xl flex items-center justify-center transition-all duration-500",
-                                                                        step.active
-                                                                            ? "bg-emerald-500 text-white shadow-[0_0_20px_rgba(16,185,129,0.45)]"
-                                                                            : (isDark ? "bg-white/[0.05] text-white/20 border border-white/[0.06]" : "bg-slate-50 text-slate-300 border border-slate-100")
-                                                                    )}>
-                                                                        <step.Icon className="w-4 h-4" />
-                                                                    </div>
-                                                                    <div className="text-center">
-                                                                        <p className={cn("text-[10px] font-black", step.active ? "text-emerald-500" : (isDark ? "text-white/25" : "text-slate-300"))}>{step.label}</p>
-                                                                        <p className={cn("text-[9px] font-medium mt-0.5 whitespace-nowrap", isDark ? "text-white/20" : "text-slate-300")}>{step.sub}</p>
-                                                                    </div>
-                                                                </div>
-                                                                {i < arr.length - 1 && (
-                                                                    <div className="flex-1 mx-2 mb-5">
-                                                                        <div className={cn("h-[2px] rounded-full", i === 0 ? "bg-gradient-to-r from-emerald-500 to-emerald-500/20" : (isDark ? "bg-white/[0.05]" : "bg-slate-100"))} />
-                                                                    </div>
-                                                                )}
-                                                            </React.Fragment>
-                                                        ))}
-                                                    </div>
-                                                </div>
-
-                                                {/* ── DELIVERABLES ── */}
-                                                <div className={cn(
-                                                    "mt-3 rounded-[28px] border overflow-hidden",
-                                                    isDark ? "bg-[#0d1219] border-white/[0.06]" : "bg-white border-slate-100 shadow-sm"
-                                                )}>
-                                                    <div className="px-5 pt-4 pb-2 flex items-center gap-2">
-                                                        <div className={cn("w-7 h-7 rounded-xl flex items-center justify-center shrink-0", isDark ? "bg-emerald-500/15" : "bg-emerald-50")}>
-                                                            <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-                                                        </div>
-                                                        <p className={cn("text-[10px] font-black uppercase tracking-[0.14em]", isDark ? "text-white/40" : "text-slate-400")}>Deliverables</p>
-                                                    </div>
-                                                    <div className="px-5 pb-4">
-                                                        {[
-                                                            { text: "1 Premium Reel (30–60s)", badge: "Main" },
-                                                            { text: "Script + hook optimization", badge: null },
-                                                            { text: "1 Story shoutout (24h)", badge: null },
-                                                            { text: "High-res source files", badge: null }
-                                                        ].map((item, i) => (
-                                                            <div key={i} className={cn(
-                                                                "flex items-center justify-between py-3",
-                                                                i < 3 ? (isDark ? "border-b border-white/[0.04]" : "border-b border-slate-50") : ""
-                                                            )}>
-                                                                <div className="flex items-center gap-3">
-                                                                    <span className={cn("w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-black shrink-0", isDark ? "bg-white/[0.06] text-white/40" : "bg-slate-100 text-slate-400")}>{i + 1}</span>
-                                                                    <span className={cn("text-[13px] font-semibold", textColor)}>{item.text}</span>
-                                                                </div>
-                                                                {item.badge && (
-                                                                    <span className="px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-500 text-[9px] font-black uppercase tracking-wider shrink-0">{item.badge}</span>
-                                                                )}
-                                                            </div>
-                                                        ))}
-                                                    </div>
-                                                </div>
-
-                                                {/* ── USAGE RIGHTS ── */}
-                                                <div className={cn(
-                                                    "mt-3 rounded-[28px] border overflow-hidden",
-                                                    isDark ? "bg-[#0d1219] border-white/[0.06]" : "bg-white border-slate-100 shadow-sm"
-                                                )}>
-                                                    <div className="px-5 pt-4 pb-2 flex items-center gap-2">
-                                                        <div className={cn("w-7 h-7 rounded-xl flex items-center justify-center shrink-0", isDark ? "bg-blue-500/15" : "bg-blue-50")}>
-                                                            <FileText className="w-4 h-4 text-blue-500" />
-                                                        </div>
-                                                        <p className={cn("text-[10px] font-black uppercase tracking-[0.14em]", isDark ? "text-white/40" : "text-slate-400")}>Usage Rights</p>
-                                                    </div>
-                                                    <div className="px-5 pb-4">
-                                                        {[
-                                                            "Organic social media only",
-                                                            "90 days usage limit",
-                                                            "No third-party licensing"
-                                                        ].map((item, i) => (
-                                                            <div key={i} className={cn(
-                                                                "flex items-center gap-3 py-3",
-                                                                i < 2 ? (isDark ? "border-b border-white/[0.04]" : "border-b border-slate-50") : ""
-                                                            )}>
-                                                                <div className="w-1.5 h-1.5 rounded-full bg-blue-500 shrink-0 ml-1" />
-                                                                <span className={cn("text-[13px] font-semibold", textColor)}>{item}</span>
-                                                            </div>
-                                                        ))}
-                                                    </div>
-                                                </div>
-
-                                                {/* ── CREATOR ARMOUR TRUST BLOCK ── */}
-                                                <div className={cn(
-                                                    "mt-3 rounded-[28px] border relative overflow-hidden",
-                                                    isDark
-                                                        ? "bg-gradient-to-br from-emerald-950/40 to-[#0d1219] border-emerald-500/15"
-                                                        : "bg-gradient-to-br from-emerald-50 to-white border-emerald-100"
-                                                )}>
-                                                    <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-emerald-500 via-emerald-400 to-teal-500 opacity-70" />
-                                                    <div className="p-5">
-                                                        <div className="flex items-start gap-3 mb-4">
-                                                            <div className="w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 bg-emerald-500 text-white shadow-[0_4px_12px_rgba(16,185,129,0.3)]">
-                                                                <ShieldCheck className="w-5 h-5" />
-                                                            </div>
-                                                            <div className="min-w-0">
-                                                                <h4 className={cn("text-[14px] font-black tracking-tight leading-snug", textColor)}>Protected by Creator Armour™</h4>
-                                                                <p className={cn("text-[11px] font-medium mt-0.5", isDark ? "text-white/40" : "text-slate-400")}>Every deal is legally secured</p>
+                                                        <div className="flex items-center justify-between mb-8">
+                                                            <h4 className={cn("text-[11px] font-black uppercase tracking-[0.2em] opacity-40 px-1", textColor)}>Project Roadmap</h4>
+                                                            <div className="flex items-center gap-2">
+                                                                <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                                                                <span className="text-[10px] font-black uppercase tracking-wider text-emerald-500">Live Secure</span>
                                                             </div>
                                                         </div>
-                                                        <div className={cn(
-                                                            "rounded-2xl divide-y overflow-hidden",
-                                                            isDark ? "divide-white/[0.05] bg-black/20" : "divide-emerald-50 bg-emerald-50/60"
-                                                        )}>
-                                                            {[
-                                                                { icon: <FileText className="w-3.5 h-3.5" />, text: "Contract auto-generated & legally binding" },
-                                                                { icon: <Clock className="w-3.5 h-3.5" />, text: "72h auto-release after approval" },
-                                                                { icon: <ShieldCheck className="w-3.5 h-3.5" />, text: "Full dispute protection & mediation" }
-                                                            ].map((point, i) => (
-                                                                <div key={i} className="flex items-center gap-3 px-4 py-3">
-                                                                    <span className="text-emerald-500 shrink-0">{point.icon}</span>
-                                                                    <span className={cn("text-[12px] font-semibold", textColor)}>{point.text}</span>
-                                                                </div>
-                                                            ))}
+
+                                                        <div className="relative pb-4">
+                                                            {/* Continuous Line Background */}
+                                                            <div className={cn("absolute top-5 left-6 right-6 h-[2px]", isDark ? "bg-white/[0.04]" : "bg-slate-100")} />
+                                                            {/* Glowing Active Line */}
+                                                            <div className="absolute top-5 left-6 w-[25%] h-[2px] bg-gradient-to-r from-emerald-500 to-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.5)]" />
+
+                                                            <div className="flex justify-between relative z-10">
+                                                                {[
+                                                                    { label: 'Accept', icon: <Zap className="w-4 h-4" />, active: true, done: false },
+                                                                    { label: 'Escrow', icon: <ShieldCheck className="w-4 h-4" />, active: false, done: false },
+                                                                    { label: 'Review', icon: <Camera className="w-4 h-4" />, active: false, done: false },
+                                                                    { label: 'Payout', icon: <DollarSign className="w-4 h-4" />, active: false, done: false }
+                                                                ].map((step, i) => (
+                                                                    <div key={i} className="flex flex-col items-center gap-3">
+                                                                        <div className={cn(
+                                                                            "w-11 h-11 rounded-2xl flex items-center justify-center transition-all duration-500 border",
+                                                                            step.active 
+                                                                                ? "bg-emerald-500 border-emerald-400 text-white shadow-[0_0_25px_rgba(16,185,129,0.4)] scale-110" 
+                                                                                : (isDark ? "bg-[#151922] border-white/5 text-white/20" : "bg-slate-50 border-slate-100 text-slate-300")
+                                                                        )}>
+                                                                            {step.icon}
+                                                                        </div>
+                                                                        <div className="text-center">
+                                            <p className={cn("text-[11px] font-black tracking-tight", step.active ? "text-emerald-500" : (isDark ? "text-white/20" : "text-slate-300"))}>{step.label}</p>
+                                                                        </div>
+                                                                    </div>
+                                                                ))}
+                                                            </div>
                                                         </div>
                                                     </div>
                                                 </div>
 
                                                 {/* ── CTA SECTION ── */}
-                                                <div className="mt-4 space-y-3">
-                                                    <button
-                                                        type="button"
-                                                        data-testid="offer-brief-accept"
-                                                        onClick={() => {
-                                                            if (processingDeal) return;
-                                                            if (selectedItem?.isDemo) {
-                                                                toast.success("This is a demo offer! Complete your profile to get real brand deals.");
-                                                                triggerHaptic(HapticPatterns.success);
-                                                                return;
-                                                            }
-                                                            if (selectedIsPureBarter) {
-                                                                handleOpenBarterShippingFlow(selectedItem);
-                                                                return;
-                                                            }
-                                                            handleAccept(selectedItem);
-                                                        }}
-                                                        className="w-full rounded-[24px] overflow-hidden relative group active:scale-[0.98] transition-transform duration-200"
-                                                    >
-                                                        <div className="bg-gradient-to-r from-emerald-600 to-emerald-500 px-6 py-5 flex items-center justify-between">
-                                                            <div className="text-left">
-                                                                <p className="text-white text-[22px] font-black tracking-tight leading-tight">
-                                                                    Accept & Earn {renderBudgetValue(selectedItem)}
-                                                                </p>
-                                                                <p className="text-white/70 text-[12px] font-semibold mt-0.5">Payment secured • Releases after approval</p>
+                                                <div className="mt-4 space-y-4">
+                                                    <div className="relative group">
+                                                        <div className="absolute -inset-1 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-[2.25rem] blur opacity-25 group-hover:opacity-40 transition duration-1000 group-hover:duration-200 animate-pulse" />
+                                                        <button
+                                                            type="button"
+                                                            data-testid="offer-brief-accept"
+                                                            onClick={() => {
+                                                                if (processingDeal) return;
+                                                                if (selectedItem?.isDemo) {
+                                                                    toast.success("This is a demo offer! Complete your profile to get real brand deals.");
+                                                                    triggerHaptic(HapticPatterns.success);
+                                                                    return;
+                                                                }
+                                                                if (selectedIsPureBarter) {
+                                                                    handleOpenBarterShippingFlow(selectedItem);
+                                                                    return;
+                                                                }
+                                                                handleAccept(selectedItem);
+                                                            }}
+                                                            className="relative w-full py-5 rounded-[2.25rem] bg-gradient-to-br from-emerald-600 to-emerald-500 text-white font-black text-[18px] tracking-tight transition-all active:scale-[0.98] shadow-xl shadow-emerald-500/20 flex items-center justify-between px-8 overflow-hidden"
+                                                        >
+                                                            <div className="flex items-center gap-3">
+                                                                <Zap className="w-5 h-5 fill-white" />
+                                                                <span>Accept & Earn {renderBudgetValue(selectedItem)}</span>
                                                             </div>
-                                                            <div className="w-12 h-12 rounded-2xl bg-white/20 border border-white/20 flex items-center justify-center shrink-0 group-hover:translate-x-0.5 transition-transform">
-                                                                <ChevronRight className="w-6 h-6 text-white" />
-                                                            </div>
-                                                        </div>
-                                                    </button>
+                                                            <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                                                            <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/10 to-white/0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
+                                                        </button>
+                                                    </div>
 
-                                                    <p className={cn("text-center text-[10px] font-bold uppercase tracking-[0.2em]", isDark ? "text-white/20" : "text-slate-300")}>
-                                                        50+ creators have completed deals
+                                                    <p className={cn("text-center text-[10px] font-black uppercase tracking-[0.25em] opacity-30 mt-4", textColor)}>
+                                                        50+ creators have completed deals this week
                                                     </p>
 
                                                     {selectedIsPureBarter && (
@@ -6139,53 +6023,68 @@ const MobileDashboardDemo = ({
                                                             <AlignLeft className="w-5 h-5 text-info" />
                                                         </div>
                                                         <p className={cn("text-[14px] leading-relaxed font-bold flex-1 pt-1.5", isDark ? "text-foreground/90" : "text-muted-foreground")}>
-                                                            {selectedItem.campaign_description || selectedItem.raw?.campaign_description || 'No description provided.'}
-                                                        </p>
-                                                    </div>
+                                                            {selectedItem.campaign_descript                                        {/* ── DELIVERABLES ── */}
+                                        {(selectedType === 'offer' || selectedType === 'deal') && (
+                                            <div className="mb-10">
+                                                <div className="flex items-center justify-between mb-5 px-1">
+                                                    <h4 className={cn("text-[13px] font-black uppercase tracking-[0.2em] opacity-40", textColor)}>Deliverables</h4>
+                                                    <span className={cn("px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border", isDark ? "bg-white/5 border-white/10 text-white/40" : "bg-slate-50 border-slate-200 text-slate-400")}>Verified</span>
+                                                </div>
+                                                <div className="grid grid-cols-1 gap-3">
+                                                    {(() => {
+                                                        const raw = selectedItem.deliverables || selectedItem.raw?.deliverables;
+                                                        let items: any[] = [{ label: 'Instagram Reel', count: 1, type: 'reel' }, { label: 'Stories', count: 2, type: 'story' }];
+                                                        try {
+                                                            const parsed = safeJsonParse(raw, raw);
+                                                            if (Array.isArray(parsed) && parsed.length > 0) {
+                                                                items = parsed.map((d: any) => {
+                                                                    if (typeof d === 'string') return { label: d, count: 1, type: 'other' };
+                                                                    const ct = (d.contentType || d.type || '').toLowerCase();
+                                                                    const count = d.count || d.quantity || 1;
+                                                                    let type = 'other', label = 'Content';
+                                                                    if (ct.includes('reel')) { type = 'reel'; label = 'Instagram Reel'; }
+                                                                    else if (ct.includes('story')) { type = 'story'; label = 'Instagram Story'; }
+                                                                    else if (ct.includes('post')) { type = 'post'; label = 'Static Post'; }
+                                                                    return { label, count, type };
+                                                                });
+                                                            }
+                                                        } catch (_) { }
+                                                        return items.map((d, i) => (
+                                                            <div key={i} className={cn(
+                                                                "relative px-6 py-5 rounded-[2.25rem] border flex items-center gap-5 transition-all hover:scale-[1.02] active:scale-[0.98] group overflow-hidden",
+                                                                isDark ? "bg-[#151922] border-white/5 shadow-xl" : "bg-white border-slate-200 shadow-sm"
+                                                            )}>
+                                                                {/* Glowing background hint */}
+                                                                <div className={cn(
+                                                                    "absolute -right-4 -top-4 w-24 h-24 blur-3xl opacity-[0.03] transition-opacity group-hover:opacity-[0.08]",
+                                                                    d.type === 'reel' ? "bg-purple-500" : d.type === 'story' ? "bg-orange-500" : "bg-blue-500"
+                                                                )} />
+                                                                
+                                                                <div className={cn(
+                                                                    "w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 shadow-lg transition-transform group-hover:rotate-6",
+                                                                    d.type === 'reel' ? "bg-purple-500/10 text-purple-500" : d.type === 'story' ? "bg-orange-500/10 text-orange-500" : "bg-blue-500/10 text-blue-500"
+                                                                )}>
+                                                                    {d.type === 'reel' ? <Film className="w-7 h-7" /> : 
+                                                                     d.type === 'story' ? <Smartphone className="w-7 h-7" /> : 
+                                                                     <FileText className="w-7 h-7" />}
+                                                                </div>
+                                                                <div className="flex-1 min-w-0">
+                                                                    <p className={cn("text-[17px] font-black leading-tight tracking-tight", textColor)}>{d.label}</p>
+                                                                    <div className="flex items-center gap-2 mt-1.5">
+                                                                        <span className={cn("px-2 py-0.5 rounded-lg text-[10px] font-black uppercase tracking-widest", d.type === 'reel' ? "bg-purple-500/10 text-purple-500" : d.type === 'story' ? "bg-orange-500/10 text-orange-500" : "bg-blue-500/10 text-blue-500")}>
+                                                                            {d.count} {d.count === 1 ? 'Post' : 'Posts'}
+                                                                        </span>
+                                                                        <span className={cn("text-[11px] font-bold opacity-30", textColor)}>•</span>
+                                                                        <span className={cn("text-[11px] font-bold opacity-30", textColor)}>Premium quality</span>
+                                                                    </div>
+                                                                </div>
+                                                                <ChevronRight className={cn("w-5 h-5 opacity-20 group-hover:opacity-40 transition-opacity", textColor)} />
+                                                            </div>
+                                                        ));
+                                                    })()}
                                                 </div>
                                             </div>
-                                        )}
-
-	                                        {/* ── DELIVERABLES ── */}
-	                                        {(selectedType === 'offer' || selectedType === 'deal') && (
-	                                        <div className="mb-8">
-	                                            <h4 className={cn("text-[12px] font-black uppercase tracking-[0.2em] mb-4 opacity-40 px-1", textColor)}>Deliverables</h4>
-	                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-	                                                {(() => {
-                                                    const raw = selectedItem.deliverables || selectedItem.raw?.deliverables;
-                                                    let items: any[] = [{ label: 'Instagram Reel', count: 1, type: 'reel' }, { label: 'Stories', count: 2, type: 'story' }];
-                                                    try {
-                                                        const parsed = safeJsonParse(raw, raw);
-                                                        if (Array.isArray(parsed) && parsed.length > 0) {
-                                                            items = parsed.map((d: any) => {
-                                                                if (typeof d === 'string') return { label: d, count: 1, type: 'other' };
-                                                                const ct = (d.contentType || d.type || '').toLowerCase();
-                                                                const count = d.count || d.quantity || 1;
-                                                                let type = 'other', label = 'Content';
-                                                                if (ct.includes('reel')) { type = 'reel'; label = 'Instagram Reel'; }
-                                                                else if (ct.includes('story')) { type = 'story'; label = 'Instagram Story'; }
-                                                                else if (ct.includes('post')) { type = 'post'; label = 'Static Post'; }
-                                                                return { label, count, type };
-                                                            });
-                                                        }
-                                                    } catch (_) { }
-                                                    return items.map((d, i) => (
-                                                        <div key={i} className={cn(
-                                                            "px-5 py-4.5 rounded-[2rem] border flex items-center gap-5 transition-all hover:translate-y-[-2px] group",
-                                                            isDark ? "bg-white/[0.02] border-white/5 hover:bg-white/[0.04]" : "bg-white border-slate-200 hover:shadow-md"
-                                                        )}>
-                                                            <div className={cn(
-                                                                "w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 shadow-sm transition-transform group-hover:scale-110",
-                                                                d.type === 'reel' ? "bg-purple-500/10 text-purple-500" : d.type === 'story' ? "bg-orange-500/10 text-orange-500" : "bg-blue-500/10 text-blue-500"
-                                                            )}>
-                                                                {d.type === 'reel' ? <Film className="w-6 h-6" /> : 
-                                                                 d.type === 'story' ? <Smartphone className="w-6 h-6" /> : 
-                                                                 <FileText className="w-6 h-6" />}
-                                                            </div>
-                                                            <div className="flex-1 min-w-0">
-                                                                <p className={cn("text-[15px] font-black leading-tight tracking-tight", textColor)}>{d.label}</p>
-                                                                <p className={cn("text-[12px] font-black uppercase tracking-widest opacity-30 mt-1", textColor)}>{d.count} {d.count === 1 ? 'Unit' : 'Units'}</p>
-                                                            </div>
+                                        )}                               </div>
                                                         </div>
                                                     ));
 	                                                })()}
@@ -6535,44 +6434,54 @@ const MobileDashboardDemo = ({
                                             </>
                                         )}
 
-                                        {/* ── LEGAL PROTECTION ── */}
-                                        <div className="mb-6">
-                                            <h4 className={cn("text-[13px] font-black uppercase tracking-wider mb-3 opacity-50", textColor)}>Legal Protection</h4>
+                                        {/* ── ELITE PROTECTION ── */}
+                                        <div className="mb-10">
                                             <div className={cn(
-                                                "rounded-[28px] border p-6 relative overflow-hidden transition-all hover:shadow-lg",
-                                                isDark ? "bg-primary/5 border-primary/20" : "bg-emerald-50 border-emerald-200"
+                                                "rounded-[2.5rem] border p-7 relative overflow-hidden transition-all shadow-2xl group",
+                                                isDark ? "bg-[#0d1219] border-primary/20 shadow-primary/5" : "bg-white border-emerald-100 shadow-emerald-500/10"
                                             )}>
-                                                {/* Decorative background elements */}
-                                                <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none" />
-                                                <div className="absolute inset-y-0 left-0 w-2 bg-primary rounded-r-full shadow-[0_0_15px_rgba(16,185,129,0.4)]" />
-                                                <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 via-transparent to-primary/5 pointer-events-none" />
+                                                {/* Animated Glows */}
+                                                <div className="absolute -top-10 -right-10 w-40 h-40 bg-primary/20 rounded-full blur-[60px] animate-pulse" />
+                                                <div className="absolute -bottom-10 -left-10 w-40 h-40 bg-teal-500/10 rounded-full blur-[60px]" />
+                                                
+                                                {/* Left Accent Bar */}
+                                                <div className="absolute inset-y-0 left-0 w-1.5 bg-gradient-to-b from-primary via-emerald-400 to-teal-500 rounded-r-full" />
 
-                                                <div className="flex items-center gap-4 relative mb-5">
-                                                    <div className="w-12 h-12 rounded-2xl bg-primary flex items-center justify-center shrink-0 shadow-[0_8px_20px_rgba(16,185,129,0.3)] border border-white/20">
-                                                        <ShieldCheck className="w-6 h-6 text-white" strokeWidth={2.5} />
+                                                <div className="flex items-center gap-5 relative z-10 mb-8">
+                                                    <div className="w-16 h-16 rounded-[1.5rem] bg-gradient-to-br from-primary to-emerald-600 flex items-center justify-center shrink-0 shadow-xl border border-white/20">
+                                                        <ShieldCheck className="w-8 h-8 text-white" strokeWidth={2.5} />
                                                     </div>
                                                     <div className="flex-1 min-w-0">
-                                                        <p className={cn("font-black text-[17px] leading-tight tracking-tight", isDark ? "text-primary" : "text-emerald-800")}>Protected by Creator Armour</p>
-                                                        <p className={cn("text-[12px] font-bold mt-0.5 opacity-70", isDark ? "text-primary/90" : "text-emerald-700")}>Contract + rights + dispute support</p>
+                                                        <h4 className={cn("font-black text-[20px] leading-tight tracking-tight", isDark ? "text-white" : "text-emerald-900")}>Creator Armour Elite™</h4>
+                                                        <p className={cn("text-[13px] font-bold mt-1 opacity-60", isDark ? "text-primary-foreground/70" : "text-emerald-700")}>Securing your creative legacy</p>
                                                     </div>
                                                 </div>
 
-                                                <div className="space-y-3 relative z-10">
+                                                <div className="grid grid-cols-1 gap-3 relative z-10">
                                                     {[
-                                                        'Contract auto-generated & legally binding',
-                                                        '72h Auto-release Guarantee after approval',
-                                                        'Full dispute protection & legal mediation',
-                                                    ].map((t) => (
-                                                        <div key={t} className={cn(
-                                                            "flex items-center gap-3 p-3 rounded-2xl border transition-all hover:translate-x-1",
-                                                            isDark ? "bg-white/5 border-white/5" : "bg-white/60 border-emerald-100/50 shadow-sm"
+                                                        { label: 'Binding Legal Contract', sub: 'Instant digital signature', icon: <FileText className="w-4 h-4" /> },
+                                                        { label: '72h Payout Guarantee', sub: 'Funds held in escrow', icon: <Zap className="w-4 h-4" /> },
+                                                        { label: 'Dispute Mediation', sub: 'Legal team protection', icon: <Scale className="w-4 h-4" /> },
+                                                    ].map((t, idx) => (
+                                                        <div key={idx} className={cn(
+                                                            "flex items-center gap-4 p-4 rounded-2xl border transition-all hover:translate-x-1 group/item",
+                                                            isDark ? "bg-white/[0.03] border-white/5 hover:bg-white/[0.05]" : "bg-slate-50/50 border-slate-100 hover:bg-white hover:shadow-sm"
                                                         )}>
-                                                            <div className="w-6 h-6 rounded-full bg-emerald-500 flex items-center justify-center shrink-0 shadow-sm">
-                                                                <CheckCircle2 className="w-3.5 h-3.5 text-white" />
+                                                            <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center shrink-0 shadow-sm", isDark ? "bg-emerald-500/10 text-emerald-400" : "bg-emerald-50 text-emerald-600")}>
+                                                                {t.icon}
                                                             </div>
-                                                            <span className={cn("text-[13px] font-black tracking-tight", isDark ? "text-primary/90" : "text-emerald-800/90")}>{t}</span>
+                                                            <div className="flex-1 min-w-0">
+                                                                <p className={cn("text-[14px] font-black tracking-tight", isDark ? "text-white/90" : "text-emerald-900")}>{t.label}</p>
+                                                                <p className={cn("text-[11px] font-bold opacity-40 uppercase tracking-widest mt-0.5", textColor)}>{t.sub}</p>
+                                                            </div>
+                                                            <CheckCircle2 className="w-4 h-4 text-primary opacity-0 group-hover/item:opacity-100 transition-opacity" />
                                                         </div>
                                                     ))}
+                                                </div>
+
+                                                {/* Elite Badge */}
+                                                <div className="absolute top-6 right-6 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-[9px] font-black uppercase tracking-widest z-20">
+                                                    Elite Protected
                                                 </div>
                                             </div>
                                         </div>
@@ -7846,10 +7755,9 @@ const BottomNavigationBar = React.memo(({
                     <motion.div 
                         animate={{ 
                             left: effectiveTab === 'dashboard' ? '0%' 
-                                : effectiveTab === 'deals' ? '20%'
-                                : effectiveTab === 'discovery' ? '40%'
-                                : effectiveTab === 'payments' ? '60%'
-                                : '80%'
+                                : effectiveTab === 'deals' ? '25%'
+                                : effectiveTab === 'payments' ? '50%'
+                                : '75%'
                         }}
                         transition={{ type: 'spring', bounce: 0.2, duration: 0.6 }}
                         className={cn(
@@ -7857,7 +7765,7 @@ const BottomNavigationBar = React.memo(({
                             isDark ? "bg-white/5 border-white/10" : "bg-white shadow-sm border-[#E5E7EB]"
                         )}
                         style={{ 
-                            width: 'calc(20% - 4px)', // 5 tabs
+                            width: 'calc(25% - 4px)', // 4 tabs (25% each)
                         }}
                     />
                 </div>
@@ -8009,7 +7917,6 @@ const DashboardTab = React.memo(({
                 )}>
                     <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-emerald-500/10 rounded-full blur-[80px] -mr-[200px] -mt-[200px] pointer-events-none mix-blend-screen" />
                     <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-teal-500/10 rounded-full blur-[60px] -ml-[150px] -mb-[150px] pointer-events-none mix-blend-screen" />
-                    <div className="absolute inset-0 bg-[url('/noise.png')] opacity-[0.03] mix-blend-overlay pointer-events-none" />
                 </div>
 
                 <div className="px-6 pt-10 pb-12 flex items-start justify-between gap-6">
