@@ -6301,63 +6301,6 @@ const MobileDashboardDemo = ({
                                                     );
                                                 })()}
                                             </div>
-                                        )}
-
-                                        {/* ── DELIVERABLES (Deals only — offers show checklist inline) ── */}
-                                        {selectedType === 'deal' && (
-                                            <div className="mb-8">
-                                                <h4 className={cn("text-[11px] font-black uppercase tracking-[0.2em] mb-4 opacity-50 px-1", textColor)}>Deliverables</h4>
-                                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-                                                    {(() => {
-                                                        const raw = selectedItem.deliverables || selectedItem.raw?.deliverables;
-                                                        let items: any[] = [{ label: 'Instagram Reel', count: 1, type: 'reel' }, { label: 'Stories', count: 2, type: 'story' }];
-                                                        try {
-                                                            const parsed = safeJsonParse(raw, raw);
-                                                            if (Array.isArray(parsed) && parsed.length > 0) {
-                                                                items = parsed.map((d: any) => {
-                                                                    if (typeof d === 'string') return { label: d, count: 1, type: 'other' };
-                                                                    const ct = (d.contentType || d.type || '').toLowerCase();
-                                                                    const count = d.count || d.quantity || 1;
-                                                                    let type = 'other', label = 'Content';
-                                                                    if (ct.includes('reel')) { type = 'reel'; label = 'Instagram Reel'; }
-                                                                    else if (ct.includes('story')) { type = 'story'; label = 'Instagram Story'; }
-                                                                    else if (ct.includes('post')) { type = 'post'; label = 'Static Post'; }
-                                                                    return { label, count, type };
-                                                                });
-                                                            }
-                                                        } catch (_) { }
-                                                        return items.map((d, i) => (
-                                                            <div key={i} className={cn(
-                                                                "px-5 py-4 rounded-[24px] border flex items-center gap-4 group transition-all duration-300",
-                                                                isDark ? "bg-[#0B0F14] border-white/5" : "bg-white border-slate-200 shadow-sm"
-                                                            )}>
-                                                                <div className={cn(
-                                                                    "w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 relative",
-                                                                    d.type === 'reel' ? "bg-purple-500/10 text-purple-400" : 
-                                                                    d.type === 'story' ? "bg-rose-500/10 text-rose-400" : 
-                                                                    "bg-blue-500/10 text-blue-400"
-                                                                )}>
-                                                                    {d.type === 'reel' ? <Film className="w-5 h-5" /> : 
-                                                                     d.type === 'story' ? <Smartphone className="w-5 h-5" /> : 
-                                                                     <FileText className="w-5 h-5" />}
-                                                                </div>
-                                                                <div className="flex-1 min-w-0">
-                                                                    <p className={cn("text-[14px] font-black tracking-tight", textColor)}>{d.label}</p>
-                                                                    <p className={cn("text-[11px] font-bold opacity-40 uppercase tracking-widest mt-0.5", textColor)}>{d.count} Required</p>
-                                                                </div>
-                                                                <div className={cn(
-                                                                    "w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all",
-                                                                    isDark ? "border-white/10" : "border-slate-200"
-                                                                )}>
-                                                                    <div className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
-                                                                </div>
-                                                            </div>
-                                                        ));
-                                                    })()}
-                                                </div>
-                                            </div>
-                                        )}
-
                                         {/* ── PRODUCT PREVIEW (IF BARTER) ── */}
                                         {selectedType !== 'offer' && selectedRequiresShipping && (
                                             <div className="mb-8">
