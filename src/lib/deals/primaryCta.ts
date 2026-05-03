@@ -371,5 +371,5 @@ export const getDealPrimaryCta = (params: { role: DealRole; deal: any }): DealPr
 export const dealPrimaryCtaButtonClass = (tone: DealCtaTone) => {
   if (tone === 'action') return 'bg-gradient-to-r from-emerald-600 to-emerald-700 text-white shadow-[0_10px_30px_rgba(16,185,129,0.3)] border-emerald-500/30 font-black';
   if (tone === 'view') return 'bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-[0_10px_30px_rgba(37,99,235,0.3)] border-blue-400/30 font-black';
-  return 'bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-white/50 border-slate-200 dark:border-white/10 shadow-sm font-bold backdrop-blur-md hover:bg-slate-200 dark:hover:bg-white/10 transition-all';
+  return 'bg-slate-100 dark:bg-white/[0.1] text-slate-500 dark:text-white/90 border-slate-200 dark:border-white/20 shadow-sm font-bold backdrop-blur-md hover:bg-slate-200 dark:hover:bg-white/[0.15] transition-all';
 };

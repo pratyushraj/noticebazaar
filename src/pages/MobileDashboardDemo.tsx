@@ -6686,7 +6686,7 @@ const MobileDashboardDemo = ({
                                                 }}
                                                 disabled={processingDeal === selectedItem.id || getDealPrimaryCta({ role: 'creator', deal: selectedItem }).disabled}
                                                 className={cn(
-                                                    "w-full py-4 rounded-[18px] shadow-lg transition-all flex flex-col items-center justify-center active:scale-[0.98] disabled:opacity-50 relative overflow-hidden group",
+                                                    "w-full py-4 rounded-[18px] shadow-lg transition-all flex flex-col items-center justify-center active:scale-[0.98] disabled:opacity-70 relative overflow-hidden group",
                                                     dealPrimaryCtaButtonClass(getDealPrimaryCta({ role: 'creator', deal: selectedItem }).tone),
                                                     !isDark && "border-white/20"
                                                 )}
