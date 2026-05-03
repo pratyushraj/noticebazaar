@@ -15,9 +15,15 @@ window.addEventListener('error', (e) => {
   if (
     e.message?.includes('Failed to fetch dynamically imported module') || 
     e.message?.includes('Importing a module script failed') ||
-    e.message?.includes('Expected a JavaScript module script but the server responded with a MIME type of "text/html"')
+    e.message?.includes('module script but the server responded with a MIME type of "text/html"')
   ) {
-    window.location.reload();
+    // Avoid infinite reloads if the server is actually returning HTML for assets
+    const lastReload = Number(sessionStorage.getItem('ca-last-reload') || 0);
+    const now = Date.now();
+    if (now - lastReload > 5000) {
+      sessionStorage.setItem('ca-last-reload', String(now));
+      window.location.reload();
+    }
   }
 });
 
@@ -32,7 +38,12 @@ window.addEventListener('unhandledrejection', (e) => {
     e.reason?.message?.includes('Failed to fetch dynamically imported module') || 
     e.reason?.message?.includes('Importing a module script failed')
   ) {
-    window.location.reload();
+    const lastReload = Number(sessionStorage.getItem('ca-last-reload') || 0);
+    const now = Date.now();
+    if (now - lastReload > 5000) {
+      sessionStorage.setItem('ca-last-reload', String(now));
+      window.location.reload();
+    }
   }
 });
 

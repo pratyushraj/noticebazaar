@@ -3,7 +3,7 @@ import { BottomSheet } from '../ui/bottom-sheet';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
-import { Loader2, Calendar, IndianRupee, Zap, Sparkles, CheckCircle2, Truck, Package } from 'lucide-react';
+import { Loader2, Calendar, IndianRupee, Zap, Sparkles, CheckCircle2, Truck, Package, Upload, X } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { getApiBaseUrl } from '@/lib/utils/api';
 import { toast } from 'sonner';
@@ -157,6 +157,9 @@ export const QuickOfferSheet: React.FC<QuickOfferSheetProps> = ({
     const [deadline, setDeadline] = useState('');
     const [description, setDescription] = useState('');
     const [requiresShipping, setRequiresShipping] = useState(false);
+    const [barterProductName, setBarterProductName] = useState('');
+    const [barterProductImageUrl, setBarterProductImageUrl] = useState('');
+    const [barterImageUploading, setBarterImageUploading] = useState(false);
 
     useEffect(() => {
         if (creator && isOpen) {
@@ -172,8 +175,51 @@ export const QuickOfferSheet: React.FC<QuickOfferSheetProps> = ({
             setIsSuccess(false);
             setDescription('');
             setRequiresShipping(initialPackage?.type === 'barter');
+            setBarterProductName('');
+            setBarterProductImageUrl('');
         }
     }, [creator, isOpen]);
+
+    const handleBarterImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        const allowed = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+        if (!allowed.includes(file.type)) {
+            toast.error('Please upload a JPEG, PNG, WebP, or GIF image.');
+            return;
+        }
+        if (file.size > 5 * 1024 * 1024) {
+            toast.error('Image must be under 5MB.');
+            return;
+        }
+
+        setBarterImageUploading(true);
+        try {
+            const formData = new FormData();
+            formData.append('file', file);
+            const apiBaseUrl = getApiBaseUrl();
+            const res = await fetch(
+                `${apiBaseUrl}/api/collab/${encodeURIComponent(creatorUsername)}/upload-barter-image`,
+                {
+                    method: 'POST',
+                    body: formData,
+                }
+            );
+            const data = await res.json().catch(() => ({}));
+            if (data.success && data.url) {
+                setBarterProductImageUrl(data.url);
+                toast.success('Product image uploaded.');
+            } else {
+                toast.error(data.error || 'Failed to upload image.');
+            }
+        } catch {
+            toast.error('Failed to upload image.');
+        } finally {
+            setBarterImageUploading(false);
+            if (e.target) e.target.value = '';
+        }
+    };
 
     const handlePackageChange = (pkgKey: string) => {
         const selectedPackage = creatorPackages.find((pkg) => pkg.key === pkgKey);
@@ -182,7 +228,14 @@ export const QuickOfferSheet: React.FC<QuickOfferSheetProps> = ({
             setBudget(String(selectedPackage.rate || ''));
             setDeliverables(selectedPackage.deliverables || []);
             setCollabType(selectedPackage.type === 'barter' ? 'barter' : 'paid');
-            if (selectedPackage.type === 'barter') setRequiresShipping(true);
+            
+            // Auto-detect shipping requirement based on package label/description
+            const needsShipping = 
+                selectedPackage.type === 'barter' || 
+                /product|ship|deliver|unboxing|physical/i.test(selectedPackage.label) ||
+                /product|ship|deliver|unboxing|physical/i.test(selectedPackage.description);
+                
+            setRequiresShipping(needsShipping);
         }
     };
 
@@ -215,7 +268,9 @@ export const QuickOfferSheet: React.FC<QuickOfferSheetProps> = ({
                 // These are required by the backend API 
                 campaign_category: 'General',
                 usage_rights: false,
-                requires_shipping: requiresShipping
+                requires_shipping: requiresShipping,
+                barter_product_name: barterProductName || null,
+                barter_product_image_url: barterProductImageUrl || null
             };
 
             const submitHandle = creatorUsername;
@@ -443,6 +498,80 @@ export const QuickOfferSheet: React.FC<QuickOfferSheetProps> = ({
                                 </div>
                             </button>
                         </div>
+
+                        {/* Product Image & Name Upload - Always visible to ensure every deal has a visual asset */}
+                        <div className="space-y-4 rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm">
+                                <div className="space-y-2">
+                                    <Label className="text-[10px] font-black uppercase tracking-[0.18em] text-slate-400">
+                                        Product Details
+                                    </Label>
+                                    <Input 
+                                        placeholder="Enter product name..."
+                                        value={barterProductName}
+                                        onChange={(e) => setBarterProductName(e.target.value)}
+                                        className="h-12 rounded-2xl border-slate-200 bg-slate-50 font-bold text-slate-900 focus-visible:ring-emerald-500/20"
+                                    />
+                                </div>
+
+                                <div className="space-y-3">
+                                    <Label className="text-[10px] font-black uppercase tracking-[0.18em] text-slate-400">
+                                        Product Photo
+                                    </Label>
+                                    
+                                    {barterProductImageUrl ? (
+                                        <div className="relative group">
+                                            <div className="relative aspect-video w-full rounded-2xl overflow-hidden border border-slate-200 bg-white shadow-sm">
+                                                <img 
+                                                    src={barterProductImageUrl} 
+                                                    alt="Product preview" 
+                                                    className="w-full h-full object-cover"
+                                                />
+                                                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                                    <button
+                                                        onClick={() => setBarterProductImageUrl('')}
+                                                        className="bg-white/20 backdrop-blur-md hover:bg-white/30 text-white rounded-full p-3 transition-all transform hover:scale-110"
+                                                    >
+                                                        <X className="w-6 h-6" />
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            <p className="mt-2 text-[10px] font-bold text-slate-400 text-center uppercase tracking-widest">
+                                                Tap image to remove and change
+                                            </p>
+                                        </div>
+                                    ) : (
+                                        <label className={cn(
+                                            "flex flex-col items-center justify-center w-full aspect-[2/1] rounded-2xl border-2 border-dashed transition-all cursor-pointer",
+                                            barterImageUploading 
+                                                ? "border-slate-200 bg-slate-50 opacity-60 cursor-not-allowed" 
+                                                : "border-slate-200 bg-white hover:border-emerald-500/50 hover:bg-emerald-50/10 shadow-inner"
+                                        )}>
+                                            <div className="flex flex-col items-center gap-2">
+                                                <div className="w-12 h-12 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 group-hover:text-emerald-500 transition-colors">
+                                                    {barterImageUploading ? (
+                                                        <Loader2 className="w-6 h-6 animate-spin" />
+                                                    ) : (
+                                                        <Upload className="w-6 h-6" />
+                                                    )}
+                                                </div>
+                                                <div className="text-center px-4">
+                                                    <p className="text-[14px] font-black text-slate-900">
+                                                        {barterImageUploading ? 'Uploading...' : 'Add Product Photo'}
+                                                    </p>
+                                                    <p className="text-[11px] font-bold text-slate-400 mt-0.5">Required for product review</p>
+                                                </div>
+                                            </div>
+                                            <input 
+                                                type="file" 
+                                                className="hidden" 
+                                                accept="image/*"
+                                                onChange={handleBarterImageChange}
+                                                disabled={barterImageUploading}
+                                            />
+                                        </label>
+                                    )}
+                                </div>
+                            </div>
 
                         {/* Submit Button */}
                         <div className="pt-4">

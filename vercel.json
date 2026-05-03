@@ -31,15 +31,7 @@
       "destination": "https://noticebazaar-api.onrender.com/api/:path*"
     },
     {
-      "source": "/assets/:path*",
-      "destination": "/assets/:path*"
-    },
-    {
-      "source": "/collab/:path*",
-      "destination": "/index.html"
-    },
-    {
-      "source": "/(.*)",
+      "source": "/((?!api|assets|public|favicon|apple-touch-icon|manifest|creator-armour-icon|og-preview|robots|sitemap|[^/]+\\.[^/]+$).*)",
       "destination": "/index.html"
     }
   ],

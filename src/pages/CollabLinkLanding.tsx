@@ -1804,6 +1804,12 @@ const CollabLinkLanding = () => {
             username: sanitizeDisplayName(data.creator.username || ''),
           }
           setCreator(baseCreator)
+          
+          // Preload the profile photo immediately to reduce perceived delay
+          if (baseCreator.profile_photo) {
+            const img = new Image();
+            img.src = safeAvatarSrc(baseCreator.profile_photo) || '';
+          }
 
           // Supplement with portfolio fields not returned by the backend API
           // We query by username (not ID) because RLS on profiles may block unauthenticated id-based reads
@@ -4301,9 +4307,8 @@ const CollabLinkLanding = () => {
                         </div>
 
 
-                        {/* Product image / product details */}
-                        {isProductImageRequired && (
-                          <div id="barter-product-image-upload" className="bg-slate-50 rounded-[32px] p-6 border border-slate-200 shadow-inner space-y-4">
+                        {/* Product image / product details - Always visible to ensure every deal has a visual asset */}
+                        <div id="barter-product-image-upload" className="bg-slate-50 rounded-[32px] p-6 border border-slate-200 shadow-inner space-y-4">
                             {(collabType === 'barter' || collabType === 'hybrid' || collabType === 'paid') && (
                               <>
                                 <label
@@ -4475,7 +4480,6 @@ const CollabLinkLanding = () => {
                               </div>
                             )}
                           </div>
-                        )}
 
                         {collabType === 'paid' && (
                           <div className="bg-slate-50 rounded-[32px] p-6 border border-slate-200 shadow-inner">

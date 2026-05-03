@@ -747,4 +747,121 @@ router.get('/deals', async (req: AuthenticatedRequest, res: Response) => {
   }
 });
 
+router.post(
+  '/deals/:id/upload-product-photo',
+  upload.single('file'),
+  async (req: AuthenticatedRequest & { file?: Express.Multer.File }, res: Response) => {
+    try {
+      const brand = await requireBrand(req, res);
+      if (!brand.ok) return;
+
+      const { id: dealId } = req.params;
+      const file = req.file;
+
+      if (!file || !file.buffer) {
+        return res.status(400).json({ success: false, error: 'No image file provided' });
+      }
+
+      const allowed = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+      if (!allowed.includes(file.mimetype)) {
+        return res.status(400).json({ success: false, error: 'Only JPEG, PNG, WebP, and GIF are allowed' });
+      }
+
+      // Verify deal belongs to this brand
+      const { data: deal, error: dealError } = await supabase
+        .from('brand_deals')
+        .select('id, brand_id, brand_email')
+        .eq('id', dealId)
+        .maybeSingle();
+
+      if (dealError || !deal) {
+        return res.status(404).json({ success: false, error: 'Deal not found' });
+      }
+
+      const dealBrandEmail = String(deal.brand_email || '').toLowerCase();
+      const hasAccess = deal.brand_id === brand.id || (brand.email && dealBrandEmail === brand.email);
+      
+      if (!hasAccess) {
+        return res.status(403).json({ success: false, error: 'Access denied' });
+      }
+
+      const ext = file.mimetype.split('/')[1] || 'png';
+      const path = `deal-assets/products/${dealId}/${crypto.randomUUID()}.${ext}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('creator-assets')
+        .upload(path, file.buffer, { contentType: file.mimetype, upsert: false });
+
+      if (uploadError) {
+        console.error('[BrandDashboard] Deal product photo upload failed:', uploadError);
+        return res.status(500).json({ success: false, error: 'Failed to upload photo' });
+      }
+
+      const { data: urlData } = supabase.storage.from('creator-assets').getPublicUrl(path);
+      return res.status(200).json({ success: true, url: urlData.publicUrl });
+    } catch (error: any) {
+      console.error('[BrandDashboard] POST /deals/:id/upload-product-photo failed:', error);
+      return res.status(500).json({ success: false, error: error?.message || 'Failed to upload photo' });
+    }
+  }
+);
+
+router.patch('/deals/:id/product-photo', async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const brand = await requireBrand(req, res);
+    if (!brand.ok) return;
+
+    const { id: dealId } = req.params;
+    const { url } = req.body;
+
+    if (!url) {
+      return res.status(400).json({ success: false, error: 'Product photo URL is required' });
+    }
+
+    // Verify deal belongs to this brand
+    const { data: deal, error: dealError } = await supabase
+      .from('brand_deals')
+      .select('id, brand_id, brand_email')
+      .eq('id', dealId)
+      .maybeSingle();
+
+    if (dealError || !deal) {
+      return res.status(404).json({ success: false, error: 'Deal not found' });
+    }
+
+    const dealBrandEmail = String(deal.brand_email || '').toLowerCase();
+    const hasAccess = deal.brand_id === brand.id || (brand.email && dealBrandEmail === brand.email);
+    
+    if (!hasAccess) {
+      return res.status(403).json({ success: false, error: 'Access denied' });
+    }
+
+    const { error: updateError } = await supabase
+      .from('brand_deals')
+      .update({ 
+        barter_product_image_url: url,
+        updated_at: new Date().toISOString()
+      } as any)
+      .eq('id', dealId);
+
+    if (updateError) {
+      console.error('[BrandDashboard] Deal product photo update failed:', updateError);
+      return res.status(500).json({ success: false, error: 'Failed to update product photo' });
+    }
+
+    // Log action
+    await supabase.from('deal_action_logs').insert({
+      deal_id: dealId,
+      user_id: brand.id,
+      event: 'PRODUCT_PHOTO_UPDATED',
+      metadata: { url }
+    });
+
+    return res.json({ success: true });
+  } catch (error: any) {
+    console.error('[BrandDashboard] PATCH /deals/:id/product-photo failed:', error);
+    return res.status(500).json({ success: false, error: error?.message || 'Failed to update product photo' });
+  }
+});
+
 export default router;

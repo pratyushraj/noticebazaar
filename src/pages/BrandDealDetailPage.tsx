@@ -33,6 +33,7 @@ const BrandDealDetailPage: React.FC = () => {
   const [isReleasingPayment, setIsReleasingPayment] = useState(false);
   const [loggedContentLink, setLoggedContentLink] = useState('');
   const [loggedContentNotes, setLoggedContentNotes] = useState('');
+  const [isUploadingProductPhoto, setIsUploadingProductPhoto] = useState(false);
 
   const loadDeal = async () => {
     if (!dealId || !session?.access_token) {
@@ -196,6 +197,48 @@ const BrandDealDetailPage: React.FC = () => {
     }
   };
 
+  const handleProductPhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !deal?.id) return;
+
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('File too large (max 5MB)');
+      return;
+    }
+
+    try {
+      setIsUploadingProductPhoto(true);
+      
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const response = await fetch(`${getApiBaseUrl()}/api/brand-dashboard/deals/${deal.id}/upload-product-photo`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${session?.access_token}`,
+        },
+        body: formData,
+      });
+
+      const json = await response.json();
+      if (!response.ok || !json.success) throw new Error(json.error || 'Upload failed');
+
+      const imageUrl = json.url;
+      
+      // Update deal record with new URL
+      await patchDeal(`/api/brand-dashboard/deals/${deal.id}/product-photo`, {
+        url: imageUrl
+      });
+
+      toast.success('Product photo updated!');
+      await loadDeal();
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to upload photo');
+    } finally {
+      setIsUploadingProductPhoto(false);
+    }
+  };
+
   const nextStepLabel = useMemo(() => {
     if (canReviewContent) return 'Review the creator content';
     if (canReleasePayment) return 'Mark payment as sent';
@@ -346,6 +389,67 @@ const BrandDealDetailPage: React.FC = () => {
             )}
           </CardContent>
         </Card>
+
+        {/* Product Photo section - Always visible as requested */}
+          <Card className="bg-white/5 border-white/10 rounded-2xl overflow-hidden">
+            <CardContent className="p-4 space-y-3">
+              <p className="text-[11px] uppercase tracking-wider text-white/40">Product Photo</p>
+              
+              {deal.barter_product_image_url ? (
+                <div className="space-y-3">
+                  <div className="relative aspect-video rounded-xl overflow-hidden bg-black/40 border border-white/10">
+                    <img 
+                      src={deal.barter_product_image_url} 
+                      alt="Product" 
+                      className="w-full h-full object-contain"
+                    />
+                  </div>
+                  <div className="flex justify-center">
+                    <Label 
+                      htmlFor="product-photo-upload" 
+                      className="text-xs font-bold text-purple-400 hover:text-purple-300 cursor-pointer transition-colors"
+                    >
+                      {isUploadingProductPhoto ? 'Uploading...' : 'Change Photo'}
+                    </Label>
+                    <input 
+                      id="product-photo-upload"
+                      type="file" 
+                      accept="image/*"
+                      className="hidden" 
+                      onChange={handleProductPhotoUpload}
+                      disabled={isUploadingProductPhoto}
+                    />
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <div className="rounded-xl border border-dashed border-white/20 bg-white/5 p-8 flex flex-col items-center justify-center text-center">
+                    <div className="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center mb-3">
+                      <Package className="h-6 w-6 text-white/40" />
+                    </div>
+                    <p className="text-sm font-medium text-white/60 mb-1">No product photo added</p>
+                    <p className="text-xs text-white/40 mb-4">Adding a photo helps the creator understand the product better.</p>
+                    
+                    <Label 
+                      htmlFor="product-photo-upload" 
+                      className="bg-purple-600 hover:bg-purple-500 text-white px-6 py-2 rounded-xl text-sm font-bold cursor-pointer transition-all active:scale-95 flex items-center gap-2"
+                    >
+                      {isUploadingProductPhoto ? <Loader2 className="h-4 w-4 animate-spin" /> : <Package className="h-4 w-4" />}
+                      {isUploadingProductPhoto ? 'Uploading...' : 'Upload Photo'}
+                    </Label>
+                    <input 
+                      id="product-photo-upload"
+                      type="file" 
+                      accept="image/*"
+                      className="hidden" 
+                      onChange={handleProductPhotoUpload}
+                      disabled={isUploadingProductPhoto}
+                    />
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
 
         {/* Deliverables */}
         {deal.deliverables && (

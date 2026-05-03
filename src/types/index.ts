@@ -248,6 +248,16 @@ export type BrandDeal = Tables<'brand_deals'> & {
   progress_percentage?: number | null; // Deal progress percentage (0-100)
   // Additional dynamic fields potentially from migrations not yet synced to types
   contract_file_url?: string | null;
+  barter_product_image_url?: string | null;
+  delivery_name?: string | null;
+  delivery_address?: string | null;
+  delivery_phone?: string | null;
+  shipping_status?: string | null;
+  utr_number?: string | null;
+  payment_released_at?: string | null;
+  content_url?: string | null;
+  content_notes?: string | null;
+  brand_approval_status?: string | null;
   contract_file_path?: string | null;
   signed_contract_url?: string | null;
   signed_contract_path?: string | null;
