@@ -5520,31 +5520,39 @@ const MobileDashboardDemo = ({
                                                                     );
                                                                 })()}
 
-                                                                <div className="flex items-start justify-between gap-4 relative z-10">
-                                                                    <div className="flex-1">
-                                                                        <div className={cn("inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full mb-3 border",
-                                                                            isDark ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400" : "bg-emerald-50 border-emerald-100 text-emerald-700 shadow-sm"
+                                                                <div className="flex items-center justify-between gap-6 relative z-10">
+                                                                    <div className="flex-1 min-w-0">
+                                                                        <div className={cn("inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full mb-4 border shadow-sm",
+                                                                            isDark ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400" : "bg-emerald-50 border-emerald-100 text-emerald-700"
                                                                         )}>
-                                                                            <ShieldCheck className="w-3 h-3" />
-                                                                            <span className="text-[10px] font-black uppercase tracking-wider">{isBarterLikeCollab(selectedItem) ? 'Product Secured' : `${renderBudgetValue(selectedItem)} Secured`}</span>
+                                                                            <ShieldCheck className="w-3.5 h-3.5" />
+                                                                            <span className="text-[11px] font-black uppercase tracking-widest">{isBarterLikeCollab(selectedItem) ? 'Product Secured' : `${renderBudgetValue(selectedItem)} Secured`}</span>
                                                                         </div>
-                                                                         <h2 className={cn("text-[44px] leading-none font-black tracking-tighter uppercase", textColor)}>
+                                                                         <h2 className={cn("text-[48px] leading-[0.9] font-black tracking-tighter uppercase mb-2", textColor)}>
                                                                              {isBarterLikeCollab(selectedItem) ? "Free Product" : renderBudgetValue(selectedItem)}
                                                                          </h2>
-                                                                         <p className={cn("text-[11px] font-bold opacity-40 mt-1 uppercase tracking-widest", textColor)}>
+                                                                         <p className={cn("text-[12px] font-bold opacity-40 uppercase tracking-[0.2em]", textColor)}>
                                                                              {isBarterLikeCollab(selectedItem) ? `Est. Value ${renderBudgetValue(selectedItem)}` : "Net Payout"}
                                                                          </p>
                                                                      </div>
-                                                                     <div className={cn("w-18 h-18 rounded-2xl overflow-hidden border shrink-0 shadow-2xl transition-transform hover:scale-105 flex items-center justify-center", 
+                                                                     
+                                                                     {/* Square Product Photo Container */}
+                                                                     <div className={cn("w-32 h-32 rounded-[2rem] overflow-hidden border shrink-0 shadow-2xl transition-all duration-500 hover:scale-105 group/product", 
                                                                          isDark ? "bg-white/10 border-white/20" : "bg-white border-slate-200"
                                                                      )}>
-                                                                         <img 
-                                                                             src={selectedItem.brand_logo_url || selectedItem.brand_logo || selectedItem.logo_url || selectedItem.raw?.brand_logo_url || selectedItem.raw?.brand_logo || `https://ui-avatars.com/api/?name=${encodeURIComponent(selectedItem.brand_name || 'B')}&background=random`} 
-                                                                             className="w-full h-full object-cover" 
-                                                                             onError={(e) => {
-                                                                                 (e.target as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${encodeURIComponent(selectedItem.brand_name || 'B')}&background=random`;
-                                                                             }}
-                                                                         />
+                                                                         {(() => {
+                                                                             const productImage = resolveCreatorDealProductImage(selectedItem) || selectedItem.brand_logo_url || selectedItem.brand_logo;
+                                                                             return (
+                                                                                 <img 
+                                                                                     src={productImage || `https://ui-avatars.com/api/?name=${encodeURIComponent(selectedItem.brand_name || 'B')}&background=random`} 
+                                                                                     className="w-full h-full object-cover transition-transform duration-700 group-hover/product:scale-110" 
+                                                                                     alt="Product"
+                                                                                     onError={(e) => {
+                                                                                         (e.target as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${encodeURIComponent(selectedItem.brand_name || 'B')}&background=random`;
+                                                                                     }}
+                                                                                 />
+                                                                             );
+                                                                         })()}
                                                                     </div>
                                                                 </div>
 
@@ -5645,7 +5653,7 @@ const MobileDashboardDemo = ({
                                                     
                                                     {/* Product Image Section */}
                                                     <div className="relative p-3 pb-0">
-                                                        <div className={cn("w-full h-60 sm:h-72 rounded-[28px] overflow-hidden relative group", 
+                                                        <div className={cn("w-full aspect-square rounded-[28px] overflow-hidden relative group", 
                                                             isDark ? "bg-[#1C212B]" : "bg-white border-slate-100 border")}>
                                                             {(() => {
                                                                 const src = resolveCreatorDealProductImage(selectedItem) || 'https://images.unsplash.com/photo-1524169358666-79f22534bc6b?auto=format&fit=crop&q=80&w=1200';
