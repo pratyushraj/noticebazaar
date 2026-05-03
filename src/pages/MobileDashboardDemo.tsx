@@ -6142,7 +6142,25 @@ const MobileDashboardDemo = ({
                                                 {(() => {
                                                     const rawDesc = selectedItem.campaign_description || selectedItem.raw?.campaign_description || selectedItem.description || selectedItem.raw?.description || "";
 
-                                                     // Multi-source package name resolution
+                                                     
+                                                    const rawDeliverables = selectedItem.deliverables || selectedItem.raw?.deliverables;
+                                                    let parsedDeliverables = [];
+                                                    try {
+                                                        if (typeof rawDeliverables === 'string') {
+                                                            parsedDeliverables = JSON.parse(rawDeliverables);
+                                                        } else if (Array.isArray(rawDeliverables)) {
+                                                            parsedDeliverables = rawDeliverables;
+                                                        }
+                                                    } catch (e) {}
+
+                                                    const primaryDeliverable = parsedDeliverables.find(d => 
+                                                        d.type?.toLowerCase().includes('reel') || 
+                                                        d.label?.toLowerCase().includes('reel')
+                                                    ) || parsedDeliverables[0] || { label: 'Instagram Reel' };
+
+                                                    const primaryLabel = primaryDeliverable.label || primaryDeliverable.name || primaryDeliverable.type || 'Instagram Reel';
+                                                    const secondaryDeliverables = parsedDeliverables.filter(d => d !== primaryDeliverable);
+// Multi-source package name resolution
                                                      const packageMatch = rawDesc.match(/Selected package:\s*(.*?)(?=\s*Collab Duration:|\n|Additional|$)/i);
                                                      const resolvedPackageName =
                                                          (packageMatch ? packageMatch[1].trim() : null) ||
