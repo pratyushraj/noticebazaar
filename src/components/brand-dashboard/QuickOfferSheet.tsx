@@ -3,7 +3,7 @@ import { BottomSheet } from '../ui/bottom-sheet';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
-import { Loader2, Calendar, IndianRupee, Zap, Sparkles, CheckCircle2, Truck, Package, Upload, X } from 'lucide-react';
+import { Loader2, Calendar, IndianRupee, Zap, Sparkles, CheckCircle2, Truck, Package, Upload, X, Save } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { getApiBaseUrl } from '@/lib/utils/api';
 import { toast } from 'sonner';
@@ -144,6 +144,7 @@ export const QuickOfferSheet: React.FC<QuickOfferSheetProps> = ({
 }) => {
     const { profile, session } = useSession();
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isSavingDraft, setIsSavingDraft] = useState(false);
     const [isSuccess, setIsSuccess] = useState(false);
     const creatorName = normalizeCreatorName(creator);
     const creatorUsername = normalizeUsername(creator);
@@ -236,6 +237,52 @@ export const QuickOfferSheet: React.FC<QuickOfferSheetProps> = ({
                 /product|ship|deliver|unboxing|physical/i.test(selectedPackage.description);
                 
             setRequiresShipping(needsShipping);
+        }
+    };
+
+    const handleSaveDraft = async () => {
+        setIsSavingDraft(true);
+        triggerHaptic(HapticPatterns.light);
+
+        try {
+            const apiBaseUrl = getApiBaseUrl();
+            const brandEmail = profile?.email || session?.user?.email || '';
+            
+            const formData = {
+                budget,
+                deliverables,
+                collabType,
+                deadline,
+                description,
+                requiresShipping,
+                barterProductName,
+                barterProductImageUrl
+            };
+
+            const response = await fetch(`${apiBaseUrl}/api/collab/${creatorUsername}/save-draft`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    brand_email: brandEmail,
+                    form_data: formData
+                }),
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                toast.success('Draft saved!', {
+                    description: 'You can resume this offer anytime from your drafts.',
+                });
+                triggerHaptic(HapticPatterns.success);
+            } else {
+                throw new Error(data.error || 'Failed to save draft');
+            }
+        } catch (error: any) {
+            console.error('[QuickOfferSheet] Save Draft Error:', error);
+            toast.error(error.message || 'Failed to save draft. Please try again.');
+        } finally {
+            setIsSavingDraft(false);
         }
     };
 
@@ -573,11 +620,11 @@ export const QuickOfferSheet: React.FC<QuickOfferSheetProps> = ({
                                 </div>
                             </div>
 
-                        {/* Submit Button */}
-                        <div className="pt-4">
+                        {/* Action Buttons */}
+                        <div className="pt-4 space-y-3">
                             <Button 
                                 onClick={handleSubmit}
-                                disabled={isSubmitting}
+                                disabled={isSubmitting || isSavingDraft}
                                 className="flex h-16 w-full items-center justify-center gap-3 rounded-[2rem] bg-[#0FA47F] text-lg font-black text-white shadow-[0_14px_30px_rgba(15,164,127,0.24)] transition-all active:scale-[0.98] hover:bg-emerald-600"
                             >
                                 {isSubmitting ? (
@@ -592,6 +639,26 @@ export const QuickOfferSheet: React.FC<QuickOfferSheetProps> = ({
                                     </>
                                 )}
                             </Button>
+
+                            <Button 
+                                variant="outline"
+                                onClick={handleSaveDraft}
+                                disabled={isSubmitting || isSavingDraft}
+                                className="flex h-14 w-full items-center justify-center gap-2 rounded-[1.75rem] border-slate-200 bg-white text-[13px] font-black text-slate-600 shadow-sm transition-all active:scale-[0.98] hover:bg-slate-50 hover:border-slate-300"
+                            >
+                                {isSavingDraft ? (
+                                    <>
+                                        <Loader2 className="h-4 w-4 animate-spin" />
+                                        SAVING...
+                                    </>
+                                ) : (
+                                    <>
+                                        <Save className="h-4 w-4" />
+                                        SAVE AS DRAFT
+                                    </>
+                                )}
+                            </Button>
+                            
                             <p className="mt-4 flex items-center justify-center gap-2 text-center text-[10px] font-medium uppercase tracking-widest italic text-slate-400">
                                 <Sparkles className="w-3 h-3" />
                                 Protected by Creator Armour
