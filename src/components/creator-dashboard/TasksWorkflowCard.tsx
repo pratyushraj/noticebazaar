@@ -6,6 +6,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { CheckCircle2, Circle, Clock, FileText, Send, CheckCircle } from 'lucide-react';
 import { BrandDeal } from '@/types';
 import { cn } from '@/lib/utils';
+import { resolvedDealAmount } from '@/lib/utils/creator-dashboard';
 
 interface TasksWorkflowCardProps {
   brandDeals?: BrandDeal[];
@@ -100,10 +101,10 @@ const TasksWorkflowCard: React.FC<TasksWorkflowCardProps> = ({ brandDeals = [] }
             <span className="text-xs text-foreground/50">
               {deal.payment_expected_date && formatDate(deal.payment_expected_date)}
             </span>
-            {deal.deal_amount > 0 && (
+            {resolvedDealAmount(deal) > 0 && (
               <>
                 <span className="text-xs text-foreground/30">•</span>
-                <span className="text-xs text-foreground/50">₹{deal.deal_amount.toLocaleString('en-IN')}</span>
+                <span className="text-xs text-foreground/50">₹{resolvedDealAmount(deal).toLocaleString('en-IN')}</span>
               </>
             )}
           </div>

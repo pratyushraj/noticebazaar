@@ -1,3 +1,4 @@
+import { resolvedDealAmount } from '@/lib/utils/creator-dashboard';
 
 
 import React from 'react';
@@ -22,12 +23,12 @@ const ProjectedEarnings: React.FC<ProjectedEarningsProps> = ({ brandDeals = [] }
         const dueDate = new Date(deal.payment_expected_date);
         return dueDate >= now && dueDate <= thirtyDaysFromNow;
       })
-      .reduce((sum, deal) => sum + deal.deal_amount, 0);
+      .reduce((sum, deal) => sum + resolvedDealAmount(deal), 0);
 
     // Add estimated earnings from active deals (mock: 50% of active deal value)
     const activeDealsEstimated = brandDeals
       .filter(deal => deal.status === 'Approved' || deal.status === 'Drafting')
-      .reduce((sum, deal) => sum + (deal.deal_amount * 0.5), 0);
+      .reduce((sum, deal) => sum + (resolvedDealAmount(deal) * 0.5), 0);
 
     return Math.round(pendingPayments + activeDealsEstimated);
   }, [brandDeals]);

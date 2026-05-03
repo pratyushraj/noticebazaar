@@ -103,8 +103,8 @@ router.post('/deal-reminders', async (req: Request, res: Response) => {
           .eq('id', deal.creator_id)
           .maybeSingle();
         const creatorName =
-          (creatorProfile as any)?.business_name ||
           [creatorProfile?.first_name, creatorProfile?.last_name].filter(Boolean).join(' ') ||
+          (creatorProfile as any)?.business_name ||
           'Creator';
         const r = await sendBrandSigningReminderEmail(deal.brand_email, {
           creatorName,
@@ -140,8 +140,8 @@ router.post('/deal-reminders', async (req: Request, res: Response) => {
           .eq('id', deal.creator_id)
           .maybeSingle();
         const creatorName =
-          (creatorProfile as any)?.business_name ||
           [creatorProfile?.first_name, creatorProfile?.last_name].filter(Boolean).join(' ') ||
+          (creatorProfile as any)?.business_name ||
           'Creator';
         let sent = false;
         const rBrand = await sendDealPendingReminderToBrand(deal.brand_email, {

@@ -1,3 +1,4 @@
+import { resolvedDealAmount } from '@/lib/utils/creator-dashboard';
 
 
 import React, { useMemo } from 'react';
@@ -93,10 +94,10 @@ const ActionCenter: React.FC<ActionCenterProps> = ({
     // Low collection ratio
     const totalExpected = brandDeals
       .filter(deal => deal.status === 'Payment Pending' || deal.status === 'Completed')
-      .reduce((sum, deal) => sum + deal.deal_amount, 0);
+      .reduce((sum, deal) => sum + resolvedDealAmount(deal), 0);
     const paidAmount = brandDeals
       .filter(deal => deal.status === 'Completed' && deal.payment_received_date)
-      .reduce((sum, deal) => sum + deal.deal_amount, 0);
+      .reduce((sum, deal) => sum + resolvedDealAmount(deal), 0);
     const collectionRatio = totalExpected > 0 ? (paidAmount / totalExpected) * 100 : 100;
     if (collectionRatio < 70 && brandDeals.length > 0) {
       items.push({

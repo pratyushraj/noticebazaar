@@ -1,3 +1,4 @@
+import { resolvedDealAmount } from '@/lib/utils/creator-dashboard';
 
 
 import React, { useMemo } from 'react';
@@ -25,7 +26,7 @@ const GSTImpactSummary: React.FC<GSTImpactSummaryProps> = ({ brandDeals = [] }) 
              receivedDate.getFullYear() === currentYear;
     });
 
-    const totalEarnings = monthlyDeals.reduce((sum, deal) => sum + deal.deal_amount, 0);
+    const totalEarnings = monthlyDeals.reduce((sum, deal) => sum + resolvedDealAmount(deal), 0);
     const estimatedExpenses = totalEarnings * 0.15; // 15% of earnings as expenses
     const gstOnExpenses = estimatedExpenses * 0.18; // 18% GST
     

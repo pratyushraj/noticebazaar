@@ -28,6 +28,7 @@ import { getCreatorNotificationContent } from '../domains/deals/creatorNotificat
 import { recordMarketplaceEvent } from '../shared/lib/marketplaceAnalytics.js';
 import { invalidateDealsMineCache } from './deals.js';
 import { saveExternalImageToStorage } from '../services/imageStorageService.js';
+import { logFailedNotification } from '../utils/outbox.js';
 
 const router = express.Router();
 
@@ -86,10 +87,18 @@ function detectDeviceType(userAgent: string | undefined): string {
   if (!userAgent) return 'unknown';
 
   const ua = userAgent.toLowerCase();
-  if (ua.includes('mobile') || ua.includes('android') || ua.includes('iphone')) {
+  // Detect iOS vs Android first
+  if (ua.includes('iphone') || ua.includes('ipad') || ua.includes('ipod')) {
+    return 'ios';
+  }
+  if (ua.includes('android')) {
+    return 'android';
+  }
+  // Fallbacks
+  if (ua.includes('mobile')) {
     return 'mobile';
   }
-  if (ua.includes('tablet') || ua.includes('ipad')) {
+  if (ua.includes('tablet')) {
     return 'tablet';
   }
   if (ua.includes('desktop') || ua.includes('windows') || ua.includes('macintosh') || ua.includes('linux')) {
@@ -101,14 +110,17 @@ function detectDeviceType(userAgent: string | undefined): string {
 type CollabTypeValue = 'paid' | 'barter' | 'hybrid' | 'both';
 
 const normalizeCollabTypeForDb = (value: unknown): 'paid' | 'barter' | 'both' | null => {
-  if (value === 'hybrid' || value === 'both') return 'both';
-  if (value === 'paid' || value === 'barter') return value;
+  const v = String(value || '').trim().toLowerCase();
+  if (v === 'hybrid' || v === 'both' || v === 'paid_barter') return 'both';
+  if (v === 'paid') return 'paid';
+  if (v === 'barter') return 'barter';
   return null;
 };
 
 const normalizeCollabTypeForApi = (value: unknown): CollabTypeValue | null => {
-  if (value === 'both') return 'hybrid';
-  if (value === 'paid' || value === 'barter' || value === 'hybrid') return value;
+  const v = String(value || '').trim().toLowerCase();
+  if (v === 'both' || v === 'paid_barter') return 'hybrid';
+  if (v === 'paid' || v === 'barter' || v === 'hybrid') return v as CollabTypeValue;
   return null;
 };
 
@@ -420,13 +432,14 @@ const resolvePublicCreatorName = ({
   businessName?: string | null;
   publicHandle?: string | null;
 }) => {
+  const storedName = String(profileName || '').trim();
+  if (storedName) return storedName;
+
   const business = String(businessName || '').trim();
   if (business) return business;
 
   const handleName = humanizePublicHandle(publicHandle);
-  const storedName = String(profileName || '').trim();
-  if (!storedName) return handleName || null;
-  if (!handleName) return storedName;
+  return handleName || null;
 
   const storedTokens = new Set(storedName.toLowerCase().split(/\s+/).filter(Boolean));
   const handleTokens = handleName.toLowerCase().split(/\s+/).filter(Boolean);
@@ -661,8 +674,8 @@ async function attachPendingCollabLeadsForCreator(creatorId: string): Promise<{ 
   }
 
   const frontendUrl = process.env.FRONTEND_URL || 'https://creatorarmour.com';
-  const creatorName = (creatorProfile as any).business_name
-    || `${(creatorProfile as any).first_name || ''} ${(creatorProfile as any).last_name || ''}`.trim()
+  const creatorName = `${(creatorProfile as any).first_name || ''} ${(creatorProfile as any).last_name || ''}`.trim()
+    || (creatorProfile as any).business_name
     || 'Creator';
 
   const creatorEmail = authUserEmail;
@@ -838,7 +851,7 @@ async function attachPendingCollabLeadsForCreator(creatorId: string): Promise<{ 
           brand_email: claimedLead.brand_email || '',
           brand_name: claimedLead.brand_name,
           deal_type: collabTypeForApi || 'paid',
-          deal_amount: 0,
+          deal_amount: Number(claimedLead.exact_budget || claimedLead.barter_value || 0),
           current_state: 'OFFER_SENT',
         });
         const requestReviewPath = `/collab-requests/${requestId}/brief`;
@@ -926,8 +939,6 @@ router.get('/:username/resume', async (req: Request, res: Response) => {
     if (!username || !token) {
       return res.status(400).json({ success: false, error: 'Username and token are required' });
     }
-    // collab_request_drafts table is missing in production schema
-    /*
     const { data: draft, error: draftError } = await supabase
       .from('collab_request_drafts')
       .select('form_data, expires_at, creator_username')
@@ -949,9 +960,6 @@ router.get('/:username/resume', async (req: Request, res: Response) => {
       success: true,
       formData: draft.form_data || {},
     });
-    */
-    console.warn('[CollabRequests] Resume draft feature disabled: collab_request_drafts table missing');
-    return res.status(501).json({ success: false, error: 'Drafts are currently disabled' });
   } catch (e) {
     console.error('[CollabRequests] Resume draft error:', e);
     return res.status(500).json({ success: false, error: 'Failed to load draft' });
@@ -978,8 +986,6 @@ router.post('/:username/save-draft', async (req: Request, res: Response) => {
     const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
 
     const normalizedUsername = username.toLowerCase().trim();
-    // collab_request_drafts table is missing in production schema
-    /*
     const { error: insertError } = await supabase
       .from('collab_request_drafts')
       .insert({
@@ -993,9 +999,6 @@ router.post('/:username/save-draft', async (req: Request, res: Response) => {
       console.error('[CollabRequests] Save draft error:', insertError);
       return res.status(500).json({ success: false, error: 'Failed to save draft' });
     }
-    */
-    console.warn('[CollabRequests] Save draft feature disabled: collab_request_drafts table missing');
-    return res.status(501).json({ success: false, error: 'Drafts are currently disabled' });
 
     const frontendUrl = process.env.FRONTEND_URL || 'https://creatorarmour.com';
     const resumeUrl = `${frontendUrl}/${encodeURIComponent(normalizedUsername)}?resume=${encodeURIComponent(resumeToken)}`;
@@ -1009,7 +1012,7 @@ router.post('/:username/save-draft', async (req: Request, res: Response) => {
       .maybeSingle();
     if (profileRes.data) {
       const p = profileRes.data as any;
-      creatorName = p.business_name || [p.first_name, p.last_name].filter(Boolean).join(' ') || 'the creator';
+      creatorName = [p.first_name, p.last_name].filter(Boolean).join(' ') || p.business_name || 'the creator';
     }
 
     const emailResult = await sendCollabDraftResumeEmail(emailStr, creatorName, resumeUrl);
@@ -1041,8 +1044,6 @@ router.get('/accept/preview/:requestToken', async (req: Request, res: Response) 
     if (!requestToken) {
       return res.status(400).json({ success: false, error: 'Invalid link' });
     }
-    // collab_accept_tokens table is missing in production schema
-    /*
     const { data: tokenRow, error: tokenError } = await supabase
       .from('collab_accept_tokens')
       .select('id, collab_request_id, creator_email, expires_at')
@@ -1051,9 +1052,6 @@ router.get('/accept/preview/:requestToken', async (req: Request, res: Response) 
     if (tokenError || !tokenRow) {
       return res.status(404).json({ success: false, error: 'Invalid link' });
     }
-    */
-    console.warn('[CollabRequests] Accept link preview disabled: collab_accept_tokens table missing');
-    return res.status(404).json({ success: false, error: 'Please log in to your dashboard to handle this request.' });
     const expiresAt = new Date(tokenRow.expires_at);
     if (expiresAt.getTime() < Date.now()) {
       return res.status(410).json({
@@ -1124,8 +1122,6 @@ router.post('/accept/send-verification', async (req: Request, res: Response) => 
     if (!tokenStr) {
       return res.status(400).json({ success: false, error: 'Invalid link' });
     }
-    // collab_accept_tokens table is missing in production schema
-    /*
     const { data: tokenRow, error: tokenError } = await supabase
       .from('collab_accept_tokens')
       .select('id, collab_request_id, creator_email, expires_at')
@@ -1134,9 +1130,6 @@ router.post('/accept/send-verification', async (req: Request, res: Response) => 
     if (tokenError || !tokenRow) {
       return res.status(404).json({ success: false, error: 'Invalid link' });
     }
-    */
-    console.warn('[CollabRequests] Magic link verification disabled: collab_accept_tokens table missing');
-    return res.status(404).json({ success: false, error: 'Feature unavailable. Please log in to your dashboard.' });
     const expiresAt = new Date(tokenRow.expires_at);
     if (expiresAt.getTime() < Date.now()) {
       return res.status(410).json({ success: false, error: 'This link has expired' });
@@ -1820,7 +1813,6 @@ router.get('/:username', async (req: Request, res: Response) => {
       success: true,
       creator: {
         id: profile.id,
-        _debug_p: p,
         is_registered: true,
         profile_type: 'verified',
         profile_label: 'Verified Creator Profile',
@@ -2501,23 +2493,21 @@ router.post('/:username/submit', async (req: Request, res: Response) => {
       }
     }
 
-    // Get creator name with better fallback (prioritize business_name like GET endpoint)
+    // Get creator name prioritizing first_name/last_name
     let creatorName = 'Creator';
     if (creatorProfile) {
-      // First try business_name, then first_name + last_name, then individual names
-      if (creatorProfile.business_name && creatorProfile.business_name.trim()) {
+      const firstName = creatorProfile.first_name || '';
+      const lastName = creatorProfile.last_name || '';
+      const fullName = `${firstName} ${lastName}`.trim();
+      
+      if (fullName) {
+        creatorName = fullName;
+      } else if (firstName) {
+        creatorName = firstName;
+      } else if (lastName) {
+        creatorName = lastName;
+      } else if (creatorProfile.business_name && creatorProfile.business_name.trim()) {
         creatorName = creatorProfile.business_name.trim();
-      } else {
-        const firstName = creatorProfile.first_name || '';
-        const lastName = creatorProfile.last_name || '';
-        const fullName = `${firstName} ${lastName}`.trim();
-        if (fullName) {
-          creatorName = fullName;
-        } else if (firstName) {
-          creatorName = firstName;
-        } else if (lastName) {
-          creatorName = lastName;
-        }
       }
     }
 
@@ -2569,6 +2559,13 @@ router.post('/:username/submit', async (req: Request, res: Response) => {
         magicLink: brandMagicLink || undefined,
       }).catch((emailError) => {
         console.error('[CollabRequests] Submission email sending failed (non-fatal):', emailError);
+        logFailedNotification({
+          type: 'email',
+          recipient_email: brand_email,
+          payload: { requestId: collabRequest.id, brand_email },
+          error_message: emailError?.message || String(emailError),
+          source: 'collabRequestSubmit_brandEmail'
+        });
       });
     }
 
@@ -2621,9 +2618,23 @@ router.post('/:username/submit', async (req: Request, res: Response) => {
           }
         }).catch((notifyError) => {
           console.error('[CollabRequests] Push notification failed (non-fatal):', notifyError);
+          logFailedNotification({
+            type: 'push',
+            recipient_id: creator.id,
+            payload: { requestId: collabRequest.id },
+            error_message: notifyError?.message || String(notifyError),
+            source: 'collabRequestSubmit_pushNotify'
+          });
         });
-      } catch (pushError) {
+      } catch (pushError: any) {
         console.error('[CollabRequests] Push notification threw (non-fatal):', pushError);
+        logFailedNotification({
+          type: 'push',
+          recipient_id: creator.id,
+          payload: { requestId: collabRequest.id },
+          error_message: pushError?.message || String(pushError),
+          source: 'collabRequestSubmit_pushNotifyThrew'
+        });
       }
 
       // ── Email Notification (requires creator's email from auth.users) ────────
@@ -2675,12 +2686,27 @@ router.post('/:username/submit', async (req: Request, res: Response) => {
               .eq('id', collabRequest.id);
           }).catch((emailError) => {
             console.error('[CollabRequests] Creator email notification failed (non-fatal):', emailError);
+            logFailedNotification({
+              type: 'email',
+              recipient_id: creator.id,
+              recipient_email: creatorEmail,
+              payload: { requestId: collabRequest.id, creatorEmail },
+              error_message: emailError?.message || String(emailError),
+              source: 'collabRequestSubmit_creatorEmail'
+            });
           });
         } else {
           console.warn('[CollabRequests] Could not fetch creator email for email notification:', authError?.message);
         }
-      } catch (emailBlockError) {
+      } catch (emailBlockError: any) {
         console.error('[CollabRequests] Error in email notification block (non-fatal):', emailBlockError);
+        logFailedNotification({
+          type: 'email',
+          recipient_id: creator.id,
+          payload: { requestId: collabRequest.id },
+          error_message: emailBlockError?.message || String(emailBlockError),
+          source: 'collabRequestSubmit_creatorEmailThrew'
+        });
       }
 
       // ── In-app Notification ──────────────────────────────────────────────────
@@ -3096,8 +3122,6 @@ router.post('/accept/confirm', async (req: AuthenticatedRequest, res: Response) 
     const clientIp = req.ip || (req.socket as any)?.remoteAddress || 'unknown';
     const userAgent = req.get('user-agent') || 'unknown';
 
-    // collab_accept_tokens table is missing in production schema
-    /*
     const { data: tokenRow, error: tokenError } = await supabase
       .from('collab_accept_tokens')
       .select('id, collab_request_id, creator_email, expires_at')
@@ -3110,9 +3134,6 @@ router.post('/accept/confirm', async (req: AuthenticatedRequest, res: Response) 
     if (expiresAt.getTime() < Date.now()) {
       return res.status(410).json({ success: false, error: 'This link has expired' });
     }
-    */
-    console.warn('[CollabRequests] Accept confirm disabled: collab_accept_tokens table missing');
-    return res.status(404).json({ success: false, error: 'Feature unavailable. Please accept via your dashboard.' });
 
     const { data: request, error: requestError } = await supabase
       .from('collab_requests')
@@ -3144,6 +3165,8 @@ router.post('/accept/confirm', async (req: AuthenticatedRequest, res: Response) 
     let dealAmount = 0;
     if (isPaidLikeCollab(request.collab_type)) {
       dealAmount = request.exact_budget || 0;
+    } else if (isBarterLikeCollab(request.collab_type)) {
+      dealAmount = request.barter_value || 0;
     }
     const isBarter = normalizeCollabTypeForDb(request.collab_type) === 'barter';
     const normalizedProductImage = normalizeImageUrl((request as any).barter_product_image_url);
@@ -3176,8 +3199,9 @@ router.post('/accept/confirm', async (req: AuthenticatedRequest, res: Response) 
       brand_id: request.brand_id || null,
       brand_name: request.brand_name,
       brand_email: request.brand_email,
+      brand_logo_url: request.brand_logo_url || null,
       deal_amount: dealAmount,
-      deliverables: deliverablesArray.join(', '),
+      deliverables: JSON.stringify(deliverablesArray),
       due_date: request.deadline || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
       payment_expected_date: request.deadline || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
       platform: 'Other',
@@ -3185,7 +3209,7 @@ router.post('/accept/confirm', async (req: AuthenticatedRequest, res: Response) 
       progress_percentage: isBarter ? 15 : 20,
       deal_type: isBarter ? 'barter' : 'paid',
       collab_type: normalizeCollabTypeForApi(request.collab_type) || request.collab_type,
-      shipping_required: isBarterLikeCollab(request.collab_type),
+      shipping_required: (request as any).shipping_required === true || isBarterLikeCollab(request.collab_type),
       created_via: 'collab_request',
       brand_address: request.brand_address,
       brand_phone: request.brand_phone,
@@ -3492,6 +3516,8 @@ router.patch('/:id/accept', async (req: AuthenticatedRequest, res: Response) => 
     let dealAmount = 0;
     if (isPaidLikeCollab(request.collab_type)) {
       dealAmount = request.exact_budget || 0;
+    } else if (isBarterLikeCollab(request.collab_type)) {
+      dealAmount = request.barter_value || 0;
     }
 
     const isBarter = normalizeCollabTypeForDb(request.collab_type) === 'barter';
@@ -3527,21 +3553,22 @@ router.patch('/:id/accept', async (req: AuthenticatedRequest, res: Response) => 
        brand_id: request.brand_id || null,
        brand_name: request.brand_name,
        brand_email: request.brand_email,
+       brand_logo_url: request.brand_logo_url || null,
        deal_amount: dealAmount,
-       deliverables: deliverablesArray.join(', '),
+       deliverables: JSON.stringify(deliverablesArray),
        due_date: request.deadline || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
        payment_expected_date: request.deadline || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
        platform: 'Other',
        status: 'Drafting',
        deal_type: isBarter ? 'barter' : 'paid',
        collab_type: normalizeCollabTypeForApi(request.collab_type) || request.collab_type,
-       shipping_required: isBarterLikeCollab(request.collab_type),
+       shipping_required: (request as any).shipping_required === true || isBarterLikeCollab(request.collab_type),
        created_via: 'collab_request',
        brand_address: request.brand_address,
        brand_phone: request.brand_phone,
        barter_product_image_url: normalizedProductImage,
        form_data: persistedFormData,
-       // collab_request_id: request.id, // Column currently missing in production DB
+       collab_request_id: request.id,
      };
 
     const dealOptionalFields = new Set([

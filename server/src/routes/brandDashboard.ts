@@ -124,44 +124,15 @@ router.get('/requests', async (req: AuthenticatedRequest, res: Response) => {
         let transformedProfs = profs || [];
         // Apply hardcoded overrides for consistency
         transformedProfs = transformedProfs.map(p => {
-          const uname = (p.username || '').toLowerCase().trim();
-          
           const isBlockedSocial = (url: string | null | undefined) => {
             const s = String(url || '').toLowerCase();
             return s.includes('cdninstagram.com') || s.includes('instagram.com') || s.includes('fbcdn.net');
           };
 
-          const isPlaceholderPhoto = (url: string | null | undefined) => {
-            if (!url) return true;
-            if (isBlockedSocial(url)) return true;
-            const s = url.toLowerCase();
-            return s.includes('photo-1531415074968-036ba1b575da') || 
-                   s.includes('photo-1541233349642-6e425fe6190e') || 
-                   s.includes('photo-1493225255756-d9584f8606e9') || 
-                   s.includes('photo-1516280440614-37939bbacd81') || 
-                   s.includes('placeholder') ||
-                   (s.includes('unsplash.com') && !s.includes('supabase.co'));
-          };
-
           // Step 1: Resolve best available photo
           let photoUrl = p.avatar_url || p.instagram_profile_photo || null;
 
-          // Step 2: Apply Demo Overrides
-          if (uname === 'beyonce') {
-            photoUrl = isPlaceholderPhoto(photoUrl) 
-                ? 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=800&h=800'
-                : photoUrl;
-            return { ...p, first_name: 'Beyoncé', business_name: 'Beyoncé', avatar_url: photoUrl, instagram_profile_photo: photoUrl };
-          }
-          
-          if (uname === 'virat.kohli') {
-            photoUrl = isPlaceholderPhoto(photoUrl)
-                ? 'https://images.unsplash.com/photo-1541233349642-6e425fe6190e?auto=format&fit=crop&q=80&w=800&h=800'
-                : photoUrl;
-            return { ...p, first_name: 'Virat', last_name: 'Kohli', business_name: 'Virat Kohli', avatar_url: photoUrl, instagram_profile_photo: photoUrl };
-          }
-
-          // Step 3: For everyone else, return the photo
+          // Step 2: For everyone, return the photo
           return {
             ...p,
             avatar_url: photoUrl,
@@ -177,7 +148,7 @@ router.get('/requests', async (req: AuthenticatedRequest, res: Response) => {
             ...r, 
             profiles: profile,
             // Denormalize some fields for easier frontend access if needed
-            creator_name: String(profile ? (profile.business_name || `${profile.first_name || ""} ${profile.last_name || ""}`.trim() || profile.username || r.creator_name || 'Creator') : (r.creator_name || 'Creator')).trim() || 'Creator',
+            creator_name: String(profile ? (`${profile.first_name || ''} ${profile.last_name || ''}`.trim() || profile.username || profile.business_name || r.creator_name || 'Creator') : (r.creator_name || 'Creator')).trim() || 'Creator',
             creator_avatar_url: String(profile ? (profile.avatar_url || profile.instagram_profile_photo || r.creator_avatar_url || '') : (r.creator_avatar_url || '')).trim()
           };
         });
@@ -342,8 +313,14 @@ router.patch('/requests/:id/revise', async (req: AuthenticatedRequest, res: Resp
     if (campaign_description !== undefined) update.campaign_description = campaign_description;
     if (offer_expires_at !== undefined) update.offer_expires_at = offer_expires_at;
     if (deliverables !== undefined) {
-      if (Array.isArray(deliverables)) update.deliverables = JSON.stringify(deliverables);
-      else update.deliverables = deliverables;
+      if (Array.isArray(deliverables)) {
+        update.deliverables = JSON.stringify(deliverables);
+      } else {
+        // Normalize comma-string to JSON array for consistent parsing
+        update.deliverables = JSON.stringify(
+          String(deliverables).split(',').map((s: string) => s.trim()).filter(Boolean)
+        );
+      }
     }
 
     const tryUpdate = async (payload: any) => {
@@ -403,11 +380,9 @@ router.get('/profile', async (req: AuthenticatedRequest, res: Response) => {
       const fs = await import('fs');
       fs.appendFileSync('brand_profile_errors.log', `${new Date().toISOString()} - Catch Error: ${error?.message || String(error)}\nStack: ${error?.stack}\n`);
     } catch {}
-    return res.status(500).json({ 
-      success: false, 
+    return res.status(500).json({
+      success: false,
       error: error?.message || 'Failed to fetch brand profile',
-      details: error,
-      stack: error?.stack
     });
   }
 });
@@ -697,7 +672,7 @@ router.get('/deals', async (req: AuthenticatedRequest, res: Response) => {
             return { 
               ...r, 
               profiles: profile,
-              creator_name: String(profile ? (profile.business_name || `${profile.first_name || ""} ${profile.last_name || ""}`.trim() || profile.username || (r as any).creator_name || 'Creator') : ((r as any).creator_name || 'Creator')).trim() || 'Creator',
+              creator_name: String(profile ? (`${profile.first_name || ''} ${profile.last_name || ''}`.trim() || profile.username || profile.business_name || (r as any).creator_name || 'Creator') : ((r as any).creator_name || 'Creator')).trim() || 'Creator',
               creator_avatar_url: String(profile ? (profile.avatar_url || profile.instagram_profile_photo || (r as any).creator_avatar_url || '') : ((r as any).creator_avatar_url || '')).trim()
             };
           });
@@ -728,7 +703,9 @@ router.get('/deals', async (req: AuthenticatedRequest, res: Response) => {
 
             const collabKind = String((row as any)?.collab_type || (row as any)?.deal_type || '').trim().toLowerCase();
             const requiresPayment = collabKind === 'paid' || collabKind === 'both' || collabKind === 'hybrid' || collabKind === 'paid_barter' || (collabKind !== 'barter' && Number((row as any)?.deal_amount || 0) > 0);
-            const requiresShipping = typeof (row as any)?.shipping_required === 'boolean' ? Boolean((row as any)?.shipping_required) : collabKind === 'barter' || collabKind === 'both' || collabKind === 'hybrid' || collabKind === 'paid_barter';
+            const requiresShipping = typeof (row as any)?.shipping_required === 'boolean'
+              ? Boolean((row as any).shipping_required)
+              : (collabKind === 'barter' || collabKind === 'both' || collabKind === 'hybrid' || collabKind === 'paid_barter');
 
             const rawLinks = Array.isArray(submissionMeta.content_links) ? submissionMeta.content_links : [];
             const contentLinks = Array.from(new Set([submissionMeta.content_url, ...rawLinks].map(v => String(v || '').trim()).filter(Boolean)));

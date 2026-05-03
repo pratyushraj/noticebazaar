@@ -4,6 +4,7 @@ import React, { useMemo } from 'react';
 import { TrendingUp, Clock, CheckCircle } from 'lucide-react';
 import { BrandDeal } from '@/types';
 import { cn } from '@/lib/utils';
+import { resolvedDealAmount } from '@/lib/utils/creator-dashboard';
 
 interface EarningsNanoMetricsProps {
   brandDeals?: BrandDeal[];
@@ -12,9 +13,9 @@ interface EarningsNanoMetricsProps {
 
 const EarningsNanoMetrics: React.FC<EarningsNanoMetricsProps> = ({ brandDeals = [] }) => {
   const metrics = useMemo(() => {
-    const completedDeals = brandDeals.filter(d => d.status === 'Completed' && d.deal_amount > 0);
+    const completedDeals = brandDeals.filter(d => d.status === 'Completed' && resolvedDealAmount(d) > 0);
     const avgDealSize = completedDeals.length > 0
-      ? completedDeals.reduce((sum, d) => sum + d.deal_amount, 0) / completedDeals.length
+      ? completedDeals.reduce((sum, d) => sum + resolvedDealAmount(d), 0) / completedDeals.length
       : 71425; // Demo value
 
     // Calculate on-time payment rate

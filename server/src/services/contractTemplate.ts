@@ -40,6 +40,8 @@ export interface DealSchema {
     notice_days?: number;
   };
   jurisdiction_city?: string;
+  deal_type?: string;
+  shipping_required?: boolean;
 }
 
 export interface ContractVariables {
@@ -67,6 +69,8 @@ export interface ContractVariables {
   exclusivity_duration?: string;
   termination_notice_days: number;
   jurisdiction_city: string;
+  deal_type: string;
+  shipping_clause: string;
 }
 
 /**
@@ -107,8 +111,20 @@ export function mapDealSchemaToContractVariables(
     : 'As mutually agreed';
 
   // Payment details
-  const paymentMethod = dealSchema.payment?.method || 'Bank Transfer';
-  const paymentTimeline = dealSchema.payment?.timeline || 'Within 7 days of content delivery';
+  let paymentMethod = dealSchema.payment?.method || 'Bank Transfer';
+  let paymentTimeline = dealSchema.payment?.timeline || 'Within 7 days of content delivery';
+
+  if (dealSchema.deal_type === 'barter') {
+    paymentMethod = 'In-Kind / Product Barter';
+    paymentTimeline = 'Upon delivery of product';
+  } else if (dealSchema.deal_type === 'hybrid') {
+    paymentMethod = 'Bank Transfer + Product Barter';
+  }
+
+  let shippingClause = '';
+  if (dealSchema.shipping_required) {
+    shippingClause = "The Brand agrees to ship the required product(s) to the Creator's registered address at the Brand's sole expense. The Creator is not liable for lost or damaged goods during transit.";
+  }
 
   // Usage rights - validate and format
   const usageType = dealSchema.usage?.type || 'Non-exclusive';
@@ -232,6 +248,8 @@ export function mapDealSchemaToContractVariables(
     exclusivity_duration: exclusivityDuration,
     termination_notice_days: terminationNoticeDays,
     jurisdiction_city: jurisdictionCity,
+    deal_type: dealSchema.deal_type || 'paid',
+    shipping_clause: shippingClause,
   };
 }
 
@@ -581,9 +599,14 @@ Content shall be delivered on or before ${variables.delivery_deadline}, unless o
 
 2. Compensation & Payment Terms
 
-• Total Fee: ${variables.deal_amount_formatted}
+${variables.deal_type === 'barter' ? `• Deal Type: Product Barter
+• Estimated Value: ${variables.deal_amount_formatted}
 • Payment Method: ${variables.payment_method}
-• Payment Timeline: ${variables.payment_timeline}
+• Payment Timeline: ${variables.payment_timeline}` : `• Total Fee: ${variables.deal_amount_formatted}
+• Payment Method: ${variables.payment_method}
+• Payment Timeline: ${variables.payment_timeline}`}
+
+${variables.shipping_clause ? `\nShipping Terms\n${variables.shipping_clause}\n` : ''}
 
 Late Payment Protection
 
@@ -801,6 +824,8 @@ export function buildDealSchemaFromDealData(deal: any): DealSchema {
       notice_days: terminationNoticeDays,
     },
     jurisdiction_city: jurisdictionCity,
+    deal_type: deal.deal_type || deal.collab_type || 'paid',
+    shipping_required: deal.shipping_required === true,
   };
 }
 

@@ -66,6 +66,7 @@ import cronDealRemindersRouter from './routes/cronDealReminders.js';
 import cronOnboardingEmailsRouter from './routes/cronOnboardingEmails.js';
 import onboardingEmailsRouter from './routes/onboardingEmails.js';
 import brandDashboardRouter from './routes/brandDashboard.js';
+import ogRouter from './routes/ogRoutes.js';
 import { sendCollabRequestAcceptedEmail, sendCollabRequestCreatorNotificationEmail } from './services/collabRequestEmailService.js';
 import { createContractReadyToken } from './services/contractReadyTokenService.js';
  import swipeRouter from './routes/swipe.js';
@@ -404,6 +405,7 @@ app.use('/api/creators', creatorsRouter); // Public creator directory routes
 app.use('/api/shipping', shippingRouter); // Public shipping update (brand, no auth)
 app.use('/api/cron', cronDealRemindersRouter); // Cron: deal reminders (protected by CRON_SECRET in route)
 app.use('/api/cron', cronOnboardingEmailsRouter); // Cron: creator onboarding sequence (protected by CRON_SECRET)
+app.use('/api/og', ogRouter); // Public OG bot scraper routes
 
 // Authentication Routes - Must be registered before catch-all and after other public routes
  console.log('[Server] Registering auth routes at /api/auth');

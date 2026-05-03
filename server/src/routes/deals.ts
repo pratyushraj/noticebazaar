@@ -57,8 +57,7 @@ const isMissingColumnError = (err: any) => {
   return (
     msg.includes('could not find the') ||
     msg.includes('does not exist') ||
-    msg.includes('column') ||
-    msg.includes('schema cache')
+    (msg.includes('column') && msg.includes('schema cache'))
   );
 };
 

@@ -247,8 +247,21 @@ export const buildProfileFormData = (profile: any, userEmail?: string | null) =>
     };
 };
 
+/**
+ * Safely resolves the monetary value of a deal — prefers deal_amount,
+ * falls back to barter_value (including nested form_data) so barter
+ * deals never show ₹0 in analytics widgets.
+ */
+export const resolvedDealAmount = (deal: any): number => {
+    if (deal?.deal_amount != null && Number(deal.deal_amount) > 0) return Number(deal.deal_amount);
+    if (deal?.barter_value != null && Number(deal.barter_value) > 0) return Number(deal.barter_value);
+    if (deal?.form_data?.barter_value != null && Number(deal.form_data.barter_value) > 0) return Number(deal.form_data.barter_value);
+    return Number(deal?.deal_amount ?? 0);
+};
+
 export const renderBudgetValue = (item: any) => {
-    const exact = Number(item?.deal_amount || item?.exact_budget);
+    // Use null-check (not falsy) so deal_amount=0 doesn't fall through to 'Flexible Budget'
+    const exact = item?.deal_amount != null ? Number(item.deal_amount) : Number(item?.exact_budget ?? NaN);
     if (Number.isFinite(exact) && exact > 0) return `₹${exact.toLocaleString()}`;
 
     const min = Number(item?.budget_range?.min || item?.form_data?.budget_range?.min || (item?.budget_range && typeof item.budget_range === 'object' && item.budget_range.min));

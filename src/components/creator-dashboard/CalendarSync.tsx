@@ -8,6 +8,7 @@ import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
+import { resolvedDealAmount } from '@/lib/utils/creator-dashboard';
 import {
   Tooltip,
   TooltipContent,
@@ -49,7 +50,7 @@ const CalendarSync: React.FC<CalendarSyncProps> = ({ brandDeals = [] }) => {
             type: 'payment',
             title: `Payment Due: ${deal.brand_name}`,
             date: dueDate,
-            amount: deal.deal_amount,
+            amount: resolvedDealAmount(deal),
           });
         }
       }

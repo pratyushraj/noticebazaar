@@ -1,3 +1,4 @@
+import { resolvedDealAmount } from '@/lib/utils/creator-dashboard';
 
 
 import React from 'react';
@@ -25,7 +26,7 @@ const AIInsights: React.FC<AIInsightsProps> = ({ brandDeals = [] }) => {
              receivedDate.getFullYear() === currentYear &&
              deal.status === 'Completed';
     })
-    .reduce((sum, deal) => sum + deal.deal_amount, 0);
+    .reduce((sum, deal) => sum + resolvedDealAmount(deal), 0);
 
   const lastMonthEarnings = brandDeals
     .filter(deal => {
@@ -35,7 +36,7 @@ const AIInsights: React.FC<AIInsightsProps> = ({ brandDeals = [] }) => {
              receivedDate.getFullYear() === lastMonthYear &&
              deal.status === 'Completed';
     })
-    .reduce((sum, deal) => sum + deal.deal_amount, 0);
+    .reduce((sum, deal) => sum + resolvedDealAmount(deal), 0);
 
   const earningsGrowth = lastMonthEarnings > 0 
     ? Math.round(((currentMonthEarnings - lastMonthEarnings) / lastMonthEarnings) * 100)

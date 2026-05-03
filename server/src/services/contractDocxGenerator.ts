@@ -99,6 +99,8 @@ export async function generateContractDocx(schema: ContractSchema): Promise<Buff
       additional_terms: schema.additional_terms?.trim() || '',
       has_additional_terms: !!(schema.additional_terms && schema.additional_terms.trim().length > 0),
       disclaimer: schema.disclaimer || 'This agreement was generated using the CreatorArmour Contract Scanner based on information provided by the Parties. CreatorArmour is not a party to this agreement and does not provide legal representation. The Parties are advised to independently review this agreement before execution.',
+      deal_type: schema.deal_type || 'paid',
+      shipping_clause: schema.shipping_clause || '',
     };
     
     // Build document with professional legal styling
@@ -463,10 +465,26 @@ export async function generateContractDocx(schema: ContractSchema): Promise<Buff
             spacing: { before: PARAGRAPH_SPACING_BEFORE * 2, after: PARAGRAPH_SPACING_AFTER },
           }),
           
+          ...(data.deal_type === 'barter' ? [
+            new Paragraph({
+              children: [
+                new TextRun({
+                  text: 'Deal Type: Product Barter',
+                  font: 'Times New Roman',
+                  size: BODY_FONT_SIZE,
+                  underline: {
+                    type: UnderlineType.NONE,
+                  },
+                }),
+              ],
+              alignment: AlignmentType.JUSTIFIED,
+              spacing: { after: PARAGRAPH_SPACING_AFTER, line: LINE_SPACING },
+            })
+          ] : []),
           new Paragraph({
             children: [
               new TextRun({
-                text: `Total Compensation: ${data.deal_amount_formatted}`,
+                text: `${data.deal_type === 'barter' ? 'Estimated Value' : 'Total Compensation'}: ${data.deal_amount_formatted}`,
                 font: 'Times New Roman',
                 size: BODY_FONT_SIZE,
                 underline: {
@@ -507,6 +525,37 @@ export async function generateContractDocx(schema: ContractSchema): Promise<Buff
             alignment: AlignmentType.JUSTIFIED,
             spacing: { after: PARAGRAPH_SPACING_AFTER, line: LINE_SPACING },
           }),
+          
+          ...(data.shipping_clause ? [
+            new Paragraph({
+              children: [
+                new TextRun({
+                  text: 'Shipping Terms',
+                  font: 'Times New Roman',
+                  size: BODY_FONT_SIZE,
+                  bold: true,
+                  underline: {
+                    type: UnderlineType.NONE,
+                  },
+                }),
+              ],
+              spacing: { before: PARAGRAPH_SPACING_BEFORE, after: PARAGRAPH_SPACING_AFTER / 2 },
+            }),
+            new Paragraph({
+              children: [
+                new TextRun({
+                  text: data.shipping_clause,
+                  font: 'Times New Roman',
+                  size: BODY_FONT_SIZE,
+                  underline: {
+                    type: UnderlineType.NONE,
+                  },
+                }),
+              ],
+              alignment: AlignmentType.JUSTIFIED,
+              spacing: { after: PARAGRAPH_SPACING_AFTER * 2, line: LINE_SPACING },
+            })
+          ] : []),
           
           // Sub-clause: Late Payment Protection
           new Paragraph({

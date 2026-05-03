@@ -45,8 +45,8 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
             exit={{ y: '100%' }}
             transition={{ type: 'spring', damping: 30, stiffness: 300 }}
             className={cn(
-              "fixed bottom-0 left-0 right-0 z-50 bg-white text-slate-900 rounded-t-[32px] shadow-[0_-10px_40px_rgba(0,0,0,0.1)]",
-              "max-h-[92vh] overflow-hidden flex flex-col border-t border-slate-100",
+              "fixed bottom-0 left-0 right-0 z-50 bg-card text-foreground rounded-t-[32px] shadow-[0_-10px_40px_rgba(0,0,0,0.1)]",
+              "max-h-[92vh] overflow-hidden flex flex-col border-t border-border",
               "safe-area-inset-bottom",
               className
             )}
@@ -56,19 +56,19 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
           >
             {/* Handle Bar */}
             <div className="flex items-center justify-center pt-4 pb-2">
-              <div className="w-12 h-1.5 bg-slate-200 rounded-full" />
+              <div className="w-12 h-1.5 bg-secondary/50 rounded-full" />
             </div>
 
             {/* Header */}
             {title && (
               <div className="flex items-center justify-between px-6 pb-6 pt-2">
-                <h2 className="text-2xl font-black tracking-tight text-slate-900 uppercase italic">{title}</h2>
+                <h2 className="text-2xl font-black tracking-tight text-foreground uppercase italic">{title}</h2>
                 <button type="button"
                   onClick={onClose}
-                  className="w-10 h-10 rounded-2xl bg-slate-100 hover:bg-slate-200 flex items-center justify-center transition-all active:scale-90"
+                  className="w-10 h-10 rounded-2xl bg-secondary/30 hover:bg-secondary/50 flex items-center justify-center transition-all active:scale-90"
                   aria-label="Close"
                 >
-                  <X className="w-5 h-5 text-slate-600" />
+                  <X className="w-5 h-5 text-muted-foreground" />
                 </button>
               </div>
             )}

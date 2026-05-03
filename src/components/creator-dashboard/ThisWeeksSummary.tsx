@@ -1,3 +1,4 @@
+import { resolvedDealAmount } from '@/lib/utils/creator-dashboard';
 
 
 import React from 'react';
@@ -38,7 +39,7 @@ const ThisWeeksSummary: React.FC<ThisWeeksSummaryProps> = ({ brandDeals = [] }) 
         const paidDate = new Date(deal.payment_received_date);
         return paidDate >= weekAgo;
       })
-      .reduce((sum, deal) => sum + deal.deal_amount, 0);
+      .reduce((sum, deal) => sum + resolvedDealAmount(deal), 0);
   }, [brandDeals, weekAgo]);
 
   const contractsReviewed = React.useMemo(() => {

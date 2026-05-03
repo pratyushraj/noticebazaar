@@ -1,3 +1,4 @@
+import { resolvedDealAmount } from '@/lib/utils/creator-dashboard';
 
 
 import React, { useState, useEffect } from 'react';
@@ -68,7 +69,7 @@ const MonthlyOverviewCard: React.FC<MonthlyOverviewCardProps> = ({
 
   // Calculate nano metrics
   const avgDealSize = brandDeals.length > 0
-    ? Math.round(brandDeals.reduce((sum, deal) => sum + deal.deal_amount, 0) / brandDeals.length)
+    ? Math.round(brandDeals.reduce((sum, deal) => sum + resolvedDealAmount(deal), 0) / brandDeals.length)
     : 0;
 
   const onTimePayments = brandDeals.filter(deal => {

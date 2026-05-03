@@ -108,29 +108,38 @@ const CreatorAppModeGate: React.FC<CreatorAppModeGateProps> = ({ enabled, childr
       ];
 
   return (
-    <div className="min-h-[100dvh] bg-gradient-to-b from-[#F8FAFC] via-[#EEF7F1] to-[#F8FAFC] px-5 py-10 flex items-center justify-center">
-      <div className="w-full max-w-md rounded-3xl border border-primary bg-card shadow-[0_20px_60px_rgba(16,185,129,0.12)] p-6 text-center">
-        <div className="mx-auto mb-4 w-14 h-14 rounded-2xl bg-primary flex items-center justify-center shadow-lg shadow-emerald-500/30">
-          <ShieldCheck className="w-7 h-7 text-foreground" />
-        </div>
-        <h2 className="text-2xl font-bold text-muted-foreground mb-2">{title}</h2>
-        <p className="text-muted-foreground mb-5">{description}</p>
+    <div className="min-h-[100dvh] bg-background px-5 py-10 flex items-center justify-center">
+      <div className="w-full max-w-md rounded-[2.5rem] border border-border bg-card shadow-2xl p-6 text-center relative overflow-hidden">
+        {/* Decorative background glows */}
+        <div className="absolute top-0 right-0 w-64 h-64 bg-primary/10 rounded-full -mr-32 -mt-32 blur-[80px]" />
+        <div className="absolute bottom-0 left-0 w-48 h-48 bg-primary/5 rounded-full -ml-24 -mb-24 blur-[60px]" />
+        
+        <div className="relative z-10">
+          <div className="mx-auto mb-5 w-16 h-16 rounded-2xl bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center shadow-lg shadow-primary/20 border border-primary/20">
+            <ShieldCheck className="w-8 h-8 text-primary-foreground drop-shadow-md" strokeWidth={2.5} />
+          </div>
+        <h2 className="text-2xl font-black tracking-tight text-foreground mb-2">{title}</h2>
+        <p className="text-muted-foreground mb-6 font-medium leading-relaxed">{description}</p>
+        
         <button type="button"
           onClick={handleInstall}
-          className="w-full rounded-2xl bg-gradient-to-r from-emerald-600 to-green-600 text-foreground font-semibold py-3.5 flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/30"
+          className="relative w-full rounded-2xl overflow-hidden group py-4 flex items-center justify-center gap-2 shadow-[0_8px_30px_rgba(16,185,129,0.2)] transition-transform active:scale-[0.98]"
         >
-          <Download className="w-4 h-4" />
-          {installLabel}
+          <div className="absolute inset-0 bg-gradient-to-r from-primary to-primary/90" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(255,255,255,0.2),transparent_60%)]" />
+          <Download className="w-5 h-5 text-primary-foreground relative z-10" />
+          <span className="text-primary-foreground font-black tracking-wide relative z-10">{installLabel}</span>
         </button>
         <button
           onClick={handleContinueAnyway}
-          className="mt-3 w-full rounded-2xl border border-border bg-card text-muted-foreground font-semibold py-3.5 transition-colors hover:bg-background"
+          className="mt-3 w-full rounded-2xl border border-border bg-secondary/30 text-secondary-foreground font-bold py-4 transition-colors hover:bg-secondary/50 active:scale-[0.98]"
         >
           {continueLabel}
         </button>
-        <div className="mt-6 rounded-[24px] bg-background border border-border p-5 text-left relative overflow-hidden">
-          <div className="absolute top-0 right-0 p-3 opacity-[0.05]">
-            <Smartphone className="w-16 h-16 rotate-12" />
+        
+        <div className="mt-8 rounded-[24px] bg-secondary/20 border border-border p-5 text-left relative overflow-hidden">
+          <div className="absolute top-0 right-0 p-3 opacity-[0.03]">
+            <Smartphone className="w-24 h-24 rotate-12" />
           </div>
           
           <p className="text-[12px] font-black uppercase tracking-[0.2em] text-primary mb-4 flex items-center gap-2">
@@ -183,11 +192,12 @@ const CreatorAppModeGate: React.FC<CreatorAppModeGateProps> = ({ enabled, childr
               </>
             )}
 
-            <div className="pt-2 flex items-center gap-2 text-[10px] font-bold text-emerald-600 uppercase tracking-widest bg-emerald-500/5 -mx-5 -mb-5 p-3 px-5 border-t border-emerald-500/10">
+            <div className="pt-2 flex items-center gap-2 text-[10px] font-black text-primary uppercase tracking-widest bg-primary/5 -mx-5 -mb-5 p-3 px-5 border-t border-primary/10">
               <Bell className="w-3 h-3" />
               Enables Instant Notifications
             </div>
           </div>
+        </div>
         </div>
       </div>
     </div>

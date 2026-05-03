@@ -1,3 +1,4 @@
+import { resolvedDealAmount } from '@/lib/utils/creator-dashboard';
 
 
 import React from 'react';
@@ -28,7 +29,7 @@ const WeeklyPerformance: React.FC<WeeklyPerformanceProps> = ({ brandDeals = [], 
   const estimatedPayments = React.useMemo(() => {
     return brandDeals
       .filter(deal => deal.status === 'Payment Pending')
-      .reduce((sum, deal) => sum + deal.deal_amount, 0);
+      .reduce((sum, deal) => sum + resolvedDealAmount(deal), 0);
   }, [brandDeals]);
 
   const contractsReviewing = React.useMemo(() => {
@@ -69,7 +70,7 @@ const WeeklyPerformance: React.FC<WeeklyPerformanceProps> = ({ brandDeals = [], 
         const paidDate = new Date(deal.payment_received_date);
         return paidDate >= weekAgo;
       })
-      .reduce((sum, deal) => sum + deal.deal_amount, 0);
+      .reduce((sum, deal) => sum + resolvedDealAmount(deal), 0);
   }, [brandDeals, weekAgo]);
 
   const contractsReviewed = React.useMemo(() => {

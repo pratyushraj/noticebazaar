@@ -1,3 +1,4 @@
+import { resolvedDealAmount } from '@/lib/utils/creator-dashboard';
 
 
 import React, { useState } from 'react';
@@ -35,7 +36,7 @@ const CreatorRevenuePayments: React.FC<CreatorRevenuePaymentsProps> = ({
     deal.status === 'Completed' || (deal.status === 'Approved' && deal.payment_received === true)
   );
 
-  const totalPaidAmount = paidAndRecoveredDeals.reduce((sum, deal) => sum + deal.deal_amount, 0);
+  const totalPaidAmount = paidAndRecoveredDeals.reduce((sum, deal) => sum + resolvedDealAmount(deal), 0);
   const calculateOverdueDays = (paymentExpectedDate: string) => {
     const today = new Date();
     const expectedDate = new Date(paymentExpectedDate);

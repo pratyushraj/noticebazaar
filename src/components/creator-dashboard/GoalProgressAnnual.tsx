@@ -1,3 +1,4 @@
+import { resolvedDealAmount } from '@/lib/utils/creator-dashboard';
 
 
 import React, { useMemo } from 'react';
@@ -25,7 +26,7 @@ const GoalProgressAnnual: React.FC<GoalProgressAnnualProps> = ({ brandDeals = []
         const receivedDate = new Date(deal.payment_received_date);
         return receivedDate.getFullYear() === currentYear;
       })
-      .reduce((sum, deal) => sum + deal.deal_amount, 0);
+      .reduce((sum, deal) => sum + resolvedDealAmount(deal), 0);
 
     // For demo mode, show realistic progress
     const progress = brandDeals.length <= 6 ? 1280000 : annualEarnings;

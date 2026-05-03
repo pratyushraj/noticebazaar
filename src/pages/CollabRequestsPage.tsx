@@ -325,7 +325,17 @@ const CollabRequestsPage = () => {
                           {getCollabTypeLabel(request.collab_type)}
                         </span>
                       </div>
-                      <p className="text-sm text-foreground/80 mt-0.5 break-all">{request.brand_email}</p>
+                      <p className="text-sm text-foreground/80 mt-0.5 break-all">
+                        {request.brand_email}
+                        {request.brand_instagram && (
+                          <>
+                            <span className="mx-1.5 opacity-40">•</span>
+                            <span className="text-info/90">
+                              {request.brand_instagram.startsWith('@') ? request.brand_instagram : `@${request.brand_instagram}`}
+                            </span>
+                          </>
+                        )}
+                      </p>
                     </div>
 
                     {/* Estimated value — gift icon + label + bold ₹ */}

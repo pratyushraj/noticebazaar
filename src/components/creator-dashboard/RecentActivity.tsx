@@ -1,3 +1,4 @@
+import { resolvedDealAmount } from '@/lib/utils/creator-dashboard';
 
 
 import React from 'react';
@@ -92,7 +93,7 @@ const RecentActivity: React.FC<RecentActivityProps> = ({ brandDeals = [] }) => {
         id: `payment-${deal.id}`,
         type: 'payment_received',
         title: 'Payment marked as received',
-        description: `₹${deal.deal_amount.toLocaleString('en-IN')} from ${deal.brand_name}`,
+        description: `₹${resolvedDealAmount(deal).toLocaleString('en-IN')} from ${deal.brand_name}`,
         timestamp: new Date(deal.payment_received_date!),
         icon: <DollarSign className="w-4 h-4 text-primary" />,
       });

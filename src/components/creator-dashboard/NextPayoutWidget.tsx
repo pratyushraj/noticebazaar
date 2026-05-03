@@ -9,6 +9,7 @@ import { motion } from 'framer-motion';
 
 import { useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
+import { resolvedDealAmount } from '@/lib/utils/creator-dashboard';
 
 interface NextPayoutWidgetProps {
   brandDeals?: BrandDeal[];
@@ -132,7 +133,7 @@ const NextPayoutWidget: React.FC<NextPayoutWidgetProps> = ({ brandDeals = [] }) 
                   <span className="text-sm font-medium text-foreground/80">Your Next Payout</span>
                 </div>
                 <h3 className="text-2xl md:text-3xl font-bold text-foreground mb-2">
-                  ₹{deal.deal_amount.toLocaleString('en-IN')}
+                  ₹{resolvedDealAmount(deal).toLocaleString('en-IN')}
                 </h3>
                 
                 {/* Platform/Source */}

@@ -156,7 +156,8 @@ const sameLocalMonth = (a: Date, b: Date) => a.getFullYear() === b.getFullYear()
 const normalizeStatus = (status: string | null | undefined) => String(status || '').trim().toLowerCase();
 
 const firstNameish = (profile: Profile | null | undefined, fallbackName?: string) => {
-  const label = profile?.business_name || profile?.first_name || profile?.username || fallbackName || 'Creator';
+  const nameParts = [profile?.first_name, profile?.last_name].filter(Boolean).join(' ');
+  const label = nameParts || profile?.business_name || profile?.username || fallbackName || 'Creator';
   return String(label || 'Creator').trim() || 'Creator';
 };
 
@@ -302,7 +303,7 @@ const dealStageLabel = (row: BrandDeal | null | undefined) => {
   if (s === 'AWAITING_BRAND_ADDRESS') return 'Address Needed';
   if (s === 'CONTRACT_READY' || s === 'AWAITING_BRAND_SIGNATURE') return 'Ready to Sign';
   if (s === 'SENT' || s === 'AWAITING_CREATOR_SIGNATURE') return 'Awaiting Creator';
-  if (s === 'FULLY_EXECUTED') return isBarterDeal ? 'Awaiting Shipment' : 'Collab Active';
+  if (s === 'FULLY_EXECUTED') return (isBarterDeal || row?.shipping_required === true) ? 'Awaiting Shipment' : 'Collab Active';
   if (s === 'CONTENT_MAKING') return 'In Production';
   if (s === 'REVISION_REQUESTED') return 'Revision Needed';
   if (s === 'CONTENT_DELIVERED' || s === 'REVISION_DONE') return 'Review Content';
@@ -363,8 +364,8 @@ const brandDealCardUi = (row: BrandDeal | null | undefined) => {
       : s === 'DISPUTE_PARTIAL_REFUND'
         ? 'Partial refund is currently processing'
       : s === 'PAYMENT_PENDING'
-        ? (isBarterDeal 
-            ? (row?.brand_address ? 'Review the agreement to get started' : 'Add shipping details to start the barter collaboration') 
+        ? ((isBarterDeal || row?.shipping_required === true) 
+            ? (row?.brand_address ? 'Review the agreement to get started' : 'Add shipping details to start the collaboration') 
             : 'Fund the escrow to start collaboration')
       : s === 'AWAITING_BRAND_ADDRESS'
         ? (row?.brand_address ? 'Review the agreement to get started' : 'Shipping address required to proceed')
@@ -377,7 +378,7 @@ const brandDealCardUi = (row: BrandDeal | null | undefined) => {
           : s === 'REVISION_REQUESTED'
             ? 'Awaiting revised content from creator'
             : s === 'CONTENT_MAKING'
-              ? ((isBarterDeal && (primaryActionLabel === 'Track Progress' || primaryActionLabel === 'Confirm Product Receipt'))
+              ? (((isBarterDeal || row?.shipping_required === true) && (primaryActionLabel === 'Track Progress' || primaryActionLabel === 'Confirm Product Receipt'))
                   ? (row?.shipping_status === 'delivered' || row?.shipping_status === 'received' 
                       ? 'Creator has received the product' 
                       : 'Creator is waiting for product delivery confirmation')
@@ -385,7 +386,7 @@ const brandDealCardUi = (row: BrandDeal | null | undefined) => {
                     ? 'Please ship the product to the creator'
                     : 'Creator is now crafting your content')
               : (s === 'FULLY_EXECUTED' || s === 'CONTRACT_READY')
-                ? (isBarterDeal 
+                ? ((isBarterDeal || row?.shipping_required === true) 
                     ? (row?.brand_address ? 'Creator is now crafting your content' : 'Contract signed — please ship the product') 
                     : 'Contract signed — awaiting content')
                 : s === 'AWAITING_CREATOR_SIGNATURE' || s === 'SENT'
@@ -1998,7 +1999,7 @@ const BrandMobileDashboard = ({
     const collabType = String(offer?.collab_type || offer?.deal_type || offer?.raw?.collab_type || '').trim().toLowerCase();
     const isPureBarter = collabType === 'barter';
     const requiresPayment = isPaidLikeCollab(offer) && !isPureBarter;
-    const requiresShipping = isBarterLikeCollab(offer);
+    const requiresShipping = offer?.shipping_required === true || isBarterLikeCollab(offer);
     const shippingStatus = String(offer?.shipping_status || '').trim().toLowerCase();
     const shippingDelivered = shippingStatus === 'delivered' || shippingStatus === 'received';
     const trackingNumber = String(offer?.tracking_number || '').trim();
@@ -2135,7 +2136,7 @@ const BrandMobileDashboard = ({
         return;
       }
       if (primaryCta.action === 'track_progress') {
-        if (isPureBarter) {
+        if (requiresShipping && !shippingDelivered) {
           setDdShowShippingBox(true);
           shippingSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
           return;
@@ -4103,7 +4104,8 @@ const BrandCollabsTab = React.memo(({
               const due = isPendingItem ? offerExpiryLabel(item) : deadlineLabel(item);
               const amount = Number(item?.deal_amount || item?.exact_budget || item?.barter_value || item?.product_value || 0);
               const creatorName = firstNameish(item?.profiles, item?.creator_name || item?.creator_email);
-              const creatorMeta = item?.profiles?.username || item?.creator_name || item?.creator_email || 'Creator';
+              let creatorMeta = item?.profiles?.username || item?.creator_name || item?.creator_email || 'Creator';
+              if (item?.profiles?.username && creatorMeta === item.profiles.username) creatorMeta = `@${creatorMeta}`;
               const creatorAvatar = item?.profiles?.avatar_url || item?.profiles?.profile_image_url || item?.profiles?.instagram_profile_photo || item?.creator_avatar_url || item?.creator_photo_url || '';
               
               if (isPendingItem && ['pending', 'countered', 'sent', 'offer_sent', 'submitted', 'action_required', 'action-required'].includes(normalizeStatus(item?.status))) {

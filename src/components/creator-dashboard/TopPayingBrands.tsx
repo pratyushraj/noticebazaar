@@ -1,3 +1,4 @@
+import { resolvedDealAmount } from '@/lib/utils/creator-dashboard';
 
 
 import React from 'react';
@@ -23,7 +24,7 @@ const TopPayingBrands: React.FC<TopPayingBrandsProps> = ({ brandDeals = [] }) =>
           dealCount: 0,
         };
       }
-      acc[brandName].totalAmount += deal.deal_amount;
+      acc[brandName].totalAmount += resolvedDealAmount(deal);
       acc[brandName].dealCount += 1;
       return acc;
     }, {} as Record<string, { name: string; totalAmount: number; dealCount: number }>);
