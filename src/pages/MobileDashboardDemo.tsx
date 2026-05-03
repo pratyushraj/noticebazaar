@@ -5568,7 +5568,7 @@ const MobileDashboardDemo = ({
                                                                     const durationMatch = rawDesc.match(/Collab Duration:\s*(.*?)(?=\s*Additional|$)/i);
                                                                     const extractedDuration = durationMatch ? durationMatch[1].trim() : null;
                                                                     
-                                                                    const cleanDesc = rawDesc.split(/Selected package:|Collab Duration:|Additional Commercial Terms:|Collab content category:|Product for collab:/i)[0].trim() || "High-energy Reel showcasing unboxing and key features.";
+                                                                    const cleanDesc = rawDesc || "High-energy Reel showcasing unboxing and key features.";
 
                                                                     return (
                                                                         <div className={cn("rounded-[24px] border overflow-hidden", isDark ? "bg-white/[0.02] border-white/6" : "bg-white border-slate-200")}>
@@ -5590,7 +5590,7 @@ const MobileDashboardDemo = ({
                                                                             </button>
                                                                             {showBrief && (
                                                                                 <div className="px-5 pb-6">
-                                                                                    <p className={cn("text-[14px] font-medium leading-relaxed opacity-60 mb-8", textColor)}>
+                                                                                    <p className={cn("text-[14px] font-medium leading-relaxed opacity-60 mb-8 whitespace-pre-wrap", textColor)}>
                                                                                         {cleanDesc}
                                                                                     </p>
             
@@ -6144,8 +6144,8 @@ const MobileDashboardDemo = ({
                                                                 return (
                                                                      <div className="space-y-4">
                                                                          {description && (
-                                                                             <p className={cn("text-[14px] leading-relaxed font-bold", isDark ? "text-foreground/90" : "text-muted-foreground")}>
-                                                                                 {description.split(/Selected package:|Collab Duration:|Additional Commercial Terms:|Collab content category:|Product for collab:/i)[0].trim()}
+                                                                             <p className={cn("text-[14px] leading-relaxed font-bold whitespace-pre-wrap", isDark ? "text-foreground/90" : "text-muted-foreground")}>
+                                                                                 {description}
                                                                              </p>
                                                                          )}
 
