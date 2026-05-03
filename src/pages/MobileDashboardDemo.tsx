@@ -18,7 +18,7 @@ import {
     Sparkles, Youtube, Twitter, Heart, Trash2, Smartphone as SmartphoneIcon, Truck,
     Users, Calendar, ShoppingBag, Video, Film, BookOpen, GraduationCap, 
     Laugh, Coffee, Layers, Flame, Clapperboard, BadgeCheck, Check, 
-    IndianRupee, Utensils, Building2, Plane, DollarSign
+    IndianRupee, Utensils, Building2, Plane, DollarSign, Image, ScrollText
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useNavigate, useSearchParams } from 'react-router-dom';
@@ -5458,193 +5458,186 @@ const MobileDashboardDemo = ({
 
                                     <div className="flex-1 overflow-y-auto px-4 sm:px-5 pt-4 sm:pt-5 pb-dashboard relative z-10">
 
-                                        {/* ── OFFER BRIEF HERO ── */}
+                                        {/* ── OFFER / DEAL HERO ── */}
                                         {selectedType === 'offer' ? (
-                                            <div className="mb-6">
-                                                <div className="flex flex-col items-center text-center gap-4 pt-1">
-                                                    <div className="flex flex-nowrap items-center justify-center gap-2 max-w-full">
-                                                      <div className={cn(
-                                                          "inline-flex items-center gap-1.5 px-3.5 py-2.5 rounded-full text-[10px] font-black uppercase tracking-[0.12em] whitespace-nowrap shadow-sm transition-all hover:scale-105",
-                                                          String(selectedItem?.collab_type || '').toLowerCase().includes('barter')
-                                                              ? "bg-amber-500 text-white"
-                                                              : (isDark ? "bg-amber-500/15 text-amber-300 border border-amber-400/20" : "bg-amber-50 text-amber-700 border border-amber-200/50")
-                                                      )}>
-                                                          <span className="animate-pulse">🔥</span>
-                                                          <span className="whitespace-nowrap">Offer expires in 5 days</span>
-                                                      </div>
-                                                      {String(selectedItem?.collab_type || '').toLowerCase().includes('barter') ? (
-                                                          <div className="inline-flex items-center gap-1.5 px-3.5 py-2.5 rounded-full text-[10px] font-black uppercase tracking-[0.12em] whitespace-nowrap shadow-sm bg-orange-500 text-white">
-                                                              <Package className="w-3.5 h-3.5" />
-                                                              <span className="whitespace-nowrap">Free Product Collab</span>
-                                                          </div>
-                                                      ) : (
-                                                          <div className={cn(
-                                                              "inline-flex items-center gap-1.5 px-3.5 py-2.5 rounded-full text-[10px] font-black uppercase tracking-[0.12em] border whitespace-nowrap shadow-sm transition-all hover:scale-105",
-                                                              isDark ? "bg-white/[0.04] text-white/80 border-white/10" : "bg-white text-slate-700 border-slate-200/80"
-                                                          )}>
-                                                              <span className="w-2 h-2 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.6)]" />
-                                                              <span className="whitespace-nowrap">Paid Campaign</span>
-                                                          </div>
-                                                      )}
+                                            <div className="mb-5 space-y-3.5">
+
+                                                {/* STATUS PILLS */}
+                                                <div className="flex flex-wrap items-center gap-2 pt-1">
+                                                    <div className={cn(
+                                                        "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-[0.12em] whitespace-nowrap border",
+                                                        isDark ? "bg-amber-500/10 text-amber-300 border-amber-400/15" : "bg-amber-50 text-amber-700 border-amber-200/50"
+                                                    )}>
+                                                        <span>🔥</span>
+                                                        <span>Expires in 5 days</span>
                                                     </div>
+                                                    {String(selectedItem?.collab_type || '').toLowerCase().includes('barter') ? (
+                                                        <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-[0.12em] whitespace-nowrap border bg-orange-500/10 text-orange-300 border-orange-400/20">
+                                                            <Package className="w-3 h-3" /><span>Free Product Collab</span>
+                                                        </div>
+                                                    ) : (
+                                                        <div className={cn(
+                                                            "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-[0.12em] border whitespace-nowrap",
+                                                            isDark ? "bg-sky-500/10 text-sky-300 border-sky-400/15" : "bg-sky-50 text-sky-700 border-sky-200/50"
+                                                        )}>
+                                                            <span className="w-1.5 h-1.5 rounded-full bg-sky-400 inline-block" />
+                                                            <span>Paid Campaign</span>
+                                                        </div>
+                                                    )}
                                                 </div>
 
+                                                {/* HERO CARD — price + image + tags */}
                                                 <div className={cn(
-                                                    "mt-6 rounded-[36px] border p-0 overflow-hidden relative transition-all duration-500",
-                                                    isDark 
-                                                        ? "bg-[#0C1320]/90 backdrop-blur-3xl border-white/10 shadow-[0_40px_80px_-20px_rgba(0,0,0,0.5)]" 
-                                                        : "bg-white border-[#E5E7EB] shadow-[0_25px_50px_-12px_rgba(0,0,0,0.08)]"
+                                                    "rounded-[28px] border overflow-hidden",
+                                                    isDark ? "bg-[#0C1320] border-white/8" : "bg-white border-slate-200 shadow-sm"
                                                 )}>
-                                                    <div className="flex flex-col sm:flex-row gap-5 p-5">
-                                                        <div className={cn(
-                                                            "w-full sm:w-[220px] h-[280px] rounded-[28px] overflow-hidden shrink-0 relative group shadow-2xl",
-                                                            isDark ? "bg-card border border-white/5" : "bg-[#F3F4F6] border border-black/5"
-                                                        )}>
-                                                            {(() => {
-                                                                const src = resolveCreatorDealProductImage(selectedItem) || 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&q=80&w=500';
-                                                                return <img src={src} alt="" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" loading="lazy" />;
-                                                            })()}
+                                                    {/* Product image */}
+                                                    <div className="relative w-full h-44 overflow-hidden">
+                                                        {(() => {
+                                                            const src = resolveCreatorDealProductImage(selectedItem) || 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&q=80&w=800';
+                                                            return <img src={src} alt="" className="w-full h-full object-cover" loading="lazy" />;
+                                                        })()}
+                                                        <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/10 to-transparent" />
+                                                        <div className="absolute top-3.5 left-3.5">
+                                                            <div className={cn(
+                                                                "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-[10px] font-black uppercase tracking-wide backdrop-blur-md border",
+                                                                "bg-white/10 border-white/15 text-white"
+                                                            )}>
+                                                                <Film className="w-3 h-3" />
+                                                                Instagram Reel
+                                                            </div>
                                                         </div>
-                                                        
-                                                        <div className="flex-1 min-w-0 flex flex-col justify-between">
+                                                    </div>
+
+                                                    {/* Price row */}
+                                                    <div className="px-5 pt-4 pb-5">
+                                                        <div className="flex items-start justify-between gap-3 mb-3">
                                                             <div>
-                                                                <div className="flex items-center gap-2 mb-2 opacity-50">
-                                                                    <Tag className="w-3 h-3" />
-                                                                    <p className="text-[11px] font-black uppercase tracking-[0.1em]">Brand Briefing</p>
-                                                                </div>
-                                                                <p className={cn("text-[44px] sm:text-[48px] leading-[0.9] font-black tracking-tight", textColor)}>
+                                                                <p className={cn("text-[10px] font-black uppercase tracking-[0.2em] opacity-40 mb-0.5", textColor)}>
+                                                                    {selectedIsPureBarter ? 'Free Product Worth' : 'Pending Payout'}
+                                                                </p>
+                                                                <p className={cn("text-[44px] leading-none font-black tracking-tight", textColor)}>
                                                                     {renderBudgetValue(selectedItem)}
                                                                 </p>
-                                                                <p className={cn("text-[16px] font-bold mt-3 inline-flex items-center gap-2", textColor)}>
-                                                                    <span className="w-1.5 h-1.5 rounded-full bg-primary inline-block" />
-                                                                    Instagram Reel
+                                                                <p className={cn("text-[11px] font-bold mt-1", isDark ? "text-emerald-400/80" : "text-emerald-700")}>
+                                                                    💰 Releases after approval
                                                                 </p>
-                                                                <div className="mt-4 flex flex-wrap gap-2">
-                                                                    <div className={cn("px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider flex items-center gap-1.5", isDark ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20" : "bg-emerald-50 text-emerald-700 border border-emerald-100")}>
-                                                                        <Package className="w-3 h-3" />
-                                                                        Product secured
-                                                                    </div>
-                                                                    <div className={cn("px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider flex items-center gap-1.5", isDark ? "bg-rose-500/10 text-rose-400 border border-rose-500/20" : "bg-rose-50 text-rose-700 border border-rose-100")}>
+                                                            </div>
+                                                            <div className={cn(
+                                                                "shrink-0 flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border mt-1",
+                                                                isDark ? "bg-emerald-500/10 border-emerald-500/20" : "bg-emerald-50 border-emerald-100"
+                                                            )}>
+                                                                <ShieldCheck className={cn("w-3.5 h-3.5", isDark ? "text-emerald-400" : "text-emerald-600")} />
+                                                                <span className={cn("text-[10px] font-black uppercase tracking-wider", isDark ? "text-emerald-400" : "text-emerald-700")}>
+                                                                    {selectedIsPureBarter ? 'Product Linked' : 'Payment Secured'}
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                        {/* Tags */}
+                                                        <div className="flex flex-wrap gap-2">
+                                                            <div className={cn("flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[10px] font-bold border", isDark ? "bg-emerald-500/8 border-emerald-500/15 text-emerald-400" : "bg-emerald-50 border-emerald-100 text-emerald-700")}>
+                                                                <Package className="w-3 h-3" />
+                                                                Product secured
+                                                            </div>
+                                                            {(() => {
+                                                                const rawDeadline = selectedItem?.due_date || selectedItem?.deadline;
+                                                                const deadlineLabel = rawDeadline
+                                                                    ? new Date(rawDeadline).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })
+                                                                    : '08 May';
+                                                                return (
+                                                                    <div className={cn("flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[10px] font-bold border", isDark ? "bg-rose-500/8 border-rose-500/15 text-rose-400" : "bg-rose-50 border-rose-100 text-rose-600")}>
                                                                         <Clock className="w-3 h-3" />
-                                                                        Submit by 08 May
+                                                                        Submit by {deadlineLabel}
                                                                     </div>
-                                                                </div>
-                                                            </div>
-
-                                                            <div className="grid grid-cols-2 gap-2 mt-6">
-                                                                {[
-                                                                    { label: "Good deal for you", icon: <Zap className="w-3 h-3" /> },
-                                                                    { label: "Payment guaranteed", icon: <CheckCircle2 className="w-3 h-3" /> },
-                                                                    { label: "1 Revision included", icon: <Edit3 className="w-3 h-3" /> },
-                                                                    { label: "No hidden tasks", icon: <ShieldCheck className="w-3 h-3" /> }
-                                                                ].map((helper, i) => (
-                                                                    <div key={i} className={cn("flex items-center gap-2 text-[10px] font-bold opacity-60", textColor)}>
-                                                                        <span className="text-emerald-500">{helper.icon}</span>
-                                                                        {helper.label}
-                                                                    </div>
-                                                                ))}
-                                                            </div>
+                                                                );
+                                                            })()}
                                                         </div>
                                                     </div>
                                                 </div>
 
-                                                {/* Timeline Progress Bar */}
-                                                <div className={cn("mt-6 p-6 rounded-[32px] border backdrop-blur-md", isDark ? "bg-white/5 border-white/10" : "bg-white border-slate-200")}>
-                                                    <p className={cn("text-[11px] font-black uppercase tracking-widest opacity-40 mb-6", textColor)}>Deal Lifecycle</p>
-                                                    <div className="relative px-2">
-                                                        <div className="absolute top-[15px] left-8 right-8 h-[2px] bg-slate-200/20 dark:bg-white/5" />
-                                                        <div className="absolute top-[15px] left-8 w-[15%] h-[2px] bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]" />
-                                                        
-                                                        <div className="flex justify-between items-start relative z-10">
-                                                            {[
-                                                                { label: 'Accept', sub: 'Secure deal', active: true, done: false },
-                                                                { label: 'Fund', sub: 'Payment locked', active: false, done: false },
-                                                                { label: 'Content', sub: 'Submit work', active: false, done: false },
-                                                                { label: 'Release', sub: 'Get paid', active: false, done: false }
-                                                            ].map((step, i) => (
-                                                                <div key={i} className="flex flex-col items-center gap-3">
-                                                                    <div className={cn(
-                                                                        "w-8 h-8 rounded-full flex items-center justify-center border-2 transition-all duration-500",
-                                                                        step.active 
-                                                                            ? "bg-emerald-500 border-emerald-500 text-white shadow-[0_0_15px_rgba(16,185,129,0.4)] scale-110" 
-                                                                            : "bg-background border-border text-muted-foreground opacity-40"
-                                                                    )}>
-                                                                        {i === 0 ? <Zap className="w-4 h-4" /> : i === 1 ? <ShieldCheck className="w-4 h-4" /> : i === 2 ? <Camera className="w-4 h-4" /> : <IndianRupee className="w-4 h-4" />}
-                                                                    </div>
-                                                                    <div className="text-center">
-                                                                        <p className={cn("text-[10px] font-black uppercase tracking-tight", step.active ? "text-emerald-500" : "opacity-30", textColor)}>{step.label}</p>
-                                                                        <p className={cn("text-[8px] font-bold whitespace-nowrap opacity-40", textColor)}>{step.sub}</p>
-                                                                    </div>
-                                                                </div>
-                                                            ))}
+                                                {/* DECISION HELPER — 2x2 compact grid */}
+                                                <div className={cn(
+                                                    "rounded-[20px] border px-4 py-3.5 grid grid-cols-2 gap-x-4 gap-y-2.5",
+                                                    isDark ? "bg-white/[0.025] border-white/6" : "bg-slate-50 border-slate-200"
+                                                )}>
+                                                    {[
+                                                        { icon: <Zap className="w-3.5 h-3.5" />, label: "Good deal for you" },
+                                                        { icon: <CheckCircle2 className="w-3.5 h-3.5" />, label: "Payment guaranteed" },
+                                                        { icon: <Edit3 className="w-3.5 h-3.5" />, label: "1 revision included" },
+                                                        { icon: <ShieldCheck className="w-3.5 h-3.5" />, label: "No hidden tasks" },
+                                                    ].map((item, i) => (
+                                                        <div key={i} className={cn("flex items-center gap-2 text-[11px] font-semibold", textColor)}>
+                                                            <span className="text-emerald-500 shrink-0">{item.icon}</span>
+                                                            <span className="opacity-70">{item.label}</span>
                                                         </div>
-                                                    </div>
+                                                    ))}
                                                 </div>
 
-                                                {/* Detailed Deliverables Section */}
-                                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
-                                                    <div className={cn("p-5 rounded-[28px] border", isDark ? "bg-white/5 border-white/10" : "bg-white border-slate-200")}>
-                                                        <p className={cn("text-[11px] font-black uppercase tracking-widest opacity-40 mb-4", textColor)}>Deliverables</p>
-                                                        <ul className="space-y-3">
-                                                            {[
-                                                                "1 Premium Reel (30–60s)",
-                                                                "Script + hook optimization",
-                                                                "1 Story shoutout (24h)",
-                                                                "High-res source files"
-                                                            ].map((item, i) => (
-                                                                <li key={i} className={cn("flex items-center gap-2.5 text-[12px] font-bold", textColor)}>
-                                                                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
-                                                                    {item}
-                                                                </li>
-                                                            ))}
-                                                        </ul>
-                                                    </div>
-
-                                                    <div className={cn("p-5 rounded-[28px] border", isDark ? "bg-white/5 border-white/10" : "bg-white border-slate-200")}>
-                                                        <p className={cn("text-[11px] font-black uppercase tracking-widest opacity-40 mb-4", textColor)}>Usage Rights</p>
-                                                        <ul className="space-y-3">
-                                                            {[
-                                                                "Organic social media only",
-                                                                "90 days usage limit",
-                                                                "No third-party licensing"
-                                                            ].map((item, i) => (
-                                                                <li key={i} className={cn("flex items-center gap-2.5 text-[12px] font-bold", textColor)}>
-                                                                    <div className="w-1.5 h-1.5 rounded-full bg-blue-500 shrink-0" />
-                                                                    {item}
-                                                                </li>
-                                                            ))}
-                                                        </ul>
-                                                    </div>
-                                                </div>
-
-                                                {/* Trust Block */}
-                                                <div className={cn("mt-4 p-5 rounded-[28px] border relative overflow-hidden", isDark ? "bg-emerald-500/5 border-emerald-500/10" : "bg-emerald-50/50 border-emerald-200/50")}>
-                                                    <div className="absolute top-0 right-0 p-4 opacity-10">
-                                                        <ShieldCheck className="w-16 h-16 text-emerald-500" />
-                                                    </div>
-                                                    <div className="flex items-center gap-3 mb-4">
-                                                        <div className="w-10 h-10 rounded-2xl bg-emerald-500 flex items-center justify-center text-white shadow-lg shadow-emerald-500/20">
-                                                            <ShieldCheck className="w-6 h-6" />
-                                                        </div>
-                                                        <div>
-                                                            <h4 className={cn("text-[15px] font-black tracking-tight", textColor)}>Protected by Creator Armour</h4>
-                                                            <p className={cn("text-[10px] font-bold opacity-40", textColor)}>Enterprise-grade security for every deal</p>
-                                                        </div>
-                                                    </div>
-                                                    <div className="space-y-2.5 relative z-10">
+                                                {/* DELIVERABLES CHECKLIST */}
+                                                <div className={cn("rounded-[20px] border px-4 py-4", isDark ? "bg-white/[0.025] border-white/6" : "bg-white border-slate-200")}>
+                                                    <p className={cn("text-[10px] font-black uppercase tracking-[0.2em] opacity-40 mb-3", textColor)}>Deliverables</p>
+                                                    <div className="space-y-2.5">
                                                         {[
-                                                            "Contract auto-generated & legally binding",
-                                                            "72h auto-release after approval",
-                                                            "Full dispute protection & mediation"
-                                                        ].map((point, i) => (
-                                                            <div key={i} className={cn("flex items-center gap-2 text-[11px] font-bold", textColor)}>
-                                                                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
-                                                                {point}
+                                                            { icon: <Film className="w-3.5 h-3.5" />, label: "1 Premium Reel (30–60s)" },
+                                                            { icon: <FileText className="w-3.5 h-3.5" />, label: "Script + hook optimization" },
+                                                            { icon: <Smartphone className="w-3.5 h-3.5" />, label: "1 Story shoutout" },
+                                                            { icon: <Image className="w-3.5 h-3.5" />, label: "High-res files included" },
+                                                        ].map((d, i) => (
+                                                            <div key={i} className={cn("flex items-center gap-2.5 text-[12px] font-semibold", textColor)}>
+                                                                <div className={cn("w-7 h-7 rounded-lg flex items-center justify-center shrink-0", isDark ? "bg-white/5" : "bg-slate-100")}>
+                                                                    <span className={isDark ? "text-white/50" : "text-slate-500"}>{d.icon}</span>
+                                                                </div>
+                                                                <span className="opacity-75">{d.label}</span>
                                                             </div>
                                                         ))}
                                                     </div>
                                                 </div>
-                                                <div className="mt-4 space-y-3">
+
+                                                {/* USAGE RIGHTS */}
+                                                <div className={cn("rounded-[20px] border px-4 py-3.5 flex items-center gap-3.5", isDark ? "bg-white/[0.02] border-white/6" : "bg-white border-slate-200")}>
+                                                    <div className={cn("w-9 h-9 rounded-xl flex items-center justify-center shrink-0", isDark ? "bg-sky-500/10" : "bg-sky-50")}>
+                                                        <ScrollText className={cn("w-4 h-4", isDark ? "text-sky-400" : "text-sky-600")} />
+                                                    </div>
+                                                    <div>
+                                                        <p className={cn("text-[11px] font-black", textColor)}>Usage Rights</p>
+                                                        <p className={cn("text-[10px] font-semibold opacity-50 mt-0.5", textColor)}>Organic social only · 90 days · No 3rd-party</p>
+                                                    </div>
+                                                </div>
+
+                                                {/* TRUST BLOCK */}
+                                                <div className={cn(
+                                                    "rounded-[20px] border p-4 flex items-start gap-3.5",
+                                                    isDark ? "bg-emerald-500/[0.04] border-emerald-500/12" : "bg-emerald-50/80 border-emerald-200/60"
+                                                )}>
+                                                    <div className="w-9 h-9 rounded-xl bg-emerald-500 flex items-center justify-center shrink-0 mt-0.5 shadow-sm">
+                                                        <ShieldCheck className="w-4 h-4 text-white" strokeWidth={2.5} />
+                                                    </div>
+                                                    <div className="flex-1 min-w-0">
+                                                        <p className={cn("text-[13px] font-black tracking-tight mb-2", isDark ? "text-emerald-300" : "text-emerald-800")}>
+                                                            Protected by Creator Armour
+                                                        </p>
+                                                        <div className="space-y-1.5">
+                                                            {[
+                                                                "Legally binding contract",
+                                                                "72h auto payout after approval",
+                                                                "Full dispute protection",
+                                                            ].map((pt, i) => (
+                                                                <div key={i} className="flex items-center gap-2">
+                                                                    <CheckCircle2 className={cn("w-3 h-3 shrink-0", isDark ? "text-emerald-400" : "text-emerald-600")} />
+                                                                    <span className={cn("text-[11px] font-semibold", isDark ? "text-emerald-200/80" : "text-emerald-800")}>{pt}</span>
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                {/* PRIMARY CTA + secondary actions */}
+                                                <div className="space-y-2 pt-1 pb-1">
+                                                    {/* Social proof */}
+                                                    <div className={cn("text-center text-[10px] font-black uppercase tracking-[0.18em] opacity-30 pb-1", textColor)}>
+                                                        ⭐ 50+ creators completed deals successfully
+                                                    </div>
+
                                                     <button
                                                         type="button"
                                                         data-testid="offer-brief-accept"
@@ -5663,106 +5656,65 @@ const MobileDashboardDemo = ({
                                                         }}
                                                         disabled={processingDeal === selectedItem?.id}
                                                         className={cn(
-                                                            "w-full rounded-[24px] px-6 py-5 flex items-center justify-between relative overflow-hidden group active:scale-[0.97] transition-all duration-300",
-                                                            "bg-gradient-to-br from-emerald-500 to-emerald-600 text-white shadow-[0_12px_32px_-8px_rgba(16,185,129,0.45)]",
+                                                            "w-full rounded-[20px] px-6 py-5 flex items-center justify-between relative overflow-hidden active:scale-[0.97] transition-all duration-200 group",
+                                                            "bg-gradient-to-br from-emerald-500 to-emerald-600 text-white shadow-[0_8px_24px_-6px_rgba(16,185,129,0.40)]",
                                                             processingDeal === selectedItem?.id && "opacity-80 pointer-events-none"
                                                         )}
                                                     >
-                                                        <div className="absolute inset-0 bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                                                        
+                                                        <div className="absolute inset-0 bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                                                         <div className="text-left relative z-10">
-                                                            <p className="text-[22px] font-black leading-tight tracking-tight">
-                                                                {processingDeal === selectedItem?.id ? (
-                                                                    <>
-                                                                        <Loader2 className="w-5 h-5 animate-spin inline mr-2" />
-                                                                        Accepting...
-                                                                    </>
-                                                                ) : (
-                                                                    <>Accept · Earn {renderBudgetValue(selectedItem)}</>
-                                                                )}
+                                                            <p className="text-[19px] font-black leading-tight tracking-tight">
+                                                                {processingDeal === selectedItem?.id
+                                                                    ? "Accepting..."
+                                                                    : <>Accept · Earn {renderBudgetValue(selectedItem)}</>
+                                                                }
                                                             </p>
-                                                            <p className="text-[11px] font-bold opacity-70 mt-1">
-                                                                {processingDeal === selectedItem?.id ? "Setting up contract..." : "Payment secured · Releases after approval"}
+                                                            <p className="text-[11px] font-bold opacity-70 mt-0.5">
+                                                                {processingDeal === selectedItem?.id
+                                                                    ? "Setting up contract..."
+                                                                    : "💰 Payment secured · Releases after approval"}
                                                             </p>
                                                         </div>
-                                                        <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center relative z-10 transition-transform group-hover:translate-x-0.5">
-                                                            {processingDeal === selectedItem?.id ? (
-                                                                <Loader2 className="w-5 h-5 text-white animate-spin" />
-                                                            ) : (
-                                                                <ChevronRight className="w-5 h-5 text-white" />
-                                                            )}
+                                                        <div className="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center relative z-10 shrink-0">
+                                                            {processingDeal === selectedItem?.id
+                                                                ? <Loader2 className="w-4 h-4 text-white animate-spin" />
+                                                                : <ChevronRight className="w-4 h-4 text-white" />
+                                                            }
                                                         </div>
                                                     </button>
-
-                                                    <div className="mt-3 flex items-center justify-center gap-2 text-[10px] font-black uppercase tracking-[0.18em] opacity-30">
-                                                        <div className="w-1 h-1 rounded-full bg-current" />
-                                                        50+ creators completed deals successfully
-                                                        <div className="w-1 h-1 rounded-full bg-current" />
-                                                    </div>
 
                                                     {selectedIsPureBarter && (
                                                         <button
                                                             type="button"
-                                                            onClick={() => {
-                                                                if (processingDeal) return;
-                                                                handleOpenBarterShippingFlow(selectedItem);
-                                                            }}
+                                                            onClick={() => { if (processingDeal) return; handleOpenBarterShippingFlow(selectedItem); }}
                                                             className={cn(
-                                                                "w-full mt-3 h-16 rounded-[24px] px-5 flex items-center justify-between border active:scale-[0.99] transition-all shadow-sm",
-                                                                isDark ? "bg-[#151922] border-amber-500/20 text-amber-300 hover:bg-amber-500/5" : "bg-white border-amber-100 text-amber-700 hover:bg-amber-50/70"
+                                                                "w-full h-14 rounded-[18px] px-5 flex items-center justify-between border active:scale-[0.99] transition-all",
+                                                                isDark ? "bg-[#151922] border-amber-500/20 text-amber-300" : "bg-white border-amber-100 text-amber-700"
                                                             )}
                                                         >
                                                             <span className="flex items-center gap-3">
-                                                                <div className={cn("w-10 h-10 rounded-full flex items-center justify-center", isDark ? "bg-amber-500/10" : "bg-amber-100")}>
-                                                                    <MapPin className="w-4.5 h-4.5" />
+                                                                <div className={cn("w-8 h-8 rounded-full flex items-center justify-center", isDark ? "bg-amber-500/10" : "bg-amber-100")}>
+                                                                    <MapPin className="w-4 h-4" />
                                                                 </div>
                                                                 <span className="text-left">
-                                                                    <span className="font-black text-[15px] tracking-tight block">Add Shipping Address</span>
-                                                                    <span className="text-[11px] font-bold opacity-60 block">Open the address step from this offer</span>
+                                                                    <span className="font-black text-[13px] tracking-tight block">Add Shipping Address</span>
+                                                                    <span className="text-[10px] font-bold opacity-60 block">Required before accepting</span>
                                                                 </span>
                                                             </span>
-                                                            <ChevronRight className="w-5 h-5 opacity-40" />
+                                                            <ChevronRight className="w-4 h-4 opacity-40" />
                                                         </button>
                                                     )}
 
-                                                        <div className="grid grid-cols-1">
-                                                            <button
-                                                                type="button"
-                                                                onClick={() => {
-                                                                    triggerHaptic();
-                                                                    window.open('https://wa.me/919999999999', '_blank');
-                                                                }}
-                                                                className={cn(
-                                                                    "w-full h-14 rounded-[18px] px-5 flex items-center justify-between border active:scale-[0.99] transition-all",
-                                                                    isDark ? "bg-white/[0.03] border-white/10 text-foreground hover:bg-white/[0.05]" : "bg-slate-50 border-slate-200 text-slate-900 hover:bg-slate-100"
-                                                                )}
-                                                            >
-                                                                <span className="flex items-center gap-4">
-                                                                    <div className={cn("w-11 h-11 rounded-full flex items-center justify-center", isDark ? "bg-white/5" : "bg-slate-100")}>
-                                                                        <ShieldCheck className="w-5.5 h-5.5 text-primary" />
-                                                                    </div>
-                                                                    <div className="text-left">
-                                                                        <span className="font-black text-[16px] tracking-tight block">Contact Support</span>
-                                                                        <span className="text-[11px] font-bold opacity-40 block">Dispute or Question?</span>
-                                                                    </div>
-                                                                </span>
-                                                                <MessageSquare className="w-5 h-5 opacity-20" />
-                                                            </button>
-                                                        </div>
-
-                                                    <div className="grid grid-cols-2 gap-3.5">
+                                                    <div className="grid grid-cols-2 gap-2.5">
                                                         <button
                                                             type="button"
-                                                            onClick={() => {
-                                                                triggerHaptic();
-                                                                toast.message('Counter Offer', { description: 'Open offer details to counter.' });
-                                                            }}
+                                                            onClick={() => { triggerHaptic(); toast.message('Counter Offer', { description: 'Open offer details to counter.' }); }}
                                                             className={cn(
-                                                                "h-14 rounded-[18px] border font-bold text-[14px] tracking-tight active:scale-[0.99] transition-all flex items-center justify-center gap-2",
-                                                                isDark ? "bg-white/[0.03] border-white/10 text-white/70 hover:bg-white/[0.06]" : "bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100"
+                                                                "h-12 rounded-[16px] border font-bold text-[13px] tracking-tight active:scale-[0.99] transition-all flex items-center justify-center gap-2",
+                                                                isDark ? "bg-white/[0.03] border-white/10 text-white/60" : "bg-white border-slate-200 text-slate-600"
                                                             )}
                                                         >
-                                                            <Edit3 className="w-5 h-5" />
+                                                            <Edit3 className="w-3.5 h-3.5" />
                                                             Counter
                                                         </button>
                                                         <button
@@ -5779,15 +5731,16 @@ const MobileDashboardDemo = ({
                                                                 closeItemDetail();
                                                             }}
                                                             className={cn(
-                                                                "h-14 rounded-[18px] border font-bold text-[14px] tracking-tight active:scale-[0.99] transition-all flex items-center justify-center gap-2",
-                                                                isDark ? "bg-white/[0.03] border-rose-500/15 text-rose-400/80 hover:bg-rose-500/5" : "bg-slate-50 border-rose-100 text-rose-500 hover:bg-rose-50"
+                                                                "h-12 rounded-[16px] border font-bold text-[13px] tracking-tight active:scale-[0.99] transition-all flex items-center justify-center gap-2",
+                                                                isDark ? "bg-white/[0.03] border-rose-500/15 text-rose-400/70" : "bg-white border-rose-100 text-rose-500"
                                                             )}
                                                         >
-                                                            <XCircle className="w-5 h-5" />
+                                                            <XCircle className="w-3.5 h-3.5" />
                                                             Decline
                                                         </button>
                                                     </div>
                                                 </div>
+
                                             </div>
                                         ) : (
                                             <div className={cn("rounded-[36px] border p-1 mb-7 relative overflow-hidden group transition-all duration-500", 
@@ -6185,8 +6138,8 @@ const MobileDashboardDemo = ({
                                             </div>
                                         )}
 
-                                        {/* ── CAMPAIGN BRIEF (Offers) ── */}
-                                        {selectedType === 'offer' && (
+                                        {/* ── CAMPAIGN BRIEF (Deals only — offers show brief inline in hero) ── */}
+                                        {selectedType === 'deal' && (
                                             <div className="mb-6">
                                                 <h4 className={cn("text-[11px] font-black uppercase tracking-[0.2em] mb-4 opacity-50 px-1", textColor)}>Campaign Brief</h4>
                                                 <div className={cn("rounded-[32px] border p-6 relative overflow-hidden backdrop-blur-xl shadow-2xl", 
@@ -6229,8 +6182,8 @@ const MobileDashboardDemo = ({
                                             </div>
                                         )}
 
-	                                        {/* ── DELIVERABLES ── */}
-	                                        {(selectedType === 'offer' || selectedType === 'deal') && (
+	                                        {/* ── DELIVERABLES (Deals only — offers show checklist inline) ── */}
+	                                        {selectedType === 'deal' && (
 	                                        <div className="mb-8">
 	                                            <h4 className={cn("text-[11px] font-black uppercase tracking-[0.2em] mb-4 opacity-50 px-1", textColor)}>Deliverables</h4>
 	                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
@@ -6633,8 +6586,8 @@ const MobileDashboardDemo = ({
                                             </>
                                         )}
 
-                                        {/* ── LEGAL PROTECTION ── */}
-                                        <div className="mb-6">
+                                        {/* ── LEGAL PROTECTION (Deals only — offers show it inline) ── */}
+                                        {selectedType !== 'offer' && <div className="mb-6">
                                             <h4 className={cn("text-[11px] font-black uppercase tracking-[0.2em] mb-4 opacity-50 px-1", textColor)}>Legal Protection</h4>
                                             <div className={cn(
                                                 "rounded-[24px] border p-5 relative overflow-hidden",
@@ -6670,6 +6623,7 @@ const MobileDashboardDemo = ({
                                                 </div>
                                             </div>
                                         </div>
+                                        }
 
 	                                        {/* ── EARNINGS BREAKDOWN (Offers) ── */}
 	                                        {false && selectedType === 'offer' && (
