@@ -5547,15 +5547,30 @@ const MobileDashboardDemo = ({
                                                                     </div>
                                                                 </div>
 
-                                                                <div className="grid grid-cols-2 gap-2 mt-5">
-                                                                    <div className={cn("flex items-center gap-2 px-3 py-2.5 rounded-xl border backdrop-blur-xl transition-all", isDark ? "bg-white/[0.04] border-white/8" : "bg-white/40 border-slate-200/50 shadow-sm")}>
-                                                                        <Film className="w-3.5 h-3.5 opacity-40" />
-                                                                        <span className={cn("text-[11px] font-bold truncate", textColor)}>{primaryLabel}</span>
-                                                                    </div>
-                                                                    <div className={cn("flex items-center gap-2 px-3 py-2.5 rounded-xl border backdrop-blur-xl transition-all", isDark ? "bg-rose-500/5 border-rose-500/15" : "bg-rose-50/40 border-rose-100/50 shadow-sm")}>
-                                                                        <Clock className="w-3.5 h-3.5 text-rose-500/60" />
-                                                                        <span className={cn("text-[11px] font-bold", isDark ? "text-rose-300" : "text-rose-700")}>By {new Date(selectedItem?.due_date || Date.now()).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}</span>
-                                                                    </div>
+                                                                <div className="mt-5">
+                                                                    {(() => {
+                                                                        const rawDesc = selectedItem.campaign_description || selectedItem.description || selectedItem.raw?.campaign_description || selectedItem.raw?.description || "";
+                                                                        const packageMatch = rawDesc.match(/Selected package:\s*([🚀📈🎯💼]?\s*.*?)(?=\s*Collab Duration:|\n|Additional|$)/i);
+                                                                        let resolvedPackageName = (packageMatch ? packageMatch[1].trim() : null) || selectedItem.package_name || selectedItem.package_tier || selectedItem.raw?.package_name || selectedItem.raw?.package_tier || 'Starter Package';
+                                                                        
+                                                                        // Ensure emoji is present if missing
+                                                                        const pkgLower = resolvedPackageName.toLowerCase();
+                                                                        if (!/[🚀📈🎯💼🎁]/.test(resolvedPackageName)) {
+                                                                            if (pkgLower.includes('starter')) resolvedPackageName = "🚀 " + resolvedPackageName;
+                                                                            else if (pkgLower.includes('growth')) resolvedPackageName = "📈 " + resolvedPackageName;
+                                                                            else if (pkgLower.includes('barter') || pkgLower.includes('free')) resolvedPackageName = "🎁 " + resolvedPackageName;
+                                                                            else if (pkgLower.includes('custom')) resolvedPackageName = "🎯 " + resolvedPackageName;
+                                                                        }
+
+                                                                        return (
+                                                                            <span className={cn(
+                                                                                "px-4 py-2.5 rounded-2xl text-[16px] font-black border whitespace-nowrap flex items-center gap-2.5 inline-flex",
+                                                                                isDark ? "bg-white/[0.05] border-white/10" : "bg-white border-slate-200 shadow-lg"
+                                                                            )}>
+                                                                                {resolvedPackageName}
+                                                                            </span>
+                                                                        );
+                                                                    })()}
                                                                 </div>
                                                             </div>
 
@@ -5816,11 +5831,21 @@ const MobileDashboardDemo = ({
                                                                     {(() => {
                                                                         const rawDesc = selectedItem.campaign_description || selectedItem.raw?.campaign_description || selectedItem.description || selectedItem.raw?.description || "";
                                                                         const packageMatch = rawDesc.match(/Selected package:\s*([🚀📈🎯💼]?\s*.*?)(?=\s*Collab Duration:|\n|Additional|$)/i);
-                                                                        const resolvedPackageName = (packageMatch ? packageMatch[1].trim() : null) || selectedItem.package_name || selectedItem.package_tier || selectedItem.raw?.package_name || selectedItem.raw?.package_tier || 'Starter Package';
+                                                                        let resolvedPackageName = (packageMatch ? packageMatch[1].trim() : null) || selectedItem.package_name || selectedItem.package_tier || selectedItem.raw?.package_name || selectedItem.raw?.package_tier || 'Starter Package';
+                                                                        
+                                                                        // Ensure emoji is present if missing
+                                                                        const pkgLower = resolvedPackageName.toLowerCase();
+                                                                        if (!/[🚀📈🎯💼🎁]/.test(resolvedPackageName)) {
+                                                                            if (pkgLower.includes('starter')) resolvedPackageName = "🚀 " + resolvedPackageName;
+                                                                            else if (pkgLower.includes('growth')) resolvedPackageName = "📈 " + resolvedPackageName;
+                                                                            else if (pkgLower.includes('barter') || pkgLower.includes('free')) resolvedPackageName = "🎁 " + resolvedPackageName;
+                                                                            else if (pkgLower.includes('custom')) resolvedPackageName = "🎯 " + resolvedPackageName;
+                                                                        }
+
                                                                         return (
                                                                             <span className={cn(
-                                                                                "px-3 py-1.5 rounded-xl text-[11px] font-black border whitespace-nowrap",
-                                                                                isDark ? "bg-white/[0.03] border-white/5" : "bg-white border-slate-200 shadow-sm"
+                                                                                "px-4 py-2.5 rounded-2xl text-[16px] font-black border whitespace-nowrap flex items-center gap-2.5",
+                                                                                isDark ? "bg-white/[0.05] border-white/10" : "bg-white border-slate-200 shadow-lg"
                                                                             )}>
                                                                                 {resolvedPackageName}
                                                                             </span>
@@ -6113,7 +6138,7 @@ const MobileDashboardDemo = ({
 
                                         {/* ── CAMPAIGN BRIEF (Deals only — offers show brief inline in hero) ── */}
                                         {selectedType === 'deal' && (
-                                            <div className="mb-8 px-1">
+                                            <div className="mb-5">
                                                 {(() => {
                                                     const rawDesc = selectedItem.campaign_description || selectedItem.raw?.campaign_description || selectedItem.description || selectedItem.raw?.description || "";
 
@@ -6202,7 +6227,7 @@ const MobileDashboardDemo = ({
                                                                 </p>
 
                                                                 <div className={cn("rounded-[32px] p-8 border backdrop-blur-md", 
-                                                                    isDark ? "bg-[#0C1320]/80 border-white/5" : "bg-slate-50/30 border-slate-200/40 shadow-sm")}>
+                                                                    isDark ? "bg-[#0C1320]/80 border-white/5" : "bg-slate-50/30 border-slate-200/40")}>
                                                                     <p className={cn("text-[11px] font-black uppercase tracking-[0.3em] opacity-40 mb-5 px-1", textColor)}>WHAT THE BRAND GETS</p>
                                                                     <div className="space-y-5">
                                                                         {/* Primary */}
