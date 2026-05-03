@@ -3066,6 +3066,7 @@ const MobileDashboardDemo = ({
                     <h1 className={cn("text-[20px] font-black tracking-tight truncate", textColor)}>{title}</h1>
                     {subtitle && <p className={cn("text-[10px] font-bold opacity-30 uppercase tracking-[0.15em] truncate mt-0.5", textColor)}>{subtitle}</p>}
                 </div>
+                                                                )}
             </div>
         );
 
@@ -5615,7 +5616,8 @@ const MobileDashboardDemo = ({
                                                                                 </div>
                                                                             </button>
                                                                             {showBrief && (
-                                                                                <div className="px-6 pb-10">
+                                                                                {showBrief && (
+                                                            <div className="px-6 pb-10">
                                                                                     <p className={cn("text-[15px] font-medium leading-relaxed opacity-70 mb-10 whitespace-pre-wrap px-1", textColor)}>
                                                                                         {cleanDesc}
                                                                                     </p>
@@ -5623,7 +5625,7 @@ const MobileDashboardDemo = ({
                                                                                     {/* WHAT THE BRAND GETS (Exactly like screenshot) */}
                                                                                     <div className={cn("rounded-[32px] p-8 border backdrop-blur-md", 
                                                                                         isDark ? "bg-[#0C1320]/80 border-white/5" : "bg-slate-50/30 border-slate-200/40")}>
-                                                                                        <h4 className={cn("text-[11px] font-black uppercase tracking-[0.25em] mb-6 opacity-40 px-1", textColor)}>WHAT THE BRAND GETS</h4>
+                                                                                        <p className={cn("text-[11px] font-black uppercase tracking-[0.3em] opacity-40 mb-5 px-1", textColor)}>WHAT THE BRAND GETS</p>
                                                                                         <div className="space-y-5">
                                                                                             {/* Primary */}
                                                                                             <div className="flex items-center gap-4">
@@ -6194,8 +6196,11 @@ const MobileDashboardDemo = ({
                                                     } catch (e) {}
 
                                                     return (
-                                                        <div className={cn("rounded-[32px] border overflow-hidden backdrop-blur-2xl transition-all shadow-2xl", isDark ? "bg-white/[0.02] border-white/6" : "bg-white border-slate-200")}>
-                                                            <div className="px-6 py-7 flex items-center justify-between">
+                                                        <div className={cn("rounded-[32px] border overflow-hidden backdrop-blur-2xl transition-all", isDark ? "bg-white/[0.02] border-white/6" : "bg-white/60 border-slate-200/60 shadow-xl")}>
+                                                            <button 
+                                                                onClick={() => setShowBrief(v => !v)}
+                                                                className="w-full px-6 py-7 flex items-center justify-between text-left"
+                                                            >
                                                                 <div className="flex flex-col">
                                                                     <div className="flex items-center gap-3 mb-1.5">
                                                                         {packageIcon && <span className="text-2xl">{packageIcon}</span>}
@@ -6207,13 +6212,16 @@ const MobileDashboardDemo = ({
                                                                         STANDARD DELIVERY
                                                                     </span>
                                                                 </div>
+                                                                <div className="flex items-center gap-5">
                                                                     {packageIcon && (
                                                                     <div className={cn("w-14 h-14 rounded-full flex items-center justify-center shadow-xl border shrink-0", 
                                                                         isDark ? "bg-[#1A2235] border-white/10" : "bg-slate-50 border-slate-100")}>
                                                                         <span className="text-2xl filter drop-shadow-md">{packageIcon}</span>
                                                                     </div>
                                                                 )}
-                                                            </div>
+                                                                    <ChevronDown className={cn("w-6 h-6 opacity-20 transition-transform", showBrief && "rotate-180")} />
+                                                                </div>
+                                                            </button>
 
                                                             <div className="px-6 pb-10">
                                                                 <p className={cn("text-[15px] font-medium leading-relaxed opacity-70 mb-10 whitespace-pre-wrap px-1", textColor)}>
@@ -6222,7 +6230,7 @@ const MobileDashboardDemo = ({
 
                                                                 <div className={cn("rounded-[32px] p-8 border backdrop-blur-md", 
                                                                     isDark ? "bg-[#0C1320]/80 border-white/5" : "bg-slate-50/30 border-slate-200/40 shadow-sm")}>
-                                                                    <h4 className={cn("text-[11px] font-black uppercase tracking-[0.25em] mb-6 opacity-40 px-1", textColor)}>WHAT THE BRAND GETS</h4>
+                                                                    <p className={cn("text-[11px] font-black uppercase tracking-[0.3em] opacity-40 mb-5 px-1", textColor)}>WHAT THE BRAND GETS</p>
                                                                     <div className="space-y-5">
                                                                         {/* Primary */}
                                                                         <div className="flex items-center gap-4">
@@ -6287,6 +6295,7 @@ const MobileDashboardDemo = ({
                                                                         ))}
                                                                     </div>
                                                                 </div>
+                                                            )}
                                                             </div>
                                                         </div>
                                                     );
