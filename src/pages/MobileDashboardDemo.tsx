@@ -5499,8 +5499,8 @@ const MobileDashboardDemo = ({
                                                     return (
                                                         <div className="space-y-4">
                                                             {/* ── COMPACT HERO ── */}
-                                                            <div className={cn("rounded-[32px] border p-6 relative overflow-hidden min-h-[240px] flex flex-col justify-end",
-                                                                isDark ? "bg-[#0B0F14] border-white/6" : "bg-white border-slate-200 shadow-sm")}>
+                                                            <div className={cn("rounded-[32px] border p-6 relative overflow-hidden min-h-[240px] flex flex-col justify-end backdrop-blur-2xl",
+                                                                isDark ? "bg-[#0B0F14]/40 border-white/6" : "bg-white/40 border-slate-200/50 shadow-xl")}>
                                                                 
                                                                 {/* Premium Background Glow */}
                                                                 <div className={cn("absolute inset-0 z-0", 
@@ -5531,8 +5531,8 @@ const MobileDashboardDemo = ({
                                                                     {/* Payment Details Below Image */}
                                                                     <div className="flex items-end justify-between px-2">
                                                                         <div className="flex-1 min-w-0">
-                                                                            <div className={cn("inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full mb-3 border shadow-sm",
-                                                                                isDark ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400" : "bg-emerald-50 border-emerald-100 text-emerald-700"
+                                                                            <div className={cn("inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full mb-3 border shadow-sm backdrop-blur-xl",
+                                                                                isDark ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400" : "bg-emerald-50/60 border-emerald-100 text-emerald-700"
                                                                             )}>
                                                                                 <ShieldCheck className="w-3.5 h-3.5" />
                                                                                 <span className="text-[11px] font-black uppercase tracking-widest">{isBarterLikeCollab(selectedItem) ? 'Product Secured' : `${renderBudgetValue(selectedItem)} Secured`}</span>
@@ -5949,7 +5949,7 @@ const MobileDashboardDemo = ({
                                                 <h4 className={cn("text-[11px] font-black uppercase tracking-[0.2em] mb-4 opacity-50 px-1", textColor)}>
                                                     {selectedIsPureBarter ? 'Product Fulfillment' : 'Campaign Timeline'}
                                                 </h4>
-                                                <div className={cn("rounded-[28px] border p-6 relative overflow-hidden", isDark ? "bg-[#0C1320]/80 border-white/5" : "bg-white border-slate-200/60 shadow-sm")}>
+                                                <div className={cn("rounded-[28px] border p-6 relative overflow-hidden backdrop-blur-xl", isDark ? "bg-[#0C1320]/40 border-white/6" : "bg-white/40 border-slate-200/50 shadow-xl")}>
                                                     {(() => {
                                                         const steps = selectedIsPureBarter
                                                             ? ['Accept', 'Ship', 'Deliver', 'Content', 'Complete']
@@ -5989,8 +5989,8 @@ const MobileDashboardDemo = ({
                                                                 {/* "Next" hint — HIGH PRIORITY BLOCKER */}
                                                                 {isPaymentPending && !isBarterDeal && (
                                                                     <div className={cn(
-                                                                        "mb-5 rounded-[20px] border px-4 py-3 flex items-start gap-3",
-                                                                        isDark ? "bg-amber-500/[0.08] border-amber-500/30" : "bg-amber-50 border-amber-300 shadow-sm"
+                                                                        "mb-5 rounded-[20px] border px-4 py-3 flex items-start gap-3 backdrop-blur-md",
+                                                                        isDark ? "bg-amber-500/[0.08] border-amber-500/30" : "bg-amber-50/60 border-amber-300/50 shadow-md"
                                                                     )}>
                                                                         <div className="w-8 h-8 rounded-full bg-amber-500/20 flex items-center justify-center shrink-0 mt-0.5">
                                                                             <span className="text-[16px]">⏳</span>
