@@ -135,8 +135,8 @@ const CreatorDashboard = () => {
           // Also refetch immediately to be sure
           collabQuery.refetch();
 
-          // Also toast for visibility if the tab is active
-          if (document.visibilityState === 'visible') {
+          // Only toast on NEW offers to avoid double-toasts from subsequent server-side updates (like last_notified_at)
+          if (payload.eventType === 'INSERT' && document.visibilityState === 'visible') {
             triggerHaptic();
             toast.success('🔥 New offer received!', {
               description: 'A brand just sent you a new collaboration request.',

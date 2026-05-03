@@ -440,16 +440,6 @@ const resolvePublicCreatorName = ({
 
   const handleName = humanizePublicHandle(publicHandle);
   return handleName || null;
-
-  const storedTokens = new Set(storedName.toLowerCase().split(/\s+/).filter(Boolean));
-  const handleTokens = handleName.toLowerCase().split(/\s+/).filter(Boolean);
-  const hasNameOverlap = handleTokens.some((handleToken) =>
-    Array.from(storedTokens).some((storedToken) =>
-      handleToken === storedToken || handleToken.includes(storedToken) || storedToken.includes(handleToken)
-    )
-  );
-
-  return hasNameOverlap ? storedName : handleName;
 };
 
 const isGeneratedCreatorHandle = (value?: string | null) => {
@@ -2075,12 +2065,12 @@ router.post('/:username/submit', async (req: Request, res: Response) => {
     }
 
     const normalizedProductImage = normalizeImageUrl(barter_product_image_url);
-    const productImageRequiredByBackend = isBarterLikeCollab(collab_type);
+    const normalizedProductName = String(barter_product_name || '').trim();
     
-    if (productImageRequiredByBackend && !normalizedProductImage) {
+    if (!normalizedProductImage || !normalizedProductName) {
       return res.status(400).json({
         success: false,
-        error: 'Product image is required for barter collaborations',
+        error: 'Product name and image are required for all collaborations',
       });
     }
 

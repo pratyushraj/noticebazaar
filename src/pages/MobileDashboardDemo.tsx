@@ -1124,9 +1124,11 @@ const MobileDashboardDemo = ({
         }
     };
     const [theme, setTheme] = useState<'light' | 'dark'>(() => {
-        if (typeof window !== 'undefined' && window.matchMedia) {
-            return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        if (typeof window !== 'undefined') {
+            const saved = localStorage.getItem('creator-dashboard-theme');
+            if (saved === 'light' || saved === 'dark') return saved;
         }
+        // Always default to dark for creators as it's the premium standard
         return 'dark';
     });
     const [showItemMenu, setShowItemMenu] = useState(false);
@@ -5054,12 +5056,6 @@ const MobileDashboardDemo = ({
                         />
                     )}
 
-                    {/* ─── DISCOVERY TAB ─── */}
-                    {activeTab === 'discovery' && (
-                        <DiscoveryTab 
-                            isDark={isDark} textColor={textColor} Sparkles={Sparkles} Heart={Heart}
-                        />
-                    )}
 
                     {/* ─── COLLABS (DEALS) TAB ─── */}
                     {activeTab === 'deals' && (
@@ -7937,29 +7933,6 @@ const BottomNavigationBar = React.memo(({
                     <span className={cn('text-[10px] tracking-tight font-black uppercase', effectiveTab === 'deals' ? 'opacity-100' : (isDark ? 'opacity-70' : 'opacity-100'))}>Deals</span>
                 </motion.button>
 
-                <div className="relative flex-1">
-                    <motion.button 
-                        whileTap={{ scale: 0.94 }} 
-                        onClick={() => { 
-                            triggerHaptic(HapticPatterns.medium); 
-                            toast.info("Discovery is coming soon!", {
-                                description: "Find new brands directly from here.",
-                                icon: '🚀',
-                                style: { borderRadius: '20px', fontWeight: 'bold' }
-                            });
-                        }} 
-                        className={cn(
-                            "flex flex-col items-center justify-center gap-1 w-full h-[54px] z-10 transition-colors",
-                            activeTab === 'discovery' ? (isDark ? 'text-white' : 'text-primary') : (isDark ? 'text-slate-400' : secondaryTextColor)
-                        )}
-                    >
-                        <Heart className="w-[22px] h-[22px]" strokeWidth={2} />
-                        <span className={cn('text-[10px] tracking-tight font-black uppercase', isDark ? 'opacity-70' : 'opacity-100')}>Find</span>
-                    </motion.button>
-                    <div className={cn("absolute -top-1 -right-1 px-1.5 py-0.5 rounded-full text-[7px] font-black uppercase tracking-tighter border shadow-sm", isDark ? "bg-primary/20 border-primary/30 text-primary" : "bg-emerald-500 border-emerald-600 text-white")}>
-                        Soon
-                    </div>
-                </div>
 
                 <motion.button 
                     whileTap={{ scale: 0.94 }} 
@@ -8141,10 +8114,10 @@ const DashboardTab = React.memo(({
 
                     <div className="flex gap-3 mt-6 relative z-10">
                         <button 
-                            onClick={() => { triggerHaptic(); setShowShareSheet(true); }}
+                            onClick={() => { triggerHaptic(); handleCopyStorefront(); }}
                             className="flex-[2] bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-600 text-white font-black italic py-4 rounded-2xl text-[11px] uppercase tracking-[0.2em] active:scale-95 transition-all shadow-lg shadow-emerald-500/30 hover:shadow-emerald-500/40"
                         >
-                            Get My Link
+                            Copy Link
                         </button>
                         <button 
                             onClick={() => {
@@ -8156,19 +8129,25 @@ const DashboardTab = React.memo(({
                                 "flex-1 px-5 py-4 rounded-2xl border flex items-center justify-center transition-all active:scale-95 group/btn bg-[#25D366]/10 border-[#25D366]/20 text-[#25D366] hover:bg-[#25D366]/20",
                             )}
                         >
-                            <MessageCircleMore className="w-5 h-5 group-hover/btn:scale-110 transition-transform" />
+                            <div className="flex flex-col items-center gap-1">
+                                <MessageCircleMore className="w-5 h-5 group-hover/btn:scale-110 transition-transform" />
+                                <span className="text-[7px] font-black uppercase tracking-tighter">Share</span>
+                            </div>
                         </button>
                         <button 
                             onClick={() => {
                                 triggerHaptic();
-                                handleCopyStorefront();
+                                toast.success("Promotion Mode Active", { description: "Your link is optimized for Instagram Story sharing." });
                             }}
                             className={cn(
                                 "flex-1 px-5 py-4 rounded-2xl border flex items-center justify-center transition-all active:scale-95 group/btn",
                                 isDark ? "bg-white/5 border-white/10 text-white hover:bg-white/10" : "bg-slate-50 border-slate-200 text-slate-900 hover:bg-slate-100"
                             )}
                         >
-                            <Copy className="w-5 h-5 group-hover/btn:scale-110 transition-transform" />
+                            <div className="flex flex-col items-center gap-1 text-center">
+                                <TrendingUp className="w-5 h-5 group-hover/btn:scale-110 transition-transform" />
+                                <span className="text-[7px] font-black uppercase tracking-tighter leading-none">Promote Profile</span>
+                            </div>
                         </button>
                     </div>
                 </div>
@@ -8217,55 +8196,74 @@ const DashboardTab = React.memo(({
                     initial={{ y: 20, opacity: 0 }}
                     animate={{ y: 0, opacity: 1 }}
                     className={cn(
-                        "p-6 rounded-[2.5rem] border overflow-hidden relative group",
+                        "p-6 rounded-[2.5rem] border overflow-hidden relative group transition-all duration-500",
                         isDark 
                           ? "border-emerald-500/30 bg-gradient-to-br from-emerald-500/10 via-emerald-950/20 to-[#020617] shadow-[0_30px_60px_rgba(0,0,0,0.4)]" 
-                          : "border-primary/60 bg-gradient-to-br from-emerald-500 via-teal-500 to-blue-600 shadow-[0_25px_55px_rgba(16,185,129,0.22)]"
+                          : "border-slate-200 bg-white shadow-xl shadow-slate-200/40"
                     )}
                 >
-                    <div className={cn("absolute inset-0 pointer-events-none opacity-20", isDark ? "bg-[radial-gradient(circle_at_top_right,rgba(16,185,129,0.3),transparent)]" : "bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.4),transparent)]")} />
+                    <div className={cn("absolute inset-0 pointer-events-none opacity-20", isDark ? "bg-[radial-gradient(circle_at_top_right,rgba(16,185,129,0.3),transparent)]" : "bg-[radial-gradient(circle_at_top_right,rgba(16,185,129,0.05),transparent)]")} />
                     
                     <div className="relative z-10 flex flex-col gap-6">
                         <div className="flex items-start justify-between">
                             <div className="min-w-0">
-                                <p className={cn("text-[10px] font-black uppercase tracking-widest", isDark ? "text-emerald-400" : "text-white/80")}>Total Earnings</p>
+                                <p className={cn("text-[10px] font-black uppercase tracking-widest", isDark ? "text-emerald-400" : "text-emerald-600")}>
+                                    {monthlyRevenue === 0 ? "Potential Earnings" : "Total Earnings"}
+                                </p>
                                 <div className="flex items-baseline gap-2 mt-3">
-                                    <span className="text-[38px] font-black tracking-tighter leading-none text-white">
-                                        ₹{monthlyRevenue.toLocaleString()}
+                                    <span className={cn("text-[38px] font-black tracking-tighter leading-none", isDark || monthlyRevenue === 0 ? "text-white" : "text-slate-900")}>
+                                        {monthlyRevenue === 0 ? "₹0 earned yet 🚀" : `₹${monthlyRevenue.toLocaleString()}`}
                                     </span>
                                     {completedDealsCount > 0 && (
-                                        <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-white/20 text-white backdrop-blur-md border border-white/20">
+                                        <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-emerald-500 text-white backdrop-blur-md border border-emerald-400/30 shadow-lg shadow-emerald-500/20">
                                             +{(completedDealsCount > 5 ? 3 : 1)} Today
                                         </span>
                                     )}
                                 </div>
-                                <p className="text-[13px] font-bold mt-3 text-white/90">
-                                    {activeDealsCount} Collaboration{activeDealsCount === 1 ? '' : 's'} running
+                                <p className={cn("text-[13px] font-bold mt-3", isDark ? "text-white/90" : "text-slate-500")}>
+                                    {activeDealsCount > 0 
+                                        ? `${activeDealsCount} Collaboration${activeDealsCount === 1 ? '' : 's'} running`
+                                        : "Start sharing your link to get your first deal"}
                                 </p>
                             </div>
-                            <div className={cn("w-12 h-12 rounded-2xl flex items-center justify-center backdrop-blur-2xl border", isDark ? "bg-white/5 border-white/10" : "bg-white/20 border-white/30")}>
-                                <BarChart3 className="w-6 h-6 text-white" />
+                            <div className={cn("w-12 h-12 rounded-2xl flex items-center justify-center backdrop-blur-2xl border", isDark ? "bg-white/5 border-white/10" : "bg-emerald-50 border-emerald-100")}>
+                                <BarChart3 className={cn("w-6 h-6", isDark ? "text-white" : "text-emerald-500")} />
                             </div>
                         </div>
 
+                        {monthlyRevenue === 0 && (
+                            <button 
+                                onClick={() => { triggerHaptic(); handleCopyStorefront(); }}
+                                className="w-full bg-emerald-500 text-white font-black italic py-4 rounded-2xl text-[11px] uppercase tracking-[0.2em] active:scale-95 transition-all shadow-lg shadow-emerald-500/20 hover:bg-emerald-600"
+                            >
+                                Share Now 🚀
+                            </button>
+                        )}
+
                         {/* Integrated Actions Card if pending offers exist */}
                         {pendingOffersCount > 0 && (
-                            <div className={cn("p-4 rounded-[2rem] border backdrop-blur-md transition-all", isDark ? "bg-white/5 border-white/10" : "bg-white/15 border-white/20")}>
+                            <div className={cn("p-4 rounded-[2rem] border backdrop-blur-md transition-all", isDark ? "bg-white/5 border-white/10" : "bg-emerald-500/5 border-emerald-500/20 shadow-inner")}>
                                 <div className="flex items-center justify-between gap-4">
                                     <div className="flex items-center gap-3">
                                         <div className={cn("w-10 h-10 rounded-2xl flex items-center justify-center", isDark ? "bg-emerald-500/20 text-emerald-400" : "bg-white/20 text-white")}>
                                             <Zap className="w-5 h-5" />
                                         </div>
                                         <div>
-                                            <p className="text-[14px] font-black text-white">{pendingOffersCount} Actions Pending</p>
-                                            <p className="text-[11px] text-white/60 font-bold">New offers waiting for you</p>
+                                        <div>
+                                            <p className="text-[14px] font-black text-white">
+                                                🔥 {pendingOffersCount} {pendingOffersCount === 1 ? 'Brand wants' : 'Brands want'} to work with you
+                                            </p>
+                                            <p className="text-[11px] text-white/60 font-bold">New offer waiting for you</p>
                                         </div>
                                     </div>
                                     <button 
                                         onClick={() => { triggerHaptic(); setActiveTab('deals'); }}
-                                        className="px-5 py-2.5 rounded-2xl bg-white text-black text-[11px] font-black uppercase tracking-widest shadow-xl active:scale-95 transition-all"
+                                        className={cn(
+                                            "px-5 py-2.5 rounded-2xl text-[11px] font-black uppercase tracking-widest shadow-xl active:scale-95 transition-all",
+                                            isDark ? "bg-white text-black" : "bg-emerald-500 text-white shadow-emerald-500/20"
+                                        )}
                                     >
-                                        Review
+                                        Review Offer
                                     </button>
                                 </div>
                                 
@@ -8396,53 +8394,6 @@ const AnalyticsTab = React.memo(({
     );
 });
 
-const DiscoveryTab = React.memo(({ isDark, textColor, Sparkles, Heart }: any) => {
-    return (
-        <div className="flex flex-col items-center justify-center min-h-[70vh] px-8 text-center animate-in fade-in zoom-in duration-700">
-            <div className="relative mb-10">
-                <div className="absolute inset-0 bg-rose-500/30 blur-[80px] rounded-full animate-pulse" />
-                <div className="relative w-28 h-28 bg-gradient-to-br from-rose-500 via-rose-600 to-orange-500 rounded-[2.8rem] flex items-center justify-center shadow-2xl shadow-rose-500/40 rotate-12 group transition-transform hover:rotate-0 duration-500">
-                    <Sparkles className="w-12 h-12 text-white animate-pulse" />
-                </div>
-                <div className="absolute -bottom-2 -right-2 w-12 h-12 bg-white rounded-2xl flex items-center justify-center shadow-xl rotate-[-12deg] border border-slate-100">
-                    <Heart className="w-6 h-6 text-rose-500" />
-                </div>
-            </div>
-            
-            <h1 className={cn("text-4xl font-black italic uppercase tracking-tighter mb-4", isDark ? "text-white" : "text-black")}>
-                Brand Discovery
-            </h1>
-            
-            <div className="inline-flex items-center gap-3 px-5 py-2.5 rounded-full bg-rose-500/15 border border-rose-500/20 mb-8 backdrop-blur-md">
-                <span className="relative flex h-2.5 w-2.5">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
-                    <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-rose-500"></span>
-                </span>
-                <span className="text-[11px] font-black uppercase tracking-[0.2em] text-rose-500">Future Section</span>
-            </div>
-
-            <div className={cn(
-                "max-w-[320px] p-6 rounded-[32px] border relative overflow-hidden",
-                isDark ? "bg-white/5 border-white/10" : "bg-white border-slate-200 shadow-xl shadow-rose-500/5"
-            )}>
-                <div className="relative z-10">
-                    <h3 className={cn("text-lg font-black italic mb-3", textColor)}>Brand Opportunities</h3>
-                    <p className={cn("text-[14px] font-medium leading-relaxed opacity-70", textColor)}>
-                        This will be the home for discovery cards where brands post active campaigns for influencers to join.
-                    </p>
-                    
-                    <div className="mt-6 flex flex-col gap-2">
-                        <div className={cn("h-4 rounded-lg w-full animate-pulse", isDark ? "bg-white/5" : "bg-slate-100")} />
-                        <div className={cn("h-4 rounded-lg w-[80%] animate-pulse", isDark ? "bg-white/5" : "bg-slate-100")} />
-                        <div className={cn("h-10 rounded-xl w-full mt-4 flex items-center justify-center text-[10px] font-black uppercase tracking-widest opacity-30 border-2 border-dashed", isDark ? "border-white/10" : "border-slate-200")}>
-                            COMING SOON
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    );
-});
 
 const DealsTab = React.memo(({ 
     isDark, textColor, collabSubTab, 

@@ -240,8 +240,8 @@ export const QuickOfferSheet: React.FC<QuickOfferSheetProps> = ({
     };
 
     const handleSubmit = async () => {
-        if (!budget || deliverables.length === 0 || !deadline) {
-            toast.error('Please fill in all required fields');
+        if (!budget || deliverables.length === 0 || !deadline || !barterProductName || !barterProductImageUrl) {
+            toast.error('Please fill in all required fields including product details and photo');
             return;
         }
 

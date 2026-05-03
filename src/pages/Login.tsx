@@ -11,7 +11,7 @@ import {
   Lock,
   User,
 } from 'lucide-react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useSession } from '@/contexts/SessionContext';
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
@@ -35,8 +35,9 @@ const Login = () => {
   };
 
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { session, loading, profile } = useSession();
-  const [identifier, setIdentifier] = useState('');
+  const [identifier, setIdentifier] = useState(searchParams.get('email') || searchParams.get('username') || '');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -244,6 +245,7 @@ const Login = () => {
                       onChange={(e) => setIdentifier(e.target.value)}
                       onKeyDown={(e) => e.key === 'Enter' && e.currentTarget.blur()}
                       enterKeyHint="done"
+                      autoComplete="username"
                       className="bg-white/5 border-white/10 text-white placeholder:text-white/10 text-[16px] h-[64px] rounded-[20px] focus:border-emerald-500/50 focus:ring-0 focus:bg-white/10 pl-12 transition-all outline-none"
                       required
                     />
@@ -268,6 +270,7 @@ const Login = () => {
                       onChange={(e) => setPassword(e.target.value)}
                       onKeyDown={(e) => e.key === 'Enter' && e.currentTarget.blur()}
                       enterKeyHint="done"
+                      autoComplete="current-password"
                       className="bg-white/5 border-white/10 text-white placeholder:text-white/10 text-[16px] h-[64px] rounded-[20px] focus:border-emerald-500/50 focus:ring-0 focus:bg-white/10 pl-12 pr-12 transition-all outline-none"
                       required
                     />

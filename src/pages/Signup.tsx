@@ -42,11 +42,11 @@ const Signup = () => {
   const accountMode: 'creator' | 'brand' = accountModeParam === 'brand' ? 'brand' : 'creator';
   const [isLoading, setIsLoading] = useState(false);
   const [showLogin, setShowLogin] = useState(false);
-  const [name, setName] = useState('');
-  const [instagramHandle, setInstagramHandle] = useState('');
-  const [brandName, setBrandName] = useState('');
+  const [name, setName] = useState(searchParams.get('name') || '');
+  const [instagramHandle, setInstagramHandle] = useState(searchParams.get('instagram_handle') || '');
+  const [brandName, setBrandName] = useState(searchParams.get('brand_name') || '');
   const [brandIndustry, setBrandIndustry] = useState('');
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState(searchParams.get('email') || '');
   const [password, setPassword] = useState('');
   const [emailError, setEmailError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -58,7 +58,13 @@ const Signup = () => {
     meta?.setAttribute('content', accountMode === 'brand'
       ? 'Create a Creator Armour brand account to send structured offers and manage creator deal workflows.'
       : 'Create your Creator Armour account and get your creator link ready in 2 minutes.');
-  }, [accountMode]);
+
+    // If email is provided in URL, validate it immediately
+    const emailFromUrl = searchParams.get('email');
+    if (emailFromUrl) {
+      handleEmailChange(emailFromUrl);
+    }
+  }, [accountMode, searchParams]);
 
   const profilesTable = supabase.from('profiles') as unknown as {
     update: (payload: {
@@ -754,11 +760,13 @@ const Signup = () => {
                       Full Name
                     </Label>
                     <Input
+                      id="signup-name"
                       placeholder="e.g. John Doe"
                       value={name}
                       onChange={(e) => setName(e.target.value)}
                       onKeyDown={(e) => e.key === 'Enter' && e.currentTarget.blur()}
                       enterKeyHint="done"
+                      autoComplete="name"
                       className="bg-white/5 border-white/10 text-white placeholder:text-white/10 text-[16px] h-[60px] rounded-[20px] focus:border-emerald-500/50 focus:ring-0 focus:bg-white/10 transition-all outline-none"
                       required
                     />
@@ -772,11 +780,13 @@ const Signup = () => {
                       <div className="relative">
                         <span className="absolute left-4 top-1/2 -translate-y-1/2 text-white/20 font-bold">@</span>
                         <Input
+                          id="signup-handle"
                           placeholder="yourhandle"
                           value={instagramHandle}
                           onChange={(e) => setInstagramHandle(e.target.value)}
                           onKeyDown={(e) => e.key === 'Enter' && e.currentTarget.blur()}
                           enterKeyHint="done"
+                          autoComplete="username"
                           className="bg-white/5 border-white/10 text-white placeholder:text-white/10 text-[16px] h-[60px] rounded-[20px] focus:border-emerald-500/50 focus:ring-0 focus:bg-white/10 pl-10 transition-all outline-none"
                         />
                       </div>
@@ -790,11 +800,13 @@ const Signup = () => {
                           Brand / Agency Name
                         </Label>
                         <Input
+                          id="signup-brand-name"
                           placeholder="e.g. Nike, creatorarmour"
                           value={brandName}
                           onChange={(e) => setBrandName(e.target.value)}
                           onKeyDown={(e) => e.key === 'Enter' && e.currentTarget.blur()}
                           enterKeyHint="done"
+                          autoComplete="organization"
                           className="bg-white/5 border-white/10 text-white placeholder:text-white/10 text-[16px] h-[60px] rounded-[20px] focus:border-emerald-500/50 focus:ring-0 focus:bg-white/10 transition-all outline-none"
                           required
                         />
@@ -819,12 +831,14 @@ const Signup = () => {
                   Email Address
                 </Label>
                 <Input
+                  id="signup-email"
                   type="email"
                   placeholder="name@example.com"
                   value={email}
                   onChange={(e) => handleEmailChange(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && e.currentTarget.blur()}
                   enterKeyHint="done"
+                  autoComplete="email"
                   className={cn(
                     "bg-white/5 border-white/10 text-white placeholder:text-white/10 text-[16px] h-[60px] rounded-[20px] focus:border-emerald-500/50 focus:ring-0 focus:bg-white/10 transition-all outline-none",
                     emailError && "border-red-500/50 focus:border-red-500/50"
@@ -846,13 +860,15 @@ const Signup = () => {
                 </div>
                 <div className="relative">
                   <Input
+                    id="signup-password"
                     type={showPassword ? "text" : "password"}
                     placeholder="••••••••"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     onKeyDown={(e) => e.key === 'Enter' && e.currentTarget.blur()}
                     enterKeyHint="done"
-                    className="bg-white/5 border-white/10 text-white placeholder:text-white/10 text-[16px] h-[60px] rounded-[20px] focus:border-emerald-500/50 focus:ring-0 focus:bg-white/10 pr-12 transition-all outline-none"
+                    autoComplete={showLogin ? "current-password" : "new-password"}
+                    className="bg-white/5 border-white/10 text-white placeholder:text-white/10 text-[16px] h-[60px] rounded-[20px] focus:border-emerald-500/50 focus:ring-0 focus:bg-white/10 pr-12 pl-4 transition-all outline-none"
                     required
                   />
                   <button
