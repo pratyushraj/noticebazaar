@@ -565,8 +565,9 @@ const DashboardLoadingStage = ({ isDark, tab = 'analytics' }: { isDark: boolean;
                             <div className="grid grid-cols-2 gap-3">
                                 <ShimmerSkeleton className="h-24 rounded-2xl" />
                                 <ShimmerSkeleton className="h-24 rounded-2xl" />
-                                     </div>
-                                         {/* Quick Actions / Lifestyle Shield */}
+                             </div>
+                         </motion.div>
+                         {/* Quick Actions / Lifestyle Shield */}
                                          <div className="px-5 space-y-4">
                                              <div className={cn(
                                                  "p-6 rounded-[32px] border relative overflow-hidden group",
@@ -5028,7 +5029,7 @@ const MobileDashboardDemo = ({
                             setActiveTab={setActiveTab} setCollabSubTab={setCollabSubTab}
                             navigate={navigate} resolveCreatorDealProductImage={resolveCreatorDealProductImage}
                             getBrandIcon={getBrandIcon} TrendingUp={TrendingUp} ArrowRight={ArrowRight}
-                            Clock={Clock} ChevronRight={ChevronRight} User={User} DollarSign={DollarSign} Zap={Zap}
+                            Clock={Clock} ChevronRight={ChevronRight} User={User} IndianRupee={IndianRupee} Zap={Zap}
                             setSelectedItem={setSelectedItem} setSelectedType={setSelectedType}
                             setShowShareSheet={setShowShareSheet} handleCopyStorefront={handleCopyStorefront}
                             Instagram={Instagram} Copy={Copy} Eye={Eye} MessageCircleMore={MessageCircleMore}
@@ -5569,7 +5570,7 @@ const MobileDashboardDemo = ({
                                                                             ? "bg-emerald-500 border-emerald-500 text-white shadow-[0_0_15px_rgba(16,185,129,0.4)] scale-110" 
                                                                             : "bg-background border-border text-muted-foreground opacity-40"
                                                                     )}>
-                                                                        {i === 0 ? <Zap className="w-4 h-4" /> : i === 1 ? <ShieldCheck className="w-4 h-4" /> : i === 2 ? <Camera className="w-4 h-4" /> : <DollarSign className="w-4 h-4" />}
+                                                                        {i === 0 ? <Zap className="w-4 h-4" /> : i === 1 ? <ShieldCheck className="w-4 h-4" /> : i === 2 ? <Camera className="w-4 h-4" /> : <IndianRupee className="w-4 h-4" />}
                                                                     </div>
                                                                     <div className="text-center">
                                                                         <p className={cn("text-[10px] font-black uppercase tracking-tight", step.active ? "text-emerald-500" : "opacity-30", textColor)}>{step.label}</p>
@@ -5661,15 +5662,20 @@ const MobileDashboardDemo = ({
                                                             }
                                                             handleAccept(selectedItem);
                                                         }}
+                                                        disabled={processingDeal === selectedItem?.id}
                                                         className={cn(
                                                             "w-full min-h-[120px] rounded-[36px] px-8 py-6 flex items-center justify-between relative overflow-hidden group active:scale-[0.97] transition-all duration-500",
-                                                            "bg-gradient-to-r from-emerald-600 via-emerald-500 to-sky-600 text-white shadow-[0_25px_50px_-12px_rgba(16,185,129,0.5)]"
+                                                            "bg-gradient-to-r from-emerald-600 via-emerald-500 to-sky-600 text-white shadow-[0_25px_50px_-12px_rgba(16,185,129,0.5)]",
+                                                            processingDeal === selectedItem?.id && "opacity-90 pointer-events-none"
                                                         )}
                                                     >
                                                         {/* Dynamic Background Effects */}
                                                         <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(255,255,255,0.2),transparent)] opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
                                                         <div className="absolute inset-0 bg-emerald-400/10 opacity-0 group-hover:opacity-20 transition-opacity" />
                                                         
+                                                        {/* Shimmer Effect */}
+                                                        <div className="absolute inset-0 translate-x-[-100%] bg-gradient-to-r from-transparent via-white/20 to-transparent animate-[shimmer_2s_infinite] pointer-events-none" />
+
                                                         {/* Pulsing Glow Animation */}
                                                         <div className="absolute inset-0 bg-emerald-400/20 animate-pulse opacity-30" />
 
@@ -5678,18 +5684,29 @@ const MobileDashboardDemo = ({
                                                         </div>
                                                         
                                                         <div className="text-left relative z-10">
-                                                            <p className="text-[26px] sm:text-[28px] font-black leading-tight tracking-tight drop-shadow-md">
-                                                                Accept → Earn {renderBudgetValue(selectedItem)}
+                                                            <p className="text-[26px] sm:text-[28px] font-black leading-tight tracking-tight drop-shadow-md flex items-center gap-3">
+                                                                {processingDeal === selectedItem?.id ? (
+                                                                    <>
+                                                                        <Loader2 className="w-8 h-8 animate-spin" />
+                                                                        Syncing...
+                                                                    </>
+                                                                ) : (
+                                                                    <>Accept → Earn {renderBudgetValue(selectedItem)}</>
+                                                                )}
                                                             </p>
                                                             <div className="text-[12px] sm:text-[13px] font-bold opacity-90 mt-1 flex items-center gap-2">
                                                                 <div className="w-5 h-5 rounded-lg bg-white/20 flex items-center justify-center shrink-0">
-                                                                    <DollarSign className="w-3 h-3" />
+                                                                    <IndianRupee className="w-3 h-3" />
                                                                 </div>
-                                                                💰 Payment secured • Releases after approval
+                                                                {processingDeal === selectedItem?.id ? "Initializing smart contract..." : "💰 Payment secured • Releases after approval"}
                                                             </div>
                                                         </div>
                                                         <div className="w-14 h-14 rounded-full bg-white/25 flex items-center justify-center backdrop-blur-md relative z-10 shadow-lg border border-white/20 transition-transform group-hover:translate-x-1">
-                                                            <ChevronRight className="w-7 h-7 text-white" />
+                                                            {processingDeal === selectedItem?.id ? (
+                                                                <RefreshCw className="w-7 h-7 text-white animate-spin" />
+                                                            ) : (
+                                                                <ChevronRight className="w-7 h-7 text-white" />
+                                                            )}
                                                         </div>
                                                     </button>
 
@@ -6026,7 +6043,7 @@ const MobileDashboardDemo = ({
                                         {/* ── DELIVERY TIMELINE (Offers & Deals) ── */}
                                         {(selectedType === 'offer' || selectedType === 'deal') && (
                                             <div className="mb-6">
-                                                <h4 className={cn("text-[13px] font-black uppercase tracking-widest mb-3.5 opacity-50 px-1", textColor)}>
+                                                <h4 className={cn("text-[11px] font-black uppercase tracking-[0.2em] mb-4 opacity-50 px-1", textColor)}>
                                                     {selectedIsPureBarter ? 'Product Fulfillment' : 'Campaign Timeline'}
                                                 </h4>
                                                 <div className={cn("rounded-[28px] border p-6 relative overflow-hidden", isDark ? "bg-[#0C1320]/80 border-white/5" : "bg-white border-slate-200/60 shadow-sm")}>
@@ -6083,34 +6100,34 @@ const MobileDashboardDemo = ({
                                                                     <div className={cn("absolute left-4 right-4 top-[7px] h-[4px] z-0 rounded-full", isDark ? "bg-white/5" : "bg-slate-100")} />
                                                                     
                                                                     {/* Active Progress Track */}
-                                                                    <motion.div 
-                                                                        initial={{ width: 0 }}
-                                                                        animate={{ width: `${(currentStep / Math.max(1, steps.length - 1)) * 100}%` }}
-                                                                        transition={{ duration: 1, ease: [0.23, 1, 0.32, 1] }}
-                                                                        className={cn(
-                                                                            "absolute left-4 top-[7px] h-[4px] z-0 rounded-full shadow-[0_0_12px_rgba(59,130,246,0.5)]",
-                                                                            selectedIsPureBarter ? "bg-amber-500 shadow-amber-500/50" : "bg-info shadow-info/50"
-                                                                        )} 
-                                                                        style={{ maxWidth: 'calc(100% - 32px)' }}
-                                                                    />
-
-                                                                    <div className="flex items-center justify-between relative z-10">
-                                                                        {steps.map((step, i) => {
-                                                                            const isCompleted = i < currentStep;
-                                                                            const isActive = i === currentStep;
+                                                                    <div className={cn("absolute left-4 right-4 top-[8px] h-[3px] z-0 rounded-full overflow-hidden", isDark ? "bg-white/5" : "bg-slate-100")}>
+                                                                        <motion.div 
+                                                                            initial={{ width: 0 }}
+                                                                            animate={{ width: `${(currentStep / (steps.length - 1)) * 100}%` }}
+                                                                            className="h-full bg-info shadow-[0_0_10px_rgba(59,130,246,0.5)]"
+                                                                        />
+                                                                    </div>
+                                                                    
+                                                                    <div className="flex justify-between items-start relative z-10">
+                                                                        {steps.map((step, idx) => {
+                                                                            const isDone = idx < currentStep;
+                                                                            const isActive = idx === currentStep;
                                                                             return (
-                                                                                <div key={step} className="flex flex-col items-center gap-3">
+                                                                                <div key={idx} className="flex flex-col items-center gap-2.5 w-14">
                                                                                     <div className={cn(
-                                                                                        "w-[18px] h-[18px] rounded-full border-[4px] transition-all duration-500 relative",
-                                                                                        isCompleted ? "bg-info border-info scale-90" : 
-                                                                                        isActive ? "bg-card border-info shadow-[0_0_15px_rgba(59,130,246,0.6)] scale-110" : 
-                                                                                        (isDark ? "bg-[#111827] border-white/10" : "bg-white border-slate-200")
+                                                                                        "w-[18px] h-[18px] rounded-full flex items-center justify-center transition-all duration-500 border-2",
+                                                                                        isDone ? "bg-info border-info" : 
+                                                                                        isActive ? "bg-white border-info shadow-[0_0_15px_rgba(59,130,246,0.4)]" : 
+                                                                                        (isDark ? "bg-[#0B0F14] border-white/10" : "bg-white border-slate-200")
                                                                                     )}>
-                                                                                        {isActive && <div className="absolute inset-0 rounded-full bg-info animate-ping opacity-20" />}
+                                                                                        {isDone ? <Check className="w-2.5 h-2.5 text-white" /> : 
+                                                                                         isActive ? <div className="w-1.5 h-1.5 rounded-full bg-info animate-pulse" /> : 
+                                                                                         <span className="text-[8px] font-black opacity-30">{idx + 1}</span>}
                                                                                     </div>
                                                                                     <span className={cn(
-                                                                                        "text-[10px] font-black uppercase tracking-wider transition-colors duration-500",
-                                                                                        isActive ? (selectedIsPureBarter ? "text-amber-500" : "text-info") : isCompleted ? "opacity-60" : "opacity-30"
+                                                                                        "text-[9px] font-black uppercase tracking-tighter text-center leading-none",
+                                                                                        isActive ? "text-info opacity-100" : "opacity-30",
+                                                                                        textColor
                                                                                     )}>
                                                                                         {step}
                                                                                     </span>
@@ -6129,8 +6146,9 @@ const MobileDashboardDemo = ({
                                         {/* ── CAMPAIGN BRIEF (Offers) ── */}
                                         {selectedType === 'offer' && (
                                             <div className="mb-6">
-                                                <h4 className={cn("text-[13px] font-black uppercase tracking-widest mb-3 opacity-50 px-1", textColor)}>Campaign Brief</h4>
-                                                <div className={cn("rounded-[24px] border p-5 relative overflow-hidden", cardBgColor, borderColor)}>
+                                                <h4 className={cn("text-[11px] font-black uppercase tracking-[0.2em] mb-4 opacity-50 px-1", textColor)}>Campaign Brief</h4>
+                                                <div className={cn("rounded-[32px] border p-6 relative overflow-hidden backdrop-blur-xl shadow-2xl", 
+                                                    isDark ? "bg-[#0C1320]/80 border-white/10" : "bg-white border-slate-200/60 shadow-sm")}>
                                                     {(() => {
                                                         const packageLabel = getOfferPackageLabel(selectedItem);
                                                         const requirementsList = getOfferRequirements(selectedItem);
@@ -6172,7 +6190,7 @@ const MobileDashboardDemo = ({
 	                                        {/* ── DELIVERABLES ── */}
 	                                        {(selectedType === 'offer' || selectedType === 'deal') && (
 	                                        <div className="mb-8">
-	                                            <h4 className={cn("text-[12px] font-black uppercase tracking-[0.2em] mb-4 opacity-40 px-1", textColor)}>Deliverables</h4>
+	                                            <h4 className={cn("text-[11px] font-black uppercase tracking-[0.2em] mb-4 opacity-50 px-1", textColor)}>Deliverables</h4>
 	                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
 	                                                {(() => {
                                                     const raw = selectedItem.deliverables || selectedItem.raw?.deliverables;
@@ -6194,12 +6212,14 @@ const MobileDashboardDemo = ({
                                                     } catch (_) { }
                                                     return items.map((d, i) => (
                                                         <div key={i} className={cn(
-                                                            "px-5 py-4.5 rounded-[2rem] border flex items-center gap-5 transition-all hover:translate-y-[-2px] group",
-                                                            isDark ? "bg-white/[0.02] border-white/5 hover:bg-white/[0.04]" : "bg-white border-slate-200 hover:shadow-md"
+                                                            "px-5 py-5 rounded-[2.5rem] border flex items-center gap-5 transition-all duration-500 hover:translate-y-[-4px] group",
+                                                            isDark ? "bg-white/[0.03] border-white/10 hover:bg-white/[0.06] hover:border-white/20" : "bg-white border-slate-200 hover:shadow-xl"
                                                         )}>
                                                             <div className={cn(
-                                                                "w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 shadow-sm transition-transform group-hover:scale-110",
-                                                                d.type === 'reel' ? "bg-purple-500/10 text-purple-500" : d.type === 'story' ? "bg-orange-500/10 text-orange-500" : "bg-blue-500/10 text-blue-500"
+                                                                "w-14 h-14 rounded-[1.25rem] flex items-center justify-center shrink-0 shadow-lg transition-all duration-500 group-hover:scale-110 group-hover:rotate-3",
+                                                                d.type === 'reel' ? "bg-gradient-to-br from-purple-500 to-indigo-600 text-white" : 
+                                                                d.type === 'story' ? "bg-gradient-to-br from-orange-400 to-rose-500 text-white" : 
+                                                                "bg-gradient-to-br from-blue-400 to-cyan-500 text-white"
                                                             )}>
                                                                 {d.type === 'reel' ? <Film className="w-6 h-6" /> : 
                                                                  d.type === 'story' ? <Smartphone className="w-6 h-6" /> : 
@@ -6560,19 +6580,18 @@ const MobileDashboardDemo = ({
 
                                         {/* ── LEGAL PROTECTION ── */}
                                         <div className="mb-6">
-                                            <h4 className={cn("text-[13px] font-black uppercase tracking-wider mb-3 opacity-50", textColor)}>Legal Protection</h4>
+                                            <h4 className={cn("text-[11px] font-black uppercase tracking-[0.2em] mb-4 opacity-50 px-1", textColor)}>Legal Protection</h4>
                                             <div className={cn(
-                                                "rounded-[28px] border p-6 relative overflow-hidden transition-all hover:shadow-lg",
-                                                isDark ? "bg-primary/5 border-primary/20" : "bg-emerald-50 border-emerald-200"
+                                                "rounded-[32px] border p-7 relative overflow-hidden transition-all duration-500 hover:shadow-2xl",
+                                                isDark ? "bg-emerald-500/5 border-emerald-500/20" : "bg-emerald-50 border-emerald-200"
                                             )}>
                                                 {/* Decorative background elements */}
-                                                <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none" />
-                                                <div className="absolute inset-y-0 left-0 w-2 bg-primary rounded-r-full shadow-[0_0_15px_rgba(16,185,129,0.4)]" />
-                                                <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 via-transparent to-primary/5 pointer-events-none" />
-
-                                                <div className="flex items-center gap-4 relative mb-5">
-                                                    <div className="w-12 h-12 rounded-2xl bg-primary flex items-center justify-center shrink-0 shadow-[0_8px_20px_rgba(16,185,129,0.3)] border border-white/20">
-                                                        <ShieldCheck className="w-6 h-6 text-white" strokeWidth={2.5} />
+                                                <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/20 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none" />
+                                                <div className="absolute inset-y-0 left-0 w-1.5 bg-emerald-500 rounded-r-full shadow-[0_0_20px_rgba(16,185,129,0.5)]" />
+                                                
+                                                <div className="flex items-center gap-4 relative mb-6">
+                                                    <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-emerald-500 to-primary flex items-center justify-center shrink-0 shadow-[0_10px_25px_rgba(16,185,129,0.4)] border border-white/20">
+                                                        <ShieldCheck className="w-7 h-7 text-white" strokeWidth={2.5} />
                                                     </div>
                                                     <div className="flex-1 min-w-0">
                                                         <p className={cn("font-black text-[17px] leading-tight tracking-tight", isDark ? "text-primary" : "text-emerald-800")}>Protected by Creator Armour</p>
@@ -7869,10 +7888,9 @@ const BottomNavigationBar = React.memo(({
                     <motion.div 
                         animate={{ 
                             left: effectiveTab === 'dashboard' ? '0%' 
-                                : effectiveTab === 'deals' ? '20%'
-                                : effectiveTab === 'discovery' ? '40%'
-                                : effectiveTab === 'payments' ? '60%'
-                                : '80%'
+                                : effectiveTab === 'deals' ? '25%'
+                                : effectiveTab === 'payments' ? '50%'
+                                : '75%'
                         }}
                         transition={{ type: 'spring', bounce: 0.2, duration: 0.6 }}
                         className={cn(
@@ -7880,7 +7898,7 @@ const BottomNavigationBar = React.memo(({
                             isDark ? "bg-white/5 border-white/10" : "bg-white shadow-sm border-[#E5E7EB]"
                         )}
                         style={{ 
-                            width: 'calc(20% - 4px)', // 5 tabs
+                            width: 'calc(25% - 4px)', // 4 tabs
                         }}
                     />
                 </div>
@@ -8032,7 +8050,13 @@ const DashboardTab = React.memo(({
                 )}>
                     <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-emerald-500/10 rounded-full blur-[80px] -mr-[200px] -mt-[200px] pointer-events-none mix-blend-screen" />
                     <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-teal-500/10 rounded-full blur-[60px] -ml-[150px] -mb-[150px] pointer-events-none mix-blend-screen" />
-                    <div className="absolute inset-0 bg-[url('/noise.png')] opacity-[0.03] mix-blend-overlay pointer-events-none" />
+                    {/* Noise Filter instead of broken png */}
+                    <svg className="absolute inset-0 w-full h-full opacity-[0.03] mix-blend-overlay pointer-events-none" xmlns="http://www.w3.org/2000/svg">
+                        <filter id="noiseFilter">
+                            <feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="3" stitchTiles="stitch" />
+                        </filter>
+                        <rect width="100%" height="100%" filter="url(#noiseFilter)" />
+                    </svg>
                 </div>
 
                 <div className="px-6 pt-10 pb-12 flex items-start justify-between gap-6">
@@ -8132,9 +8156,16 @@ const DashboardTab = React.memo(({
                                         <p className={cn("text-[10px] font-black uppercase tracking-widest opacity-40", textColor)}>Active Collaboration</p>
                                         <span className="w-1 h-1 rounded-full bg-emerald-500 animate-pulse" />
                                     </div>
-                                    <h3 className={cn("text-[18px] font-black tracking-tighter leading-none truncate", textColor)}>
-                                        {featuredDeal.brand_name || featuredDeal.company_name || 'Brand Partner'}
-                                    </h3>
+                                    <div className="flex items-baseline gap-2">
+                                        <h3 className={cn("text-[18px] font-black tracking-tighter leading-none truncate", textColor)}>
+                                            {featuredDeal.brand_name || featuredDeal.company_name || 'Brand Partner'}
+                                        </h3>
+                                        {!isBarterLikeCollab(featuredDeal) && (
+                                            <span className={cn("text-[14px] font-black opacity-40 shrink-0", textColor)}>
+                                                {renderBudgetValue(featuredDeal)}
+                                            </span>
+                                        )}
+                                    </div>
                                 </div>
                                 <ChevronRight className={cn("w-5 h-5 opacity-20", textColor)} />
                             </div>
@@ -8149,10 +8180,10 @@ const DashboardTab = React.memo(({
                                 
                                 <div className="flex justify-between items-start relative z-10">
                                     {[
-                                        { id: 1, label: 'Agreement', icon: CheckCircle2 },
-                                        { id: 2, label: 'Shipment', icon: Package },
-                                        { id: 3, label: 'Content', icon: Camera },
-                                        { id: 4, label: 'Payment', icon: DollarSign }
+                                        { id: 1, label: 'AGREEMENT', icon: CheckCircle2 },
+                                        { id: 2, label: 'SHIPMENT', icon: Package },
+                                        { id: 3, label: 'CONTENT', icon: Camera },
+                                        { id: 4, label: 'PAYMENT', icon: IndianRupee }
                                     ].map((step, idx) => {
                                         const StepIcon = step.icon;
                                         const isActive = progress.step === step.id;
@@ -8195,7 +8226,11 @@ const DashboardTab = React.memo(({
                                         {progress.step === 4 && "Deliverables approved! Payment is being processed."}
                                     </p>
                                 </div>
-                                <div className={cn("px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest", isDark ? "bg-emerald-500/20 text-emerald-400" : "bg-emerald-500 text-white")}>
+                                <div className={cn(
+                                    "px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest flex items-center gap-1.5 shrink-0", 
+                                    isDark ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/20" : "bg-emerald-500 text-white shadow-lg shadow-emerald-500/20"
+                                )}>
+                                    <span className="w-1 h-1 rounded-full bg-current animate-pulse" />
                                     LIVE
                                 </div>
                             </div>

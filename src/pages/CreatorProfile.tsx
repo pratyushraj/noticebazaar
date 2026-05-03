@@ -2148,7 +2148,7 @@ const ProfileSettings = () => {
               animate={{ y: 0, opacity: 1 }}
               transition={{ delay: 0.1 }}
               className={cn(
-                "rounded-[2.5rem] p-8 border backdrop-blur-2xl transition-all duration-500",
+                "rounded-[32px] p-8 border backdrop-blur-2xl transition-all duration-500 overflow-hidden relative",
                 isDark ? "bg-white/[0.02] border-white/10 shadow-2xl" : "bg-white border-slate-200 shadow-xl shadow-slate-200/30"
               )}
             >
@@ -2156,12 +2156,12 @@ const ProfileSettings = () => {
                 <div className="w-10 h-10 rounded-2xl bg-blue-500/10 flex items-center justify-center">
                   <User className="w-5 h-5 text-blue-500" />
                 </div>
-                <h2 className={cn("text-lg font-black tracking-tight", isDark ? "text-white" : "text-slate-900")}>Fundamental Dossier</h2>
+                <h2 className={cn("text-[11px] font-black uppercase tracking-[0.2em] opacity-50", isDark ? "text-white" : "text-slate-900")}>Fundamental Dossier</h2>
               </div>
 
               <div className="space-y-8">
                 <div className="relative group">
-                  <label className={cn("text-[10px] font-black uppercase tracking-widest mb-2 block opacity-40 group-focus-within:opacity-100 group-focus-within:text-emerald-500 transition-all", isDark ? "text-white" : "text-slate-900")}>Official Name</label>
+                  <label className={cn("text-[10px] font-black uppercase tracking-[0.1em] mb-2 block opacity-40 group-focus-within:opacity-100 group-focus-within:text-emerald-500 transition-all", isDark ? "text-white" : "text-slate-900")}>Official Name</label>
                   <input
                     type="text"
                     value={formData.name}
@@ -2179,14 +2179,14 @@ const ProfileSettings = () => {
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
                   <div className="relative group">
-                    <label className={cn("text-[10px] font-black uppercase tracking-widest mb-2 block opacity-40", isDark ? "text-white" : "text-slate-900")}>Email Contact</label>
+                    <label className={cn("text-[10px] font-black uppercase tracking-[0.1em] mb-2 block opacity-40", isDark ? "text-white" : "text-slate-900")}>Email Contact</label>
                     <div className="flex items-center gap-3 py-3 border-b-2 border-transparent">
                       <Mail className="w-5 h-5 opacity-20" />
                       <span className={cn("text-lg font-bold opacity-40", isDark ? "text-white" : "text-slate-900")}>{formData.email}</span>
                     </div>
                   </div>
                   <div className="relative group">
-                    <label className={cn("text-[10px] font-black uppercase tracking-widest mb-2 block opacity-40 group-focus-within:opacity-100 group-focus-within:text-emerald-500 transition-all", isDark ? "text-white" : "text-slate-900")}>Mobile Uplink</label>
+                    <label className={cn("text-[10px] font-black uppercase tracking-[0.1em] mb-2 block opacity-40 group-focus-within:opacity-100 group-focus-within:text-emerald-500 transition-all", isDark ? "text-white" : "text-slate-900")}>Mobile Uplink</label>
                     <div className="flex items-center gap-3">
                       <Phone className="w-5 h-5 opacity-20" />
                       <input
@@ -2213,7 +2213,7 @@ const ProfileSettings = () => {
                 </div>
 
                 <div className="relative group">
-                  <label className={cn("text-[10px] font-black uppercase tracking-widest mb-2 block opacity-40 group-focus-within:opacity-100 group-focus-within:text-emerald-500 transition-all", isDark ? "text-white" : "text-slate-900")}>Residential Anchor</label>
+                  <label className={cn("text-[10px] font-black uppercase tracking-[0.1em] mb-2 block opacity-40 group-focus-within:opacity-100 group-focus-within:text-emerald-500 transition-all", isDark ? "text-white" : "text-slate-900")}>Residential Anchor</label>
                   <div className="flex items-start gap-3">
                     <MapPin className="w-5 h-5 mt-4 opacity-20" />
                     <textarea
@@ -2234,7 +2234,7 @@ const ProfileSettings = () => {
 
                 <div className="grid grid-cols-2 gap-8">
                   <div className="relative group">
-                    <label className={cn("text-[10px] font-black uppercase tracking-widest mb-2 block opacity-40", isDark ? "text-white" : "text-slate-900")}>Postal Region</label>
+                    <label className={cn("text-[10px] font-black uppercase tracking-[0.1em] mb-2 block opacity-40", isDark ? "text-white" : "text-slate-900")}>Postal Region</label>
                     <input
                       type="text"
                       value={formData.pincode}
@@ -2250,7 +2250,7 @@ const ProfileSettings = () => {
                     />
                   </div>
                   <div className="relative group">
-                    <label className={cn("text-[10px] font-black uppercase tracking-widest mb-2 block opacity-40", isDark ? "text-white" : "text-slate-900")}>City/State Cluster</label>
+                    <label className={cn("text-[10px] font-black uppercase tracking-[0.1em] mb-2 block opacity-40", isDark ? "text-white" : "text-slate-900")}>City/State Cluster</label>
                     <div className="py-3 text-lg font-bold opacity-40">
                       {formData.city ? `${formData.city}, ${formData.state}` : 'Waiting for Pincode...'}
                     </div>
@@ -2265,7 +2265,7 @@ const ProfileSettings = () => {
               animate={{ y: 0, opacity: 1 }}
               transition={{ delay: 0.2 }}
               className={cn(
-                "rounded-[2.5rem] p-8 border backdrop-blur-2xl transition-all duration-500",
+                "rounded-[32px] p-8 border backdrop-blur-2xl transition-all duration-500",
                 isDark ? "bg-white/[0.02] border-white/10 shadow-2xl" : "bg-white border-slate-200 shadow-xl shadow-slate-200/30"
               )}
             >
@@ -2273,11 +2273,11 @@ const ProfileSettings = () => {
                 <div className="w-10 h-10 rounded-2xl bg-pink-500/10 flex items-center justify-center">
                   <Instagram className="w-5 h-5 text-pink-500" />
                 </div>
-                <h2 className={cn("text-lg font-black tracking-tight", isDark ? "text-white" : "text-slate-900")}>Social Authority</h2>
+                <h2 className={cn("text-[11px] font-black uppercase tracking-[0.2em] opacity-50", isDark ? "text-white" : "text-slate-900")}>Social Authority</h2>
               </div>
 
               <div className="relative group">
-                <label className={cn("text-[10px] font-black uppercase tracking-widest mb-2 block opacity-40 group-focus-within:opacity-100 group-focus-within:text-pink-500 transition-all", isDark ? "text-white" : "text-slate-900")}>Instagram Handle</label>
+                <label className={cn("text-[10px] font-black uppercase tracking-[0.1em] mb-2 block opacity-40 group-focus-within:opacity-100 group-focus-within:text-pink-500 transition-all", isDark ? "text-white" : "text-slate-900")}>Instagram Handle</label>
                 <div className="flex items-center gap-3">
                   <span className={cn("text-2xl font-black opacity-20", isDark ? "text-white" : "text-slate-900")}>@</span>
                   <input
