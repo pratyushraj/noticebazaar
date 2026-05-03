@@ -3298,7 +3298,7 @@ const ProfileSettings = () => {
 
               <div className="space-y-6">
                 <p className={cn("text-sm font-medium leading-relaxed opacity-60", isDark ? "text-slate-300" : "text-slate-600")}>
-                  Synchronize your device with the NoticeBazaar cloud to receive sub-second alerts for high-priority brand collaborations.
+                  Synchronize your device with the Creator Armour cloud to receive sub-second alerts for high-priority brand collaborations.
                 </p>
 
                 <div className="flex flex-wrap gap-3">
@@ -3528,7 +3528,7 @@ const ProfileSettings = () => {
 
             {/* Final Footer Intelligence */}
             <div className="text-center pt-8 pb-4">
-              <div className={cn("text-[10px] font-black tracking-[0.3em] uppercase mb-1", isDark ? "text-white/20" : "text-slate-900/20")}>NoticeBazaar Elite</div>
+              <div className={cn("text-[10px] font-black tracking-[0.3em] uppercase mb-1", isDark ? "text-white/20" : "text-slate-900/20")}>Creator Armour Elite</div>
               <div className="text-[8px] font-bold opacity-20 uppercase tracking-widest">Version 2.0.4 • Alpha Flux</div>
             </div>
 
