@@ -6509,30 +6509,6 @@ const MobileDashboardDemo = ({
                                             </div>
                                         )}
 
-                                        <div className="mb-8">
-                                            <h4 className={cn("text-[12px] font-black uppercase tracking-[0.2em] mb-4 opacity-40 px-1", textColor)}>Usage Rights</h4>
-                                            <div className={cn(
-                                                "rounded-[2.5rem] border p-6 flex items-center gap-5 relative overflow-hidden group", 
-                                                isDark ? "bg-emerald-500/[0.03] border-emerald-500/10" : "bg-slate-50 border-slate-200"
-                                            )}>
-                                                <div className={cn(
-                                                    "w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 shadow-lg", 
-                                                    isDark ? "bg-emerald-500/10 border border-emerald-500/20 text-emerald-400" : "bg-emerald-50 border border-emerald-100 text-emerald-600"
-                                                )}>
-                                                    <Scale className="w-7 h-7" />
-                                                </div>
-                                                <div className="flex-1 min-w-0 relative z-10">
-                                                    <p className={cn("text-[17px] font-black leading-tight tracking-tight", textColor)}>Organic social media only</p>
-                                                    <div className="flex items-center gap-2 mt-1.5">
-                                                        <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 opacity-40" />
-                                                        <p className={cn("text-[13px] font-black uppercase tracking-widest opacity-40", textColor)}>90 days usage limit</p>
-                                                    </div>
-                                                </div>
-                                                <div className="absolute top-0 right-0 p-4 opacity-[0.04] group-hover:opacity-[0.06] transition-opacity rotate-6">
-                                                    <FileText className="w-20 h-20" />
-                                                </div>
-                                            </div>
-                                        </div>
 
                                         {selectedIsPureBarter && (
                                             <div className="mb-6">
