@@ -3024,11 +3024,11 @@ const MobileDashboardDemo = ({
         if (safeLogo) {
             const isSvg = /\.svg(\?|#|$)/i.test(safeLogo);
             return (
-                <div className="relative w-full h-full flex items-center justify-center overflow-hidden rounded-inherit bg-white">
+                <div className="relative w-full h-full flex items-center justify-center overflow-hidden rounded-inherit">
                     <img 
                         alt=""
                         src={proxiedLogo}
-                        className="w-full h-full object-contain absolute inset-0 z-10 p-1 transition-opacity duration-300"
+                        className="w-full h-full object-cover absolute inset-0 z-10 transition-opacity duration-300"
                         loading="eager"
                         decoding="async"
                         referrerPolicy="no-referrer"
@@ -5583,7 +5583,7 @@ const MobileDashboardDemo = ({
                                                                     const resolvedPackageName = 
                                                                         (packageMatch ? packageMatch[1].trim() : null) ||
                                                                         selectedItem.package_name || selectedItem.package_tier ||
-                                                                        selectedItem.raw?.package_name || selectedItem.raw?.package_tier || null;
+                                                                        selectedItem.raw?.package_name || selectedItem.raw?.package_tier || 'Starter Collab';
 
                                                                     const durationMatch = rawDesc.match(/Collab Duration:\s*(.*?)(?=\s*Additional|\n|$)/i);
                                                                     const extractedDuration = durationMatch ? durationMatch[1].trim() : null;
@@ -6161,11 +6161,11 @@ const MobileDashboardDemo = ({
                                                     const primaryLabel = primaryDeliverable.label || primaryDeliverable.name || primaryDeliverable.type || 'Instagram Reel';
                                                     const secondaryDeliverables = parsedDeliverables.filter(d => d !== primaryDeliverable);
 // Multi-source package name resolution
-                                                     const packageMatch = rawDesc.match(/Selected package:\s*(.*?)(?=\s*Collab Duration:|\n|Additional|$)/i);
+                                                     const packageMatch = rawDesc.match(/Selected package:\s*([🚀📈🎯💼]?\s*.*?)(?=\s*Collab Duration:|\n|Additional|$)/i);
                                                      const resolvedPackageName =
                                                          (packageMatch ? packageMatch[1].trim() : null) ||
                                                          selectedItem.package_name || selectedItem.package_tier ||
-                                                         selectedItem.raw?.package_name || selectedItem.raw?.package_tier || null;
+                                                         selectedItem.raw?.package_name || selectedItem.raw?.package_tier || 'Starter Collab';
 
                                                      const durationMatch = rawDesc.match(/Collab Duration:\s*(.*?)(?=\s*Additional|\n|$)/i);
                                                      const extractedDuration = durationMatch ? durationMatch[1].trim() : null;
