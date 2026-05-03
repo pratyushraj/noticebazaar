@@ -5019,6 +5019,7 @@ const MobileDashboardDemo = ({
                         <DashboardTab 
                             isDark={isDark} textColor={textColor} secondaryTextColor={secondaryTextColor}
                             isLoadingDeals={isLoadingDeals} activeDealsCount={activeDealsCount}
+                            activeDealsList={activeDealsList}
                             completedDealsCount={completedDealsCount} monthlyRevenue={monthlyRevenue}
                             pendingOffersCount={pendingOffersCount} pendingOffersDeduplicated={pendingOffersDeduplicated}
                             displayName={displayName} username={username} avatarUrl={avatarVersionedUrl}
@@ -7975,7 +7976,7 @@ BottomNavigationBar.displayName = 'BottomNavigationBar';
 
 const DashboardTab = React.memo(({ 
     isDark, textColor, secondaryTextColor, isLoadingDeals, 
-    activeDealsCount, completedDealsCount, monthlyRevenue, 
+    activeDealsCount, activeDealsList = [], completedDealsCount, monthlyRevenue, 
     pendingOffersCount, pendingOffersDeduplicated, displayName, username,
     avatarUrl, avatarFallbackUrl, shouldShowPushPrompt, 
     isPushSubscribed, triggerHaptic, setActiveTab, 
@@ -7986,6 +7987,36 @@ const DashboardTab = React.memo(({
     analyticsSummary, analyticsLoading
 }: any) => {
     const hasDeals = activeDealsCount > 0 || completedDealsCount > 0;
+
+    // Get the most recent active deal for the hero tracker
+    const featuredDeal = activeDealsList[0];
+
+    const getDealProgress = (deal: any) => {
+        if (!deal) return { step: 0, label: 'Inactive' };
+        const status = getCanonicalDealStatus(deal);
+        const shippingStatus = String(deal?.shipping_status || deal?.raw?.shipping_status || '').toLowerCase();
+        
+        // Step 1: Agreement (Signed but waiting for next steps)
+        if (status === 'SENT' || status === 'FULLY_EXECUTED') return { step: 1, label: 'Agreement' };
+        
+        // Step 2: Shipment (For barter/shipping deals)
+        const isBarter = String(deal?.collab_type || deal?.deal_type || '').toLowerCase().includes('barter');
+        if (isBarter && (status === 'AWAITING_BRAND_ADDRESS' || (status === 'CONTENT_MAKING' && shippingStatus !== 'received' && shippingStatus !== 'delivered'))) {
+            return { step: 2, label: 'Shipment' };
+        }
+        
+        // Step 3: Content (Making or Delivered)
+        if (status === 'CONTENT_MAKING' || status === 'CONTENT_DELIVERED' || status === 'REVISION_REQUESTED') {
+            return { step: 3, label: 'Content' };
+        }
+        
+        // Step 4: Payment (Completed)
+        if (status === 'COMPLETED') return { step: 4, label: 'Payment' };
+        
+        return { step: 1, label: 'Agreement' }; // Fallback
+    };
+
+    const progress = getDealProgress(featuredDeal);
 
     if (isLoadingDeals) {
         return <DashboardLoadingStage isDark={isDark} tab="dashboard" />;
@@ -8075,6 +8106,110 @@ const DashboardTab = React.memo(({
                     </motion.div>
                 </div>
             </div>
+
+            {/* Active Deal Hero Tracker (Post-First-Deal UX) */}
+            {activeDealsCount > 0 && featuredDeal && (
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="px-5"
+                >
+                    <div className={cn(
+                        "p-6 rounded-[2.5rem] border relative overflow-hidden group transition-all duration-500",
+                        isDark 
+                          ? "bg-[#0B1220] border-emerald-500/20 shadow-[0_20px_50px_rgba(0,0,0,0.3)]" 
+                          : "bg-white border-slate-200 shadow-xl shadow-emerald-500/5"
+                    )}
+                    onClick={() => { triggerHaptic(); setSelectedItem(featuredDeal); setSelectedType('deal'); }}
+                    >
+                        {/* Background Glow */}
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 blur-[50px] rounded-full -mr-16 -mt-16" />
+                        
+                        <div className="relative z-10">
+                            <div className="flex items-center gap-4 mb-8">
+                                <div className={cn("w-12 h-12 rounded-2xl flex items-center justify-center overflow-hidden border", isDark ? "bg-white/5 border-white/10" : "bg-slate-50 border-slate-100")}>
+                                    <img 
+                                        src={getBrandIcon(featuredDeal)} 
+                                        alt="Brand" 
+                                        className="w-full h-full object-cover"
+                                    />
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                    <div className="flex items-center gap-2 mb-0.5">
+                                        <p className={cn("text-[10px] font-black uppercase tracking-widest opacity-40", textColor)}>Active Collaboration</p>
+                                        <span className="w-1 h-1 rounded-full bg-emerald-500 animate-pulse" />
+                                    </div>
+                                    <h3 className={cn("text-[18px] font-black tracking-tighter leading-none truncate", textColor)}>
+                                        {featuredDeal.brand_name || featuredDeal.company_name || 'Brand Partner'}
+                                    </h3>
+                                </div>
+                                <ChevronRight className={cn("w-5 h-5 opacity-20", textColor)} />
+                            </div>
+
+                            {/* Progress Steps */}
+                            <div className="relative px-2">
+                                <div className="absolute top-[15px] left-8 right-8 h-[2px] bg-slate-200/20 dark:bg-white/5" />
+                                <div 
+                                    className="absolute top-[15px] left-8 h-[2px] bg-emerald-500 transition-all duration-1000" 
+                                    style={{ width: `calc(${Math.max(0, (progress.step - 1) * 33.33)}% )` }}
+                                />
+                                
+                                <div className="flex justify-between items-start relative z-10">
+                                    {[
+                                        { id: 1, label: 'Agreement', icon: CheckCircle2 },
+                                        { id: 2, label: 'Shipment', icon: Package },
+                                        { id: 3, label: 'Content', icon: Camera },
+                                        { id: 4, label: 'Payment', icon: DollarSign }
+                                    ].map((step, idx) => {
+                                        const StepIcon = step.icon;
+                                        const isActive = progress.step === step.id;
+                                        const isCompleted = progress.step > step.id;
+                                        
+                                        return (
+                                            <div key={step.id} className="flex flex-col items-center gap-3">
+                                                <div className={cn(
+                                                    "w-8 h-8 rounded-full flex items-center justify-center transition-all duration-500 border-2",
+                                                    isCompleted 
+                                                        ? "bg-emerald-500 border-emerald-500 text-white" 
+                                                        : isActive 
+                                                            ? "bg-emerald-500/20 border-emerald-500 text-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.3)] scale-110" 
+                                                            : isDark ? "bg-[#0B1220] border-white/10 text-white/20" : "bg-white border-slate-200 text-slate-300"
+                                                )}>
+                                                    {isCompleted ? <CheckCircle2 className="w-4 h-4" /> : <StepIcon className="w-4 h-4" />}
+                                                </div>
+                                                <p className={cn(
+                                                    "text-[9px] font-black uppercase tracking-tighter transition-colors duration-500",
+                                                    isActive ? "text-emerald-500" : isCompleted ? (isDark ? "text-white/60" : "text-slate-500") : (isDark ? "text-white/20" : "text-slate-300")
+                                                )}>
+                                                    {step.label}
+                                                </p>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+
+                            {/* Contextual Action Description */}
+                            <div className={cn("mt-8 p-4 rounded-2xl border flex items-center justify-between", isDark ? "bg-white/5 border-white/5" : "bg-slate-50 border-slate-100")}>
+                                <div className="flex items-center gap-3">
+                                    <div className={cn("w-8 h-8 rounded-xl flex items-center justify-center", isDark ? "bg-emerald-500/10 text-emerald-500" : "bg-emerald-50 text-emerald-600")}>
+                                        <Zap className="w-4 h-4" />
+                                    </div>
+                                    <p className={cn("text-[11px] font-bold leading-tight", textColor)}>
+                                        {progress.step === 1 && "Contract signed! Waiting for brand's next step."}
+                                        {progress.step === 2 && "Product is in transit. We'll notify you once it arrives."}
+                                        {progress.step === 3 && "It's time to create! Upload your deliverables once ready."}
+                                        {progress.step === 4 && "Deliverables approved! Payment is being processed."}
+                                    </p>
+                                </div>
+                                <div className={cn("px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest", isDark ? "bg-emerald-500/20 text-emerald-400" : "bg-emerald-500 text-white")}>
+                                    LIVE
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </motion.div>
+            )}
 
             {/* Link to Instagram Bio Widget (Redesigned) */}
             <motion.div
