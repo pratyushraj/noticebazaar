@@ -3066,7 +3066,6 @@ const MobileDashboardDemo = ({
                     <h1 className={cn("text-[20px] font-black tracking-tight truncate", textColor)}>{title}</h1>
                     {subtitle && <p className={cn("text-[10px] font-bold opacity-30 uppercase tracking-[0.15em] truncate mt-0.5", textColor)}>{subtitle}</p>}
                 </div>
-                                                                )}
             </div>
         );
 
@@ -5616,8 +5615,7 @@ const MobileDashboardDemo = ({
                                                                                 </div>
                                                                             </button>
                                                                             {showBrief && (
-                                                                                {showBrief && (
-                                                            <div className="px-6 pb-10">
+                                                                                <div className="px-6 pb-10">
                                                                                     <p className={cn("text-[15px] font-medium leading-relaxed opacity-70 mb-10 whitespace-pre-wrap px-1", textColor)}>
                                                                                         {cleanDesc}
                                                                                     </p>
@@ -5816,42 +5814,17 @@ const MobileDashboardDemo = ({
                                                             <div className="flex flex-col items-start gap-3 sm:items-end">
                                                                 <div className={cn("flex flex-wrap gap-2 sm:justify-end", textColor)}>
                                                                     {(() => {
-                                                                        const raw = selectedItem.deliverables || selectedItem.raw?.deliverables;
-                                                                        let items: string[] = [];
-                                                                        try {
-                                                                            if (raw) {
-                                                                                if (typeof raw === 'string' && !raw.startsWith('[') && !raw.startsWith('{')) {
-                                                                                    // Handle plain text deliverables
-                                                                                    items = [raw];
-                                                                                } else {
-                                                                                    const parsed = safeJsonParse(raw, raw);
-                                                                                    if (Array.isArray(parsed) && parsed.length > 0) {
-                                                                                        items = parsed.map((d: any) => {
-                                                                                            if (typeof d === 'string') return d;
-                                                                                            const ct = (d.contentType || d.type || '').toLowerCase();
-                                                                                            const count = d.count || d.quantity || 1;
-                                                                                            let label = 'Content';
-                                                                                            if (ct.includes('reel')) label = 'Reel';
-                                                                                            else if (ct.includes('story')) label = 'Stories';
-                                                                                            else if (ct.includes('post')) label = 'Post';
-                                                                                            return `${count} ${label}`;
-                                                                                        });
-                                                                                    } else if (typeof parsed === 'string') {
-                                                                                        items = [parsed];
-                                                                                    }
-                                                                                }
-                                                                            }
-                                                                        } catch (_) {
-                                                                            if (typeof raw === 'string') items = [raw];
-                                                                        }
-                                                                        // Sensible default if still empty
-                                                                        if (items.length === 0) items = ['1 Reel'];
-                                                                        return items.map((d, i) => (
-                                                                            <span key={i} className={cn(
+                                                                        const rawDesc = selectedItem.campaign_description || selectedItem.raw?.campaign_description || selectedItem.description || selectedItem.raw?.description || "";
+                                                                        const packageMatch = rawDesc.match(/Selected package:\s*([🚀📈🎯💼]?\s*.*?)(?=\s*Collab Duration:|\n|Additional|$)/i);
+                                                                        const resolvedPackageName = (packageMatch ? packageMatch[1].trim() : null) || selectedItem.package_name || selectedItem.package_tier || selectedItem.raw?.package_name || selectedItem.raw?.package_tier || 'Starter Package';
+                                                                        return (
+                                                                            <span className={cn(
                                                                                 "px-3 py-1.5 rounded-xl text-[11px] font-black border whitespace-nowrap",
-                                                                                isDark ? "bg-white/[0.03] border-white/5" : "bg-white border-slate-200"
-                                                                            )}>{d}</span>
-                                                                        ));
+                                                                                isDark ? "bg-white/[0.03] border-white/5" : "bg-white border-slate-200 shadow-sm"
+                                                                            )}>
+                                                                                {resolvedPackageName}
+                                                                            </span>
+                                                                        );
                                                                     })()}
                                                                 </div>
                                                                 <div className={cn(
@@ -6295,12 +6268,13 @@ const MobileDashboardDemo = ({
                                                                         ))}
                                                                     </div>
                                                                 </div>
-                                                            )}
                                                             </div>
-                                                        </div>
-                                                    );
-                                                })()}
-                                            </div>
+                                                        )}
+                                                    </div>
+                                                );
+                                            })()}
+                                        </div>
+                                    )}
                                         {/* ── PRODUCT PREVIEW (IF BARTER) ── */}
                                         {selectedType !== 'offer' && selectedRequiresShipping && (
                                             <div className="mb-8">
