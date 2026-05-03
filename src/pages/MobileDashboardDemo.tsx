@@ -5526,15 +5526,21 @@ const MobileDashboardDemo = ({
                                                             <div className="space-y-2.5">
                                                                 <button
                                                                     type="button"
-                                                                    disabled={isAccepting}
-                                                                    onClick={handleAccept}
+                                                                    disabled={processingDeal === selectedItem.id}
+                                                                    onClick={() => handleAccept(selectedItem)}
                                                                     className={cn(
                                                                         "w-full h-15 py-4 rounded-[22px] font-black text-[16px] tracking-tight active:scale-[0.98] transition-all shadow-xl flex items-center justify-center gap-3",
                                                                         isDark ? "bg-emerald-500 text-white shadow-emerald-500/20" : "bg-emerald-600 text-white shadow-emerald-600/20"
                                                                     )}
                                                                 >
-                                                                    <Zap className="w-4 h-4 fill-current" />
-                                                                    Accept & Earn {renderBudgetValue(selectedItem)}
+                                                                    {processingDeal === selectedItem.id ? (
+                                                                        <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                                                    ) : (
+                                                                        <>
+                                                                            <Zap className="w-4 h-4 fill-current" />
+                                                                            Accept & Earn {renderBudgetValue(selectedItem)}
+                                                                        </>
+                                                                    )}
                                                                 </button>
                                                                 <div className="flex gap-2">
                                                                     <button className={cn("flex-1 h-11 rounded-xl border font-black text-[12px] uppercase tracking-wider", isDark ? "bg-white/5 border-white/8 text-white/40" : "bg-white border-slate-200 text-slate-500")}>Counter</button>
@@ -6034,7 +6040,7 @@ const MobileDashboardDemo = ({
                                                             <AlignLeft className="w-5 h-5 text-info" />
                                                         </div>
                                                         <p className={cn("text-[14px] leading-relaxed font-bold flex-1 pt-1.5", isDark ? "text-foreground/90" : "text-muted-foreground")}>
-                                                            {selectedItem.campaign_description || selectedItem.raw?.campaign_description || 'No description provided.'}
+                                                            {selectedItem.campaign_description || selectedItem.raw?.campaign_description || 'Ensure high-quality lighting, no competitor branding, and a clear product focus in your content.'}
                                                         </p>
                                                     </div>
                                                 </div>
