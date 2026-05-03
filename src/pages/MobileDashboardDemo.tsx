@@ -5507,40 +5507,43 @@ const MobileDashboardDemo = ({
                                                                     isDark ? "bg-[radial-gradient(circle_at_top_right,rgba(16,185,129,0.08),transparent)]" : "bg-[radial-gradient(circle_at_top_right,rgba(16,185,129,0.05),transparent)]"
                                                                 )} />
 
-                                                                <div className="flex items-center justify-between gap-6 relative z-10">
-                                                                    <div className="flex-1 min-w-0">
-                                                                        <div className={cn("inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full mb-4 border shadow-sm",
-                                                                            isDark ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400" : "bg-emerald-50 border-emerald-100 text-emerald-700"
-                                                                        )}>
-                                                                            <ShieldCheck className="w-3.5 h-3.5" />
-                                                                            <span className="text-[11px] font-black uppercase tracking-widest">{isBarterLikeCollab(selectedItem) ? 'Product Secured' : `${renderBudgetValue(selectedItem)} Secured`}</span>
+                                                                <div className="flex flex-col gap-5 relative z-10">
+                                                                    {/* Full-Width Rectangular Product Image */}
+                                                                    <div className={cn("w-full aspect-[16/10] rounded-[2.5rem] overflow-hidden border shadow-2xl transition-all duration-500 hover:scale-[1.02] group/product relative", 
+                                                                        isDark ? "bg-white/5 border-white/10" : "bg-white border-slate-200"
+                                                                    )}>
+                                                                        <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent z-10" />
+                                                                        {(() => {
+                                                                            const productImage = resolveCreatorDealProductImage(selectedItem) || selectedItem.brand_logo_url || selectedItem.brand_logo;
+                                                                            return (
+                                                                                <img 
+                                                                                    src={productImage || `https://images.unsplash.com/photo-1524169358666-79f22534bc6b?auto=format&fit=crop&q=80&w=1200`} 
+                                                                                    className="w-full h-full object-cover transition-transform duration-1000 group-hover/product:scale-110" 
+                                                                                    alt="Product"
+                                                                                    onError={(e) => {
+                                                                                        (e.target as HTMLImageElement).src = `https://images.unsplash.com/photo-1524169358666-79f22534bc6b?auto=format&fit=crop&q=80&w=1200`;
+                                                                                    }}
+                                                                                />
+                                                                            );
+                                                                        })()}
+                                                                    </div>
+
+                                                                    {/* Payment Details Below Image */}
+                                                                    <div className="flex items-end justify-between px-2">
+                                                                        <div className="flex-1 min-w-0">
+                                                                            <div className={cn("inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full mb-3 border shadow-sm",
+                                                                                isDark ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400" : "bg-emerald-50 border-emerald-100 text-emerald-700"
+                                                                            )}>
+                                                                                <ShieldCheck className="w-3.5 h-3.5" />
+                                                                                <span className="text-[11px] font-black uppercase tracking-widest">{isBarterLikeCollab(selectedItem) ? 'Product Secured' : `${renderBudgetValue(selectedItem)} Secured`}</span>
+                                                                            </div>
+                                                                            <h2 className={cn("text-[44px] leading-[0.9] font-black tracking-tighter uppercase mb-1", textColor)}>
+                                                                                {isBarterLikeCollab(selectedItem) ? "Free Product" : renderBudgetValue(selectedItem)}
+                                                                            </h2>
+                                                                            <p className={cn("text-[11px] font-bold opacity-40 uppercase tracking-[0.2em]", textColor)}>
+                                                                                {isBarterLikeCollab(selectedItem) ? `Est. Value ${renderBudgetValue(selectedItem)}` : "Net Payout"}
+                                                                            </p>
                                                                         </div>
-                                                                         <h2 className={cn("text-[48px] leading-[0.9] font-black tracking-tighter uppercase mb-2", textColor)}>
-                                                                             {isBarterLikeCollab(selectedItem) ? "Free Product" : renderBudgetValue(selectedItem)}
-                                                                         </h2>
-                                                                         <p className={cn("text-[12px] font-bold opacity-40 uppercase tracking-[0.2em]", textColor)}>
-                                                                             {isBarterLikeCollab(selectedItem) ? `Est. Value ${renderBudgetValue(selectedItem)}` : "Net Payout"}
-                                                                         </p>
-                                                                     </div>
-                                                                     
-                                                                     {/* Enhanced Product Photo Container */}
-                                                                     <div className={cn("w-40 h-40 rounded-[2.5rem] overflow-hidden border shrink-0 shadow-[0_20px_50px_rgba(0,0,0,0.3)] transition-all duration-500 hover:scale-105 group/product relative", 
-                                                                         isDark ? "bg-white/5 border-white/10" : "bg-white border-slate-200"
-                                                                     )}>
-                                                                         <div className="absolute inset-0 bg-gradient-to-tr from-black/20 to-transparent z-10" />
-                                                                         {(() => {
-                                                                             const productImage = resolveCreatorDealProductImage(selectedItem) || selectedItem.brand_logo_url || selectedItem.brand_logo;
-                                                                             return (
-                                                                                 <img 
-                                                                                     src={productImage || `https://ui-avatars.com/api/?name=${encodeURIComponent(selectedItem.brand_name || 'B')}&background=random`} 
-                                                                                     className="w-full h-full object-cover transition-transform duration-700 group-hover/product:scale-110" 
-                                                                                     alt="Product"
-                                                                                     onError={(e) => {
-                                                                                         (e.target as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${encodeURIComponent(selectedItem.brand_name || 'B')}&background=random`;
-                                                                                     }}
-                                                                                 />
-                                                                             );
-                                                                         })()}
                                                                     </div>
                                                                 </div>
 
@@ -5605,8 +5608,8 @@ const MobileDashboardDemo = ({
                                                                                                 </p>
                                                                                             </div>
                                                                                             
-                                                                                            {/* Fallback items if it's a known package type but checklist is empty */}
-                                                                                            {extractedPackageName?.toLowerCase().includes('starter') && requirementsList.length === 0 && (
+                                                                                            {/* Package Specific Deliverables */}
+                                                                                            {extractedPackageName?.toLowerCase().includes('starter') && (
                                                                                                 <>
                                                                                                     <div className="flex items-center gap-3.5">
                                                                                                         <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0">
@@ -5619,6 +5622,23 @@ const MobileDashboardDemo = ({
                                                                                                             <Check className="w-3 h-3 text-emerald-500" strokeWidth={4} />
                                                                                                         </div>
                                                                                                         <p className={cn("text-[14px] font-bold tracking-tight opacity-90", textColor)}>Basic editing</p>
+                                                                                                    </div>
+                                                                                                </>
+                                                                                            )}
+
+                                                                                            {extractedPackageName?.toLowerCase().includes('growth') && (
+                                                                                                <>
+                                                                                                    <div className="flex items-center gap-3.5">
+                                                                                                        <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0">
+                                                                                                            <Check className="w-3 h-3 text-emerald-500" strokeWidth={4} />
+                                                                                                        </div>
+                                                                                                        <p className={cn("text-[14px] font-bold tracking-tight opacity-90", textColor)}>SEO + Hook Optimization</p>
+                                                                                                    </div>
+                                                                                                    <div className="flex items-center gap-3.5">
+                                                                                                        <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0">
+                                                                                                            <Check className="w-3 h-3 text-emerald-500" strokeWidth={4} />
+                                                                                                        </div>
+                                                                                                        <p className={cn("text-[14px] font-bold tracking-tight opacity-90", textColor)}>1 Story shoutout</p>
                                                                                                     </div>
                                                                                                 </>
                                                                                             )}
@@ -6122,32 +6142,76 @@ const MobileDashboardDemo = ({
                                                                 const description = selectedItem.campaign_description || selectedItem.raw?.campaign_description || selectedItem.description || selectedItem.raw?.description;
 
                                                                 return (
-                                                                    <div className="space-y-4">
-                                                                        {description && (
-                                                                            <p className={cn("text-[14px] leading-relaxed font-bold", isDark ? "text-foreground/90" : "text-muted-foreground")}>
-                                                                                {description.split(/Selected package:|Collab Duration:|Additional Commercial Terms:|Collab content category:|Product for collab:/i)[0].trim()}
-                                                                            </p>
-                                                                        )}
-                                                                        
-                                                                        {requirementsList.length > 0 && (
-                                                                            <div className={cn("space-y-3 pt-2", description ? "border-t border-white/5 mt-4" : "")}>
-                                                                                {requirementsList.map((req: string, i: number) => (
-                                                                                    <div key={i} className="flex items-start gap-3">
-                                                                                        <div className="mt-1 w-4 h-4 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0">
-                                                                                            <Check className="w-2.5 h-2.5 text-emerald-500" strokeWidth={4} />
-                                                                                        </div>
-                                                                                        <p className={cn("text-[13px] font-bold leading-tight opacity-80", textColor)}>{req}</p>
-                                                                                    </div>
-                                                                                ))}
-                                                                            </div>
-                                                                        )}
-
-                                                                        {!description && requirementsList.length === 0 && (
+                                                                     <div className="space-y-4">
+                                                                         {description && (
                                                                              <p className={cn("text-[14px] leading-relaxed font-bold", isDark ? "text-foreground/90" : "text-muted-foreground")}>
-                                                                                Ensure high-quality lighting, no competitor branding, and a clear product focus in your content.
-                                                                            </p>
-                                                                        )}
-                                                                    </div>
+                                                                                 {description.split(/Selected package:|Collab Duration:|Additional Commercial Terms:|Collab content category:|Product for collab:/i)[0].trim()}
+                                                                             </p>
+                                                                         )}
+
+                                                                         {/* Package Specific Deliverables */}
+                                                                         {(() => {
+                                                                             const rawDesc = selectedItem.campaign_description || selectedItem.raw?.campaign_description || selectedItem.description || selectedItem.raw?.description || "";
+                                                                             const packageMatch = rawDesc.match(/Selected package:\s*(.*?)(?=\s*Collab Duration:|Additional|$)/i);
+                                                                             const packageName = packageMatch ? packageMatch[1].toLowerCase() : "";
+
+                                                                             return (
+                                                                                 <>
+                                                                                     {packageName.includes('starter') && (
+                                                                                         <div className="space-y-3 mt-4 pt-4 border-t border-white/5">
+                                                                                             <div className="flex items-center gap-3">
+                                                                                                  <div className="w-4 h-4 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0">
+                                                                                                     <Check className="w-2.5 h-2.5 text-emerald-500" strokeWidth={4} />
+                                                                                                 </div>
+                                                                                                 <p className={cn("text-[13px] font-bold opacity-80", textColor)}>Organic reach focus</p>
+                                                                                             </div>
+                                                                                             <div className="flex items-center gap-3">
+                                                                                                  <div className="w-4 h-4 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0">
+                                                                                                     <Check className="w-2.5 h-2.5 text-emerald-500" strokeWidth={4} />
+                                                                                                 </div>
+                                                                                                 <p className={cn("text-[13px] font-bold opacity-80", textColor)}>Basic editing</p>
+                                                                                             </div>
+                                                                                         </div>
+                                                                                     )}
+                                                                                     {packageName.includes('growth') && (
+                                                                                         <div className="space-y-3 mt-4 pt-4 border-t border-white/5">
+                                                                                              <div className="flex items-center gap-3">
+                                                                                                  <div className="w-4 h-4 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0">
+                                                                                                     <Check className="w-2.5 h-2.5 text-emerald-500" strokeWidth={4} />
+                                                                                                 </div>
+                                                                                                 <p className={cn("text-[13px] font-bold opacity-80", textColor)}>SEO + Hook Optimization</p>
+                                                                                             </div>
+                                                                                             <div className="flex items-center gap-3">
+                                                                                                  <div className="w-4 h-4 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0">
+                                                                                                     <Check className="w-2.5 h-2.5 text-emerald-500" strokeWidth={4} />
+                                                                                                 </div>
+                                                                                                 <p className={cn("text-[13px] font-bold opacity-80", textColor)}>1 Story shoutout</p>
+                                                                                             </div>
+                                                                                         </div>
+                                                                                     )}
+                                                                                 </>
+                                                                             );
+                                                                         })()}
+                                                                         
+                                                                         {requirementsList.length > 0 && (
+                                                                             <div className={cn("space-y-3 pt-2", description ? "border-t border-white/5 mt-4" : "")}>
+                                                                                 {requirementsList.map((req: string, i: number) => (
+                                                                                     <div key={i} className="flex items-start gap-3">
+                                                                                         <div className="mt-1 w-4 h-4 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0">
+                                                                                             <Check className="w-2.5 h-2.5 text-emerald-500" strokeWidth={4} />
+                                                                                         </div>
+                                                                                         <p className={cn("text-[13px] font-bold leading-tight opacity-80", textColor)}>{req}</p>
+                                                                                     </div>
+                                                                                 ))}
+                                                                             </div>
+                                                                         )}
+
+                                                                         {!description && requirementsList.length === 0 && (
+                                                                              <p className={cn("text-[14px] leading-relaxed font-bold", isDark ? "text-foreground/90" : "text-muted-foreground")}>
+                                                                                 Ensure high-quality lighting, no competitor branding, and a clear product focus in your content.
+                                                                             </p>
+                                                                         )}
+                                                                     </div>
                                                                 );
                                                             })()}
                                                         </div>
