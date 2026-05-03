@@ -5461,189 +5461,234 @@ const MobileDashboardDemo = ({
                                         {/* ── OFFER BRIEF HERO ── */}
                                         {selectedType === 'offer' ? (
                                             <div className="mb-6">
-                                                <div className="flex flex-col items-center text-center gap-4 pt-1">
-                                                    <div className="flex flex-nowrap items-center justify-center gap-2 max-w-full">
-                                                      <div className={cn(
-                                                          "inline-flex items-center gap-1.5 px-3.5 py-2.5 rounded-full text-[10px] font-black uppercase tracking-[0.12em] whitespace-nowrap shadow-sm transition-all hover:scale-105",
-                                                          String(selectedItem?.collab_type || '').toLowerCase().includes('barter')
-                                                              ? "bg-amber-500 text-white"
-                                                              : (isDark ? "bg-amber-500/15 text-amber-300 border border-amber-400/20" : "bg-amber-50 text-amber-700 border border-amber-200/50")
-                                                      )}>
-                                                          <span className="animate-pulse">🔥</span>
-                                                          <span className="whitespace-nowrap">Offer expires in 5 days</span>
-                                                      </div>
-                                                      {String(selectedItem?.collab_type || '').toLowerCase().includes('barter') ? (
-                                                          <div className="inline-flex items-center gap-1.5 px-3.5 py-2.5 rounded-full text-[10px] font-black uppercase tracking-[0.12em] whitespace-nowrap shadow-sm bg-orange-500 text-white">
-                                                              <Package className="w-3.5 h-3.5" />
-                                                              <span className="whitespace-nowrap">Free Product Collab</span>
-                                                          </div>
-                                                      ) : (
-                                                          <div className={cn(
-                                                              "inline-flex items-center gap-1.5 px-3.5 py-2.5 rounded-full text-[10px] font-black uppercase tracking-[0.12em] border whitespace-nowrap shadow-sm transition-all hover:scale-105",
-                                                              isDark ? "bg-white/[0.04] text-white/80 border-white/10" : "bg-white text-slate-700 border-slate-200/80"
-                                                          )}>
-                                                              <span className="w-2 h-2 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.6)]" />
-                                                              <span className="whitespace-nowrap">Paid Campaign</span>
-                                                          </div>
-                                                      )}
+                                                {/* Status pill row */}
+                                                <div className="flex flex-nowrap items-center justify-center gap-2 pt-1 max-w-full">
+                                                    <div className={cn(
+                                                        "inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full text-[10px] font-black uppercase tracking-[0.12em] whitespace-nowrap",
+                                                        String(selectedItem?.collab_type || '').toLowerCase().includes('barter')
+                                                            ? "bg-amber-500 text-white"
+                                                            : (isDark ? "bg-amber-500/15 text-amber-300 border border-amber-400/20" : "bg-amber-50 text-amber-700 border border-amber-200/50")
+                                                    )}>
+                                                        <span className="animate-pulse">🔥</span>
+                                                        <span className="whitespace-nowrap">Offer expires in 5 days</span>
                                                     </div>
-                                                </div>
-
-                                                <div className={cn(
-                                                    "mt-6 rounded-[36px] border p-0 overflow-hidden relative transition-all duration-500",
-                                                    isDark 
-                                                        ? "bg-[#0C1320]/90 backdrop-blur-3xl border-white/10 shadow-[0_40px_80px_-20px_rgba(0,0,0,0.5)]" 
-                                                        : "bg-white border-[#E5E7EB] shadow-[0_25px_50px_-12px_rgba(0,0,0,0.08)]"
-                                                )}>
-                                                    <div className="flex flex-col sm:flex-row gap-5 p-5">
+                                                    {String(selectedItem?.collab_type || '').toLowerCase().includes('barter') ? (
+                                                        <div className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full text-[10px] font-black uppercase tracking-[0.12em] whitespace-nowrap bg-orange-500 text-white">
+                                                            <Package className="w-3.5 h-3.5" />
+                                                            <span className="whitespace-nowrap">Free Product Collab</span>
+                                                        </div>
+                                                    ) : (
                                                         <div className={cn(
-                                                            "w-full sm:w-[220px] h-[280px] rounded-[28px] overflow-hidden shrink-0 relative group shadow-2xl",
-                                                            isDark ? "bg-card border border-white/5" : "bg-[#F3F4F6] border border-black/5"
+                                                            "inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full text-[10px] font-black uppercase tracking-[0.12em] border whitespace-nowrap",
+                                                            isDark ? "bg-white/[0.04] text-white/80 border-white/10" : "bg-white text-slate-700 border-slate-200/80"
                                                         )}>
-                                                            {(() => {
-                                                                const src = resolveCreatorDealProductImage(selectedItem) || 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&q=80&w=500';
-                                                                return <img src={src} alt="" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" loading="lazy" />;
-                                                            })()}
+                                                            <span className="w-2 h-2 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.6)]" />
+                                                            <span className="whitespace-nowrap">Paid Campaign</span>
                                                         </div>
-                                                        
-                                                        <div className="flex-1 min-w-0 flex flex-col justify-between">
-                                                            <div>
-                                                                <div className="flex items-center gap-2 mb-2 opacity-50">
-                                                                    <Tag className="w-3 h-3" />
-                                                                    <p className="text-[11px] font-black uppercase tracking-[0.1em]">Brand Briefing</p>
-                                                                </div>
-                                                                <p className={cn("text-[44px] sm:text-[48px] leading-[0.9] font-black tracking-tight", textColor)}>
-                                                                    {renderBudgetValue(selectedItem)}
-                                                                </p>
-                                                                <p className={cn("text-[16px] font-bold mt-3 inline-flex items-center gap-2", textColor)}>
-                                                                    <span className="w-1.5 h-1.5 rounded-full bg-primary inline-block" />
-                                                                    Instagram Reel
-                                                                </p>
-                                                                <div className="mt-4 flex flex-wrap gap-2">
-                                                                    <div className={cn("px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider flex items-center gap-1.5", isDark ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20" : "bg-emerald-50 text-emerald-700 border border-emerald-100")}>
-                                                                        <Package className="w-3 h-3" />
-                                                                        Product secured
-                                                                    </div>
-                                                                    <div className={cn("px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider flex items-center gap-1.5", isDark ? "bg-rose-500/10 text-rose-400 border border-rose-500/20" : "bg-rose-50 text-rose-700 border border-rose-100")}>
-                                                                        <Clock className="w-3 h-3" />
-                                                                        Submit by 08 May
-                                                                    </div>
-                                                                </div>
-                                                            </div>
+                                                    )}
+                                                </div>
 
-                                                            <div className="grid grid-cols-2 gap-2 mt-6">
-                                                                {[
-                                                                    { label: "Good deal for you", icon: <Zap className="w-3 h-3" /> },
-                                                                    { label: "Payment guaranteed", icon: <CheckCircle2 className="w-3 h-3" /> },
-                                                                    { label: "1 Revision included", icon: <Edit3 className="w-3 h-3" /> },
-                                                                    { label: "No hidden tasks", icon: <ShieldCheck className="w-3 h-3" /> }
-                                                                ].map((helper, i) => (
-                                                                    <div key={i} className={cn("flex items-center gap-2 text-[10px] font-bold opacity-60", textColor)}>
-                                                                        <span className="text-emerald-500">{helper.icon}</span>
-                                                                        {helper.label}
-                                                                    </div>
-                                                                ))}
+                                                {/* ── CINEMATIC HERO CARD ── */}
+                                                <div className={cn(
+                                                    "mt-5 rounded-[32px] overflow-hidden relative",
+                                                    isDark ? "shadow-[0_32px_64px_-16px_rgba(0,0,0,0.7)]" : "shadow-[0_20px_48px_-12px_rgba(0,0,0,0.15)]"
+                                                )}>
+                                                    {/* Full-bleed product image */}
+                                                    <div className="relative w-full h-[260px]">
+                                                        {(() => {
+                                                            const src = resolveCreatorDealProductImage(selectedItem) || 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&q=80&w=800';
+                                                            return <img src={src} alt="" className="w-full h-full object-cover" loading="lazy" />;
+                                                        })()}
+                                                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                                                        <div className="absolute top-4 right-4">
+                                                            <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-white text-[10px] font-black uppercase tracking-widest">
+                                                                <Tag className="w-3 h-3" />
+                                                                Brand Brief
                                                             </div>
                                                         </div>
-                                                    </div>
-                                                </div>
-
-                                                {/* Timeline Progress Bar */}
-                                                <div className={cn("mt-6 p-6 rounded-[32px] border backdrop-blur-md", isDark ? "bg-white/5 border-white/10" : "bg-white border-slate-200")}>
-                                                    <p className={cn("text-[11px] font-black uppercase tracking-widest opacity-40 mb-6", textColor)}>Deal Lifecycle</p>
-                                                    <div className="relative px-2">
-                                                        <div className="absolute top-[15px] left-8 right-8 h-[2px] bg-slate-200/20 dark:bg-white/5" />
-                                                        <div className="absolute top-[15px] left-8 w-[15%] h-[2px] bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]" />
-                                                        
-                                                        <div className="flex justify-between items-start relative z-10">
-                                                            {[
-                                                                { label: 'Accept', sub: 'Secure deal', active: true, done: false },
-                                                                { label: 'Fund', sub: 'Payment locked', active: false, done: false },
-                                                                { label: 'Content', sub: 'Submit work', active: false, done: false },
-                                                                { label: 'Release', sub: 'Get paid', active: false, done: false }
-                                                            ].map((step, i) => (
-                                                                <div key={i} className="flex flex-col items-center gap-3">
-                                                                    <div className={cn(
-                                                                        "w-8 h-8 rounded-full flex items-center justify-center border-2 transition-all duration-500",
-                                                                        step.active 
-                                                                            ? "bg-emerald-500 border-emerald-500 text-white shadow-[0_0_15px_rgba(16,185,129,0.4)] scale-110" 
-                                                                            : "bg-background border-border text-muted-foreground opacity-40"
-                                                                    )}>
-                                                                        {i === 0 ? <Zap className="w-4 h-4" /> : i === 1 ? <ShieldCheck className="w-4 h-4" /> : i === 2 ? <Camera className="w-4 h-4" /> : <DollarSign className="w-4 h-4" />}
-                                                                    </div>
-                                                                    <div className="text-center">
-                                                                        <p className={cn("text-[10px] font-black uppercase tracking-tight", step.active ? "text-emerald-500" : "opacity-30", textColor)}>{step.label}</p>
-                                                                        <p className={cn("text-[8px] font-bold whitespace-nowrap opacity-40", textColor)}>{step.sub}</p>
-                                                                    </div>
-                                                                </div>
-                                                            ))}
+                                                        <div className="absolute bottom-0 left-0 right-0 p-5">
+                                                            <p className="text-white/50 text-[10px] font-black uppercase tracking-[0.15em] mb-0.5">Deal Value</p>
+                                                            <p className="text-white text-[52px] font-black leading-none tracking-tight">
+                                                                {renderBudgetValue(selectedItem)}
+                                                            </p>
+                                                            <div className="flex items-center gap-2 mt-2 flex-wrap">
+                                                                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/15 backdrop-blur-sm text-white text-[10px] font-bold border border-white/10">
+                                                                    <span className="w-1.5 h-1.5 rounded-full bg-primary" />
+                                                                    1 Instagram Reel
+                                                                </span>
+                                                                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/80 backdrop-blur-sm text-white text-[10px] font-bold">
+                                                                    <Package className="w-3 h-3" />
+                                                                    Product secured
+                                                                </span>
+                                                                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-rose-500/80 backdrop-blur-sm text-white text-[10px] font-bold">
+                                                                    <Clock className="w-3 h-3" />
+                                                                    Due 08 May
+                                                                </span>
+                                                            </div>
                                                         </div>
                                                     </div>
-                                                </div>
 
-                                                {/* Detailed Deliverables Section */}
-                                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
-                                                    <div className={cn("p-5 rounded-[28px] border", isDark ? "bg-white/5 border-white/10" : "bg-white border-slate-200")}>
-                                                        <p className={cn("text-[11px] font-black uppercase tracking-widest opacity-40 mb-4", textColor)}>Deliverables</p>
-                                                        <ul className="space-y-3">
-                                                            {[
-                                                                "1 Premium Reel (30–60s)",
-                                                                "Script + hook optimization",
-                                                                "1 Story shoutout (24h)",
-                                                                "High-res source files"
-                                                            ].map((item, i) => (
-                                                                <li key={i} className={cn("flex items-center gap-2.5 text-[12px] font-bold", textColor)}>
-                                                                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
-                                                                    {item}
-                                                                </li>
-                                                            ))}
-                                                        </ul>
-                                                    </div>
-
-                                                    <div className={cn("p-5 rounded-[28px] border", isDark ? "bg-white/5 border-white/10" : "bg-white border-slate-200")}>
-                                                        <p className={cn("text-[11px] font-black uppercase tracking-widest opacity-40 mb-4", textColor)}>Usage Rights</p>
-                                                        <ul className="space-y-3">
-                                                            {[
-                                                                "Organic social media only",
-                                                                "90 days usage limit",
-                                                                "No third-party licensing"
-                                                            ].map((item, i) => (
-                                                                <li key={i} className={cn("flex items-center gap-2.5 text-[12px] font-bold", textColor)}>
-                                                                    <div className="w-1.5 h-1.5 rounded-full bg-blue-500 shrink-0" />
-                                                                    {item}
-                                                                </li>
-                                                            ))}
-                                                        </ul>
-                                                    </div>
-                                                </div>
-
-                                                {/* Trust Block */}
-                                                <div className={cn("mt-4 p-5 rounded-[28px] border relative overflow-hidden", isDark ? "bg-emerald-500/5 border-emerald-500/10" : "bg-emerald-50/50 border-emerald-200/50")}>
-                                                    <div className="absolute top-0 right-0 p-4 opacity-10">
-                                                        <ShieldCheck className="w-16 h-16 text-emerald-500" />
-                                                    </div>
-                                                    <div className="flex items-center gap-3 mb-4">
-                                                        <div className="w-10 h-10 rounded-2xl bg-emerald-500 flex items-center justify-center text-white shadow-lg shadow-emerald-500/20">
-                                                            <ShieldCheck className="w-6 h-6" />
-                                                        </div>
-                                                        <div>
-                                                            <h4 className={cn("text-[15px] font-black tracking-tight", textColor)}>Protected by Creator Armour</h4>
-                                                            <p className={cn("text-[10px] font-bold opacity-40", textColor)}>Enterprise-grade security for every deal</p>
-                                                        </div>
-                                                    </div>
-                                                    <div className="space-y-2.5 relative z-10">
+                                                    {/* Decision helpers 2x2 grid */}
+                                                    <div className={cn(
+                                                        "grid grid-cols-2 gap-px",
+                                                        isDark ? "bg-white/[0.04]" : "bg-slate-100"
+                                                    )}>
                                                         {[
-                                                            "Contract auto-generated & legally binding",
-                                                            "72h auto-release after approval",
-                                                            "Full dispute protection & mediation"
-                                                        ].map((point, i) => (
-                                                            <div key={i} className={cn("flex items-center gap-2 text-[11px] font-bold", textColor)}>
-                                                                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
-                                                                {point}
+                                                            { label: "Great deal for you", icon: <Zap className="w-3.5 h-3.5" /> },
+                                                            { label: "Payment guaranteed", icon: <CheckCircle2 className="w-3.5 h-3.5" /> },
+                                                            { label: "1 Revision included", icon: <Edit3 className="w-3.5 h-3.5" /> },
+                                                            { label: "No hidden tasks", icon: <ShieldCheck className="w-3.5 h-3.5" /> }
+                                                        ].map((helper, i) => (
+                                                            <div key={i} className={cn(
+                                                                "flex items-center gap-2 px-4 py-3.5 text-[11px] font-semibold",
+                                                                isDark ? "bg-[#0d1219] text-white/60" : "bg-white text-slate-600"
+                                                            )}>
+                                                                <span className="text-emerald-500 shrink-0">{helper.icon}</span>
+                                                                {helper.label}
                                                             </div>
                                                         ))}
                                                     </div>
                                                 </div>
+
+                                                {/* ── DEAL LIFECYCLE TIMELINE ── */}
+                                                <div className={cn(
+                                                    "mt-4 px-5 pt-4 pb-5 rounded-[28px] border",
+                                                    isDark ? "bg-[#0d1219] border-white/[0.06]" : "bg-white border-slate-100 shadow-sm"
+                                                )}>
+                                                    <p className={cn("text-[10px] font-black uppercase tracking-[0.18em] mb-5", isDark ? "text-white/30" : "text-slate-400")}>
+                                                        Deal Lifecycle
+                                                    </p>
+                                                    <div className="flex items-center">
+                                                        {[
+                                                            { label: 'Accept', sub: 'Secure deal', active: true, Icon: Zap },
+                                                            { label: 'Fund', sub: 'Locked in', active: false, Icon: ShieldCheck },
+                                                            { label: 'Content', sub: 'You create', active: false, Icon: Camera },
+                                                            { label: 'Paid', sub: 'Get paid', active: false, Icon: DollarSign }
+                                                        ].map((step, i, arr) => (
+                                                            <React.Fragment key={i}>
+                                                                <div className="flex flex-col items-center gap-2 flex-shrink-0">
+                                                                    <div className={cn(
+                                                                        "w-9 h-9 rounded-2xl flex items-center justify-center transition-all duration-500",
+                                                                        step.active
+                                                                            ? "bg-emerald-500 text-white shadow-[0_0_20px_rgba(16,185,129,0.45)]"
+                                                                            : (isDark ? "bg-white/[0.05] text-white/20 border border-white/[0.06]" : "bg-slate-50 text-slate-300 border border-slate-100")
+                                                                    )}>
+                                                                        <step.Icon className="w-4 h-4" />
+                                                                    </div>
+                                                                    <div className="text-center">
+                                                                        <p className={cn("text-[10px] font-black", step.active ? "text-emerald-500" : (isDark ? "text-white/25" : "text-slate-300"))}>{step.label}</p>
+                                                                        <p className={cn("text-[9px] font-medium mt-0.5 whitespace-nowrap", isDark ? "text-white/20" : "text-slate-300")}>{step.sub}</p>
+                                                                    </div>
+                                                                </div>
+                                                                {i < arr.length - 1 && (
+                                                                    <div className="flex-1 mx-2 mb-5">
+                                                                        <div className={cn("h-[2px] rounded-full", i === 0 ? "bg-gradient-to-r from-emerald-500 to-emerald-500/20" : (isDark ? "bg-white/[0.05]" : "bg-slate-100"))} />
+                                                                    </div>
+                                                                )}
+                                                            </React.Fragment>
+                                                        ))}
+                                                    </div>
+                                                </div>
+
+                                                {/* ── DELIVERABLES ── */}
+                                                <div className={cn(
+                                                    "mt-3 rounded-[28px] border overflow-hidden",
+                                                    isDark ? "bg-[#0d1219] border-white/[0.06]" : "bg-white border-slate-100 shadow-sm"
+                                                )}>
+                                                    <div className="px-5 pt-4 pb-2 flex items-center gap-2">
+                                                        <div className={cn("w-7 h-7 rounded-xl flex items-center justify-center shrink-0", isDark ? "bg-emerald-500/15" : "bg-emerald-50")}>
+                                                            <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                                                        </div>
+                                                        <p className={cn("text-[10px] font-black uppercase tracking-[0.14em]", isDark ? "text-white/40" : "text-slate-400")}>Deliverables</p>
+                                                    </div>
+                                                    <div className="px-5 pb-4">
+                                                        {[
+                                                            { text: "1 Premium Reel (30–60s)", badge: "Main" },
+                                                            { text: "Script + hook optimization", badge: null },
+                                                            { text: "1 Story shoutout (24h)", badge: null },
+                                                            { text: "High-res source files", badge: null }
+                                                        ].map((item, i) => (
+                                                            <div key={i} className={cn(
+                                                                "flex items-center justify-between py-3",
+                                                                i < 3 ? (isDark ? "border-b border-white/[0.04]" : "border-b border-slate-50") : ""
+                                                            )}>
+                                                                <div className="flex items-center gap-3">
+                                                                    <span className={cn("w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-black shrink-0", isDark ? "bg-white/[0.06] text-white/40" : "bg-slate-100 text-slate-400")}>{i + 1}</span>
+                                                                    <span className={cn("text-[13px] font-semibold", textColor)}>{item.text}</span>
+                                                                </div>
+                                                                {item.badge && (
+                                                                    <span className="px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-500 text-[9px] font-black uppercase tracking-wider shrink-0">{item.badge}</span>
+                                                                )}
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                </div>
+
+                                                {/* ── USAGE RIGHTS ── */}
+                                                <div className={cn(
+                                                    "mt-3 rounded-[28px] border overflow-hidden",
+                                                    isDark ? "bg-[#0d1219] border-white/[0.06]" : "bg-white border-slate-100 shadow-sm"
+                                                )}>
+                                                    <div className="px-5 pt-4 pb-2 flex items-center gap-2">
+                                                        <div className={cn("w-7 h-7 rounded-xl flex items-center justify-center shrink-0", isDark ? "bg-blue-500/15" : "bg-blue-50")}>
+                                                            <FileText className="w-4 h-4 text-blue-500" />
+                                                        </div>
+                                                        <p className={cn("text-[10px] font-black uppercase tracking-[0.14em]", isDark ? "text-white/40" : "text-slate-400")}>Usage Rights</p>
+                                                    </div>
+                                                    <div className="px-5 pb-4">
+                                                        {[
+                                                            "Organic social media only",
+                                                            "90 days usage limit",
+                                                            "No third-party licensing"
+                                                        ].map((item, i) => (
+                                                            <div key={i} className={cn(
+                                                                "flex items-center gap-3 py-3",
+                                                                i < 2 ? (isDark ? "border-b border-white/[0.04]" : "border-b border-slate-50") : ""
+                                                            )}>
+                                                                <div className="w-1.5 h-1.5 rounded-full bg-blue-500 shrink-0 ml-1" />
+                                                                <span className={cn("text-[13px] font-semibold", textColor)}>{item}</span>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                </div>
+
+                                                {/* ── CREATOR ARMOUR TRUST BLOCK ── */}
+                                                <div className={cn(
+                                                    "mt-3 rounded-[28px] border relative overflow-hidden",
+                                                    isDark
+                                                        ? "bg-gradient-to-br from-emerald-950/40 to-[#0d1219] border-emerald-500/15"
+                                                        : "bg-gradient-to-br from-emerald-50 to-white border-emerald-100"
+                                                )}>
+                                                    <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-emerald-500 via-emerald-400 to-teal-500 opacity-70" />
+                                                    <div className="p-5">
+                                                        <div className="flex items-start gap-3 mb-4">
+                                                            <div className="w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 bg-emerald-500 text-white shadow-[0_4px_12px_rgba(16,185,129,0.3)]">
+                                                                <ShieldCheck className="w-5 h-5" />
+                                                            </div>
+                                                            <div className="min-w-0">
+                                                                <h4 className={cn("text-[14px] font-black tracking-tight leading-snug", textColor)}>Protected by Creator Armour™</h4>
+                                                                <p className={cn("text-[11px] font-medium mt-0.5", isDark ? "text-white/40" : "text-slate-400")}>Every deal is legally secured</p>
+                                                            </div>
+                                                        </div>
+                                                        <div className={cn(
+                                                            "rounded-2xl divide-y overflow-hidden",
+                                                            isDark ? "divide-white/[0.05] bg-black/20" : "divide-emerald-50 bg-emerald-50/60"
+                                                        )}>
+                                                            {[
+                                                                { icon: <FileText className="w-3.5 h-3.5" />, text: "Contract auto-generated & legally binding" },
+                                                                { icon: <Clock className="w-3.5 h-3.5" />, text: "72h auto-release after approval" },
+                                                                { icon: <ShieldCheck className="w-3.5 h-3.5" />, text: "Full dispute protection & mediation" }
+                                                            ].map((point, i) => (
+                                                                <div key={i} className="flex items-center gap-3 px-4 py-3">
+                                                                    <span className="text-emerald-500 shrink-0">{point.icon}</span>
+                                                                    <span className={cn("text-[12px] font-semibold", textColor)}>{point.text}</span>
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                {/* ── CTA SECTION ── */}
                                                 <div className="mt-4 space-y-3">
                                                     <button
                                                         type="button"
@@ -5661,45 +5706,24 @@ const MobileDashboardDemo = ({
                                                             }
                                                             handleAccept(selectedItem);
                                                         }}
-                                                        className={cn(
-                                                            "w-full min-h-[120px] rounded-[36px] px-8 py-6 flex items-center justify-between relative overflow-hidden group active:scale-[0.97] transition-all duration-500",
-                                                            "bg-gradient-to-r from-emerald-600 via-emerald-500 to-sky-600 text-white shadow-[0_25px_50px_-12px_rgba(16,185,129,0.5)]"
-                                                        )}
+                                                        className="w-full rounded-[24px] overflow-hidden relative group active:scale-[0.98] transition-transform duration-200"
                                                     >
-                                                        {/* Dynamic Background Effects */}
-                                                        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(255,255,255,0.2),transparent)] opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
-                                                        <div className="absolute inset-0 bg-emerald-400/10 opacity-0 group-hover:opacity-20 transition-opacity" />
-                                                        
-                                                        {/* Pulsing Glow Animation */}
-                                                        <div className="absolute inset-0 bg-emerald-400/20 animate-pulse opacity-30" />
-
-                                                        <div className="absolute -top-6 -right-6 p-3 opacity-10 rotate-12 group-hover:rotate-45 group-hover:scale-125 transition-all duration-700">
-                                                            <Zap className="w-24 h-24 text-white" />
-                                                        </div>
-                                                        
-                                                        <div className="text-left relative z-10">
-                                                            <p className="text-[26px] sm:text-[28px] font-black leading-tight tracking-tight drop-shadow-md">
-                                                                Accept → Earn {renderBudgetValue(selectedItem)}
-                                                            </p>
-                                                            <div className="text-[12px] sm:text-[13px] font-bold opacity-90 mt-1 flex items-center gap-2">
-                                                                <div className="w-5 h-5 rounded-lg bg-white/20 flex items-center justify-center shrink-0">
-                                                                    <DollarSign className="w-3 h-3" />
-                                                                </div>
-                                                                💰 Payment secured • Releases after approval
+                                                        <div className="bg-gradient-to-r from-emerald-600 to-emerald-500 px-6 py-5 flex items-center justify-between">
+                                                            <div className="text-left">
+                                                                <p className="text-white text-[22px] font-black tracking-tight leading-tight">
+                                                                    Accept & Earn {renderBudgetValue(selectedItem)}
+                                                                </p>
+                                                                <p className="text-white/70 text-[12px] font-semibold mt-0.5">Payment secured • Releases after approval</p>
                                                             </div>
-                                                        </div>
-                                                        <div className="w-14 h-14 rounded-full bg-white/25 flex items-center justify-center backdrop-blur-md relative z-10 shadow-lg border border-white/20 transition-transform group-hover:translate-x-1">
-                                                            <ChevronRight className="w-7 h-7 text-white" />
+                                                            <div className="w-12 h-12 rounded-2xl bg-white/20 border border-white/20 flex items-center justify-center shrink-0 group-hover:translate-x-0.5 transition-transform">
+                                                                <ChevronRight className="w-6 h-6 text-white" />
+                                                            </div>
                                                         </div>
                                                     </button>
 
-                                                    <div className="mt-4 flex flex-col items-center gap-3">
-                                                        <div className="flex items-center gap-2 text-[11px] font-black uppercase tracking-[0.2em] opacity-40">
-                                                            <div className="w-1 h-1 rounded-full bg-emerald-500" />
-                                                            50+ creators completed deals successfully
-                                                            <div className="w-1 h-1 rounded-full bg-emerald-500" />
-                                                        </div>
-                                                    </div>
+                                                    <p className={cn("text-center text-[10px] font-bold uppercase tracking-[0.2em]", isDark ? "text-white/20" : "text-slate-300")}>
+                                                        50+ creators have completed deals
+                                                    </p>
 
                                                     {selectedIsPureBarter && (
                                                         <button
@@ -5709,49 +5733,47 @@ const MobileDashboardDemo = ({
                                                                 handleOpenBarterShippingFlow(selectedItem);
                                                             }}
                                                             className={cn(
-                                                                "w-full mt-3 h-16 rounded-[24px] px-5 flex items-center justify-between border active:scale-[0.99] transition-all shadow-sm",
-                                                                isDark ? "bg-[#151922] border-amber-500/20 text-amber-300 hover:bg-amber-500/5" : "bg-white border-amber-100 text-amber-700 hover:bg-amber-50/70"
+                                                                "w-full h-16 rounded-[20px] px-5 flex items-center justify-between border active:scale-[0.99] transition-all",
+                                                                isDark ? "bg-[#0d1219] border-amber-500/20 text-amber-300 hover:bg-amber-500/5" : "bg-white border-amber-100 text-amber-700"
                                                             )}
                                                         >
                                                             <span className="flex items-center gap-3">
-                                                                <div className={cn("w-10 h-10 rounded-full flex items-center justify-center", isDark ? "bg-amber-500/10" : "bg-amber-100")}>
-                                                                    <MapPin className="w-4.5 h-4.5" />
+                                                                <div className={cn("w-9 h-9 rounded-xl flex items-center justify-center", isDark ? "bg-amber-500/10" : "bg-amber-100")}>
+                                                                    <MapPin className="w-4 h-4" />
                                                                 </div>
                                                                 <span className="text-left">
-                                                                    <span className="font-black text-[15px] tracking-tight block">Add Shipping Address</span>
-                                                                    <span className="text-[11px] font-bold opacity-60 block">Open the address step from this offer</span>
+                                                                    <span className="font-black text-[14px] tracking-tight block">Add Shipping Address</span>
+                                                                    <span className="text-[11px] font-medium opacity-60 block">Required to receive your product</span>
                                                                 </span>
                                                             </span>
                                                             <ChevronRight className="w-5 h-5 opacity-40" />
                                                         </button>
                                                     )}
 
-                                                        <div className="grid grid-cols-1">
-                                                            <button
-                                                                type="button"
-                                                                onClick={() => {
-                                                                    triggerHaptic();
-                                                                    window.open('https://wa.me/919999999999', '_blank');
-                                                                }}
-                                                                className={cn(
-                                                                    "w-full h-20 rounded-[24px] px-6 flex items-center justify-between border active:scale-[0.99] transition-all shadow-sm",
-                                                                    isDark ? "bg-[#151922] border-white/10 text-foreground hover:bg-white/5" : "bg-white border-slate-200 text-slate-900"
-                                                                )}
-                                                            >
-                                                                <span className="flex items-center gap-4">
-                                                                    <div className={cn("w-11 h-11 rounded-full flex items-center justify-center", isDark ? "bg-white/5" : "bg-slate-100")}>
-                                                                        <ShieldCheck className="w-5.5 h-5.5 text-primary" />
-                                                                    </div>
-                                                                    <div className="text-left">
-                                                                        <span className="font-black text-[16px] tracking-tight block">Contact Support</span>
-                                                                        <span className="text-[11px] font-bold opacity-40 block">Dispute or Question?</span>
-                                                                    </div>
-                                                                </span>
-                                                                <MessageSquare className="w-5 h-5 opacity-20" />
-                                                            </button>
-                                                        </div>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => {
+                                                            triggerHaptic();
+                                                            window.open('https://wa.me/919999999999', '_blank');
+                                                        }}
+                                                        className={cn(
+                                                            "w-full h-[60px] rounded-[20px] px-5 flex items-center justify-between border active:scale-[0.99] transition-all",
+                                                            isDark ? "bg-[#0d1219] border-white/[0.06] text-foreground hover:bg-white/[0.03]" : "bg-white border-slate-100 text-slate-900 shadow-sm"
+                                                        )}
+                                                    >
+                                                        <span className="flex items-center gap-3">
+                                                            <div className={cn("w-9 h-9 rounded-xl flex items-center justify-center", isDark ? "bg-white/[0.05]" : "bg-slate-50")}>
+                                                                <MessageSquare className="w-4 h-4 text-primary" />
+                                                            </div>
+                                                            <div className="text-left">
+                                                                <span className="font-bold text-[13px] tracking-tight block">Contact Support</span>
+                                                                <span className={cn("text-[11px] font-medium block", isDark ? "text-white/30" : "text-slate-400")}>Dispute or Question?</span>
+                                                            </div>
+                                                        </span>
+                                                        <ChevronRight className="w-4 h-4 opacity-20" />
+                                                    </button>
 
-                                                    <div className="grid grid-cols-2 gap-3.5">
+                                                    <div className="grid grid-cols-2 gap-2.5">
                                                         <button
                                                             type="button"
                                                             onClick={() => {
@@ -5759,11 +5781,11 @@ const MobileDashboardDemo = ({
                                                                 toast.message('Counter Offer', { description: 'Open offer details to counter.' });
                                                             }}
                                                             className={cn(
-                                                                "h-20 rounded-[24px] border font-black text-[16px] tracking-tight active:scale-[0.99] transition-all flex items-center justify-center gap-3 shadow-sm",
-                                                                isDark ? "bg-[#151922] border-blue-500/20 text-blue-400 hover:bg-blue-500/5" : "bg-white border-blue-100 text-blue-600 hover:bg-blue-50/50"
+                                                                "h-[60px] rounded-[20px] border font-bold text-[14px] tracking-tight active:scale-[0.99] transition-all flex items-center justify-center gap-2",
+                                                                isDark ? "bg-[#0d1219] border-blue-500/20 text-blue-400 hover:bg-blue-500/5" : "bg-white border-blue-100 text-blue-600 shadow-sm"
                                                             )}
                                                         >
-                                                            <Edit3 className="w-5 h-5" />
+                                                            <Edit3 className="w-4 h-4" />
                                                             Counter
                                                         </button>
                                                         <button
@@ -5780,11 +5802,11 @@ const MobileDashboardDemo = ({
                                                                 closeItemDetail();
                                                             }}
                                                             className={cn(
-                                                                "h-20 rounded-[24px] border font-black text-[16px] tracking-tight active:scale-[0.99] transition-all flex items-center justify-center gap-3 shadow-sm",
-                                                                isDark ? "bg-[#151922] border-rose-500/20 text-rose-400 hover:bg-rose-500/5" : "bg-white border-rose-100 text-rose-600 hover:bg-rose-50/50"
+                                                                "h-[60px] rounded-[20px] border font-bold text-[14px] tracking-tight active:scale-[0.99] transition-all flex items-center justify-center gap-2",
+                                                                isDark ? "bg-[#0d1219] border-rose-500/20 text-rose-400 hover:bg-rose-500/5" : "bg-white border-rose-100 text-rose-600 shadow-sm"
                                                             )}
                                                         >
-                                                            <XCircle className="w-5 h-5" />
+                                                            <XCircle className="w-4 h-4" />
                                                             Decline
                                                         </button>
                                                     </div>
