@@ -5469,8 +5469,8 @@ const MobileDashboardDemo = ({
                                                               ? "bg-amber-500 text-white"
                                                               : (isDark ? "bg-amber-500/15 text-amber-300 border border-amber-400/20" : "bg-amber-50 text-amber-700 border border-amber-200/50")
                                                       )}>
-                                                          <Clock className="w-4 h-4 animate-pulse" />
-                                                          <span className="whitespace-nowrap">Awaiting your decision</span>
+                                                          <span className="animate-pulse">🔥</span>
+                                                          <span className="whitespace-nowrap">Offer expires in 5 days</span>
                                                       </div>
                                                       {String(selectedItem?.collab_type || '').toLowerCase().includes('barter') ? (
                                                           <div className="inline-flex items-center gap-1.5 px-3.5 py-2.5 rounded-full text-[10px] font-black uppercase tracking-[0.12em] whitespace-nowrap shadow-sm bg-orange-500 text-white">
@@ -5495,23 +5495,14 @@ const MobileDashboardDemo = ({
                                                         ? "bg-[#0C1320]/90 backdrop-blur-3xl border-white/10 shadow-[0_40px_80px_-20px_rgba(0,0,0,0.5)]" 
                                                         : "bg-white border-[#E5E7EB] shadow-[0_25px_50px_-12px_rgba(0,0,0,0.08)]"
                                                 )}>
-                                                    {isDark && <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-[1px] bg-gradient-to-r from-transparent via-white/10 to-transparent" />}
-                                                    
                                                     <div className="flex flex-col sm:flex-row gap-5 p-5">
                                                         <div className={cn(
-                                                            "w-full sm:w-[190px] h-[250px] rounded-[28px] overflow-hidden shrink-0 relative group shadow-[0_20px_40px_-15px_rgba(0,0,0,0.4)]",
+                                                            "w-full sm:w-[220px] h-[280px] rounded-[28px] overflow-hidden shrink-0 relative group shadow-2xl",
                                                             isDark ? "bg-card border border-white/5" : "bg-[#F3F4F6] border border-black/5"
                                                         )}>
-                                                            {/* Barter Gradient Header Band (P0 Fix) */}
-                                                            {selectedIsPureBarter && (
-                                                                <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-amber-400 via-orange-500 to-amber-600 z-20" />
-                                                            )}
                                                             {(() => {
                                                                 const src = resolveCreatorDealProductImage(selectedItem) || 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&q=80&w=500';
-                                                                return (
-                                                                        <img src={src} alt="" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" loading="lazy" />
-
-                                                                );
+                                                                return <img src={src} alt="" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" loading="lazy" />;
                                                             })()}
                                                         </div>
                                                         
@@ -5519,193 +5510,196 @@ const MobileDashboardDemo = ({
                                                             <div>
                                                                 <div className="flex items-center gap-2 mb-2 opacity-50">
                                                                     <Tag className="w-3 h-3" />
-                                                                    <p className="text-[11px] font-black uppercase tracking-[0.1em]">{selectedIsPureBarter ? 'Product Briefing' : 'Brand Briefing'}</p>
+                                                                    <p className="text-[11px] font-black uppercase tracking-[0.1em]">Brand Briefing</p>
                                                                 </div>
-                                                                {selectedIsPureBarter ? (
-                                                                    <>
-                                                                        {/* Standardized label badge (P1 Fix) */}
-                                                                        <div className="inline-flex items-center gap-1.5 mb-2 px-3 py-1 rounded-lg bg-amber-500/15 border border-amber-500/20">
-                                                                            <Package className="w-3 h-3 text-amber-400" />
-                                                                            <span className="text-[11px] font-black text-amber-400 uppercase tracking-wider">Free Product Collab</span>
-                                                                        </div>
-                                                                        <div className="flex flex-col gap-1 overflow-hidden">
-                                                                            {/* Inverted Hierarchy (P1 Fix) */}
-                                                                            <p className="text-amber-500 font-black text-[12px] uppercase tracking-widest mb-[-4px]">Free Product</p>
-                                                                            <p className={cn("text-[32px] sm:text-[44px] leading-[0.9] font-black tracking-tight truncate", isDark ? "text-amber-400" : "text-amber-600")}>
-                                                                                Worth {renderBudgetValue(selectedItem)}
-                                                                            </p>
-                                                                            <p className={cn("text-[13px] font-bold mt-1 inline-flex items-center gap-2 text-amber-400/80")}>
-                                                                                <span className="w-1.5 h-1.5 rounded-full bg-amber-400 inline-block animate-pulse shrink-0" />
-                                                                                <span className="truncate">
-                                                                                    {(() => {
-                                                                                        const productName = String(
-                                                                                            selectedItem?.brand_submission_details?.product_name
-                                                                                            || selectedItem?.brand_submission_details?.form_data?.product_name
-                                                                                            || selectedItem?.product_name
-                                                                                            || selectedItem?.raw?.product_name
-                                                                                            || ''
-                                                                                        ).trim();
-                                                                                        const ship = String(selectedItem?.shipping_status || '').trim().toLowerCase();
-                                                                                        if (productName && (ship === 'delivered' || ship === 'received')) return `${productName} received ✓`;
-                                                                                        if (productName && ship === 'shipped') return `${productName} en route`;
-                                                                                        return productName ? `${productName} — awaiting shipping` : 'Product awaiting shipping';
-                                                                                    })()}
-                                                                                </span>
-                                                                            </p>
-                                                                        </div>
-                                                                    </>
-                                                                ) : (
-                                                                    <>
-                                                                        <p className={cn("text-[44px] sm:text-[48px] leading-[0.9] font-black tracking-tight", textColor)}>
-                                                                            {renderBudgetValue(selectedItem)}
-                                                                        </p>
-                                                                        <p className={cn("text-[16px] font-bold mt-3 inline-flex items-center gap-2", textColor)}>
-                                                                            <span className="w-1.5 h-1.5 rounded-full bg-primary inline-block" />
-                                                                            {(() => {
-                                                                                const raw = selectedItem?.deliverables || selectedItem?.raw?.deliverables;
-                                                                                try {
-                                                                                    const parsed = safeJsonParse(raw, raw);
-                                                                                    if (Array.isArray(parsed) && parsed.length > 0) {
-                                                                                        const first = parsed[0];
-                                                                                        if (typeof first === 'string') return first.includes('Reel') ? 'Reel' : first;
-                                                                                        const ct = String(first?.contentType || first?.type || '').toLowerCase();
-                                                                                        if (ct.includes('reel')) return 'Instagram Reel';
-                                                                                        if (ct.includes('story')) return 'Instagram Story';
-                                                                                        if (ct.includes('post')) return 'Grid Post';
-                                                                                    }
-                                                                                } catch {}
-                                                                                return 'Premium Deliverable';
-                                                                            })()}
-                                                                        </p>
-                                                                    </>
-                                                                )}
+                                                                <p className={cn("text-[44px] sm:text-[48px] leading-[0.9] font-black tracking-tight", textColor)}>
+                                                                    {renderBudgetValue(selectedItem)}
+                                                                </p>
+                                                                <p className={cn("text-[16px] font-bold mt-3 inline-flex items-center gap-2", textColor)}>
+                                                                    <span className="w-1.5 h-1.5 rounded-full bg-primary inline-block" />
+                                                                    Instagram Reel
+                                                                </p>
+                                                                <div className="mt-4 flex flex-wrap gap-2">
+                                                                    <div className={cn("px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider flex items-center gap-1.5", isDark ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20" : "bg-emerald-50 text-emerald-700 border border-emerald-100")}>
+                                                                        <Package className="w-3 h-3" />
+                                                                        Product secured
+                                                                    </div>
+                                                                    <div className={cn("px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider flex items-center gap-1.5", isDark ? "bg-rose-500/10 text-rose-400 border border-rose-500/20" : "bg-rose-50 text-rose-700 border border-rose-100")}>
+                                                                        <Clock className="w-3 h-3" />
+                                                                        Submit by 08 May
+                                                                    </div>
+                                                                </div>
                                                             </div>
 
-                                                            <div className="space-y-4 mt-6">
-                                                                <div className="flex items-center gap-2.5">
-                                                                    <div className={cn(
-                                                                        "w-6 h-6 rounded-full flex items-center justify-center", 
-                                                                        selectedIsPureBarter 
-                                                                            ? (isDark ? "bg-amber-500/20" : "bg-amber-100")
-                                                                            : (isDark ? "bg-emerald-500/20" : "bg-emerald-100")
-                                                                    )}>
-                                                                        <ShieldCheck className={cn(
-                                                                            "w-3.5 h-3.5", 
-                                                                            selectedIsPureBarter
-                                                                                ? (isDark ? "text-amber-300" : "text-amber-600")
-                                                                                : (isDark ? "text-emerald-300" : "text-emerald-600")
-                                                                        )} />
+                                                            <div className="grid grid-cols-2 gap-2 mt-6">
+                                                                {[
+                                                                    { label: "Good deal for you", icon: <Zap className="w-3 h-3" /> },
+                                                                    { label: "Payment guaranteed", icon: <CheckCircle2 className="w-3 h-3" /> },
+                                                                    { label: "1 Revision included", icon: <Edit3 className="w-3 h-3" /> },
+                                                                    { label: "No hidden tasks", icon: <ShieldCheck className="w-3 h-3" /> }
+                                                                ].map((helper, i) => (
+                                                                    <div key={i} className={cn("flex items-center gap-2 text-[10px] font-bold opacity-60", textColor)}>
+                                                                        <span className="text-emerald-500">{helper.icon}</span>
+                                                                        {helper.label}
                                                                     </div>
-                                                                    <p className={cn(
-                                                                        "text-[13px] font-bold tracking-tight", 
-                                                                        selectedIsPureBarter
-                                                                            ? (isDark ? "text-amber-300/90" : "text-amber-700")
-                                                                            : (isDark ? "text-emerald-300/90" : "text-emerald-700")
-                                                                    )}>
-                                                                        {selectedIsPureBarter ? 'Product secured' : (selectedRequiresPayment ? 'Payment secured' : 'Product secured')}
-                                                                    </p>
-                                                                </div>
-
-                                                                {selectedIsPureBarter && (
-                                                                    <div className={cn("rounded-[22px] border px-5 py-4 flex items-center justify-between gap-4 transition-all", isDark ? "bg-white/[0.03] border-white/5" : "bg-slate-50 border-slate-100")}>
-                                                                        <div className="min-w-0">
-                                                                            <p className={cn("text-[10px] font-black uppercase tracking-widest opacity-40 mb-1", textColor)}>Shipping</p>
-                                                                            <p className={cn("text-[15px] font-black tracking-tight", textColor)}>
-                                                                                {selectedItem?.brand_address || selectedItem?.delivery_address ? 'Shipping details added' : 'Awaiting shipping details'}
-                                                                            </p>
-                                                                        </div>
-                                                                        <div className={cn("px-3.5 py-2 rounded-full text-[11px] font-black flex items-center gap-2 shadow-sm", isDark ? "bg-sky-500/25 text-sky-300" : "bg-sky-100 text-sky-700")}>
-                                                                            <Truck className="w-3.5 h-3.5" />
-                                                                            {String(selectedItem?.shipping_status || '').trim().toLowerCase() === 'shipped' ? 'Shipped' : String(selectedItem?.shipping_status || '').trim().toLowerCase() === 'delivered' ? 'Received' : 'Pending'}
-                                                                        </div>
-                                                                    </div>
-                                                                )}
-
-                                                                {(() => {
-                                                                    const deadlineRaw = selectedItem?.deadline || selectedItem?.due_date || selectedItem?.raw?.deadline || selectedItem?.raw?.due_date || null;
-                                                                    const deadlineDt = deadlineRaw ? new Date(deadlineRaw) : null;
-                                                                    const valid = deadlineDt && !Number.isNaN(deadlineDt.getTime());
-                                                                    const now = new Date();
-                                                                    const daysLeft = valid ? Math.max(0, Math.ceil((deadlineDt!.getTime() - now.getTime()) / 86400000)) : null;
-                                                                    
-                                                                    return (
-                                                                        <div className={cn(
-                                                                            "rounded-[22px] border-l-[6px] px-5 py-4 flex items-center justify-between gap-4 transition-all hover:scale-[1.02]",
-                                                                            isDark ? "bg-white/[0.03] border-rose-500/50" : "bg-slate-50 border-rose-500/30"
-                                                                        )}>
-                                                                            <div className="min-w-0">
-                                                                                <p className={cn("text-[10px] font-black uppercase tracking-widest opacity-40 mb-1", textColor)}>Submit By</p>
-                                                                                <p className={cn("text-[15px] font-black tracking-tight", textColor)}>
-                                                                                    {valid ? deadlineDt!.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : 'Flexible'}
-                                                                                </p>
-                                                                            </div>
-                                                                            <div className={cn(
-                                                                                "px-3.5 py-2 rounded-full text-[11px] font-black flex items-center gap-2 shadow-sm",
-                                                                                isDark ? "bg-rose-500/25 text-rose-300" : "bg-rose-100 text-rose-700"
-                                                                            )}>
-                                                                                <Clock className="w-3.5 h-3.5" />
-                                                                                {daysLeft !== null ? `${daysLeft}D Left` : 'Active'}
-                                                                            </div>
-                                                                        </div>
-                                                                    );
-                                                                })()}
+                                                                ))}
                                                             </div>
                                                         </div>
                                                     </div>
                                                 </div>
 
+                                                {/* Timeline Progress Bar */}
+                                                <div className={cn("mt-6 p-6 rounded-[32px] border backdrop-blur-md", isDark ? "bg-white/5 border-white/10" : "bg-white border-slate-200")}>
+                                                    <p className={cn("text-[11px] font-black uppercase tracking-widest opacity-40 mb-6", textColor)}>Deal Lifecycle</p>
+                                                    <div className="relative px-2">
+                                                        <div className="absolute top-[15px] left-8 right-8 h-[2px] bg-slate-200/20 dark:bg-white/5" />
+                                                        <div className="absolute top-[15px] left-8 w-[15%] h-[2px] bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]" />
+                                                        
+                                                        <div className="flex justify-between items-start relative z-10">
+                                                            {[
+                                                                { label: 'Accept', sub: 'Secure deal', active: true, done: false },
+                                                                { label: 'Fund', sub: 'Payment locked', active: false, done: false },
+                                                                { label: 'Content', sub: 'Submit work', active: false, done: false },
+                                                                { label: 'Release', sub: 'Get paid', active: false, done: false }
+                                                            ].map((step, i) => (
+                                                                <div key={i} className="flex flex-col items-center gap-3">
+                                                                    <div className={cn(
+                                                                        "w-8 h-8 rounded-full flex items-center justify-center border-2 transition-all duration-500",
+                                                                        step.active 
+                                                                            ? "bg-emerald-500 border-emerald-500 text-white shadow-[0_0_15px_rgba(16,185,129,0.4)] scale-110" 
+                                                                            : "bg-background border-border text-muted-foreground opacity-40"
+                                                                    )}>
+                                                                        {i === 0 ? <Zap className="w-4 h-4" /> : i === 1 ? <ShieldCheck className="w-4 h-4" /> : i === 2 ? <Camera className="w-4 h-4" /> : <DollarSign className="w-4 h-4" />}
+                                                                    </div>
+                                                                    <div className="text-center">
+                                                                        <p className={cn("text-[10px] font-black uppercase tracking-tight", step.active ? "text-emerald-500" : "opacity-30", textColor)}>{step.label}</p>
+                                                                        <p className={cn("text-[8px] font-bold whitespace-nowrap opacity-40", textColor)}>{step.sub}</p>
+                                                                    </div>
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                {/* Detailed Deliverables Section */}
+                                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
+                                                    <div className={cn("p-5 rounded-[28px] border", isDark ? "bg-white/5 border-white/10" : "bg-white border-slate-200")}>
+                                                        <p className={cn("text-[11px] font-black uppercase tracking-widest opacity-40 mb-4", textColor)}>Deliverables</p>
+                                                        <ul className="space-y-3">
+                                                            {[
+                                                                "1 Premium Reel (30–60s)",
+                                                                "Script + hook optimization",
+                                                                "1 Story shoutout (24h)",
+                                                                "High-res source files"
+                                                            ].map((item, i) => (
+                                                                <li key={i} className={cn("flex items-center gap-2.5 text-[12px] font-bold", textColor)}>
+                                                                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
+                                                                    {item}
+                                                                </li>
+                                                            ))}
+                                                        </ul>
+                                                    </div>
+
+                                                    <div className={cn("p-5 rounded-[28px] border", isDark ? "bg-white/5 border-white/10" : "bg-white border-slate-200")}>
+                                                        <p className={cn("text-[11px] font-black uppercase tracking-widest opacity-40 mb-4", textColor)}>Usage Rights</p>
+                                                        <ul className="space-y-3">
+                                                            {[
+                                                                "Organic social media only",
+                                                                "90 days usage limit",
+                                                                "No third-party licensing"
+                                                            ].map((item, i) => (
+                                                                <li key={i} className={cn("flex items-center gap-2.5 text-[12px] font-bold", textColor)}>
+                                                                    <div className="w-1.5 h-1.5 rounded-full bg-blue-500 shrink-0" />
+                                                                    {item}
+                                                                </li>
+                                                            ))}
+                                                        </ul>
+                                                    </div>
+                                                </div>
+
+                                                {/* Trust Block */}
+                                                <div className={cn("mt-4 p-5 rounded-[28px] border relative overflow-hidden", isDark ? "bg-emerald-500/5 border-emerald-500/10" : "bg-emerald-50/50 border-emerald-200/50")}>
+                                                    <div className="absolute top-0 right-0 p-4 opacity-10">
+                                                        <ShieldCheck className="w-16 h-16 text-emerald-500" />
+                                                    </div>
+                                                    <div className="flex items-center gap-3 mb-4">
+                                                        <div className="w-10 h-10 rounded-2xl bg-emerald-500 flex items-center justify-center text-white shadow-lg shadow-emerald-500/20">
+                                                            <ShieldCheck className="w-6 h-6" />
+                                                        </div>
+                                                        <div>
+                                                            <h4 className={cn("text-[15px] font-black tracking-tight", textColor)}>Protected by Creator Armour</h4>
+                                                            <p className={cn("text-[10px] font-bold opacity-40", textColor)}>Enterprise-grade security for every deal</p>
+                                                        </div>
+                                                    </div>
+                                                    <div className="space-y-2.5 relative z-10">
+                                                        {[
+                                                            "Contract auto-generated & legally binding",
+                                                            "72h auto-release after approval",
+                                                            "Full dispute protection & mediation"
+                                                        ].map((point, i) => (
+                                                            <div key={i} className={cn("flex items-center gap-2 text-[11px] font-bold", textColor)}>
+                                                                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
+                                                                {point}
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                </div>
                                                 <div className="mt-4 space-y-3">
                                                     <button
                                                         type="button"
                                                         data-testid="offer-brief-accept"
                                                         onClick={() => {
                                                             if (processingDeal) return;
-                                                                    if (selectedItem?.isDemo) {
-                                                                        toast.success("This is a demo offer! Complete your profile to get real brand deals.");
-                                                                        triggerHaptic(HapticPatterns.success);
-                                                                        return;
-                                                                    }
-                                                                    if (selectedIsPureBarter) {
-                                                                        handleOpenBarterShippingFlow(selectedItem);
-                                                                        return;
-                                                                    }
-                                                                    handleAccept(selectedItem);
-                                                                }}
+                                                            if (selectedItem?.isDemo) {
+                                                                toast.success("This is a demo offer! Complete your profile to get real brand deals.");
+                                                                triggerHaptic(HapticPatterns.success);
+                                                                return;
+                                                            }
+                                                            if (selectedIsPureBarter) {
+                                                                handleOpenBarterShippingFlow(selectedItem);
+                                                                return;
+                                                            }
+                                                            handleAccept(selectedItem);
+                                                        }}
                                                         className={cn(
-                                                            "w-full min-h-[112px] rounded-[32px] px-8 py-6 flex items-center justify-between relative overflow-hidden group active:scale-[0.97] transition-all duration-500",
-                                                            selectedIsPureBarter
-                                                                ? "bg-gradient-to-br from-amber-500 via-orange-500 to-amber-600 text-white shadow-[0_25px_50px_-12px_rgba(245,158,11,0.5)]"
-                                                                : (isDark 
-                                                                    ? "bg-gradient-to-br from-blue-600 via-blue-500 to-blue-700 text-white shadow-[0_25px_50px_-12px_rgba(37,99,235,0.5)]" 
-                                                                    : "bg-gradient-to-br from-blue-600 via-blue-500 to-blue-700 text-white shadow-[0_20px_40px_-10px_rgba(37,99,235,0.4)]")
+                                                            "w-full min-h-[120px] rounded-[36px] px-8 py-6 flex items-center justify-between relative overflow-hidden group active:scale-[0.97] transition-all duration-500",
+                                                            "bg-gradient-to-r from-emerald-600 via-emerald-500 to-sky-600 text-white shadow-[0_25px_50px_-12px_rgba(16,185,129,0.5)]"
                                                         )}
                                                     >
                                                         {/* Dynamic Background Effects */}
-                                                        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(255,255,255,0.15),transparent)] opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
-                                                        <div className={cn("absolute inset-0 opacity-0 group-hover:opacity-20 transition-opacity", selectedIsPureBarter ? "bg-amber-300/10" : "bg-blue-400/10")} />
+                                                        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(255,255,255,0.2),transparent)] opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+                                                        <div className="absolute inset-0 bg-emerald-400/10 opacity-0 group-hover:opacity-20 transition-opacity" />
                                                         
-                                                        {/* Subtle Shine Animation */}
-                                                        <div className="absolute top-0 -left-[100%] w-[50%] h-full bg-gradient-to-r from-transparent via-white/20 to-transparent skew-x-[-25deg] group-hover:left-[150%] transition-all duration-[1200ms] ease-in-out" />
+                                                        {/* Pulsing Glow Animation */}
+                                                        <div className="absolute inset-0 bg-emerald-400/20 animate-pulse opacity-30" />
 
                                                         <div className="absolute -top-6 -right-6 p-3 opacity-10 rotate-12 group-hover:rotate-45 group-hover:scale-125 transition-all duration-700">
-                                                            {selectedIsPureBarter ? <Package className="w-24 h-24 text-white" /> : <Zap className="w-24 h-24 text-white" />}
+                                                            <Zap className="w-24 h-24 text-white" />
                                                         </div>
                                                         
                                                         <div className="text-left relative z-10">
-                                                            <p className="text-[24px] sm:text-[26px] font-black leading-tight tracking-tight drop-shadow-sm">
-                                                                {selectedIsPureBarter ? `Claim Free Product` : `Accept Deal ${renderBudgetValue(selectedItem)}`}
+                                                            <p className="text-[26px] sm:text-[28px] font-black leading-tight tracking-tight drop-shadow-md">
+                                                                Accept → Earn {renderBudgetValue(selectedItem)}
                                                             </p>
-                                                            <div className="text-[12px] sm:text-[13px] font-bold opacity-90 mt-1.5 flex items-center gap-2">
+                                                            <div className="text-[12px] sm:text-[13px] font-bold opacity-90 mt-1 flex items-center gap-2">
                                                                 <div className="w-5 h-5 rounded-lg bg-white/20 flex items-center justify-center shrink-0">
-                                                                    {selectedIsPureBarter ? <Truck className="w-3 h-3" /> : <FileText className="w-3 h-3" />}
+                                                                    <DollarSign className="w-3 h-3" />
                                                                 </div>
-                                                                {selectedIsPureBarter ? 'Product ships after contract signing' : 'Contract generated instantly'}
+                                                                💰 Payment secured • Releases after approval
                                                             </div>
                                                         </div>
                                                         <div className="w-14 h-14 rounded-full bg-white/25 flex items-center justify-center backdrop-blur-md relative z-10 shadow-lg border border-white/20 transition-transform group-hover:translate-x-1">
                                                             <ChevronRight className="w-7 h-7 text-white" />
                                                         </div>
                                                     </button>
+
+                                                    <div className="mt-4 flex flex-col items-center gap-3">
+                                                        <div className="flex items-center gap-2 text-[11px] font-black uppercase tracking-[0.2em] opacity-40">
+                                                            <div className="w-1 h-1 rounded-full bg-emerald-500" />
+                                                            50+ creators completed deals successfully
+                                                            <div className="w-1 h-1 rounded-full bg-emerald-500" />
+                                                        </div>
+                                                    </div>
 
                                                     {selectedIsPureBarter && (
                                                         <button
@@ -8346,7 +8340,7 @@ const DashboardTab = React.memo(({
                                     {monthlyRevenue === 0 ? "Potential Earnings" : "Total Earnings"}
                                 </p>
                                 <div className="flex items-baseline gap-2 mt-3">
-                                    <span className={cn("text-[38px] font-black tracking-tighter leading-none", isDark || monthlyRevenue === 0 ? "text-white" : "text-slate-900")}>
+                                    <span className={cn("text-[38px] font-black tracking-tighter leading-none", isDark ? "text-white" : "text-slate-900")}>
                                         {monthlyRevenue === 0 ? "₹0 earned yet 🚀" : `₹${monthlyRevenue.toLocaleString()}`}
                                     </span>
                                     {completedDealsCount > 0 && (
@@ -8380,14 +8374,14 @@ const DashboardTab = React.memo(({
                             <div className={cn("p-4 rounded-[2rem] border backdrop-blur-md transition-all", isDark ? "bg-white/5 border-white/10" : "bg-emerald-500/5 border-emerald-500/20 shadow-inner")}>
                                 <div className="flex items-center justify-between gap-4">
                                     <div className="flex items-center gap-3">
-                                        <div className={cn("w-10 h-10 rounded-2xl flex items-center justify-center", isDark ? "bg-emerald-500/20 text-emerald-400" : "bg-white/20 text-white")}>
+                                        <div className={cn("w-10 h-10 rounded-2xl flex items-center justify-center", isDark ? "bg-emerald-500/20 text-emerald-400" : "bg-emerald-500 text-white")}>
                                             <Zap className="w-5 h-5" />
                                         </div>
                                         <div>
-                                            <p className="text-[14px] font-black text-white">
+                                            <p className={cn("text-[14px] font-black", isDark ? "text-white" : "text-slate-900")}>
                                                 🔥 {pendingOffersCount} {pendingOffersCount === 1 ? 'Brand wants' : 'Brands want'} to work with you
                                             </p>
-                                            <p className="text-[11px] text-white/60 font-bold">New offer waiting for you</p>
+                                            <p className={cn("text-[11px] font-bold", isDark ? "text-white/60" : "text-slate-500")}>New offer waiting for you</p>
                                         </div>
                                     </div>
                                     <button 
@@ -8401,8 +8395,8 @@ const DashboardTab = React.memo(({
                                     </button>
                                 </div>
                                 
-                                <div className="mt-3 flex flex-wrap gap-1.5 border-t border-white/5 pt-3">
-                                    <span className="text-[9px] font-black uppercase tracking-widest text-white/40">
+                                <div className={cn("mt-3 flex flex-wrap gap-1.5 border-t pt-3", isDark ? "border-white/5" : "border-slate-200")}>
+                                    <span className={cn("text-[9px] font-black uppercase tracking-widest", isDark ? "text-white/40" : "text-slate-400")}>
                                         {pendingOffersCount} Incoming Offers • 0 Counters
                                     </span>
                                 </div>

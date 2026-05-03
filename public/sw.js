@@ -1,4 +1,4 @@
-// Service Worker v1.3.4 - Safer SPA caching
+// Service Worker v1.3.5 - Safer SPA caching
 // Precaches app shell for offline support
 
 const CACHE_NAME = 'creator-armour-v8';
@@ -131,7 +131,12 @@ self.addEventListener('fetch', (event) => {
           return response;
         })
         .catch(() =>
-          caches.open(STATIC_CACHE).then((cache) => cache.match('/index.html')).then((cached) => cached || new Response('Offline: Resource not in cache', { status: 504 }))
+          caches.match('/index.html').then((cached) => 
+            cached || new Response('Offline: App shell not found in cache.', { 
+                status: 200, 
+                headers: { 'Content-Type': 'text/html' } 
+            })
+          )
         )
     );
     return;
@@ -148,7 +153,7 @@ self.addEventListener('fetch', (event) => {
             }
             return response;
           })
-          .catch(() => cached || new Response('Offline: Network failure', { status: 504 }));
+          .catch(() => cached || new Response('Offline: Resource unavailable.', { status: 200 }));
         return cached || fetchPromise;
       })
     )
