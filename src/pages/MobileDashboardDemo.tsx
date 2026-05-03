@@ -5580,7 +5580,11 @@ const MobileDashboardDemo = ({
                                                                 {showBrief && (
                                                                     <div className="px-5 pb-5">
                                                                         <p className={cn("text-[13px] font-medium leading-relaxed opacity-60", textColor)}>
-                                                                            {selectedItem.campaign_description || selectedItem.description || selectedItem.raw?.campaign_description || selectedItem.raw?.description || "High-energy Reel showcasing unboxing and key features."}
+                                                                            {(() => {
+                                                                                const rawDesc = selectedItem.campaign_description || selectedItem.description || selectedItem.raw?.campaign_description || selectedItem.raw?.description || "High-energy Reel showcasing unboxing and key features.";
+                                                                                // Clean up auto-generated metadata strings
+                                                                                return rawDesc.split(/Selected package:|Collab Duration:|Additional Commercial Terms:|Collab content category:|Product for collab:/i)[0].trim();
+                                                                            })()}
                                                                         </p>
 
                                                                         {/* WHAT THE BRAND GETS (Checklist Style) */}
@@ -6088,7 +6092,7 @@ const MobileDashboardDemo = ({
                                                                     <div className="space-y-4">
                                                                         {description && (
                                                                             <p className={cn("text-[14px] leading-relaxed font-bold", isDark ? "text-foreground/90" : "text-muted-foreground")}>
-                                                                                {description}
+                                                                                {description.split(/Selected package:|Collab Duration:|Additional Commercial Terms:|Collab content category:|Product for collab:/i)[0].trim()}
                                                                             </p>
                                                                         )}
                                                                         
