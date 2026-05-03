@@ -5879,6 +5879,22 @@ const MobileDashboardDemo = ({
 
                                                         return (
                                                             <>
+                                                                {/* "Next" hint — HIGH PRIORITY BLOCKER */}
+                                                                {isPaymentPending && !isBarterDeal && (
+                                                                    <div className={cn(
+                                                                        "mb-5 rounded-[20px] border px-4 py-3 flex items-start gap-3",
+                                                                        isDark ? "bg-amber-500/[0.08] border-amber-500/30" : "bg-amber-50 border-amber-300 shadow-sm"
+                                                                    )}>
+                                                                        <div className="w-8 h-8 rounded-full bg-amber-500/20 flex items-center justify-center shrink-0 mt-0.5">
+                                                                            <span className="text-[16px]">⏳</span>
+                                                                        </div>
+                                                                        <div>
+                                                                            <p className={cn("text-[13px] font-black tracking-tight", isDark ? "text-amber-400" : "text-amber-800")}>Waiting for Brand Funding</p>
+                                                                            <p className={cn("text-[11px] font-medium opacity-80 mt-0.5 leading-snug", isDark ? "text-amber-200/80" : "text-amber-900/80")}>Brand needs to fund the escrow before you start creating content.</p>
+                                                                        </div>
+                                                                    </div>
+                                                                )}
+
                                                                 <div className="flex items-center justify-between mb-6">
                                                                     <div className="flex flex-col">
                                                                         <span className={cn("text-[11px] font-black uppercase tracking-[0.2em] opacity-40", textColor)}>Current Progress</span>
@@ -5932,17 +5948,11 @@ const MobileDashboardDemo = ({
                                                                         })}
                                                                     </div>
                                                                 </div>
-                                                                {/* "Next" hint — eliminates confusion */}
-                                                                {isPaymentPending && (
-                                                                    <div className={cn("mt-3 flex items-center gap-2 px-1 text-[11px] font-bold", isDark ? "text-sky-400/70" : "text-sky-700/80")}>
-                                                                        <ArrowRight className="w-3 h-3 shrink-0" />
-                                                                        <span>Next: Brand funds deal → you create content → get paid</span>
-                                                                    </div>
-                                                                )}
+
                                                                 {/* What to do next — context-aware guidance */}
                                                                 {!isBarterDeal && (
                                                                     <div className={cn(
-                                                                        "mt-5 rounded-[20px] border px-4 py-3.5",
+                                                                        "mt-6 rounded-[20px] border px-4 py-3.5",
                                                                         isPaymentPending
                                                                             ? (isDark ? "bg-amber-500/[0.04] border-amber-500/15" : "bg-amber-50/80 border-amber-200/70")
                                                                             : isMaking
@@ -6072,27 +6082,29 @@ const MobileDashboardDemo = ({
                                                     } catch (_) { }
                                                     return items.map((d, i) => (
                                                         <div key={i} className={cn(
-                                                            "px-4 py-3.5 rounded-[20px] border flex items-center gap-3.5 transition-all duration-300",
-                                                            isDark ? "bg-white/[0.03] border-white/8" : "bg-white border-slate-200"
+                                                            "px-5 py-4 rounded-[24px] border flex items-center gap-4 group transition-all duration-300",
+                                                            isDark ? "bg-[#0B0F14] border-white/5" : "bg-white border-slate-200 shadow-sm"
                                                         )}>
                                                             <div className={cn(
-                                                                "w-9 h-9 rounded-xl flex items-center justify-center shrink-0",
-                                                                d.type === 'reel' ? "bg-gradient-to-br from-purple-500/80 to-indigo-600/80 text-white" : 
-                                                                d.type === 'story' ? "bg-gradient-to-br from-orange-400/80 to-rose-500/80 text-white" : 
-                                                                "bg-gradient-to-br from-blue-400/80 to-cyan-500/80 text-white"
+                                                                "w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 relative",
+                                                                d.type === 'reel' ? "bg-purple-500/10 text-purple-400" : 
+                                                                d.type === 'story' ? "bg-rose-500/10 text-rose-400" : 
+                                                                "bg-blue-500/10 text-blue-400"
                                                             )}>
-                                                                {d.type === 'reel' ? <Film className="w-3.5 h-3.5" /> : 
-                                                                 d.type === 'story' ? <Smartphone className="w-3.5 h-3.5" /> : 
-                                                                 <FileText className="w-3.5 h-3.5" />}
+                                                                {d.type === 'reel' ? <Film className="w-5 h-5" /> : 
+                                                                 d.type === 'story' ? <Smartphone className="w-5 h-5" /> : 
+                                                                 <FileText className="w-5 h-5" />}
                                                             </div>
                                                             <div className="flex-1 min-w-0">
-                                                                <p className={cn("text-[13px] font-black leading-tight tracking-tight", textColor)}>{d.label}</p>
-                                                                <p className={cn("text-[11px] font-bold opacity-40 mt-0.5", textColor)}>{d.count} {d.count === 1 ? 'piece' : 'pieces'}</p>
+                                                                <p className={cn("text-[14px] font-black tracking-tight", textColor)}>{d.label}</p>
+                                                                <p className={cn("text-[11px] font-bold opacity-40 uppercase tracking-widest mt-0.5", textColor)}>{d.count} Required</p>
                                                             </div>
                                                             <div className={cn(
-                                                                "px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider shrink-0",
-                                                                isDark ? "bg-amber-500/10 text-amber-400 border border-amber-500/20" : "bg-amber-50 text-amber-600 border border-amber-100"
-                                                            )}>Pending</div>
+                                                                "w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all",
+                                                                isDark ? "border-white/10" : "border-slate-200"
+                                                            )}>
+                                                                <div className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
+                                                            </div>
                                                         </div>
                                                     ));
                                                 })()}
@@ -6378,117 +6390,62 @@ const MobileDashboardDemo = ({
                                                     </div>
                                                 </div>
 
-                                                {/* Escrow Status & Receipt */}
-                                                {selectedRequiresPayment && (
-                                                    <div className={cn("rounded-2xl border p-4 mb-6", isDark ? "bg-emerald-500/5 border-emerald-500/20" : "bg-emerald-50 border-emerald-200 shadow-sm shadow-emerald-500/5")}>
-                                                        <div className="flex items-center justify-between gap-3 mb-4">
-                                                            <div className="flex items-center gap-2.5">
-                                                                <div className="w-8 h-8 rounded-xl bg-emerald-500/10 flex items-center justify-center">
-                                                                    <ShieldCheck className="w-4 h-4 text-emerald-500" />
-                                                                </div>
-                                                                <p className={cn("text-[14px] font-black", isDark ? "text-emerald-300" : "text-emerald-800")}>Payment Protection</p>
+                                                {/* ── SECURITY & LEGAL (Unified) ── */}
+                                                <div className="mb-6">
+                                                    <h4 className={cn("text-[11px] font-black uppercase tracking-[0.2em] mb-4 opacity-50 px-1", textColor)}>Verified Protection</h4>
+                                                    <div className={cn("rounded-[28px] border p-5 sm:p-6 relative overflow-hidden", isDark ? "bg-emerald-500/[0.03] border-emerald-500/10" : "bg-emerald-50/50 border-emerald-100")}>
+                                                        <div className="flex items-center gap-4 mb-5">
+                                                            <div className={cn("w-12 h-12 rounded-2xl flex items-center justify-center shadow-lg shrink-0", isDark ? "bg-emerald-500 text-white shadow-emerald-500/20" : "bg-emerald-600 text-white shadow-emerald-600/10")}>
+                                                                <ShieldCheck className="w-6 h-6" strokeWidth={2.5} />
                                                             </div>
-                                                            {(() => {
-                                                                const status = normalizeDealStatus(selectedItem);
-                                                                const isPaid = status === 'paid' || status.includes('released') || status.includes('completed');
-                                                                return isPaid ? (
-                                                                    <div className={cn(
-                                                                        "px-3 py-1.5 rounded-xl text-[10px] font-black tracking-widest border bg-emerald-500/20 border-emerald-500/20 text-emerald-300",
-                                                                        !isDark && "bg-emerald-100 border-emerald-200 text-emerald-700"
-                                                                    )}>
-                                                                        PAID
-                                                                    </div>
-                                                                ) : null;
-                                                            })()}
+                                                            <div>
+                                                                <p className={cn("text-[15px] font-black tracking-tight", textColor)}>Security & Legal Shield</p>
+                                                                <p className={cn("text-[11px] font-bold opacity-50", textColor)}>Managed by Creator Armour</p>
+                                                            </div>
                                                         </div>
-                                                        <div className="space-y-2 mb-3">
+                                                        <div className="grid grid-cols-1 gap-3.5">
                                                             {[
-                                                                'Payment already secured in escrow',
-                                                                'Releases within 72h after approval',
-                                                                'Protected by platform guarantee',
-                                                            ].map((pt) => (
-                                                                <div key={pt} className="flex items-center gap-2">
-                                                                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
-                                                                    <span className={cn("text-[12px] font-semibold", isDark ? "text-emerald-200/90" : "text-emerald-900")}>{pt}</span>
+                                                                { 
+                                                                    icon: selectedRequiresPayment ? '💰' : '📦', 
+                                                                    text: selectedRequiresPayment ? 'Escrow Protection Active' : 'Product Fulfillment Tracked', 
+                                                                    desc: selectedRequiresPayment ? 'Brand payment is already secured by platform' : 'Brand is obligated to ship product per terms' 
+                                                                },
+                                                                { 
+                                                                    icon: '📜', 
+                                                                    text: 'Legally Binding Contract', 
+                                                                    desc: 'Auto-generated contract protecting your rights' 
+                                                                },
+                                                                { 
+                                                                    icon: '⚖️', 
+                                                                    text: 'Dispute & Mediation', 
+                                                                    desc: '72h Auto-release & full mediation support' 
+                                                                }
+                                                            ].map((item, i) => (
+                                                                <div key={i} className="flex items-start gap-3">
+                                                                    <span className="text-[14px] mt-0.5">{item.icon}</span>
+                                                                    <div>
+                                                                        <p className={cn("text-[12px] font-bold tracking-tight", textColor)}>{item.text}</p>
+                                                                        <p className={cn("text-[10px] opacity-40 font-bold leading-snug mt-0.5", textColor)}>{item.desc}</p>
+                                                                    </div>
                                                                 </div>
                                                             ))}
                                                         </div>
-                                                        {selectedItem.escrow_receipt_url && (
+                                                        {selectedRequiresPayment && selectedItem.escrow_receipt_url && (
                                                             <a 
                                                                 href={selectedItem.escrow_receipt_url} 
                                                                 target="_blank" 
                                                                 rel="noopener noreferrer"
                                                                 className={cn(
-                                                                    "flex items-center gap-2 py-2.5 px-3 rounded-xl border text-[12px] font-bold transition-all active:scale-[0.98]",
+                                                                    "flex items-center justify-center gap-2 mt-5 py-3 px-4 rounded-xl border text-[12px] font-black uppercase tracking-wider transition-all active:scale-[0.98]",
                                                                     isDark ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400" : "bg-white border-emerald-200 text-emerald-700 shadow-sm"
                                                                 )}
                                                             >
                                                                 <FileText className="w-3.5 h-3.5" />
                                                                 View Payment Receipt
-                                                                <ExternalLink className="w-3 h-3 ml-auto opacity-50" />
                                                             </a>
                                                         )}
                                                     </div>
-                                                )}
-
-                                                {selectedIsPureBarter && (
-                                                    <div className={cn("rounded-2xl border p-4 mb-6", isDark ? "bg-amber-500/5 border-amber-500/20" : "bg-amber-50 border-amber-200 shadow-sm shadow-amber-500/5")}>
-                                                        <div className="flex items-center justify-between gap-3 mb-4">
-                                                            <div className="flex items-center gap-2.5">
-                                                                <div className="w-8 h-8 rounded-xl bg-amber-500/10 flex items-center justify-center">
-                                                                    <ShieldCheck className="w-4 h-4 text-amber-500" />
-                                                                </div>
-                                                                <p className={cn("text-[14px] font-black", isDark ? "text-amber-300" : "text-amber-800")}>Product Security</p>
-                                                            </div>
-                                                        </div>
-                                                        <p className={cn("text-[12px] font-medium leading-relaxed opacity-80", isDark ? "text-amber-200" : "text-amber-900")}>
-                                                            This barter is protected by Creator Armour. The brand is obligated to ship the product as per the agreed terms once the contract is signed.
-                                                        </p>
-                                                    </div>
-                                                )}
-
-
-                                            </>
-                                        )}
-
-                                        {/* ── LEGAL PROTECTION (Deals only — offers show it inline) ── */}
-                                        {selectedType !== 'offer' && <div className="mb-6">
-                                            <h4 className={cn("text-[11px] font-black uppercase tracking-[0.2em] mb-4 opacity-50 px-1", textColor)}>Legal Protection</h4>
-                                            <div className={cn(
-                                                "rounded-[24px] border p-5 relative overflow-hidden",
-                                                isDark ? "bg-emerald-500/[0.04] border-emerald-500/15" : "bg-emerald-50/80 border-emerald-200/70"
-                                            )}>
-                                                <div className="absolute inset-y-0 left-0 w-1 bg-emerald-500/60 rounded-r-full" />
-                                                
-                                                <div className="flex items-center gap-3 relative pl-4 mb-4">
-                                                    <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center shrink-0 shadow-md">
-                                                        <ShieldCheck className="w-5 h-5 text-white" strokeWidth={2.5} />
-                                                    </div>
-                                                    <div className="flex-1 min-w-0">
-                                                        <p className={cn("font-black text-[14px] leading-tight tracking-tight", isDark ? "text-primary" : "text-emerald-800")}>Protected by Creator Armour</p>
-                                                        <p className={cn("text-[11px] font-bold mt-0.5 opacity-60", isDark ? "text-primary/90" : "text-emerald-700")}>Contract + rights + dispute support</p>
-                                                    </div>
                                                 </div>
-                                                
-                                                <div className="space-y-2 pl-4">
-                                                    {[
-                                                        'Contract auto-generated & legally binding',
-                                                        '72h Auto-release Guarantee after approval',
-                                                        'Full dispute protection & legal mediation',
-                                                    ].map((t) => (
-                                                        <div key={t} className={cn(
-                                                            "flex items-center gap-2.5"
-                                                        )}>
-                                                            <div className="w-4 h-4 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0">
-                                                                <Check className="w-2.5 h-2.5 text-emerald-500" />
-                                                            </div>
-                                                            <span className={cn("text-[12px] font-semibold opacity-80", isDark ? "text-primary/80" : "text-emerald-800")}>{t}</span>
-                                                        </div>
-                                                    ))}
-                                                </div>
-                                            </div>
-                                        </div>
-                                        }
 
 	                                        {/* ── EARNINGS BREAKDOWN (Offers) ── */}
 	                                        {false && selectedType === 'offer' && (
