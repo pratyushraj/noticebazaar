@@ -5486,7 +5486,7 @@ const MobileDashboardDemo = ({
                                                     return (
                                                         <div className="space-y-4">
                                                             {/* ── COMPACT HERO ── */}
-                                                            <div className={cn("rounded-[32px] border p-5 relative overflow-hidden min-h-[160px] flex flex-col justify-end",
+                                                            <div className={cn("rounded-[32px] border p-6 relative overflow-hidden min-h-[240px] flex flex-col justify-end",
                                                                 isDark ? "bg-[#0B0F14] border-white/6" : "bg-white border-slate-200 shadow-sm")}>
                                                                 
                                                                 {/* Product Photo Background */}
@@ -5520,7 +5520,7 @@ const MobileDashboardDemo = ({
                                                                         </h2>
                                                                         <p className={cn("text-[11px] font-bold opacity-40 mt-1 uppercase tracking-widest", textColor)}>{isBarterLikeCollab(selectedItem) ? "Est. Product Value" : "Net Payout"}</p>
                                                                     </div>
-                                                                    <div className="w-14 h-14 rounded-2xl overflow-hidden border border-white/10 shrink-0 shadow-lg">
+                                                                    <div className={cn("w-18 h-18 rounded-2xl overflow-hidden border shrink-0 shadow-2xl transition-transform hover:scale-105", isDark ? "bg-white/10 border-white/20" : "bg-white border-slate-200")}>
                                                                         <img 
                                                                             src={selectedItem.brand_logo || selectedItem.raw?.brand_logo || `https://ui-avatars.com/api/?name=${encodeURIComponent(selectedItem.brand_name || 'B')}&background=random`} 
                                                                             className="w-full h-full object-cover" 
@@ -5581,7 +5581,7 @@ const MobileDashboardDemo = ({
                                                                             {selectedItem.description || selectedItem.raw?.description || "High-energy Reel showcasing unboxing and key features."}
                                                                         </p>
                                                                         <div className="mt-4 space-y-2">
-                                                                            {secondaryDeliverables.map((d, i) => (
+                                                                            {secondaryDeliverables.filter(d => d.label || d.name).map((d, i) => (
                                                                                 <div key={i} className={cn("flex items-center gap-2 text-[12px] font-bold opacity-50", textColor)}>
                                                                                     <div className="w-1 h-1 rounded-full bg-current" />
                                                                                     {d.label || d.name}
