@@ -5800,7 +5800,6 @@ const MobileDashboardDemo = ({
                                                     </div>
                                                 </div>
                                             </div>
-
                                         )}
 
 
@@ -6016,13 +6015,14 @@ const MobileDashboardDemo = ({
                                                                 ))}
                                                             </div>
                                                         );
-                                                    })()}
-                                                    <div className="flex items-start gap-4">
-                                                        <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center shrink-0 bg-info/10")}>
-                                                            <AlignLeft className="w-5 h-5 text-info" />
+                                                        <div className="flex items-start gap-4">
+                                                            <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center shrink-0 bg-info/10")}>
+                                                                <AlignLeft className="w-5 h-5 text-info" />
+                                                            </div>
+                                                            <p className={cn("text-[14px] leading-relaxed font-bold flex-1 pt-1.5", isDark ? "text-foreground/90" : "text-muted-foreground")}>
+                                                                {selectedItem.campaign_description || selectedItem.description || 'Campaign information not provided.'}
+                                                            </p>
                                                         </div>
-                                                            {selectedItem.campaign_description || selectedItem.description || 'Campaign information not provided.'}
-                                                        </p>
                                                     </div>
                                                 </div>
                                             </div>
@@ -6089,13 +6089,7 @@ const MobileDashboardDemo = ({
                                                     })()}
                                                 </div>
                                             </div>
-                                        )}                               </div>
-                                                        </div>
-                                                    ));
-	                                                })()}
-	                                            </div>
-	                                        </div>
-	                                        )}
+                                        )}
 
 	                                        {/* ── PRODUCT PREVIEW (IF BARTER) ── */}
 	                                        {selectedType !== 'offer' && selectedRequiresShipping && (
