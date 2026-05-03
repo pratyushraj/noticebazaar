@@ -5562,14 +5562,29 @@ const MobileDashboardDemo = ({
                                                             {/* ── COLLAPSIBLE BRIEF ── */}
                                                             {(() => {
                                                                     const rawDesc = selectedItem.campaign_description || selectedItem.description || selectedItem.raw?.campaign_description || selectedItem.raw?.description || "";
-                                                                    const packageMatch = rawDesc.match(/Selected package:\s*(.*?)(?=\s*Collab Duration:|Additional|$)/i);
-                                                                    const extractedPackageName = packageMatch ? packageMatch[1].trim() : null;
-                                                                    
-                                                                    const durationMatch = rawDesc.match(/Collab Duration:\s*(.*?)(?=\s*Additional|$)/i);
+
+                                                                    // Resolve package name: try regex on description first, then direct fields
+                                                                    const packageMatch = rawDesc.match(/Selected package:\s*([🚀📈🎯💼]?\s*.*?)(?=\s*Collab Duration:|\n|Additional|$)/i);
+                                                                    const resolvedPackageName = 
+                                                                        (packageMatch ? packageMatch[1].trim() : null) ||
+                                                                        selectedItem.package_name || selectedItem.package_tier ||
+                                                                        selectedItem.raw?.package_name || selectedItem.raw?.package_tier || null;
+
+                                                                    const durationMatch = rawDesc.match(/Collab Duration:\s*(.*?)(?=\s*Additional|\n|$)/i);
                                                                     const extractedDuration = durationMatch ? durationMatch[1].trim() : null;
-                                                                    
-                                                                    const cleanDesc = rawDesc.split(/Selected package:|Collab Duration:|Additional Commercial Terms:|Collab content category:|Product for collab:/i)[0].trim() || "High-energy Reel showcasing unboxing and key features.";
-                                                                    const packageIcon = extractedPackageName?.toLowerCase().includes('starter') ? "🚀" : extractedPackageName?.toLowerCase().includes('growth') ? "📈" : "📄";
+
+                                                                    // Strip metadata lines from display text
+                                                                    const cleanDesc = rawDesc.split(/Selected package:|Collab Duration:|Additional Commercial Terms:|Collab content category:|Product for collab:/i)[0].trim() || "High-energy Reel optimized for organic reach. Best for first-time brand discovery.";
+
+                                                                    const pkgLower = (resolvedPackageName || "").toLowerCase();
+                                                                    const isStarter = pkgLower.includes('starter');
+                                                                    const isGrowth = pkgLower.includes('growth');
+                                                                    const packageIcon = isStarter ? "🚀" : isGrowth ? "📈" : "📄";
+
+                                                                    // Format primary deliverable with count + duration
+                                                                    const rawCount = parsedDeliverables[0]?.count || parsedDeliverables[0]?.quantity || 1;
+                                                                    const reelDuration = extractedDuration || (isStarter ? "15-30s" : isGrowth ? "30-60s" : null);
+                                                                    const formattedPrimary = `${rawCount} ${primaryLabel}${reelDuration ? ` (${reelDuration})` : ""}`;
 
                                                                     return (
                                                                         <div className={cn("rounded-[32px] border overflow-hidden backdrop-blur-2xl transition-all", isDark ? "bg-white/[0.02] border-white/6" : "bg-white/60 border-slate-200/60 shadow-xl")}>
@@ -5581,7 +5596,7 @@ const MobileDashboardDemo = ({
                                                                                     <div className="flex items-center gap-3 mb-1.5">
                                                                                         <span className="text-2xl">{packageIcon}</span>
                                                                                         <span className={cn("text-[26px] font-black tracking-tighter leading-none", textColor)}>
-                                                                                            {extractedPackageName || "Campaign Brief"}
+                                                                                            {resolvedPackageName || "Campaign Brief"}
                                                                                         </span>
                                                                                     </div>
                                                                                     <span className={cn("text-[10px] font-black uppercase tracking-[0.3em] opacity-30 px-1", textColor)}>
@@ -5589,12 +5604,10 @@ const MobileDashboardDemo = ({
                                                                                     </span>
                                                                                 </div>
                                                                                 <div className="flex items-center gap-5">
-                                                                                    {extractedPackageName && (
-                                                                                        <div className={cn("w-14 h-14 rounded-full flex items-center justify-center shadow-xl border shrink-0", 
-                                                                                            isDark ? "bg-[#1A2235] border-white/10" : "bg-slate-50 border-slate-100")}>
-                                                                                            <span className="text-2xl filter drop-shadow-md">{packageIcon}</span>
-                                                                                        </div>
-                                                                                    )}
+                                                                                    <div className={cn("w-14 h-14 rounded-full flex items-center justify-center shadow-xl border shrink-0", 
+                                                                                        isDark ? "bg-[#1A2235] border-white/10" : "bg-slate-50 border-slate-100")}>
+                                                                                        <span className="text-2xl filter drop-shadow-md">{packageIcon}</span>
+                                                                                    </div>
                                                                                     <ChevronDown className={cn("w-6 h-6 opacity-20 transition-transform", showBrief && "rotate-180")} />
                                                                                 </div>
                                                                             </button>
@@ -5615,12 +5628,12 @@ const MobileDashboardDemo = ({
                                                                                                     <Check className="w-3.5 h-3.5 text-emerald-500" strokeWidth={4} />
                                                                                                 </div>
                                                                                                 <p className={cn("text-[15px] font-bold tracking-tight", textColor)}>
-                                                                                                    {primaryLabel} {extractedDuration ? `(${extractedDuration})` : ""}
+                                                                                                    {formattedPrimary}
                                                                                                 </p>
                                                                                             </div>
                                                                                             
                                                                                             {/* Package Specific Deliverables */}
-                                                                                            {extractedPackageName?.toLowerCase().includes('starter') && (
+                                                                                            {isStarter && (
                                                                                                 <>
                                                                                                     <div className="flex items-center gap-4">
                                                                                                         <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0">
@@ -5637,7 +5650,7 @@ const MobileDashboardDemo = ({
                                                                                                 </>
                                                                                             )}
                                                                                             
-                                                                                            {extractedPackageName?.toLowerCase().includes('growth') && (
+                                                                                            {isGrowth && (
                                                                                                 <>
                                                                                                     <div className="flex items-center gap-4">
                                                                                                         <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0">
@@ -6125,14 +6138,26 @@ const MobileDashboardDemo = ({
                                             <div className="mb-8 px-1">
                                                 {(() => {
                                                     const rawDesc = selectedItem.campaign_description || selectedItem.raw?.campaign_description || selectedItem.description || selectedItem.raw?.description || "";
-                                                    const packageMatch = rawDesc.match(/Selected package:\s*(.*?)(?=\s*Collab Duration:|Additional|$)/i);
-                                                    const extractedPackageName = packageMatch ? packageMatch[1].trim() : null;
-                                                    
-                                                    const durationMatch = rawDesc.match(/Collab Duration:\s*(.*?)(?=\s*Additional|$)/i);
-                                                    const extractedDuration = durationMatch ? durationMatch[1].trim() : null;
-                                                    
-                                                    const packageIcon = extractedPackageName?.toLowerCase().includes('starter') ? "🚀" : extractedPackageName?.toLowerCase().includes('growth') ? "📈" : "📄";
-                                                    const cleanDesc = rawDesc.split(/Selected package:|Collab Duration:|Additional Commercial Terms:|Collab content category:|Product for collab:/i)[0].trim() || "High-energy Reel showcasing unboxing and key features.";
+
+                                                     // Multi-source package name resolution
+                                                     const packageMatch = rawDesc.match(/Selected package:\s*(.*?)(?=\s*Collab Duration:|\n|Additional|$)/i);
+                                                     const resolvedPackageName =
+                                                         (packageMatch ? packageMatch[1].trim() : null) ||
+                                                         selectedItem.package_name || selectedItem.package_tier ||
+                                                         selectedItem.raw?.package_name || selectedItem.raw?.package_tier || null;
+
+                                                     const durationMatch = rawDesc.match(/Collab Duration:\s*(.*?)(?=\s*Additional|\n|$)/i);
+                                                     const extractedDuration = durationMatch ? durationMatch[1].trim() : null;
+
+                                                     const pkgLower = (resolvedPackageName || "").toLowerCase();
+                                                     const isStarter = pkgLower.includes('starter');
+                                                     const isGrowth = pkgLower.includes('growth');
+                                                     const packageIcon = isStarter ? "🚀" : isGrowth ? "📈" : "📄";
+                                                     const cleanDesc = rawDesc.split(/Selected package:|Collab Duration:|Additional Commercial Terms:|Collab content category:|Product for collab:/i)[0].trim() || "High-energy Reel optimized for organic reach. Best for first-time brand discovery.";
+
+                                                     const reelDuration = extractedDuration || (isStarter ? "15-30s" : isGrowth ? "30-60s" : null);
+                                                     const formattedPrimary = `1 ${primaryLabel}${reelDuration ? ` (${reelDuration})` : ""}`;
+
 
                                                     const rawReqs = selectedItem.requirements || selectedItem.raw?.requirements;
                                                     let requirementsList = [];
@@ -6152,19 +6177,17 @@ const MobileDashboardDemo = ({
                                                                     <div className="flex items-center gap-3 mb-1.5">
                                                                         <span className="text-2xl">{packageIcon}</span>
                                                                         <span className={cn("text-[26px] font-black tracking-tighter leading-none", textColor)}>
-                                                                            {extractedPackageName || "Campaign Brief"}
+                                                                            {resolvedPackageName || "Campaign Brief"}
                                                                         </span>
                                                                     </div>
                                                                     <span className={cn("text-[10px] font-black uppercase tracking-[0.3em] opacity-30 px-1", textColor)}>
                                                                         STANDARD DELIVERY
                                                                     </span>
                                                                 </div>
-                                                                {extractedPackageName && (
                                                                     <div className={cn("w-14 h-14 rounded-full flex items-center justify-center shadow-xl border shrink-0", 
                                                                         isDark ? "bg-[#1A2235] border-white/10" : "bg-slate-50 border-slate-100")}>
                                                                         <span className="text-2xl filter drop-shadow-md">{packageIcon}</span>
                                                                     </div>
-                                                                )}
                                                             </div>
 
                                                             <div className="px-6 pb-10">
@@ -6182,12 +6205,12 @@ const MobileDashboardDemo = ({
                                                                                 <Check className="w-3.5 h-3.5 text-emerald-500" strokeWidth={4} />
                                                                             </div>
                                                                             <p className={cn("text-[15px] font-bold tracking-tight", textColor)}>
-                                                                                {primaryLabel} {extractedDuration ? `(${extractedDuration})` : ""}
+                                                                            {formattedPrimary}
                                                                             </p>
                                                                         </div>
                                                                         
                                                                         {/* Package Specific Deliverables */}
-                                                                        {extractedPackageName?.toLowerCase().includes('starter') && (
+                                                                        {isStarter && (
                                                                             <>
                                                                                 <div className="flex items-center gap-4">
                                                                                     <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0">
@@ -6204,7 +6227,7 @@ const MobileDashboardDemo = ({
                                                                             </>
                                                                         )}
                                                                         
-                                                                        {extractedPackageName?.toLowerCase().includes('growth') && (
+                                                                        {isGrowth && (
                                                                             <>
                                                                                 <div className="flex items-center gap-4">
                                                                                     <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0">
