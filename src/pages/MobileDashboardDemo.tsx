@@ -6098,7 +6098,7 @@ const MobileDashboardDemo = ({
                                                                             ).map((item, i) => (
                                                                                 <li key={i} className={cn("flex items-center gap-2.5 text-[12px] font-bold", item.done ? "opacity-40 line-through" : "opacity-80", textColor)}>
                                                                                     <div className={cn(
-                                                                                        "w-3.5 h-3.5 rounded-full flex items-center justify-center shrink-0 border",
+                                                        "w-3.5 h-3.5 rounded-full flex items-center justify-center shrink-0 border",
                                                                                         item.done
                                                                                             ? "bg-emerald-500 border-emerald-500"
                                                                                             : isPaymentPending
@@ -6122,111 +6122,127 @@ const MobileDashboardDemo = ({
 
                                         {/* ── CAMPAIGN BRIEF (Deals only — offers show brief inline in hero) ── */}
                                         {selectedType === 'deal' && (
-                                            <div className="mb-6">
-                                                <h4 className={cn("text-[11px] font-black uppercase tracking-[0.2em] mb-4 opacity-50 px-1", textColor)}>
-                                                    {(() => {
-                                                        const rawDesc = selectedItem.campaign_description || selectedItem.raw?.campaign_description || selectedItem.description || selectedItem.raw?.description || "";
-                                                        const packageMatch = rawDesc.match(/Selected package:\s*(.*?)(?=\s*Collab Duration:|Additional|$)/i);
-                                                        return packageMatch ? packageMatch[1].trim() : "Campaign Brief";
-                                                    })()}
-                                                </h4>
-                                                <div className={cn("rounded-[32px] border p-6 relative overflow-hidden backdrop-blur-xl shadow-2xl", 
-                                                    isDark ? "bg-[#0C1320]/80 border-white/10" : "bg-white border-slate-200/60 shadow-sm")}>
-                                                    <div className="flex items-start gap-4">
-                                                        <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center shrink-0 bg-info/10")}>
-                                                            <AlignLeft className="w-5 h-5 text-info" />
+                                            <div className="mb-8 px-1">
+                                                {(() => {
+                                                    const rawDesc = selectedItem.campaign_description || selectedItem.raw?.campaign_description || selectedItem.description || selectedItem.raw?.description || "";
+                                                    const packageMatch = rawDesc.match(/Selected package:\s*(.*?)(?=\s*Collab Duration:|Additional|$)/i);
+                                                    const extractedPackageName = packageMatch ? packageMatch[1].trim() : null;
+                                                    
+                                                    const durationMatch = rawDesc.match(/Collab Duration:\s*(.*?)(?=\s*Additional|$)/i);
+                                                    const extractedDuration = durationMatch ? durationMatch[1].trim() : null;
+                                                    
+                                                    const packageIcon = extractedPackageName?.toLowerCase().includes('starter') ? "🚀" : extractedPackageName?.toLowerCase().includes('growth') ? "📈" : "📄";
+                                                    const cleanDesc = rawDesc.split(/Selected package:|Collab Duration:|Additional Commercial Terms:|Collab content category:|Product for collab:/i)[0].trim() || "High-energy Reel showcasing unboxing and key features.";
+
+                                                    const rawReqs = selectedItem.requirements || selectedItem.raw?.requirements;
+                                                    let requirementsList = [];
+                                                    try {
+                                                        if (typeof rawReqs === 'string') {
+                                                            const parsed = JSON.parse(rawReqs);
+                                                            if (Array.isArray(parsed)) requirementsList = parsed;
+                                                        } else if (Array.isArray(rawReqs)) {
+                                                            requirementsList = rawReqs;
+                                                        }
+                                                    } catch (e) {}
+
+                                                    return (
+                                                        <div className={cn("rounded-[32px] border overflow-hidden backdrop-blur-2xl transition-all shadow-2xl", isDark ? "bg-white/[0.02] border-white/6" : "bg-white border-slate-200")}>
+                                                            <div className="px-6 py-7 flex items-center justify-between">
+                                                                <div className="flex flex-col">
+                                                                    <div className="flex items-center gap-3 mb-1.5">
+                                                                        <span className="text-2xl">{packageIcon}</span>
+                                                                        <span className={cn("text-[26px] font-black tracking-tighter leading-none", textColor)}>
+                                                                            {extractedPackageName || "Campaign Brief"}
+                                                                        </span>
+                                                                    </div>
+                                                                    <span className={cn("text-[10px] font-black uppercase tracking-[0.3em] opacity-30 px-1", textColor)}>
+                                                                        STANDARD DELIVERY
+                                                                    </span>
+                                                                </div>
+                                                                {extractedPackageName && (
+                                                                    <div className={cn("w-14 h-14 rounded-full flex items-center justify-center shadow-xl border shrink-0", 
+                                                                        isDark ? "bg-[#1A2235] border-white/10" : "bg-slate-50 border-slate-100")}>
+                                                                        <span className="text-2xl filter drop-shadow-md">{packageIcon}</span>
+                                                                    </div>
+                                                                )}
+                                                            </div>
+
+                                                            <div className="px-6 pb-10">
+                                                                <p className={cn("text-[15px] font-medium leading-relaxed opacity-70 mb-10 whitespace-pre-wrap px-1", textColor)}>
+                                                                    {cleanDesc}
+                                                                </p>
+
+                                                                <div className={cn("rounded-[32px] p-8 border backdrop-blur-md", 
+                                                                    isDark ? "bg-[#0C1320]/80 border-white/5" : "bg-slate-50/30 border-slate-200/40 shadow-sm")}>
+                                                                    <h4 className={cn("text-[11px] font-black uppercase tracking-[0.25em] mb-6 opacity-40 px-1", textColor)}>WHAT THE BRAND GETS</h4>
+                                                                    <div className="space-y-5">
+                                                                        {/* Primary */}
+                                                                        <div className="flex items-center gap-4">
+                                                                            <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0">
+                                                                                <Check className="w-3.5 h-3.5 text-emerald-500" strokeWidth={4} />
+                                                                            </div>
+                                                                            <p className={cn("text-[15px] font-bold tracking-tight", textColor)}>
+                                                                                {primaryLabel} {extractedDuration ? `(${extractedDuration})` : ""}
+                                                                            </p>
+                                                                        </div>
+                                                                        
+                                                                        {/* Package Specific Deliverables */}
+                                                                        {extractedPackageName?.toLowerCase().includes('starter') && (
+                                                                            <>
+                                                                                <div className="flex items-center gap-4">
+                                                                                    <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0">
+                                                                                        <Check className="w-3.5 h-3.5 text-emerald-500" strokeWidth={4} />
+                                                                                    </div>
+                                                                                    <p className={cn("text-[15px] font-bold tracking-tight", textColor)}>Organic reach focus</p>
+                                                                                </div>
+                                                                                <div className="flex items-center gap-4">
+                                                                                    <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0">
+                                                                                        <Check className="w-3.5 h-3.5 text-emerald-500" strokeWidth={4} />
+                                                                                    </div>
+                                                                                    <p className={cn("text-[15px] font-bold tracking-tight", textColor)}>Basic editing</p>
+                                                                                </div>
+                                                                            </>
+                                                                        )}
+                                                                        
+                                                                        {extractedPackageName?.toLowerCase().includes('growth') && (
+                                                                            <>
+                                                                                <div className="flex items-center gap-4">
+                                                                                    <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0">
+                                                                                        <Check className="w-3.5 h-3.5 text-emerald-500" strokeWidth={4} />
+                                                                                    </div>
+                                                                                    <p className={cn("text-[15px] font-bold tracking-tight", textColor)}>SEO + Hook Optimization</p>
+                                                                                </div>
+                                                                                <div className="flex items-center gap-4">
+                                                                                    <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0">
+                                                                                        <Check className="w-3.5 h-3.5 text-emerald-500" strokeWidth={4} />
+                                                                                    </div>
+                                                                                    <p className={cn("text-[15px] font-bold tracking-tight", textColor)}>1 Story shoutout</p>
+                                                                                </div>
+                                                                            </>
+                                                                        )}
+
+                                                                        {secondaryDeliverables.filter(d => d.label || d.name).map((d, i) => (
+                                                                            <div key={i} className="flex items-center gap-4">
+                                                                                <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0">
+                                                                                    <Check className="w-3.5 h-3.5 text-emerald-500" strokeWidth={4} />
+                                                                                </div>
+                                                                                <p className={cn("text-[15px] font-bold tracking-tight", textColor)}>{d.label || d.name}</p>
+                                                                            </div>
+                                                                        ))}
+                                                                        {requirementsList.map((req, i) => (
+                                                                            <div key={i} className="flex items-center gap-4">
+                                                                                <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0">
+                                                                                    <Check className="w-3.5 h-3.5 text-emerald-500" strokeWidth={4} />
+                                                                                </div>
+                                                                                <p className={cn("text-[15px] font-bold tracking-tight opacity-80", textColor)}>{req}</p>
+                                                                            </div>
+                                                                        ))}
+                                                                    </div>
+                                                                </div>
+                                                            </div>
                                                         </div>
-                                                        <div className="flex-1">
-                                                            {(() => {
-                                                                const rawReqs = selectedItem.requirements || selectedItem.raw?.requirements;
-                                                                let requirementsList = [];
-                                                                try {
-                                                                    if (typeof rawReqs === 'string') {
-                                                                        const parsed = JSON.parse(rawReqs);
-                                                                        if (Array.isArray(parsed)) requirementsList = parsed;
-                                                                    } else if (Array.isArray(rawReqs)) {
-                                                                        requirementsList = rawReqs;
-                                                                    }
-                                                                } catch (e) {}
-
-                                                                const description = selectedItem.campaign_description || selectedItem.raw?.campaign_description || selectedItem.description || selectedItem.raw?.description;
-
-                                                                return (
-                                                                     <div className="space-y-4">
-                                                                         {description && (
-                                                                             <p className={cn("text-[14px] leading-relaxed font-bold whitespace-pre-wrap", isDark ? "text-foreground/90" : "text-muted-foreground")}>
-                                                                                 {description.split(/Selected package:|Collab Duration:|Additional Commercial Terms:|Collab content category:|Product for collab:/i)[0].trim()}
-                                                                             </p>
-                                                                         )}
-
-                                                                         {/* Package Specific Deliverables */}
-                                                                         {(() => {
-                                                                             const rawDesc = selectedItem.campaign_description || selectedItem.raw?.campaign_description || selectedItem.description || selectedItem.raw?.description || "";
-                                                                             const packageMatch = rawDesc.match(/Selected package:\s*(.*?)(?=\s*Collab Duration:|Additional|$)/i);
-                                                                             const packageName = packageMatch ? packageMatch[1].toLowerCase() : "";
-
-                                                                             return (
-                                                                                 <>
-                                                                                     {packageName.includes('starter') && (
-                                                                                         <div className="space-y-3 mt-4 pt-4 border-t border-white/5">
-                                                                                             <div className="flex items-center gap-3">
-                                                                                                  <div className="w-4 h-4 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0">
-                                                                                                     <Check className="w-2.5 h-2.5 text-emerald-500" strokeWidth={4} />
-                                                                                                 </div>
-                                                                                                 <p className={cn("text-[13px] font-bold opacity-80", textColor)}>Organic reach focus</p>
-                                                                                             </div>
-                                                                                             <div className="flex items-center gap-3">
-                                                                                                  <div className="w-4 h-4 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0">
-                                                                                                     <Check className="w-2.5 h-2.5 text-emerald-500" strokeWidth={4} />
-                                                                                                 </div>
-                                                                                                 <p className={cn("text-[13px] font-bold opacity-80", textColor)}>Basic editing</p>
-                                                                                             </div>
-                                                                                         </div>
-                                                                                     )}
-                                                                                     {packageName.includes('growth') && (
-                                                                                         <div className="space-y-3 mt-4 pt-4 border-t border-white/5">
-                                                                                              <div className="flex items-center gap-3">
-                                                                                                  <div className="w-4 h-4 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0">
-                                                                                                     <Check className="w-2.5 h-2.5 text-emerald-500" strokeWidth={4} />
-                                                                                                 </div>
-                                                                                                 <p className={cn("text-[13px] font-bold opacity-80", textColor)}>SEO + Hook Optimization</p>
-                                                                                             </div>
-                                                                                             <div className="flex items-center gap-3">
-                                                                                                  <div className="w-4 h-4 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0">
-                                                                                                     <Check className="w-2.5 h-2.5 text-emerald-500" strokeWidth={4} />
-                                                                                                 </div>
-                                                                                                 <p className={cn("text-[13px] font-bold opacity-80", textColor)}>1 Story shoutout</p>
-                                                                                             </div>
-                                                                                         </div>
-                                                                                     )}
-                                                                                 </>
-                                                                             );
-                                                                         })()}
-                                                                         
-                                                                         {requirementsList.length > 0 && (
-                                                                             <div className={cn("space-y-3 pt-2", description ? "border-t border-white/5 mt-4" : "")}>
-                                                                                 {requirementsList.map((req: string, i: number) => (
-                                                                                     <div key={i} className="flex items-start gap-3">
-                                                                                         <div className="mt-1 w-4 h-4 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0">
-                                                                                             <Check className="w-2.5 h-2.5 text-emerald-500" strokeWidth={4} />
-                                                                                         </div>
-                                                                                         <p className={cn("text-[13px] font-bold leading-tight opacity-80", textColor)}>{req}</p>
-                                                                                     </div>
-                                                                                 ))}
-                                                                             </div>
-                                                                         )}
-
-                                                                         {!description && requirementsList.length === 0 && (
-                                                                              <p className={cn("text-[14px] leading-relaxed font-bold", isDark ? "text-foreground/90" : "text-muted-foreground")}>
-                                                                                 Ensure high-quality lighting, no competitor branding, and a clear product focus in your content.
-                                                                             </p>
-                                                                         )}
-                                                                     </div>
-                                                                );
-                                                            })()}
-                                                        </div>
-                                                    </div>
-                                                </div>
+                                                    );
+                                                })()}
                                             </div>
                                         )}
 
