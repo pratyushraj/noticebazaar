@@ -5578,16 +5578,9 @@ const MobileDashboardDemo = ({
                                                                 {showBrief && (
                                                                     <div className="px-5 pb-5">
                                                                         <p className={cn("text-[13px] font-medium leading-relaxed opacity-60", textColor)}>
-                                                                            {selectedItem.description || selectedItem.raw?.description || "High-energy Reel showcasing unboxing and key features."}
+                                                                            {selectedItem.campaign_description || selectedItem.description || selectedItem.raw?.campaign_description || selectedItem.raw?.description || "High-energy Reel showcasing unboxing and key features."}
                                                                         </p>
-                                                                        <div className="mt-4 space-y-2">
-                                                                            {secondaryDeliverables.filter(d => d.label || d.name).map((d, i) => (
-                                                                                <div key={i} className={cn("flex items-center gap-2 text-[12px] font-bold opacity-50", textColor)}>
-                                                                                    <div className="w-1 h-1 rounded-full bg-current" />
-                                                                                    {d.label || d.name}
-                                                                                </div>
-                                                                            ))}
-                                                                        </div>
+                                                                        {/* Removed redundant deliverables mapping */}
                                                                     </div>
                                                                 )}
                                                             </div>
@@ -6037,32 +6030,7 @@ const MobileDashboardDemo = ({
                                                 <h4 className={cn("text-[11px] font-black uppercase tracking-[0.2em] mb-4 opacity-50 px-1", textColor)}>Campaign Brief</h4>
                                                 <div className={cn("rounded-[32px] border p-6 relative overflow-hidden backdrop-blur-xl shadow-2xl", 
                                                     isDark ? "bg-[#0C1320]/80 border-white/10" : "bg-white border-slate-200/60 shadow-sm")}>
-                                                    {(() => {
-                                                        const packageLabel = getOfferPackageLabel(selectedItem);
-                                                        const requirementsList = getOfferRequirements(selectedItem);
-                                                        const barterTypesList = getOfferBarterTypes(selectedItem);
-                                                        const addonsList = getOfferAddons(selectedItem);
-                                                        const contentQuantity = selectedItem?.content_quantity || selectedItem?.form_data?.content_quantity || selectedItem?.raw?.content_quantity || selectedItem?.raw?.form_data?.content_quantity;
-                                                        const contentDuration = selectedItem?.content_duration || selectedItem?.form_data?.content_duration || selectedItem?.raw?.content_duration || selectedItem?.raw?.form_data?.content_duration;
-                                                        const chips = [
-                                                            packageLabel ? `Package: ${packageLabel}` : '',
-                                                            contentQuantity ? `Qty: ${contentQuantity}` : '',
-                                                            contentDuration ? `Duration: ${contentDuration}` : '',
-                                                            ...requirementsList,
-                                                            ...addonsList.map(label => `Add-on: ${label}`),
-                                                            ...barterTypesList.map(label => `Barter: ${label}`),
-                                                        ].filter(Boolean);
-                                                        if (chips.length === 0) return null;
-                                                        return (
-                                                            <div className="flex flex-wrap gap-2 mb-4">
-                                                                {chips.map((chip) => (
-                                                                    <span key={chip} className={cn("px-3 py-1.5 rounded-xl text-[10px] font-black border", isDark ? "bg-white/[0.04] border-white/10 text-white/80" : "bg-slate-50 border-slate-200 text-slate-700")}>
-                                                                        {chip}
-                                                                    </span>
-                                                                ))}
-                                                            </div>
-                                                        );
-                                                    })()}
+                                                     {/* Removed redundant chips here as per user request */}
                                                     <div className="flex items-start gap-4">
                                                         <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center shrink-0 bg-info/10")}>
                                                             <AlignLeft className="w-5 h-5 text-info" />
