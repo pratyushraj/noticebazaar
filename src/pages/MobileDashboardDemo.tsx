@@ -8182,17 +8182,6 @@ const DashboardTab = React.memo(({
                     </div>
                 </motion.div>
             )}
-Deliverables approved! Payment is being processed."}
-                                    </p>
-                                </div>
-                                <div className={cn("px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest", isDark ? "bg-emerald-500/20 text-emerald-400" : "bg-emerald-500 text-white")}>
-                                    LIVE
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </motion.div>
-            )}
 
             {/* Link to Instagram Bio Widget (Redesigned) */}
             <motion.div
@@ -8299,7 +8288,12 @@ Deliverables approved! Payment is being processed."}
                                 </div>
                                 <p className="text-[9px] font-black uppercase tracking-[0.2em] opacity-30">THIS WEEK</p>
                             </div>
-                        </di            {/* Premium Earnings & Offers Hub (Elite Edition) */}
+                        </div>
+                    </div>
+                </motion.div>
+            )}
+
+            {/* Premium Earnings & Offers Hub (Elite Edition) */}
             <div className="px-5 mb-10">
                 <motion.div
                     initial={{ y: 30, opacity: 0 }}
@@ -8412,13 +8406,6 @@ Deliverables approved! Payment is being processed."}
                     </div>
                 </motion.div>
             </div>
-        </motion.div>
-    );
-});
-
-
-
-
         </motion.div>
     );
 });
