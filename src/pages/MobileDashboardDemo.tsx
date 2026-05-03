@@ -5848,7 +5848,7 @@ const MobileDashboardDemo = ({
                                                                 <div className="flex items-center gap-2 mb-1.5">
                                                                     {selectedIsPureBarter && <Package className="w-3.5 h-3.5 text-amber-400" />}
                                                                     <p className={cn("text-[10px] font-black uppercase tracking-[0.25em] opacity-40", textColor)}>
-                                                                        {selectedIsPureBarter ? 'Free Product Collab' : 'Guaranteed Payout'}
+                                                                        {selectedIsPureBarter ? 'Free Product Collab' : 'Pending Payout'}
                                                                     </p>
                                                                 </div>
                                                                 {selectedIsPureBarter ? (
@@ -5865,11 +5865,14 @@ const MobileDashboardDemo = ({
                                                                         </span>
                                                                     </div>
                                                                 ) : (
-                                                                    <div className="flex items-baseline gap-1.5">
-                                                                        <span className={cn("text-[48px] leading-none font-black tracking-tighter", textColor)}>
-                                                                            {renderBudgetValue(selectedItem)}
-                                                                        </span>
-                                                                        <span className={cn("text-[15px] font-black opacity-30", textColor)}>INR</span>
+                                                                    <div>
+                                                                        <div className="flex items-baseline gap-1.5">
+                                                                            <span className={cn("text-[48px] leading-none font-black tracking-tighter", textColor)}>
+                                                                                {renderBudgetValue(selectedItem)}
+                                                                            </span>
+                                                                            <span className={cn("text-[15px] font-black opacity-30", textColor)}>INR</span>
+                                                                        </div>
+                                                                        <p className={cn("text-[11px] font-bold mt-1 flex items-center gap-1.5", isDark ? "text-emerald-400/80" : "text-emerald-700")}>💰 Releases after approval</p>
                                                                     </div>
                                                                 )}
                                                             </div>
@@ -5961,7 +5964,7 @@ const MobileDashboardDemo = ({
                                                     <p className={cn("text-[13px] font-black leading-tight tracking-tighter whitespace-nowrap", textColor)}>
                                                         {selectedItem.company_name || selectedItem.brand_name || selectedItem.brand?.name || selectedItem.raw?.brand_name || 'Brand Information'}
                                                     </p>
-                                                    <p className={cn("text-[11px] mt-1 font-bold opacity-50", textColor)}>Verified Business · View Company Details</p>
+                                                    <p className={cn("text-[11px] mt-1 font-bold opacity-50", textColor)}>Verified Business · ⭐ 12 deals completed</p>
                                                 </div>
                                                 <motion.div
                                                     animate={{ rotate: showBrandDetails ? 90 : 0 }}
@@ -6118,6 +6121,63 @@ const MobileDashboardDemo = ({
                                                                         })}
                                                                     </div>
                                                                 </div>
+                                                                {/* What to do next — context-aware guidance */}
+                                                                {!isBarterDeal && (
+                                                                    <div className={cn(
+                                                                        "mt-5 rounded-[20px] border px-4 py-3.5",
+                                                                        isPaymentPending
+                                                                            ? (isDark ? "bg-amber-500/[0.04] border-amber-500/15" : "bg-amber-50/80 border-amber-200/70")
+                                                                            : isMaking
+                                                                                ? (isDark ? "bg-sky-500/[0.04] border-sky-500/15" : "bg-sky-50/80 border-sky-200/70")
+                                                                                : (isDark ? "bg-white/[0.03] border-white/8" : "bg-slate-50 border-slate-200")
+                                                                    )}>
+                                                                        <div className="flex items-center gap-2 mb-3">
+                                                                            <span className="text-[13px]">🎯</span>
+                                                                            <p className={cn("text-[11px] font-black uppercase tracking-widest",
+                                                                                isPaymentPending
+                                                                                    ? (isDark ? "text-amber-400" : "text-amber-700")
+                                                                                    : isMaking
+                                                                                        ? (isDark ? "text-sky-400" : "text-sky-700")
+                                                                                        : "opacity-50",
+                                                                                textColor
+                                                                            )}>What you need to do</p>
+                                                                        </div>
+                                                                        <ul className="space-y-2">
+                                                                            {(isPaymentPending
+                                                                                ? [
+                                                                                    { text: 'Wait for brand to fund the deal', done: false },
+                                                                                    { text: 'Read the brief carefully', done: false },
+                                                                                    { text: 'Prepare your content plan', done: false },
+                                                                                  ]
+                                                                                : isMaking
+                                                                                    ? [
+                                                                                        { text: 'Brand payment locked in escrow', done: true },
+                                                                                        { text: 'Create and shoot your content', done: false },
+                                                                                        { text: 'Submit before the deadline', done: false },
+                                                                                      ]
+                                                                                    : [
+                                                                                        { text: 'Brand payment locked in escrow', done: true },
+                                                                                        { text: 'Content submitted — awaiting approval', done: true },
+                                                                                        { text: 'Payout releases within 72h', done: false },
+                                                                                      ]
+                                                                            ).map((item, i) => (
+                                                                                <li key={i} className={cn("flex items-center gap-2.5 text-[12px] font-bold", item.done ? "opacity-40 line-through" : "opacity-80", textColor)}>
+                                                                                    <div className={cn(
+                                                                                        "w-3.5 h-3.5 rounded-full flex items-center justify-center shrink-0 border",
+                                                                                        item.done
+                                                                                            ? "bg-emerald-500 border-emerald-500"
+                                                                                            : isPaymentPending
+                                                                                                ? "border-amber-400/50"
+                                                                                                : "border-sky-400/50"
+                                                                                    )}>
+                                                                                        {item.done && <Check className="w-2 h-2 text-white" />}
+                                                                                    </div>
+                                                                                    {item.text}
+                                                                                </li>
+                                                                            ))}
+                                                                        </ul>
+                                                                    </div>
+                                                                )}
                                                             </>
                                                         );
                                                     })()}
@@ -6194,23 +6254,27 @@ const MobileDashboardDemo = ({
                                                     } catch (_) { }
                                                     return items.map((d, i) => (
                                                         <div key={i} className={cn(
-                                                            "px-4 py-4 rounded-[20px] border flex items-center gap-4 transition-all duration-300 hover:translate-y-[-2px]",
-                                                            isDark ? "bg-white/[0.03] border-white/8 hover:bg-white/[0.05]" : "bg-white border-slate-200 hover:shadow-md"
+                                                            "px-4 py-3.5 rounded-[20px] border flex items-center gap-3.5 transition-all duration-300",
+                                                            isDark ? "bg-white/[0.03] border-white/8" : "bg-white border-slate-200"
                                                         )}>
                                                             <div className={cn(
-                                                                "w-10 h-10 rounded-2xl flex items-center justify-center shrink-0",
+                                                                "w-9 h-9 rounded-xl flex items-center justify-center shrink-0",
                                                                 d.type === 'reel' ? "bg-gradient-to-br from-purple-500/80 to-indigo-600/80 text-white" : 
                                                                 d.type === 'story' ? "bg-gradient-to-br from-orange-400/80 to-rose-500/80 text-white" : 
                                                                 "bg-gradient-to-br from-blue-400/80 to-cyan-500/80 text-white"
                                                             )}>
-                                                                {d.type === 'reel' ? <Film className="w-4 h-4" /> : 
-                                                                 d.type === 'story' ? <Smartphone className="w-4 h-4" /> : 
-                                                                 <FileText className="w-4 h-4" />}
+                                                                {d.type === 'reel' ? <Film className="w-3.5 h-3.5" /> : 
+                                                                 d.type === 'story' ? <Smartphone className="w-3.5 h-3.5" /> : 
+                                                                 <FileText className="w-3.5 h-3.5" />}
                                                             </div>
                                                             <div className="flex-1 min-w-0">
                                                                 <p className={cn("text-[13px] font-black leading-tight tracking-tight", textColor)}>{d.label}</p>
-                                                                <p className={cn("text-[11px] font-bold opacity-30 mt-0.5", textColor)}>{d.count} {d.count === 1 ? 'unit' : 'units'}</p>
+                                                                <p className={cn("text-[11px] font-bold opacity-40 mt-0.5", textColor)}>{d.count} {d.count === 1 ? 'piece' : 'pieces'}</p>
                                                             </div>
+                                                            <div className={cn(
+                                                                "px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider shrink-0",
+                                                                isDark ? "bg-amber-500/10 text-amber-400 border border-amber-500/20" : "bg-amber-50 text-amber-600 border border-amber-100"
+                                                            )}>Pending</div>
                                                         </div>
                                                     ));
                                                 })()}
@@ -6488,7 +6552,7 @@ const MobileDashboardDemo = ({
                                                                         {deadlineStr}
                                                                     </span>
                                                                     <span className={cn("text-[11px] font-black tracking-tight flex items-center mt-1", deadlineColor)}>
-                                                                        ⚡ {diff > 0 ? `${diff} days remaining` : 'Overdue'}
+                                                                        {diff <= 0 ? '🚨 Deadline passed' : diff <= 3 ? `⚡ ${diff} days left — submit soon` : `⚡ ${diff} days left to submit`}
                                                                     </span>
                                                                 </>
                                                             );
@@ -6519,9 +6583,18 @@ const MobileDashboardDemo = ({
                                                                 ) : null;
                                                             })()}
                                                         </div>
-                                                        <p className={cn("text-[12px] font-medium leading-relaxed opacity-80 mb-4", isDark ? "text-emerald-200" : "text-emerald-900")}>
-                                                            The brand has deposited funds into our secure system. Your payment is guaranteed and will be released upon content approval.
-                                                        </p>
+                                                        <div className="space-y-2 mb-3">
+                                                            {[
+                                                                'Payment already secured in escrow',
+                                                                'Releases within 72h after approval',
+                                                                'Protected by platform guarantee',
+                                                            ].map((pt) => (
+                                                                <div key={pt} className="flex items-center gap-2">
+                                                                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+                                                                    <span className={cn("text-[12px] font-semibold", isDark ? "text-emerald-200/90" : "text-emerald-900")}>{pt}</span>
+                                                                </div>
+                                                            ))}
+                                                        </div>
                                                         {selectedItem.escrow_receipt_url && (
                                                             <a 
                                                                 href={selectedItem.escrow_receipt_url} 
@@ -6628,85 +6701,88 @@ const MobileDashboardDemo = ({
                                     </div>
                                     
                                     {/* ── STICKY CTA BAR ── */}
-                                    {selectedType !== 'offer' && (
-                                     <div className={cn(
-                                        "px-5 pb-9 pt-5 border-t z-20 relative overflow-hidden",
-                                        isDark 
-                                            ? "bg-[#0B0F14]/90 backdrop-blur-2xl border-white/5" 
-                                            : "bg-white/95 backdrop-blur-xl border-slate-200 shadow-[0_-12px_40px_rgba(0,0,0,0.08)]"
-                                    )}>
-                                        <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-emerald-500/20 to-transparent" />
-                                        
-                                        <div className="max-w-md mx-auto">
-                                            <motion.button
-                                                whileTap={{ scale: 0.96, y: 1 }}
-                                                onClick={() => {
-                                                    if (processingDeal) return;
-                                                    const cta = getDealPrimaryCta({ role: 'creator', deal: selectedItem });
-                                                    triggerHaptic();
-
-                                                    if (cta.disabled) return;
-
-                                                    if (cta.action === 'confirm_receipt') {
-                                                        void handleConfirmReceipt();
-                                                        return;
-                                                    }
-
-                                                    if (cta.action === 'mark_delivered' || cta.action === 'upload_revision') {
-                                                        setShowDeliverContentModal(true);
-                                                        return;
-                                                    }
-
-                                                    if (cta.action === 'review_sign_contract') {
-                                                        setCreatorSigningStep('send');
-                                                        setCreatorOTP('');
-                                                        setShowCreatorSigningModal(true);
-                                                        return;
-                                                    }
-
-                                                    if (cta.action === 'start_working') {
-                                                        void handleProgressStageSelect('content_making');
-                                                        return;
-                                                    }
-
-                                                    if (cta.action === 'view_contract') {
-                                                        contractSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                                                        return;
-                                                    }
-
-                                                    if (cta.action === 'view_summary') {
-                                                        toast.success("Collaboration Completed", {
-                                                            description: "This deal is successfully finalized."
-                                                        });
-                                                        triggerHaptic(HapticPatterns.success);
-                                                        return;
-                                                    }
-
-                                                    setShowProgressSheet(true);
-                                                }}
-                                                disabled={processingDeal === selectedItem.id || getDealPrimaryCta({ role: 'creator', deal: selectedItem }).disabled}
-                                                className={cn(
-                                                    "w-full py-4 rounded-[18px] shadow-lg transition-all flex flex-col items-center justify-center active:scale-[0.98] disabled:opacity-70 relative overflow-hidden group",
-                                                    dealPrimaryCtaButtonClass(getDealPrimaryCta({ role: 'creator', deal: selectedItem }).tone),
-                                                    !isDark && "border-white/20"
-                                                )}
-                                            >
-                                                <div className="absolute inset-0 bg-white/5 opacity-0 group-active:opacity-100 transition-opacity" />
-                                                
-                                                {processingDeal === selectedItem.id ? (
-                                                    <Loader2 className="w-6 h-6 animate-spin" />
-                                                ) : (
-                                                    <div className="flex items-center gap-3">
-                                                        <span className="text-[18px] font-black tracking-tight uppercase">
-                                                            {getDealPrimaryCta({ role: 'creator', deal: selectedItem }).label}
-                                                        </span>
-                                                        <ArrowRight className="w-5 h-5 transition-transform group-active:translate-x-1" />
+                                    {selectedType !== 'offer' && (() => {
+                                       const cta = getDealPrimaryCta({ role: 'creator', deal: selectedItem });
+                                       const isWaiting = cta.tone === 'waiting';
+                                       return (
+                                         <div className={cn(
+                                            "px-5 pb-9 pt-4 border-t z-20 relative overflow-hidden",
+                                            isDark 
+                                                ? "bg-[#0B0F14]/90 backdrop-blur-2xl border-white/5" 
+                                                : "bg-white/95 backdrop-blur-xl border-slate-200 shadow-[0_-12px_40px_rgba(0,0,0,0.08)]"
+                                        )}>
+                                            <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-emerald-500/20 to-transparent" />
+                                            <div className="max-w-md mx-auto">
+                                                {isWaiting ? (
+                                                    <div>
+                                                        <div className={cn(
+                                                            "w-full rounded-[18px] px-5 py-4 border flex items-center gap-4",
+                                                            isDark ? "bg-amber-500/[0.06] border-amber-500/20" : "bg-amber-50 border-amber-200"
+                                                        )}>
+                                                            <div className="relative shrink-0">
+                                                                <div className="w-10 h-10 rounded-full bg-amber-500/20 flex items-center justify-center">
+                                                                    <span className="text-amber-500 text-[18px]">⏳</span>
+                                                                </div>
+                                                                <div className="absolute -top-0.5 -right-0.5 w-3 h-3 rounded-full bg-amber-400 animate-pulse" />
+                                                            </div>
+                                                            <div className="flex-1 min-w-0">
+                                                                <p className={cn("text-[14px] font-black tracking-tight", isDark ? "text-amber-300" : "text-amber-800")}>
+                                                                    Waiting for brand to fund
+                                                                </p>
+                                                                <p className={cn("text-[11px] font-bold mt-0.5", isDark ? "text-amber-400/60" : "text-amber-700/60")}>
+                                                                    We'll notify you once payment is secured
+                                                                </p>
+                                                            </div>
+                                                        </div>
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => setShowProgressSheet(true)}
+                                                            className={cn(
+                                                                "w-full mt-2.5 h-11 rounded-[14px] border text-[13px] font-black tracking-tight flex items-center justify-center gap-2 active:scale-[0.98] transition-all",
+                                                                isDark ? "bg-white/[0.04] border-white/10 text-white/70" : "bg-slate-50 border-slate-200 text-slate-600"
+                                                            )}
+                                                        >
+                                                            View Timeline
+                                                            <ChevronRight className="w-4 h-4 opacity-50" />
+                                                        </button>
                                                     </div>
+                                                ) : (
+                                                    <motion.button
+                                                        whileTap={{ scale: 0.96, y: 1 }}
+                                                        onClick={() => {
+                                                            if (processingDeal) return;
+                                                            triggerHaptic();
+                                                            if (cta.disabled) return;
+                                                            if (cta.action === 'confirm_receipt') { void handleConfirmReceipt(); return; }
+                                                            if (cta.action === 'mark_delivered' || cta.action === 'upload_revision') { setShowDeliverContentModal(true); return; }
+                                                            if (cta.action === 'review_sign_contract') { setCreatorSigningStep('send'); setCreatorOTP(''); setShowCreatorSigningModal(true); return; }
+                                                            if (cta.action === 'start_working') { void handleProgressStageSelect('content_making'); return; }
+                                                            if (cta.action === 'view_contract') { contractSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }); return; }
+                                                            if (cta.action === 'view_summary') { toast.success("Collaboration Completed", { description: "This deal is successfully finalized." }); triggerHaptic(HapticPatterns.success); return; }
+                                                            setShowProgressSheet(true);
+                                                        }}
+                                                        disabled={processingDeal === selectedItem.id || cta.disabled}
+                                                        className={cn(
+                                                            "w-full py-4 rounded-[18px] shadow-lg transition-all flex flex-col items-center justify-center active:scale-[0.98] disabled:opacity-70 relative overflow-hidden group",
+                                                            dealPrimaryCtaButtonClass(cta.tone),
+                                                            !isDark && "border-white/20"
+                                                        )}
+                                                    >
+                                                        <div className="absolute inset-0 bg-white/5 opacity-0 group-active:opacity-100 transition-opacity" />
+                                                        {processingDeal === selectedItem.id ? (
+                                                            <Loader2 className="w-6 h-6 animate-spin" />
+                                                        ) : (
+                                                            <div className="flex items-center gap-3">
+                                                                <span className="text-[18px] font-black tracking-tight uppercase">{cta.label}</span>
+                                                                <ArrowRight className="w-5 h-5 transition-transform group-active:translate-x-1" />
+                                                            </div>
+                                                        )}
+                                                    </motion.button>
                                                 )}
-                                            </motion.button>
+                                            </div>
                                         </div>
-                                    </div>
-                                    )}
+                                       );
+                                    })()}
 
                                     {/* Item menu (three-dots) */}
                                     <AnimatePresence>
