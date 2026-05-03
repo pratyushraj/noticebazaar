@@ -5500,8 +5500,8 @@ const MobileDashboardDemo = ({
                                                                                 className="w-full h-full object-cover"
                                                                                 alt="Product"
                                                                             />
-                                                                            <div className={cn("absolute inset-0 bg-gradient-to-t", 
-                                                                                isDark ? "from-[#0B0F14] via-[#0B0F14]/60 to-transparent" : "from-white via-white/40 to-transparent"
+                                                                            <div className={cn("absolute inset-0 bg-gradient-to-t from-transparent to-transparent", 
+                                                                                isDark ? "from-[#0B0F14] via-[#0B0F14]/60" : "from-white via-white/40"
                                                                             )} />
                                                                         </div>
                                                                     );
@@ -5537,7 +5537,10 @@ const MobileDashboardDemo = ({
 
                                                                 <div className="grid grid-cols-2 gap-2 mt-5">
                                                                     <div className={cn("flex items-center gap-2 px-3 py-2.5 rounded-xl border", isDark ? "bg-white/[0.04] border-white/8" : "bg-slate-50 border-slate-200")}>
-                                            <div className={cn("flex items-center gap-2 px-3 py-2.5 rounded-xl border", isDark ? "bg-rose-500/5 border-rose-500/15" : "bg-rose-50 border-rose-100")}>
+                                                                        <Film className="w-3.5 h-3.5 opacity-40" />
+                                                                        <span className={cn("text-[11px] font-bold truncate", textColor)}>{primaryLabel}</span>
+                                                                    </div>
+                                                                    <div className={cn("flex items-center gap-2 px-3 py-2.5 rounded-xl border", isDark ? "bg-rose-500/5 border-rose-500/15" : "bg-rose-50 border-rose-100")}>
                                                                         <Clock className="w-3.5 h-3.5 text-rose-500/60" />
                                                                         <span className={cn("text-[11px] font-bold", isDark ? "text-rose-300" : "text-rose-700")}>By {new Date(selectedItem?.due_date || Date.now()).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}</span>
                                                                     </div>
@@ -5617,10 +5620,10 @@ const MobileDashboardDemo = ({
                                                                 </div>
                                                             </div>
                                                         </div>
-                                                    );
+                                                    )
                                                 })()}
                                             </div>
-) : (
+                                         ) : (
                                             <div className={cn("rounded-[36px] border p-1 mb-7 relative overflow-hidden group transition-all duration-500", 
                                                 isDark ? "bg-[#0A0D14] border-white/5 shadow-2xl" : "bg-white border-[#E2E8F0] shadow-[0_20px_50px_rgba(0,0,0,0.05)]")}>
                                                 
