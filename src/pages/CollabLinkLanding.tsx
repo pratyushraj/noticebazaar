@@ -3874,7 +3874,7 @@ const CollabLinkLanding = () => {
                               value={campaignDescription}
                               onChange={e => setCampaignDescription(e.target.value)}
                               placeholder={paymentType === 'barter' 
-                                ? "Any specific requirements or instructions for this collaboration?" 
+                                ? "Give 1–2 reference videos (optional but recommended)" 
                                 : "Example:&#10;• 1 Instagram Reel (30–45 sec)&#10;• Show product usage naturally&#10;• Mention brand name in first 5 sec&#10;• Tag @brand_handle"}
                               className="min-h-[180px] rounded-2xl border-slate-100 bg-slate-50/50 px-5 py-5 font-semibold text-[15px] text-slate-900 placeholder:text-slate-400 shadow-inner resize-none focus-visible:ring-4 focus-visible:ring-emerald-500/10 focus-visible:border-emerald-500 transition-all leading-relaxed"
                             />
@@ -4519,7 +4519,7 @@ const CollabLinkLanding = () => {
                             <Textarea
                               value={anyOtherNeeds}
                               onChange={e => setAnyOtherNeeds(e.target.value)}
-                              placeholder="Add any specific instructions or extra requirements for this collaboration..."
+                              placeholder="Give 1–2 reference videos (optional but recommended)"
                               className="min-h-[100px] rounded-2xl border-slate-100 bg-slate-50/50 px-5 py-4 font-semibold text-[14px] text-slate-900 placeholder:text-slate-400 shadow-inner resize-none focus-visible:ring-4 focus-visible:ring-emerald-500/10 focus-visible:border-emerald-500 transition-all"
                             />
                           </div>
