@@ -335,7 +335,7 @@ const getPreferredPublicHandle = (...candidates: Array<string | null | undefined
 
 const CAMPAIGN_GOALS = [
   'App / Website Promotion',
-  'Product Review / Unboxing',
+  'Product Review / Unboxing Reel',
   'Brand Awareness',
   'Performance Campaign',
   'Content Creation (UGC)',
@@ -901,7 +901,7 @@ const CollabLinkLanding = () => {
       setPaymentType('barter')
       setIncludesProduct(true)
       setBarterTypes(['product'])
-      setCampaignGoal('Product Review / Unboxing')
+      setCampaignGoal('Product Review / Unboxing Reel')
       setDeliverables(['Instagram Reel'])
       setDeliverableQuantities({ 'Instagram Reel': 1 })
       setContentQuantity(1)
@@ -1204,7 +1204,7 @@ const CollabLinkLanding = () => {
             category: creator.category || 'Lifestyle',
             description:
               'Product unboxing or review with no paid usage rights. Best for authentic product proof.',
-            deliverables: ['Product Review / Unboxing', '1 Story mention', 'No paid usage rights'],
+            deliverables: ['Product Review / Unboxing Reel', '1 Story mention', 'No paid usage rights'],
             quantities: { 'Unboxing Video': 1, Story: 1 },
             deadlineDays: 14,
             notes: 'Product must be shipped before shoot. Honest review only.',
@@ -2190,7 +2190,7 @@ const CollabLinkLanding = () => {
     }
 
     // Conditional: Product Review requires Physical Product
-    if (campaignGoal === 'Product Review / Unboxing' && paymentType === 'barter' && !barterTypes.includes('product')) {
+    if (campaignGoal === 'Product Review / Unboxing Reel' && paymentType === 'barter' && !barterTypes.includes('product')) {
       newErrors.barterTypes = 'Product Review requires a Physical Product'
     }
 
@@ -3720,13 +3720,13 @@ const CollabLinkLanding = () => {
                           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
                             {[
                               { id: 'App / Website Promotion', icon: <Rocket />, label: 'App / Website', sub: 'Promote installs or usage' },
-                              { id: 'Product Review / Unboxing', icon: <Package />, label: 'Product Review', sub: 'Unboxing & item review' },
+                              { id: 'Product Review / Unboxing Reel', icon: <Package />, label: 'Product Review', sub: 'Unboxing & item review' },
                               { id: 'Brand Awareness', icon: <Target />, label: 'Brand Awareness', sub: 'Reach new audiences' },
                               { id: 'Performance Campaign', icon: <TrendingUp />, label: 'Sales / Leads', sub: 'Focus on conversions' },
                               { id: 'Content Creation (UGC)', icon: <Camera />, label: 'Content for Ads', sub: 'High-quality UGC ads' },
                               { id: 'Custom Collaboration', icon: <Sparkles />, label: 'Custom', sub: 'Tailored partnership' },
                             ]
-                            .filter(goal => !isBarterRestricted || goal.id === 'Product Review / Unboxing')
+                            .filter(goal => !isBarterRestricted || goal.id === 'Product Review / Unboxing Reel')
                             .map((goal) => (
                               <button
                                 type="button"
@@ -3760,7 +3760,7 @@ const CollabLinkLanding = () => {
                           {/* SMART UX LAYER: Contextual Hint */}
                           {campaignGoal && (
                             <div className="animate-in fade-in slide-in-from-top-2 duration-300">
-                              {campaignGoal === 'Product Review / Unboxing' ? (
+                              {campaignGoal === 'Product Review / Unboxing Reel' ? (
                                 <div className="p-4 rounded-2xl bg-amber-50 border border-amber-100 flex items-center gap-3">
                                   <div className="p-2 bg-amber-100 rounded-lg text-amber-700">
                                     <Package className="h-4 w-4" />
