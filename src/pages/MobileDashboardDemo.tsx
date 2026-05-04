@@ -5597,7 +5597,7 @@ const MobileDashboardDemo = ({
                                                                     const extractedOtherNeeds = otherNeedsMatch ? otherNeedsMatch[1].trim() : null;
 
                                                                     // Strip metadata lines from display text
-                                                                    const cleanDesc = rawDesc.split(/Selected package:|Collab Duration:|Other Needs:|Additional Commercial Terms:|Collab content category:|Product for collab:/i)[0].trim() || "High-energy Reel optimized for organic reach. Best for first-time brand discovery.";
+                                                                    const cleanDesc = rawDesc.split(/Selected package:|Collab Duration:|Other Needs:|Additional Commercial Terms:|Collab content category:|Product for collab:/i)[0].trim() || "High-performing Reel optimized for organic reach. Best for first-time brand discovery.";
 
                                                                     const pkgLower = (resolvedPackageName || "").toLowerCase();
                                                                     const isStarter = pkgLower.includes('starter');
@@ -5655,19 +5655,33 @@ const MobileDashboardDemo = ({
                                                                                         <div className="space-y-5 mb-2">
                                                                                             {isStringList ? (
                                                                                                 // Render all items for string list format
-                                                                                                parsedDeliverables.map((item, i) => (
-                                                                                                    <div key={i} className="flex items-center gap-4">
+                                                                                                <>
+                                                                                                    <div className="flex items-center gap-4">
                                                                                                         <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0">
                                                                                                             <Check className="w-3.5 h-3.5 text-emerald-500" strokeWidth={4} />
                                                                                                         </div>
-                                                                                                        <p className={cn("text-[15px] font-bold tracking-tight", textColor)}>
-                                                                                                            {item}
-                                                                                                        </p>
+                                                                                                        <p className={cn("text-[15px] font-bold tracking-tight", textColor)}>1 Revision included</p>
                                                                                                     </div>
-                                                                                                ))
+                                                                                                    {parsedDeliverables.map((item, i) => (
+                                                                                                        <div key={i} className="flex items-center gap-4">
+                                                                                                            <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0">
+                                                                                                                <Check className="w-3.5 h-3.5 text-emerald-500" strokeWidth={4} />
+                                                                                                            </div>
+                                                                                                            <p className={cn("text-[15px] font-bold tracking-tight", textColor)}>
+                                                                                                                {item}
+                                                                                                            </p>
+                                                                                                        </div>
+                                                                                                    ))}
+                                                                                                </>
                                                                                             ) : (
                                                                                                 // Legacy structured format
                                                                                                 <>
+                                                                                                    <div className="flex items-center gap-4">
+                                                                                                        <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0">
+                                                                                                            <Check className="w-3.5 h-3.5 text-emerald-500" strokeWidth={4} />
+                                                                                                        </div>
+                                                                                                        <p className={cn("text-[15px] font-bold tracking-tight", textColor)}>1 Revision included</p>
+                                                                                                    </div>
                                                                                                     <div className="flex items-center gap-4">
                                                                                                         <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0">
                                                                                                             <Check className="w-3.5 h-3.5 text-emerald-500" strokeWidth={4} />
@@ -6196,8 +6210,8 @@ const MobileDashboardDemo = ({
                                                      const isExchange = pkgLower.includes('exchange') || pkgLower.includes('product');
                                                      const packageIcon = isStarter ? "🚀" : isGrowth ? "📈" : isExchange ? "🎁" : "";
 
-                                                      const displayPackageName = (resolvedPackageName || "Campaign Brief").replace(/^[🚀📈🎯💼📄]\s*/u, "");
-                                                      const cleanDesc = rawDesc.split(/Selected package:|Collab Duration:|Additional Commercial Terms:|Collab content category:|Product for collab:/i)[0].trim() || "High-energy Reel optimized for organic reach. Best for first-time brand discovery.";
+                                                      const displayPackageName = (resolvedPackageName || "Collaboration Details").replace(/^[🚀📈🎯💼📄]\s*/u, "");
+                                                      const cleanDesc = rawDesc.split(/Selected package:|Collab Duration:|Additional Commercial Terms:|Collab content category:|Product for collab:/i)[0].trim() || "High-performing Reel optimized for organic reach. Best for first-time brand discovery.";
 
                                                      const reelDuration = extractedDuration || (isStarter ? "15-30s" : isGrowth ? "30-60s" : null);
                                                      const formattedPrimary = `1 ${primaryLabel}${reelDuration ? ` (${reelDuration})` : ""}`;
@@ -6228,7 +6242,7 @@ const MobileDashboardDemo = ({
                                                                         </span>
                                                                     </div>
                                                                     <span className={cn("text-[10px] font-black uppercase tracking-[0.3em] opacity-60 dark:opacity-30 px-1", textColor)}>
-                                                                        {isExchange ? "PRODUCT ONLY" : "STANDARD DELIVERY"}
+                                                                        {isExchange ? "PRODUCT COLLAB" : "PAID COLLABORATION"}
                                                                     </span>
                                                                 </div>
                                                                 <div className="flex items-center gap-5">
@@ -6252,6 +6266,12 @@ const MobileDashboardDemo = ({
                                                                     <p className={cn("text-[11px] font-black uppercase tracking-[0.3em] opacity-70 dark:opacity-40 mb-5 px-1", textColor)}>1. DELIVERABLES</p>
                                                                     <div className="space-y-5 mb-10">
                                                                         {/* Primary */}
+                                                                        <div className="flex items-center gap-4">
+                                                                            <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0">
+                                                                                <Check className="w-3.5 h-3.5 text-emerald-500" strokeWidth={4} />
+                                                                            </div>
+                                                                            <p className={cn("text-[15px] font-bold tracking-tight", textColor)}>1 Revision included</p>
+                                                                        </div>
                                                                         <div className="flex items-center gap-4">
                                                                             <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0">
                                                                                 <Check className="w-3.5 h-3.5 text-emerald-500" strokeWidth={4} />
@@ -6325,6 +6345,18 @@ const MobileDashboardDemo = ({
 
                                                                     <p className={cn("text-[11px] font-black uppercase tracking-[0.3em] opacity-70 dark:opacity-40 mb-5 px-1", textColor)}>2. REQUIREMENTS</p>
                                                                     <div className="space-y-5 mb-10">
+                                                                        <div className="flex items-center gap-4">
+                                                                            <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0">
+                                                                                <Check className="w-3.5 h-3.5 text-emerald-500" strokeWidth={4} />
+                                                                            </div>
+                                                                            <p className={cn("text-[15px] font-bold tracking-tight", textColor)}>1 Revision included</p>
+                                                                        </div>
+                                                                        <div className="flex items-center gap-4">
+                                                                            <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0">
+                                                                                <Check className="w-3.5 h-3.5 text-emerald-500" strokeWidth={4} />
+                                                                            </div>
+                                                                            <p className={cn("text-[15px] font-bold tracking-tight", textColor)}>Follow campaign instructions</p>
+                                                                        </div>
                                                                         <div className="flex items-center gap-4">
                                                                             <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0">
                                                                                 <Check className="w-3.5 h-3.5 text-emerald-500" strokeWidth={4} />
