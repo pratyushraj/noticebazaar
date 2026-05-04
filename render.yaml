@@ -21,9 +21,9 @@ services:
       - key: RESEND_API_KEY
         value: re_3vCFXaJL_Gt3Y2z8Qc2nakcz5YDkbK5uH
       - key: RAZORPAY_KEY_ID
-        value: rzp_live_SOpCNkp7Fe6nV8
+        value: rzp_live_SlEMSIP2mfXZrN
       - key: RAZORPAY_KEY_SECRET
-        value: dCrHBxEnRhBtw4dX4Ra1371C
+        value: buTxBaGx7B8fYBKjBDFKXiT7
       - key: SUPABASE_ANON_KEY
         value: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9vYXh0d21xcnZmemRxem9pamNqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk1MDEyNTYsImV4cCI6MjA3NTA3NzI1Nn0.xIIz_9W9PAnxTKDdJZ3_wQ6OO7NQJbiy4P_PP0CSVBQ
     healthCheckPath: /health
@@ -54,6 +54,6 @@ services:
       - key: VITE_SUPABASE_ANON_KEY
         value: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9vYXh0d21xcnZmemRxem9pamNqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk1MDEyNTYsImV4cCI6MjA3NTA3NzI1Nn0.xIIz_9W9PAnxTKDdJZ3_wQ6OO7NQJbiy4P_PP0CSVBQ
       - key: VITE_RAZORPAY_KEY_ID
-        value: rzp_live_SOpCNkp7Fe6nV8
+        value: rzp_live_SlEMSIP2mfXZrN
       - key: VITE_API_BASE_URL
         value: https://creatorarmour-api-l6a9.onrender.com
