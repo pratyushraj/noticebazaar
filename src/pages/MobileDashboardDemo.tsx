@@ -2110,15 +2110,15 @@ const MobileDashboardDemo = ({
     const completedDealsList = React.useMemo(() => {
         return (brandDeals || []).filter((d: any) => {
             const s = normalizeDealStatus(d);
-            // Completed, paid, payment released, approved OR declined/cancelled/rejected
-            return s.includes('completed') || s === 'paid' || s === 'payment_released' || s.includes('approved') || s === 'declined' || s === 'rejected' || s === 'cancelled';
+            // Completed, paid, payment released OR declined/cancelled/rejected
+            return s.includes('completed') || s === 'paid' || s === 'payment_released' || s === 'declined' || s === 'rejected' || s === 'cancelled';
         }).map((deal: any) => hydrateDealWithRequestMedia(deal));
     }, [brandDeals, hydrateDealWithRequestMedia]);
     const activeDealsList = React.useMemo(() => {
         return (brandDeals || []).filter((d: any) => {
             const s = normalizeDealStatus(d);
             // Exclude completed, paid, payment released, approved AND rejected/cancelled/declined deals
-            return !(s.includes('completed') || s === 'paid' || s.includes('approved') || s === 'payment_released' || s === 'declined' || s === 'rejected' || s === 'cancelled');
+            return !(s.includes('completed') || s === 'paid' || s === 'payment_released' || s === 'declined' || s === 'rejected' || s === 'cancelled');
         }).map((deal: any) => hydrateDealWithRequestMedia(deal));
     }, [brandDeals, hydrateDealWithRequestMedia]);
     const actionRequiredDealsList = React.useMemo(() => {
@@ -5504,7 +5504,7 @@ const MobileDashboardDemo = ({
                                                     } catch (e) {}
 
                                                     // Detect if we have the new string-list format from package templates
-                                                    const isStringList = parsedDeliverables.length > 0 && typeof parsedDeliverables[0] === 'string';
+                                                    const isStringList = Array.isArray(parsedDeliverables) && parsedDeliverables.length > 0 && typeof parsedDeliverables[0] === 'string';
 
                                                     const primaryDeliverable = isStringList 
                                                         ? { label: parsedDeliverables[0] }
@@ -5632,6 +5632,28 @@ const MobileDashboardDemo = ({
                                                                     const isExchange = pkgLower.includes('exchange') || pkgLower.includes('product');
                                                                     const packageIcon = isStarter ? "🚀" : isGrowth ? "📈" : isExchange ? "🎁" : "";
                                                                     const displayPackageName = (resolvedPackageName || "Campaign Brief").replace(/^[🚀📈🎯💼📄🎁]\s*/u, "");
+
+                                                                    // Detecting string list format again inside nested IIFE for scope safety
+                                                                    const rawDeliverablesLocal = selectedItem.deliverables || selectedItem.raw?.deliverables;
+                                                                    let parsedDeliverablesLocal = [];
+                                                                    try {
+                                                                        if (typeof rawDeliverablesLocal === 'string') {
+                                                                            parsedDeliverablesLocal = JSON.parse(rawDeliverablesLocal);
+                                                                        } else if (Array.isArray(rawDeliverablesLocal)) {
+                                                                            parsedDeliverablesLocal = rawDeliverablesLocal;
+                                                                        }
+                                                                    } catch (e) {}
+                                                                    const isStringList = Array.isArray(parsedDeliverablesLocal) && parsedDeliverablesLocal.length > 0 && typeof parsedDeliverablesLocal[0] === 'string';
+                                                                    const primaryDeliverableLocal = isStringList 
+                                                                        ? { label: parsedDeliverablesLocal[0] }
+                                                                        : parsedDeliverablesLocal.find(d => 
+                                                                            d.type?.toLowerCase().includes('reel') || 
+                                                                            d.label?.toLowerCase().includes('reel')
+                                                                        ) || parsedDeliverablesLocal[0] || { label: 'Instagram Reel' };
+                                                                    const primaryLabel = isStringList ? parsedDeliverablesLocal[0] : (primaryDeliverableLocal.label || primaryDeliverableLocal.name || primaryDeliverableLocal.type || 'Instagram Reel');
+                                                                    const secondaryDeliverables = isStringList 
+                                                                        ? parsedDeliverablesLocal.slice(1).map(s => ({ label: s }))
+                                                                        : parsedDeliverablesLocal.filter(d => d !== primaryDeliverableLocal);
 
                                                                     // Format primary deliverable with count + duration
                                                                     const rawCount = parsedDeliverables[0]?.count || parsedDeliverables[0]?.quantity || 1;
@@ -6206,13 +6228,18 @@ const MobileDashboardDemo = ({
                                                         }
                                                     } catch (e) {}
 
-                                                    const primaryDeliverable = parsedDeliverables.find(d => 
-                                                        d.type?.toLowerCase().includes('reel') || 
-                                                        d.label?.toLowerCase().includes('reel')
-                                                    ) || parsedDeliverables[0] || { label: 'Instagram Reel' };
+                                                    const isStringList = Array.isArray(parsedDeliverables) && parsedDeliverables.length > 0 && typeof parsedDeliverables[0] === 'string';
+                                                    const primaryDeliverable = isStringList 
+                                                        ? { label: parsedDeliverables[0] }
+                                                        : parsedDeliverables.find(d => 
+                                                            d.type?.toLowerCase().includes('reel') || 
+                                                            d.label?.toLowerCase().includes('reel')
+                                                        ) || parsedDeliverables[0] || { label: 'Instagram Reel' };
 
-                                                    const primaryLabel = primaryDeliverable.label || primaryDeliverable.name || primaryDeliverable.type || 'Instagram Reel';
-                                                    const secondaryDeliverables = parsedDeliverables.filter(d => d !== primaryDeliverable);
+                                                    const primaryLabel = isStringList ? parsedDeliverables[0] : (primaryDeliverable.label || primaryDeliverable.name || primaryDeliverable.type || 'Instagram Reel');
+                                                    const secondaryDeliverables = isStringList 
+                                                        ? parsedDeliverables.slice(1).map(s => ({ label: s }))
+                                                        : parsedDeliverables.filter(d => d !== primaryDeliverable);
 // Multi-source package name resolution
                                                      const packageMatch = rawDesc.match(/Selected package:\s*([🚀📈🎯💼]?\s*.*?)(?=\s*Collab Duration:|\n|Additional|$)/i);
                                                      const resolvedPackageName =
@@ -6232,6 +6259,9 @@ const MobileDashboardDemo = ({
 
                                                       const displayPackageName = (resolvedPackageName || "Collaboration Details").replace(/^[🚀📈🎯💼📄]\s*/u, "");
                                                       const cleanDesc = rawDesc.split(/Selected package:|Collab Duration:|Additional Commercial Terms:|Collab content category:|Product for collab:/i)[0].trim() || "High-performing Reel optimized for organic reach. Best for first-time brand discovery.";
+
+                                                     const otherNeedsMatch = rawDesc.match(/Other Needs:\s*(.*?)(?=\s*Selected package:|Collab Duration:|Additional|\n|$)/i);
+                                                     const extractedOtherNeeds = otherNeedsMatch ? otherNeedsMatch[1].trim() : null;
 
                                                      const reelDuration = extractedDuration || (isStarter ? "15-30s" : isGrowth ? "30-60s" : null);
                                                      const formattedPrimary = `1 ${primaryLabel}${reelDuration ? ` (${reelDuration})` : ""}`;

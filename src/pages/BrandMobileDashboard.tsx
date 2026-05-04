@@ -1217,8 +1217,10 @@ const BrandMobileDashboard = ({
     const fromDeals = uniqDeals((deals || []).filter((d: any) => {
       const s = normalizeStatus(d?.status);
       if (!s) return true;
+      // Explicitly exclude statuses that are clearly finished
       if (s.includes('cancel')) return false;
-      if (s.includes('complete') || s.includes('completed') || s.includes('closed') || s.includes('paid') || s.includes('payment_released') || s.includes('approved')) return false;
+      if (s.includes('complete') || s.includes('completed') || s.includes('closed') || s.includes('paid') || s.includes('released')) return false;
+      // Include everything else as active (including approved, content_making, payment_pending, etc.)
       return true;
     }));
     // Also include collab_requests accepted by creator (these are active collabs)
@@ -1237,7 +1239,7 @@ const BrandMobileDashboard = ({
     return uniqDeals((deals || []).filter((d: any) => {
       const s = normalizeStatus(d?.status);
       if (!s) return false;
-      return s.includes('complete') || s.includes('completed') || s.includes('closed') || s.includes('paid') || s.includes('payment_released') || s.includes('approved');
+      return s.includes('complete') || s.includes('completed') || s.includes('closed') || s.includes('paid') || s.includes('released') || s.includes('cancel');
     }) as any[]);
   }, [deals]);
 
@@ -2170,6 +2172,16 @@ const BrandMobileDashboard = ({
         contentSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
         return;
       }
+      if (primaryCta.action === 'confirm_payment') {
+        setOverlayDeal(offer);
+        setShowConfirmPaymentModal(true);
+        return;
+      }
+      if (primaryCta.action === 'escalate_dispute') {
+        setOverlayDeal(offer);
+        setShowDisputeEscalationModal(true);
+        return;
+      }
       if (primaryCta.action === 'track_progress') {
         if (requiresShipping && !shippingDelivered) {
           setDdShowShippingBox(true);
@@ -2238,6 +2250,19 @@ const BrandMobileDashboard = ({
                   <DropdownMenuItem onClick={() => copyText(contractUrl, 'Contract Link')} className="rounded-xl py-3 cursor-pointer">
                     <Copy className="w-4 h-4 mr-3 opacity-60" />
                     <span className="font-bold">Copy Contract Link</span>
+                  </DropdownMenuItem>
+                )}
+
+                {!normalizedDealStatus.includes('CANCELLED') && !normalizedDealStatus.includes('COMPLETED') && (
+                  <DropdownMenuItem 
+                    onClick={() => {
+                      setOverlayDeal(offer);
+                      setShowDisputeEscalationModal(true);
+                    }} 
+                    className="rounded-xl py-3 cursor-pointer text-red-500 hover:text-red-600 hover:bg-red-500/10"
+                  >
+                    <AlertTriangle className="w-4 h-4 mr-3 opacity-60" />
+                    <span className="font-bold">Cancel Deal</span>
                   </DropdownMenuItem>
                 )}
 
