@@ -8391,34 +8391,43 @@ const DashboardTab = React.memo(({
 
             {/* Link Visits Widget (Redesigned) */}
             {(analyticsSummary?.weeklyViews || 0) > 0 && (
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.12 }}
-                    className="px-5"
-                >
+                <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.1 }}>
                     <div className={cn(
-                        "p-7 rounded-[2.5rem] border relative overflow-hidden group transition-all duration-500",
-                        isDark ? "bg-[#0B1324] border-white/5 shadow-2xl" : "bg-white border-slate-200 shadow-xl"
+                        "p-8 rounded-[3rem] border-0 relative overflow-hidden group transition-all duration-700",
+                        isDark 
+                          ? "bg-gradient-to-br from-[#0B1324] via-[#0B1324] to-[#020617] shadow-[0_40px_100px_-20px_rgba(0,0,0,0.8)]" 
+                          : "bg-white shadow-[0_30px_60px_-15px_rgba(0,0,0,0.08)] border-slate-100"
                     )}>
+                        {/* Atmospheric Glow */}
+                        <div className={cn(
+                            "absolute top-0 right-0 w-[200px] h-[200px] blur-[100px] pointer-events-none opacity-30 transition-opacity duration-700 group-hover:opacity-50",
+                            isDark ? "bg-blue-500/20" : "bg-blue-500/10"
+                        )} />
+
                         <div className="flex items-center justify-between relative z-10">
                             <div className="flex items-center gap-5">
-                                <div className="w-14 h-14 bg-blue-500/10 rounded-2xl flex items-center justify-center text-blue-500 shadow-inner group-hover:rotate-12 transition-transform duration-500">
-                                    <Eye className="w-7 h-7" />
+                                <div className={cn(
+                                    "w-14 h-14 rounded-3xl flex items-center justify-center transition-all duration-500 group-hover:rotate-12 group-hover:scale-110 shadow-2xl backdrop-blur-2xl border",
+                                    isDark ? "bg-white/5 border-white/10 text-blue-400" : "bg-blue-50 border-blue-100 text-blue-500"
+                                )}>
+                                    <Eye className="w-7 h-7" strokeWidth={2.5} />
                                 </div>
                                 <div className="flex-1 min-w-0">
-                                    <p className={cn("text-[10px] font-black uppercase tracking-[0.2em] opacity-70 dark:opacity-40 mb-1", textColor)}>Profile Traffic</p>
-                                    <h3 className={cn("text-[20px] font-black tracking-tighter italic uppercase leading-none", textColor)}>Link Visits</h3>
+                                    <div className="flex items-center gap-2 mb-2">
+                                        <p className={cn("text-[10px] font-black uppercase tracking-[0.25em] opacity-50", textColor)}>Analytics</p>
+                                        <div className="h-[1px] w-4 bg-blue-500/30" />
+                                    </div>
+                                    <h3 className={cn("text-[22px] font-black tracking-tighter italic uppercase leading-none", textColor)}>Link Visits</h3>
                                 </div>
                             </div>
                             <div className="text-right">
-                                <div className="text-[32px] font-black italic tracking-tighter text-emerald-500 leading-none mb-1">
+                                <div className="text-[36px] font-black italic tracking-tighter text-blue-500 leading-none mb-1 drop-shadow-sm">
                                     {analyticsSummary?.weeklyViews}
                                 </div>
-                                <p className="text-[9px] font-black uppercase tracking-[0.2em] opacity-60 dark:opacity-30">THIS WEEK</p>
+                                <p className="text-[9px] font-black uppercase tracking-[0.25em] opacity-40">THIS WEEK</p>
                             </div>
                         </div>
-                        <p className={cn("text-[13px] font-medium opacity-80 dark:opacity-50 leading-relaxed mt-5 relative z-10 max-w-[85%]", textColor)}>
+                        <p className={cn("text-[14px] font-medium opacity-60 leading-relaxed mt-6 relative z-10 max-w-[90%]", textColor)}>
                             Your profile is gaining traction! {analyticsSummary?.weeklyViews === 1 ? 'A brand' : 'Brands'} checked out your work recently.
                         </p>
                         <div className="absolute bottom-0 right-0 w-32 h-32 bg-emerald-500/5 blur-3xl rounded-full -mr-16 -mb-16 pointer-events-none" />
@@ -8427,84 +8436,117 @@ const DashboardTab = React.memo(({
             )}
 
             {/* Premium Earnings & Offers Hub */}
-            <div className="px-5 mb-5">
+            <div className="px-5 mb-6">
                 <motion.div
                     initial={{ y: 20, opacity: 0 }}
                     animate={{ y: 0, opacity: 1 }}
                     className={cn(
-                        "p-6 rounded-[2.5rem] border overflow-hidden relative group transition-all duration-500",
+                        "p-8 rounded-[3rem] border-0 overflow-hidden relative group transition-all duration-700",
                         isDark 
-                          ? "border-emerald-500/30 bg-gradient-to-br from-emerald-500/10 via-emerald-950/20 to-[#020617] shadow-[0_30px_60px_rgba(0,0,0,0.4)]" 
-                          : "border-slate-200 bg-white shadow-xl shadow-slate-200/40"
+                          ? "bg-gradient-to-br from-[#0B1324] via-[#0B1324] to-[#020617] shadow-[0_40px_100px_-20px_rgba(0,0,0,0.8)]" 
+                          : "bg-white shadow-[0_30px_60px_-15px_rgba(0,0,0,0.08)] border-slate-100"
                     )}
                 >
-                    <div className={cn("absolute inset-0 pointer-events-none opacity-50 dark:opacity-20", isDark ? "bg-[radial-gradient(circle_at_top_right,rgba(16,185,129,0.3),transparent)]" : "bg-[radial-gradient(circle_at_top_right,rgba(16,185,129,0.05),transparent)]")} />
+                    {/* Atmospheric Glow */}
+                    <div className={cn(
+                        "absolute top-0 right-0 w-[250px] h-[250px] blur-[100px] pointer-events-none opacity-40 transition-opacity duration-700 group-hover:opacity-60",
+                        isDark ? "bg-emerald-500/20" : "bg-emerald-500/10"
+                    )} />
                     
-                    <div className="relative z-10 flex flex-col gap-6">
+                    <div className="relative z-10 flex flex-col gap-8">
                         <div className="flex items-start justify-between">
                             <div className="min-w-0">
-                                <p className={cn("text-[10px] font-black uppercase tracking-widest", isDark ? "text-emerald-400" : "text-emerald-600")}>
-                                    {monthlyRevenue === 0 ? "Potential Earnings" : "Total Earnings"}
-                                </p>
-                                <div className="flex items-baseline gap-2 mt-3">
-                                    <span className={cn("text-[38px] font-black tracking-tighter leading-none", isDark ? "text-white" : "text-slate-900")}>
-                                        {monthlyRevenue === 0 ? "₹0 earned yet 🚀" : `₹${monthlyRevenue.toLocaleString()}`}
+                                <div className="flex items-center gap-2 mb-3">
+                                    <p className={cn("text-[10px] font-black uppercase tracking-[0.25em]", isDark ? "text-emerald-400/80" : "text-emerald-600/80")}>
+                                        {monthlyRevenue === 0 ? "Potential Earnings" : "Total Earnings"}
+                                    </p>
+                                    <div className="h-[1px] w-6 bg-emerald-500/30" />
+                                </div>
+                                <div className="flex items-baseline gap-2.5">
+                                    <span className={cn(
+                                        "text-[44px] font-black tracking-tighter leading-none italic",
+                                        isDark ? "text-white" : "text-slate-900",
+                                        "drop-shadow-sm"
+                                    )}>
+                                        {monthlyRevenue === 0 ? "₹0.00" : `₹${monthlyRevenue.toLocaleString()}`}
                                     </span>
                                     {completedDealsCount > 0 && (
-                                        <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-emerald-500 text-white backdrop-blur-md border border-emerald-400/30 shadow-lg shadow-emerald-500/20">
+                                        <motion.span 
+                                            initial={{ scale: 0.8, opacity: 0 }}
+                                            animate={{ scale: 1, opacity: 1 }}
+                                            className="px-2.5 py-1 rounded-full text-[10px] font-black bg-emerald-500 text-white shadow-lg shadow-emerald-500/30"
+                                        >
                                             +{(completedDealsCount > 5 ? 3 : 1)} Today
-                                        </span>
+                                        </motion.span>
                                     )}
                                 </div>
-                                <p className={cn("text-[13px] font-bold mt-3", isDark ? "text-white/90" : "text-slate-500")}>
-                                    {activeDealsCount > 0 
-                                        ? `${activeDealsCount} Collaboration${activeDealsCount === 1 ? '' : 's'} running`
-                                        : "Start sharing your link to get your first deal"}
-                                </p>
+                                <div className="flex items-center gap-2 mt-4">
+                                    <div className={cn("w-1.5 h-1.5 rounded-full animate-pulse", activeDealsCount > 0 ? "bg-emerald-500" : "bg-slate-400")} />
+                                    <p className={cn("text-[13px] font-bold tracking-tight opacity-70", isDark ? "text-white" : "text-slate-500")}>
+                                        {activeDealsCount > 0 
+                                            ? `${activeDealsCount} Collaboration${activeDealsCount === 1 ? '' : 's'} running`
+                                            : "Start sharing your link to get your first deal"}
+                                    </p>
+                                </div>
                             </div>
-                            <div className={cn("w-12 h-12 rounded-2xl flex items-center justify-center backdrop-blur-2xl border", isDark ? "bg-white/5 border-white/10" : "bg-emerald-50 border-emerald-100")}>
-                                <BarChart3 className={cn("w-6 h-6", isDark ? "text-white" : "text-emerald-500")} />
+                            <div className={cn(
+                                "w-14 h-14 rounded-3xl flex items-center justify-center backdrop-blur-3xl border transition-all duration-500 group-hover:scale-110 group-hover:rotate-6", 
+                                isDark ? "bg-white/5 border-white/10 shadow-2xl" : "bg-emerald-50 border-emerald-100 shadow-xl shadow-emerald-500/10"
+                            )}>
+                                <BarChart3 className={cn("w-7 h-7", isDark ? "text-emerald-400" : "text-emerald-500")} strokeWidth={2.5} />
                             </div>
                         </div>
 
                         {monthlyRevenue === 0 && (
                             <button 
                                 onClick={() => { triggerHaptic(); handleCopyStorefront(); }}
-                                className="w-full bg-emerald-500 text-white font-black italic py-4 rounded-2xl text-[11px] uppercase tracking-[0.2em] active:scale-95 transition-all shadow-lg shadow-emerald-500/20 hover:bg-emerald-600"
+                                className="w-full bg-emerald-500 text-white font-black italic py-4.5 rounded-2xl text-[11px] uppercase tracking-[0.25em] active:scale-[0.97] transition-all shadow-xl shadow-emerald-500/25 hover:bg-emerald-400"
                             >
-                                Share Now 🚀
+                                Share Collab Link 🚀
                             </button>
                         )}
 
                         {/* Integrated Actions Card if pending offers exist */}
                         {pendingOffersCount > 0 && (
-                            <div className={cn("p-4 rounded-[2rem] border backdrop-blur-md transition-all", isDark ? "bg-white/5 border-white/10" : "bg-emerald-500/5 border-emerald-500/20 shadow-inner")}>
+                            <div className={cn(
+                                "p-5 rounded-[2.5rem] border backdrop-blur-xl transition-all duration-500 hover:scale-[1.02]", 
+                                isDark 
+                                  ? "bg-white/[0.03] border-white/10 shadow-2xl" 
+                                  : "bg-emerald-500/[0.03] border-emerald-500/10 shadow-inner"
+                            )}>
                                 <div className="flex items-center justify-between gap-4">
-                                    <div className="flex items-center gap-3">
-                                        <div className={cn("w-10 h-10 rounded-2xl flex items-center justify-center", isDark ? "bg-emerald-500/20 text-emerald-400" : "bg-emerald-500 text-white")}>
-                                            <Zap className="w-5 h-5" />
+                                    <div className="flex items-center gap-4">
+                                        <div className={cn(
+                                            "w-12 h-12 rounded-2xl flex items-center justify-center relative",
+                                            isDark ? "bg-emerald-500/10 text-emerald-400" : "bg-emerald-500 text-white shadow-lg shadow-emerald-500/20"
+                                        )}>
+                                            <Zap className="w-6 h-6" fill="currentColor" />
+                                            <div className="absolute inset-0 bg-emerald-400 blur-lg opacity-20 animate-pulse" />
                                         </div>
                                         <div>
-                                            <p className={cn("text-[14px] font-black", isDark ? "text-white" : "text-slate-900")}>
-                                                🔥 {pendingOffersCount} {pendingOffersCount === 1 ? 'Brand wants' : 'Brands want'} to work with you
+                                            <p className={cn("text-[15px] font-black italic tracking-tight", isDark ? "text-white" : "text-slate-900")}>
+                                                {pendingOffersCount} Brand {pendingOffersCount === 1 ? 'Proposal' : 'Proposals'}
                                             </p>
-                                            <p className={cn("text-[11px] font-bold", isDark ? "text-white/60" : "text-slate-500")}>New offer waiting for you</p>
+                                            <p className={cn("text-[11px] font-bold opacity-60 uppercase tracking-widest mt-0.5", isDark ? "text-white" : "text-slate-500")}>Waiting for you</p>
                                         </div>
                                     </div>
                                     <button 
                                         onClick={() => { triggerHaptic(); setActiveTab('deals'); }}
                                         className={cn(
-                                            "px-5 py-2.5 rounded-2xl text-[11px] font-black uppercase tracking-widest shadow-xl active:scale-95 transition-all",
-                                            isDark ? "bg-white text-black" : "bg-emerald-500 text-white shadow-emerald-500/20"
+                                            "px-6 py-3 rounded-2xl text-[11px] font-black uppercase tracking-[0.15em] shadow-2xl active:scale-95 transition-all",
+                                            isDark 
+                                              ? "bg-emerald-500 text-white shadow-emerald-500/40" 
+                                              : "bg-emerald-600 text-white shadow-emerald-600/30"
                                         )}
                                     >
-                                        Review Offer
+                                        Review
                                     </button>
                                 </div>
                                 
-                                <div className={cn("mt-3 flex flex-wrap gap-1.5 border-t pt-3", isDark ? "border-white/5" : "border-slate-200")}>
-                                    <span className={cn("text-[9px] font-black uppercase tracking-widest", isDark ? "text-white/40" : "text-slate-600")}>
-                                        {pendingOffersCount} Incoming Offers • 0 Counters
+                                <div className={cn("mt-4 flex items-center gap-2 border-t pt-4", isDark ? "border-white/5" : "border-slate-100")}>
+                                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                                    <span className={cn("text-[10px] font-black uppercase tracking-widest opacity-40", isDark ? "text-white" : "text-slate-600")}>
+                                        {pendingOffersCount} Incoming • 0 Counters
                                     </span>
                                 </div>
                             </div>
