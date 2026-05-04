@@ -1129,8 +1129,8 @@ const MobileDashboardDemo = ({
             const saved = localStorage.getItem('creator-dashboard-theme');
             if (saved === 'light' || saved === 'dark') return saved;
         }
-        // Always default to dark for creators as it's the premium standard
-        return 'dark';
+        // Default to light as requested
+        return 'light';
     });
     const [showItemMenu, setShowItemMenu] = useState(false);
     const [showProgressSheet, setShowProgressSheet] = useState(false);
@@ -5540,7 +5540,7 @@ const MobileDashboardDemo = ({
                                                                             <h2 className={cn("text-[44px] leading-[0.9] font-black tracking-tighter uppercase mb-1", textColor)}>
                                                                                 {isBarterLikeCollab(selectedItem) ? "Free Product" : renderBudgetValue(selectedItem)}
                                                                             </h2>
-                                                                            <p className={cn("text-[11px] font-bold opacity-40 uppercase tracking-[0.2em]", textColor)}>
+                                                                            <p className={cn("text-[11px] font-bold opacity-80 uppercase tracking-[0.2em]", textColor)}>
                                                                                 {isBarterLikeCollab(selectedItem) ? `Est. Value ${renderBudgetValue(selectedItem)}` : "Net Payout"}
                                                                             </p>
                                                                         </div>
@@ -5562,14 +5562,7 @@ const MobileDashboardDemo = ({
                                                                             else if (pkgLower.includes('custom')) resolvedPackageName = "🎯 " + resolvedPackageName;
                                                                         }
 
-                                                                        return (
-                                                                            <span className={cn(
-                                                                                "px-4 py-2.5 rounded-2xl text-[16px] font-black border whitespace-nowrap flex items-center gap-2.5 inline-flex",
-                                                                                isDark ? "bg-white/[0.05] border-white/10" : "bg-white border-slate-200 shadow-lg"
-                                                                            )}>
-                                                                                {resolvedPackageName}
-                                                                            </span>
-                                                                        );
+                                                                        return null;
                                                                     })()}
                                                                 </div>
                                                             </div>
@@ -5594,8 +5587,9 @@ const MobileDashboardDemo = ({
                                                                     const pkgLower = (resolvedPackageName || "").toLowerCase();
                                                                     const isStarter = pkgLower.includes('starter');
                                                                     const isGrowth = pkgLower.includes('growth');
-                                                                    const packageIcon = isStarter ? "🚀" : isGrowth ? "📈" : "";
-                                                                    const displayPackageName = (resolvedPackageName || "Campaign Brief").replace(/^[🚀📈🎯💼📄]\s*/u, "");
+                                                                    const isExchange = pkgLower.includes('exchange') || pkgLower.includes('product');
+                                                                    const packageIcon = isStarter ? "🚀" : isGrowth ? "📈" : isExchange ? "🎁" : "";
+                                                                    const displayPackageName = (resolvedPackageName || "Campaign Brief").replace(/^[🚀📈🎯💼📄🎁]\s*/u, "");
 
                                                                     // Format primary deliverable with count + duration
                                                                     const rawCount = parsedDeliverables[0]?.count || parsedDeliverables[0]?.quantity || 1;
@@ -5794,7 +5788,7 @@ const MobileDashboardDemo = ({
                                                             <div className="min-w-0">
                                                                 <div className="flex items-center gap-2 mb-1.5">
                                                                     {selectedIsPureBarter && <Package className="w-3.5 h-3.5 text-amber-400" />}
-                                                                    <p className={cn("text-[10px] font-black uppercase tracking-[0.25em] opacity-40", textColor)}>
+                                                                    <p className={cn("text-[10px] font-black uppercase tracking-[0.25em] opacity-80", textColor)}>
                                                                         {selectedIsPureBarter ? 'Free Product Collab' : 'Pending Payout'}
                                                                     </p>
                                                                 </div>
@@ -5819,7 +5813,7 @@ const MobileDashboardDemo = ({
                                                                             <span className={cn("text-[48px] leading-none font-black tracking-tighter", textColor)}>
                                                                                 {renderBudgetValue(selectedItem)}
                                                                             </span>
-                                                                            <span className={cn("text-[15px] font-black opacity-30", textColor)}>INR</span>
+                                                                            <span className={cn("text-[15px] font-black opacity-60", textColor)}>INR</span>
                                                                         </div>
                                                                         <p className={cn("text-[11px] font-bold mt-1 flex items-center gap-1.5", isDark ? "text-emerald-400/80" : "text-emerald-700")}>💰 Releases after approval</p>
                                                                     </div>
@@ -5842,14 +5836,7 @@ const MobileDashboardDemo = ({
                                                                             else if (pkgLower.includes('custom')) resolvedPackageName = "🎯 " + resolvedPackageName;
                                                                         }
 
-                                                                        return (
-                                                                            <span className={cn(
-                                                                                "px-4 py-2.5 rounded-2xl text-[16px] font-black border whitespace-nowrap flex items-center gap-2.5",
-                                                                                isDark ? "bg-white/[0.05] border-white/10" : "bg-white border-slate-200 shadow-lg"
-                                                                            )}>
-                                                                                {resolvedPackageName}
-                                                                            </span>
-                                                                        );
+                                                                        return null;
                                                                     })()}
                                                                 </div>
                                                                 <div className={cn(
@@ -5962,7 +5949,7 @@ const MobileDashboardDemo = ({
                                         {/* ── DELIVERY TIMELINE (Offers & Deals) ── */}
                                         {(selectedType === 'deal') && (
                                             <div className="mb-6">
-                                                <h4 className={cn("text-[11px] font-black uppercase tracking-[0.2em] mb-4 opacity-50 px-1", textColor)}>
+                                                <h4 className={cn("text-[11px] font-black uppercase tracking-[0.2em] mb-4 opacity-80 px-1", textColor)}>
                                                     {selectedIsPureBarter ? 'Product Fulfillment' : 'Campaign Timeline'}
                                                 </h4>
                                                 <div className={cn("rounded-[28px] border p-6 relative overflow-hidden backdrop-blur-xl", isDark ? "bg-[#0C1320]/40 border-white/6" : "bg-white/40 border-slate-200/50 shadow-xl")}>
@@ -6020,7 +6007,7 @@ const MobileDashboardDemo = ({
 
                                                                 <div className="flex items-center justify-between mb-6">
                                                                     <div className="flex flex-col">
-                                                                        <span className={cn("text-[11px] font-black uppercase tracking-[0.2em] opacity-40", textColor)}>Current Progress</span>
+                                                                        <span className={cn("text-[11px] font-black uppercase tracking-[0.2em] opacity-80", textColor)}>Current Progress</span>
                                                                         <span className={cn("text-[16px] font-black tracking-tight", selectedIsPureBarter ? "text-amber-500" : "text-info")}>
                                                                             {currentStep === steps.length - 1 ? (isBarterDeal ? 'Collab Completed' : 'Campaign Completed') : `Step ${currentStep + 1}: ${steps[Math.min(currentStep, steps.length - 1)]}`}
                                                                         </span>
@@ -6207,7 +6194,7 @@ const MobileDashboardDemo = ({
                                                                         </span>
                                                                     </div>
                                                                     <span className={cn("text-[10px] font-black uppercase tracking-[0.3em] opacity-30 px-1", textColor)}>
-                                                                        STANDARD DELIVERY
+                                                                        {isExchange ? "PRODUCT ONLY" : "STANDARD DELIVERY"}
                                                                     </span>
                                                                 </div>
                                                                 <div className="flex items-center gap-5">
@@ -6271,6 +6258,29 @@ const MobileDashboardDemo = ({
                                                                                         <Check className="w-3.5 h-3.5 text-emerald-500" strokeWidth={4} />
                                                                                     </div>
                                                                                     <p className={cn("text-[15px] font-bold tracking-tight", textColor)}>1 Story shoutout</p>
+                                                                                </div>
+                                                                            </>
+                                                                        )}
+                                                                        
+                                                                        {isExchange && (
+                                                                            <>
+                                                                                <div className="flex items-center gap-4">
+                                                                                    <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0">
+                                                                                        <Check className="w-3.5 h-3.5 text-emerald-500" strokeWidth={4} />
+                                                                                    </div>
+                                                                                    <p className={cn("text-[15px] font-bold tracking-tight", textColor)}>Product Review / Unboxing</p>
+                                                                                </div>
+                                                                                <div className="flex items-center gap-4">
+                                                                                    <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0">
+                                                                                        <Check className="w-3.5 h-3.5 text-emerald-500" strokeWidth={4} />
+                                                                                    </div>
+                                                                                    <p className={cn("text-[15px] font-bold tracking-tight", textColor)}>1 Story mention</p>
+                                                                                </div>
+                                                                                <div className="flex items-center gap-4">
+                                                                                    <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0">
+                                                                                        <Check className="w-3.5 h-3.5 text-emerald-500" strokeWidth={4} />
+                                                                                    </div>
+                                                                                    <p className={cn("text-[15px] font-bold tracking-tight", textColor)}>No paid usage rights</p>
                                                                                 </div>
                                                                             </>
                                                                         )}
@@ -8597,10 +8607,7 @@ const DealsTab = React.memo(({
                                                         }}
                                                     />
                                                 )}
-                                                <div className={cn(
-                                                    "absolute inset-0 bg-gradient-to-t from-black/95 via-black/60 to-black/30",
-                                                    isBarter && "bg-amber-950/40"
-                                                )} />
+
                                             </div>
                                             <div className="relative h-full p-5 flex flex-col justify-between z-10">
                                                 <div className="flex items-center gap-2">
@@ -8653,16 +8660,13 @@ const DealsTab = React.memo(({
                                                 {productImage && (
                                                     <img 
                                                         src={productImage} 
-                                                        className="w-full h-full object-cover opacity-50" 
+                                                        className="w-full h-full object-cover" 
                                                         onError={(e) => {
                                                             (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&q=80&w=500';
                                                         }}
                                                     />
                                                 )}
-                                                <div className={cn(
-                                                    "absolute inset-0 bg-gradient-to-t from-black/95 via-black/60 to-black/30",
-                                                    isBarter && "bg-amber-950/40"
-                                                )} />
+
                                             </div>
                                             <div className="relative h-full p-5 flex flex-col justify-between z-10">
                                                 <div className="flex items-center gap-2">
@@ -8721,10 +8725,7 @@ const DealsTab = React.memo(({
                                                         }}
                                                     />
                                                 )}
-                                                <div className={cn(
-                                                    "absolute inset-0 bg-gradient-to-t from-black/95 via-black/60 to-black/30",
-                                                    isBarter && "bg-amber-950/40"
-                                                )} />
+
                                             </div>
                                             <div className="relative h-full p-5 flex flex-col justify-between z-10">
                                                 <div className="flex items-center gap-2">
