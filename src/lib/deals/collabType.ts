@@ -9,6 +9,8 @@ export const isBarterLikeCollab = (deal: any): boolean => {
   // Use explicit flags if available (highest priority)
   if (typeof deal.requires_shipping === 'boolean') return deal.requires_shipping;
   if (typeof deal.shipping_required === 'boolean') return deal.shipping_required;
+  if (typeof deal.raw?.requires_shipping === 'boolean') return deal.raw.requires_shipping;
+  if (typeof deal.raw?.shipping_required === 'boolean') return deal.raw.shipping_required;
   
   // Infer from collab_type / deal_type
   const type = String(
@@ -40,7 +42,9 @@ export const isPaidLikeCollab = (deal: any): boolean => {
   
   // If deal amount is clearly > 0, it is paid-like regardless of string type
   const amount = Number(deal.deal_amount || deal.exact_budget || 0);
+  const rawAmount = Number(deal.raw?.deal_amount || deal.raw?.exact_budget || 0);
   if (amount > 0) return true;
+  if (rawAmount > 0) return true;
 
   return (
     type.includes('paid') || 

@@ -30,7 +30,7 @@ import { useUpdateDealProgress, DealStage, STAGE_TO_PROGRESS, useDeleteBrandDeal
 import { triggerHaptic, HapticPatterns } from '@/lib/utils/haptics';
 import { DealProgressTracker } from '@/components/deals/DealProgressTracker';
 import { InvoiceGeneratorModal } from '@/components/deals/CreatorInvoiceGenerator';
-import { isBarterLikeCollab } from '@/lib/deals/collabType';
+import { isBarterLikeCollab, isPaidLikeCollab } from '@/lib/deals/collabType';
 
 import { motion } from 'framer-motion';
 import { NativeLoadingSheet } from '@/components/mobile/NativeLoadingSheet';
@@ -1207,7 +1207,11 @@ function DealDetailPageContent() {
     const approvalStatus = String((deal as any)?.brand_approval_status || '').toLowerCase();
     const responseStatus = String((deal as any)?.brand_response_status || '').toLowerCase();
     const executionStatus = String(dealExecutionStatus || '').toLowerCase();
-    const isShippingDeliveryPending = Boolean((deal as any)?.shipping_required)
+    const requiresPayment = isPaidLikeCollab(deal);
+    const paymentStatus = String((deal as any)?.payment_status || '').trim().toLowerCase();
+    const paymentId = String((deal as any)?.payment_id || '').trim();
+    const hasCapturedPayment = paymentStatus === 'captured' || (paymentId.startsWith('pay_') && Number((deal as any)?.amount_paid || 0) > 0);
+    const isShippingDeliveryPending = requiresShipping
       && statusLower === 'drafting'
       && !(deal as any)?.delivery_address;
     const isPaidDrafting = dealTypeLower !== 'barter' && statusLower === 'drafting';
@@ -1222,6 +1226,9 @@ function DealDetailPageContent() {
     if (executionStatus === 'signed' || executionStatus === 'completed' || bothSigned) {
       const shippingStatus = String((deal as any)?.shipping_status || '').trim().toLowerCase();
       const hasReceived = shippingStatus === 'delivered' || shippingStatus === 'received';
+      if (requiresPayment && !hasCapturedPayment) {
+        return 'PAYMENT_PENDING';
+      }
       if (requiresShipping && !hasReceived) {
         return 'AWAITING_PRODUCT';
       }
@@ -1240,6 +1247,7 @@ function DealDetailPageContent() {
       case 'CONTRACT_SENT':
         return 1;
       case 'CONTRACT_SIGNED':
+      case 'AWAITING_PRODUCT':
       case 'CONTENT_IN_PROGRESS':
         return 2;
       case 'REVISION_REQUESTED':
@@ -1294,6 +1302,16 @@ function DealDetailPageContent() {
           actionLabel: 'Review brief',
           action: () => {
             const target = document.getElementById('deal-brief-section');
+            target?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          },
+        };
+      case 'AWAITING_PRODUCT':
+        return {
+          title: 'Wait for product delivery',
+          explanation: 'The agreement is signed. The brand needs to ship the product, and you can start creating once you confirm receipt.',
+          actionLabel: 'View shipping',
+          action: () => {
+            const target = document.getElementById('deal-shipping-section') || document.getElementById('deal-brief-section');
             target?.scrollIntoView({ behavior: 'smooth', block: 'start' });
           },
         };
@@ -1382,6 +1400,12 @@ function DealDetailPageContent() {
           'Read the brief below once before you start shooting.',
           'Make the content in the agreed format and timeline.',
           'Come back here when your Instagram post is ready.',
+        ];
+      case 'AWAITING_PRODUCT':
+        return [
+          'Wait for the brand to add tracking and ship the product.',
+          'Confirm receipt only after the product reaches you.',
+          'Start creating once the product is received.',
         ];
       case 'CONTENT_IN_PROGRESS':
         return [
@@ -4220,7 +4244,7 @@ ${link}`;
 
               {/* Product shipping */}
               {Boolean((deal as any)?.shipping_required || isBarterLikeCollab(deal)) && (
-                <div className="bg-card border border-border rounded-2xl p-5 md:p-6 shadow-lg shadow-black/20">
+                <div id="deal-shipping-section" className="bg-card border border-border rounded-2xl p-5 md:p-6 shadow-lg shadow-black/20">
                   <div className="flex items-center gap-2 mb-4">
                     <Package className="w-5 h-5 text-warning" />
                     <h3 className="font-semibold text-lg">Product delivery</h3>

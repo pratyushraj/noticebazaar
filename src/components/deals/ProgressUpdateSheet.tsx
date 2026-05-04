@@ -31,11 +31,11 @@ const ProgressUpdateSheet: React.FC<ProgressUpdateSheetProps> = ({
     description: string;
   }> = requiresShipping
     ? [
-        // Keep aligned with the shipping-led creator timeline: Contract → Signed → Dispatch → Received → Complete
+        // Keep aligned with the shipping-led creator timeline: Contract → Signed → Ship → Create → Complete
         { label: 'Contract', value: 'contract_ready', description: 'Agreement is being finalized' },
         { label: 'Signed', value: 'fully_executed', description: 'Contract signed by both parties' },
-        { label: 'Dispatch', value: 'content_making', description: 'Product is being shipped or handed off' },
-        { label: 'Received', value: 'content_delivered', description: 'Product confirmed by the creator' },
+        { label: 'Ship', value: 'content_making', description: 'Product is shipped and creator work can begin after receipt' },
+        { label: 'Create', value: 'content_delivered', description: 'Content submitted to brand' },
         { label: 'Complete', value: 'completed', description: 'Deal fully completed' },
       ]
     : [

@@ -205,6 +205,9 @@ export const getDealPrimaryCta = (params: { role: DealRole; deal: any }): DealPr
   const requiresPayment = isPaidLikeCollab(deal) && !isPureBarter;
   const shippingStatus = String(deal?.shipping_status || deal?.raw?.shipping_status || '').trim().toLowerCase();
   const hasReceivedShipment = shippingStatus === 'delivered' || shippingStatus === 'received';
+  const paymentStatus = String(deal?.payment_status || deal?.raw?.payment_status || '').trim().toLowerCase();
+  const paymentId = String(deal?.payment_id || deal?.raw?.payment_id || '').trim();
+  const hasCapturedPayment = paymentStatus === 'captured' || (paymentId.startsWith('pay_') && Number(deal?.amount_paid || deal?.raw?.amount_paid || 0) > 0);
   const signatureSources = [
     deal,
     deal?.raw,
@@ -231,7 +234,10 @@ export const getDealPrimaryCta = (params: { role: DealRole; deal: any }): DealPr
     }
     // ── Payment pending gate: brand must confirm payment ──────────────────────
     if (status === 'PAYMENT_PENDING') {
-      if (isPureBarter && requiresShipping) {
+      if (requiresPayment) {
+        return { status, label: 'Pay Escrow', disabled: false, tone: 'action', action: 'confirm_payment' };
+      }
+      if (requiresShipping) {
         return { 
           status, 
           label: 'Add Tracking Details',
@@ -240,9 +246,7 @@ export const getDealPrimaryCta = (params: { role: DealRole; deal: any }): DealPr
           action: 'track_progress'
         };
       }
-      return requiresShipping
-        ? { status, label: 'Ship Product First', disabled: true, tone: 'waiting', action: 'none' }
-        : { status, label: 'Pay Escrow', disabled: false, tone: 'action', action: 'confirm_payment' };
+      return { status, label: 'Pay Escrow', disabled: false, tone: 'action', action: 'confirm_payment' };
     }
     // ── Shipping address gate: brand must provide address ─────────────────────
     if (status === 'AWAITING_BRAND_ADDRESS') {
@@ -280,7 +284,10 @@ export const getDealPrimaryCta = (params: { role: DealRole; deal: any }): DealPr
       return { status, label: 'Review & Sign Contract', disabled: false, tone: 'action', action: 'review_sign_contract' };
     }
     if (status === 'FULLY_EXECUTED') {
-      if (isPureBarter && requiresShipping) {
+      if (requiresPayment && !hasCapturedPayment) {
+        return { status, label: 'Pay Escrow', disabled: false, tone: 'action', action: 'confirm_payment' };
+      }
+      if (requiresShipping && !hasReceivedShipment) {
         return { 
           status, 
           label: 'Ship Product', 
@@ -319,6 +326,9 @@ export const getDealPrimaryCta = (params: { role: DealRole; deal: any }): DealPr
   // Shipping deals: never show "Mark as Delivered" until the product shipment is received.
   // (Some legacy states incorrectly set status=CONTENT_MAKING for barter/shipping deals.)
   if (requiresShipping && !hasReceivedShipment) {
+    if (requiresPayment && !hasCapturedPayment) {
+      return { status, label: 'Awaiting Payment', disabled: true, tone: 'waiting', action: 'none' };
+    }
     if (shippingStatus === 'shipped') {
       return { status, label: 'Confirm Product Received', disabled: false, tone: 'action', action: 'confirm_receipt' };
     }
@@ -359,10 +369,7 @@ export const getDealPrimaryCta = (params: { role: DealRole; deal: any }): DealPr
   }
   if (status === 'FULLY_EXECUTED') {
     if (requiresPayment) {
-      const paymentStatus = String(deal?.payment_status || deal?.raw?.payment_status || '').trim().toLowerCase();
-      const paymentId = String(deal?.payment_id || deal?.raw?.payment_id || '').trim();
-      const hasPayment = paymentStatus === 'captured' || (paymentId.startsWith('pay_') && Number(deal?.amount_paid || deal?.raw?.amount_paid || 0) > 0);
-      if (!hasPayment) {
+      if (!hasCapturedPayment) {
         return { status, label: 'Awaiting Payment', disabled: true, tone: 'waiting', action: 'none' };
       }
     }

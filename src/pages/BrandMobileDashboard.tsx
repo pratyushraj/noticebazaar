@@ -398,6 +398,13 @@ const brandDealCardUi = (row: BrandDeal | null | undefined) => {
   const s = effectiveDealStatus(row);
   const requiresShipping = Boolean(row?.shipping_required) || isBarterLikeCollab(row);
   const isBarterDeal = isBarterLikeCollab(row) && !isPaidLikeCollab(row);
+  const requiresPayment = isPaidLikeCollab(row) && !isBarterDeal;
+  const paymentStatus = String((row as any)?.payment_status || '').trim().toLowerCase();
+  const paymentId = String((row as any)?.payment_id || '').trim();
+  const hasCapturedPayment = paymentStatus === 'captured' || (paymentId.startsWith('pay_') && Number((row as any)?.amount_paid || 0) > 0);
+  const shippingStatus = String((row as any)?.shipping_status || '').trim().toLowerCase();
+  const hasShipped = shippingStatus === 'shipped' || shippingStatus === 'in_transit';
+  const hasDeliveredShipping = shippingStatus === 'delivered' || shippingStatus === 'received';
   const human = dealStageLabel({ status: s });
   const stageBadge =
     s === 'DISPUTED' ? 'ISSUE'
@@ -422,8 +429,10 @@ const brandDealCardUi = (row: BrandDeal | null | undefined) => {
       : s === 'DISPUTE_PARTIAL_REFUND'
         ? 'Partial refund is currently processing'
       : s === 'PAYMENT_PENDING'
-        ? (requiresShipping
-            ? (row?.brand_address ? 'Review the agreement to get started' : 'Add shipping details to start the collaboration') 
+        ? (requiresPayment
+            ? 'Fund the escrow to start collaboration'
+            : requiresShipping
+              ? (row?.brand_address ? 'Review the agreement to get started' : 'Add shipping details to start the collaboration')
             : 'Fund the escrow to start collaboration')
       : s === 'AWAITING_BRAND_ADDRESS'
         ? (row?.brand_address ? 'Review the agreement to get started' : 'Shipping address required to proceed')
@@ -445,7 +454,13 @@ const brandDealCardUi = (row: BrandDeal | null | undefined) => {
                     : 'Creator is now crafting your content')
               : (s === 'FULLY_EXECUTED' || s === 'CONTRACT_READY')
                 ? (requiresShipping
-                    ? (row?.brand_address ? 'Creator is now crafting your content' : 'Contract signed — please ship the product') 
+                    ? (requiresPayment && !hasCapturedPayment
+                        ? 'Contract signed — fund escrow before shipment'
+                        : hasDeliveredShipping
+                          ? 'Creator has received the product and can create content'
+                          : hasShipped
+                            ? 'Product shipped — waiting for creator receipt'
+                            : 'Contract signed — please ship the product')
                     : 'Contract signed — awaiting content')
                 : s === 'AWAITING_CREATOR_SIGNATURE' || s === 'SENT'
                   ? "Waiting for creator's signature"
@@ -2098,7 +2113,15 @@ const BrandMobileDashboard = ({
     const dealUi = (() => {
       const label = cardUi.human || 'In progress';
       const tone = primaryCta.tone === 'action' ? 'bg-warning/10 text-warning border-warning/20' : 'bg-info/10 text-info border-sky-500/20';
-      const stepIndex = Math.max(0, Math.min(4, (cardUi.step || 1) - 1));
+      const stepIndex = requiresShipping
+        ? (() => {
+            if (['COMPLETED', 'CONTENT_APPROVED', 'PAYMENT_RELEASED'].includes(normalizedDealStatus)) return 4;
+            if (['CONTENT_DELIVERED', 'REVISION_DONE', 'REVISION_REQUESTED', 'CONTENT_MAKING'].includes(normalizedDealStatus)) return 3;
+            if (shippingStatus === 'shipped' || shippingDelivered || normalizedDealStatus === 'FULLY_EXECUTED') return 2;
+            if (['SIGNED_BY_BRAND', 'SIGNED_BY_CREATOR', 'SENT'].includes(normalizedDealStatus)) return 1;
+            return 0;
+          })()
+        : Math.max(0, Math.min(4, (cardUi.step || 1) - 1));
       return { label, tone, stepIndex };
     })();
 
@@ -2479,9 +2502,9 @@ const BrandMobileDashboard = ({
           {/* Timeline Section */}
           <div ref={progressSectionRef} className="mb-5">
             <div className="flex items-center justify-between mb-4 px-1">
-              <SectionTitle>{requiresShipping && !requiresPayment ? 'Fulfillment Timeline' : 'Deal Timeline'}</SectionTitle>
+              <SectionTitle>{requiresShipping ? 'Fulfillment Timeline' : 'Deal Timeline'}</SectionTitle>
               <div className={cn('px-2.5 py-1 rounded-lg border text-[9px] font-black uppercase tracking-widest', isDark ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-emerald-50 text-emerald-600 border-emerald-100')}>
-                {requiresShipping && !requiresPayment ? 'BARTER' : dealUi.label}
+                {requiresShipping ? (requiresPayment ? 'PRODUCT' : 'BARTER') : dealUi.label}
               </div>
             </div>
             <div className={cn('p-6 rounded-[32px] border relative overflow-hidden', isDark ? 'bg-card/40 border-white/5' : 'bg-white border-slate-100 shadow-sm')}>
@@ -2493,12 +2516,12 @@ const BrandMobileDashboard = ({
                     className={cn('h-full bg-gradient-to-r from-emerald-500 to-sky-500 shadow-[0_0_10px_rgba(16,185,129,0.3)]')}
                   />
                 </div>
-                  {(requiresShipping && !requiresPayment
+                  {(requiresShipping
                     ? [
                         { label: 'Contract', icon: FileText },
                         { label: 'Signed', icon: PenTool },
-                        { label: 'Dispatch', icon: Truck },
-                        { label: 'Received', icon: CheckCircle2 },
+                        { label: 'Ship', icon: Truck },
+                        { label: 'Create', icon: PlayCircle },
                         { label: 'Complete', icon: Wallet },
                       ]
                     : [

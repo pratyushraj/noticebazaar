@@ -1309,6 +1309,9 @@ const confirmReceivedHandler = async (req: AuthenticatedRequest, res: Response) 
     if (!dealData.shipping_required) {
       return res.status(400).json({ success: false, error: 'Shipping confirmation is only for deals with shipping required' });
     }
+    if (dealData.shipping_status !== 'shipped') {
+      return res.status(400).json({ success: false, error: 'Product must be marked as shipped before confirming receipt' });
+    }
 
     const now = new Date().toISOString();
     const { error: updateError } = await supabase
@@ -1717,11 +1720,11 @@ router.patch('/:dealId/shipping/report-issue', async (req: AuthenticatedRequest,
     const userId = req.user!.id;
     const { dealId } = req.params;
     const { reason } = req.body;
-    const reasonStr = String(reason || 'No reason specified');
+    const reasonStr = String(reason || '').trim();
 
     const { data: deal, error: dealError } = await supabase
       .from('brand_deals')
-      .select('id, creator_id, brand_name, brand_email')
+      .select('id, creator_id, deal_type, shipping_required, shipping_status, brand_name, brand_email')
       .eq('id', dealId)
       .single();
 
@@ -1732,11 +1735,21 @@ router.patch('/:dealId/shipping/report-issue', async (req: AuthenticatedRequest,
     if (deal.creator_id !== userId && req.user!.role !== 'admin') {
       return res.status(403).json({ success: false, error: 'Access denied' });
     }
+    if (!inferRequiresShipping(deal)) {
+      return res.status(400).json({ success: false, error: 'Shipping issue reporting is only available for deals with shipping' });
+    }
+    if ((deal as any).shipping_status === 'delivered' || (deal as any).shipping_status === 'received') {
+      return res.status(400).json({ success: false, error: 'Product already marked as delivered' });
+    }
+    if (!reasonStr) {
+      return res.status(400).json({ success: false, error: 'Please provide a reason for the issue' });
+    }
 
     const { error: updateError } = await supabase
       .from('brand_deals')
       .update({
         shipping_status: 'issue_reported',
+        shipping_issue_reason: reasonStr,
         updated_at: new Date().toISOString(),
       } as any)
       .eq('id', dealId);

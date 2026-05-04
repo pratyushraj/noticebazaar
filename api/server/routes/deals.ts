@@ -28,6 +28,13 @@ const inferRequiresPayment = (deal: any) => {
   return kind === 'paid' || kind === 'both' || kind === 'hybrid' || kind === 'paid_barter';
 };
 
+const inferRequiresShipping = (deal: any) => {
+  if (typeof deal?.requires_shipping === 'boolean') return deal.requires_shipping;
+  if (typeof deal?.shipping_required === 'boolean') return deal.shipping_required;
+  const kind = String(deal?.collab_type || deal?.deal_type || '').trim().toLowerCase();
+  return kind === 'barter' || kind === 'both' || kind === 'hybrid' || kind === 'paid_barter';
+};
+
 // Helper: determine if a deal is barter-type (requires shipping/product delivery)
 const isBarterType = (deal: any): boolean => {
   if (!deal) return false;
@@ -528,7 +535,7 @@ router.patch('/:id/submit-content', async (req: AuthenticatedRequest, res: Respo
     }
 
     // Additional guard: enforce pre-conditions based on deal type
-    if (isBarterType(deal) && deal.shipping_status !== 'delivered') {
+    if (inferRequiresShipping(deal) && deal.shipping_status !== 'delivered') {
       return res.status(409).json({
         success: false,
         error: 'Cannot submit content until you have received the product. Please confirm delivery first.',
@@ -1611,7 +1618,7 @@ router.patch('/:dealId/shipping/report-issue', async (req: AuthenticatedRequest,
 
     const { data: deal, error: dealError } = await supabase
       .from('brand_deals')
-      .select('id, creator_id, deal_type, shipping_required, brand_name, brand_email')
+      .select('id, creator_id, deal_type, shipping_required, shipping_status, brand_name, brand_email')
       .eq('id', dealId)
       .single();
 
