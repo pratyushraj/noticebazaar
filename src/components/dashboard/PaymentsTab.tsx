@@ -105,7 +105,7 @@ export const PaymentsTab: React.FC<PaymentsTabProps> = ({
     const hasUpi = Boolean(profileFormData.payout_upi);
 
     return (
-        <div className="px-5 pt-8 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-32">
+        <div className="px-5 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-32" style={{ paddingTop: 'max(env(safe-area-inset-top), 32px)' }}>
             {/* Header */}
             <div className="flex items-center justify-between mb-6">
                 <div className="mb-8 relative z-10">

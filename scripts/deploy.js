@@ -114,8 +114,8 @@ class Deployer {
 
     // Check Node.js version
     const nodeVersion = process.version;
-    if (!nodeVersion.startsWith('v18') && !nodeVersion.startsWith('v20')) {
-      throw new Error(`Node.js version ${nodeVersion} is not supported. Please use Node.js 18 or 20.`);
+    if (!nodeVersion.startsWith('v18') && !nodeVersion.startsWith('v20') && !nodeVersion.startsWith('v22') && !nodeVersion.startsWith('v24')) {
+      throw new Error(`Node.js version ${nodeVersion} is not supported. Please use Node.js 18, 20, 22, or 24.`);
     }
 
     // Check environment variables

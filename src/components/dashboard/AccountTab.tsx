@@ -76,9 +76,10 @@ export const AccountTab = React.memo(({
             animate={{ opacity: 1, y: 0 }} 
             exit={{ opacity: 0, x: -20 }} 
             className={cn(
-                "w-full px-5 pt-8 pb-32 relative",
+                "w-full px-5 pb-32 relative",
                 isDark ? "bg-transparent" : "bg-slate-50"
             )}
+            style={{ paddingTop: 'max(env(safe-area-inset-top), 32px)' }}
         >
             {/* Header */}
             <div className="mb-8 relative z-10">

@@ -103,10 +103,10 @@ interface MobileDashboardProps {
 // Minimal Status Badge for Deal Cards
 const StatusBadge = ({ status }: { status: string }) => {
     const config: Record<string, { bg: string; text: string; label: string }> = {
-        'new': { bg: 'bg-background dark:bg-secondary/50', text: 'text-muted-foreground dark:text-muted-foreground', label: 'NEW' },
-        'pending': { bg: 'bg-background dark:bg-secondary/50', text: 'text-muted-foreground dark:text-muted-foreground', label: 'AWAITING REVIEW' },
-        'negotiating': { bg: 'bg-background dark:bg-secondary/50', text: 'text-muted-foreground dark:text-muted-foreground', label: 'IN NEGOTIATION' },
-        'active': { bg: 'bg-background dark:bg-secondary/50', text: 'text-muted-foreground dark:text-muted-foreground', label: 'ACTIVE' },
+        'new': { bg: 'bg-slate-100 dark:bg-secondary/50', text: 'text-slate-600 dark:text-muted-foreground', label: 'NEW' },
+        'pending': { bg: 'bg-slate-100 dark:bg-secondary/50', text: 'text-slate-600 dark:text-muted-foreground', label: 'AWAITING REVIEW' },
+        'negotiating': { bg: 'bg-slate-100 dark:bg-secondary/50', text: 'text-slate-600 dark:text-muted-foreground', label: 'IN NEGOTIATION' },
+        'active': { bg: 'bg-emerald-50 dark:bg-secondary/50', text: 'text-emerald-700 dark:text-muted-foreground', label: 'ACTIVE' },
         'payment_pending': { bg: 'bg-yellow-100 dark:bg-yellow-900/30', text: 'text-yellow-700 dark:text-yellow-400', label: 'WAITING FOR PAYMENT' },
         'payment_released': { bg: 'bg-green-100 dark:bg-green-900/30', text: 'text-green-700 dark:text-green-400', label: '💰 PAID' },
         'completed': { bg: 'bg-green-100 dark:bg-green-900/30', text: 'text-green-700 dark:text-green-400', label: 'COMPLETED' },
@@ -578,11 +578,11 @@ const DashboardLoadingStage = ({ isDark, tab = 'analytics' }: { isDark: boolean;
                                                          <Shield className="w-6 h-6" />
                                                      </div>
                                                      <div className="flex-1 min-w-0">
-                                                         <p className={cn("text-[11px] font-black uppercase tracking-widest opacity-40 mb-0.5", textColor)}>Consumer Protection</p>
+                                                         <p className={cn("text-[11px] font-black uppercase tracking-widest opacity-70 dark:opacity-40 mb-0.5", textColor)}>Consumer Protection</p>
                                                          <h3 className={cn("text-lg font-black tracking-tight italic uppercase", textColor)}>Lifestyle Shield</h3>
                                                      </div>
                                                  </div>
-                                                 <p className={cn("text-xs font-medium opacity-40 leading-relaxed mt-4 relative z-10", textColor)}>
+                                                 <p className={cn("text-xs font-medium opacity-70 dark:opacity-40 leading-relaxed mt-4 relative z-10", textColor)}>
                                                      Got cheated by a brand or service? File a legal notice in minutes.
                                                  </p>
                                                  <div className="flex gap-3 mt-6 relative z-10">
@@ -624,7 +624,7 @@ const DashboardLoadingStage = ({ isDark, tab = 'analytics' }: { isDark: boolean;
                                                      </div>
                                                      <div>
                                                          <p className={cn("text-[13px] font-black italic leading-tight mb-1", textColor)}>Contact Lawyer</p>
-                                                         <p className={cn("text-[10px] font-bold opacity-30 uppercase tracking-widest", textColor)}>Legal Support</p>
+                                                         <p className={cn("text-[10px] font-bold opacity-60 dark:opacity-30 uppercase tracking-widest", textColor)}>Legal Support</p>
                                                      </div>
                                                  </button>
                                                  <button 
@@ -642,7 +642,7 @@ const DashboardLoadingStage = ({ isDark, tab = 'analytics' }: { isDark: boolean;
                                                      </div>
                                                      <div>
                                                          <p className={cn("text-[13px] font-black italic leading-tight mb-1", textColor)}>24/7 Response</p>
-                                                         <p className={cn("text-[10px] font-bold opacity-30 uppercase tracking-widest", textColor)}>Fast Support</p>
+                                                         <p className={cn("text-[10px] font-bold opacity-60 dark:opacity-30 uppercase tracking-widest", textColor)}>Fast Support</p>
                                                      </div>
                                                  </button>
                                              </div>
@@ -712,7 +712,7 @@ const SettingsRow = ({ icon, label, subtext, iconColorClass, hasChevron, isDark,
             {subtext && <p className={cn("text-[12px] font-medium leading-tight mt-1 opacity-70", isDark ? "text-white/80" : "text-[#6B7280]")}>{subtext}</p>}
         </div>
         {rightElement}
-        {hasChevron && !rightElement && <ChevronRight className={cn("w-5 h-5 opacity-30", isDark ? "text-white" : "text-slate-400")} />}
+        {hasChevron && !rightElement && <ChevronRight className={cn("w-5 h-5 opacity-60 dark:opacity-30", isDark ? "text-white" : "text-slate-600")} />}
     </div>
 );
 
@@ -730,7 +730,7 @@ const SettingsGroup = ({ children, isDark, className }: any) => (
 const SectionHeader = ({ title, isDark }: any) => (
     <p className={cn(
         "px-6 mb-3 mt-8 text-[11px] font-black uppercase tracking-[0.25em] opacity-80",
-        isDark ? "text-white/30" : "text-slate-400"
+        isDark ? "text-white/30" : "text-slate-600"
     )}>
         {title}
     </p>
@@ -2221,8 +2221,9 @@ const MobileDashboardDemo = ({
     const bgColor = isDark ? '#061318' : '#FFFFFF';
     const cardBgColor = isDark ? 'bg-card backdrop-blur-md' : 'bg-card';
     const borderColor = isDark ? 'border-border' : 'border-border';
-    const secondaryTextColor = isDark ? 'text-foreground/60' : 'text-muted-foreground';
-    const textColor = isDark ? 'text-foreground' : 'text-muted-foreground';
+    const secondaryTextColor = isDark ? 'text-foreground/60' : 'text-slate-600';
+    const textColor = isDark ? 'text-foreground' : 'text-foreground';
+
 
     const shouldShowPushPrompt =
         isPushSupported &&
@@ -3054,7 +3055,7 @@ const MobileDashboardDemo = ({
 
     const renderSettingsPage = () => {
         const PageHeader = ({ title, subtitle }: { title: string, subtitle?: string }) => (
-            <div className={cn("px-5 pt-5 pb-4 flex items-center gap-4 bg-transparent")}>
+            <div className={cn("px-5 pb-4 flex items-center gap-4 bg-transparent")} style={{ paddingTop: 'max(env(safe-area-inset-top), 20px)' }}>
                 <motion.button
                     whileTap={{ scale: 0.9 }}
                     onClick={() => setActiveSettingsPage(null)}
@@ -3064,7 +3065,7 @@ const MobileDashboardDemo = ({
                 </motion.button>
                 <div className="flex flex-col min-w-0">
                     <h1 className={cn("text-[20px] font-black tracking-tight truncate", textColor)}>{title}</h1>
-                    {subtitle && <p className={cn("text-[10px] font-bold opacity-30 uppercase tracking-[0.15em] truncate mt-0.5", textColor)}>{subtitle}</p>}
+                    {subtitle && <p className={cn("text-[10px] font-bold opacity-60 dark:opacity-30 uppercase tracking-[0.15em] truncate mt-0.5", textColor)}>{subtitle}</p>}
                 </div>
             </div>
         );
@@ -3078,7 +3079,7 @@ const MobileDashboardDemo = ({
                         exit={{ opacity: 0 }}
                         className="pb-dashboard touch-pan-y"
                     >
-                        <div className="px-6 pt-4 pb-2 flex items-center justify-between">
+                        <div className="px-6 pb-2 flex items-center justify-between" style={{ paddingTop: 'max(env(safe-area-inset-top), 16px)' }}>
                             <div className="flex items-center gap-4">
                                 <motion.button
                                     whileTap={{ scale: 0.9 }}
@@ -3128,7 +3129,7 @@ const MobileDashboardDemo = ({
                             )}>
                                 {/* Rich Mesh Gradient Background */}
                                 <div className={cn(
-                                    "absolute inset-0 opacity-40 transition-opacity duration-1000 group-hover/banner:opacity-60",
+                                    "absolute inset-0 opacity-70 dark:opacity-40 transition-opacity duration-1000 group-hover/banner:opacity-60",
                                     isDark 
                                         ? "bg-[radial-gradient(at_0%_0%,rgba(16,185,129,0.3)_0,transparent_50%),radial-gradient(at_50%_0%,rgba(59,130,246,0.2)_0,transparent_50%),radial-gradient(at_100%_0%,rgba(139,92,246,0.3)_0,transparent_50%)]" 
                                         : "bg-[radial-gradient(at_0%_0%,rgba(16,185,129,0.15)_0,transparent_50%),radial-gradient(at_50%_0%,rgba(59,130,246,0.1)_0,transparent_50%),radial-gradient(at_100%_0%,rgba(139,92,246,0.15)_0,transparent_50%)]"
@@ -3183,7 +3184,7 @@ const MobileDashboardDemo = ({
                                                     className="w-full h-full object-cover"
                                                 />
                                             ) : (
-                                                <User className={cn("w-10 h-10", isDark ? "text-white/20" : "text-slate-300")} />
+                                                <User className={cn("w-10 h-10", isDark ? "text-white/20" : "text-slate-500")} />
                                             )}
                                         </div>
                                     </div>
@@ -3207,7 +3208,7 @@ const MobileDashboardDemo = ({
                                     </h2>
                                     <div className="flex items-center gap-2">
                                         <div className={cn("w-2 h-2 rounded-full bg-primary")} />
-                                        <p className={cn("text-[14px] font-bold opacity-40 uppercase tracking-widest", textColor)}>
+                                        <p className={cn("text-[14px] font-bold opacity-70 dark:opacity-40 uppercase tracking-widest", textColor)}>
                                             Verified Profile
                                         </p>
                                     </div>
@@ -3265,7 +3266,7 @@ const MobileDashboardDemo = ({
 
                             {/* ── BASIC INFO ── */}
                             <div>
-                                <p className={cn("text-[11px] font-black uppercase tracking-[0.2em] px-2 mb-4 opacity-40", textColor)}>1. Global Identity</p>
+                                <p className={cn("text-[11px] font-black uppercase tracking-[0.2em] px-2 mb-4 opacity-70 dark:opacity-40", textColor)}>1. Global Identity</p>
                                 <div className={cn(
                                     "rounded-[2.25rem] border overflow-hidden p-2 space-y-1.5",
                                     isDark ? "bg-[#0B1324] border-white/5 shadow-2xl shadow-black/20" : "bg-white border-slate-200/60 shadow-xl shadow-slate-100/50"
@@ -3276,7 +3277,7 @@ const MobileDashboardDemo = ({
                                             <User className="w-5 h-5 text-violet-500" />
                                         </div>
                                         <div className="flex-1 min-w-0">
-                                            <p className={cn("text-[10px] font-black uppercase tracking-widest mb-1 opacity-50", textColor)}>Full Name</p>
+                                            <p className={cn("text-[10px] font-black uppercase tracking-widest mb-1 opacity-80 dark:opacity-50", textColor)}>Full Name</p>
                                             {isEditMode ? (
                                                 <input
                                                     className={cn("w-full bg-transparent outline-none font-black text-[15px] p-0 border-none focus:ring-0", textColor)}
@@ -3287,7 +3288,7 @@ const MobileDashboardDemo = ({
                                                     onChange={e => setProfileFormData((p: any) => ({ ...p, full_name: e.target.value }))}
                                                 />
                                             ) : (
-                                                <p className={cn("font-black text-[15px] truncate", textColor)}>{profileFormData.full_name || <span className="opacity-20 font-bold italic">Not set</span>}</p>
+                                                <p className={cn("font-black text-[15px] truncate", textColor)}>{profileFormData.full_name || <span className="opacity-50 dark:opacity-20 font-bold italic">Not set</span>}</p>
                                             )}
                                         </div>
                                     </div>
@@ -3298,11 +3299,11 @@ const MobileDashboardDemo = ({
                                             <Mail className="w-5 h-5 text-blue-500" />
                                         </div>
                                         <div className="flex-1 min-w-0">
-                                            <p className={cn("text-[10px] font-black uppercase tracking-widest mb-1 opacity-50", textColor)}>Business Email</p>
-                                            <p className={cn("font-black text-[15px] truncate opacity-50", textColor)}>{profileFormData.email || '—'}</p>
+                                            <p className={cn("text-[10px] font-black uppercase tracking-widest mb-1 opacity-80 dark:opacity-50", textColor)}>Business Email</p>
+                                            <p className={cn("font-black text-[15px] truncate opacity-80 dark:opacity-50", textColor)}>{profileFormData.email || '—'}</p>
                                         </div>
                                         <div className={cn("px-3 py-1.5 rounded-xl border flex items-center gap-2", isDark ? "bg-white/5 border-white/5" : "bg-slate-100 border-slate-200/50")}>
-                                            <LockIcon className="w-3 h-3 opacity-40" />
+                                            <LockIcon className="w-3 h-3 opacity-70 dark:opacity-40" />
                                             <span className={cn("text-[9px] font-black uppercase tracking-widest opacity-60", textColor)}>Secure</span>
                                         </div>
                                     </div>
@@ -3313,7 +3314,7 @@ const MobileDashboardDemo = ({
                                             <Phone className="w-5 h-5 text-emerald-500" />
                                         </div>
                                         <div className="flex-1 min-w-0">
-                                            <p className={cn("text-[10px] font-black uppercase tracking-widest mb-1 opacity-50", textColor)}>Phone Number</p>
+                                            <p className={cn("text-[10px] font-black uppercase tracking-widest mb-1 opacity-80 dark:opacity-50", textColor)}>Phone Number</p>
                                             {isEditMode ? (
                                                 <input
                                                     inputMode="tel"
@@ -3325,7 +3326,7 @@ const MobileDashboardDemo = ({
                                                     onChange={e => setProfileFormData((p: any) => ({ ...p, phone: e.target.value }))}
                                                 />
                                             ) : (
-                                                <p className={cn("font-black text-[15px]", textColor)}>{profileFormData.phone || <span className="opacity-20 font-bold italic">Not set</span>}</p>
+                                                <p className={cn("font-black text-[15px]", textColor)}>{profileFormData.phone || <span className="opacity-50 dark:opacity-20 font-bold italic">Not set</span>}</p>
                                             )}
                                         </div>
                                     </div>
@@ -3334,7 +3335,7 @@ const MobileDashboardDemo = ({
 
                             {/* ── LOCATION ── */}
                             <div>
-                                <p className={cn("text-[11px] font-black uppercase tracking-[0.2em] px-2 mb-4 opacity-40", textColor)}>2. Shipping & Base</p>
+                                <p className={cn("text-[11px] font-black uppercase tracking-[0.2em] px-2 mb-4 opacity-70 dark:opacity-40", textColor)}>2. Shipping & Base</p>
                                 <div className={cn(
                                     "rounded-[2.25rem] border overflow-hidden p-2 space-y-1.5",
                                     isDark ? "bg-[#0B1324] border-white/5 shadow-2xl shadow-black/20" : "bg-white border-slate-200/60 shadow-xl shadow-slate-100/50"
@@ -3344,7 +3345,7 @@ const MobileDashboardDemo = ({
                                             <MapPin className="w-5 h-5 text-orange-500" />
                                         </div>
                                         <div className="flex-1 min-w-0">
-                                            <p className={cn("text-[10px] font-black uppercase tracking-widest mb-1 opacity-50", textColor)}>Full Address</p>
+                                            <p className={cn("text-[10px] font-black uppercase tracking-widest mb-1 opacity-80 dark:opacity-50", textColor)}>Full Address</p>
                                             {isEditMode ? (
                                                 <input
                                                     className={cn("w-full bg-transparent outline-none font-black text-[15px] p-0 border-none focus:ring-0", textColor)}
@@ -3355,14 +3356,14 @@ const MobileDashboardDemo = ({
                                                     onChange={e => setProfileFormData((p: any) => ({ ...p, address: e.target.value }))}
                                                 />
                                             ) : (
-                                                <p className={cn("font-black text-[15px] truncate", textColor)}>{profileFormData.address || <span className="opacity-20 font-bold italic">Not set</span>}</p>
+                                                <p className={cn("font-black text-[15px] truncate", textColor)}>{profileFormData.address || <span className="opacity-50 dark:opacity-20 font-bold italic">Not set</span>}</p>
                                             )}
                                         </div>
                                     </div>
 
                                     <div className="flex gap-2">
                                         <div className={cn("flex-1 px-4 py-4 rounded-[1.75rem] transition-colors animate-in slide-in-from-left-2 duration-300", isDark ? "bg-white/5" : "bg-slate-50")}>
-                                            <p className={cn("text-[10px] font-black uppercase tracking-widest mb-1 opacity-50", textColor)}>City</p>
+                                            <p className={cn("text-[10px] font-black uppercase tracking-widest mb-1 opacity-80 dark:opacity-50", textColor)}>City</p>
                                             {isEditMode ? (
                                                 <input
                                                     className={cn("w-full bg-transparent outline-none font-black text-[15px] p-0 border-none focus:ring-0", textColor)}
@@ -3377,7 +3378,7 @@ const MobileDashboardDemo = ({
                                             )}
                                         </div>
                                         <div className={cn("flex-1 px-4 py-4 rounded-[1.75rem] transition-colors animate-in slide-in-from-right-2 duration-300", isDark ? "bg-white/5" : "bg-slate-50")}>
-                                            <p className={cn("text-[10px] font-black uppercase tracking-widest mb-1 opacity-50", textColor)}>Pincode</p>
+                                            <p className={cn("text-[10px] font-black uppercase tracking-widest mb-1 opacity-80 dark:opacity-50", textColor)}>Pincode</p>
                                             {isEditMode ? (
                                                 <input
                                                     inputMode="numeric"
@@ -3411,7 +3412,7 @@ const MobileDashboardDemo = ({
 
                             {/* ── CREATOR PROFILE ── */}
                             <div>
-                                <p className={cn("text-[11px] font-black uppercase tracking-[0.2em] px-2 mb-4 opacity-40", textColor)}>3. Public Display</p>
+                                <p className={cn("text-[11px] font-black uppercase tracking-[0.2em] px-2 mb-4 opacity-70 dark:opacity-40", textColor)}>3. Public Display</p>
                                 <div className={cn(
                                     "rounded-[2.25rem] border overflow-hidden p-2 space-y-1.5 transition-all duration-500",
                                     isDark ? "bg-[#0B1324] border-white/5 shadow-2xl shadow-black/20" : "bg-white border-slate-200/60 shadow-xl shadow-slate-100/50"
@@ -3423,7 +3424,7 @@ const MobileDashboardDemo = ({
                                         </div>
                                         <div className="flex-1 min-w-0">
                                             <div className="flex items-center justify-between mb-1">
-                                                <p className={cn("text-[10px] font-black uppercase tracking-widest opacity-50", textColor)}>Bio / Headline</p>
+                                                <p className={cn("text-[10px] font-black uppercase tracking-widest opacity-80 dark:opacity-50", textColor)}>Bio / Headline</p>
                                                 {isEditMode && (
                                                     <button 
                                                         type="button"
@@ -3460,7 +3461,7 @@ const MobileDashboardDemo = ({
                                                     onChange={e => setProfileFormData((p: any) => ({ ...p, bio: e.target.value }))}
                                                 />
                                             ) : (
-                                                <p className={cn("font-black text-[15px] leading-relaxed", textColor)}>{profileFormData.bio || <span className="opacity-20 font-bold italic">Not set</span>}</p>
+                                                <p className={cn("font-black text-[15px] leading-relaxed", textColor)}>{profileFormData.bio || <span className="opacity-50 dark:opacity-20 font-bold italic">Not set</span>}</p>
                                             )}
                                         </div>
                                     </div>
@@ -3471,10 +3472,10 @@ const MobileDashboardDemo = ({
                                             <Instagram className="w-5 h-5 text-pink-500" />
                                         </div>
                                         <div className="flex-1 min-w-0">
-                                            <p className={cn("text-[10px] font-black uppercase tracking-widest mb-1 opacity-50", textColor)}>Instagram Handle</p>
+                                            <p className={cn("text-[10px] font-black uppercase tracking-widest mb-1 opacity-80 dark:opacity-50", textColor)}>Instagram Handle</p>
                                             {isEditMode ? (
                                                 <div className="flex items-center gap-1">
-                                                    <span className="font-black text-[15px] opacity-20">@</span>
+                                                    <span className="font-black text-[15px] opacity-50 dark:opacity-20">@</span>
                                                     <input
                                                         className={cn("flex-1 bg-transparent outline-none font-black text-[15px] p-0 border-none focus:ring-0 text-pink-500", !isDark && "text-pink-600")}
                                                         value={profileFormData.instagram_handle?.replace('@', '') || ''}
@@ -3484,7 +3485,7 @@ const MobileDashboardDemo = ({
                                                 </div>
                                             ) : (
                                                 <p className={cn("font-black text-[15px] text-pink-500", !isDark && "text-pink-600")}>
-                                                    {profileFormData.instagram_handle ? `@${profileFormData.instagram_handle.replace('@', '')}` : <span className="opacity-20 font-bold italic">Not linked</span>}
+                                                    {profileFormData.instagram_handle ? `@${profileFormData.instagram_handle.replace('@', '')}` : <span className="opacity-50 dark:opacity-20 font-bold italic">Not linked</span>}
                                                 </p>
                                             )}
                                         </div>
@@ -3497,14 +3498,14 @@ const MobileDashboardDemo = ({
                                                 <Users className="w-5 h-5 text-indigo-500" />
                                             </div>
                                             <div className="flex-1 min-w-0">
-                                                <p className={cn("text-[10px] font-black uppercase tracking-widest mb-1 opacity-50", textColor)}>Follower Count</p>
+                                                <p className={cn("text-[10px] font-black uppercase tracking-widest mb-1 opacity-80 dark:opacity-50", textColor)}>Follower Count</p>
                                                 {!isEditMode && (
                                                     <p className={cn("font-black text-[15px]", textColor)}>
                                                         {profileFormData.instagram_followers ? (
                                                             Number(profileFormData.instagram_followers) < 1000 ? '<1k' :
                                                             Number(profileFormData.instagram_followers) <= 10000 ? '1k–10k' :
                                                             Number(profileFormData.instagram_followers) <= 50000 ? '10k–50k' : '50k+'
-                                                        ) : <span className="opacity-20 font-bold italic">Not set</span>}
+                                                        ) : <span className="opacity-50 dark:opacity-20 font-bold italic">Not set</span>}
                                                     </p>
                                                 )}
                                             </div>
@@ -3550,7 +3551,7 @@ const MobileDashboardDemo = ({
                                             <Globe className="w-5 h-5 text-blue-500" />
                                         </div>
                                         <div className="flex-1 min-w-0">
-                                            <p className={cn("text-[10px] font-black uppercase tracking-widest mb-1 opacity-50", textColor)}>Media Kit / URL</p>
+                                            <p className={cn("text-[10px] font-black uppercase tracking-widest mb-1 opacity-80 dark:opacity-50", textColor)}>Media Kit / URL</p>
                                             {isEditMode ? (
                                                 <input
                                                     className={cn("w-full bg-transparent outline-none font-black text-[15px] p-0 border-none focus:ring-0 text-blue-500", !isDark && "text-blue-600")}
@@ -3560,7 +3561,7 @@ const MobileDashboardDemo = ({
                                                 />
                                             ) : (
                                                 <p className={cn("font-black text-[15px] truncate text-blue-500 underline underline-offset-4 decoration-current/30", !isDark && "text-blue-600")}>
-                                                    {profileFormData.media_kit_url || <span className="opacity-20 font-bold italic">Not set</span>}
+                                                    {profileFormData.media_kit_url || <span className="opacity-50 dark:opacity-20 font-bold italic">Not set</span>}
                                                 </p>
                                             )}
                                         </div>
@@ -3570,7 +3571,7 @@ const MobileDashboardDemo = ({
 
                             {/* ── PAYOUT METHOD ── */}
                             <div>
-                                <p className={cn("text-[11px] font-black uppercase tracking-[0.2em] px-2 mb-4 opacity-40", textColor)}>4. Payout Method</p>
+                                <p className={cn("text-[11px] font-black uppercase tracking-[0.2em] px-2 mb-4 opacity-70 dark:opacity-40", textColor)}>4. Payout Method</p>
                                 <div className={cn(
                                     "rounded-[2.25rem] border overflow-hidden p-2 space-y-1.5 transition-all duration-500",
                                     isDark ? "bg-[#0B1324] border-white/5 shadow-2xl shadow-black/20" : "bg-white border-slate-200/60 shadow-xl shadow-slate-100/50"
@@ -3580,7 +3581,7 @@ const MobileDashboardDemo = ({
                                             <Landmark className="w-5 h-5 text-blue-500" />
                                         </div>
                                      <div className="flex-1 min-w-0">
-                                            <p className={cn("text-[10px] font-black uppercase tracking-widest mb-2 opacity-50", textColor)}>Payout UPI ID</p>
+                                            <p className={cn("text-[10px] font-black uppercase tracking-widest mb-2 opacity-80 dark:opacity-50", textColor)}>Payout UPI ID</p>
                                             <UpiIdInput
                                               value={profileFormData.payout_upi || ''}
                                               readOnly={!isEditMode}
@@ -3613,7 +3614,7 @@ const MobileDashboardDemo = ({
                                             isDark ? "bg-primary text-white shadow-primary/20" : "bg-gradient-to-br from-emerald-400 to-emerald-600 text-white shadow-emerald-500/30"
                                         )}
                                     >
-                                        <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                        <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-40 dark:opacity-100 transition-opacity" />
                                         {isSavingProfile ? (
                                             <>
                                                 <Loader2 className="w-4 h-4 animate-spin text-white" />
@@ -3641,7 +3642,7 @@ const MobileDashboardDemo = ({
                                 <SettingsGroup isDark={isDark}>
                                     <div className="p-4 space-y-4">
                                         <div className="space-y-1.5">
-                                            <p className={cn("text-[11px] font-black uppercase tracking-wider opacity-40", textColor)}>Reel Rate</p>
+                                            <p className={cn("text-[11px] font-black uppercase tracking-wider opacity-70 dark:opacity-40", textColor)}>Reel Rate</p>
                                             <div className="flex items-center gap-2 border-b py-2" style={{ borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)' }}>
                                                 <span className="text-info font-black">₹</span>
                                                 <input
@@ -3656,7 +3657,7 @@ const MobileDashboardDemo = ({
                                             </div>
                                         </div>
                                         <div className="space-y-1.5">
-                                            <p className={cn("text-[11px] font-black uppercase tracking-wider opacity-40", textColor)}>Story Rate</p>
+                                            <p className={cn("text-[11px] font-black uppercase tracking-wider opacity-70 dark:opacity-40", textColor)}>Story Rate</p>
                                             <div className="flex items-center gap-2 border-b py-2" style={{ borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)' }}>
                                                 <span className="text-info font-black">₹</span>
                                                 <input
@@ -3671,7 +3672,7 @@ const MobileDashboardDemo = ({
                                             </div>
                                         </div>
                                         <div className="space-y-1.5">
-                                            <p className={cn("text-[11px] font-black uppercase tracking-wider opacity-40", textColor)}>Package Summary</p>
+                                            <p className={cn("text-[11px] font-black uppercase tracking-wider opacity-70 dark:opacity-40", textColor)}>Package Summary</p>
                                             <div className={cn("rounded-2xl px-4 py-3 text-[13px] font-medium", isDark ? "bg-card text-foreground/80" : "bg-secondary/30 text-black/70")}>
                                                 Create or update packages in your public profile to show brands your rates in a cleaner format.
                                             </div>
@@ -3684,7 +3685,7 @@ const MobileDashboardDemo = ({
                                     <Globe className="w-10 h-10 text-info" />
                                 </div>
                                 <h3 className={cn("text-xl font-bold tracking-tight mb-1", textColor)}>creatorarmour.com/{username}</h3>
-                                <p className={cn("text-[13px] opacity-40 mb-6", textColor)}>Your public intake storefront</p>
+                                <p className={cn("text-[13px] opacity-70 dark:opacity-40 mb-6", textColor)}>Your public intake storefront</p>
                                 <div className="flex gap-3">
                                     <button type="button" onClick={handleCopyStorefront} className="flex-1 bg-info text-foreground font-bold py-3.5 rounded-2xl text-[13px] active:scale-95 transition-all">Copy</button>
                                     <button type="button" onClick={() => window.open(`https://creatorarmour.com/${username}`, '_blank')} className={cn("flex-1 font-bold py-3.5 rounded-2xl text-[13px] border active:scale-95 transition-all", isDark ? "border-border text-foreground" : "border-black/5 text-black")}>Preview</button>
@@ -3697,7 +3698,7 @@ const MobileDashboardDemo = ({
                                 <SettingsRow icon={<Link2 />} iconBg="bg-info" label="Media Kit" subtext="Connect your external deck" isDark={isDark} textColor={textColor} hasChevron onClick={() => setActiveSettingsPage('personal')} />
                             </SettingsGroup>
                             <div className="px-4 pt-4">
-                                <button type="button" onClick={handleSaveProfile} disabled={isSavingProfile} className="w-full bg-info text-foreground font-bold py-3 rounded-xl active:scale-95 transition-all uppercase tracking-widest text-[11px] disabled:opacity-50 disabled:active:scale-100">
+                                <button type="button" onClick={handleSaveProfile} disabled={isSavingProfile} className="w-full bg-info text-foreground font-bold py-3 rounded-xl active:scale-95 transition-all uppercase tracking-widest text-[11px] disabled:opacity-80 dark:opacity-50 disabled:active:scale-100">
                                     {isSavingProfile ? 'Saving...' : 'Save Public Profile'}
                                 </button>
                             </div>
@@ -3714,7 +3715,7 @@ const MobileDashboardDemo = ({
                                     <ShieldCheck className="w-9 h-9 text-foreground" />
                                 </div>
                                 <h3 className={cn("text-2xl font-black tracking-tight mb-2", textColor)}>Verified Creator</h3>
-                                <p className={cn("text-sm opacity-50 leading-relaxed mb-6", textColor)}>Your identity and content ownership are secured. Brands see your 'Verified' badge, increasing trust.</p>
+                                <p className={cn("text-sm opacity-80 dark:opacity-50 leading-relaxed mb-6", textColor)}>Your identity and content ownership are secured. Brands see your 'Verified' badge, increasing trust.</p>
                                 <div className="flex flex-col gap-2">
                                     <div className={cn("flex items-center gap-3 p-3 rounded-xl", isDark ? "bg-card" : "bg-background")}>
                                         <CheckCircle2 className="w-4 h-4 text-primary" />
@@ -3737,7 +3738,7 @@ const MobileDashboardDemo = ({
                         <div className={cn("relative overflow-hidden px-5 pt-14 pb-8", isDark ? "bg-[#0B0D12]" : "bg-gradient-to-br from-emerald-600 to-teal-700")}>
                             {/* Ambient glow */}
                             <div className="absolute inset-0 pointer-events-none">
-                                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-64 h-64 rounded-full blur-3xl opacity-20 bg-emerald-400" />
+                                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-64 h-64 rounded-full blur-3xl opacity-50 dark:opacity-20 bg-emerald-400" />
                             </div>
                             <div className="relative z-10">
                                 <div className="flex items-center gap-2 mb-3">
@@ -3821,13 +3822,13 @@ const MobileDashboardDemo = ({
                                     </div>
                                     <div>
                                         <p className={cn("text-[14px] font-black tracking-tight", textColor)}>Identity</p>
-                                        <p className={cn("text-[10px] font-semibold opacity-40", textColor)}>Your creator handle & bio</p>
+                                        <p className={cn("text-[10px] font-semibold opacity-70 dark:opacity-40", textColor)}>Your creator handle & bio</p>
                                     </div>
                                 </div>
                                 <div className={cn("rounded-[28px] border p-5 space-y-5", isDark ? "bg-[#12151C] border-white/[0.07] shadow-2xl shadow-black/20" : "bg-white border-slate-200 shadow-sm")}>
                                     <div className="space-y-1.5">
                                         <div className="flex items-center justify-between px-1">
-                                            <p className={cn("text-[10px] font-black uppercase tracking-wider opacity-50", textColor)}>Instagram Handle</p>
+                                            <p className={cn("text-[10px] font-black uppercase tracking-wider opacity-80 dark:opacity-50", textColor)}>Instagram Handle</p>
                                             <Instagram className="w-3.5 h-3.5 text-pink-500 opacity-60" />
                                         </div>
                                         <div className="relative">
@@ -3844,7 +3845,7 @@ const MobileDashboardDemo = ({
 
                                     <div className="space-y-1.5">
                                         <div className="flex items-center justify-between px-1">
-                                            <p className={cn("text-[10px] font-black uppercase tracking-wider opacity-50", textColor)}>Bio / Pitch Title</p>
+                                            <p className={cn("text-[10px] font-black uppercase tracking-wider opacity-80 dark:opacity-50", textColor)}>Bio / Pitch Title</p>
                                             <Edit3 className="w-3.5 h-3.5 text-primary opacity-60" />
                                         </div>
                                         <input
@@ -3858,7 +3859,7 @@ const MobileDashboardDemo = ({
 
                                     <div className="space-y-1.5">
                                         <div className="flex items-center justify-between px-1">
-                                            <p className={cn("text-[10px] font-black uppercase tracking-wider opacity-50", textColor)}>Base City / Location</p>
+                                            <p className={cn("text-[10px] font-black uppercase tracking-wider opacity-80 dark:opacity-50", textColor)}>Base City / Location</p>
                                             <MapPin className="w-3.5 h-3.5 text-primary opacity-60" />
                                         </div>
                                         <input
@@ -3879,15 +3880,15 @@ const MobileDashboardDemo = ({
                                     </div>
                                     <div>
                                         <p className={cn("text-[14px] font-black tracking-tight", textColor)}>Who follows you?</p>
-                                        <p className={cn("text-[10px] font-semibold opacity-40", textColor)}>Helps brands match you with better deals</p>
+                                        <p className={cn("text-[10px] font-semibold opacity-70 dark:opacity-40", textColor)}>Helps brands match you with better deals</p>
                                     </div>
                                 </div>
                                 <div className={cn("rounded-[28px] border p-5 space-y-6", isDark ? "bg-[#12151C] border-white/[0.07] shadow-2xl shadow-black/20" : "bg-white border-slate-200 shadow-sm")}>
                                     <div className="grid grid-cols-1 gap-6">
                                         <div className="space-y-3 px-1">
                                             <div className="flex items-center justify-between">
-                                                <p className={cn("text-[10px] font-black uppercase tracking-wider opacity-50", textColor)}>Gender Split</p>
-                                                <Users className="w-3.5 h-3.5 opacity-20" />
+                                                <p className={cn("text-[10px] font-black uppercase tracking-wider opacity-80 dark:opacity-50", textColor)}>Gender Split</p>
+                                                <Users className="w-3.5 h-3.5 opacity-50 dark:opacity-20" />
                                             </div>
                                             <div className="flex flex-wrap gap-2">
                                             <div className="grid grid-cols-3 gap-3">
@@ -3930,8 +3931,8 @@ const MobileDashboardDemo = ({
 
                                         <div className="space-y-3 px-1">
                                             <div className="flex items-center justify-between">
-                                                <p className={cn("text-[10px] font-black uppercase tracking-wider opacity-50", textColor)}>Primary Age Range</p>
-                                                <Calendar className="w-3.5 h-3.5 opacity-20" />
+                                                <p className={cn("text-[10px] font-black uppercase tracking-wider opacity-80 dark:opacity-50", textColor)}>Primary Age Range</p>
+                                                <Calendar className="w-3.5 h-3.5 opacity-50 dark:opacity-20" />
                                             </div>
                                             <div className="flex flex-wrap gap-2">
                                                 {['13–17', '18–24', '25–34', '35–44', '45+'].map((age) => {
@@ -3957,8 +3958,8 @@ const MobileDashboardDemo = ({
 
                                         <div className="space-y-3 px-1">
                                             <div className="flex items-center justify-between">
-                                                <p className={cn("text-[10px] font-black uppercase tracking-wider opacity-50", textColor)}>Audience Top 3 Cities</p>
-                                                <MapPin className="w-3.5 h-3.5 opacity-20" />
+                                                <p className={cn("text-[10px] font-black uppercase tracking-wider opacity-80 dark:opacity-50", textColor)}>Audience Top 3 Cities</p>
+                                                <MapPin className="w-3.5 h-3.5 opacity-50 dark:opacity-20" />
                                             </div>
                                             <div className="grid grid-cols-3 gap-2 relative">
                                                 {[0, 1, 2].map((idx) => (
@@ -3966,7 +3967,7 @@ const MobileDashboardDemo = ({
                                                         <input 
                                                             className={cn(
                                                                 "h-12 w-full px-3 rounded-2xl border font-black text-[11px] outline-none transition-all focus:ring-2 focus:ring-primary/20",
-                                                                isDark ? "bg-white/5 border-white/10 text-white placeholder:text-white/20" : "bg-slate-50 border-slate-200 text-slate-900 placeholder:text-slate-400"
+                                                                isDark ? "bg-white/5 border-white/10 text-white placeholder:text-white/30" : "bg-slate-50 border-slate-200 text-slate-900 placeholder:text-slate-500"
                                                             )}
                                                             placeholder={`City ${idx + 1}`}
                                                             value={profileFormData.top_cities?.[idx] || ''}
@@ -4001,7 +4002,7 @@ const MobileDashboardDemo = ({
                                                     </div>
                                                 ))}
                                             </div>
-                                            <p className="px-1 text-[9px] font-medium leading-relaxed opacity-40 italic">
+                                            <p className="px-1 text-[9px] font-medium leading-relaxed opacity-70 dark:opacity-40 italic">
                                                 Tip: Use specific city names to help brands find you in local searches.
                                             </p>
                                         </div>
@@ -4044,14 +4045,14 @@ const MobileDashboardDemo = ({
                                     </div>
                                     <div>
                                         <p className={cn("text-[14px] font-black tracking-tight", textColor)}>Vibe & Niche</p>
-                                        <p className={cn("text-[10px] font-semibold opacity-40", textColor)}>What kind of content do you create?</p>
+                                        <p className={cn("text-[10px] font-semibold opacity-70 dark:opacity-40", textColor)}>What kind of content do you create?</p>
                                     </div>
                                 </div>
                                 <div className={cn("rounded-[28px] border p-5 space-y-7", isDark ? "bg-[#12151C] border-white/[0.07] shadow-2xl shadow-black/20" : "bg-white border-slate-200 shadow-sm")}>
                                         <div className="space-y-3 px-1">
                                             <div className="flex items-end justify-between gap-3">
                                                 <div className="flex flex-col">
-                                                    <p className={cn("text-[10px] font-black uppercase tracking-wider opacity-50", textColor)}>Select Your Vibe</p>
+                                                    <p className={cn("text-[10px] font-black uppercase tracking-wider opacity-80 dark:opacity-50", textColor)}>Select Your Vibe</p>
                                                     <p className="text-[9px] text-primary/60 font-black uppercase tracking-tighter">Choose max 3</p>
                                                 </div>
                                                 <span className="text-[10px] font-black uppercase tracking-[0.22em] text-emerald-400">
@@ -4110,7 +4111,7 @@ const MobileDashboardDemo = ({
                                     <div className="space-y-3 px-1">
                                         <div className="flex items-end justify-between gap-3">
                                             <div className="flex flex-col">
-                                                <p className={cn("text-[10px] font-black uppercase tracking-wider opacity-50", textColor)}>Your Main Niches</p>
+                                                <p className={cn("text-[10px] font-black uppercase tracking-wider opacity-80 dark:opacity-50", textColor)}>Your Main Niches</p>
                                                 <p className="text-[9px] text-primary/60 font-black uppercase tracking-tighter">Choose your content topics</p>
                                             </div>
                                             <span className="text-[10px] font-black uppercase tracking-[0.22em] text-emerald-400">
@@ -4148,7 +4149,7 @@ const MobileDashboardDemo = ({
                                     </div>
 
                                     <div className="space-y-3 px-1">
-                                        <p className={cn("text-[10px] font-black uppercase tracking-wider opacity-50", textColor)}>Main Platform</p>
+                                        <p className={cn("text-[10px] font-black uppercase tracking-wider opacity-80 dark:opacity-50", textColor)}>Main Platform</p>
                                         <div className="flex gap-2">
                                             {[
                                                 { label: 'Instagram', icon: <Instagram className="w-3.5 h-3.5" /> },
@@ -4179,7 +4180,7 @@ const MobileDashboardDemo = ({
                                     </div>
                                     <div>
                                         <p className={cn("text-[14px] font-black tracking-tight", textColor)}>Earnings & Packages</p>
-                                        <p className={cn("text-[10px] font-semibold opacity-40", textColor)}>Creators with pricing get 2x more deals</p>
+                                        <p className={cn("text-[10px] font-semibold opacity-70 dark:opacity-40", textColor)}>Creators with pricing get 2x more deals</p>
                                     </div>
                                 </div>
                                 <div className="space-y-4">
@@ -4196,7 +4197,7 @@ const MobileDashboardDemo = ({
                                                     value={profileFormData.avg_rate_reel || ''}
                                                     onChange={(e) => setProfileFormData({ ...profileFormData, avg_rate_reel: e.target.value })}
                                                     placeholder="5000"
-                                                    className={cn("w-full bg-transparent border-none text-[28px] font-black outline-none placeholder:opacity-20", textColor)}
+                                                    className={cn("w-full bg-transparent border-none text-[28px] font-black outline-none placeholder:text-slate-400", textColor)}
                                                 />
                                             </div>
                                             <p className="mt-2 text-[10px] font-bold opacity-60 leading-tight">
@@ -4225,7 +4226,7 @@ const MobileDashboardDemo = ({
                                     </div>
                                     <div>
                                         <p className={cn("text-[14px] font-black tracking-tight", textColor)}>Past Partnerships</p>
-                                        <p className={cn("text-[10px] font-semibold opacity-40", textColor)}>Add your media kit to stand out</p>
+                                        <p className={cn("text-[10px] font-semibold opacity-70 dark:opacity-40", textColor)}>Add your media kit to stand out</p>
                                     </div>
                                 </div>
                                 <div className={cn("rounded-[28px] border p-5 space-y-7", isDark ? "bg-[#12151C] border-white/[0.07] shadow-2xl shadow-black/20" : "bg-white border-slate-200 shadow-sm")}>
@@ -4233,7 +4234,7 @@ const MobileDashboardDemo = ({
                                     {/* Media Kit (Option 3) */}
                                     <div className="space-y-3 px-1">
                                         <div className="flex items-center justify-between">
-                                            <p className={cn("text-[10px] font-black uppercase tracking-wider opacity-50", textColor)}>Detailed Media Kit (PDF/Drive)</p>
+                                            <p className={cn("text-[10px] font-black uppercase tracking-wider opacity-80 dark:opacity-50", textColor)}>Detailed Media Kit (PDF/Drive)</p>
                                             <BadgeCheck className="w-3.5 h-3.5 text-primary opacity-60" />
                                         </div>
                                         <input
@@ -4258,7 +4259,7 @@ const MobileDashboardDemo = ({
                                     ].map((item, i) => (
                                         <div key={i} className="flex items-center gap-1.5">
                                             {item.icon}
-                                            <span className={cn("text-[10px] font-black opacity-50", textColor)}>{item.label}</span>
+                                            <span className={cn("text-[10px] font-black opacity-80 dark:opacity-50", textColor)}>{item.label}</span>
                                         </div>
                                     ))}
                                 </div>
@@ -4308,7 +4309,7 @@ const MobileDashboardDemo = ({
                                     rightElement={<ToggleSwitch active={isDark} onToggle={toggleTheme} isDark={isDark} />}
                                 />
                             </SettingsGroup>
-                            <p className={cn("px-4 text-[13px] opacity-40 leading-relaxed", textColor)}>Choose between light and dark themes. We recommend dark mode to save eye strain and battery life.</p>
+                            <p className={cn("px-4 text-[13px] opacity-70 dark:opacity-40 leading-relaxed", textColor)}>Choose between light and dark themes. We recommend dark mode to save eye strain and battery life.</p>
                         </div>
                     </motion.div>
                 );
@@ -4374,7 +4375,7 @@ const MobileDashboardDemo = ({
                                             if (res.success) toast.success("Test notification sent!");
                                             else toast.error("Test push failed.", { description: res.reason || 'Unknown reason' });
                                         }}
-                                        className={cn("w-full py-3 text-[11px] font-black uppercase tracking-wider text-info text-center", isPushBusy && "opacity-50")}
+                                        className={cn("w-full py-3 text-[11px] font-black uppercase tracking-wider text-info text-center", isPushBusy && "opacity-70 dark:opacity-40")}
                                         disabled={isPushBusy}
                                     >
                                         {isPushBusy ? "Sending..." : "Send Test Notification"}
@@ -4408,7 +4409,7 @@ const MobileDashboardDemo = ({
                                     }}
                                     className={cn(
                                         "h-10 px-4 rounded-xl border text-[12px] font-bold transition-all active:scale-[0.99] shrink-0",
-                                        isDark ? "border-border bg-card text-foreground/80 hover:bg-secondary/50" : "border-border bg-card text-muted-foreground hover:bg-background"
+                                        isDark ? "border-border bg-card text-foreground/80 hover:bg-secondary/50" : "border-border bg-card text-slate-600 hover:bg-background"
                                     )}
                                 >
                                     Refresh
@@ -4473,7 +4474,7 @@ const MobileDashboardDemo = ({
                                     <Trash2 className="w-8 h-8 text-red-500" />
                                 </div>
                                 <h2 className={cn("text-2xl font-black mb-3", textColor)}>Delete Account?</h2>
-                                <p className={cn("text-sm opacity-50 leading-relaxed mb-8", textColor)}>
+                                <p className={cn("text-sm opacity-80 dark:opacity-50 leading-relaxed mb-8", textColor)}>
                                     This will permanently remove your profile, deals, and earnings history. This action cannot be undone.
                                 </p>
                                 
@@ -4528,7 +4529,7 @@ const MobileDashboardDemo = ({
                                                 <Shield className="w-9 h-9 text-primary" />
                                             </div>
                                             <h3 className={cn("text-2xl font-black tracking-tight mb-2", textColor)}>File New Complaint</h3>
-                                            <p className={cn("text-sm opacity-50 leading-relaxed mb-6", textColor)}>Got cheated by a brand or service? File a professional legal notice in minutes.</p>
+                                            <p className={cn("text-sm opacity-80 dark:opacity-50 leading-relaxed mb-6", textColor)}>Got cheated by a brand or service? File a professional legal notice in minutes.</p>
                                             <button 
                                                 onClick={() => { triggerHaptic(); setComplaintStep('category'); }}
                                                 className="w-full bg-primary text-white font-black py-4 rounded-2xl text-[13px] uppercase tracking-widest active:scale-95 transition-all shadow-lg shadow-primary/25 mb-3"
@@ -4548,7 +4549,7 @@ const MobileDashboardDemo = ({
                                         </div>
 
                                         <div className="px-1">
-                                            <p className={cn("text-[11px] font-black uppercase tracking-widest opacity-30 mb-4", textColor)}>Why Lifestyle Shield?</p>
+                                            <p className={cn("text-[11px] font-black uppercase tracking-widest opacity-60 dark:opacity-30 mb-4", textColor)}>Why Lifestyle Shield?</p>
                                             <div className="grid grid-cols-2 gap-3">
                                                 {[
                                                     { label: 'Legal Power', desc: 'Verified notices', icon: <Scale className="w-4 h-4" /> },
@@ -4557,7 +4558,7 @@ const MobileDashboardDemo = ({
                                                     <div key={i} className={cn("p-4 rounded-2xl border", isDark ? "bg-card border-border" : "bg-white border-slate-100")}>
                                                         <div className="text-primary mb-2">{feat.icon}</div>
                                                         <p className={cn("text-[12px] font-black", textColor)}>{feat.label}</p>
-                                                        <p className={cn("text-[10px] font-bold opacity-40", textColor)}>{feat.desc}</p>
+                                                        <p className={cn("text-[10px] font-bold opacity-70 dark:opacity-40", textColor)}>{feat.desc}</p>
                                                     </div>
                                                 ))}
                                             </div>
@@ -4590,7 +4591,7 @@ const MobileDashboardDemo = ({
                                                     {cat.id === 'other' && <MoreHorizontal className="w-5 h-5" />}
                                                 </div>
                                                 <p className={cn("font-black text-sm pointer-events-none", textColor)}>{cat.label}</p>
-                                                <p className={cn("text-[10px] font-bold opacity-30 mt-1 pointer-events-none", textColor)}>{cat.examples}</p>
+                                                <p className={cn("text-[10px] font-bold opacity-60 dark:opacity-30 mt-1 pointer-events-none", textColor)}>{cat.examples}</p>
                                             </button>
                                         ))}
                                     </motion.div>
@@ -4599,7 +4600,7 @@ const MobileDashboardDemo = ({
                                 {complaintStep === 'company' && selectedComplaintCategory && (
                                     <motion.div key="company" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-3">
                                         <div className="px-1 mb-2">
-                                            <p className={cn("text-[10px] font-black uppercase tracking-widest opacity-30", textColor)}>Popular Companies</p>
+                                            <p className={cn("text-[10px] font-black uppercase tracking-widest opacity-60 dark:opacity-30", textColor)}>Popular Companies</p>
                                         </div>
                                         {(POPULAR_COMPANIES[selectedComplaintCategory] || []).map((company) => (
                                             <button
@@ -4616,11 +4617,11 @@ const MobileDashboardDemo = ({
                                             >
                                                 <div className="flex items-center gap-4">
                                                     <div className="w-10 h-10 rounded-full bg-slate-500/5 flex items-center justify-center border border-slate-500/10">
-                                                        <Building2 className="w-5 h-5 opacity-40" />
+                                                        <Building2 className="w-5 h-5 opacity-70 dark:opacity-40" />
                                                     </div>
                                                     <span className={cn("font-black text-[15px]", textColor)}>{company}</span>
                                                 </div>
-                                                <ChevronRight className="w-5 h-5 opacity-20 group-hover:opacity-100 transition-opacity" />
+                                                <ChevronRight className="w-5 h-5 opacity-50 dark:opacity-20 group-hover:opacity-40 dark:opacity-100 transition-opacity" />
                                             </button>
                                         ))}
                                     </motion.div>
@@ -4629,7 +4630,7 @@ const MobileDashboardDemo = ({
                                 {complaintStep === 'details' && (
                                     <motion.div key="details" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-6">
                                         <div className="space-y-2 group">
-                                            <label className={cn("text-[11px] font-black uppercase tracking-widest ml-1 opacity-40 transition-colors group-focus-within:opacity-100 group-focus-within:text-primary", textColor)}>What went wrong?</label>
+                                            <label className={cn("text-[11px] font-black uppercase tracking-widest ml-1 opacity-70 dark:opacity-40 transition-colors group-focus-within:opacity-40 dark:opacity-100 group-focus-within:text-primary", textColor)}>What went wrong?</label>
                                             <textarea 
                                                 value={complaintDescription}
                                                 onChange={(e) => setComplaintDescription(e.target.value)}
@@ -4685,7 +4686,7 @@ const MobileDashboardDemo = ({
                                         </div>
                                         <div className="text-center">
                                             <h4 className={cn("text-xl font-black mb-2", textColor)}>Securely Filing...</h4>
-                                            <p className={cn("text-sm opacity-50", textColor)}>We are sending your case to our legal team.</p>
+                                            <p className={cn("text-sm opacity-80 dark:opacity-50", textColor)}>We are sending your case to our legal team.</p>
                                         </div>
                                     </motion.div>
                                 )}
@@ -4711,7 +4712,7 @@ const MobileDashboardDemo = ({
                                                 </div>
                                                 <div>
                                                     <h4 className={cn("font-black text-sm", textColor)}>{complaint.id}</h4>
-                                                    <p className="text-[10px] opacity-40 uppercase tracking-widest font-bold">{complaint.company}</p>
+                                                    <p className="text-[10px] opacity-70 dark:opacity-40 uppercase tracking-widest font-bold">{complaint.company}</p>
                                                 </div>
                                             </div>
                                             <div className="px-3 py-1 rounded-full bg-amber-500/10 text-amber-500 text-[10px] font-black uppercase tracking-widest border border-amber-500/20">
@@ -4720,11 +4721,11 @@ const MobileDashboardDemo = ({
                                         </div>
                                         <div className="space-y-3 pt-3 border-t border-white/5">
                                             <div className="flex justify-between items-center">
-                                                <span className="text-[11px] opacity-40">Category</span>
+                                                <span className="text-[11px] opacity-70 dark:opacity-40">Category</span>
                                                 <span className={cn("text-[11px] font-bold", textColor)}>{complaint.category}</span>
                                             </div>
                                             <div className="flex justify-between items-center">
-                                                <span className="text-[11px] opacity-40">Filed Date</span>
+                                                <span className="text-[11px] opacity-70 dark:opacity-40">Filed Date</span>
                                                 <span className={cn("text-[11px] font-bold", textColor)}>{complaint.filedDate}</span>
                                             </div>
                                         </div>
@@ -4735,9 +4736,9 @@ const MobileDashboardDemo = ({
                                 ))
                             ) : (
                                 <div className={cn("flex flex-col items-center justify-center min-h-[40vh] p-8 rounded-[2.5rem] border border-dashed", isDark ? "border-white/10" : "border-slate-200")}>
-                                    <FileText className="w-12 h-12 opacity-20 mb-4" />
-                                    <p className={cn("font-bold opacity-40", textColor)}>No active complaints found</p>
-                                    <p className={cn("text-[11px] opacity-30 mt-1", textColor)}>All your legal notices will appear here.</p>
+                                    <FileText className="w-12 h-12 opacity-50 dark:opacity-20 mb-4" />
+                                    <p className={cn("font-bold opacity-70 dark:opacity-40", textColor)}>No active complaints found</p>
+                                    <p className={cn("text-[11px] opacity-60 dark:opacity-30 mt-1", textColor)}>All your legal notices will appear here.</p>
                                 </div>
                             )}
                         </div>
@@ -4764,10 +4765,10 @@ const MobileDashboardDemo = ({
                 return (
                     <div className="flex flex-col items-center justify-center min-h-[60vh] px-10 text-center">
                         <div className="w-20 h-20 bg-info/10 rounded-3xl flex items-center justify-center mb-6">
-                            <Clock className="w-10 h-10 text-info opacity-40" />
+                            <Clock className="w-10 h-10 text-info opacity-70 dark:opacity-40" />
                         </div>
                         <h3 className={cn("text-xl font-bold mb-2", textColor)}>Refining Module</h3>
-                        <p className={cn("opacity-40 text-sm leading-relaxed mb-8", textColor)}>We're fine-tuning this control center for your creator business.</p>
+                        <p className={cn("opacity-70 dark:opacity-40 text-sm leading-relaxed mb-8", textColor)}>We're fine-tuning this control center for your creator business.</p>
                         <button type="button"
                             onClick={() => setActiveSettingsPage(null)}
                             className="bg-info text-foreground font-black px-10 py-4 rounded-2xl active:scale-95 transition-all text-[13px] uppercase tracking-widest"
@@ -4850,7 +4851,7 @@ const MobileDashboardDemo = ({
                 >
                     <div className={cn('w-10 h-10 rounded-full flex items-center justify-center shadow-lg border', isDark ? 'bg-[#121826] border-[#1F2937]' : 'bg-card border-border')}>
                         {isRefreshingProp
-                            ? <Loader2 className="w-5 h-5 text-muted-foreground animate-spin" />
+                            ? <Loader2 className="w-5 h-5 text-slate-500 animate-spin" />
                             : <RefreshCw className="w-5 h-5 text-muted-foreground" style={{ transform: `rotate(${pullDistance * 6}deg)` }} />
                         }
                     </div>
@@ -5190,8 +5191,8 @@ const MobileDashboardDemo = ({
                                 <div className="max-w-md mx-auto">
                                     <div className="flex items-start justify-between mb-6">
                                         <div>
-                                            <h2 className={cn("text-2xl font-bold tracking-tight", isDark ? "text-foreground" : "text-muted-foreground")}>Manage your deal page</h2>
-                                            <p className={cn("text-[13px] mt-1 opacity-60", isDark ? "text-foreground" : "text-muted-foreground")}>Share your profile, review offers, and keep your page current.</p>
+                                            <h2 className={cn("text-2xl font-bold tracking-tight", isDark ? "text-foreground" : "text-slate-700")}>Manage your deal page</h2>
+                                            <p className={cn("text-[13px] mt-1 opacity-60", isDark ? "text-foreground" : "text-slate-700")}>Share your profile, review offers, and keep your page current.</p>
                                         </div>
                                         <motion.button
                                             whileTap={{ scale: 0.9 }}
@@ -5260,7 +5261,7 @@ const MobileDashboardDemo = ({
                                                 <div className="w-8 h-8 rounded-xl bg-background/10 flex items-center justify-center">
                                                     <QrCode className="w-4 h-4 text-muted-foreground group-hover:text-info transition-colors" />
                                                 </div>
-                                                <p className={cn("font-bold text-[14px]", isDark ? "text-foreground" : "text-muted-foreground")}>Generate QR Code</p>
+                                                <p className={cn("font-bold text-[14px]", isDark ? "text-foreground" : "text-slate-700")}>Generate QR Code</p>
                                             </div>
                                             <ChevronRight className="w-4 h-4 text-muted-foreground" />
                                         </motion.button>
@@ -5272,7 +5273,7 @@ const MobileDashboardDemo = ({
                                                 <div className="w-8 h-8 rounded-xl bg-background/10 flex items-center justify-center">
                                                     <RefreshCw className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
                                                 </div>
-                                                <p className={cn("font-bold text-[14px]", isDark ? "text-foreground" : "text-muted-foreground")}>Test Intake Form</p>
+                                                <p className={cn("font-bold text-[14px]", isDark ? "text-foreground" : "text-slate-700")}>Test Intake Form</p>
                                             </div>
                                             <ChevronRight className="w-4 h-4 text-muted-foreground" />
                                         </motion.button>
@@ -5416,10 +5417,13 @@ const MobileDashboardDemo = ({
                                     )}
 
                                     {/* Fixed Header */}
-                                    <div className={cn(
-                                        "flex items-center justify-between px-6 py-5 border-b backdrop-blur-2xl sticky top-0 z-20",
-                                        isDark ? "bg-[#0B0F14]/80 border-white/[0.05]" : "bg-white/80 border-slate-200/60"
-                                    )}>
+                                    <div 
+                                        className={cn(
+                                            "flex items-center justify-between px-6 border-b backdrop-blur-2xl sticky top-0 z-20",
+                                            isDark ? "bg-[#0B0F14]/80 border-white/[0.05]" : "bg-white/80 border-slate-200/60"
+                                        )}
+                                        style={{ paddingTop: 'max(env(safe-area-inset-top), 20px)', paddingBottom: '20px' }}
+                                    >
                                         <div className="flex items-center gap-4">
                                             <button 
                                                 type="button"
@@ -5440,7 +5444,7 @@ const MobileDashboardDemo = ({
                                                         "w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]",
                                                         getCanonicalDealStatus(selectedItem) !== 'COMPLETED' && "animate-pulse"
                                                     )} />
-                                                    <p className={cn("text-[11px] font-black uppercase tracking-[0.15em] opacity-40", textColor)}>
+                                                    <p className={cn("text-[11px] font-black uppercase tracking-[0.15em] opacity-70 dark:opacity-40", textColor)}>
                                                         {getCanonicalDealStatus(selectedItem) === 'COMPLETED' ? 'Completed' : 'Collaboration'}
                                                     </p>
                                                 </div>
@@ -5453,7 +5457,7 @@ const MobileDashboardDemo = ({
                                                 isDark ? "bg-white/[0.03] border-white/10" : "bg-white border-slate-200"
                                             )}
                                         >
-                                            <MoreHorizontal className="w-5 h-5 opacity-40" />
+                                            <MoreHorizontal className="w-5 h-5 opacity-70 dark:opacity-40" />
                                         </button>
                                     </div>
 
@@ -5512,7 +5516,7 @@ const MobileDashboardDemo = ({
                                                                     <div className={cn("w-full aspect-[16/10] rounded-[2.5rem] overflow-hidden border shadow-2xl transition-all duration-500 hover:scale-[1.02] group/product relative", 
                                                                         isDark ? "bg-white/5 border-white/10" : "bg-white border-slate-200"
                                                                     )}>
-                                                                        <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent z-10" />
+                                                                        {/* Gradient removed as per request */}
                                                                         {(() => {
                                                                             const productImage = resolveCreatorDealProductImage(selectedItem) || selectedItem.brand_logo_url || selectedItem.brand_logo;
                                                                             return (
@@ -5609,8 +5613,8 @@ const MobileDashboardDemo = ({
                                                                                             {displayPackageName}
                                                                                         </span>
                                                                                     </div>
-                                                                                    <span className={cn("text-[10px] font-black uppercase tracking-[0.3em] opacity-30 px-1", textColor)}>
-                                                                                        STANDARD DELIVERY
+                                                                                    <span className={cn("text-[10px] font-black uppercase tracking-[0.3em] opacity-60 dark:opacity-30 px-1", textColor)}>
+                                                                                        {isExchange ? "PRODUCT ONLY" : "STANDARD DELIVERY"}
                                                                                     </span>
                                                                                 </div>
                                                                                 <div className="flex items-center gap-5">
@@ -5620,7 +5624,7 @@ const MobileDashboardDemo = ({
                                                                         <span className="text-2xl filter drop-shadow-md">{packageIcon}</span>
                                                                     </div>
                                                                 )}
-                                                                                    <ChevronDown className={cn("w-6 h-6 opacity-20 transition-transform", showBrief && "rotate-180")} />
+                                                                                    <ChevronDown className={cn("w-6 h-6 opacity-50 dark:opacity-20 transition-transform", showBrief && "rotate-180")} />
                                                                                 </div>
                                                                             </button>
                                                                             {showBrief && (
@@ -5632,8 +5636,8 @@ const MobileDashboardDemo = ({
                                                                                     {/* WHAT THE BRAND GETS (Exactly like screenshot) */}
                                                                                     <div className={cn("rounded-[32px] p-8 border backdrop-blur-md", 
                                                                                         isDark ? "bg-[#0C1320]/80 border-white/5" : "bg-slate-50/30 border-slate-200/40")}>
-                                                                                        <p className={cn("text-[11px] font-black uppercase tracking-[0.3em] opacity-40 mb-5 px-1", textColor)}>WHAT THE BRAND GETS</p>
-                                                                                        <div className="space-y-5">
+                                                                                        <p className={cn("text-[11px] font-black uppercase tracking-[0.3em] opacity-70 dark:opacity-40 mb-5 px-1", textColor)}>1. DELIVERABLES</p>
+                                                                                        <div className="space-y-5 mb-10">
                                                                                             {/* Primary */}
                                                                                             <div className="flex items-center gap-4">
                                                                                                 <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0">
@@ -5679,6 +5683,23 @@ const MobileDashboardDemo = ({
                                                                                                 </>
                                                                                             )}
 
+                                                                                            {isExchange && (
+                                                                                                <>
+                                                                                                    <div className="flex items-center gap-4">
+                                                                                                        <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0">
+                                                                                                            <Check className="w-3.5 h-3.5 text-emerald-500" strokeWidth={4} />
+                                                                                                        </div>
+                                                                                                        <p className={cn("text-[15px] font-bold tracking-tight", textColor)}>Product Review / Unboxing</p>
+                                                                                                    </div>
+                                                                                                    <div className="flex items-center gap-4">
+                                                                                                        <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0">
+                                                                                                            <Check className="w-3.5 h-3.5 text-emerald-500" strokeWidth={4} />
+                                                                                                        </div>
+                                                                                                        <p className={cn("text-[15px] font-bold tracking-tight", textColor)}>1 Story mention</p>
+                                                                                                    </div>
+                                                                                                </>
+                                                                                            )}
+
                                                                                             {secondaryDeliverables.filter(d => d.label || d.name).map((d, i) => (
                                                                                                 <div key={i} className="flex items-center gap-4">
                                                                                                     <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0">
@@ -5687,7 +5708,22 @@ const MobileDashboardDemo = ({
                                                                                                     <p className={cn("text-[15px] font-bold tracking-tight", textColor)}>{d.label || d.name}</p>
                                                                                                 </div>
                                                                                             ))}
-                                                                                            {/* Requirements */}
+                                                                                        </div>
+
+                                                                                        <p className={cn("text-[11px] font-black uppercase tracking-[0.3em] opacity-70 dark:opacity-40 mb-5 px-1", textColor)}>2. REQUIREMENTS</p>
+                                                                                        <div className="space-y-5 mb-10">
+                                                                                            <div className="flex items-center gap-4">
+                                                                                                <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0">
+                                                                                                    <Check className="w-3.5 h-3.5 text-emerald-500" strokeWidth={4} />
+                                                                                                </div>
+                                                                                                <p className={cn("text-[15px] font-bold tracking-tight", textColor)}>High-quality video editing</p>
+                                                                                            </div>
+                                                                                            <div className="flex items-center gap-4">
+                                                                                                <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0">
+                                                                                                    <Check className="w-3.5 h-3.5 text-emerald-500" strokeWidth={4} />
+                                                                                                </div>
+                                                                                                <p className={cn("text-[15px] font-bold tracking-tight", textColor)}>Mention brand name clearly</p>
+                                                                                            </div>
                                                                                             {requirementsList.map((req, i) => (
                                                                                                 <div key={i} className="flex items-center gap-4">
                                                                                                     <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0">
@@ -5697,8 +5733,26 @@ const MobileDashboardDemo = ({
                                                                                                 </div>
                                                                                             ))}
                                                                                         </div>
-                                                                                    </div>
+
+                                                                                        <p className={cn("text-[11px] font-black uppercase tracking-[0.3em] opacity-70 dark:opacity-40 mb-5 px-1", textColor)}>3. USAGE RIGHTS</p>
+                                                                                        <div className="space-y-5">
+                                                                                            <div className="flex items-center gap-4">
+                                                                                                <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0">
+                                                                                                    <Check className="w-3.5 h-3.5 text-emerald-500" strokeWidth={4} />
+                                                                                                </div>
+                                                                                                <p className={cn("text-[15px] font-bold tracking-tight", textColor)}>30 Days Organic Usage</p>
+                                                                                            </div>
+                                                                                            <div className="flex items-center gap-4">
+                                                                                                <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0">
+                                                                                                    <Check className="w-3.5 h-3.5 text-emerald-500" strokeWidth={4} />
+                                                                                                </div>
+                                                                                                <p className={cn("text-[15px] font-bold tracking-tight", textColor)}>
+                                                                                                    {isExchange ? "No paid whitelist rights" : "Whitelisting rights included"}
+                                                                                                </p>
+                                                                                            </div>
+                                                                                        </div>
                                                                                 </div>
+                                                                                    </div>
                                                                             )}
                                                                         </div>
                                                                     );
@@ -5706,7 +5760,7 @@ const MobileDashboardDemo = ({
 
                                                             {/* ── ROADMAP ── */}
                                                             <div className={cn("rounded-[24px] border p-5", isDark ? "bg-white/[0.02] border-white/6" : "bg-white border-slate-200")}>
-                                                                <h3 className={cn("text-[11px] font-black uppercase tracking-[0.2em] mb-4 opacity-40", textColor)}>The Deal Roadmap</h3>
+                                                                <h3 className={cn("text-[11px] font-black uppercase tracking-[0.2em] mb-4 opacity-70 dark:opacity-40", textColor)}>The Deal Roadmap</h3>
                                                                 <div className="space-y-4">
                                                                     {[
                                                                         { step: 1, label: "Accept this deal", status: "current" },
@@ -5721,7 +5775,7 @@ const MobileDashboardDemo = ({
                                                                             )}>
                                                                                 {item.step}
                                                                             </div>
-                                                                            <p className={cn("text-[12px] font-bold", item.status === 'current' ? textColor : "opacity-30")}>{item.label}</p>
+                                                                            <p className={cn("text-[12px] font-bold", item.status === 'current' ? textColor : "opacity-60 dark:opacity-30")}>{item.label}</p>
                                                                         </div>
                                                                     ))}
                                                                 </div>
@@ -5885,13 +5939,13 @@ const MobileDashboardDemo = ({
                                                     <p className={cn("text-[13px] font-black leading-tight tracking-tighter whitespace-nowrap", textColor)}>
                                                         {selectedItem.company_name || selectedItem.brand_name || selectedItem.brand?.name || selectedItem.raw?.brand_name || 'Brand Information'}
                                                     </p>
-                                                    <p className={cn("text-[11px] mt-1 font-bold opacity-50", textColor)}>Verified Business · ⭐ 12 deals · 4.8 rating</p>
+                                                    <p className={cn("text-[11px] mt-1 font-bold opacity-80 dark:opacity-50", textColor)}>Verified Business · ⭐ 12 deals · 4.8 rating</p>
                                                 </div>
                                                 <motion.div
                                                     animate={{ rotate: showBrandDetails ? 90 : 0 }}
                                                     transition={{ duration: 0.3, ease: [0.23, 1, 0.32, 1] }}
                                                 >
-                                                    <ChevronRight className={cn("w-5 h-5 opacity-30", textColor)} />
+                                                    <ChevronRight className={cn("w-5 h-5 opacity-60 dark:opacity-30", textColor)} />
                                                 </motion.div>
                                             </button>
 
@@ -5910,7 +5964,7 @@ const MobileDashboardDemo = ({
 
                                                         {/* Trust badges */}
                                                         <div className="px-4 pt-3 pb-2">
-                                                            <p className={cn("text-[10px] font-black uppercase tracking-wider mb-2 opacity-40", textColor)}>Verified Identity</p>
+                                                            <p className={cn("text-[10px] font-black uppercase tracking-wider mb-2 opacity-70 dark:opacity-40", textColor)}>Verified Identity</p>
                                                             <div className="flex flex-wrap gap-1.5">
                                                                 {[
                                                                     { icon: '✓', label: 'GST Verified', color: 'text-primary bg-primary/10 border-primary/20' },
@@ -5926,7 +5980,7 @@ const MobileDashboardDemo = ({
 
                                                         {/* Company info rows */}
                                                         <div className="px-4 pb-3 space-y-0">
-                                                            <p className={cn("text-[10px] font-black uppercase tracking-wider mb-2 opacity-40 pt-2", textColor)}>Company Details</p>
+                                                            <p className={cn("text-[10px] font-black uppercase tracking-wider mb-2 opacity-70 dark:opacity-40 pt-2", textColor)}>Company Details</p>
                                                             {[
                                                                 { label: 'Company', value: selectedItem.company_name || selectedItem.brand_name || selectedItem.raw?.brand_name || 'Pronto Pvt Ltd' },
                                                                 { label: 'GST', value: selectedItem.gst_number || selectedItem.brand_gstin || selectedItem.raw?.brand_gstin || '27ABCDE1234F1Z5' },
@@ -5947,7 +6001,7 @@ const MobileDashboardDemo = ({
                                         </motion.div>
 
                                         {/* ── DELIVERY TIMELINE (Offers & Deals) ── */}
-                                        {(selectedType === 'deal') && (
+                                        {(selectedType === 'deal' || selectedType === 'offer') && (
                                             <div className="mb-6">
                                                 <h4 className={cn("text-[11px] font-black uppercase tracking-[0.2em] mb-4 opacity-80 px-1", textColor)}>
                                                     {selectedIsPureBarter ? 'Product Fulfillment' : 'Campaign Timeline'}
@@ -5986,6 +6040,8 @@ const MobileDashboardDemo = ({
                                                             else if (isPaymentPending) currentStep = 1;
                                                             else currentStep = 0;
                                                         }
+
+                                                        if (selectedType === 'offer') currentStep = 0;
 
                                                         return (
                                                             <>
@@ -6044,11 +6100,11 @@ const MobileDashboardDemo = ({
                                                                                     )}>
                                                                                         {isDone ? <Check className="w-2.5 h-2.5 text-white" /> : 
                                                                                          isActive ? <div className="w-1.5 h-1.5 rounded-full bg-info animate-pulse" /> : 
-                                                                                         <span className="text-[8px] font-black opacity-30">{idx + 1}</span>}
+                                                                                         <span className="text-[8px] font-black opacity-60 dark:opacity-30">{idx + 1}</span>}
                                                                                     </div>
                                                                                     <span className={cn(
                                                                                         "text-[9px] font-black uppercase tracking-tighter text-center leading-none",
-                                                                                        isActive ? "text-info opacity-100" : "opacity-30",
+                                                                                        isActive ? "text-info opacity-40 dark:opacity-100" : "opacity-60 dark:opacity-30",
                                                                                         textColor
                                                                                     )}>
                                                                                         {step}
@@ -6076,7 +6132,7 @@ const MobileDashboardDemo = ({
                                                                                     ? (isDark ? "text-amber-400" : "text-amber-700")
                                                                                     : isMaking
                                                                                         ? (isDark ? "text-sky-400" : "text-sky-700")
-                                                                                        : "opacity-50",
+                                                                                        : "opacity-70 dark:opacity-40",
                                                                                 textColor
                                                                             )}>What you need to do</p>
                                                                         </div>
@@ -6099,7 +6155,7 @@ const MobileDashboardDemo = ({
                                                                                         { text: 'Payout releases within 72h', done: false },
                                                                                       ]
                                                                             ).map((item, i) => (
-                                                                                <li key={i} className={cn("flex items-center gap-2.5 text-[12px] font-bold", item.done ? "opacity-40 line-through" : "opacity-80", textColor)}>
+                                                                                <li key={i} className={cn("flex items-center gap-2.5 text-[12px] font-bold", item.done ? "opacity-70 dark:opacity-40 line-through" : "opacity-80", textColor)}>
                                                                                     <div className={cn(
                                                         "w-3.5 h-3.5 rounded-full flex items-center justify-center shrink-0 border",
                                                                                         item.done
@@ -6193,7 +6249,7 @@ const MobileDashboardDemo = ({
                                                                             {displayPackageName}
                                                                         </span>
                                                                     </div>
-                                                                    <span className={cn("text-[10px] font-black uppercase tracking-[0.3em] opacity-30 px-1", textColor)}>
+                                                                    <span className={cn("text-[10px] font-black uppercase tracking-[0.3em] opacity-60 dark:opacity-30 px-1", textColor)}>
                                                                         {isExchange ? "PRODUCT ONLY" : "STANDARD DELIVERY"}
                                                                     </span>
                                                                 </div>
@@ -6204,7 +6260,7 @@ const MobileDashboardDemo = ({
                                                                         <span className="text-2xl filter drop-shadow-md">{packageIcon}</span>
                                                                     </div>
                                                                 )}
-                                                                    <ChevronDown className={cn("w-6 h-6 opacity-20 transition-transform", showBrief && "rotate-180")} />
+                                                                    <ChevronDown className={cn("w-6 h-6 opacity-50 dark:opacity-20 transition-transform", showBrief && "rotate-180")} />
                                                                 </div>
                                                             </button>
                                                             {showBrief && (
@@ -6215,8 +6271,8 @@ const MobileDashboardDemo = ({
 
                                                                 <div className={cn("rounded-[32px] p-8 border backdrop-blur-md", 
                                                                     isDark ? "bg-[#0C1320]/80 border-white/5" : "bg-slate-50/30 border-slate-200/40")}>
-                                                                    <p className={cn("text-[11px] font-black uppercase tracking-[0.3em] opacity-40 mb-5 px-1", textColor)}>WHAT THE BRAND GETS</p>
-                                                                    <div className="space-y-5">
+                                                                    <p className={cn("text-[11px] font-black uppercase tracking-[0.3em] opacity-70 dark:opacity-40 mb-5 px-1", textColor)}>1. DELIVERABLES</p>
+                                                                    <div className="space-y-5 mb-10">
                                                                         {/* Primary */}
                                                                         <div className="flex items-center gap-4">
                                                                             <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0">
@@ -6276,12 +6332,6 @@ const MobileDashboardDemo = ({
                                                                                     </div>
                                                                                     <p className={cn("text-[15px] font-bold tracking-tight", textColor)}>1 Story mention</p>
                                                                                 </div>
-                                                                                <div className="flex items-center gap-4">
-                                                                                    <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0">
-                                                                                        <Check className="w-3.5 h-3.5 text-emerald-500" strokeWidth={4} />
-                                                                                    </div>
-                                                                                    <p className={cn("text-[15px] font-bold tracking-tight", textColor)}>No paid usage rights</p>
-                                                                                </div>
                                                                             </>
                                                                         )}
 
@@ -6293,6 +6343,22 @@ const MobileDashboardDemo = ({
                                                                                 <p className={cn("text-[15px] font-bold tracking-tight", textColor)}>{d.label || d.name}</p>
                                                                             </div>
                                                                         ))}
+                                                                    </div>
+
+                                                                    <p className={cn("text-[11px] font-black uppercase tracking-[0.3em] opacity-70 dark:opacity-40 mb-5 px-1", textColor)}>2. REQUIREMENTS</p>
+                                                                    <div className="space-y-5 mb-10">
+                                                                        <div className="flex items-center gap-4">
+                                                                            <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0">
+                                                                                <Check className="w-3.5 h-3.5 text-emerald-500" strokeWidth={4} />
+                                                                            </div>
+                                                                            <p className={cn("text-[15px] font-bold tracking-tight", textColor)}>High-quality video editing</p>
+                                                                        </div>
+                                                                        <div className="flex items-center gap-4">
+                                                                            <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0">
+                                                                                <Check className="w-3.5 h-3.5 text-emerald-500" strokeWidth={4} />
+                                                                            </div>
+                                                                            <p className={cn("text-[15px] font-bold tracking-tight", textColor)}>Mention brand name clearly</p>
+                                                                        </div>
                                                                         {requirementsList.map((req, i) => (
                                                                             <div key={i} className="flex items-center gap-4">
                                                                                 <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0">
@@ -6301,6 +6367,24 @@ const MobileDashboardDemo = ({
                                                                                 <p className={cn("text-[15px] font-bold tracking-tight opacity-80", textColor)}>{req}</p>
                                                                             </div>
                                                                         ))}
+                                                                    </div>
+
+                                                                    <p className={cn("text-[11px] font-black uppercase tracking-[0.3em] opacity-70 dark:opacity-40 mb-5 px-1", textColor)}>3. USAGE RIGHTS</p>
+                                                                    <div className="space-y-5">
+                                                                        <div className="flex items-center gap-4">
+                                                                            <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0">
+                                                                                <Check className="w-3.5 h-3.5 text-emerald-500" strokeWidth={4} />
+                                                                            </div>
+                                                                            <p className={cn("text-[15px] font-bold tracking-tight", textColor)}>30 Days Organic Usage</p>
+                                                                        </div>
+                                                                        <div className="flex items-center gap-4">
+                                                                            <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0">
+                                                                                <Check className="w-3.5 h-3.5 text-emerald-500" strokeWidth={4} />
+                                                                            </div>
+                                                                            <p className={cn("text-[15px] font-bold tracking-tight", textColor)}>
+                                                                                {isExchange ? "No paid whitelist rights" : "Whitelisting rights included"}
+                                                                            </p>
+                                                                        </div>
                                                                     </div>
                                                                 </div>
                                                             </div>
@@ -6313,7 +6397,7 @@ const MobileDashboardDemo = ({
                                         {/* ── PRODUCT PREVIEW (IF BARTER) ── */}
                                         {selectedType !== 'offer' && selectedRequiresShipping && (
                                             <div className="mb-8">
-                                                <h4 className={cn("text-[12px] font-black uppercase tracking-[0.2em] mb-4 opacity-40 px-1", textColor)}>Product Included</h4>
+                                                <h4 className={cn("text-[12px] font-black uppercase tracking-[0.2em] mb-4 opacity-70 dark:opacity-40 px-1", textColor)}>Product Included</h4>
                                                 <div className={cn(
                                                     "rounded-[2.5rem] border p-5 flex items-center gap-6 relative overflow-hidden group transition-all duration-500", 
                                                     isDark ? "bg-white/[0.03] border-white/5" : "bg-white border-slate-200 shadow-sm"
@@ -6327,7 +6411,7 @@ const MobileDashboardDemo = ({
                                                             alt="Product" 
                                                             className="w-full h-full object-cover transition-transform group-hover:scale-110 duration-700" 
                                                         />
-                                                        <div className="absolute inset-0 bg-gradient-to-tr from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                                                        {/* Gradient removed as per request */}
                                                     </div>
                                                     <div className="flex-1 min-w-0">
                                                         <p className={cn("text-[18px] font-black leading-tight tracking-tight", textColor)}>
@@ -6354,7 +6438,7 @@ const MobileDashboardDemo = ({
 
                                         {selectedType === 'deal' && selectedRequiresShipping && (
                                             <div className="mb-6">
-                                                <h4 className={cn("text-[13px] font-black uppercase tracking-wider mb-3 opacity-50", textColor)}>Shipping</h4>
+                                                <h4 className={cn("text-[13px] font-black uppercase tracking-wider mb-3 opacity-80 dark:opacity-50", textColor)}>Shipping</h4>
                                                 <div className={cn("rounded-2xl border p-4 space-y-4", cardBgColor, borderColor)}>
                                                     <div className="flex items-start justify-between gap-3">
                                                         <div>
@@ -6394,20 +6478,20 @@ const MobileDashboardDemo = ({
                                                             <div className="grid grid-cols-2 gap-4 relative z-10">
                                                                 {selectedItem.courier_name && (
                                                                     <div>
-                                                                        <p className={cn("text-[10px] font-black uppercase tracking-[0.15em] opacity-40 mb-1.5", textColor)}>Courier</p>
+                                                                        <p className={cn("text-[10px] font-black uppercase tracking-[0.15em] opacity-70 dark:opacity-40 mb-1.5", textColor)}>Courier</p>
                                                                         <p className={cn("text-[14px] font-black", textColor)}>{selectedItem.courier_name}</p>
                                                                     </div>
                                                                 )}
                                                                 {selectedItem.tracking_number && (
                                                                     <div>
-                                                                        <p className={cn("text-[10px] font-black uppercase tracking-[0.15em] opacity-40 mb-1.5", textColor)}>Tracking ID</p>
+                                                                        <p className={cn("text-[10px] font-black uppercase tracking-[0.15em] opacity-70 dark:opacity-40 mb-1.5", textColor)}>Tracking ID</p>
                                                                         <p className={cn("text-[14px] font-black break-all tracking-tight", textColor)}>{selectedItem.tracking_number}</p>
                                                                     </div>
                                                                 )}
                                                             </div>
                                                             {selectedItem.expected_delivery_date && (
                                                                 <div className="pt-3 border-t border-white/5">
-                                                                    <p className={cn("text-[10px] font-black uppercase tracking-[0.15em] opacity-40 mb-1.5", textColor)}>ETA</p>
+                                                                    <p className={cn("text-[10px] font-black uppercase tracking-[0.15em] opacity-70 dark:opacity-40 mb-1.5", textColor)}>ETA</p>
                                                                     <p className={cn("text-[14px] font-black", textColor)}>
                                                                         {new Date(selectedItem.expected_delivery_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
                                                                     </p>
@@ -6464,7 +6548,7 @@ const MobileDashboardDemo = ({
                                                                     <p className={cn("text-[15px] font-black", isDark ? "text-amber-200" : "text-amber-900")}>Waiting for Shipping</p>
                                                                     <div className="flex items-center gap-1.5 mt-0.5">
                                                                         <div className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
-                                                                        <p className={cn("text-[11px] font-black uppercase tracking-wider opacity-40", textColor)}>Brand action pending</p>
+                                                                        <p className={cn("text-[11px] font-black uppercase tracking-wider opacity-70 dark:opacity-40", textColor)}>Brand action pending</p>
                                                                     </div>
                                                                 </div>
                                                             </div>
@@ -6500,7 +6584,7 @@ const MobileDashboardDemo = ({
                                                 {/* ── PAYMENT ── */}
                                                 <div className="mb-6 grid grid-cols-2 gap-3">
                                                     <div className={cn("rounded-2xl border p-4 flex flex-col justify-center", cardBgColor, borderColor)}>
-                                                        <p className={cn("text-[11px] font-black uppercase tracking-wider mb-2 opacity-50", textColor)}>
+                                                        <p className={cn("text-[11px] font-black uppercase tracking-wider mb-2 opacity-80 dark:opacity-50", textColor)}>
                                                             {selectedRequiresPayment ? 'Payment Method' : selectedRequiresShipping ? 'Fulfillment' : 'Deal Type'}
                                                         </p>
                                                         <div className="flex items-center gap-2.5 mb-1">
@@ -6513,7 +6597,7 @@ const MobileDashboardDemo = ({
                                                         </div>
                                                     </div>
                                                     <div className={cn("rounded-2xl border p-4 flex flex-col justify-center", cardBgColor, borderColor)}>
-                                                        <p className={cn("text-[11px] font-black uppercase tracking-wider mb-2 opacity-50", textColor)}>Deadline</p>
+                                                        <p className={cn("text-[11px] font-black uppercase tracking-wider mb-2 opacity-80 dark:opacity-50", textColor)}>Deadline</p>
                                                         {(() => {
                                                             const rawDeadline = selectedItem.due_date || selectedItem.deadline;
                                                             const d = rawDeadline ? new Date(rawDeadline) : new Date(Date.now() + 13 * 86400000);
@@ -6538,7 +6622,7 @@ const MobileDashboardDemo = ({
 
                                                 {/* ── SECURITY & LEGAL (Unified) ── */}
                                                 <div className="mb-6">
-                                                    <h4 className={cn("text-[11px] font-black uppercase tracking-[0.2em] mb-4 opacity-50 px-1", textColor)}>Verified Protection</h4>
+                                                    <h4 className={cn("text-[11px] font-black uppercase tracking-[0.2em] mb-4 opacity-80 dark:opacity-50 px-1", textColor)}>Verified Protection</h4>
                                                     <div className={cn("rounded-[28px] border p-5 sm:p-6 relative overflow-hidden", isDark ? "bg-emerald-500/[0.03] border-emerald-500/10" : "bg-emerald-50/50 border-emerald-100")}>
                                                         <div className="flex items-center gap-4 mb-5">
                                                             <div className={cn("w-12 h-12 rounded-2xl flex items-center justify-center shadow-lg shrink-0", isDark ? "bg-emerald-500 text-white shadow-emerald-500/20" : "bg-emerald-600 text-white shadow-emerald-600/10")}>
@@ -6546,7 +6630,7 @@ const MobileDashboardDemo = ({
                                                             </div>
                                                             <div>
                                                                 <p className={cn("text-[15px] font-black tracking-tight", textColor)}>Security & Legal Shield</p>
-                                                                <p className={cn("text-[11px] font-bold opacity-50", textColor)}>Managed by Creator Armour</p>
+                                                                <p className={cn("text-[11px] font-bold opacity-80 dark:opacity-50", textColor)}>Managed by Creator Armour</p>
                                                             </div>
                                                         </div>
                                                         <div className="grid grid-cols-1 gap-3.5">
@@ -6571,7 +6655,7 @@ const MobileDashboardDemo = ({
                                                                     <span className="text-[14px] mt-0.5">{item.icon}</span>
                                                                     <div>
                                                                         <p className={cn("text-[12px] font-bold tracking-tight", textColor)}>{item.text}</p>
-                                                                        <p className={cn("text-[10px] opacity-40 font-bold leading-snug mt-0.5", textColor)}>{item.desc}</p>
+                                                                        <p className={cn("text-[10px] opacity-70 dark:opacity-40 font-bold leading-snug mt-0.5", textColor)}>{item.desc}</p>
                                                                     </div>
                                                                 </div>
                                                             ))}
@@ -6676,7 +6760,7 @@ const MobileDashboardDemo = ({
                                                             )}
                                                         >
                                                             View Timeline
-                                                            <ChevronRight className="w-4 h-4 opacity-50" />
+                                                            <ChevronRight className="w-4 h-4 opacity-80 dark:opacity-50" />
                                                         </button>
                                                     </div>
                                                 ) : (
@@ -6701,7 +6785,7 @@ const MobileDashboardDemo = ({
                                                             !isDark && "border-white/20"
                                                         )}
                                                     >
-                                                        <div className="absolute inset-0 bg-white/5 opacity-0 group-active:opacity-100 transition-opacity" />
+                                                        <div className="absolute inset-0 bg-white/5 opacity-0 group-active:opacity-40 dark:opacity-100 transition-opacity" />
                                                         {processingDeal === selectedItem.id ? (
                                                             <Loader2 className="w-6 h-6 animate-spin" />
                                                         ) : (
@@ -6742,7 +6826,7 @@ const MobileDashboardDemo = ({
                                                     <div className="max-w-md mx-auto">
                                                         <div className="flex items-center justify-between mb-4">
                                                             <div className="min-w-0">
-                                                                <p className={cn("text-[11px] font-black uppercase tracking-[0.18em] opacity-40", textColor)}>{selectedType === 'deal' ? 'Deal Actions' : 'Offer Actions'}</p>
+                                                                <p className={cn("text-[11px] font-black uppercase tracking-[0.18em] opacity-70 dark:opacity-40", textColor)}>{selectedType === 'deal' ? 'Deal Actions' : 'Offer Actions'}</p>
                                                                 <p className={cn("text-[16px] font-black tracking-tighter whitespace-nowrap", textColor)}>
                                                                     {selectedItem.company_name || selectedItem.brand_name || selectedItem.brand?.name || selectedItem.raw?.brand_name || 'Actions'}
                                                                 </p>
@@ -6770,7 +6854,7 @@ const MobileDashboardDemo = ({
                                                                         <p className={cn("text-[12px] opacity-60", textColor)}>Share this offer/deal</p>
                                                                     </span>
                                                                 </span>
-                                                                <ChevronRight className={cn("w-4 h-4 opacity-40", textColor)} />
+                                                                <ChevronRight className={cn("w-4 h-4 opacity-70 dark:opacity-40", textColor)} />
                                                             </button>
                                                             <div className={cn("h-px", isDark ? "bg-secondary/50" : "bg-background")} />
                                                             <button type="button"
@@ -6786,7 +6870,7 @@ const MobileDashboardDemo = ({
                                                                         <p className={cn("text-[12px] opacity-60", textColor)}>Send via WhatsApp, etc.</p>
                                                                     </span>
                                                                 </span>
-                                                                <ChevronRight className={cn("w-4 h-4 opacity-40", textColor)} />
+                                                                <ChevronRight className={cn("w-4 h-4 opacity-70 dark:opacity-40", textColor)} />
                                                             </button>
                                                             <div className={cn("h-px", isDark ? "bg-secondary/50" : "bg-background")} />
 
@@ -6814,7 +6898,7 @@ const MobileDashboardDemo = ({
                                                                                     <p className={cn("text-[12px] opacity-60", textColor)}>Move the deal to the next stage</p>
                                                                                 </span>
                                                                             </span>
-                                                                            <ChevronRight className={cn("w-4 h-4 opacity-40", textColor)} />
+                                                                            <ChevronRight className={cn("w-4 h-4 opacity-70 dark:opacity-40", textColor)} />
                                                                         </button>
                                                                         <div className={cn("h-px", isDark ? "bg-secondary/50" : "bg-background")} />
                                                                     </>
@@ -6833,14 +6917,14 @@ const MobileDashboardDemo = ({
                                                             >
                                                                 <span className="flex items-center gap-3">
                                                                     <span className={cn("w-9 h-9 rounded-xl flex items-center justify-center", isDark ? "bg-card" : "bg-background")}>
-                                                                        <Eye className={cn("w-4 h-4", isDark ? "text-foreground/80" : "text-muted-foreground")} />
+                                                                        <Eye className={cn("w-4 h-4", isDark ? "text-foreground/80" : "text-slate-700")} />
                                                                     </span>
                                                                     <span>
                                                                         <p className={cn("text-[14px] font-bold", textColor)}>Open full page</p>
                                                                         <p className={cn("text-[12px] opacity-60", textColor)}>View outside the dashboard</p>
                                                                     </span>
                                                                 </span>
-                                                                <ChevronRight className={cn("w-4 h-4 opacity-40", textColor)} />
+                                                                <ChevronRight className={cn("w-4 h-4 opacity-70 dark:opacity-40", textColor)} />
                                                             </button>
                                                         </div>
                                                     </div>
@@ -6889,7 +6973,7 @@ const MobileDashboardDemo = ({
                                 <X className="w-4 h-4" />
                             </button>
                         </div>
-                        <DialogTitle className={cn("flex flex-col gap-1 px-8 pt-10 text-3xl font-black tracking-tight", isDark ? "text-foreground" : "text-muted-foreground")}>
+                        <DialogTitle className={cn("flex flex-col gap-1 px-8 pt-10 text-3xl font-black tracking-tight", isDark ? "text-foreground" : "text-slate-700")}>
                             <div className="flex items-center gap-3">
                                 <div className={cn(
                                     "w-12 h-12 rounded-2xl flex items-center justify-center shadow-lg",
@@ -6904,7 +6988,7 @@ const MobileDashboardDemo = ({
                                     : 'Deliver Content'}
                             </div>
                         </DialogTitle>
-                        <DialogDescription className={cn("px-8 pb-2 mt-2 text-[15px] font-medium leading-relaxed opacity-60", isDark ? "text-foreground" : "text-muted-foreground")}>
+                        <DialogDescription className={cn("px-8 pb-2 mt-2 text-[15px] font-medium leading-relaxed opacity-60", isDark ? "text-foreground" : "text-slate-700")}>
                             {deliverContentStatusDraft === 'draft' 
                                 ? "Upload your draft file or paste a review link to keep the brand updated."
                                 : "Paste the live Instagram link for the brand to verify and approve."}
@@ -6922,7 +7006,7 @@ const MobileDashboardDemo = ({
                             </div>
                         )}
                         <div className="space-y-3">
-                            <label className={cn("text-[12px] font-black uppercase tracking-[0.18em] px-1", isDark ? "text-foreground/50" : "text-muted-foreground/50")}>
+                            <label className={cn("text-[12px] font-black uppercase tracking-[0.18em] px-1", isDark ? "text-foreground/50" : "text-slate-600/50")}>
                                 {deliverContentStatusDraft === 'draft' ? 'Draft/Drive Link' : 'Instagram Post Link'}
                             </label>
                             {uploadedFileName ? (
@@ -6966,7 +7050,7 @@ const MobileDashboardDemo = ({
                                         "w-full rounded-[1.25rem] px-5 py-4 text-[14px] font-bold outline-none transition-all border shadow-sm",
                                         isDark 
                                             ? "bg-white/5 border-white/10 text-foreground placeholder:text-foreground/30 focus:border-emerald-500/50 focus:bg-white/[0.08]" 
-                                            : "bg-slate-50 border-slate-200 text-muted-foreground placeholder:text-muted-foreground/50 focus:border-emerald-500/50 focus:bg-white"
+                                            : "bg-slate-50 border-slate-200 text-slate-600 placeholder:text-slate-600/50 focus:border-emerald-500/50 focus:bg-white"
                                     )}
                                     inputMode="url"
                                     autoComplete="url"
@@ -7014,7 +7098,7 @@ const MobileDashboardDemo = ({
                         </div>
 
                         <div className="space-y-3">
-                            <label className={cn("text-[12px] font-black uppercase tracking-[0.18em] px-1", isDark ? "text-foreground/50" : "text-muted-foreground/50")}>
+                            <label className={cn("text-[12px] font-black uppercase tracking-[0.18em] px-1", isDark ? "text-foreground/50" : "text-slate-600/50")}>
                                 Content Status
                             </label>
                             <div className={cn("grid grid-cols-2 gap-3 rounded-[1.5rem] p-1.5 border", isDark ? "bg-white/5 border-white/10" : "bg-slate-50 border-slate-200")}>
@@ -7030,7 +7114,7 @@ const MobileDashboardDemo = ({
                                 >
                                     {deliverContentStatusDraft === 'draft' && <div className="absolute inset-0 bg-white/10 group-hover:bg-transparent transition-colors" />}
                                     <span className="relative z-10">Draft for review</span>
-                                    <span className={cn("relative z-10 text-[10px] font-black uppercase tracking-widest mt-1 opacity-70", deliverContentStatusDraft === 'draft' ? "text-white" : "text-slate-400")}>
+                                    <span className={cn("relative z-10 text-[10px] font-black uppercase tracking-widest mt-1 opacity-70", deliverContentStatusDraft === 'draft' ? "text-white" : "text-slate-600")}>
                                         In Production
                                     </span>
                                 </button>
@@ -7046,7 +7130,7 @@ const MobileDashboardDemo = ({
                                 >
                                     {deliverContentStatusDraft === 'posted' && <div className="absolute inset-0 bg-white/10 group-hover:bg-transparent transition-colors" />}
                                     <span className="relative z-10">Already posted</span>
-                                    <span className={cn("relative z-10 text-[10px] font-black uppercase tracking-widest mt-1 opacity-70", deliverContentStatusDraft === 'posted' ? "text-white" : "text-slate-400")}>
+                                    <span className={cn("relative z-10 text-[10px] font-black uppercase tracking-widest mt-1 opacity-70", deliverContentStatusDraft === 'posted' ? "text-white" : "text-slate-600")}>
                                         Live on Profile
                                     </span>
                                 </button>
@@ -7055,7 +7139,7 @@ const MobileDashboardDemo = ({
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                             <div className="space-y-3">
-                                <label className={cn("text-[12px] font-black uppercase tracking-[0.18em] px-1", isDark ? "text-foreground/50" : "text-muted-foreground/50")}>
+                                <label className={cn("text-[12px] font-black uppercase tracking-[0.18em] px-1", isDark ? "text-foreground/50" : "text-slate-600/50")}>
                                     Caption (Optional)
                                 </label>
                                 <textarea
@@ -7066,13 +7150,13 @@ const MobileDashboardDemo = ({
                                         "w-full min-h-[120px] rounded-[1.5rem] px-5 py-4 text-[14px] font-bold outline-none transition-all border resize-none shadow-sm",
                                         isDark 
                                             ? "bg-white/5 border-white/10 text-foreground placeholder:text-foreground/30 focus:border-emerald-500/50 focus:bg-white/[0.08]" 
-                                            : "bg-slate-50 border-slate-200 text-muted-foreground placeholder:text-muted-foreground/50 focus:border-emerald-500/50 focus:bg-white"
+                                            : "bg-slate-50 border-slate-200 text-slate-600 placeholder:text-slate-600/50 focus:border-emerald-500/50 focus:bg-white"
                                     )}
                                 />
                             </div>
 
                             <div className="space-y-3">
-                                <label className={cn("text-[12px] font-black uppercase tracking-[0.18em] px-1", isDark ? "text-foreground/50" : "text-muted-foreground/50")}>
+                                <label className={cn("text-[12px] font-black uppercase tracking-[0.18em] px-1", isDark ? "text-foreground/50" : "text-slate-600/50")}>
                                     Additional Links
                                 </label>
                                 <textarea
@@ -7083,14 +7167,14 @@ const MobileDashboardDemo = ({
                                         "w-full min-h-[120px] rounded-[1.5rem] px-5 py-4 text-[14px] font-bold outline-none transition-all border resize-none shadow-sm",
                                         isDark 
                                             ? "bg-white/5 border-white/10 text-foreground placeholder:text-foreground/30 focus:border-emerald-500/50 focus:bg-white/[0.08]" 
-                                            : "bg-slate-50 border-slate-200 text-muted-foreground placeholder:text-muted-foreground/50 focus:border-emerald-500/50 focus:bg-white"
+                                            : "bg-slate-50 border-slate-200 text-slate-600 placeholder:text-slate-600/50 focus:border-emerald-500/50 focus:bg-white"
                                     )}
                                 />
                             </div>
                         </div>
 
                         <div className="space-y-3">
-                            <label className={cn("text-[12px] font-black uppercase tracking-[0.18em] px-1", isDark ? "text-foreground/50" : "text-muted-foreground/50")}>
+                            <label className={cn("text-[12px] font-black uppercase tracking-[0.18em] px-1", isDark ? "text-foreground/50" : "text-slate-600/50")}>
                                 Message to Brand (Optional)
                             </label>
                             <textarea
@@ -7101,7 +7185,7 @@ const MobileDashboardDemo = ({
                                     "w-full min-h-[100px] rounded-[1.5rem] px-5 py-4 text-[14px] font-bold outline-none transition-all border resize-none shadow-sm",
                                     isDark 
                                         ? "bg-white/5 border-white/10 text-foreground placeholder:text-foreground/30 focus:border-emerald-500/50 focus:bg-white/[0.08]" 
-                                        : "bg-slate-50 border-slate-200 text-muted-foreground placeholder:text-muted-foreground/50 focus:border-emerald-500/50 focus:bg-white"
+                                        : "bg-slate-50 border-slate-200 text-slate-600 placeholder:text-slate-600/50 focus:border-emerald-500/50 focus:bg-white"
                                 )}
                             />
                         </div>
@@ -7155,11 +7239,11 @@ const MobileDashboardDemo = ({
                     )}
                 >
                     <DialogHeader>
-                        <DialogTitle className={cn("flex items-center gap-2 px-6 pt-6 text-2xl font-black tracking-tight", isDark ? "text-foreground" : "text-muted-foreground")}>
+                        <DialogTitle className={cn("flex items-center gap-2 px-6 pt-6 text-2xl font-black tracking-tight", isDark ? "text-foreground" : "text-slate-700")}>
                             <AlertCircle className="w-6 h-6 text-rose-500" />
                             Report Shipping Issue
                         </DialogTitle>
-                        <DialogDescription className={cn("px-6 pb-2 text-sm font-medium leading-relaxed opacity-60", isDark ? "text-foreground" : "text-muted-foreground")}>
+                        <DialogDescription className={cn("px-6 pb-2 text-sm font-medium leading-relaxed opacity-60", isDark ? "text-foreground" : "text-slate-700")}>
                             Describe what went wrong so the brand can fix the shipment quickly.
                         </DialogDescription>
                     </DialogHeader>
@@ -7171,7 +7255,7 @@ const MobileDashboardDemo = ({
                             rows={5}
                             className={cn(
                                 "w-full rounded-2xl px-4 py-3.5 text-[13px] font-semibold outline-none transition-all border resize-none",
-                                isDark ? "bg-card border-border text-foreground placeholder:text-foreground/40 focus:border-rose-500/50" : "bg-background border-border text-muted-foreground placeholder:text-muted-foreground focus:border-rose-500/50"
+                                isDark ? "bg-card border-border text-foreground placeholder:text-foreground/40 focus:border-rose-500/50" : "bg-background border-border text-slate-600 placeholder:text-slate-400 focus:border-rose-500/50"
                             )}
                         />
                         <div className="grid grid-cols-2 gap-2.5">
@@ -7201,11 +7285,11 @@ const MobileDashboardDemo = ({
             <Dialog open={showCreatorSigningModal} onOpenChange={setShowCreatorSigningModal}>
                 <DialogContent className={cn("sm:max-w-[440px] border-border rounded-[2rem] p-0 overflow-hidden shadow-2xl", isDark ? "bg-[#0B0F14] text-foreground shadow-black/60" : "bg-card text-muted-foreground shadow-slate-200")}>
                     <DialogHeader>
-                        <DialogTitle className={cn("flex items-center gap-2 px-6 pt-6 text-2xl font-black tracking-tight", isDark ? "text-foreground" : "text-muted-foreground")}>
+                        <DialogTitle className={cn("flex items-center gap-2 px-6 pt-6 text-2xl font-black tracking-tight", isDark ? "text-foreground" : "text-slate-700")}>
                             <ShieldCheck className="w-6 h-6 text-primary" />
                             Sign Agreement
                         </DialogTitle>
-                        <DialogDescription className={cn("px-6 pb-2 text-sm font-medium leading-relaxed opacity-60", isDark ? "text-foreground" : "text-muted-foreground")}>
+                        <DialogDescription className={cn("px-6 pb-2 text-sm font-medium leading-relaxed opacity-60", isDark ? "text-foreground" : "text-slate-700")}>
                             {creatorSigningStep === 'send'
                                 ? 'We will send a secure OTP to your registered email to verify your identity and sign the contract.'
                                 : 'Enter the 6-digit code sent to your email to complete the signing process.'}
@@ -7223,7 +7307,7 @@ const MobileDashboardDemo = ({
                                     <div className="min-w-0">
                                         <p className="text-[14px] font-bold tracking-tight">OTP Verification</p>
                                         <p className="text-[12px] opacity-60 font-medium truncate mt-0.5">
-                                            Signing as: <span className="font-bold opacity-100">{profile?.email || 'Your registered email'}</span>
+                                            Signing as: <span className="font-bold opacity-40 dark:opacity-100">{profile?.email || 'Your registered email'}</span>
                                         </p>
                                     </div>
                                 </div>
@@ -7257,7 +7341,7 @@ const MobileDashboardDemo = ({
                                       "w-full h-12 rounded-2xl border font-black uppercase tracking-widest text-[11px] transition-all active:scale-[0.98]",
                                       isDark
                                         ? "bg-card border-border text-foreground hover:bg-secondary/40"
-                                        : "bg-background border-border text-muted-foreground hover:bg-secondary/40"
+                                        : "bg-background border-border text-slate-600 hover:bg-secondary/40"
                                     )}
                                   >
                                     Skip OTP (Dev)
@@ -7267,7 +7351,7 @@ const MobileDashboardDemo = ({
                         ) : (
                             <div className="space-y-6">
                                 <div className="space-y-3">
-                                    <label className="text-[10px] font-black uppercase tracking-[0.2em] opacity-40 px-1">Verification Code</label>
+                                    <label className="text-[10px] font-black uppercase tracking-[0.2em] opacity-70 dark:opacity-40 px-1">Verification Code</label>
                                     <input
                                         type="text"
                                         maxLength={6}
@@ -7277,12 +7361,12 @@ const MobileDashboardDemo = ({
                                         inputMode="numeric"
                                         autoComplete="one-time-code"
                                         className={cn(
-                                            "w-full rounded-2xl px-4 py-5 text-center text-4xl tracking-[0.3em] font-black font-outfit focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all placeholder:opacity-20 border",
+                                            "w-full rounded-2xl px-4 py-5 text-center text-4xl tracking-[0.3em] font-black font-outfit focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all placeholder:text-slate-400 border",
                                             isDark ? "bg-card border-border text-foreground focus:border-primary/50" : "bg-background border-border text-muted-foreground focus:border-primary/50"
                                         )}
                                     />
                                     <div className="flex items-center justify-between px-1">
-                                        <p className="text-[11px] font-bold opacity-40 italic">Exp. in 10 minutes</p>
+                                        <p className="text-[11px] font-bold opacity-70 dark:opacity-40 italic">Exp. in 10 minutes</p>
                                         <button type="button"
                                             onClick={() => {
                                                 setCreatorSigningStep('send');
@@ -7318,7 +7402,7 @@ const MobileDashboardDemo = ({
                         )}
                     </div>
 
-                    <div className={cn("flex items-center gap-2 text-[10px] font-bold opacity-40 border-t px-6 py-5", isDark ? "border-border/5" : "border-border")}>
+                    <div className={cn("flex items-center gap-2 text-[10px] font-bold opacity-70 dark:opacity-40 border-t px-6 py-5", isDark ? "border-border/5" : "border-border")}>
                         <ShieldCheck className="w-3.5 h-3.5 text-primary" />
                         <span>Aadhar Verified · Secure E-signature by Creator Armour</span>
                     </div>
@@ -7437,7 +7521,7 @@ const MobileDashboardDemo = ({
                                             <ChevronRight className={cn("w-5 h-5 rotate-180", isDark ? "text-white/60" : "text-slate-600")} />
                                         </button>
                                         <div>
-                                            <p className={cn("text-[10px] font-black uppercase tracking-[0.3em] mb-0.5 opacity-30", textColor)}>Earnings</p>
+                                            <p className={cn("text-[10px] font-black uppercase tracking-[0.3em] mb-0.5 opacity-60 dark:opacity-30", textColor)}>Earnings</p>
                                             <h2 className={cn("text-[17px] font-bold tracking-tight", textColor)}>Payment Detail</h2>
                                         </div>
                                     </div>
@@ -7470,9 +7554,9 @@ const MobileDashboardDemo = ({
                                             ? "bg-gradient-to-b from-blue-600/20 to-blue-600/5 border border-white/5" 
                                             : "bg-gradient-to-b from-blue-50 to-white border border-slate-200"
                                     )}>
-                                        <div className={cn("absolute inset-0 opacity-20 filter blur-3xl mix-blend-overlay", isPaid ? "bg-emerald-400" : "bg-blue-400")} />
+                                        <div className={cn("absolute inset-0 opacity-50 dark:opacity-20 filter blur-3xl mix-blend-overlay", isPaid ? "bg-emerald-400" : "bg-blue-400")} />
                                         <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-full blur-3xl -mr-16 -mt-16" />
-                                        <p className={cn("relative z-10 text-[10px] font-black uppercase tracking-[0.4em] opacity-40", textColor)}>
+                                        <p className={cn("relative z-10 text-[10px] font-black uppercase tracking-[0.4em] opacity-70 dark:opacity-40", textColor)}>
                                             Campaign Collaborator
                                         </p>
                                     </div>
@@ -7498,7 +7582,7 @@ const MobileDashboardDemo = ({
                                                     <ShieldCheck className="w-3 h-3 text-blue-500" strokeWidth={3} />
                                                     <span className="text-[9px] font-black text-blue-500 uppercase tracking-widest">Verified</span>
                                                 </div>
-                                                <span className={cn("text-[11px] font-bold opacity-30", textColor)}>Partner since 2024</span>
+                                                <span className={cn("text-[11px] font-bold opacity-60 dark:opacity-30", textColor)}>Partner since 2024</span>
                                             </div>
                                         </div>
                                     </div>
@@ -7524,7 +7608,7 @@ const MobileDashboardDemo = ({
                                                 )}>
                                                     {isPaid ? <Check className="w-5 h-5 stroke-[3]" /> : <Clock className="w-5 h-5 stroke-[3]" />}
                                                 </div>
-                                                <p className={cn("text-[11px] font-black uppercase tracking-[0.25em] opacity-50", textColor)}>
+                                                <p className={cn("text-[11px] font-black uppercase tracking-[0.25em] opacity-80 dark:opacity-50", textColor)}>
                                                     {isPaid ? 'Payout Finalized' : 'Estimated Payout'}
                                                 </p>
                                             </div>
@@ -7546,7 +7630,7 @@ const MobileDashboardDemo = ({
                                                         <div className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
                                                         <p className={cn("text-[13px] font-black", textColor)}>Settled to Bank</p>
                                                     </div>
-                                                    <p className={cn("text-[13px] font-bold opacity-40", textColor)}>{dueDateStr}</p>
+                                                    <p className={cn("text-[13px] font-bold opacity-70 dark:opacity-40", textColor)}>{dueDateStr}</p>
                                                 </div>
                                             ) : (
                                                 <div className="flex items-center justify-between">
@@ -7567,7 +7651,7 @@ const MobileDashboardDemo = ({
 
                                 {/* ── DEAL BREAKDOWN ── */}
                                 <div className="space-y-4">
-                                    <p className={cn("text-[11px] font-black uppercase tracking-[0.2em] px-4 opacity-30", textColor)}>Campaign Intel</p>
+                                    <p className={cn("text-[11px] font-black uppercase tracking-[0.2em] px-4 opacity-60 dark:opacity-30", textColor)}>Campaign Intel</p>
                                     <div className="grid grid-cols-1 gap-3">
                                         {[
                                             { label: 'Deliverables', value: pay.deliverables_summary || '1 Instagram Reel', icon: <FileText className="w-5 h-5" />, color: 'bg-blue-500' },
@@ -7582,7 +7666,7 @@ const MobileDashboardDemo = ({
                                                     {row.icon}
                                                 </div>
                                                 <div className="flex-1 min-w-0">
-                                                    <p className={cn("text-[10px] font-black uppercase tracking-widest mb-0.5 opacity-30", textColor)}>{row.label}</p>
+                                                    <p className={cn("text-[10px] font-black uppercase tracking-widest mb-0.5 opacity-60 dark:opacity-30", textColor)}>{row.label}</p>
                                                     <p className={cn("text-[15px] font-black truncate", textColor)}>{row.value}</p>
                                                 </div>
                                             </div>
@@ -7592,7 +7676,7 @@ const MobileDashboardDemo = ({
 
                                 {/* ── TIMELINE ── */}
                                 <div className="space-y-4">
-                                    <p className={cn("text-[11px] font-black uppercase tracking-[0.2em] px-4 opacity-30", textColor)}>Lifecycle</p>
+                                    <p className={cn("text-[11px] font-black uppercase tracking-[0.2em] px-4 opacity-60 dark:opacity-30", textColor)}>Lifecycle</p>
                                     <div className={cn(
                                         "rounded-[2.5rem] border p-6",
                                         isDark ? "bg-white/[0.02] border-white/5 shadow-2xl" : "bg-white border-slate-100 shadow-xl shadow-slate-200/40"
@@ -7620,7 +7704,7 @@ const MobileDashboardDemo = ({
                                                     <div className="flex-1 min-w-0">
                                                         <p className={cn(
                                                             "text-[14px] font-bold mt-1",
-                                                            step.active ? "text-primary" : step.done ? (isDark ? "text-white/80" : "text-slate-800") : "opacity-30"
+                                                            step.active ? "text-primary" : step.done ? (isDark ? "text-white/80" : "text-slate-800") : "opacity-60 dark:opacity-30"
                                                         )}>
                                                             {step.label}
                                                         </p>
@@ -7663,7 +7747,7 @@ const MobileDashboardDemo = ({
 
                                 {/* ── PAYMENT METADATA ── */}
                                 <div className="space-y-3">
-                                    <p className={cn("text-[11px] font-black uppercase tracking-[0.2em] px-4 opacity-30", textColor)}>Transaction Log</p>
+                                    <p className={cn("text-[11px] font-black uppercase tracking-[0.2em] px-4 opacity-60 dark:opacity-30", textColor)}>Transaction Log</p>
                                     <div className={cn(
                                         "rounded-[2.5rem] border overflow-hidden p-2 divide-y",
                                         isDark ? "bg-white/[0.02] border-white/5 divide-white/5 shadow-2xl" : "bg-white border-slate-100 divide-slate-50 shadow-xl shadow-slate-200/40"
@@ -7675,7 +7759,7 @@ const MobileDashboardDemo = ({
                                             { label: isPureBarter ? 'Fulfillment Protection' : (selectedRequiresPayment ? 'Payment Protection' : 'Fulfillment Protection'), value: isPureBarter ? '✓ SHIPPING TRACKED' : (selectedRequiresPayment ? '✓ 100% SECURED' : '✓ PRODUCT LINKED') },
                                         ].map((row, i) => (
                                             <div key={i} className={cn("flex items-center justify-between px-5 py-4", i > 0 ? (isDark ? "border-t border-border/5" : "border-t border-border") : "")}>
-                                                <span className={cn("text-[12px] font-semibold opacity-50", textColor)}>{row.label}</span>
+                                                <span className={cn("text-[12px] font-semibold opacity-80 dark:opacity-50", textColor)}>{row.label}</span>
                                                 <span className={cn("text-[12px] font-black font-mono", textColor)}>{row.value}</span>
                                             </div>
                                         ))}
@@ -7685,7 +7769,7 @@ const MobileDashboardDemo = ({
                                 {/* ── SUBMITTED CONTENT ── */}
                                 {(pay.submission_link || pay.content_url) && (
                                     <div className="space-y-3">
-                                        <p className={cn("text-[11px] font-black uppercase tracking-[0.2em] px-4 opacity-30", textColor)}>Work Evidence</p>
+                                        <p className={cn("text-[11px] font-black uppercase tracking-[0.2em] px-4 opacity-60 dark:opacity-30", textColor)}>Work Evidence</p>
                                         <div className={cn(
                                             "rounded-[2.5rem] border p-5 flex items-center justify-between",
                                             isDark ? "bg-white/[0.02] border-white/5 shadow-2xl" : "bg-white border-slate-100 shadow-xl shadow-slate-200/40"
@@ -7713,13 +7797,13 @@ const MobileDashboardDemo = ({
 
                                 {/* ── BRAND TRUST ── */}
                                 <div className={cn("rounded-2xl border p-4", cardBgColor, borderColor)}>
-                                    <p className={cn("text-[10px] font-black uppercase tracking-widest mb-3 opacity-40", textColor)}>Brand Trust</p>
+                                    <p className={cn("text-[10px] font-black uppercase tracking-widest mb-3 opacity-70 dark:opacity-40", textColor)}>Brand Trust</p>
                                         <div className={cn("rounded-xl p-3 border", isDark ? "bg-card border-border" : "bg-background border-border")}>
-                                            <p className={cn("text-[10px] font-black uppercase tracking-wider opacity-50 mb-1", textColor)}>Response Time</p>
+                                            <p className={cn("text-[10px] font-black uppercase tracking-wider opacity-80 dark:opacity-50 mb-1", textColor)}>Response Time</p>
                                             <p className={cn("text-[15px] font-black", textColor)}>~3 hours</p>
                                         </div>
                                         <div className={cn("rounded-xl p-3 border", isDark ? "bg-card border-border" : "bg-background border-border")}>
-                                            <p className={cn("text-[10px] font-black uppercase tracking-wider opacity-50 mb-1", textColor)}>Campaigns</p>
+                                            <p className={cn("text-[10px] font-black uppercase tracking-wider opacity-80 dark:opacity-50 mb-1", textColor)}>Campaigns</p>
                                             <p className={cn("text-[15px] font-black", textColor)}>{pay.total_collabs || 21} done</p>
                                         </div>
                                 </div>
@@ -7904,7 +7988,7 @@ const BottomNavigationBar = React.memo(({
                     )}
                 >
                     <LayoutDashboard className="w-[22px] h-[22px]" strokeWidth={effectiveTab === 'dashboard' ? 2.5 : 2} />
-                    <span className={cn('text-[10px] tracking-tight font-black uppercase', effectiveTab === 'dashboard' ? 'opacity-100' : (isDark ? 'opacity-70' : 'opacity-100'))}>Home</span>
+                    <span className={cn('text-[10px] tracking-tight font-black uppercase', effectiveTab === 'dashboard' ? 'opacity-40 dark:opacity-100' : (isDark ? 'opacity-70' : 'opacity-40 dark:opacity-100'))}>Home</span>
                 </motion.button>
 
                 <motion.button 
@@ -7930,7 +8014,7 @@ const BottomNavigationBar = React.memo(({
                             </span>
                         )}
                     </div>
-                    <span className={cn('text-[10px] tracking-tight font-black uppercase', effectiveTab === 'deals' ? 'opacity-100' : (isDark ? 'opacity-70' : 'opacity-100'))}>Deals</span>
+                    <span className={cn('text-[10px] tracking-tight font-black uppercase', effectiveTab === 'deals' ? 'opacity-40 dark:opacity-100' : (isDark ? 'opacity-70' : 'opacity-40 dark:opacity-100'))}>Deals</span>
                 </motion.button>
 
 
@@ -7947,7 +8031,7 @@ const BottomNavigationBar = React.memo(({
                     )}
                 >
                     <CreditCard className="w-[22px] h-[22px]" strokeWidth={effectiveTab === 'payments' ? 2.5 : 2} />
-                    <span className={cn('text-[10px] tracking-tight font-black uppercase', effectiveTab === 'payments' ? 'opacity-100' : (isDark ? 'opacity-70' : 'opacity-100'))}>Pay</span>
+                    <span className={cn('text-[10px] tracking-tight font-black uppercase', effectiveTab === 'payments' ? 'opacity-40 dark:opacity-100' : (isDark ? 'opacity-70' : 'opacity-40 dark:opacity-100'))}>Pay</span>
                 </motion.button>
 
                 <motion.button 
@@ -7963,7 +8047,7 @@ const BottomNavigationBar = React.memo(({
                     )}
                 >
                     <User className="w-[22px] h-[22px]" strokeWidth={effectiveTab === 'profile' ? 2.5 : 2} />
-                    <span className={cn('text-[10px] tracking-tight font-black uppercase', effectiveTab === 'profile' ? 'opacity-100' : (isDark ? 'opacity-70' : 'opacity-100'))}>Me</span>
+                    <span className={cn('text-[10px] tracking-tight font-black uppercase', effectiveTab === 'profile' ? 'opacity-40 dark:opacity-100' : (isDark ? 'opacity-70' : 'opacity-40 dark:opacity-100'))}>Me</span>
                 </motion.button>
             </div>
         </div>
@@ -8047,7 +8131,7 @@ const DashboardTab = React.memo(({
                     </svg>
                 </div>
 
-                <div className="px-6 pt-10 pb-12 flex items-start justify-between gap-6">
+                <div className="px-6 pb-12 flex items-start justify-between gap-6" style={{ paddingTop: 'max(env(safe-area-inset-top), 40px)' }}>
                     <div className="flex-1 min-w-0">
                         <motion.p 
                             initial={{ opacity: 0, y: 10 }}
@@ -8155,7 +8239,7 @@ const DashboardTab = React.memo(({
                                         )}
                                     </div>
                                 </div>
-                                <ChevronRight className={cn("w-5 h-5 opacity-50", textColor)} />
+                                <ChevronRight className={cn("w-5 h-5 opacity-80 dark:opacity-50", textColor)} />
                             </div>
 
                             {/* Progress Steps */}
@@ -8191,7 +8275,7 @@ const DashboardTab = React.memo(({
                                                 </div>
                                                 <p className={cn(
                                                     "text-[9px] font-black uppercase tracking-tighter transition-colors duration-500",
-                                                    isActive ? "text-emerald-500" : isCompleted ? (isDark ? "text-white/60" : "text-slate-500") : (isDark ? "text-white/40" : "text-slate-300")
+                                                    isActive ? "text-emerald-500" : isCompleted ? (isDark ? "text-white/60" : "text-slate-500") : (isDark ? "text-white/40" : "text-slate-500")
                                                 )}>
                                                     {step.label}
                                                 </p>
@@ -8247,7 +8331,7 @@ const DashboardTab = React.memo(({
                         </div>
                         <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2 mb-1">
-                                <p className={cn("text-[10px] font-black uppercase tracking-[0.2em] opacity-40", textColor)}>Profile Visibility</p>
+                                <p className={cn("text-[10px] font-black uppercase tracking-[0.2em] opacity-70 dark:opacity-40", textColor)}>Profile Visibility</p>
                                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                             </div>
                             <h3 className={cn("text-[20px] font-black tracking-tighter italic uppercase leading-none", textColor)}>Share Collab Link</h3>
@@ -8322,7 +8406,7 @@ const DashboardTab = React.memo(({
                                     <Eye className="w-7 h-7" />
                                 </div>
                                 <div className="flex-1 min-w-0">
-                                    <p className={cn("text-[10px] font-black uppercase tracking-[0.2em] opacity-40 mb-1", textColor)}>Profile Traffic</p>
+                                    <p className={cn("text-[10px] font-black uppercase tracking-[0.2em] opacity-70 dark:opacity-40 mb-1", textColor)}>Profile Traffic</p>
                                     <h3 className={cn("text-[20px] font-black tracking-tighter italic uppercase leading-none", textColor)}>Link Visits</h3>
                                 </div>
                             </div>
@@ -8330,10 +8414,10 @@ const DashboardTab = React.memo(({
                                 <div className="text-[32px] font-black italic tracking-tighter text-emerald-500 leading-none mb-1">
                                     {analyticsSummary?.weeklyViews}
                                 </div>
-                                <p className="text-[9px] font-black uppercase tracking-[0.2em] opacity-30">THIS WEEK</p>
+                                <p className="text-[9px] font-black uppercase tracking-[0.2em] opacity-60 dark:opacity-30">THIS WEEK</p>
                             </div>
                         </div>
-                        <p className={cn("text-[13px] font-medium opacity-50 leading-relaxed mt-5 relative z-10 max-w-[85%]", textColor)}>
+                        <p className={cn("text-[13px] font-medium opacity-80 dark:opacity-50 leading-relaxed mt-5 relative z-10 max-w-[85%]", textColor)}>
                             Your profile is gaining traction! {analyticsSummary?.weeklyViews === 1 ? 'A brand' : 'Brands'} checked out your work recently.
                         </p>
                         <div className="absolute bottom-0 right-0 w-32 h-32 bg-emerald-500/5 blur-3xl rounded-full -mr-16 -mb-16 pointer-events-none" />
@@ -8353,7 +8437,7 @@ const DashboardTab = React.memo(({
                           : "border-slate-200 bg-white shadow-xl shadow-slate-200/40"
                     )}
                 >
-                    <div className={cn("absolute inset-0 pointer-events-none opacity-20", isDark ? "bg-[radial-gradient(circle_at_top_right,rgba(16,185,129,0.3),transparent)]" : "bg-[radial-gradient(circle_at_top_right,rgba(16,185,129,0.05),transparent)]")} />
+                    <div className={cn("absolute inset-0 pointer-events-none opacity-50 dark:opacity-20", isDark ? "bg-[radial-gradient(circle_at_top_right,rgba(16,185,129,0.3),transparent)]" : "bg-[radial-gradient(circle_at_top_right,rgba(16,185,129,0.05),transparent)]")} />
                     
                     <div className="relative z-10 flex flex-col gap-6">
                         <div className="flex items-start justify-between">
@@ -8418,7 +8502,7 @@ const DashboardTab = React.memo(({
                                 </div>
                                 
                                 <div className={cn("mt-3 flex flex-wrap gap-1.5 border-t pt-3", isDark ? "border-white/5" : "border-slate-200")}>
-                                    <span className={cn("text-[9px] font-black uppercase tracking-widest", isDark ? "text-white/40" : "text-slate-400")}>
+                                    <span className={cn("text-[9px] font-black uppercase tracking-widest", isDark ? "text-white/40" : "text-slate-600")}>
                                         {pendingOffersCount} Incoming Offers • 0 Counters
                                     </span>
                                 </div>
@@ -8557,7 +8641,7 @@ const DealsTab = React.memo(({
     CheckCircle2, Camera, handleAccept, onDeclineRequest
 }: any) => {
     return (
-        <div className={cn("px-5 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-20", isDark ? "" : "bg-slate-50")}>
+        <div className={cn("px-5 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-20", isDark ? "" : "bg-slate-50")} style={{ paddingTop: 'max(env(safe-area-inset-top), 8px)' }}>
             <div className="pt-2 mb-6">
                 <div className={cn("p-1.5 rounded-[22px] border flex gap-1.5 backdrop-blur-xl", isDark ? "bg-secondary/[0.06] border-border/50" : "bg-slate-100/80 border-slate-200/60")}>
                     {(['pending', 'active', 'completed'] as const).map((tab) => (
@@ -8575,7 +8659,7 @@ const DealsTab = React.memo(({
                                 "flex-1 h-11 rounded-[18px] px-3 transition-all flex items-center justify-center",
                                 collabSubTab === tab
                                     ? isDark ? 'bg-card text-foreground shadow-lg' : 'bg-blue-600 text-white shadow-lg'
-                                    : 'text-muted-foreground'
+                                    : 'text-slate-700'
                             )}
                         >
                             <span className="text-[10px] font-black uppercase tracking-widest">{tab === 'pending' ? 'Offers' : tab}</span>
@@ -8612,14 +8696,11 @@ const DealsTab = React.memo(({
                                             <div className="relative h-full p-5 flex flex-col justify-between z-10">
                                                 <div className="flex items-center gap-2">
                                                     <div className="px-2.5 py-1.5 rounded-full bg-emerald-500 self-start text-[11px] font-black text-white uppercase tracking-widest shadow-sm">{ux.stagePill}</div>
-                                                    <div className={cn(
-                                                        "px-2.5 py-1.5 rounded-full text-[11px] font-black uppercase tracking-widest",
-                                                        isBarter 
-                                                            ? "bg-amber-500 text-white shadow-sm" 
-                                                            : "bg-blue-500 text-white shadow-sm"
-                                                    )}>
-                                                        {isBarter ? 'Free Product Collab' : 'Paid'}
-                                                    </div>
+                                                    {!isBarter && (
+                                                        <div className="px-2.5 py-1.5 rounded-full bg-blue-500 text-white shadow-sm text-[11px] font-black uppercase tracking-widest">
+                                                            Paid
+                                                        </div>
+                                                    )}
                                                 </div>
                                                 <div>
                                                     <div className="mb-3">
@@ -8628,7 +8709,7 @@ const DealsTab = React.memo(({
                                                             <p className={cn("text-lg font-black leading-none", isBarter ? "text-amber-400" : "text-white")}>
                                                                 {isBarter ? 'Free product' : `₹${budget.toLocaleString()}`}
                                                             </p>
-                                                            {isBarter && <span className="text-[10px] font-black uppercase tracking-widest text-amber-400/60">est. value ₹{budget.toLocaleString()}</span>}
+                                                            {isBarter && <span className="text-[10px] font-black uppercase tracking-widest text-amber-400">est. value ₹{budget.toLocaleString()}</span>}
                                                         </div>
                                                     </div>
                                                     <div className="h-1 w-full bg-white/10 rounded-full overflow-hidden">
@@ -8643,7 +8724,7 @@ const DealsTab = React.memo(({
                                     );
                                 })}
                             </div>
-                        ) : <div className="p-10 text-center opacity-40">No active deals</div>}
+                        ) : <div className="p-10 text-center opacity-70 dark:opacity-40">No active deals</div>}
                     </motion.div>
                 ) : collabSubTab === 'completed' ? (
                     <motion.div key="completed" initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 10 }}>
@@ -8671,14 +8752,11 @@ const DealsTab = React.memo(({
                                             <div className="relative h-full p-5 flex flex-col justify-between z-10">
                                                 <div className="flex items-center gap-2">
                                                     <div className="px-2.5 py-1.5 rounded-full bg-slate-500 self-start text-[11px] font-black text-white uppercase tracking-widest shadow-sm">Completed</div>
-                                                    <div className={cn(
-                                                        "px-2.5 py-1.5 rounded-full text-[11px] font-black uppercase tracking-widest",
-                                                        isBarter 
-                                                            ? "bg-amber-500 text-white shadow-sm" 
-                                                            : "bg-blue-500 text-white shadow-sm"
-                                                    )}>
-                                                        {isBarter ? 'Free Product Collab' : 'Paid'}
-                                                    </div>
+                                                    {!isBarter && (
+                                                        <div className="px-2.5 py-1.5 rounded-full bg-blue-500 text-white shadow-sm text-[11px] font-black uppercase tracking-widest">
+                                                            Paid
+                                                        </div>
+                                                    )}
                                                 </div>
                                                 <div>
                                                     <div className="mb-3">
@@ -8687,7 +8765,7 @@ const DealsTab = React.memo(({
                                                             <p className={cn("text-lg font-black leading-none", isBarter ? "text-amber-400" : "text-white")}>
                                                                 {isBarter ? 'Free product' : `₹${budget.toLocaleString()}`}
                                                             </p>
-                                                            {isBarter && <span className="text-[10px] font-black uppercase tracking-widest text-amber-400/60">est. value ₹{budget.toLocaleString()}</span>}
+                                                            {isBarter && <span className="text-[10px] font-black uppercase tracking-widest text-amber-400">est. value ₹{budget.toLocaleString()}</span>}
                                                         </div>
                                                     </div>
                                                     <div className="h-1 w-full bg-emerald-500/30 rounded-full overflow-hidden"><div className={cn("h-full w-full", isBarter ? "bg-amber-400" : "bg-emerald-400")} /></div>
@@ -8697,7 +8775,7 @@ const DealsTab = React.memo(({
                                     );
                                 })}
                              </div>
-                         ) : <div className="p-10 text-center opacity-40">No completed deals</div>}
+                         ) : <div className="p-10 text-center opacity-70 dark:opacity-40">No completed deals</div>}
                     </motion.div>
                 ) : (
                     <motion.div key="pending" initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -10 }}>
@@ -8730,14 +8808,11 @@ const DealsTab = React.memo(({
                                             <div className="relative h-full p-5 flex flex-col justify-between z-10">
                                                 <div className="flex items-center gap-2">
                                                     <div className="px-2.5 py-1.5 rounded-full bg-violet-600 self-start text-[11px] font-black text-white uppercase tracking-widest shadow-sm">New Offer</div>
-                                                    <div className={cn(
-                                                        "px-2.5 py-1.5 rounded-full text-[11px] font-black uppercase tracking-widest",
-                                                        isBarter 
-                                                            ? "bg-amber-500 text-white shadow-sm" 
-                                                            : "bg-blue-500 text-white shadow-sm"
-                                                    )}>
-                                                        {isBarter ? 'Free Product Collab' : 'Paid'}
-                                                    </div>
+                                                    {!isBarter && (
+                                                        <div className="px-2.5 py-1.5 rounded-full bg-blue-500 text-white shadow-sm text-[11px] font-black uppercase tracking-widest">
+                                                            Paid
+                                                        </div>
+                                                    )}
                                                 </div>
                                                 <div className="mt-auto">
                                                     <div className="mb-4">
@@ -8793,7 +8868,7 @@ const DealsTab = React.memo(({
                                     );
                                 })}
                              </div>
-                        ) : <div className="p-10 text-center opacity-40">No pending offers</div>}
+                        ) : <div className="p-10 text-center opacity-70 dark:opacity-40">No pending offers</div>}
                     </motion.div>
                 )}
             </AnimatePresence>
