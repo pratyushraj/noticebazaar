@@ -2754,7 +2754,10 @@ const CollabLinkLanding = () => {
 
     if (template.category) setCampaignCategory(template.category)
     setCampaignGoal(template.label)
-    setCampaignDescription(template.description)
+    
+    // Format brief exactly as shown in the package details
+    const briefContent = template.deliverables.map((d, i) => i === 0 ? d : `• ${d}`).join('\n')
+    setCampaignDescription(briefContent)
     setDeliverables(template.deliverables)
     setDeliverableQuantities(template.quantities)
 
