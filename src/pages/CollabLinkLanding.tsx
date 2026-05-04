@@ -860,7 +860,7 @@ const CollabLinkLanding = () => {
     campaignGoal &&
     isBudgetProvided &&
     (paymentType === 'barter' ? barterTypes.length > 0 : true) &&
-    (selectedTemplateId ? deliverables.length > 0 : campaignDescription.trim().length >= 10)
+    deliverables.length > 0
   )
   const isValidBrandEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(brandEmail)
   const isProductImageRequired = isBarterLikeCollab(collabType) || includesProduct
@@ -868,7 +868,12 @@ const CollabLinkLanding = () => {
     ? Boolean(String(barterProductImageUrl || '').trim())
     : true
   const isLogoReady = Boolean(String(brandLogoUrl || '').trim())
-  const isStep2Ready = Boolean(brandEmail.trim() && isValidBrandEmail && isProductImageReady)
+  const isStep2Ready = Boolean(
+    brandEmail.trim() && 
+    isValidBrandEmail && 
+    isProductImageReady &&
+    (selectedTemplateId ? true : campaignDescription.trim().length >= 10)
+  )
 
   const completionChecks = useMemo(
     () => [
@@ -3843,55 +3848,11 @@ const CollabLinkLanding = () => {
                           </div>
                         )}
 
-                        {/* Section 4: The Brief (The Centerpiece) */}
-                        <div className="bg-white rounded-3xl p-6 border border-slate-100 shadow-[0_8px_40px_rgba(0,0,0,0.05)] space-y-5">
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-3">
-                              <label className="text-[16px] font-black text-slate-900 tracking-tight">
-                                Any other requirements
-                              </label>
-                            </div>
-                            {paymentType !== 'barter' && (
-                              <button 
-                                type="button"
-                                onClick={() => {
-                                  triggerHaptic(HapticPatterns.success);
-                                  const base = campaignDescription.trim();
-                                  const isReel = deliverables.some(d => d.toLowerCase().includes('reel'));
-                                  const enhanced = `1 ${isReel ? 'Instagram Reel' : 'Video'} showcasing the product naturally with brand mention and tagging.\n\n• Length: ${contentDuration}\n• Key Highlights: Show product usage, tag @brand_handle\n• Style: Engaging and authentic\n• CTA: Link in bio / Check out now\n• No competitors in video`;
-                                  setCampaignDescription(enhanced);
-                                  toast.success("Brief professionally structured!");
-                                }}
-                                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-50 text-emerald-700 text-[10px] font-black uppercase tracking-tight hover:bg-emerald-100 transition-colors border border-emerald-100"
-                              >
-                                <Sparkles className="h-3 w-3" /> Improve my brief
-                              </button>
-                            )}
-                          </div>
-
-                          <div className="relative group">
-                            <Textarea
-                              id="campaign-description-input"
-                              value={campaignDescription}
-                              onChange={e => setCampaignDescription(e.target.value)}
-                              placeholder="Give 1–2 reference videos (optional but recommended)"
-                              className="min-h-[180px] rounded-2xl border-slate-100 bg-slate-50/50 px-5 py-5 font-semibold text-[15px] text-slate-900 placeholder:text-slate-400 shadow-inner resize-none focus-visible:ring-4 focus-visible:ring-emerald-500/10 focus-visible:border-emerald-500 transition-all leading-relaxed"
-                            />
-                            <div className="absolute bottom-5 right-5 opacity-20 pointer-events-none">
-                              <PenLine className="h-6 w-6 text-slate-900" />
-                            </div>
-                          </div>
-                          
-                          {errors.campaignDescription && (
-                            <p className="mt-2 text-[11px] font-bold text-destructive">
-                              {errors.campaignDescription}
-                            </p>
-                          )}
-                        </div>
 
 
-                        {/* Section 5: Content Details (Quantities & Specifics) - Hidden for Barter */}
-                        {paymentType !== 'barter' && (
+
+                        {/* Section 5: Content Details (Quantities & Specifics) */}
+                        {(paymentType !== 'affiliate') && (
                           <div className="bg-slate-50 rounded-[32px] p-6 border border-slate-200 shadow-inner space-y-6">
                             <label className="block text-base font-black text-slate-800 flex items-center gap-2">
                               <Clapperboard className="h-5 w-5 text-slate-900" />
@@ -4507,6 +4468,50 @@ const CollabLinkLanding = () => {
                             )}
                           </div>
                         )}
+
+                        {/* Section: The Brief (Any other requirements) */}
+                        <div className="bg-white rounded-3xl p-6 border border-slate-100 shadow-[0_8px_40px_rgba(0,0,0,0.05)] space-y-5">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                              <label className="text-[16px] font-black text-slate-900 tracking-tight">
+                                Any other requirements
+                              </label>
+                            </div>
+                            <button 
+                              type="button"
+                              onClick={() => {
+                                triggerHaptic(HapticPatterns.success);
+                                const base = campaignDescription.trim();
+                                const isReel = deliverables.some(d => d.toLowerCase().includes('reel'));
+                                const enhanced = `1 ${isReel ? 'Instagram Reel' : 'Video'} showcasing the product naturally with brand mention and tagging.\n\n• Length: ${contentDuration}\n• Key Highlights: Show product usage, tag @brand_handle\n• Style: Engaging and authentic\n• CTA: Link in bio / Check out now\n• No competitors in video`;
+                                setCampaignDescription(enhanced);
+                                toast.success("Brief professionally structured!");
+                              }}
+                              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-50 text-emerald-700 text-[10px] font-black uppercase tracking-tight hover:bg-emerald-100 transition-colors border border-emerald-100"
+                            >
+                              <Sparkles className="h-3 w-3" /> Improve my brief
+                            </button>
+                          </div>
+
+                          <div className="relative group">
+                            <Textarea
+                              id="campaign-description-input"
+                              value={campaignDescription}
+                              onChange={e => setCampaignDescription(e.target.value)}
+                              placeholder={selectedTemplateId ? "Any specific do's and don'ts?" : "Give 1–2 reference videos (optional but recommended)"}
+                              className="min-h-[120px] rounded-2xl border-slate-100 bg-slate-50/50 px-5 py-5 font-semibold text-[15px] text-slate-900 placeholder:text-slate-400 shadow-inner resize-none focus-visible:ring-4 focus-visible:ring-emerald-500/10 focus-visible:border-emerald-500 transition-all leading-relaxed"
+                            />
+                            <div className="absolute bottom-5 right-5 opacity-20 pointer-events-none">
+                              <PenLine className="h-6 w-6 text-slate-900" />
+                            </div>
+                          </div>
+                          
+                          {errors.campaignDescription && (
+                            <p className="mt-2 text-[11px] font-bold text-destructive">
+                              {errors.campaignDescription}
+                            </p>
+                          )}
+                        </div>
 
 
 
