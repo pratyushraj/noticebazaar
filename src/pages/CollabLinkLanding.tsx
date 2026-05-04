@@ -4477,20 +4477,6 @@ const CollabLinkLanding = () => {
                                 Any other requirements
                               </label>
                             </div>
-                            <button 
-                              type="button"
-                              onClick={() => {
-                                triggerHaptic(HapticPatterns.success);
-                                const base = campaignDescription.trim();
-                                const isReel = deliverables.some(d => d.toLowerCase().includes('reel'));
-                                const enhanced = `1 ${isReel ? 'Instagram Reel' : 'Video'} showcasing the product naturally with brand mention and tagging.\n\n• Length: ${contentDuration}\n• Key Highlights: Show product usage, tag @brand_handle\n• Style: Engaging and authentic\n• CTA: Link in bio / Check out now\n• No competitors in video`;
-                                setCampaignDescription(enhanced);
-                                toast.success("Brief professionally structured!");
-                              }}
-                              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-50 text-emerald-700 text-[10px] font-black uppercase tracking-tight hover:bg-emerald-100 transition-colors border border-emerald-100"
-                            >
-                              <Sparkles className="h-3 w-3" /> Improve my brief
-                            </button>
                           </div>
 
                           <div className="relative group">
