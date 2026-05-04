@@ -3345,7 +3345,6 @@ const CollabLinkLanding = () => {
                                 </span>
                               </div>
                             </div>
-                            </div>
                           </div>
 
                           <p className="text-sm text-slate-500 font-medium mb-10 leading-relaxed">
