@@ -8657,10 +8657,10 @@ const DashboardTab = React.memo(({
                                     <button
                                         onClick={() => { triggerHaptic(); setActiveTab('deals'); }}
                                         className={cn(
-                                            "h-11 px-4.5 rounded-2xl text-[11px] font-black uppercase tracking-[0.16em] shadow-2xl active:scale-95 transition-all shrink-0",
+                                            "h-10 px-6 rounded-xl text-[12px] font-black uppercase tracking-[0.2em] shadow-xl active:scale-95 transition-all shrink-0",
                                             isDark
-                                              ? "bg-emerald-500 text-white shadow-emerald-500/35"
-                                              : "bg-emerald-600 text-white shadow-emerald-600/30"
+                                              ? "bg-emerald-500 text-white shadow-emerald-500/30"
+                                              : "bg-emerald-600 text-white shadow-emerald-500/20"
                                         )}
                                     >
                                         Review
