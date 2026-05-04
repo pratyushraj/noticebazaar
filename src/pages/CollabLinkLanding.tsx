@@ -2759,7 +2759,7 @@ const CollabLinkLanding = () => {
     
     // Format brief exactly as shown in the package details
     const briefContent = template.deliverables.map((d, i) => i === 0 ? d : `• ${d}`).join('\n')
-    setCampaignDescription(briefContent)
+    setCampaignDescription(template.type === 'barter' ? '' : briefContent)
     setDeliverables(template.deliverables)
     setDeliverableQuantities(template.quantities)
 
@@ -3845,25 +3845,26 @@ const CollabLinkLanding = () => {
                         <div className="bg-white rounded-3xl p-6 border border-slate-100 shadow-[0_8px_40px_rgba(0,0,0,0.05)] space-y-5">
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-3">
-                              <div className="w-8 h-8 rounded-xl bg-slate-900 flex items-center justify-center text-white font-black text-xs">03</div>
                               <label className="text-[16px] font-black text-slate-900 tracking-tight">
                                 {paymentType === 'barter' ? "Any other requirements" : "Campaign Brief"}
                               </label>
                             </div>
-                            <button 
-                              type="button"
-                              onClick={() => {
-                                triggerHaptic(HapticPatterns.success);
-                                const base = campaignDescription.trim();
-                                const isReel = deliverables.some(d => d.toLowerCase().includes('reel'));
-                                const enhanced = `1 ${isReel ? 'Instagram Reel' : 'Video'} showcasing the product naturally with brand mention and tagging.\n\n• Length: ${contentDuration}\n• Key Highlights: Show product usage, tag @brand_handle\n• Style: Engaging and authentic\n• CTA: Link in bio / Check out now\n• No competitors in video`;
-                                setCampaignDescription(enhanced);
-                                toast.success("Brief professionally structured!");
-                              }}
-                              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-50 text-emerald-700 text-[10px] font-black uppercase tracking-tight hover:bg-emerald-100 transition-colors border border-emerald-100"
-                            >
-                              <Sparkles className="h-3 w-3" /> Improve my brief
-                            </button>
+                            {paymentType !== 'barter' && (
+                              <button 
+                                type="button"
+                                onClick={() => {
+                                  triggerHaptic(HapticPatterns.success);
+                                  const base = campaignDescription.trim();
+                                  const isReel = deliverables.some(d => d.toLowerCase().includes('reel'));
+                                  const enhanced = `1 ${isReel ? 'Instagram Reel' : 'Video'} showcasing the product naturally with brand mention and tagging.\n\n• Length: ${contentDuration}\n• Key Highlights: Show product usage, tag @brand_handle\n• Style: Engaging and authentic\n• CTA: Link in bio / Check out now\n• No competitors in video`;
+                                  setCampaignDescription(enhanced);
+                                  toast.success("Brief professionally structured!");
+                                }}
+                                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-50 text-emerald-700 text-[10px] font-black uppercase tracking-tight hover:bg-emerald-100 transition-colors border border-emerald-100"
+                              >
+                                <Sparkles className="h-3 w-3" /> Improve my brief
+                              </button>
+                            )}
                           </div>
 
                           <div className="relative group">
