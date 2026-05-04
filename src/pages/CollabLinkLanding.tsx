@@ -1172,7 +1172,7 @@ const CollabLinkLanding = () => {
             category: creator.category || 'Lifestyle',
             description:
               'High-performing Reel optimized for organic reach. Best for first-time brand discovery.',
-            deliverables: ['1 Reel (15-30s)', 'Organic reach focus', 'Basic editing'],
+            deliverables: ['1 Reel (15-30s)', 'Organic reach focus', '1 Revision included'],
             quantities: { 'Instagram Reel': 1 },
             deadlineDays: 3,
           },
@@ -1190,6 +1190,7 @@ const CollabLinkLanding = () => {
               '30-day usage rights (for ads)',
               'Script + hook optimization',
               '1 Story shoutout',
+              '1 Revision included',
             ],
             quantities: { 'Instagram Reel': 1, 'Instagram Stories': 2 },
             deadlineDays: 5,
@@ -1205,7 +1206,7 @@ const CollabLinkLanding = () => {
             category: creator.category || 'Lifestyle',
             description:
               'Product unboxing or review with no paid usage rights. Best for authentic product proof.',
-            deliverables: ['Product Review / Unboxing Reel', '1 Story mention', 'No paid usage rights'],
+            deliverables: ['Product Review / Unboxing Reel', '1 Story mention', '1 Revision included'],
             quantities: { 'Unboxing Video': 1, Story: 1 },
             deadlineDays: 14,
             notes: 'Product must be shipped before shoot. Honest review only.',
@@ -4523,6 +4524,21 @@ const CollabLinkLanding = () => {
                             />
                           </div>
                         )}
+
+                        <div className="bg-slate-50 rounded-[32px] p-6 border border-slate-200 shadow-inner space-y-4">
+                          <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-600">
+                              <RefreshCcw className="w-4 h-4" />
+                            </div>
+                            <div>
+                              <p className="text-[14px] font-black text-slate-900 tracking-tight">Revision Policy</p>
+                              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">1 Revision included • 72h window</p>
+                            </div>
+                          </div>
+                          <p className="text-[11px] font-medium text-slate-500 leading-relaxed bg-white/50 p-3 rounded-xl border border-slate-100">
+                            Standard policy includes 1 round of revisions. Once the creator delivers, you have 72 hours to review or request changes before the funds are released.
+                          </p>
+                        </div>
 
                         <div className="bg-slate-50 rounded-[32px] p-6 border border-slate-200 shadow-inner space-y-4">
                           <div>
