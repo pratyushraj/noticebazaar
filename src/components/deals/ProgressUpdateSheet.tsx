@@ -14,20 +14,8 @@ interface ProgressUpdateSheetProps {
   currentStage?: DealStage;
   onStageSelect: (stage: DealStage) => void;
   isLoading?: boolean;
+  requiresShipping?: boolean;
 }
-
-const progressStages: Array<{
-  label: string;
-  value: DealStage;
-  description: string;
-}> = [
-  // Keep this list aligned with the Creator UI timeline: Contract → Signed → Create → Deliver → Done
-  { label: 'Contract', value: 'contract_ready', description: 'Agreement is being finalized' },
-  { label: 'Signed', value: 'fully_executed', description: 'Contract signed by both parties' },
-  { label: 'Create', value: 'content_making', description: 'You’re producing the content' },
-  { label: 'Deliver', value: 'content_delivered', description: 'Content submitted to brand' },
-  { label: 'Done', value: 'completed', description: 'Deal fully completed' },
-];
 
 const ProgressUpdateSheet: React.FC<ProgressUpdateSheetProps> = ({
   isOpen,
@@ -35,7 +23,30 @@ const ProgressUpdateSheet: React.FC<ProgressUpdateSheetProps> = ({
   currentStage,
   onStageSelect,
   isLoading = false,
+  requiresShipping = false,
 }) => {
+  const progressStages: Array<{
+    label: string;
+    value: DealStage;
+    description: string;
+  }> = requiresShipping
+    ? [
+        // Keep aligned with the shipping-led creator timeline: Contract → Signed → Dispatch → Received → Complete
+        { label: 'Contract', value: 'contract_ready', description: 'Agreement is being finalized' },
+        { label: 'Signed', value: 'fully_executed', description: 'Contract signed by both parties' },
+        { label: 'Dispatch', value: 'content_making', description: 'Product is being shipped or handed off' },
+        { label: 'Received', value: 'content_delivered', description: 'Product confirmed by the creator' },
+        { label: 'Complete', value: 'completed', description: 'Deal fully completed' },
+      ]
+    : [
+        // Keep this list aligned with the creator content timeline: Contract → Signed → Create → Deliver → Done
+        { label: 'Contract', value: 'contract_ready', description: 'Agreement is being finalized' },
+        { label: 'Signed', value: 'fully_executed', description: 'Contract signed by both parties' },
+        { label: 'Create', value: 'content_making', description: 'You’re producing the content' },
+        { label: 'Deliver', value: 'content_delivered', description: 'Content submitted to brand' },
+        { label: 'Done', value: 'completed', description: 'Deal fully completed' },
+      ];
+
   const uiStage: DealStage | undefined = (() => {
     // Collapse legacy/internal stages into the simplified UI stages.
     if (!currentStage) return undefined;

@@ -1530,7 +1530,9 @@ const MobileDashboardDemo = ({
     const selectedDealStatus = normalizeDealStatus(selectedItem);
     const selectedIsPureBarter = (selectedType === 'deal' || selectedType === 'offer') && String(selectedItem?.collab_type || selectedItem?.deal_type || selectedItem?.raw?.collab_type || '').trim().toLowerCase() === 'barter';
     const selectedRequiresPayment = selectedType === 'deal' && !!selectedItem ? inferCreatorRequiresPayment(selectedItem) : false;
-    const selectedRequiresShipping = selectedType === 'deal' && !!selectedItem ? isBarterLikeCollab(selectedItem) : false;
+    const selectedRequiresShipping = selectedType === 'deal' && !!selectedItem
+        ? Boolean(selectedItem?.shipping_required) || isBarterLikeCollab(selectedItem)
+        : false;
     const selectedShippingStatus = String(selectedItem?.shipping_status || '').trim().toLowerCase() || 'pending';
     const selectedShippingDelivered = selectedShippingStatus === 'delivered' || selectedShippingStatus === 'received';
 
@@ -1628,7 +1630,7 @@ const MobileDashboardDemo = ({
         }
         if (stage === 'content_delivered') {
             const requiresPayment = isPaidLikeCollab(selectedItem);
-            const requiresShipping = isBarterLikeCollab(selectedItem);
+            const requiresShipping = Boolean(selectedItem?.shipping_required) || isBarterLikeCollab(selectedItem);
             const rawStatus = String(selectedItem?.status || '').toLowerCase();
             const isFunded = !rawStatus.includes('payment_pending') && 
                              rawStatus !== 'pending' && 
@@ -5781,9 +5783,9 @@ const MobileDashboardDemo = ({
                                                                 <div className="space-y-4">
                                                                     {[
                                                                         { step: 1, label: "Accept this deal", status: "current" },
-                                                                        { step: 2, label: isBarterLikeCollab(selectedItem) ? "Wait for shipping" : "Brand funds deal", status: "upcoming" },
+                                                                        { step: 2, label: selectedRequiresShipping ? "Wait for shipping" : "Brand funds deal", status: "upcoming" },
                                                                         { step: 3, label: "Submit content", status: "upcoming" },
-                                                                        { step: 4, label: isBarterLikeCollab(selectedItem) ? "Deal complete" : "Get paid", status: "upcoming" },
+                                                                        { step: 4, label: selectedRequiresShipping ? "Deal complete" : "Get paid", status: "upcoming" },
                                                                     ].map((item, i) => (
                                                                         <div key={i} className="flex items-center gap-4">
                                                                             <div className={cn(
@@ -6762,12 +6764,12 @@ const MobileDashboardDemo = ({
                                                          {processingDeal === selectedItem.id ? (
                                                              <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                                                          ) : (
-                                                             <>
+                                                                <>
                                                                  <Zap className="w-4 h-4 fill-current" />
-                                                                 {isBarterLikeCollab(selectedItem) ? "Accept & Receive Product" : `Accept & Earn ${renderBudgetValue(selectedItem)}`}
-                                                             </>
-                                                         )}
-                                                     </button>
+                                                                 {selectedRequiresShipping ? "Accept & Receive Product" : `Accept & Earn ${renderBudgetValue(selectedItem)}`}
+                                                                 </>
+                                                             )}
+                                                         </button>
                                                      <div className="flex gap-2">
                                                          <button className={cn("flex-1 h-11 rounded-xl border font-black text-[12px] uppercase tracking-wider", isDark ? "bg-white/5 border-white/8 text-white/40" : "bg-white border-slate-200 text-slate-500")}>Counter</button>
                                                          <button className={cn("flex-1 h-11 rounded-xl border font-black text-[12px] uppercase tracking-wider", isDark ? "bg-white/5 border-white/8 text-white/40" : "bg-white border-slate-200 text-slate-500")}>Decline</button>
@@ -7007,6 +7009,7 @@ const MobileDashboardDemo = ({
                         currentStage={currentDealStage}
                         onStageSelect={handleProgressStageSelect}
                         isLoading={Boolean((updateDealProgress as any)?.isPending ?? (updateDealProgress as any)?.isLoading)}
+                        requiresShipping={selectedRequiresShipping}
                     />,
                     document.body
                 )}

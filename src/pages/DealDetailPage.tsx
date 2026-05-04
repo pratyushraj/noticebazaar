@@ -1070,6 +1070,7 @@ function DealDetailPageContent() {
 
   // Get current stage - calculated after all hooks
   const currentStage = getCurrentStage(deal?.status, deal?.progress_percentage);
+  const requiresShipping = Boolean((deal as any)?.shipping_required) || isBarterLikeCollab(deal);
 
   // Compute deal data for handlers (safe even if deal is undefined)
   const dealAmount = useMemo(() => Number(deal?.deal_amount || 0), [deal?.deal_amount]);
@@ -4583,6 +4584,7 @@ ${link}`;
         currentStage={currentStage}
         onStageSelect={handleProgressStageSelect}
         isLoading={updateDealProgress.isPending}
+        requiresShipping={requiresShipping}
       />
 
       {/* Delete Confirmation Dialog */}
