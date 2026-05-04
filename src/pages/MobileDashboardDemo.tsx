@@ -6665,7 +6665,7 @@ const MobileDashboardDemo = ({
                                                                 <Landmark className="w-4 h-4 text-info" />
                                                             </div>
                                                             <span className={cn("text-[14px] font-black leading-tight", textColor)}>
-                                                                {selectedRequiresPayment ? <>UPI<br />Payout</> : selectedRequiresShipping ? <>Product<br />Shipping</> : <>Collab<br />Only</>}
+                                                                {selectedRequiresPayment ? "UPI Payout" : selectedRequiresShipping ? "Product Shipping" : "Collab Only"}
                                                             </span>
                                                         </div>
                                                     </div>

@@ -727,7 +727,7 @@ const BrandMobileDashboard = ({
         }, 0);
       } else {
         setTimeout(() => {
-          progressSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          dealDetailProgressRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }, 0);
       }
       return;

@@ -35,7 +35,7 @@ router.post('/webhook', async (req: Request, res: Response) => {
     const body = JSON.parse(payloadString);
     const event = body.event;
     
-    if (event === 'payment.captured') {
+    if (event === 'payment.captured' || event === 'payment.failed') {
       const payment = body.payload.payment.entity;
       const notes = payment.notes || {};
       const dealId = notes.deal_id;
@@ -62,66 +62,61 @@ router.post('/webhook', async (req: Request, res: Response) => {
         }
       }
 
-      console.log(`[Razorpay] Processing webhook for deal ${dealId}. Current status: ${deal?.status}`);
+      if (event === 'payment.captured') {
+        console.log(`[Razorpay] Processing webhook for deal ${dealId}. Current status: ${deal?.status}`);
 
-      if (deal && (deal.payment_status === 'captured' || (deal.status || '').toLowerCase() === 'content_making')) {
-        console.log(`[Razorpay] Webhook already processed for deal ${dealId}`);
-        return res.status(200).send('Already processed');
-      }
+        if (deal && (deal.payment_status === 'captured' || (deal.status || '').toLowerCase() === 'content_making')) {
+          console.log(`[Razorpay] Webhook already processed for deal ${dealId}`);
+          return res.status(200).send('Already processed');
+        }
 
-      // Update deal status to content_making (Race condition fix: only if PAYMENT_PENDING)
-      const now = new Date().toISOString();
-      const updateData: any = {
-        status: 'content_making',
-        updated_at: now
-      };
-      
-      // Only include escrow columns if they exist in the schema
-      // (Hardening: prevent webhook crash if migrations haven't run)
-      if ('payment_id' in (deal || {})) updateData.payment_id = payment.id;
-      if ('payment_status' in (deal || {})) updateData.payment_status = 'captured';
-      if ('amount_paid' in (deal || {})) updateData.amount_paid = payment.amount / 100;
-      
-      console.log(`[Razorpay] Updating deal ${dealId} with:`, updateData);
-      const { error: updateError } = await supabase
-        .from('brand_deals')
-        .update(updateData)
-        .eq('id', dealId)
-        .or('status.eq.PAYMENT_PENDING,status.eq.payment_pending,status.eq.signed,status.eq.SIGNED'); 
+        // Update deal status to content_making (Race condition fix: only if PAYMENT_PENDING)
+        const now = new Date().toISOString();
+        const updateData: any = {
+          status: 'content_making',
+          updated_at: now
+        };
         
-      if (updateError) {
-        console.error('[Razorpay] Failed to update deal status:', updateError);
-      } else {
-        console.log(`[Razorpay] Successfully updated deal ${dealId} to content_making`);
-      }
-      
-      // Log action
-      await supabase.from('deal_action_logs').insert({
-        deal_id: dealId,
-        event: 'PAYMENT_CAPTURED',
-        metadata: { payment_id: payment.id, amount: payment.amount, via: 'webhook' }
-      });
+        // Only include escrow columns if they exist in the schema
+        // (Hardening: prevent webhook crash if migrations haven't run)
+        if ('payment_id' in (deal || {})) updateData.payment_id = payment.id;
+        if ('payment_status' in (deal || {})) updateData.payment_status = 'captured';
+        if ('amount_paid' in (deal || {})) updateData.amount_paid = payment.amount / 100;
+        
+        console.log(`[Razorpay] Updating deal ${dealId} with:`, updateData);
+        const { error: updateError } = await supabase
+          .from('brand_deals')
+          .update(updateData)
+          .eq('id', dealId)
+          .or('status.eq.PAYMENT_PENDING,status.eq.payment_pending,status.eq.signed,status.eq.SIGNED'); 
+          
+        if (updateError) {
+          console.error('[Razorpay] Failed to update deal status:', updateError);
+        } else {
+          console.log(`[Razorpay] Successfully updated deal ${dealId} to content_making`);
+        }
+        
+        // Log action
+        await supabase.from('deal_action_logs').insert({
+          deal_id: dealId,
+          event: 'PAYMENT_CAPTURED',
+          metadata: { payment_id: payment.id, amount: payment.amount, via: 'webhook' }
+        });
 
-      // Send Email to Creator
-      if (deal) {
-        // Fetch creator details
-        const { data: creator } = await supabase.from('creators').select('email, first_name, username').eq('id', deal.creator_id).single();
-        await sendEscrowFundedEmailToCreator(deal, creator);
-      }
+        // Send Email to Creator
+        if (deal) {
+          // Fetch creator details
+          const { data: creator } = await supabase.from('creators').select('email, first_name, username').eq('id', deal.creator_id).single();
+          await sendEscrowFundedEmailToCreator(deal, creator);
+        }
 
-      // Generate Escrow Receipt for Brand
-      try {
-        await generateEscrowReceipt(dealId);
-      } catch (receiptErr) {
-        console.error('[Razorpay] Failed to generate receipt:', receiptErr);
-      }
-      
-    } else if (event === 'payment.failed') {
-      const payment = body.payload.payment.entity;
-      const notes = payment.notes || {};
-      const dealId = notes.deal_id;
-      
-      if (dealId) {
+        // Generate Escrow Receipt for Brand
+        try {
+          await generateEscrowReceipt(dealId);
+        } catch (receiptErr) {
+          console.error('[Razorpay] Failed to generate receipt:', receiptErr);
+        }
+      } else if (event === 'payment.failed') {
         // Missing Failed Payment State Fix
         const updateData: any = {
           status: 'PAYMENT_FAILED',
