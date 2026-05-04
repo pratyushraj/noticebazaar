@@ -68,7 +68,7 @@ const getFallbackOptions = (creator: any) => {
     );
 
     if (reelRate > 0) {
-        options.push({ key: 'reel', label: 'Reel', rate: reelRate, deliverables: ['Instagram Reel'], type: 'paid' });
+        options.push({ key: 'reel', label: 'Reel', rate: reelRate, deliverables: ['Reel'], type: 'paid' });
     }
     if (storyRate > 0) {
         options.push({ key: 'story', label: 'Story', rate: storyRate, deliverables: ['Story'], type: 'paid' });
@@ -91,7 +91,7 @@ const getFallbackOptions = (creator: any) => {
             key: 'general',
             label: 'Creator Offer',
             rate: Number.isFinite(baseRate) && baseRate > 0 ? baseRate : 0,
-            deliverables: ['Instagram Reel'],
+            deliverables: ['Creator deliverable'],
             type: 'paid',
         });
     }
@@ -108,7 +108,7 @@ const getCreatorPackages = (creator: any) => {
             rate: Number((template as any)?.budget || template?.rate || 0),
             deliverables: Array.isArray(template?.deliverables) && template.deliverables.length > 0
                 ? template.deliverables
-                : ['Instagram Reel'],
+                : [String((template as any)?.label || template?.name || `Package ${index + 1}`)],
             description: template?.description || '',
             type: template?.type === 'barter' ? 'barter' : 'paid',
         }))
@@ -167,7 +167,7 @@ export const QuickOfferSheet: React.FC<QuickOfferSheetProps> = ({
             const initialPackage = getCreatorPackages(creator)[0];
             setSelectedPackageKey(initialPackage?.key || '');
             setBudget(initialPackage?.rate ? String(initialPackage.rate) : '');
-            setDeliverables(initialPackage?.deliverables || ['Instagram Reel']);
+            setDeliverables(initialPackage?.deliverables || []);
             setCollabType(initialPackage?.type === 'barter' ? 'barter' : 'paid');
             // Default deadline to 14 days out
             const date = new Date();

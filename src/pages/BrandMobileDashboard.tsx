@@ -2064,9 +2064,10 @@ const BrandMobileDashboard = ({
     const contractUrl = offer?.safe_contract_url || offer?.signed_contract_url || offer?.contract_file_url || null;
     
     const collabType = String(offer?.collab_type || offer?.deal_type || offer?.raw?.collab_type || '').trim().toLowerCase();
-    const rightsLabel = offer?.usage_rights === true || String(offer?.usage_type || '').trim()
-      ? (offer?.usage_rights === true ? 'Usage included' : String(offer?.usage_type).trim())
-      : 'Not specified';
+    const rightsLabel = String(offer?.usage_type || '').trim() || (offer?.usage_rights === true ? 'Usage included' : 'Not specified');
+    const rightsDescription = offer?.usage_rights === true
+      ? 'Usage rights are included for this deal. Check the signed contract for duration, channels, and exclusions.'
+      : 'Usage rights were not specified for this deal. Check the signed contract before reusing content beyond the agreed deliverables.';
     const platformLabel = String(offer?.platform || offer?.platforms || offer?.raw?.platform || '').trim() || 'Not specified';
     const isPureBarter = collabType === 'barter';
     const requiresPayment = isPaidLikeCollab(offer) && !isPureBarter;
@@ -2769,13 +2770,13 @@ const BrandMobileDashboard = ({
                   <Globe className="w-5 h-5" />
                 </div>
                 <div>
-                  <p className={cn('text-[15px] font-black', textColor)}>Organic Usage</p>
-                  <p className={cn('text-[12px] font-bold opacity-50', textColor)}>Perpetual organic rights included.</p>
+                  <p className={cn('text-[15px] font-black', textColor)}>{rightsLabel}</p>
+                  <p className={cn('text-[12px] font-bold opacity-50', textColor)}>Usage terms from this deal.</p>
                 </div>
               </div>
               <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/5">
                 <p className={cn('text-[12px] leading-relaxed opacity-70', textColor)}>
-                  Creator grants the brand perpetual, non-exclusive rights to use the content on brand's own social channels and website for organic marketing purposes.
+                  {rightsDescription}
                 </p>
               </div>
             </div>

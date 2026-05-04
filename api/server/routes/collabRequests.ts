@@ -1375,7 +1375,7 @@ router.post('/accept/confirm', async (req: AuthenticatedRequest, res: Response) 
        deliverables: deliverablesArray.join(', '),
        due_date: request.deadline || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
        payment_expected_date: request.deadline || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-       platform: 'Other',
+       platform: inferPlatformFromDeliverables(request.deliverables),
        status: isBarter ? 'Drafting' : 'CONTRACT_READY',
        deal_type: isBarter ? 'barter' : 'paid',
        created_via: 'collab_request',
@@ -1463,12 +1463,14 @@ router.post('/accept/confirm', async (req: AuthenticatedRequest, res: Response) 
         if (request.collab_type === 'paid' || request.collab_type === 'both' || request.collab_type === 'hybrid') {
           paymentTerms = `Payment expected by ${request.deadline ? new Date(request.deadline).toLocaleDateString() : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString()}`;
         }
+        const inferredPlatform = inferPlatformFromDeliverables(request.deliverables);
+        const usagePlatforms = inferredPlatform ? [inferredPlatform] : [];
         const dealSchema = {
           deal_amount: dealAmount,
           deliverables: deliverablesArray.length > 0 ? deliverablesArray : ['As per agreement'],
           delivery_deadline: request.deadline || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
           payment: { method: 'Bank Transfer', timeline: paymentTerms || 'Within 7 days of content delivery' },
-          usage: { type: request.usage_rights ? 'Exclusive' : 'Non-exclusive', platforms: ['All platforms'], duration: '6 months', paid_ads: false, whitelisting: false },
+          usage: { type: request.usage_rights ? 'Exclusive' : 'Non-exclusive', platforms: usagePlatforms, duration: '6 months', paid_ads: false, whitelisting: false },
           exclusivity: { enabled: false, category: null, duration: null },
           termination: { notice_days: 7 },
           jurisdiction_city: 'Mumbai',
@@ -1482,14 +1484,14 @@ router.post('/accept/confirm', async (req: AuthenticatedRequest, res: Response) 
           paymentTerms,
           dueDate: request.deadline ? new Date(request.deadline).toLocaleDateString() : undefined,
           paymentExpectedDate: request.deadline ? new Date(request.deadline).toLocaleDateString() : undefined,
-          platform: 'Multiple Platforms',
+          platform: inferredPlatform || undefined,
           brandEmail: request.brand_email || undefined,
           brandAddress: request.brand_address?.trim() || undefined,
           brandGstin: request.brand_gstin?.trim() || undefined,
           creatorAddress,
           dealSchema,
           usageType: request.usage_rights ? 'Exclusive' : 'Non-exclusive',
-          usagePlatforms: ['All platforms'],
+          usagePlatforms,
           usageDuration: '6 months',
           paidAdsAllowed: false,
           whitelistingAllowed: false,
@@ -1611,7 +1613,7 @@ router.patch('/:id/accept', async (req: AuthenticatedRequest, res: Response) => 
        deliverables: deliverablesArray.join(', '),
        due_date: request.deadline || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
        payment_expected_date: request.deadline || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-       platform: 'Other',
+       platform: inferPlatformFromDeliverables(request.deliverables),
        status: isBarter ? 'Drafting' : 'CONTRACT_READY',
        deal_type: isBarter ? 'barter' : 'paid',
        created_via: 'collab_request',
@@ -1747,6 +1749,8 @@ router.patch('/:id/accept', async (req: AuthenticatedRequest, res: Response) => 
             : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString();
           paymentTerms = `Payment expected by ${paymentDate}`;
         }
+        const inferredPlatform = inferPlatformFromDeliverables(request.deliverables);
+        const usagePlatforms = inferredPlatform ? [inferredPlatform] : [];
 
         // Build deal schema for contract
         const dealSchema = {
@@ -1759,7 +1763,7 @@ router.patch('/:id/accept', async (req: AuthenticatedRequest, res: Response) => 
           },
           usage: {
             type: request.usage_rights ? 'Exclusive' : 'Non-exclusive',
-            platforms: ['All platforms'],
+            platforms: usagePlatforms,
             duration: '6 months',
             paid_ads: false,
             whitelisting: false,
@@ -1789,14 +1793,14 @@ router.patch('/:id/accept', async (req: AuthenticatedRequest, res: Response) => 
           paymentExpectedDate: request.deadline
             ? new Date(request.deadline).toLocaleDateString()
             : undefined,
-          platform: 'Multiple Platforms',
+          platform: inferredPlatform || undefined,
           brandEmail: request.brand_email || undefined,
           brandAddress: request.brand_address?.trim() || undefined,
           brandGstin: request.brand_gstin?.trim() || undefined,
           creatorAddress,
           dealSchema,
           usageType: request.usage_rights ? 'Exclusive' : 'Non-exclusive',
-          usagePlatforms: ['All platforms'],
+          usagePlatforms,
           usageDuration: '6 months',
           paidAdsAllowed: false,
           whitelistingAllowed: false,
