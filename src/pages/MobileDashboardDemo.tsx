@@ -6216,7 +6216,8 @@ const MobileDashboardDemo = ({
                                                      const pkgLower = (resolvedPackageName || "").toLowerCase();
                                                      const isStarter = pkgLower.includes('starter');
                                                      const isGrowth = pkgLower.includes('growth');
-                                                     const packageIcon = isStarter ? "🚀" : isGrowth ? "📈" : "";
+                                                     const isExchange = pkgLower.includes('exchange') || pkgLower.includes('product');
+                                                     const packageIcon = isStarter ? "🚀" : isGrowth ? "📈" : isExchange ? "🎁" : "";
 
                                                       const displayPackageName = (resolvedPackageName || "Campaign Brief").replace(/^[🚀📈🎯💼📄]\s*/u, "");
                                                       const cleanDesc = rawDesc.split(/Selected package:|Collab Duration:|Additional Commercial Terms:|Collab content category:|Product for collab:/i)[0].trim() || "High-energy Reel optimized for organic reach. Best for first-time brand discovery.";
