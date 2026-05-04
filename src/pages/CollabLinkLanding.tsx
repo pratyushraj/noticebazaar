@@ -4459,7 +4459,7 @@ const CollabLinkLanding = () => {
                                     <Check className="w-5 h-5" />
                                   </div>
                                   <div>
-                                    <p className="text-[16px] font-black text-slate-900">₹{formatNumberWithCommas(exactBudget)}</p>
+                                    <p className="text-[16px] font-black text-slate-900">₹{Number(exactBudget).toLocaleString('en-IN')}</p>
                                     <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">Fixed Price Package</p>
                                   </div>
                                 </div>
