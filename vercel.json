@@ -2,7 +2,7 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "buildCommand": "pnpm run build",
   "outputDirectory": "dist",
-  "installCommand": "pnpm install --no-frozen-lockfile",
+  "installCommand": "npm install -g pnpm@9.15.4 && pnpm install --no-frozen-lockfile",
   "functions": {
     "api/index.ts": {
       "maxDuration": 30
