@@ -8692,7 +8692,8 @@ const DealsTab = React.memo(({
                                                         }}
                                                     />
                                                 )}
-
+                                                {/* Bottom Scrim for Readability */}
+                                                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-80" />
                                             </div>
                                             <div className="relative h-full p-5 flex flex-col justify-between z-10">
                                                 <div className="flex items-center gap-2">
@@ -8703,10 +8704,9 @@ const DealsTab = React.memo(({
                                                         </div>
                                                     )}
                                                 </div>
-                                                <div>
                                                     <div className="mb-3">
-                                                        <h2 className="text-xl font-black italic uppercase text-white truncate mb-0.5">{deal.brand_name || 'Partner'}</h2>
-                                                        <div className="flex items-baseline gap-1.5 flex-wrap">
+                                                        <h2 className="text-xl font-black italic uppercase text-white truncate mb-0.5 drop-shadow-lg">{deal.brand_name || 'Partner'}</h2>
+                                                        <div className="flex items-baseline gap-1.5 flex-wrap drop-shadow-md">
                                                             <p className={cn("text-lg font-black leading-none", isBarter ? "text-white" : "text-white")}>
                                                                 {isBarter ? 'Free product' : `₹${budget.toLocaleString()}`}
                                                             </p>
@@ -8804,7 +8804,8 @@ const DealsTab = React.memo(({
                                                         }}
                                                     />
                                                 )}
-
+                                                {/* Bottom Scrim for Readability */}
+                                                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-80" />
                                             </div>
                                             <div className="relative h-full p-5 flex flex-col justify-between z-10">
                                                 <div className="flex items-center gap-2">
@@ -8817,8 +8818,8 @@ const DealsTab = React.memo(({
                                                 </div>
                                                 <div className="mt-auto">
                                                     <div className="mb-4">
-                                                        <h2 className="text-xl font-black italic uppercase text-white truncate mb-0.5">{req.brand_name || 'Brand Partner'}</h2>
-                                                        <div className="flex items-baseline gap-1.5 flex-wrap">
+                                                        <h2 className="text-xl font-black italic uppercase text-white truncate mb-0.5 drop-shadow-lg">{req.brand_name || 'Brand Partner'}</h2>
+                                                        <div className="flex items-baseline gap-1.5 flex-wrap drop-shadow-md">
                                                             <p className={cn("text-lg font-black leading-none", isBarter ? "text-white" : "text-white")}>
                                                                 {isBarter ? 'Free product' : `₹${budget.toLocaleString()}`}
                                                             </p>
