@@ -3889,21 +3889,6 @@ const CollabLinkLanding = () => {
                           )}
                         </div>
 
-                        {/* Additional Requirements for all Paid Deals */}
-                        {paymentType !== 'barter' && (
-                          <div className="bg-white rounded-3xl p-6 border border-slate-100 shadow-[0_8px_40px_rgba(0,0,0,0.05)] space-y-4">
-                            <label className="text-[14px] font-black text-slate-900 tracking-tight flex items-center gap-2">
-                              <Plus className="h-4 w-4 text-emerald-500" />
-                              Any other requirements?
-                            </label>
-                            <Textarea
-                              value={anyOtherNeeds}
-                              onChange={e => setAnyOtherNeeds(e.target.value)}
-                              placeholder="Add any specific instructions or extra requirements for this collaboration..."
-                              className="min-h-[100px] rounded-2xl border-slate-100 bg-slate-50/50 px-5 py-4 font-semibold text-[14px] text-slate-900 placeholder:text-slate-400 shadow-inner resize-none focus-visible:ring-4 focus-visible:ring-emerald-500/10 focus-visible:border-emerald-500 transition-all"
-                            />
-                          </div>
-                        )}
 
                         {/* Section 5: Content Details (Quantities & Specifics) - Hidden for Barter */}
                         {paymentType !== 'barter' && (
@@ -4520,6 +4505,22 @@ const CollabLinkLanding = () => {
                                 )}
                               </div>
                             )}
+                          </div>
+                        )}
+
+                        {/* Additional Requirements for all Paid Deals - Moved to Step 2 to ensure visibility for packages */}
+                        {paymentType !== 'barter' && (
+                          <div className="bg-white rounded-3xl p-6 border border-slate-100 shadow-[0_8px_40px_rgba(0,0,0,0.05)] space-y-4">
+                            <label className="text-[14px] font-black text-slate-900 tracking-tight flex items-center gap-2">
+                              <Plus className="h-4 w-4 text-emerald-500" />
+                              Any other requirements?
+                            </label>
+                            <Textarea
+                              value={anyOtherNeeds}
+                              onChange={e => setAnyOtherNeeds(e.target.value)}
+                              placeholder="Add any specific instructions or extra requirements for this collaboration..."
+                              className="min-h-[100px] rounded-2xl border-slate-100 bg-slate-50/50 px-5 py-4 font-semibold text-[14px] text-slate-900 placeholder:text-slate-400 shadow-inner resize-none focus-visible:ring-4 focus-visible:ring-emerald-500/10 focus-visible:border-emerald-500 transition-all"
+                            />
                           </div>
                         )}
 
