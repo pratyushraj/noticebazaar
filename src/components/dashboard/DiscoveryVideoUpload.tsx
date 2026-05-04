@@ -129,6 +129,8 @@ export const DiscoveryVideoUpload: React.FC<DiscoveryVideoUploadProps> = ({
                             muted 
                             loop 
                             playsInline
+                            autoPlay
+                            preload="metadata"
                             onMouseOver={e => e.currentTarget.play()}
                             onMouseOut={e => e.currentTarget.pause()}
                         />

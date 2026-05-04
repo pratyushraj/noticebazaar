@@ -3749,7 +3749,7 @@ const MobileDashboardDemo = ({
                                         </span>
                                     </div>
                                 </div>
-                                <h1 className="text-3xl font-black text-white tracking-tight mb-1">Money Generator</h1>
+                                <h1 className="text-3xl font-black text-white tracking-tight mb-1">Collab Page Setup</h1>
                                 <p className="text-white/50 text-sm font-semibold">Complete your setup to unlock brand deals</p>
 
                                 {/* Live toggle */}
