@@ -5631,9 +5631,11 @@ const MobileDashboardDemo = ({
                                                                             </button>
                                                                             {showBrief && (
                                                                                 <div className="px-6 pb-6">
-                                                                                    <p className={cn("text-[15px] font-medium leading-relaxed opacity-70 mb-6 whitespace-pre-wrap px-1", textColor)}>
-                                                                                        {cleanDesc}
-                                                                                    </p>
+                                                                                    {!isStringList && (
+                                                                                        <p className={cn("text-[15px] font-medium leading-relaxed opacity-70 mb-6 whitespace-pre-wrap px-1", textColor)}>
+                                                                                            {cleanDesc}
+                                                                                        </p>
+                                                                                    )}
 
                                                                                     {extractedOtherNeeds && (
                                                                                         <div className={cn("mb-6 p-5 rounded-3xl border", isDark ? "bg-amber-500/5 border-amber-500/10" : "bg-amber-50 border-amber-100")}>
@@ -6257,9 +6259,11 @@ const MobileDashboardDemo = ({
                                                             </button>
                                                             {showBrief && (
                                                             <div className="px-6 pb-10">
-                                                                <p className={cn("text-[15px] font-medium leading-relaxed opacity-70 mb-10 whitespace-pre-wrap px-1", textColor)}>
-                                                                    {cleanDesc}
-                                                                </p>
+                                                                {!isStringList && (
+                                                                    <p className={cn("text-[15px] font-medium leading-relaxed opacity-70 mb-10 whitespace-pre-wrap px-1", textColor)}>
+                                                                        {cleanDesc}
+                                                                    </p>
+                                                                )}
 
                                                                 <div className={cn("rounded-[32px] p-8 border backdrop-blur-md", 
                                                                     isDark ? "bg-[#0C1320]/80 border-white/5" : "bg-slate-50/30 border-slate-200/40")}>
