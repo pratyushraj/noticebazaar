@@ -8722,8 +8722,7 @@ const DealsTab = React.memo(({
                                                         )} style={{ width: `${(ux.progressStep / 5) * 100}%` }} />
                                                     </div>
                                                 </div>
-                                            </div>
-                                        </motion.div>
+                                            </motion.div>
                                     );
                                 })}
                             </div>
@@ -8749,6 +8748,7 @@ const DealsTab = React.memo(({
                                                             (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&q=80&w=500';
                                                         }}
                                                     />
+                                                )}
                                                 {/* Bottom Scrim for Readability - Strengthened for white backgrounds */}
                                                 <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent z-0" />
                                                 {/* Subtle overall dimming to reduce glare on pure white products */}
