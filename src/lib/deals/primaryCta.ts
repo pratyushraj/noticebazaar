@@ -139,7 +139,10 @@ export const getCanonicalDealStatus = (deal: any): CanonicalDealStatus => {
 
   // New enforcement statuses
   if (lower === 'payment_pending') {
-    if (deal?.payment_status === 'captured') {
+    const paymentStatus = String(deal?.payment_status || deal?.raw?.payment_status || '').trim().toLowerCase();
+    const paymentId = String(deal?.payment_id || deal?.raw?.payment_id || '').trim();
+    const hasCapturedPayment = paymentStatus === 'captured' || (paymentId.startsWith('pay_') && Number(deal?.amount_paid || deal?.raw?.amount_paid || 0) > 0);
+    if (hasCapturedPayment) {
       if (isBarter && !hasAddress) {
         return 'AWAITING_BRAND_ADDRESS';
       }
@@ -340,10 +343,9 @@ export const getDealPrimaryCta = (params: { role: DealRole; deal: any }): DealPr
   }
   if (status === 'FULLY_EXECUTED') {
     if (requiresPayment) {
-      const hasPayment = (deal?.amount_paid && deal.amount_paid > 0) || 
-                         deal?.payment_id || 
-                         deal?.payment_status === 'captured' || 
-                         deal?.raw?.payment_status === 'captured';
+      const paymentStatus = String(deal?.payment_status || deal?.raw?.payment_status || '').trim().toLowerCase();
+      const paymentId = String(deal?.payment_id || deal?.raw?.payment_id || '').trim();
+      const hasPayment = paymentStatus === 'captured' || (paymentId.startsWith('pay_') && Number(deal?.amount_paid || deal?.raw?.amount_paid || 0) > 0);
       if (!hasPayment) {
         return { status, label: 'Awaiting Payment', disabled: true, tone: 'waiting', action: 'none' };
       }

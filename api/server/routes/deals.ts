@@ -40,7 +40,17 @@ const isBarterType = (deal: any): boolean => {
 };
 
 // Helper: determine if a deal is paid-type (requires monetary payment)
-    return type === 'paid' || type.includes('paid');
+const isPaidType = (deal: any): boolean => {
+  if (!deal) return false;
+  return inferRequiresPayment(deal);
+};
+
+const hasCapturedEscrow = (deal: any): boolean => {
+  const paymentStatus = String(deal?.payment_status || '').trim().toLowerCase();
+  const paymentId = String(deal?.payment_id || '').trim();
+  const amountPaid = Number(deal?.amount_paid || 0);
+
+  return paymentStatus === 'captured' || (paymentId.startsWith('pay_') && amountPaid > 0);
 };
 
 /**
@@ -524,7 +534,7 @@ router.patch('/:id/submit-content', async (req: AuthenticatedRequest, res: Respo
         error: 'Cannot submit content until you have received the product. Please confirm delivery first.',
       });
     }
-    if (isPaidType(deal) && !deal.payment_id && (!deal.amount_paid || deal.amount_paid <= 0)) {
+    if (isPaidType(deal) && !hasCapturedEscrow(deal)) {
       return res.status(409).json({
         success: false,
         error: 'Cannot submit content until payment is escrowed. Please wait for the brand to fund the escrow.',
@@ -602,7 +612,7 @@ router.patch('/:id/review-content', async (req: AuthenticatedRequest, res: Respo
 
     const { data: deal, error: dealErr } = await supabase
       .from('brand_deals')
-      .select('id, brand_id, brand_email, status, creator_id')
+      .select('id, brand_id, brand_email, status, creator_id, deal_type, deal_amount, payment_id, payment_status, amount_paid')
       .eq('id', dealId)
       .maybeSingle();
     if (dealErr || !deal) return res.status(404).json({ success: false, error: 'Deal not found' });
@@ -615,6 +625,13 @@ router.patch('/:id/review-content', async (req: AuthenticatedRequest, res: Respo
     if (!hasAccess) return res.status(403).json({ success: false, error: 'Access denied' });
 
     const current = normalizeStatus((deal as any).status);
+    if (status === 'approved' && inferRequiresPayment(deal) && !hasCapturedEscrow(deal)) {
+      return res.status(409).json({
+        success: false,
+        error: 'Escrow must be captured before paid content can be approved.',
+      });
+    }
+
     if (current !== 'CONTENT_DELIVERED' && current !== 'CONTENT_SUBMITTED' && current !== 'REVISION_SUBMITTED' && current !== 'REVISION_DONE') {
       // Allow "review" even if schema uses string statuses.
       if (!String((deal as any).status || '').toLowerCase().includes('content')) {
@@ -1968,6 +1985,7 @@ router.post('/:id/create-payment-order', async (req: AuthenticatedRequest, res: 
       
       // Hardening: only update columns if they exist in the schema
       if ('payment_id' in (deal || {})) updateData.payment_id = order.id;
+      if ('payment_status' in (deal || {})) updateData.payment_status = 'created';
       if ('amount_paid' in (deal || {})) updateData.amount_paid = breakdown.brandTotal;
       if ('creator_amount' in (deal || {})) updateData.creator_amount = breakdown.creatorPayout;
       if ('platform_fee' in (deal || {})) updateData.platform_fee = breakdown.platformFee;

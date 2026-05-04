@@ -1139,7 +1139,9 @@ export const useUpdateDealProgress = () => {
       if (stage === 'content_making') {
         const requiresPayment = isPaidLikeCollab(currentDeal);
         if (requiresPayment) {
-          const hasPayment = (currentDeal as any)?.payment_id || (currentDeal as any)?.amount_paid > 0;
+          const paymentStatus = String((currentDeal as any)?.payment_status || '').trim().toLowerCase();
+          const paymentId = String((currentDeal as any)?.payment_id || '').trim();
+          const hasPayment = paymentStatus === 'captured' || (paymentId.startsWith('pay_') && Number((currentDeal as any)?.amount_paid || 0) > 0);
           if (!hasPayment) {
             throw new Error('Payment required. Please wait for the brand to fund the escrow before starting work.');
           }

@@ -2045,7 +2045,10 @@ const BrandMobileDashboard = ({
 
     const normalizedDealStatus = effectiveDealStatus(offer);
     const canReviewContent = normalizedDealStatus === 'CONTENT_DELIVERED' || normalizedDealStatus === 'REVISION_DONE';
-    const isEscrowDeal = Boolean((offer as any)?.payment_status === 'captured' || (offer?.payment_id && String(offer.payment_id).startsWith('pay_')));
+    const isEscrowDeal = Boolean(
+      String((offer as any)?.payment_status || '').toLowerCase() === 'captured' ||
+      (offer?.payment_id && String(offer.payment_id).startsWith('pay_') && Number((offer as any)?.amount_paid || 0) > 0)
+    );
     const canReleasePayment = requiresPayment && normalizedDealStatus === 'CONTENT_APPROVED' && !isEscrowDeal;
     
     const cardUi = brandDealCardUi(offer);

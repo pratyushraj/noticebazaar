@@ -77,7 +77,9 @@ const BrandDealDetailPage: React.FC = () => {
   const normalizedStatus = String(deal?.status || '').trim().toUpperCase().replaceAll(' ', '_');
   const canReviewContent = normalizedStatus === 'CONTENT_DELIVERED' || normalizedStatus === 'REVISION_DONE';
   const paymentMarkedSent = Boolean((deal as any)?.payment_released_at) || normalizedStatus === 'PAYMENT_RELEASED';
-  const isEscrowDeal = Boolean(deal?.payment_id || (deal as any)?.payment_status === 'captured' || (deal as any)?.amount_paid > 0);
+  const paymentStatus = String((deal as any)?.payment_status || '').trim().toLowerCase();
+  const paymentId = String((deal as any)?.payment_id || '').trim();
+  const isEscrowDeal = Boolean(paymentStatus === 'captured' || (paymentId.startsWith('pay_') && Number((deal as any)?.amount_paid || 0) > 0));
   const canReleasePayment = normalizedStatus === 'CONTENT_APPROVED' && !paymentMarkedSent && !isEscrowDeal;
   const directContentLink = String((deal as any)?.content_submission_url || (deal as any)?.content_url || '').trim();
   const directContentNotes = String((deal as any)?.content_notes || '').trim();
