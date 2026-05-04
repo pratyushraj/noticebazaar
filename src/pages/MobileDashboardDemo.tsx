@@ -5628,7 +5628,6 @@ const MobileDashboardDemo = ({
                                                                                     </span>
                                                                                 </div>
                                                                                     <ChevronDown className={cn("w-6 h-6 opacity-50 dark:opacity-20 transition-transform", showBrief && "rotate-180")} />
-                                                                                </div>
                                                                             </button>
                                                                             {showBrief && (
                                                                                 <div className="px-6 pb-6">
