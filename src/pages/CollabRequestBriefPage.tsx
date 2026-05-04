@@ -5,7 +5,33 @@ import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { CreatorNavigationWrapper } from '@/components/navigation/CreatorNavigationWrapper';
 import { cn } from '@/lib/utils';
 import { spacing } from '@/lib/design-system';
-import { AlertTriangle, CheckCircle2, Clock, Instagram, Loader2, Lock, ShieldCheck, XCircle, WifiOff } from 'lucide-react';
+import { AlertTriangle, CheckCircle2, Clock, Instagram, Loader2, Lock, ShieldCheck, XCircle, WifiOff, ExternalLink } from 'lucide-react';
+
+const renderClickableLinks = (text: string, isDark: boolean = true) => {
+    if (!text) return text;
+    // URL detection regex
+    const urlRegex = /(https?:\/\/[^\s]+)/g;
+    const parts = text.split(urlRegex);
+    
+    return parts.map((part, i) => {
+        if (part.match(urlRegex)) {
+            return (
+                <a 
+                    key={i} 
+                    href={part} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-emerald-600 dark:text-emerald-400 underline decoration-emerald-500/30 underline-offset-4 hover:decoration-emerald-500 transition-all inline-flex items-center gap-1"
+                    onClick={(e) => e.stopPropagation()}
+                >
+                    {part}
+                    <ExternalLink className="w-3 h-3 opacity-50" />
+                </a>
+            );
+        }
+        return part;
+    });
+};
 import { supabase } from '@/integrations/supabase/client';
 import { useSession } from '@/contexts/SessionContext';
 import { useUpdateProfile } from '@/lib/hooks/useProfiles';
@@ -629,9 +655,9 @@ const CollabRequestBriefPage = () => {
           {/* ─── CAMPAIGN BRIEF ─── */}
           {request.campaign_description && (
             <div className="px-4 pt-4 space-y-2">
-              <p className="text-[11px] font-semibold text-foreground/40 uppercase tracking-wider">Campaign brief</p>
+              <p className="text-[11px] font-semibold text-foreground/40 uppercase tracking-wider">Any other requirements</p>
               <p className="text-[13px] text-foreground/65 leading-relaxed whitespace-pre-wrap">
-                {request.campaign_description}
+                {renderClickableLinks(request.campaign_description)}
               </p>
             </div>
           )}

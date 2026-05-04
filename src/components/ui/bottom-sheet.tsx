@@ -60,18 +60,18 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
             </div>
 
             {/* Header */}
-            {title && (
-              <div className="flex items-center justify-between px-6 pb-6 pt-2">
+            <div className={cn("flex items-center justify-between px-6 pb-6 pt-2", !title && "justify-end")}>
+              {title && (
                 <h2 className="text-2xl font-black tracking-tight text-foreground uppercase italic">{title}</h2>
-                <button type="button"
-                  onClick={onClose}
-                  className="w-10 h-10 rounded-2xl bg-secondary/30 hover:bg-secondary/50 flex items-center justify-center transition-all active:scale-90"
-                  aria-label="Close"
-                >
-                  <X className="w-5 h-5 text-muted-foreground" />
-                </button>
-              </div>
-            )}
+              )}
+              <button type="button"
+                onClick={onClose}
+                className="w-10 h-10 rounded-2xl bg-secondary/30 hover:bg-secondary/50 flex items-center justify-center transition-all active:scale-90"
+                aria-label="Close"
+              >
+                <X className="w-5 h-5 text-muted-foreground" />
+              </button>
+            </div>
 
             {/* Content */}
             <div className="flex-1 overflow-y-auto px-6 pb-6">

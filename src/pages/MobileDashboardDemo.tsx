@@ -28,6 +28,32 @@ import { toast } from 'sonner';
 import { getApiBaseUrl } from '@/lib/utils/api';
 import { useSession } from '@/contexts/SessionContext';
 import { useDealAlertNotifications } from '@/hooks/useDealAlertNotifications';
+
+const renderClickableLinks = (text: string, isDark: boolean) => {
+    if (!text) return text;
+    // URL detection regex
+    const urlRegex = /(https?:\/\/[^\s]+)/g;
+    const parts = text.split(urlRegex);
+    
+    return parts.map((part, i) => {
+        if (part.match(urlRegex)) {
+            return (
+                <a 
+                    key={i} 
+                    href={part} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-emerald-600 dark:text-emerald-400 underline decoration-emerald-500/30 underline-offset-4 hover:decoration-emerald-500 transition-all inline-flex items-center gap-1"
+                    onClick={(e) => e.stopPropagation()}
+                >
+                    {part}
+                    <ExternalLink className="w-3 h-3 opacity-50" />
+                </a>
+            );
+        }
+        return part;
+    });
+};
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import ProgressUpdateSheet from '@/components/deals/ProgressUpdateSheet';
 import { triggerHaptic as globalTriggerHaptic, HapticPatterns } from '@/lib/utils/haptics';
@@ -5633,7 +5659,7 @@ const MobileDashboardDemo = ({
                                                                                 <div className="px-6 pb-6">
                                                                                     {!isStringList && (
                                                                                         <p className={cn("text-[15px] font-medium leading-relaxed opacity-70 mb-6 whitespace-pre-wrap px-1", textColor)}>
-                                                                                            {cleanDesc}
+                                                                                            {renderClickableLinks(cleanDesc, isDark)}
                                                                                         </p>
                                                                                     )}
 
@@ -5643,7 +5669,7 @@ const MobileDashboardDemo = ({
                                                                                                 <Plus className="w-3 h-3" /> Other Requirements
                                                                                             </p>
                                                                                             <p className={cn("text-[14px] font-semibold leading-relaxed", textColor)}>
-                                                                                                {extractedOtherNeeds}
+                                                                                                {renderClickableLinks(extractedOtherNeeds, isDark)}
                                                                                             </p>
                                                                                         </div>
                                                                                     )}
@@ -6261,8 +6287,19 @@ const MobileDashboardDemo = ({
                                                             <div className="px-6 pb-10">
                                                                 {!isStringList && (
                                                                     <p className={cn("text-[15px] font-medium leading-relaxed opacity-70 mb-10 whitespace-pre-wrap px-1", textColor)}>
-                                                                        {cleanDesc}
+                                                                        {renderClickableLinks(cleanDesc, isDark)}
                                                                     </p>
+                                                                )}
+
+                                                                {extractedOtherNeeds && (
+                                                                    <div className={cn("mb-10 p-6 rounded-[32px] border", isDark ? "bg-amber-500/5 border-amber-500/10" : "bg-amber-50 border-amber-100")}>
+                                                                        <p className={cn("text-[10px] font-black uppercase tracking-widest mb-3 flex items-center gap-2", isDark ? "text-amber-400" : "text-amber-700")}>
+                                                                            <Plus className="w-3.5 h-3.5" /> Other Requirements
+                                                                        </p>
+                                                                        <p className={cn("text-[15px] font-semibold leading-relaxed", textColor)}>
+                                                                            {renderClickableLinks(extractedOtherNeeds, isDark)}
+                                                                        </p>
+                                                                    </div>
                                                                 )}
 
                                                                 <div className={cn("rounded-[32px] p-8 border backdrop-blur-md", 

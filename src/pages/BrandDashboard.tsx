@@ -113,6 +113,8 @@ const BrandDashboard: React.FC = () => {
 
     console.log('[BrandDashboard] Setting up real-time subscription for brand:', user.id);
 
+    // We remove the filters and rely on RLS to only send us events we are allowed to see.
+    // This is more robust against column name changes (like brand_id vs organization_id).
     const channel = supabase
       .channel(`brand-dashboard-updates-${user.id}`)
       .on(
@@ -120,17 +122,19 @@ const BrandDashboard: React.FC = () => {
         {
           event: '*',
           schema: 'public',
-          table: 'collab_requests',
-          filter: user.email ? `brand_email=eq.${user.email}` : undefined
+          table: 'collab_requests'
         },
         (payload) => {
-          console.log('[Realtime] Brand collab request event received:', payload.eventType);
+          console.log('[Realtime] Brand collab request event received:', payload.eventType, payload.new?.id);
           void loadBrandDashboardRef.current(true);
           
           if (document.visibilityState === 'visible') {
             triggerHaptic();
             if (payload.eventType === 'INSERT') {
-              toast.success('New response received!');
+              toast.success('New offer received!', {
+                description: 'A creator just responded to your campaign.',
+                duration: 5000,
+              });
             } else {
               toast.info('Collaboration updated');
             }
@@ -142,11 +146,10 @@ const BrandDashboard: React.FC = () => {
         {
           event: '*',
           schema: 'public',
-          table: 'brand_deals',
-          filter: `brand_id=eq.${user.id}`
+          table: 'brand_deals'
         },
         (payload) => {
-          console.log('[Realtime] Brand deal event received:', payload.eventType);
+          console.log('[Realtime] Brand deal event received:', payload.eventType, payload.new?.id);
           void loadBrandDashboardRef.current(true);
           
           if (document.visibilityState === 'visible') {
@@ -168,7 +171,7 @@ const BrandDashboard: React.FC = () => {
       console.log('[BrandDashboard] Cleaning up real-time subscription');
       void supabase.removeChannel(channel);
     };
-  }, [user?.id, isBrandUser, user?.email, sessionLoading]);
+  }, [user?.id, isBrandUser, sessionLoading]);
 
   const stats: BrandDashboardStats = useMemo(() => {
     const totalSent = (requests || []).length;

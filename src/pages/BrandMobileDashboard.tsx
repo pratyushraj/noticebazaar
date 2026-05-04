@@ -35,6 +35,32 @@ import PushNotificationPrompt from '@/components/dashboard/PushNotificationPromp
 
 import { optimizeImage, safeAvatarSrc, withCacheBuster } from '@/lib/utils/image';
 
+const renderClickableLinks = (text: string, isDark: boolean) => {
+    if (!text) return text;
+    // URL detection regex
+    const urlRegex = /(https?:\/\/[^\s]+)/g;
+    const parts = text.split(urlRegex);
+    
+    return parts.map((part, i) => {
+        if (part.match(urlRegex)) {
+            return (
+                <a 
+                    key={i} 
+                    href={part} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-emerald-600 dark:text-emerald-400 underline decoration-emerald-500/30 underline-offset-4 hover:decoration-emerald-500 transition-all inline-flex items-center gap-1"
+                    onClick={(e) => e.stopPropagation()}
+                >
+                    {part}
+                    <ExternalLink className="w-3 h-3 opacity-50" />
+                </a>
+            );
+        }
+        return part;
+    });
+};
+
 type BrandTab = 'dashboard' | 'collabs' | 'creators' | 'profile' | 'payments';
 type BrandCollabTab = 'action_required' | 'active' | 'completed';
 
@@ -184,6 +210,14 @@ type SuggestedCreator = {
 };
 
 function formatDeliverables(row: BrandDeal | null | undefined) {
+  // Prioritize package name if present in campaign_description
+  if (row?.campaign_description) {
+    const packageMatch = row.campaign_description.match(/\|\|Package: ([^|]+)/);
+    if (packageMatch && packageMatch[1]) {
+      return packageMatch[1].trim();
+    }
+  }
+
   const d = row?.deliverables;
   if (!d) return '';
   const uniq = (parts: string[]) => {
@@ -2009,7 +2043,7 @@ const BrandMobileDashboard = ({
 
     const normalizedDealStatus = effectiveDealStatus(offer);
     const canReviewContent = normalizedDealStatus === 'CONTENT_DELIVERED' || normalizedDealStatus === 'REVISION_DONE';
-    const isEscrowDeal = Boolean(offer?.payment_id || (offer as any)?.payment_status === 'captured');
+    const isEscrowDeal = Boolean((offer as any)?.payment_status === 'captured' || (offer?.payment_id && String(offer.payment_id).startsWith('pay_')));
     const canReleasePayment = requiresPayment && normalizedDealStatus === 'CONTENT_APPROVED' && !isEscrowDeal;
     
     const cardUi = brandDealCardUi(offer);
@@ -2292,6 +2326,23 @@ const BrandMobileDashboard = ({
               </div>
             </div>
           </div>
+
+          {/* Any other requirements section */}
+          {offer?.campaign_description && (
+            <div className="mb-6">
+              <div className="flex items-center justify-between mb-4 px-1">
+                <SectionTitle>Any other requirements</SectionTitle>
+                <div className={cn('px-2.5 py-1 rounded-lg border text-[9px] font-black uppercase tracking-widest', isDark ? 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20' : 'bg-indigo-50 text-indigo-600 border-indigo-100')}>
+                  Briefing
+                </div>
+              </div>
+              <div className={cn('p-6 rounded-[32px] border relative overflow-hidden', isDark ? 'bg-card/40 border-white/5' : 'bg-white border-slate-100 shadow-sm')}>
+                <p className={cn('text-[13px] font-medium leading-relaxed opacity-70 whitespace-pre-wrap', textColor)}>
+                  {renderClickableLinks(offer.campaign_description.split('||Package:')[0].trim(), isDark)}
+                </p>
+              </div>
+            </div>
+          )}
 
           {/* Timeline Section */}
           <div ref={progressSectionRef} className="mb-5">
@@ -2608,7 +2659,7 @@ const BrandMobileDashboard = ({
                     <p className={cn('text-[10px] font-black uppercase tracking-widest opacity-40', textColor)}>Amount Due</p>
                     <p className={cn('text-[16px] font-black', textColor)}>₹{amount.toLocaleString('en-IN')}</p>
                   </div>
-                  {creatorUpiId && (
+                  {creatorUpiId && !isEscrowDeal && (
                     <div className="flex items-center justify-between pt-4 border-t border-white/5">
                       <p className={cn('text-[10px] font-black uppercase tracking-widest opacity-40', textColor)}>Creator UPI</p>
                       <div className="flex items-center gap-2">

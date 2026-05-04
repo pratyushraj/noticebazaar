@@ -3848,7 +3848,7 @@ const CollabLinkLanding = () => {
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-3">
                               <label className="text-[16px] font-black text-slate-900 tracking-tight">
-                                {paymentType === 'barter' ? "Any other requirements" : "Campaign Brief"}
+                                Any other requirements
                               </label>
                             </div>
                             {paymentType !== 'barter' && (
@@ -3874,9 +3874,7 @@ const CollabLinkLanding = () => {
                               id="campaign-description-input"
                               value={campaignDescription}
                               onChange={e => setCampaignDescription(e.target.value)}
-                              placeholder={paymentType === 'barter' 
-                                ? "Give 1–2 reference videos (optional but recommended)" 
-                                : "Example:&#10;• 1 Instagram Reel (30–45 sec)&#10;• Show product usage naturally&#10;• Mention brand name in first 5 sec&#10;• Tag @brand_handle"}
+                              placeholder="Give 1–2 reference videos (optional but recommended)"
                               className="min-h-[180px] rounded-2xl border-slate-100 bg-slate-50/50 px-5 py-5 font-semibold text-[15px] text-slate-900 placeholder:text-slate-400 shadow-inner resize-none focus-visible:ring-4 focus-visible:ring-emerald-500/10 focus-visible:border-emerald-500 transition-all leading-relaxed"
                             />
                             <div className="absolute bottom-5 right-5 opacity-20 pointer-events-none">
@@ -4510,21 +4508,7 @@ const CollabLinkLanding = () => {
                           </div>
                         )}
 
-                        {/* Additional Requirements for all Paid Deals - Moved to Step 2 to ensure visibility for packages */}
-                        {paymentType !== 'barter' && (
-                          <div className="bg-white rounded-3xl p-6 border border-slate-100 shadow-[0_8px_40px_rgba(0,0,0,0.05)] space-y-4">
-                            <label className="text-[14px] font-black text-slate-900 tracking-tight flex items-center gap-2">
-                              <Plus className="h-4 w-4 text-emerald-500" />
-                              Any other requirements?
-                            </label>
-                            <Textarea
-                              value={anyOtherNeeds}
-                              onChange={e => setAnyOtherNeeds(e.target.value)}
-                              placeholder="Give 1–2 reference videos (optional but recommended)"
-                              className="min-h-[100px] rounded-2xl border-slate-100 bg-slate-50/50 px-5 py-4 font-semibold text-[14px] text-slate-900 placeholder:text-slate-400 shadow-inner resize-none focus-visible:ring-4 focus-visible:ring-emerald-500/10 focus-visible:border-emerald-500 transition-all"
-                            />
-                          </div>
-                        )}
+
 
                         <div className="bg-slate-50 rounded-[32px] p-6 border border-slate-200 shadow-inner space-y-4">
                           <div className="flex items-center gap-3">

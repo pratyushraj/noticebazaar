@@ -247,13 +247,15 @@ export const QuickOfferSheet: React.FC<QuickOfferSheetProps> = ({
         try {
             const apiBaseUrl = getApiBaseUrl();
             const brandEmail = profile?.email || session?.user?.email || '';
+            const selectedPackage = creatorPackages.find(p => p.key === selectedPackageKey);
+            const packageName = selectedPackage?.label || 'Custom';
             
             const formData = {
                 budget,
                 deliverables,
                 collabType,
                 deadline,
-                description,
+                description: `${description} ||Package: ${packageName}`,
                 requiresShipping,
                 barterProductName,
                 barterProductImageUrl
@@ -298,8 +300,9 @@ export const QuickOfferSheet: React.FC<QuickOfferSheetProps> = ({
         try {
             const apiBaseUrl = getApiBaseUrl();
             const brandEmail = profile?.email || session?.user?.email || '';
-            const brandName = profile?.business_name || profile?.first_name || profile?.full_name || (brandEmail ? brandEmail.split('@')[0] : 'Brand');
-            const descriptionValue = description || `Marketing collaboration for ${brandName}`;
+            const selectedPackage = creatorPackages.find(p => p.key === selectedPackageKey);
+            const packageName = selectedPackage?.label || 'Custom';
+            const descriptionValue = `${description || `Marketing collaboration for ${brandName}`} ||Package: ${packageName}`;
 
             const payload = {
                 brand_name: brandName,
@@ -494,16 +497,16 @@ export const QuickOfferSheet: React.FC<QuickOfferSheetProps> = ({
                             </div>
                         </div>
 
-                        {/* Campaign Brief */}
+                        {/* Any other requirements */}
                         <div className="space-y-3">
-                            <Label className="text-sm font-black uppercase tracking-widest opacity-60 text-slate-500">Campaign Brief (Optional)</Label>
+                            <Label className="text-sm font-black uppercase tracking-widest opacity-60 text-slate-500">Any other requirements</Label>
                             <Input 
                                 value={description}
                                 onChange={(e) => setDescription(e.target.value)}
                                 onKeyDown={(e) => e.key === 'Enter' && e.currentTarget.blur()}
                                 enterKeyHint="done"
                                 className="h-14 rounded-2xl border border-slate-200 bg-white px-4 font-medium text-sm text-slate-900 shadow-sm focus:border-emerald-500/50"
-                                placeholder="Describe your requirements..."
+                                placeholder="Give 1–2 reference videos (optional but recommended)"
                             />
                         </div>
 

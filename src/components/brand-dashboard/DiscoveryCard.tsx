@@ -127,6 +127,7 @@ export const DiscoveryCard: React.FC<DiscoveryCardProps> = ({
             style={{ x, rotate, opacity, zIndex: isActive ? 10 : 0, touchAction: 'pan-y' }}
             onDragEnd={handleDragEnd}
             animate={controls}
+            exit={{ x: -1000, opacity: 0, transition: { duration: 0.3 } }}
             className={cn(
                 "absolute inset-0 w-full h-full rounded-[2.5rem] overflow-hidden flex flex-col border shadow-2xl",
                 isDark ? "bg-[#0B1220] border-white/10" : "bg-white border-slate-200"
