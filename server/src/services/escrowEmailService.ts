@@ -21,17 +21,22 @@ export async function sendEscrowFundedEmailToCreator(deal: any, creator: any) {
     return { success: false, error: 'No creator email' };
   }
 
-  const subject = `💰 ${brandName} has paid! Time to start creating`;
+  const isShippingDeal = deal?.requires_shipping === true || deal?.shipping_required === true || 
+                        ['both', 'hybrid', 'paid_barter', 'barter'].includes(String(deal?.collab_type || '').toLowerCase());
+
+  const subject = isShippingDeal 
+    ? `📦 ${brandName} has paid! Product shipping next.` 
+    : `💰 ${brandName} has paid! Time to start creating`;
   
   const content = `
     <tr>
       <td style="padding: 40px 30px; text-align: center; background-color: #f0fdf4;">
-        <div style="font-size: 48px; margin-bottom: 16px;">🛡️</div>
+        <div style="font-size: 48px; margin-bottom: 16px;">${isShippingDeal ? '📦' : '🛡️'}</div>
         <h1 style="margin: 0 0 8px 0; font-size: 24px; font-weight: 700; color: #166534; line-height: 1.3;">
-          Payment Secured in Escrow
+          ${isShippingDeal ? 'Payment Secured & Shipping Next' : 'Payment Secured in Escrow'}
         </h1>
         <p style="margin: 0; font-size: 16px; color: #15803d;">
-          The funds are safely locked. You can start creating!
+          ${isShippingDeal ? 'Funds are locked. Brand will now provide shipping details.' : 'The funds are safely locked. You can start creating!'}
         </p>
       </td>
     </tr>
@@ -48,7 +53,12 @@ export async function sendEscrowFundedEmailToCreator(deal: any, creator: any) {
         <div style="background-color: #f8fafc; border-left: 4px solid #10b981; border-radius: 8px; padding: 20px; margin-bottom: 30px;">
           <h3 style="margin: 0 0 12px 0; font-size: 16px; color: #1e293b;">Next Steps:</h3>
           <ul style="margin: 0; padding-left: 20px; color: #475569; font-size: 15px; line-height: 1.6;">
+            ${isShippingDeal ? `
+            <li style="margin-bottom: 8px;">Wait for the brand to provide their shipping address and tracking details.</li>
+            <li style="margin-bottom: 8px;">Once you receive the product, you can start the creative process.</li>
+            ` : `
             <li style="margin-bottom: 8px;">Create the content according to the agreed brief.</li>
+            `}
             <li style="margin-bottom: 8px;">Submit the content link on your CreatorArmour dashboard.</li>
             <li>Once the brand approves, the funds will be released to your bank account.</li>
           </ul>

@@ -109,13 +109,23 @@ export const getCanonicalDealStatus = (deal: any): CanonicalDealStatus => {
     lower.includes('paid') || 
     lower.includes('dispute');
 
-  if (isBarter && (hasAddress || brandSigned || creatorSigned) && !isPostContractStatus) {
-    return 'CONTENT_MAKING';
-  }
-
   if (lower.includes('cancel')) return 'CANCELLED';
   if (lower === 'completed' || lower.includes('completed') || lower.includes('approved') || lower.includes('released') || lower.includes('settled') || lower.includes('paid')) return 'COMPLETED';
   if (lower.includes('dispute') || lower.includes('disputed')) return 'DISPUTED';
+
+  // ── Shipping address gate: ensure address is provided for shipping-required deals ──
+  // This must come before CONTENT_MAKING or SENT to ensure brands don't skip this step.
+  if (isBarter && !hasAddress && !isPostContractStatus) {
+    // For paid deals, only show address gate AFTER payment is captured.
+    const requiresPayment = isPaidLikeCollab(deal);
+    const paymentStatus = String(deal?.payment_status || deal?.raw?.payment_status || '').trim().toLowerCase();
+    const paymentId = String(deal?.payment_id || deal?.raw?.payment_id || '').trim();
+    const hasCapturedPayment = paymentStatus === 'captured' || (paymentId.startsWith('pay_') && Number(deal?.amount_paid || deal?.raw?.amount_paid || 0) > 0);
+    
+    if (!requiresPayment || hasCapturedPayment) {
+      return 'AWAITING_BRAND_ADDRESS';
+    }
+  }
 
   // Revision requested: prefer explicit status, but also treat brand_approval_status as a signal.
   const approval = String(deal?.brand_approval_status || '').trim().toLowerCase();
@@ -143,6 +153,7 @@ export const getCanonicalDealStatus = (deal: any): CanonicalDealStatus => {
     const paymentId = String(deal?.payment_id || deal?.raw?.payment_id || '').trim();
     const hasCapturedPayment = paymentStatus === 'captured' || (paymentId.startsWith('pay_') && Number(deal?.amount_paid || deal?.raw?.amount_paid || 0) > 0);
     if (hasCapturedPayment) {
+      // (This redundancy is safe as it's also handled by the global isBarter check above)
       if (isBarter && !hasAddress) {
         return 'AWAITING_BRAND_ADDRESS';
       }
@@ -150,6 +161,7 @@ export const getCanonicalDealStatus = (deal: any): CanonicalDealStatus => {
     }
     return 'PAYMENT_PENDING';
   }
+  
   if (lower === 'awaiting_brand_address') return 'AWAITING_BRAND_ADDRESS';
   if (lower === 'dispute_arbitration') return 'DISPUTE_ARBITRATION';
   if (lower === 'dispute_partial_refund') return 'DISPUTE_PARTIAL_REFUND';
@@ -174,8 +186,12 @@ export const getCanonicalDealStatus = (deal: any): CanonicalDealStatus => {
   if (lower.includes('fully_executed') || lower.includes('executed') || lower === 'signed') return 'FULLY_EXECUTED';
 
   // Signature-driven override (prevents "signature required" when already signed).
-  // IMPORTANT: Only apply when we couldn't derive a later-stage status from `deal.status`.
   if (creatorSigned && brandSigned) return 'FULLY_EXECUTED';
+
+  // Barter fallback: if address is provided or signed, we effectively move to the active stage
+  if (isBarter && (hasAddress || brandSigned || creatorSigned) && !isPostContractStatus) {
+    return 'CONTENT_MAKING';
+  }
 
   return 'UNKNOWN';
 };

@@ -53,6 +53,23 @@ async function sendCollabPushViaRender(params: {
 
 const router = express.Router();
 
+const inferPlatformFromDeliverables = (deliverables: unknown) => {
+  const text = Array.isArray(deliverables)
+    ? deliverables.map((item: any) => {
+        if (!item) return '';
+        if (typeof item === 'string') return item;
+        return [item?.platform, item?.type, item?.name, item?.deliverable].filter(Boolean).join(' ');
+      }).join(' ')
+    : String(deliverables || '');
+  const normalized = text.toLowerCase();
+  if (normalized.includes('youtube') || normalized.includes('shorts')) return 'YouTube';
+  if (normalized.includes('tiktok')) return 'TikTok';
+  if (normalized.includes('twitter') || normalized.includes('x post')) return 'X';
+  if (normalized.includes('linkedin')) return 'LinkedIn';
+  if (normalized.includes('instagram') || normalized.includes('reel') || normalized.includes('story') || normalized.includes('stories')) return 'Instagram';
+  return null;
+};
+
 const humanizePublicHandle = (handle: string | null | undefined) => {
   const clean = String(handle || '').trim().replace(/^@/, '');
   if (!clean) return null;
