@@ -157,21 +157,19 @@ const StatusBadge = ({ status }: { status: string }) => {
 };
 
 const COMPLAINT_CATEGORIES = [
-    { id: 'food', label: 'Food & Dining', icon: 'Utensils', examples: 'Zomato, Swiggy' },
-    { id: 'ecommerce', label: 'E-Commerce', icon: 'ShoppingBag', examples: 'Amazon, Flipkart' },
-    { id: 'quick-commerce', label: 'Quick Commerce', icon: 'Zap', examples: 'Zepto, Blinkit' },
-    { id: 'travel', label: 'Travel & Stay', icon: 'Plane', examples: 'MMT, Oyo' },
-    { id: 'banking', label: 'Banking & Fintech', icon: 'CreditCard', examples: 'Paytm, Banks' },
-    { id: 'other', label: 'Others', icon: 'MoreHorizontal', examples: 'General issues' },
+    { id: 'payout', label: 'Late Payouts', icon: 'Wallet', examples: 'Delayed payments, pending dues' },
+    { id: 'content', label: 'Content Disputes', icon: 'FileText', examples: 'Reshoots, usage breaches' },
+    { id: 'contracts', label: 'Contract Issues', icon: 'Scale', examples: 'Vague terms, scope creep' },
+    { id: 'breach', label: 'Agreement Breach', icon: 'AlertTriangle', examples: 'Sudden cancellations' },
+    { id: 'other', label: 'Others', icon: 'MoreHorizontal', examples: 'General deal issues' },
 ];
 
 const POPULAR_COMPANIES: Record<string, string[]> = {
-    food: ['Zomato', 'Swiggy', 'KFC', 'Domino\'s', 'Pizza Hut', 'Other'],
-    ecommerce: ['Amazon', 'Flipkart', 'Myntra', 'Ajio', 'Meesho', 'Other'],
-    'quick-commerce': ['Zepto', 'Blinkit', 'Instamart', 'BigBasket', 'Other'],
-    travel: ['MakeMyTrip', 'Goibibo', 'Oyo', 'Airbnb', 'IndiGo', 'Other'],
-    banking: ['Paytm', 'PhonePe', 'Google Pay', 'HDFC Bank', 'ICICI Bank', 'Other'],
-    other: ['Airtel', 'Jio', 'Urban Company', 'Netflix', 'Other'],
+    payout: ['Direct Brand', 'Agency Partner', 'Talent Manager', 'Third Party'],
+    content: ['Usage Rights', 'Exclusivity', 'Deliverable Mix', 'Script Approval'],
+    contracts: ['Payment Terms', 'Cancellation Policy', 'Legal Indemnity', 'Tax/GST'],
+    breach: ['Campaign Scrapped', 'Communication Ghosting', 'Unpaid Revisions'],
+    other: ['Technical Issue', 'Shipping Delay', 'Product Quality'],
 };
 
 const renderBudgetValue = (item: any) => {
@@ -640,7 +638,7 @@ const DashboardLoadingStage = ({ isDark, tab = 'analytics' }: { isDark: boolean;
                                                      </div>
                                                      <div className="flex-1 min-w-0">
                                                          <p className={cn("text-[11px] font-black uppercase tracking-widest opacity-70 dark:opacity-40 mb-0.5", textColor)}>Consumer Protection</p>
-                                                         <h3 className={cn("text-lg font-black tracking-tight italic uppercase", textColor)}>Lifestyle Shield</h3>
+                                                         <h3 className={cn("text-lg font-black tracking-tight italic uppercase", textColor)}>Legal Shield</h3>
                                                      </div>
                                                  </div>
                                                  <p className={cn("text-xs font-medium opacity-70 dark:opacity-40 leading-relaxed mt-4 relative z-10", textColor)}>
@@ -4637,11 +4635,11 @@ const MobileDashboardDemo = ({
                                         </div>
 
                                         <div className="px-1">
-                                            <p className={cn("text-[11px] font-black uppercase tracking-widest opacity-60 dark:opacity-30 mb-4", textColor)}>Why Lifestyle Shield?</p>
+                                            <p className={cn("text-[11px] font-black uppercase tracking-widest opacity-60 dark:opacity-30 mb-4", textColor)}>Why Legal Shield?</p>
                                             <div className="grid grid-cols-2 gap-3">
                                                 {[
-                                                    { label: 'Legal Power', desc: 'Verified notices', icon: <Scale className="w-4 h-4" /> },
-                                                    { label: 'High Success', desc: '92% resolution', icon: <TrendingUp className="w-4 h-4" /> }
+                                                    { label: 'Deal Recovery', desc: 'Verified notices', icon: <Scale className="w-4 h-4" /> },
+                                                    { label: 'High Payouts', desc: '98% resolution', icon: <TrendingUp className="w-4 h-4" /> }
                                                 ].map((feat, i) => (
                                                     <div key={i} className={cn("p-4 rounded-2xl border", isDark ? "bg-card border-border" : "bg-white border-slate-100")}>
                                                         <div className="text-primary mb-2">{feat.icon}</div>
@@ -4661,7 +4659,7 @@ const MobileDashboardDemo = ({
                                                 key={cat.id}
                                                 onClick={() => {
                                                     triggerHaptic();
-                                                    console.log('[LifestyleShield] Selected Category:', cat.id);
+                                                    console.log('[LegalShield] Selected Category:', cat.id);
                                                     setSelectedComplaintCategory(cat.id);
                                                     setComplaintStep('company');
                                                 }}
@@ -4671,11 +4669,10 @@ const MobileDashboardDemo = ({
                                                 )}
                                             >
                                                 <div className="w-10 h-10 rounded-xl bg-primary/5 flex items-center justify-center text-primary mb-3 group-hover:scale-110 transition-transform pointer-events-none">
-                                                    {cat.id === 'food' && <Utensils className="w-5 h-5" />}
-                                                    {cat.id === 'ecommerce' && <ShoppingBag className="w-5 h-5" />}
-                                                    {cat.id === 'quick-commerce' && <Zap className="w-5 h-5" />}
-                                                    {cat.id === 'travel' && <Plane className="w-5 h-5" />}
-                                                    {cat.id === 'banking' && <CreditCard className="w-5 h-5" />}
+                                                    {cat.id === 'payout' && <Wallet className="w-5 h-5" />}
+                                                    {cat.id === 'content' && <FileText className="w-5 h-5" />}
+                                                    {cat.id === 'contracts' && <Scale className="w-5 h-5" />}
+                                                    {cat.id === 'breach' && <AlertTriangle className="w-5 h-5" />}
                                                     {cat.id === 'other' && <MoreHorizontal className="w-5 h-5" />}
                                                 </div>
                                                 <p className={cn("font-black text-sm pointer-events-none", textColor)}>{cat.label}</p>
@@ -4688,7 +4685,7 @@ const MobileDashboardDemo = ({
                                 {complaintStep === 'company' && selectedComplaintCategory && (
                                     <motion.div key="company" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-3">
                                         <div className="px-1 mb-2">
-                                            <p className={cn("text-[10px] font-black uppercase tracking-widest opacity-60 dark:opacity-30", textColor)}>Popular Companies</p>
+                                            <p className={cn("text-[10px] font-black uppercase tracking-widest opacity-60 dark:opacity-30", textColor)}>Common Issues</p>
                                         </div>
                                         {(POPULAR_COMPANIES[selectedComplaintCategory] || []).map((company) => (
                                             <button
