@@ -3028,7 +3028,7 @@ const MobileDashboardDemo = ({
                     <img 
                         alt=""
                         src={proxiedLogo}
-                        className="w-full h-full object-cover absolute inset-0 z-10 transition-opacity duration-300"
+                        className="w-full h-full object-contain absolute inset-0 z-10 p-1.5 transition-opacity duration-300"
                         loading="eager"
                         decoding="async"
                         referrerPolicy="no-referrer"
@@ -8131,7 +8131,7 @@ const DashboardTab = React.memo(({
                                 </div>
                                 <div className="flex-1 min-w-0">
                                     <div className="flex items-center gap-2 mb-0.5">
-                                        <p className={cn("text-[10px] font-black uppercase tracking-widest opacity-40", textColor)}>Active Collaboration</p>
+                                        <p className={cn("text-[10px] font-black uppercase tracking-widest opacity-80", textColor)}>Active Collaboration</p>
                                         <span className="w-1 h-1 rounded-full bg-emerald-500 animate-pulse" />
                                     </div>
                                     <div className="flex items-baseline gap-2">
@@ -8139,18 +8139,18 @@ const DashboardTab = React.memo(({
                                             {featuredDeal.brand_name || featuredDeal.company_name || 'Brand Partner'}
                                         </h3>
                                         {!isBarterLikeCollab(featuredDeal) && (
-                                            <span className={cn("text-[14px] font-black opacity-40 shrink-0", textColor)}>
+                                            <span className={cn("text-[14px] font-black opacity-80 shrink-0", textColor)}>
                                                 {renderBudgetValue(featuredDeal)}
                                             </span>
                                         )}
                                     </div>
                                 </div>
-                                <ChevronRight className={cn("w-5 h-5 opacity-20", textColor)} />
+                                <ChevronRight className={cn("w-5 h-5 opacity-50", textColor)} />
                             </div>
 
                             {/* Progress Steps */}
                             <div className="relative px-2">
-                                <div className="absolute top-[15px] left-8 right-8 h-[2px] bg-slate-200/20 dark:bg-white/5" />
+                                <div className="absolute top-[15px] left-8 right-8 h-[2px] bg-slate-200/20 dark:bg-white/10" />
                                 <div 
                                     className="absolute top-[15px] left-8 h-[2px] bg-emerald-500 transition-all duration-1000" 
                                     style={{ width: `calc(${Math.max(0, (progress.step - 1) * 33.33)}% )` }}
@@ -8175,13 +8175,13 @@ const DashboardTab = React.memo(({
                                                         ? "bg-emerald-500 border-emerald-500 text-white" 
                                                         : isActive 
                                                             ? "bg-emerald-500/20 border-emerald-500 text-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.3)] scale-110" 
-                                                            : isDark ? "bg-[#0B1220] border-white/10 text-white/20" : "bg-white border-slate-200 text-slate-300"
+                                                            : isDark ? "bg-[#0B1220] border-white/10 text-white/40" : "bg-white border-slate-200 text-slate-300"
                                                 )}>
                                                     {isCompleted ? <CheckCircle2 className="w-4 h-4" /> : <StepIcon className="w-4 h-4" />}
                                                 </div>
                                                 <p className={cn(
                                                     "text-[9px] font-black uppercase tracking-tighter transition-colors duration-500",
-                                                    isActive ? "text-emerald-500" : isCompleted ? (isDark ? "text-white/60" : "text-slate-500") : (isDark ? "text-white/20" : "text-slate-300")
+                                                    isActive ? "text-emerald-500" : isCompleted ? (isDark ? "text-white/60" : "text-slate-500") : (isDark ? "text-white/40" : "text-slate-300")
                                                 )}>
                                                     {step.label}
                                                 </p>
