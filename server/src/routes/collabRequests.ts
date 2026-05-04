@@ -127,12 +127,12 @@ const normalizeCollabTypeForApi = (value: unknown): CollabTypeValue | null => {
 
 const isPaidLikeCollab = (value: unknown): boolean => {
   const normalized = normalizeCollabTypeForDb(value);
-  return normalized === 'paid' || normalized === 'both' || normalized === 'hybrid' || normalized === 'paid_barter';
+  return normalized === 'paid' || normalized === 'both';
 };
 
 const isBarterLikeCollab = (value: unknown): boolean => {
   const normalized = normalizeCollabTypeForDb(value);
-  return normalized === 'barter' || normalized === 'both' || normalized === 'hybrid' || normalized === 'paid_barter';
+  return normalized === 'barter' || normalized === 'both';
 };
 
 const normalizeHandle = (value: unknown): string | null => {

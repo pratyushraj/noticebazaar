@@ -2082,14 +2082,17 @@ const BrandMobileDashboard = ({
     const contractUrl = offer?.safe_contract_url || offer?.signed_contract_url || offer?.contract_file_url || null;
     
     const collabType = String(offer?.collab_type || offer?.deal_type || offer?.raw?.collab_type || '').trim().toLowerCase();
-    const rightsLabel = String(offer?.usage_type || '').trim() || (offer?.usage_rights === true ? 'Usage included' : 'Not specified');
-    const rightsDescription = offer?.usage_rights === true
+    const usageDuration = offer?.usage_duration || offer?.raw?.usage_duration || offer?.form_data?.usage_duration || '';
+    const rightsLabel = usageDuration ? `${usageDuration} Usage` : String(offer?.usage_type || '').trim() || (offer?.usage_rights === true ? 'Usage included' : 'Not specified');
+    const rightsDescription = usageDuration
+      ? `Usage rights are granted for ${usageDuration}. Check the signed contract for channels and exclusions.`
+      : offer?.usage_rights === true
       ? 'Usage rights are included for this deal. Check the signed contract for duration, channels, and exclusions.'
       : 'Usage rights were not specified for this deal. Check the signed contract before reusing content beyond the agreed deliverables.';
     const platformLabel = String(offer?.platform || offer?.platforms || offer?.raw?.platform || '').trim() || 'Not specified';
     const isPureBarter = collabType === 'barter';
     const requiresPayment = isPaidLikeCollab(offer) && !isPureBarter;
-    const requiresShipping = offer?.shipping_required === true || isBarterLikeCollab(offer);
+    const requiresShipping = offer?.shipping_required === true || offer?.raw?.shipping_required === true || isBarterLikeCollab(offer);
     const shippingStatus = String(offer?.shipping_status || '').trim().toLowerCase();
     const shippingDelivered = shippingStatus === 'delivered' || shippingStatus === 'received';
     const trackingNumber = String(offer?.tracking_number || '').trim();
@@ -2503,7 +2506,7 @@ const BrandMobileDashboard = ({
           {/* Timeline Section */}
           <div ref={progressSectionRef} className="mb-5">
             <div className="flex items-center justify-between mb-4 px-1">
-              <SectionTitle>{requiresShipping ? 'Fulfillment Timeline' : 'Deal Timeline'}</SectionTitle>
+              <SectionTitle>{requiresShipping ? 'Campaign Progress' : 'Deal Timeline'}</SectionTitle>
               <div className={cn('px-2.5 py-1 rounded-lg border text-[9px] font-black uppercase tracking-widest', isDark ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-emerald-50 text-emerald-600 border-emerald-100')}>
                 {requiresShipping ? (requiresPayment ? 'PRODUCT' : 'BARTER') : dealUi.label}
               </div>
@@ -2521,7 +2524,7 @@ const BrandMobileDashboard = ({
                     ? [
                         { label: 'Contract', icon: FileText },
                         { label: 'Signed', icon: PenTool },
-                        { label: 'Ship', icon: Truck },
+                        { label: 'Logistics', icon: Truck },
                         { label: 'Create', icon: PlayCircle },
                         { label: 'Complete', icon: Wallet },
                       ]

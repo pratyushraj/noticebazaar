@@ -17,12 +17,15 @@ export const isBarterLikeCollab = (deal: any): boolean => {
     deal.collab_type || 
     deal.deal_type || 
     deal.raw?.collab_type || 
+    deal.raw?.deal_type ||
+    deal.type ||
     ''
   ).trim().toLowerCase();
   
   return (
     type.includes('barter') || 
-    ['both', 'hybrid', 'paid_barter'].includes(type)
+    type === 'free' ||
+    ['both', 'hybrid', 'paid_barter', 'gifted', 'product_only'].includes(type)
   );
 };
 
@@ -37,6 +40,8 @@ export const isPaidLikeCollab = (deal: any): boolean => {
     deal.collab_type || 
     deal.deal_type || 
     deal.raw?.collab_type || 
+    deal.raw?.deal_type ||
+    deal.type ||
     ''
   ).trim().toLowerCase();
   

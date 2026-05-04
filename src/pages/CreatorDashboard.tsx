@@ -201,10 +201,11 @@ const CreatorDashboardContent = ({ navigate }: { navigate: any }) => {
       const msg = data?.error || '';
       if (msg.includes('already been processed') || msg.includes('already accepted') || msg.includes('already declined')) {
         toast.info('This offer was already processed.');
-        return;
+        return data; // Return data anyway so caller knows it was processed
       }
       throw new Error(data.error || 'Failed to accept');
     }
+    return data;
   };
 
   const handleDeclineRequest = async (req: any) => {

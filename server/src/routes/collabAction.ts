@@ -139,6 +139,7 @@ router.post('/confirm', async (req, res) => {
             platform: 'instagram',
             collab_request_id: request.id,
             shipping_required: requiresLogistics,
+            collab_type: request.collab_type || null,
 
             // Preserve campaign metadata
             campaign_goal: request.campaign_goal || null,
@@ -168,7 +169,8 @@ router.post('/confirm', async (req, res) => {
             'content_duration',
             'content_requirements',
             'barter_types',
-            'form_data'
+            'form_data',
+            'collab_type'
         ]);
 
         const extractMissingColumn = (message: string): string | null => {

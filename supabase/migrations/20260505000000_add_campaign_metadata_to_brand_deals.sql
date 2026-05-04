@@ -19,6 +19,8 @@ ALTER TABLE public.brand_deals
   ADD COLUMN IF NOT EXISTS delivery_address TEXT,
   ADD COLUMN IF NOT EXISTS creator_otp_verified BOOLEAN DEFAULT FALSE,
   ADD COLUMN IF NOT EXISTS creator_otp_verified_at TIMESTAMPTZ,
+  ADD COLUMN IF NOT EXISTS shipping_required BOOLEAN DEFAULT FALSE,
+  ADD COLUMN IF NOT EXISTS requires_shipping BOOLEAN DEFAULT FALSE,
   ADD COLUMN IF NOT EXISTS collab_type TEXT;
 
 COMMENT ON COLUMN public.brand_deals.selected_package_label IS 'Preserved package label from the original collab offer';

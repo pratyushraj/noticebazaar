@@ -104,7 +104,7 @@ interface MobileDashboardProps {
     collabRequests?: any[];
     brandDeals?: any[];
     stats?: any;
-    onAcceptRequest?: (req: any) => Promise<void>;
+    onAcceptRequest?: (req: any, addressData?: { address: string; pincode: string }, otpVerified?: boolean, otpVerifiedAt?: string) => Promise<any>;
     onDeclineRequest?: (id: string) => void;
     onOpenMenu?: () => void;
     isRefreshing?: boolean;
@@ -1566,7 +1566,7 @@ const MobileDashboardDemo = ({
     const selectedIsPureBarter = (selectedType === 'deal' || selectedType === 'offer') && String(selectedItem?.collab_type || selectedItem?.deal_type || selectedItem?.raw?.collab_type || '').trim().toLowerCase() === 'barter';
     const selectedRequiresPayment = selectedType === 'deal' && !!selectedItem ? inferCreatorRequiresPayment(selectedItem) : false;
     const selectedRequiresShipping = (selectedType === 'deal' || selectedType === 'offer') && !!selectedItem
-        ? Boolean(selectedItem?.shipping_required) || isBarterLikeCollab(selectedItem)
+        ? Boolean(selectedItem?.shipping_required || selectedItem?.raw?.shipping_required) || isBarterLikeCollab(selectedItem)
         : false;
     const selectedShippingStatus = String(selectedItem?.shipping_status || '').trim().toLowerCase() || 'pending';
     const selectedShippingDelivered = selectedShippingStatus === 'delivered' || selectedShippingStatus === 'received';
@@ -2869,10 +2869,13 @@ const MobileDashboardDemo = ({
                     setProcessingDeal(pendingAcceptReq.id);
                     try {
                         const verifiedAt = new Date().toISOString();
-                        await onAcceptRequest?.(pendingAcceptReq, pendingAddressData || undefined, true, verifiedAt);
+                        const acceptResult = await onAcceptRequest?.(pendingAcceptReq, pendingAddressData || undefined, true, verifiedAt);
+                        
+                        // Use the returned deal ID for signing (important: pendingAcceptReq.id is the REQUEST ID)
+                        const dealId = (acceptResult as any)?.deal?.id || (acceptResult as any)?.dealId || (pendingAcceptReq as any).deal_id || pendingAcceptReq.id;
                         
                         // Automatically sign the contract after acceptance
-                        const signResp = await fetch(`${getApiBaseUrl()}/api/deals/${pendingAcceptReq.id}/sign-creator`, {
+                        const signResp = await fetch(`${getApiBaseUrl()}/api/deals/${dealId}/sign-creator`, {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json',
@@ -2886,11 +2889,23 @@ const MobileDashboardDemo = ({
                         });
                         
                         if (signResp.ok) {
+                            // Update UI cache immediately to prevent duplicate signing prompts
+                            patchDealInCache(dealId, { 
+                                status: 'signed_by_creator',
+                                creator_signed_at: new Date().toISOString() 
+                            });
+                            queryClient.invalidateQueries({ queryKey: ['brand_deals'] });
+                            queryClient.invalidateQueries({ queryKey: ['brand-deals'] });
+                            queryClient.invalidateQueries({ queryKey: ['collab-requests'] });
+
                             closeItemDetail();
                             setShowCreatorSigningModal(false);
                             confetti({ particleCount: 80, spread: 60, origin: { y: 0.7 }, colors: ['#10B981', '#059669', '#34D399'] });
                             toast.success(pendingAddressData ? '🎉 Deal accepted & contract signed!' : '🎉 Collab accepted & contract signed!');
                             toast.message('Next: Submit content links in Active tab → Deliver Content', { description: 'Brand gets notified. Payment held until you deliver.' });
+                        } else {
+                            const errorData = await signResp.json().catch(() => ({}));
+                            throw new Error(errorData.error || 'Failed to auto-sign contract');
                         }
                     } catch (error: any) {
                         console.error("Accept error:", error);
@@ -5929,9 +5944,12 @@ const MobileDashboardDemo = ({
                                                                             <h2 className={cn("text-[44px] leading-none font-black tracking-tighter uppercase", textColor)}>
                                                                                 {isBarterLikeCollab(selectedItem) ? "Free Product" : renderBudgetValue(selectedItem)}
                                                                             </h2>
-                                                                            <span className={cn("text-[38px] sm:text-[48px] leading-[0.9] font-black tracking-tighter", textColor)}>
-                                                                                {renderBudgetValue(selectedItem)}
-                                                                            </span>
+                                                                            {/* Only show the value on a separate line if we showed "Free Product" above, to avoid duplication */}
+                                                                            {isBarterLikeCollab(selectedItem) && (
+                                                                                <span className={cn("text-[38px] sm:text-[48px] leading-[0.9] font-black tracking-tighter", textColor)}>
+                                                                                    {renderBudgetValue(selectedItem)}
+                                                                                </span>
+                                                                            )}
                                                                         </div>
                                                                         <span className="block text-[14px] font-bold text-amber-400 flex items-center gap-1.5">
                                                                             <span className="w-1.5 h-1.5 rounded-full bg-amber-400 inline-block animate-pulse" />
@@ -6088,7 +6106,7 @@ const MobileDashboardDemo = ({
                                                         const steps = selectedIsPureBarter
                                                             ? ['Accept', 'Ship', 'Deliver', 'Content', 'Complete']
                                                             : selectedRequiresShipping 
-                                                                ? ['Accept', 'Fund', 'Shipment', 'Content', 'Release']
+                                                                ? ['Accept', 'Fund', 'Logistics', 'Content', 'Release']
                                                                 : ['Accept', 'Fund', 'Content', 'Release'];
                                                         let currentStep = 0;
                                                         
@@ -6116,9 +6134,9 @@ const MobileDashboardDemo = ({
                                                             else currentStep = 0;
                                                         } else if (selectedRequiresShipping) {
                                                             if (isPaid) currentStep = 4;
-                                                            else if (isApproved || isDelivered) currentStep = 3;
                                                             else if (isReceived && !isPaymentPending) currentStep = 3;
                                                             else if (isShipped && !isPaymentPending) currentStep = 2;
+                                                            else if (isApproved || isDelivered) currentStep = 3;
                                                             else if (!isPaymentPending) currentStep = 2;
                                                             else if (isPaymentPending) currentStep = 1;
                                                             else currentStep = 0;
@@ -8193,7 +8211,7 @@ const DashboardTab = React.memo(({
         if (status === 'SENT' || status === 'FULLY_EXECUTED') return { step: 1, label: 'Agreement' };
         
         // Step 2: Shipment (For barter/shipping deals)
-        const isBarter = String(deal?.collab_type || deal?.deal_type || '').toLowerCase().includes('barter');
+        const isBarter = isBarterLikeCollab(deal);
         if (isBarter && (status === 'AWAITING_BRAND_ADDRESS' || (status === 'CONTENT_MAKING' && shippingStatus !== 'received' && shippingStatus !== 'delivered'))) {
             return { step: 2, label: 'Shipment' };
         }
