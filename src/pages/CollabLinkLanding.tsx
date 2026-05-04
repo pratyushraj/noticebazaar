@@ -3894,134 +3894,136 @@ const CollabLinkLanding = () => {
                           )}
                         </div>
 
-                        {/* Section 5: Content Details (Quantities & Specifics) */}
-                        <div className="bg-slate-50 rounded-[32px] p-6 border border-slate-200 shadow-inner space-y-6">
-                          <label className="block text-base font-black text-slate-800 flex items-center gap-2">
-                            <Clapperboard className="h-5 w-5 text-slate-900" />
-                            What content do you need?
-                          </label>
-                          
-                          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                            {DELIVERABLE_OPTIONS.slice(0, 6)
-                              .filter(option => !isBarterRestricted || option.label === 'Reel')
-                              .map(option => {
-                              const isSelected = deliverables.includes(option.value)
-                              return (
-                                <button
-                                  type="button"
-                                  key={option.value}
-                                  onClick={() => {
-                                    handleDeliverableToggle(option.value);
-                                    triggerHaptic(HapticPatterns.selection);
-                                  }}
-                                  className={cn(
-                                    "flex flex-col items-center justify-center gap-2 p-4 rounded-2xl text-[12px] font-black transition-all border-2",
-                                    isSelected 
-                                      ? 'bg-slate-900 border-slate-900 text-white shadow-lg scale-[1.02]' 
-                                      : 'bg-white border-white text-slate-500 hover:border-slate-200 shadow-sm'
-                                  )}
-                                >
-                                  {React.cloneElement(option.icon as React.ReactElement, { className: "h-5 w-5" })}
-                                  {option.label}
-                                </button>
-                              )
-                            })}
-                          </div>
+                        {/* Section 5: Content Details (Quantities & Specifics) - Hidden for Barter */}
+                        {paymentType !== 'barter' && (
+                          <div className="bg-slate-50 rounded-[32px] p-6 border border-slate-200 shadow-inner space-y-6">
+                            <label className="block text-base font-black text-slate-800 flex items-center gap-2">
+                              <Clapperboard className="h-5 w-5 text-slate-900" />
+                              What content do you need?
+                            </label>
+                            
+                            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                              {DELIVERABLE_OPTIONS.slice(0, 6)
+                                .filter(option => !isBarterRestricted || option.label === 'Reel')
+                                .map(option => {
+                                const isSelected = deliverables.includes(option.value)
+                                return (
+                                  <button
+                                    type="button"
+                                    key={option.value}
+                                    onClick={() => {
+                                      handleDeliverableToggle(option.value);
+                                      triggerHaptic(HapticPatterns.selection);
+                                    }}
+                                    className={cn(
+                                      "flex flex-col items-center justify-center gap-2 p-4 rounded-2xl text-[12px] font-black transition-all border-2",
+                                      isSelected 
+                                        ? 'bg-slate-900 border-slate-900 text-white shadow-lg scale-[1.02]' 
+                                        : 'bg-white border-white text-slate-500 hover:border-slate-200 shadow-sm'
+                                    )}
+                                  >
+                                    {React.cloneElement(option.icon as React.ReactElement, { className: "h-5 w-5" })}
+                                    {option.label}
+                                  </button>
+                                )
+                              })}
+                            </div>
 
-                          {/* Granular Settings for selected deliverables (e.g., Reel) */}
-                          {deliverables.length > 0 && (
-                            <div className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
-                              <div className="p-5 rounded-2xl bg-white border border-slate-100 shadow-sm space-y-5">
-                                <div className="space-y-3">
-                                  <div className="flex items-center justify-between">
-                                    <span className="text-[11px] font-black uppercase tracking-widest text-slate-400">Content Quantity</span>
-                                    <span className="text-[10px] font-bold text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">Recommended: 1-2</span>
-                                  </div>
-                                  <div className="flex gap-2">
-                                    {(isBarterRestricted ? [1] : [1, 2, '3+'] as (number | '3+')[]).map(num => (
-                                      <button 
-                                        key={String(num)}
-                                        type="button"
-                                        onClick={() => { setContentQuantity(num); triggerHaptic(HapticPatterns.selection); }}
-                                        className={cn(
-                                          "flex-1 h-11 rounded-xl border font-bold text-sm transition-all active:scale-95",
-                                          contentQuantity === num
-                                            ? 'bg-slate-900 border-slate-900 text-white shadow-md'
-                                            : 'bg-slate-50 border-slate-100 text-slate-900 hover:border-slate-900'
-                                        )}
-                                      >
-                                        {num}
-                                      </button>
-                                    ))}
-                                  </div>
-                                </div>
-
-                                {deliverables.some(d => d.toLowerCase().includes('reel') || d.toLowerCase().includes('video')) && (
+                            {/* Granular Settings for selected deliverables (e.g., Reel) */}
+                            {deliverables.length > 0 && (
+                              <div className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
+                                <div className="p-5 rounded-2xl bg-white border border-slate-100 shadow-sm space-y-5">
                                   <div className="space-y-3">
-                                    <span className="text-[11px] font-black uppercase tracking-widest text-slate-400">Duration</span>
+                                    <div className="flex items-center justify-between">
+                                      <span className="text-[11px] font-black uppercase tracking-widest text-slate-400">Content Quantity</span>
+                                      <span className="text-[10px] font-bold text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">Recommended: 1-2</span>
+                                    </div>
                                     <div className="flex gap-2">
-                                      {(isBarterRestricted ? ['15s'] : ['15s', '30s', '60s']).map(dur => (
+                                      {(isBarterRestricted ? [1] : [1, 2, '3+'] as (number | '3+')[]).map(num => (
                                         <button 
-                                          key={dur}
+                                          key={String(num)}
                                           type="button"
-                                          onClick={() => { setContentDuration(dur); triggerHaptic(HapticPatterns.selection); }}
+                                          onClick={() => { setContentQuantity(num); triggerHaptic(HapticPatterns.selection); }}
                                           className={cn(
                                             "flex-1 h-11 rounded-xl border font-bold text-sm transition-all active:scale-95",
-                                            contentDuration === dur
+                                            contentQuantity === num
                                               ? 'bg-slate-900 border-slate-900 text-white shadow-md'
                                               : 'bg-slate-50 border-slate-100 text-slate-900 hover:border-slate-900'
                                           )}
                                         >
-                                          {dur}
+                                          {num}
                                         </button>
                                       ))}
                                     </div>
                                   </div>
-                                )}
 
-                                <div className="space-y-3">
-                                  <span className="text-[11px] font-black uppercase tracking-widest text-slate-400">Requirements</span>
-                                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                                    {[
-                                      { id: 'hook', label: 'Hook in first 3 sec' },
-                                      { id: 'voiceover', label: 'Voiceover included' },
-                                      { id: 'cta', label: 'Strong Call to Action' },
-                                      { id: 'tag', label: 'Brand Tagging' },
-                                    ].map(req => {
-                                      const isChecked = contentRequirements.includes(req.id)
-                                      return (
-                                        <button
-                                          key={req.id}
-                                          type="button"
-                                          onClick={() => {
-                                            setContentRequirements(prev =>
-                                              prev.includes(req.id) ? prev.filter(r => r !== req.id) : [...prev, req.id]
-                                            )
-                                            triggerHaptic(HapticPatterns.selection)
-                                          }}
-                                          className={cn(
-                                            "flex items-center gap-3 p-3 rounded-xl border text-left transition-all",
-                                            isChecked
-                                              ? 'border-emerald-300 bg-emerald-50 text-slate-900'
-                                              : 'border-slate-100 bg-slate-50/50 text-slate-600 hover:bg-slate-100'
-                                          )}
-                                        >
-                                          <div className={cn(
-                                            "w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all flex-shrink-0",
-                                            isChecked ? 'bg-emerald-500 border-emerald-500' : 'border-slate-200 bg-white'
-                                          )}>
-                                            {isChecked && <Check className="h-3.5 w-3.5 text-white" />}
-                                          </div>
-                                          <span className="text-[12px] font-bold">{req.label}</span>
-                                        </button>
-                                      )
-                                    })}
+                                  {deliverables.some(d => d.toLowerCase().includes('reel') || d.toLowerCase().includes('video')) && (
+                                    <div className="space-y-3">
+                                      <span className="text-[11px] font-black uppercase tracking-widest text-slate-400">Duration</span>
+                                      <div className="flex gap-2">
+                                        {(isBarterRestricted ? ['15s'] : ['15s', '30s', '60s']).map(dur => (
+                                          <button 
+                                            key={dur}
+                                            type="button"
+                                            onClick={() => { setContentDuration(dur); triggerHaptic(HapticPatterns.selection); }}
+                                            className={cn(
+                                              "flex-1 h-11 rounded-xl border font-bold text-sm transition-all active:scale-95",
+                                              contentDuration === dur
+                                                ? 'bg-slate-900 border-slate-900 text-white shadow-md'
+                                                : 'bg-slate-50 border-slate-100 text-slate-900 hover:border-slate-900'
+                                            )}
+                                          >
+                                            {dur}
+                                          </button>
+                                        ))}
+                                      </div>
+                                    </div>
+                                  )}
+
+                                  <div className="space-y-3">
+                                    <span className="text-[11px] font-black uppercase tracking-widest text-slate-400">Requirements</span>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                      {[
+                                        { id: 'hook', label: 'Hook in first 3 sec' },
+                                        { id: 'voiceover', label: 'Voiceover included' },
+                                        { id: 'cta', label: 'Strong Call to Action' },
+                                        { id: 'tag', label: 'Brand Tagging' },
+                                      ].map(req => {
+                                        const isChecked = contentRequirements.includes(req.id)
+                                        return (
+                                          <button
+                                            key={req.id}
+                                            type="button"
+                                            onClick={() => {
+                                              setContentRequirements(prev =>
+                                                prev.includes(req.id) ? prev.filter(r => r !== req.id) : [...prev, req.id]
+                                              )
+                                              triggerHaptic(HapticPatterns.selection)
+                                            }}
+                                            className={cn(
+                                              "flex items-center gap-3 p-3 rounded-xl border text-left transition-all",
+                                              isChecked
+                                                ? 'border-emerald-300 bg-emerald-50 text-slate-900'
+                                                : 'border-slate-100 bg-slate-50/50 text-slate-600 hover:bg-slate-100'
+                                            )}
+                                          >
+                                            <div className={cn(
+                                              "w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all flex-shrink-0",
+                                              isChecked ? 'bg-emerald-500 border-emerald-500' : 'border-slate-200 bg-white'
+                                            )}>
+                                              {isChecked && <Check className="h-3.5 w-3.5 text-white" />}
+                                            </div>
+                                            <span className="text-[12px] font-bold">{req.label}</span>
+                                          </button>
+                                        )
+                                      })}
+                                    </div>
                                   </div>
                                 </div>
                               </div>
-                            </div>
-                          )}
-                        </div>
+                            )}
+                          </div>
+                        )}
 
                       </div>
                     )}
