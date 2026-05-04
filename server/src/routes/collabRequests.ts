@@ -3180,6 +3180,14 @@ router.post('/accept/confirm', async (req: AuthenticatedRequest, res: Response) 
             product_image_url: normalizedProductImage,
           }
         : {}),
+      campaign_goal: request.campaign_goal || undefined,
+      campaign_category: request.campaign_category || undefined,
+      campaign_description: request.campaign_description || undefined,
+      // Legacy names for DealDetailPage.tsx
+      campaignName: request.campaign_goal || undefined,
+      brandName: request.brand_name || undefined,
+      productDescription: (request as any).barter_description || request.campaign_description || undefined,
+      productName: (request as any).barter_product_name || undefined,
     };
     const persistedFormData = Object.values(offerDetailFormData).some(value => value !== undefined && value !== null && value !== '')
       ? offerDetailFormData
@@ -3199,6 +3207,9 @@ router.post('/accept/confirm', async (req: AuthenticatedRequest, res: Response) 
       progress_percentage: isBarter ? 15 : 20,
       deal_type: isBarter ? 'barter' : 'paid',
       collab_type: normalizeCollabTypeForApi(request.collab_type) || request.collab_type,
+      campaign_description: request.campaign_description || null,
+      campaign_goal: request.campaign_goal || null,
+      campaign_category: request.campaign_category || null,
       shipping_required: (request as any).shipping_required === true || isBarterLikeCollab(request.collab_type),
       created_via: 'collab_request',
       brand_address: request.brand_address,

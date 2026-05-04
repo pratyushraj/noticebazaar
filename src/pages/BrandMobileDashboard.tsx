@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import type { MouseEvent, MutableRefObject, ReactNode } from 'react';
 import { createPortal } from 'react-dom';
-import { AlertTriangle, ArrowLeft, BarChart3, Bell, Briefcase, Calendar, Camera, Check, CheckCircle2, ChevronRight, Clock, Copy, CreditCard, ExternalLink, Eye, FileText, Globe, Handshake, History, Info, Landmark, LayoutDashboard, Loader2, Lock, Mail, MapPin, Menu, MessageSquare, Moon, MoreHorizontal, MoreVertical, PenTool, Play, PlayCircle, Plus, RefreshCw, RotateCcw, Search, Send, Settings, Shield, ShieldCheck, Sparkles, Sun, Truck, User, Video, Wallet, Zap } from 'lucide-react';
+import { AlertTriangle, ArrowLeft, BarChart3, Bell, Briefcase, Calendar, Camera, Check, CheckCircle2, ChevronRight, Clock, Copy, CreditCard, ExternalLink, Eye, FileText, Globe, Handshake, History, Info, Landmark, LayoutDashboard, Loader2, Lock, Mail, MapPin, Menu, MessageSquare, Moon, MoreHorizontal, MoreVertical, Package, PenTool, Play, PlayCircle, Plus, RefreshCw, RotateCcw, Search, Send, Settings, Shield, ShieldCheck, Sparkles, Sun, Tag, Target, Truck, User, Video, Wallet, Zap } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import CountUp from 'react-countup';
@@ -2077,6 +2077,11 @@ const BrandMobileDashboard = ({
     const trackingNumber = String(offer?.tracking_number || '').trim();
     const courierName = String(offer?.courier_name || '').trim();
     const creatorUpiId = String(offer?.profiles?.bank_upi || '').trim();
+    
+    // Campaign Objectives fallbacks
+    const campaignGoal = offer?.campaign_goal || offer?.form_data?.campaign_goal || offer?.form_data?.campaignName;
+    const campaignCategory = offer?.campaign_category || offer?.form_data?.campaign_category || offer?.form_data?.industry;
+    const barterProductName = (offer as any)?.barter_product_name || offer?.form_data?.barter_product_name || offer?.form_data?.productName;
 
     const normalizedDealStatus = effectiveDealStatus(offer);
     const canReviewContent = normalizedDealStatus === 'CONTENT_DELIVERED' || normalizedDealStatus === 'REVISION_DONE';
@@ -2401,6 +2406,53 @@ const BrandMobileDashboard = ({
               </div>
               <div className={cn('p-5 rounded-[28px] border', isDark ? 'bg-card/40 border-white/5' : 'bg-white border-slate-100 shadow-sm')}>
                 <p className={cn('text-[13px] font-bold leading-relaxed', textColor)}>{deliverables}</p>
+              </div>
+            </div>
+          )}
+
+          {/* Campaign Details Section */}
+          {(campaignGoal || campaignCategory || (requiresShipping && barterProductName)) && (
+            <div className="mb-6">
+              <div className="flex items-center justify-between mb-4 px-1">
+                <SectionTitle>Campaign Objectives</SectionTitle>
+                <div className={cn('px-2.5 py-1 rounded-lg border text-[9px] font-black uppercase tracking-widest', isDark ? 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20' : 'bg-indigo-50 text-indigo-600 border-indigo-100')}>
+                  Strategy
+                </div>
+              </div>
+              <div className={cn('p-4 rounded-[28px] border grid grid-cols-2 gap-3', isDark ? 'bg-card/40 border-white/5' : 'bg-white border-slate-100 shadow-sm')}>
+                {campaignGoal && (
+                  <div className={cn('p-3 rounded-2xl border flex items-center gap-3', isDark ? 'bg-white/5 border-white/5' : 'bg-slate-50 border-slate-100')}>
+                    <div className="w-8 h-8 rounded-xl bg-indigo-500/10 flex items-center justify-center shrink-0">
+                      <Target className="w-4 h-4 text-indigo-500" />
+                    </div>
+                    <div>
+                      <p className={cn('text-[10px] font-bold opacity-40 uppercase tracking-wider', textColor)}>Goal</p>
+                      <p className={cn('text-[12px] font-bold truncate max-w-[100px]', textColor)}>{campaignGoal}</p>
+                    </div>
+                  </div>
+                )}
+                {campaignCategory && (
+                  <div className={cn('p-3 rounded-2xl border flex items-center gap-3', isDark ? 'bg-white/5 border-white/5' : 'bg-slate-50 border-slate-100')}>
+                    <div className="w-8 h-8 rounded-xl bg-purple-500/10 flex items-center justify-center shrink-0">
+                      <Tag className="w-4 h-4 text-purple-500" />
+                    </div>
+                    <div>
+                      <p className={cn('text-[10px] font-bold opacity-40 uppercase tracking-wider', textColor)}>Category</p>
+                      <p className={cn('text-[12px] font-bold truncate max-w-[100px]', textColor)}>{campaignCategory}</p>
+                    </div>
+                  </div>
+                )}
+                {requiresShipping && barterProductName && (
+                  <div className={cn('p-3 rounded-2xl border flex items-center gap-3 col-span-2', isDark ? 'bg-white/5 border-white/5' : 'bg-slate-50 border-slate-100')}>
+                    <div className="w-8 h-8 rounded-xl bg-emerald-500/10 flex items-center justify-center shrink-0">
+                      <Package className="w-4 h-4 text-emerald-500" />
+                    </div>
+                    <div>
+                      <p className={cn('text-[10px] font-bold opacity-40 uppercase tracking-wider', textColor)}>Product for Collab</p>
+                      <p className={cn('text-[12px] font-bold', textColor)}>{barterProductName}</p>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           )}

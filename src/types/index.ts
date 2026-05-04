@@ -274,6 +274,8 @@ export type BrandDeal = Tables<'brand_deals'> & {
   escrow_receipt_url?: string | null;
   escrow_receipt_path?: string | null;
   campaign_description?: string | null;
+  campaign_goal?: string | null;
+  campaign_category?: string | null;
 };
 
 // NEW: Payment Reminder Type
