@@ -126,13 +126,17 @@ const PushNotificationPrompt: React.FC<PushNotificationPromptProps> = ({
 
                             {/* Close button */}
                             <button
-                                onClick={handleDismiss}
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleDismiss();
+                                }}
                                 className={cn(
-                                    "absolute top-5 right-5 p-2 rounded-full transition-all active:scale-90",
-                                    isDark ? "bg-white/5 hover:bg-white/10 text-white" : "bg-slate-100 hover:bg-slate-200 text-slate-500"
+                                    "absolute top-4 right-4 p-3 rounded-full transition-all active:scale-90 z-[100] cursor-pointer",
+                                    isDark ? "bg-white/10 hover:bg-white/20 text-white" : "bg-slate-100 hover:bg-slate-200 text-slate-500"
                                 )}
+                                aria-label="Close"
                             >
-                                <X className="w-4 h-4" />
+                                <X className="w-5 h-5" />
                             </button>
                         </motion.div>
                     </div>
