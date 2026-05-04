@@ -297,6 +297,7 @@ router.patch('/:id/accept-counter', async (req: AuthenticatedRequest, res: expre
     const isBarter = request.collab_type === 'barter';
     const isHybrid = request.collab_type === 'hybrid' || request.collab_type === 'both';
     const requiresShipping = isBarter || isHybrid;
+    const dealPlatform = String(request.platform || inferPlatformFromDeliverables(request.deliverables) || 'Multiple Platforms').trim();
 
     // Create the brand deal
     const dealData: any = {
@@ -307,7 +308,7 @@ router.patch('/:id/accept-counter', async (req: AuthenticatedRequest, res: expre
       deliverables: deliverablesArray.join(', '),
       due_date: request.deadline || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
       payment_expected_date: request.deadline || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-      platform: inferPlatformFromDeliverables(request.deliverables),
+      platform: dealPlatform,
       status: 'Drafting',
       deal_type: isBarter ? 'barter' : 'paid',
       created_via: 'collab_request_counter',

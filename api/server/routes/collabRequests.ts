@@ -1463,8 +1463,7 @@ router.post('/accept/confirm', async (req: AuthenticatedRequest, res: Response) 
         if (request.collab_type === 'paid' || request.collab_type === 'both' || request.collab_type === 'hybrid') {
           paymentTerms = `Payment expected by ${request.deadline ? new Date(request.deadline).toLocaleDateString() : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString()}`;
         }
-        const inferredPlatform = inferPlatformFromDeliverables(request.deliverables);
-        const usagePlatforms = inferredPlatform ? [inferredPlatform] : [];
+        const usagePlatforms = dealPlatform ? [dealPlatform] : [];
         const dealSchema = {
           deal_amount: dealAmount,
           deliverables: deliverablesArray.length > 0 ? deliverablesArray : ['As per agreement'],
@@ -1484,7 +1483,7 @@ router.post('/accept/confirm', async (req: AuthenticatedRequest, res: Response) 
           paymentTerms,
           dueDate: request.deadline ? new Date(request.deadline).toLocaleDateString() : undefined,
           paymentExpectedDate: request.deadline ? new Date(request.deadline).toLocaleDateString() : undefined,
-          platform: inferredPlatform || undefined,
+          platform: dealPlatform,
           brandEmail: request.brand_email || undefined,
           brandAddress: request.brand_address?.trim() || undefined,
           brandGstin: request.brand_gstin?.trim() || undefined,
@@ -1603,6 +1602,8 @@ router.patch('/:id/accept', async (req: AuthenticatedRequest, res: Response) => 
 
     const isBarter = request.collab_type === 'barter';
     const requiresShipping = request.collab_type === 'barter' || request.collab_type === 'hybrid' || request.collab_type === 'both';
+    const inferredPlatform = inferPlatformFromDeliverables(request.deliverables);
+    const dealPlatform = String(request.platform || inferredPlatform || 'Multiple Platforms').trim();
 
     // Create brand deal
      const dealData: any = {
@@ -1613,7 +1614,7 @@ router.patch('/:id/accept', async (req: AuthenticatedRequest, res: Response) => 
        deliverables: deliverablesArray.join(', '),
        due_date: request.deadline || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
        payment_expected_date: request.deadline || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-       platform: inferPlatformFromDeliverables(request.deliverables),
+       platform: dealPlatform,
        status: isBarter ? 'Drafting' : 'CONTRACT_READY',
        deal_type: isBarter ? 'barter' : 'paid',
        created_via: 'collab_request',
@@ -1749,8 +1750,7 @@ router.patch('/:id/accept', async (req: AuthenticatedRequest, res: Response) => 
             : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString();
           paymentTerms = `Payment expected by ${paymentDate}`;
         }
-        const inferredPlatform = inferPlatformFromDeliverables(request.deliverables);
-        const usagePlatforms = inferredPlatform ? [inferredPlatform] : [];
+        const usagePlatforms = dealPlatform ? [dealPlatform] : [];
 
         // Build deal schema for contract
         const dealSchema = {
@@ -1793,7 +1793,7 @@ router.patch('/:id/accept', async (req: AuthenticatedRequest, res: Response) => 
           paymentExpectedDate: request.deadline
             ? new Date(request.deadline).toLocaleDateString()
             : undefined,
-          platform: inferredPlatform || undefined,
+          platform: dealPlatform,
           brandEmail: request.brand_email || undefined,
           brandAddress: request.brand_address?.trim() || undefined,
           brandGstin: request.brand_gstin?.trim() || undefined,
