@@ -3,7 +3,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
     HelpCircle, ShieldCheck, Wallet, ArrowUpRight, 
     FileText, ChevronRight, Smartphone, Landmark, Download,
-    CheckCircle2, Clock, AlertCircle, History
+    CheckCircle2, Clock, AlertCircle, History,
+    TrendingUp, QrCode, MoreHorizontal, Sun, Moon, Bell, Menu, LayoutDashboard, Briefcase, User, Send, X, AlertTriangle, Instagram, BarChart3, Share2, Copy, Eye, ArrowRight
 } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { normalizeDealStatus } from '../../lib/utils/creator-dashboard';
@@ -295,5 +296,3 @@ export const PaymentsTab: React.FC<PaymentsTabProps> = ({
     );
 };
 
-// Types/Icons needed locally if not imported
-import { TrendingUp, QrCode, MoreHorizontal, Sun, Moon, Bell, Menu, LayoutDashboard, Briefcase, User, Send, X, AlertTriangle, Instagram, BarChart3, Share2, Copy, Eye, ArrowRight } from 'lucide-react';

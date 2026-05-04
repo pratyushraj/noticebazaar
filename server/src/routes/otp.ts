@@ -443,24 +443,39 @@ router.post('/send-creator', authMiddleware, async (req: AuthenticatedRequest, r
       });
     }
 
-    // Fetch deal
-    const { data: deal, error: dealError } = await supabase
+    // Fetch deal or collab_request
+    let targetTable = 'brand_deals';
+    let { data: deal, error: dealError } = await supabase
       .from('brand_deals')
       .select('*')
       .eq('id', dealId)
       .maybeSingle();
 
-    if (dealError || !deal) {
-      console.warn('[OTP] send-creator failed: Deal not found or error:', dealError);
+    if (!deal) {
+      // Fallback to collab_requests
+      const { data: request, error: requestError } = await supabase
+        .from('collab_requests')
+        .select('*')
+        .eq('id', dealId)
+        .maybeSingle();
+      
+      if (request) {
+        deal = request;
+        targetTable = 'collab_requests';
+      }
+    }
+
+    if (!deal) {
+      console.warn('[OTP] send-creator failed: Deal or Request not found');
       return res.status(404).json({
         success: false,
-        error: 'Deal not found',
+        error: 'Offer or Deal not found',
       });
     }
 
     // Verify user has access (must be the creator or admin)
     if (deal.creator_id !== req.user.id && req.user?.role !== 'admin') {
-      console.warn('[OTP] send-creator failed: Access denied. Deal creator:', deal.creator_id, 'User:', req.user.id);
+      console.warn('[OTP] send-creator failed: Access denied. Target creator:', deal.creator_id, 'User:', req.user.id);
       return res.status(403).json({
         success: false,
         error: 'Access denied',
@@ -538,7 +553,7 @@ router.post('/send-creator', authMiddleware, async (req: AuthenticatedRequest, r
       });
     }
 
-    // Store OTP hash in deal (for creator signing)
+    // Store OTP hash in target table
     const updateData: any = {
       creator_otp_hash: otpHash,
       creator_otp_expires_at: expiresAt.toISOString(),
@@ -548,12 +563,12 @@ router.post('/send-creator', authMiddleware, async (req: AuthenticatedRequest, r
     };
 
     const { error: updateError } = await supabase
-      .from('brand_deals')
+      .from(targetTable)
       .update(updateData)
       .eq('id', dealId);
 
     if (updateError) {
-      console.error('[OTP] Failed to update deal:', updateError);
+      console.error(`[OTP] Failed to update ${targetTable}:`, updateError);
       return res.status(500).json({
         success: false,
         error: `Failed to save OTP: ${updateError.message}`,
@@ -608,21 +623,36 @@ router.post('/verify-creator', authMiddleware, async (req: AuthenticatedRequest,
       });
     }
 
-    // Fetch deal with OTP info
-    const { data: deal, error: dealError } = await supabase
+    // Fetch deal or collab_request
+    let targetTable = 'brand_deals';
+    let { data: deal, error: dealError } = await supabase
       .from('brand_deals')
       .select('*')
       .eq('id', dealId)
       .maybeSingle();
 
-    if (dealError || !deal) {
+    if (!deal) {
+      // Fallback to collab_requests
+      const { data: request, error: requestError } = await supabase
+        .from('collab_requests')
+        .select('*')
+        .eq('id', dealId)
+        .maybeSingle();
+      
+      if (request) {
+        deal = request;
+        targetTable = 'collab_requests';
+      }
+    }
+
+    if (!deal) {
       return res.status(404).json({
         success: false,
-        error: 'Deal not found',
+        error: 'Offer or Deal not found',
       });
     }
 
-    // Verify user has access
+    // Verify user has access (must be the creator or admin)
     if (deal.creator_id !== req.user.id && req.user?.role !== 'admin') {
       return res.status(403).json({
         success: false,
@@ -681,7 +711,7 @@ router.post('/verify-creator', authMiddleware, async (req: AuthenticatedRequest,
       // Increment attempts
       const newAttempts = attempts + 1;
       await supabase
-        .from('brand_deals')
+        .from(targetTable)
         .update({
           creator_otp_attempts: newAttempts,
           updated_at: new Date().toISOString(),
@@ -700,29 +730,24 @@ router.post('/verify-creator', authMiddleware, async (req: AuthenticatedRequest,
       });
     }
 
-    // OTP is valid - mark as verified
-    const updateData: any = {
-      creator_otp_verified: true,
-      creator_otp_verified_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    };
-
+    // Update verification status in target table
     const { error: updateError } = await supabase
-      .from('brand_deals')
-      .update(updateData)
+      .from(targetTable)
+      .update({
+        creator_otp_verified: true,
+        creator_otp_verified_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      })
       .eq('id', dealId);
 
     if (updateError) {
-      console.error('[OTP] Failed to update deal:', updateError);
-      return res.status(500).json({
-        success: false,
-        error: `Failed to verify OTP: ${updateError.message}`,
-      });
+      console.error(`[OTP] Failed to update ${targetTable} verification status:`, updateError);
+      return res.status(500).json({ success: false, error: 'Failed to verify OTP' });
     }
 
     // Log successful verification
     await logDealAction(dealId, 'CREATOR_OTP_VERIFIED', {
-      verifiedAt: updateData.creator_otp_verified_at,
+      verifiedAt: new Date().toISOString(),
     });
 
     console.log('[OTP] Creator OTP verified successfully for deal:', dealId);
@@ -730,7 +755,7 @@ router.post('/verify-creator', authMiddleware, async (req: AuthenticatedRequest,
     return res.json({
       success: true,
       message: 'OTP verified successfully',
-      verifiedAt: updateData.creator_otp_verified_at,
+      verifiedAt: new Date().toISOString(),
     });
   } catch (error: any) {
     console.error('[OTP] verify-creator error:', error);

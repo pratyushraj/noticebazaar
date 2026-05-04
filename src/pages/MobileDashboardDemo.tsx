@@ -225,8 +225,42 @@ const parseStringList = (value: any): string[] => {
     return [];
 };
 
-const getOfferPackageLabel = (item: any) =>
-    String(item?.selected_package_label || item?.form_data?.selected_package_label || item?.raw?.selected_package_label || item?.raw?.form_data?.selected_package_label || item?.campaign_goal || item?.raw?.campaign_goal || '').trim();
+const resolveItemPackageLabel = (item: any) => {
+    if (!item) return '';
+    
+    // 1. Explicitly stored label (canonical)
+    const storedLabel = String(
+        item.selected_package_label || 
+        item.form_data?.selected_package_label || 
+        item.raw?.selected_package_label || 
+        item.raw?.form_data?.selected_package_label || 
+        item.package_name || 
+        item.raw?.package_name || 
+        item.package_tier || 
+        item.raw?.package_tier || 
+        ''
+    ).trim();
+    if (storedLabel) return storedLabel;
+
+    // 2. Detect from campaign_goal if it looks like a tier
+    const rawGoal = String(item.campaign_goal || item.raw?.campaign_goal || '').trim();
+    const tierKeywords = /starter|growth|collab|campaign|exchange|product|basic|standard|premium|🚀|📈|🎯|💼|⭐|🎁/i;
+    if (rawGoal && tierKeywords.test(rawGoal)) return rawGoal;
+
+    // 3. Extract from description string (legacy)
+    const rawDesc = String(item.campaign_description || item.description || item.raw?.campaign_description || item.raw?.description || '');
+    const packageMatch = rawDesc.match(/(?:Selected package:|\|\|Package:)\s*([🚀📈🎯💼⭐🎁]?\s*.*?)(?=\s*Collab Duration:|\n|Additional|\|\||$)/i);
+    if (packageMatch) return packageMatch[1].trim();
+
+    // 4. Fallback to campaign_goal even if not "tier-like"
+    if (rawGoal) return rawGoal;
+
+    // 5. Hardcoded fallbacks
+    const isBarter = String(item.collab_type || item.deal_type || item.raw?.collab_type || '').toLowerCase().includes('barter');
+    return isBarter ? 'Product Collaboration' : 'Starter Collab';
+};
+
+const getOfferPackageLabel = (item: any) => resolveItemPackageLabel(item);
 
 const getOfferRequirements = (item: any) =>
     parseStringList(item?.content_requirements || item?.form_data?.content_requirements || item?.raw?.content_requirements || item?.raw?.form_data?.content_requirements);
@@ -1531,7 +1565,7 @@ const MobileDashboardDemo = ({
     const selectedDealStatus = normalizeDealStatus(selectedItem);
     const selectedIsPureBarter = (selectedType === 'deal' || selectedType === 'offer') && String(selectedItem?.collab_type || selectedItem?.deal_type || selectedItem?.raw?.collab_type || '').trim().toLowerCase() === 'barter';
     const selectedRequiresPayment = selectedType === 'deal' && !!selectedItem ? inferCreatorRequiresPayment(selectedItem) : false;
-    const selectedRequiresShipping = selectedType === 'deal' && !!selectedItem
+    const selectedRequiresShipping = (selectedType === 'deal' || selectedType === 'offer') && !!selectedItem
         ? Boolean(selectedItem?.shipping_required) || isBarterLikeCollab(selectedItem)
         : false;
     const selectedShippingStatus = String(selectedItem?.shipping_status || '').trim().toLowerCase() || 'pending';
@@ -1909,6 +1943,8 @@ const MobileDashboardDemo = ({
     const [creatorOTP, setCreatorOTP] = useState('');
     const [creatorSigningStep, setCreatorSigningStep] = useState<'send' | 'verify'>('send');
     const [isSigningAsCreator, setIsSigningAsCreator] = useState(false);
+    const [creatorSigningMode, setCreatorSigningMode] = useState<'sign' | 'accept'>('sign');
+    const [pendingAddressData, setPendingAddressData] = useState<{ address: string; pincode: string } | null>(null);
     const [liveCollabProfile, setLiveCollabProfile] = useState<{ name?: string | null; profile_photo?: string | null } | null>(null);
     const [isCollabLinkCopied, setIsCollabLinkCopied] = useState(false);
 
@@ -2110,6 +2146,9 @@ const MobileDashboardDemo = ({
         return pendingOffersDeduplicated;
     }, [pendingOffersDeduplicated]);
     const pendingOffersCount = displayOffers.length;
+    const counterOfferCount = (collabRequests || []).filter((req: any) => 
+        String(req?.status || '').toLowerCase().trim() === 'counter_offered'
+    ).length;
     const completedDealsList = React.useMemo(() => {
         return (brandDeals || []).filter((d: any) => {
             const s = normalizeDealStatus(d);
@@ -2822,7 +2861,48 @@ const MobileDashboardDemo = ({
             const data = await resp.json();
             if (data.success || (data.error && data.error.includes('already been verified'))) {
                 if (data.success) toast.success('OTP verified!');
-                await handleSignAsCreator();
+                
+                if (creatorSigningMode === 'accept' && pendingAcceptReq) {
+                    // Finalize the acceptance flow after OTP verification
+                    // Also sign the contract automatically to avoid a second OTP prompt
+                    triggerHaptic();
+                    setProcessingDeal(pendingAcceptReq.id);
+                    try {
+                        const verifiedAt = new Date().toISOString();
+                        await onAcceptRequest?.(pendingAcceptReq, pendingAddressData || undefined, true, verifiedAt);
+                        
+                        // Automatically sign the contract after acceptance
+                        const signResp = await fetch(`${getApiBaseUrl()}/api/deals/${pendingAcceptReq.id}/sign-creator`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                Authorization: `Bearer ${session.access_token}`,
+                            },
+                            body: JSON.stringify({
+                                signerName: profile?.first_name ? `${profile.first_name} ${profile.last_name || ''}`.trim() : 'Creator',
+                                signerEmail: user?.email || profile?.email || '',
+                                contractSnapshotHtml: `Contract auto-signed during acceptance at: ${new Date().toISOString()}`,
+                            }),
+                        });
+                        
+                        if (signResp.ok) {
+                            closeItemDetail();
+                            setShowCreatorSigningModal(false);
+                            confetti({ particleCount: 80, spread: 60, origin: { y: 0.7 }, colors: ['#10B981', '#059669', '#34D399'] });
+                            toast.success(pendingAddressData ? '🎉 Deal accepted & contract signed!' : '🎉 Collab accepted & contract signed!');
+                            toast.message('Next: Submit content links in Active tab → Deliver Content', { description: 'Brand gets notified. Payment held until you deliver.' });
+                        }
+                    } catch (error: any) {
+                        console.error("Accept error:", error);
+                        toast.error('Failed to accept: ' + (error?.message || 'Unknown error'));
+                    } finally {
+                        setProcessingDeal(null);
+                        setPendingAcceptReq(null);
+                        setPendingAddressData(null);
+                    }
+                } else {
+                    await handleSignAsCreator();
+                }
             } else {
                 toast.error(data.error || 'Invalid OTP');
             }
@@ -2935,28 +3015,15 @@ const MobileDashboardDemo = ({
             return;
         }
 
-        // Otherwise proceed with normal accept
+        // Trigger OTP Verification flow before acceptance
         triggerHaptic();
-        setProcessingDeal(req.id);
-        try {
-            await onAcceptRequest(req);
-            closeItemDetail();
-            // Celebration: confetti burst on first accept
-            confetti({ particleCount: 80, spread: 60, origin: { y: 0.7 }, colors: ['#10B981', '#059669', '#34D399'] });
-            toast.success('🎉 Collab accepted! Check your deals tab.');
-            toast.message('Next: Submit content links in Active tab → Deliver Content', { description: 'Brand gets notified. Payment held until you deliver.' });
-        } catch (error: any) {
-            console.error("Accept error:", error);
-            const msg = error?.message || '';
-            if (msg.includes('already been processed') || msg.includes('already accepted') || msg.includes('already declined')) {
-                toast.info('This offer was already processed.');
-                closeItemDetail();
-            } else {
-                toast.error('Failed to accept: ' + (error?.message || 'Unknown error'));
-            }
-        } finally {
-            setProcessingDeal(null);
-        }
+        setPendingAcceptReq(req);
+        setCreatorSigningMode('accept');
+        setCreatorSigningStep('send');
+        setCreatorOTP('');
+        setShowCreatorSigningModal(true);
+        // Pre-emptively send OTP
+        handleSendCreatorOTP();
     };
 
     const handleOpenBarterShippingFlow = (req: any) => {
@@ -2970,23 +3037,15 @@ const MobileDashboardDemo = ({
         if (!pendingAcceptReq || !onAcceptRequest) return;
         
         setShowCreatorShippingModal(false);
-        triggerHaptic();
-        setProcessingDeal(pendingAcceptReq.id);
+        setPendingAddressData(addressData);
         
-        try {
-            // Accept the deal and pass the shipping details through the accept flow.
-            await onAcceptRequest(pendingAcceptReq, addressData);
-            closeItemDetail();
-            confetti({ particleCount: 80, spread: 60, origin: { y: 0.7 }, colors: ['#10B981', '#059669', '#34D399'] });
-            toast.success('🎉 Deal accepted! Shipping address confirmed.');
-            toast.message('Next: Submit content links in Active tab → Deliver Content', { description: 'Brand gets notified. Payment held until you deliver.' });
-        } catch (error: any) {
-            console.error("Accept error with shipping:", error);
-            toast.error('Failed to accept: ' + (error?.message || 'Unknown error'));
-        } finally {
-            setProcessingDeal(null);
-            setPendingAcceptReq(null);
-        }
+        // After shipping is confirmed, move to OTP Signing flow
+        triggerHaptic();
+        setCreatorSigningMode('accept');
+        setCreatorSigningStep('send');
+        setCreatorOTP('');
+        setShowCreatorSigningModal(true);
+        handleSendCreatorOTP();
     };
 
     const [showMenu, setShowMenu] = useState(false);
@@ -5065,6 +5124,7 @@ const MobileDashboardDemo = ({
                             Instagram={Instagram} Copy={Copy} Eye={Eye} MessageCircleMore={MessageCircleMore}
                             handleAccept={handleAccept} onDeclineRequest={onDeclineRequest}
                             analyticsSummary={analyticsSummary} analyticsLoading={analyticsLoading}
+                            counterOfferCount={counterOfferCount}
                         />
                     )}
 
@@ -5537,6 +5597,14 @@ const MobileDashboardDemo = ({
                                                     const usageDuration = selectedItem.usage_duration || selectedItem.raw?.usage_duration || selectedItem.form_data?.usage_duration;
                                                     const daysLeft = expiryDate ? Math.max(0, Math.ceil((new Date(expiryDate).getTime() - Date.now()) / (1000 * 60 * 60 * 24))) : null;
 
+                                                    const rawDesc = selectedItem.campaign_description || selectedItem.description || selectedItem.raw?.campaign_description || selectedItem.raw?.description || "";
+                                                    const otherNeedsMatch = rawDesc.match(/Other Needs:\s*(.*?)(?=\s*Additional|$)/i);
+                                                    const packageMatch = rawDesc.match(/Selected package:\s*([🚀📈🎯💼]?\s*.*?)(?=\s*Collab Duration:|\n|Additional|$)/i);
+                                                    const resolvedPackageNameOuter = resolveItemPackageLabel(selectedItem);
+
+                                                    const durationMatch = rawDesc.match(/Collab Duration:\s*(.*?)(?=\s*Additional|\n|$)/i);
+                                                    const extractedDuration = durationMatch ? durationMatch[1].trim() : null;
+
                                                     return (
                                                         <div className="space-y-4">
                                                             {/* ── COMPACT HERO ── */}
@@ -5590,9 +5658,7 @@ const MobileDashboardDemo = ({
 
                                                                 <div className="mt-5">
                                                                     {(() => {
-                                                                        const rawDesc = selectedItem.campaign_description || selectedItem.description || selectedItem.raw?.campaign_description || selectedItem.raw?.description || "";
-                                                                        const packageMatch = rawDesc.match(/Selected package:\s*([🚀📈🎯💼]?\s*.*?)(?=\s*Collab Duration:|\n|Additional|$)/i);
-                                                                        let resolvedPackageName = (packageMatch ? packageMatch[1].trim() : null) || selectedItem.package_name || selectedItem.package_tier || selectedItem.raw?.package_name || selectedItem.raw?.package_tier || 'Starter Package';
+                                                                        let resolvedPackageName = resolvedPackageNameOuter;
                                                                         
                                                                         // Ensure emoji is present if missing
                                                                         const pkgLower = resolvedPackageName.toLowerCase();
@@ -5609,6 +5675,7 @@ const MobileDashboardDemo = ({
                                                             </div>
 {/* ── COLLAPSIBLE BRIEF ── */}
                                                             {(() => {
+                                                                    let resolvedPackageName = resolvedPackageNameOuter;
                                                                     const extractedOtherNeeds = otherNeedsMatch ? otherNeedsMatch[1].trim() : null;
 
                                                                     // Strip metadata lines from display text
@@ -5695,7 +5762,6 @@ const MobileDashboardDemo = ({
                                                                                             {isStringList ? (
                                                                                                 // Render all items for string list format
                                                                                                 <>
-
                                                                                                     {parsedDeliverables.map((item, i) => (
                                                                                                         <div key={i} className="flex items-center gap-4">
                                                                                                             <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0">
@@ -5899,7 +5965,7 @@ const MobileDashboardDemo = ({
                                                                     {(() => {
                                                                         const rawDesc = selectedItem.campaign_description || selectedItem.raw?.campaign_description || selectedItem.description || selectedItem.raw?.description || "";
                                                                         const packageMatch = rawDesc.match(/Selected package:\s*([🚀📈🎯💼]?\s*.*?)(?=\s*Collab Duration:|\n|Additional|$)/i);
-                                                                        let resolvedPackageName = (packageMatch ? packageMatch[1].trim() : null) || selectedItem.package_name || selectedItem.package_tier || selectedItem.raw?.package_name || selectedItem.raw?.package_tier || 'Starter Package';
+                                                                        let resolvedPackageName = resolveItemPackageLabel(selectedItem);
                                                                         
                                                                         // Ensure emoji is present if missing
                                                                         const pkgLower = resolvedPackageName.toLowerCase();
@@ -6019,9 +6085,8 @@ const MobileDashboardDemo = ({
                                                 )}
                                             </AnimatePresence>
                                         </motion.div>
-
                                         {/* ── DELIVERY TIMELINE (Offers & Deals) ── */}
-                                        {(selectedType === 'deal' || selectedType === 'offer') && (
+                                        {selectedType === 'deal' && (
                                             <div className="mb-6">
                                                 <h4 className={cn("text-[11px] font-black uppercase tracking-[0.2em] mb-4 opacity-80 px-1", textColor)}>
                                                     {selectedIsPureBarter ? 'Product Fulfillment' : 'Campaign Timeline'}
@@ -6030,7 +6095,9 @@ const MobileDashboardDemo = ({
                                                     {(() => {
                                                         const steps = selectedIsPureBarter
                                                             ? ['Accept', 'Ship', 'Deliver', 'Content', 'Complete']
-                                                            : ['Accept', 'Fund', 'Content', 'Release'];
+                                                            : selectedRequiresShipping 
+                                                                ? ['Accept', 'Fund', 'Shipment', 'Content', 'Release']
+                                                                : ['Accept', 'Fund', 'Content', 'Release'];
                                                         let currentStep = 0;
                                                         
                                                         const status = normalizeDealStatus(selectedItem);
@@ -6043,15 +6110,25 @@ const MobileDashboardDemo = ({
                                                         const isMaking = status.includes('making') || status.includes('active') || status.includes('working');
                                                         const isPaymentPending = raw.includes('payment_pending') || raw === 'pending';
 
+                                                        const shippingStatus = String(selectedItem?.shipping_status || '').trim().toLowerCase();
+                                                        const isShipped = ['shipped', 'delivered', 'received'].includes(shippingStatus);
+                                                        const isReceived = ['delivered', 'received'].includes(shippingStatus);
+
                                                         if (isBarterDeal) {
                                                             const isSigned = raw.includes('contract') || raw.includes('signed') || status.includes('fully_executed');
-                                                            const isShipped = ['shipped', 'delivered', 'received'].includes(String(selectedItem?.shipping_status || '').trim().toLowerCase());
-                                                            const isReceived = ['delivered', 'received'].includes(String(selectedItem?.shipping_status || '').trim().toLowerCase());
                                                             if (status.includes('completed')) currentStep = 4;
                                                             else if (isSubmitted) currentStep = 4;
                                                             else if (isReceived || isApproved) currentStep = 3;
                                                             else if (isShipped) currentStep = 2;
                                                             else if (isSigned) currentStep = 1;
+                                                            else currentStep = 0;
+                                                        } else if (selectedRequiresShipping) {
+                                                            if (isPaid) currentStep = 4;
+                                                            else if (isApproved || isDelivered) currentStep = 3;
+                                                            else if (isReceived && !isPaymentPending) currentStep = 3;
+                                                            else if (isShipped && !isPaymentPending) currentStep = 2;
+                                                            else if (!isPaymentPending) currentStep = 2;
+                                                            else if (isPaymentPending) currentStep = 1;
                                                             else currentStep = 0;
                                                         } else {
                                                             if (isPaid) currentStep = 4;
@@ -6157,38 +6234,47 @@ const MobileDashboardDemo = ({
                                                                             )}>What you need to do</p>
                                                                         </div>
                                                                         <ul className="space-y-2">
-                                                                            {(isPaymentPending
-                                                                                ? [
-                                                                                    { text: 'Wait for brand to fund the deal', done: false },
-                                                                                    { text: 'Read the brief carefully', done: false },
-                                                                                    { text: 'Prepare your content plan', done: false },
-                                                                                  ]
-                                                                                : isMaking
-                                                                                    ? [
+                                                                            {(() => {
+                                                                                let items = [];
+                                                                                if (isPaymentPending) {
+                                                                                    items = [
+                                                                                        { text: 'Wait for brand to fund the deal', done: false },
+                                                                                        { text: 'Read the brief carefully', done: false },
+                                                                                        { text: 'Prepare your content plan', done: false },
+                                                                                    ];
+                                                                                } else if (selectedRequiresShipping && !isReceived) {
+                                                                                    items = [
                                                                                         { text: 'Brand payment locked in escrow', done: true },
+                                                                                        { text: isShipped ? 'Product is on its way' : 'Wait for brand to ship product', done: isShipped },
+                                                                                        { text: 'Confirm arrival of the package', done: false },
+                                                                                    ];
+                                                                                } else if (isMaking) {
+                                                                                    items = [
+                                                                                        { text: 'Brand payment locked in escrow', done: true },
+                                                                                        ...(selectedRequiresShipping ? [{ text: 'Product received', done: true }] : []),
                                                                                         { text: 'Create and shoot your content', done: false },
                                                                                         { text: 'Submit before the deadline', done: false },
-                                                                                      ]
-                                                                                    : [
+                                                                                    ];
+                                                                                } else {
+                                                                                    items = [
                                                                                         { text: 'Brand payment locked in escrow', done: true },
                                                                                         { text: 'Content submitted — awaiting approval', done: true },
                                                                                         { text: 'Payout releases within 72h', done: false },
-                                                                                      ]
-                                                                            ).map((item, i) => (
-                                                                                <li key={i} className={cn("flex items-center gap-2.5 text-[12px] font-bold", item.done ? "opacity-70 dark:opacity-40 line-through" : "opacity-80", textColor)}>
-                                                                                    <div className={cn(
-                                                        "w-3.5 h-3.5 rounded-full flex items-center justify-center shrink-0 border",
-                                                                                        item.done
-                                                                                            ? "bg-emerald-500 border-emerald-500"
-                                                                                            : isPaymentPending
-                                                                                                ? "border-amber-400/50"
-                                                                                                : "border-sky-400/50"
-                                                                                    )}>
-                                                                                        {item.done && <Check className="w-2 h-2 text-white" />}
-                                                                                    </div>
-                                                                                    {item.text}
-                                                                                </li>
-                                                                            ))}
+                                                                                    ];
+                                                                                }
+
+                                                                                return items.map((item, i) => (
+                                                                                    <li key={i} className={cn("flex items-center gap-2.5 text-[12px] font-bold", item.done ? "opacity-70 dark:opacity-40 line-through" : "opacity-80", textColor)}>
+                                                                                        <div className={cn("w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0", 
+                                                                                            item.done 
+                                                                                                ? (isDark ? "bg-emerald-500 border-emerald-500" : "bg-emerald-500 border-emerald-500") 
+                                                                                                : (isDark ? "border-white/20" : "border-slate-300"))}>
+                                                                                            {item.done && <Check className="w-2.5 h-2.5 text-white" />}
+                                                                                        </div>
+                                                                                        {item.text}
+                                                                                    </li>
+                                                                                ));
+                                                                            })()}
                                                                         </ul>
                                                                     </div>
                                                                 )}
@@ -6228,13 +6314,7 @@ const MobileDashboardDemo = ({
                                                     const secondaryDeliverables = isStringList 
                                                         ? parsedDeliverables.slice(1).map(s => ({ label: s }))
                                                         : parsedDeliverables.filter(d => d !== primaryDeliverable);
-// Multi-source package name resolution
-                                                     const packageMatch = rawDesc.match(/(?:Selected package:|\|\|Package:)\s*([🚀📈🎯💼⭐🎁]?\s*.*?)(?=\s*Collab Duration:|\n|Additional|\|\||$)/i);
-                                                     const resolvedPackageName =
-                                                         selectedItem.campaign_goal ||
-                                                         (packageMatch ? packageMatch[1].trim() : null) ||
-                                                         selectedItem.package_name || selectedItem.package_tier ||
-                                                         selectedItem.raw?.package_name || selectedItem.raw?.package_tier || 'Starter Collab';
+                                                      const resolvedPackageName = resolveItemPackageLabel(selectedItem);
 
                                                      const durationMatch = rawDesc.match(/Collab Duration:\s*(.*?)(?=\s*Additional|\n|$)/i);
                                                      const extractedDuration = durationMatch ? durationMatch[1].trim() : null;
@@ -6255,16 +6335,7 @@ const MobileDashboardDemo = ({
                                                      const formattedPrimary = `1 ${primaryLabel}${reelDuration ? ` (${reelDuration})` : ""}`;
 
 
-                                                    const rawReqs = selectedItem.requirements || selectedItem.raw?.requirements;
-                                                    let requirementsList = [];
-                                                    try {
-                                                        if (typeof rawReqs === 'string') {
-                                                            const parsed = JSON.parse(rawReqs);
-                                                            if (Array.isArray(parsed)) requirementsList = parsed;
-                                                        } else if (Array.isArray(rawReqs)) {
-                                                            requirementsList = rawReqs;
-                                                        }
-                                                    } catch (e) {}
+                                                    let requirementsList = getOfferRequirements(selectedItem);
 
                                                     return (
                                                         <div className={cn("rounded-[32px] border overflow-hidden backdrop-blur-2xl transition-all", isDark ? "bg-white/[0.02] border-white/6" : "bg-white/60 border-slate-200/60 shadow-xl")}>
@@ -6316,13 +6387,6 @@ const MobileDashboardDemo = ({
                                                                     isDark ? "bg-[#0C1320]/80 border-white/5" : "bg-slate-50/30 border-slate-200/40")}>
                                                                     <p className={cn("text-[11px] font-black uppercase tracking-[0.3em] opacity-70 dark:opacity-40 mb-5 px-1", textColor)}>1. DELIVERABLES</p>
                                                                     <div className="space-y-5 mb-10">
-                                                                        {/* Primary */}
-                                                                        <div className="flex items-center gap-4">
-                                                                            <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0">
-                                                                                <Check className="w-3.5 h-3.5 text-emerald-500" strokeWidth={4} />
-                                                                            </div>
-                                                                            <p className={cn("text-[15px] font-bold tracking-tight", textColor)}>1 Revision included</p>
-                                                                        </div>
                                                                         <div className="flex items-center gap-4">
                                                                             <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0">
                                                                                 <Check className="w-3.5 h-3.5 text-emerald-500" strokeWidth={4} />
@@ -6396,38 +6460,43 @@ const MobileDashboardDemo = ({
 
                                                                     <p className={cn("text-[11px] font-black uppercase tracking-[0.3em] opacity-70 dark:opacity-40 mb-5 px-1", textColor)}>2. REQUIREMENTS</p>
                                                                     <div className="space-y-5 mb-10">
-                                                                        <div className="flex items-center gap-4">
-                                                                            <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0">
-                                                                                <Check className="w-3.5 h-3.5 text-emerald-500" strokeWidth={4} />
-                                                                            </div>
-                                                                            <p className={cn("text-[15px] font-bold tracking-tight", textColor)}>1 Revision included</p>
-                                                                        </div>
-                                                                        <div className="flex items-center gap-4">
-                                                                            <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0">
-                                                                                <Check className="w-3.5 h-3.5 text-emerald-500" strokeWidth={4} />
-                                                                            </div>
-                                                                            <p className={cn("text-[15px] font-bold tracking-tight", textColor)}>Follow campaign instructions</p>
-                                                                        </div>
-                                                                        <div className="flex items-center gap-4">
-                                                                            <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0">
-                                                                                <Check className="w-3.5 h-3.5 text-emerald-500" strokeWidth={4} />
-                                                                            </div>
-                                                                            <p className={cn("text-[15px] font-bold tracking-tight", textColor)}>High-quality video editing</p>
-                                                                        </div>
-                                                                        <div className="flex items-center gap-4">
-                                                                            <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0">
-                                                                                <Check className="w-3.5 h-3.5 text-emerald-500" strokeWidth={4} />
-                                                                            </div>
-                                                                            <p className={cn("text-[15px] font-bold tracking-tight", textColor)}>Mention brand name clearly</p>
-                                                                        </div>
-                                                                        {requirementsList.map((req, i) => (
-                                                                            <div key={i} className="flex items-center gap-4">
-                                                                                <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0">
-                                                                                    <Check className="w-3.5 h-3.5 text-emerald-500" strokeWidth={4} />
+                                                                        {requirementsList.length > 0 ? (
+                                                                            requirementsList.map((req, i) => (
+                                                                                <div key={i} className="flex items-center gap-4">
+                                                                                    <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0">
+                                                                                        <Check className="w-3.5 h-3.5 text-emerald-500" strokeWidth={4} />
+                                                                                    </div>
+                                                                                    <p className={cn("text-[15px] font-bold tracking-tight", textColor)}>{req}</p>
                                                                                 </div>
-                                                                                <p className={cn("text-[15px] font-bold tracking-tight opacity-80", textColor)}>{req}</p>
-                                                                            </div>
-                                                                        ))}
+                                                                            ))
+                                                                        ) : (
+                                                                            <>
+                                                                                <div className="flex items-center gap-4">
+                                                                                    <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0">
+                                                                                        <Check className="w-3.5 h-3.5 text-emerald-500" strokeWidth={4} />
+                                                                                    </div>
+                                                                                    <p className={cn("text-[15px] font-bold tracking-tight", textColor)}>1 Revision included</p>
+                                                                                </div>
+                                                                                <div className="flex items-center gap-4">
+                                                                                    <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0">
+                                                                                        <Check className="w-3.5 h-3.5 text-emerald-500" strokeWidth={4} />
+                                                                                    </div>
+                                                                                    <p className={cn("text-[15px] font-bold tracking-tight", textColor)}>Follow campaign instructions</p>
+                                                                                </div>
+                                                                                <div className="flex items-center gap-4">
+                                                                                    <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0">
+                                                                                        <Check className="w-3.5 h-3.5 text-emerald-500" strokeWidth={4} />
+                                                                                    </div>
+                                                                                    <p className={cn("text-[15px] font-bold tracking-tight", textColor)}>High-quality video editing</p>
+                                                                                </div>
+                                                                                <div className="flex items-center gap-4">
+                                                                                    <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0">
+                                                                                        <Check className="w-3.5 h-3.5 text-emerald-500" strokeWidth={4} />
+                                                                                    </div>
+                                                                                    <p className={cn("text-[15px] font-bold tracking-tight", textColor)}>Mention brand name clearly</p>
+                                                                                </div>
+                                                                            </>
+                                                                        )}
                                                                     </div>
 
                                                                     <p className={cn("text-[11px] font-black uppercase tracking-[0.3em] opacity-70 dark:opacity-40 mb-5 px-1", textColor)}>3. USAGE RIGHTS</p>
@@ -6765,9 +6834,9 @@ const MobileDashboardDemo = ({
                                                          {processingDeal === selectedItem.id ? (
                                                              <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                                                          ) : (
-                                                                <>
-                                                                 <Zap className="w-4 h-4 fill-current" />
-                                                                 {selectedRequiresShipping ? "Accept & Receive Product" : `Accept & Earn ${renderBudgetValue(selectedItem)}`}
+                                                                 <>
+                                                                  <Zap className="w-4 h-4 fill-current" />
+                                                                  {selectedRequiresShipping ? "Accept & Receive Product" : `Accept & Earn ${renderBudgetValue(selectedItem)}`}
                                                                  </>
                                                              )}
                                                          </button>
@@ -7349,11 +7418,13 @@ const MobileDashboardDemo = ({
                     <DialogHeader>
                         <DialogTitle className={cn("flex items-center gap-2 px-6 pt-6 text-2xl font-black tracking-tight", isDark ? "text-foreground" : "text-slate-700")}>
                             <ShieldCheck className="w-6 h-6 text-primary" />
-                            Sign Agreement
+                            {creatorSigningMode === 'accept' ? 'Accept & Sign Agreement' : 'Sign Agreement'}
                         </DialogTitle>
                         <DialogDescription className={cn("px-6 pb-2 text-sm font-medium leading-relaxed opacity-60", isDark ? "text-foreground" : "text-slate-700")}>
                             {creatorSigningStep === 'send'
-                                ? 'We will send a secure OTP to your registered email to verify your identity and sign the contract.'
+                                ? (creatorSigningMode === 'accept' 
+                                    ? 'By verifying this OTP, you accept the brand\'s offer and digitally sign the collaboration terms.'
+                                    : 'We will send a secure OTP to your registered email to verify your identity and sign the contract.')
                                 : 'Enter the 6-digit code sent to your email to complete the signing process.'}
                         </DialogDescription>
                     </DialogHeader>
@@ -7392,23 +7463,6 @@ const MobileDashboardDemo = ({
                                     )}
                                 </motion.button>
 
-                                {import.meta.env.DEV && (
-                                  <button
-                                    type="button"
-                                    onClick={() => {
-                                      // Local E2E testing: bypass OTP requirement.
-                                      void handleSignAsCreator();
-                                    }}
-                                    className={cn(
-                                      "w-full h-12 rounded-2xl border font-black uppercase tracking-widest text-[11px] transition-all active:scale-[0.98]",
-                                      isDark
-                                        ? "bg-card border-border text-foreground hover:bg-secondary/40"
-                                        : "bg-background border-border text-slate-600 hover:bg-secondary/40"
-                                    )}
-                                  >
-                                    Skip OTP (Dev)
-                                  </button>
-                                )}
                             </div>
                         ) : (
                             <div className="space-y-6">
@@ -7455,8 +7509,8 @@ const MobileDashboardDemo = ({
                                         </>
                                     ) : (
                                         <>
-                                            <CheckCircle2 className="w-4 h-4" />
-                                            Complete & Sign
+                                            <Zap className="w-4 h-4 fill-current" />
+                                            {creatorSigningMode === 'accept' ? 'Verify & Accept Deal' : 'Sign & Complete Contract'}
                                         </>
                                     )}
                                 </motion.button>
@@ -8126,6 +8180,7 @@ const DashboardTab = React.memo(({
     avatarUrl, avatarFallbackUrl, shouldShowPushPrompt, 
     isPushSubscribed, triggerHaptic, setActiveTab, 
     setCollabSubTab, navigate, resolveCreatorDealProductImage, getBrandIcon,
+    counterOfferCount,
     TrendingUp, ArrowRight, Clock, ChevronRight, User, DollarSign, Zap,
     setSelectedItem, setSelectedType, setShowShareSheet, handleCopyStorefront,
     Instagram, Copy, Eye, MessageCircleMore, handleAccept, onDeclineRequest,
@@ -8828,6 +8883,15 @@ const DealsTab = React.memo(({
                                                             </p>
                                                             {isBarter && <span className="text-[10px] font-black uppercase tracking-widest text-white/80">est. value ₹{budget.toLocaleString()}</span>}
                                                         </div>
+                                                        {(() => {
+                                                            const pkgLabel = resolveItemPackageLabel(deal);
+                                                            if (!pkgLabel) return null;
+                                                            return (
+                                                                <div className="mt-2.5 flex flex-wrap gap-1.5">
+                                                                    <span className="px-2.5 py-1 rounded-lg bg-black/30 backdrop-blur-md text-white text-[10px] font-black border border-white/10 shadow-sm">{pkgLabel}</span>
+                                                                </div>
+                                                            );
+                                                        })()}
                                                     </div>
                                                     <div className="h-1 w-full bg-white/10 rounded-full overflow-hidden">
                                                         <div className={cn(
@@ -8884,6 +8948,15 @@ const DealsTab = React.memo(({
                                                             </p>
                                                             {isBarter && <span className="text-[10px] font-black uppercase tracking-widest text-white/80">est. value ₹{budget.toLocaleString()}</span>}
                                                         </div>
+                                                        {(() => {
+                                                            const pkgLabel = resolveItemPackageLabel(deal);
+                                                            if (!pkgLabel) return null;
+                                                            return (
+                                                                <div className="mt-2.5 flex flex-wrap gap-1.5">
+                                                                    <span className="px-2.5 py-1 rounded-lg bg-black/30 backdrop-blur-md text-white text-[10px] font-black border border-white/10 shadow-sm">{pkgLabel}</span>
+                                                                </div>
+                                                            );
+                                                        })()}
                                                     </div>
                                                     <div className="h-1 w-full bg-emerald-500/30 rounded-full overflow-hidden"><div className={cn("h-full w-full", isBarter ? "bg-amber-400" : "bg-emerald-400")} /></div>
                                                 </div>

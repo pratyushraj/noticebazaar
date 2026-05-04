@@ -3201,7 +3201,7 @@ const CollabLinkLanding = () => {
                           src={safeAvatarSrc(creator.profile_photo)}
                           alt={displayCreatorName}
                           className="w-full h-full object-cover"
-                          fetchPriority="high"
+                          fetchpriority="high"
                           loading="eager"
                         />
                         <AvatarFallback className="w-full h-full flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100 text-slate-400 font-bold text-4xl">
@@ -4128,7 +4128,7 @@ const CollabLinkLanding = () => {
                                       alt="Brand Logo"
                                       className="w-full h-full object-contain"
                                       referrerPolicy="no-referrer"
-                                      fetchPriority="high"
+                                      fetchpriority="high"
                                       loading="eager"
                                       onLoadingStatusChange={status => {
                                         if (status === 'error') {
@@ -4214,9 +4214,46 @@ const CollabLinkLanding = () => {
                         </div>
 
 
-                        {/* Product image / product details - Always visible to ensure every deal has a visual asset */}
+                        {/* Product image / product details - Explicitly ask if shipping for paid deals */}
                         <div id="barter-product-image-upload" className="bg-slate-50 rounded-[32px] p-6 border border-slate-200 shadow-inner space-y-4">
-                            {(collabType === 'barter' || collabType === 'hybrid' || collabType === 'paid') && (
+                            {paymentType === 'paid' && (
+                                <div className="flex flex-col gap-3 pb-2 border-b border-slate-200/50 mb-2">
+                                    <div className="flex items-center gap-2">
+                                        <Package className="h-4 w-4 text-slate-400" />
+                                        <span className="text-[13px] font-black text-slate-800 uppercase tracking-widest">Are you shipping a product?</span>
+                                    </div>
+                                    <div className="flex gap-2">
+                                        <button 
+                                            type="button"
+                                            onClick={() => setIncludesProduct(true)}
+                                            className={cn(
+                                                "flex-1 py-3 px-4 rounded-2xl border-2 font-black text-[12px] uppercase tracking-wider transition-all flex items-center justify-center gap-2", 
+                                                includesProduct 
+                                                    ? "bg-white border-slate-900 text-slate-900 shadow-md" 
+                                                    : "border-transparent text-slate-400 bg-slate-200/50 hover:bg-slate-200"
+                                            )}
+                                        >
+                                            {includesProduct && <Check className="w-3.5 h-3.5" />}
+                                            Yes
+                                        </button>
+                                        <button 
+                                            type="button"
+                                            onClick={() => setIncludesProduct(false)}
+                                            className={cn(
+                                                "flex-1 py-3 px-4 rounded-2xl border-2 font-black text-[12px] uppercase tracking-wider transition-all flex items-center justify-center gap-2", 
+                                                !includesProduct 
+                                                    ? "bg-white border-slate-900 text-slate-900 shadow-md" 
+                                                    : "border-transparent text-slate-400 bg-slate-200/50 hover:bg-slate-200"
+                                            )}
+                                        >
+                                            {!includesProduct && <Check className="w-3.5 h-3.5" />}
+                                            No
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
+
+                            {(paymentType === 'barter' || includesProduct) && (
                               <>
                                 <label
                                   htmlFor="barter-product-name-input"
@@ -4274,8 +4311,7 @@ const CollabLinkLanding = () => {
                                     </p>
                                   )}
                                 </div>
-                              </>
-                            )}
+
 
                             <div>
                               <div className="flex items-center justify-between gap-3 mb-2">
@@ -4368,8 +4404,10 @@ const CollabLinkLanding = () => {
                                 </p>
                               )}
                             </div>
+                              </>
+                            )}
 
-                            {collabType === 'hybrid' && (
+                          {collabType === 'hybrid' && (
                               <div className="relative group">
                                 <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-black text-[15px] group-focus-within:text-slate-900 transition-colors">
                                   ₹

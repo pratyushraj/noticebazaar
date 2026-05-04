@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter } from "react-router-dom";
@@ -13,35 +13,6 @@ import ScrollToTop from "./components/ScrollToTop";
 import AppRoutes from "./app/AppRoutes";
 import { useKeyboardNavigation } from "@/lib/hooks/useKeyboardNavigation";
 import { usePerformanceMonitoring, WebVitalsTracker } from "@/lib/hooks/usePerformanceMonitoring";
-
-type RetryableError = Error & {
-  status?: number;
-};
-
-// Configure React Query with timeout and retry settings
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      retry: (failureCount, error: RetryableError) => {
-        // Don't retry on 4xx errors (client errors)
-        if (typeof error.status === "number" && error.status >= 400 && error.status < 500) {
-          return false;
-        }
-        // Retry up to 2 times for network/server errors
-        return failureCount < 2;
-      },
-      retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
-      staleTime: 5 * 60 * 1000, // 5 minutes
-      gcTime: 10 * 60 * 1000, // 10 minutes (formerly cacheTime)
-      refetchOnWindowFocus: false,
-      refetchOnReconnect: true,
-    },
-    mutations: {
-      retry: 1,
-      retryDelay: 1000,
-    },
-  },
-});
 
 const APP_SHELL_VERSION = '2026-05-03-1';
 
@@ -158,30 +129,28 @@ const App = () => {
 
   return (
     <ErrorBoundary>
-      <QueryClientProvider client={queryClient}>
-        <GlobalLoadingBar />
-        <TooltipProvider>
-          <AppToaster />
-          {/* Splash Screen */}
-          {showSplash && <SplashScreen onComplete={handleSplashComplete} />}
+      <GlobalLoadingBar />
+      <AppToaster />
+      {/* Splash Screen */}
+      {showSplash && <SplashScreen onComplete={handleSplashComplete} />}
 
-          {/* Main App - Only show after splash is completely gone */}
-          {splashComplete && (
-            <div className="min-h-dvh bg-[#020D0A]">
-              <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-                <RouterInstrumentation />
-                <ScrollToTop />
-                <NetworkStatusWrapper>
-                  <FacebookPixelTracker />
-                  <GoogleAnalyticsTracker /> {/* Add GA4 tracker here */}
-                  <WebVitalsTracker />
-                  <AppRoutes />
-                </NetworkStatusWrapper>
-              </BrowserRouter>
-            </div>
-          )}
-        </TooltipProvider>
-      </QueryClientProvider>
+      {/* Main App - Only show after splash is completely gone */}
+      {splashComplete && (
+        <div className="min-h-dvh bg-[#020D0A]">
+          <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+            <RouterInstrumentation />
+            <ScrollToTop />
+            <NetworkStatusWrapper>
+              <FacebookPixelTracker />
+              <GoogleAnalyticsTracker /> {/* Add GA4 tracker here */}
+              <WebVitalsTracker />
+              <TooltipProvider delayDuration={400}>
+                <AppRoutes />
+              </TooltipProvider>
+            </NetworkStatusWrapper>
+          </BrowserRouter>
+        </div>
+      )}
     </ErrorBoundary>
   );
 };

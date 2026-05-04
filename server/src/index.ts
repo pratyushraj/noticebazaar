@@ -223,7 +223,7 @@ const corsOptions = {
       normalizedOrigin.includes('trycloudflare.com') || 
       normalizedOrigin.includes('creatorarmour.com') ||
       normalizedOrigin.includes('vercel.app') ||
-      normalizedOrigin.includes('noticebazaar.com')
+      normalizedOrigin.includes('creatorarmour.com')
     ) {
       console.log('[CORS] ✓ Allowing origin by keyword:', origin);
       return callback(null, true);
@@ -488,9 +488,10 @@ app.use('/api/push', authMiddleware, rateLimitMiddleware, pushNotificationsRoute
 // Demo email (only when ALLOW_DEMO_EMAIL=true; restricted to *@yopmail.com)
 app.post('/api/demo-email/barter-accepted', async (req: express.Request, res: express.Response) => {
   if (process.env.ALLOW_DEMO_EMAIL !== 'true') {
-    return console.warn("CATCH-ALL 404", req.method, req.originalUrl); res.status(404).json({ success: false, error: 'Not found' });
+    console.warn("CATCH-ALL 404", req.method, req.originalUrl); 
+    return res.status(404).json({ success: false, error: 'Not found' });
   }
-  const to = (req.body?.to || 'notice@yopmail.com').trim().toLowerCase();
+  const to = (req.body?.to || 'creatorarmour@yopmail.com').trim().toLowerCase();
   if (!to.endsWith('@yopmail.com')) {
     return res.status(400).json({ success: false, error: 'Demo emails only allowed to *@yopmail.com' });
   }
@@ -516,9 +517,10 @@ app.post('/api/demo-email/barter-accepted', async (req: express.Request, res: ex
 // Demo: creator notification (barter collab request) — sent TO creator
 app.post('/api/demo-email/creator-barter', async (req: express.Request, res: express.Response) => {
   if (process.env.ALLOW_DEMO_EMAIL !== 'true') {
-    return console.warn("CATCH-ALL 404", req.method, req.originalUrl); res.status(404).json({ success: false, error: 'Not found' });
+    console.warn("CATCH-ALL 404", req.method, req.originalUrl); 
+    return res.status(404).json({ success: false, error: 'Not found' });
   }
-  const to = (req.body?.to || 'notice@yopmail.com').trim().toLowerCase();
+  const to = (req.body?.to || 'creatorarmour@yopmail.com').trim().toLowerCase();
   if (!to.endsWith('@yopmail.com')) {
     return res.status(400).json({ success: false, error: 'Demo emails only allowed to *@yopmail.com' });
   }
@@ -550,9 +552,10 @@ app.post('/api/demo-email/creator-barter', async (req: express.Request, res: exp
 // Demo: brand acceptance (paid collab) — sent TO brand when creator accepts paid deal
 app.post('/api/demo-email/paid-accepted', async (req: express.Request, res: express.Response) => {
   if (process.env.ALLOW_DEMO_EMAIL !== 'true') {
-    return console.warn("CATCH-ALL 404", req.method, req.originalUrl); res.status(404).json({ success: false, error: 'Not found' });
+    console.warn("CATCH-ALL 404", req.method, req.originalUrl); 
+    return res.status(404).json({ success: false, error: 'Not found' });
   }
-  const to = (req.body?.to || 'notice@yopmail.com').trim().toLowerCase();
+  const to = (req.body?.to || 'creatorarmour@yopmail.com').trim().toLowerCase();
   if (!to.endsWith('@yopmail.com')) {
     return res.status(400).json({ success: false, error: 'Demo emails only allowed to *@yopmail.com' });
   }
@@ -578,10 +581,11 @@ app.post('/api/demo-email/paid-accepted', async (req: express.Request, res: expr
 // Demo: send brand contract-signing email for an existing deal (so you can test brand signing)
 app.post('/api/demo-email/send-brand-contract-for-deal', async (req: express.Request, res: express.Response) => {
   if (process.env.ALLOW_DEMO_EMAIL !== 'true') {
-    return console.warn("CATCH-ALL 404", req.method, req.originalUrl); res.status(404).json({ success: false, error: 'Not found' });
+    console.warn("CATCH-ALL 404", req.method, req.originalUrl); 
+    return res.status(404).json({ success: false, error: 'Not found' });
   }
   const dealId = (req.body?.dealId || '').trim();
-  const to = (req.body?.to || 'notice@yopmail.com').trim().toLowerCase();
+  const to = (req.body?.to || 'creatorarmour@yopmail.com').trim().toLowerCase();
   if (!dealId) {
     return res.status(400).json({ success: false, error: 'dealId is required' });
   }
@@ -596,7 +600,8 @@ app.post('/api/demo-email/send-brand-contract-for-deal', async (req: express.Req
       .maybeSingle();
 
     if (dealError || !deal) {
-      return console.warn("CATCH-ALL 404", req.method, req.originalUrl); res.status(404).json({ success: false, error: 'Deal not found' });
+      console.warn("CATCH-ALL 404", req.method, req.originalUrl);
+      return res.status(404).json({ success: false, error: 'Deal not found' });
     }
 
     const { data: profile } = await supabase

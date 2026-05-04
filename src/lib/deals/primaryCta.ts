@@ -93,8 +93,8 @@ export const getCanonicalDealStatus = (deal: any): CanonicalDealStatus => {
     deal?.signatures,
   ].filter((x) => x && typeof x === 'object');
 
-  const creatorSigned = hasTruthyKeyMatch(signatureSources, /(creator.*signed|signed.*creator|creator_signature|creator_esign|creator_signed_at)/i);
-  const brandSigned = hasTruthyKeyMatch(signatureSources, /(brand.*signed|signed.*brand|brand_signature|brand_esign|brand_signed_at)/i);
+  const creatorSigned = hasTruthyKeyMatch(signatureSources, /(creator.*signed|signed.*creator|creator_signature|creator_esign|creator_signed_at|creator_otp_verified)/i);
+  const brandSigned = hasTruthyKeyMatch(signatureSources, /(brand.*signed|signed.*brand|brand_signature|brand_esign|brand_signed_at|brand_otp_verified)/i);
 
   // For barter deals, once the address is provided, we effectively move to the active stage
   // unless it's already completed or disputed, or content has already been delivered.
@@ -275,6 +275,14 @@ export const getDealPrimaryCta = (params: { role: DealRole; deal: any }): DealPr
       // The next step is waiting for the creator to sign.
       if (brandSigned && !creatorSigned) {
         return { status, label: 'Waiting for Creator', disabled: true, tone: 'waiting', action: 'none' };
+      }
+      // If creator has signed but the brand has not, wait for brand signature instead of starting work.
+      if (creatorSigned && !brandSigned) {
+        return { status, label: 'Waiting for Brand Signature', disabled: true, tone: 'waiting', action: 'none' };
+      }
+      // If both sides signed, let the brand view collaboration.
+      if (creatorSigned && brandSigned) {
+        return { status, label: 'View Collaboration', disabled: false, tone: 'view', action: 'view_collaboration' };
       }
       // For barter deals: only show shipping address CTA if address is missing.
       // After address is provided, the next action is to review & sign the contract.

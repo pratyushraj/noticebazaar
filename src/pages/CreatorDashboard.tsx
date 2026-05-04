@@ -43,8 +43,7 @@ async function fetchBrandDeals() {
   }
 }
 
-const CreatorDashboard = () => {
-  const navigate = useNavigate();
+const CreatorDashboardContent = ({ navigate }: { navigate: any }) => {
   const { user, profile, loading: isLoadingProfile } = useSession();
   const queryClient = useQueryClient();
 
@@ -175,7 +174,7 @@ const CreatorDashboard = () => {
     queryClient.invalidateQueries({ queryKey: ['brand-deals'] });
   };
 
-  const handleAcceptRequest = async (req: any, addressData?: { address: string; pincode: string }) => {
+  const handleAcceptRequest = async (req: any, addressData?: { address: string; pincode: string }, otpVerified?: boolean, otpVerifiedAt?: string) => {
     const { data: sessionData } = await supabase.auth.getSession();
     if (!sessionData.session) throw new Error('Not authenticated');
 
@@ -188,6 +187,8 @@ const CreatorDashboard = () => {
       body: JSON.stringify({
         shipping_address: addressData?.address,
         pincode: addressData?.pincode,
+        otp_verified: otpVerified,
+        otp_verified_at: otpVerifiedAt,
       }),
     });
     const data = await res.json();
@@ -263,6 +264,17 @@ const CreatorDashboard = () => {
       onRefresh={handleRefresh}
     />
   );
+};
+
+// Wrapper component to handle Router context properly with lazy loading
+const CreatorDashboard = () => {
+  const { loading: isLoadingProfile } = useSession();
+  
+  // Return null during initial load to ensure Router context is ready
+  if (isLoadingProfile) return null;
+  
+  const navigate = useNavigate();
+  return <CreatorDashboardContent navigate={navigate} />;
 };
 
 export default CreatorDashboard;

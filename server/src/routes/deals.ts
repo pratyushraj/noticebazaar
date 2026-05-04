@@ -550,7 +550,7 @@ router.post('/log-reminder', authMiddleware, async (req: AuthenticatedRequest, r
       .single();
 
     if (dealError || !deal) {
-      console.error("404 Deal not found", dealId, (typeof dealError !== "undefined" ? dealError : (typeof error !== "undefined" ? error : null))); return res.status(404).json({ success: false, error: 'Deal not found' });
+      console.warn('[Deals] 404 Deal not found:', dealId); return res.status(404).json({ success: false, error: 'Deal not found' });
     }
 
     if (deal.creator_id !== userId && req.user!.role !== 'admin') {
@@ -653,7 +653,7 @@ router.get('/:id', authMiddleware, async (req: AuthenticatedRequest, res: Respon
 
     const { deal, error } = await fetchDealForViewer(dealId);
     if (error || !deal) {
-      console.error("404 Deal not found", dealId, (typeof dealError !== "undefined" ? dealError : (typeof error !== "undefined" ? error : null))); return res.status(404).json({ success: false, error: 'Deal not found' });
+      console.warn('[Deals] 404 Deal not found:', dealId); return res.status(404).json({ success: false, error: 'Deal not found' });
     }
 
     const dealBrandEmail = String((deal as any).brand_email || '').toLowerCase() || null;
@@ -696,7 +696,7 @@ router.post('/:id/upload-signed-contract', authMiddleware, upload.single('file')
       .single();
 
     if (dealError || !deal) {
-      console.error("404 Deal not found", dealId, (typeof dealError !== "undefined" ? dealError : (typeof error !== "undefined" ? error : null))); return res.status(404).json({ success: false, error: 'Deal not found' });
+      console.warn('[Deals] 404 Deal not found:', dealId); return res.status(404).json({ success: false, error: 'Deal not found' });
     }
 
     if (deal.creator_id !== userId && req.user!.role !== 'admin') {
@@ -784,7 +784,7 @@ router.post('/barter/delivery-details', authMiddleware, async (req: Authenticate
       .single();
 
     if (dealError || !deal) {
-      console.error("404 Deal not found", dealId, (typeof dealError !== "undefined" ? dealError : (typeof error !== "undefined" ? error : null))); return res.status(404).json({ success: false, error: 'Deal not found' });
+      console.warn('[Deals] 404 Deal not found:', dealId); return res.status(404).json({ success: false, error: 'Deal not found' });
     }
 
     if (deal.creator_id !== userId && req.user!.role !== 'admin') {
@@ -926,7 +926,7 @@ router.patch('/:dealId/delivery-details', async (req: AuthenticatedRequest, res:
       .single();
 
     if (dealError || !deal) {
-      console.error("404 Deal not found", dealId, (typeof dealError !== "undefined" ? dealError : (typeof error !== "undefined" ? error : null))); return res.status(404).json({ success: false, error: 'Deal not found' });
+      console.warn('[Deals] 404 Deal not found:', dealId); return res.status(404).json({ success: false, error: 'Deal not found' });
     }
     if (deal.creator_id !== userId) {
       return res.status(403).json({ success: false, error: 'Access denied' });
@@ -1298,7 +1298,7 @@ const confirmReceivedHandler = async (req: AuthenticatedRequest, res: Response) 
       .single();
 
     if (dealError || !deal) {
-      console.error("404 Deal not found", dealId, (typeof dealError !== "undefined" ? dealError : (typeof error !== "undefined" ? error : null))); return res.status(404).json({ success: false, error: 'Deal not found' });
+      console.warn('[Deals] 404 Deal not found:', dealId); return res.status(404).json({ success: false, error: 'Deal not found' });
     }
 
     const dealData = deal as any;
@@ -1414,7 +1414,7 @@ router.post('/:dealId/regenerate-contract', async (req: AuthenticatedRequest, re
     }
 
     if (dealError || !deal) {
-      console.error("404 Deal not found", dealId, (typeof dealError !== "undefined" ? dealError : (typeof error !== "undefined" ? error : null))); return res.status(404).json({ success: false, error: 'Deal not found' });
+      console.warn('[Deals] 404 Deal not found:', dealId); return res.status(404).json({ success: false, error: 'Deal not found' });
     }
 
     const isCreatorOwner = deal.creator_id === userId;
@@ -1659,7 +1659,7 @@ router.get('/:dealId/contract-review-link', async (req: AuthenticatedRequest, re
       .single();
 
     if (dealError || !deal) {
-      console.error("404 Deal not found", dealId, (typeof dealError !== "undefined" ? dealError : (typeof error !== "undefined" ? error : null))); return res.status(404).json({ success: false, error: 'Deal not found' });
+      console.warn('[Deals] 404 Deal not found:', dealId); return res.status(404).json({ success: false, error: 'Deal not found' });
     }
 
     const isCreatorOwner = deal.creator_id === userId;
@@ -1729,7 +1729,7 @@ router.patch('/:dealId/shipping/report-issue', async (req: AuthenticatedRequest,
       .single();
 
     if (dealError || !deal) {
-      console.error("404 Deal not found", dealId, (typeof dealError !== "undefined" ? dealError : (typeof error !== "undefined" ? error : null))); return res.status(404).json({ success: false, error: 'Deal not found' });
+      console.warn('[Deals] 404 Deal not found:', dealId); return res.status(404).json({ success: false, error: 'Deal not found' });
     }
 
     if (deal.creator_id !== userId && req.user!.role !== 'admin') {
@@ -1823,7 +1823,7 @@ router.post('/:id/sign-creator', async (req: AuthenticatedRequest, res: Response
       .maybeSingle();
 
     if (dealError || !deal) {
-      console.error("404 Deal not found", dealId, (typeof dealError !== "undefined" ? dealError : (typeof error !== "undefined" ? error : null))); return res.status(404).json({ success: false, error: 'Deal not found' });
+      console.warn('[Deals] 404 Deal not found:', dealId); return res.status(404).json({ success: false, error: 'Deal not found' });
     }
 
     const dealData = deal as any;
@@ -1936,7 +1936,7 @@ router.post('/:id/brand-shipping-address', authMiddleware, async (req: Authentic
 
     const { deal, error: dealError } = await fetchDealForBrandMutation(dealId);
     if (dealError || !deal) {
-      console.error("404 Deal not found", dealId, (typeof dealError !== "undefined" ? dealError : (typeof error !== "undefined" ? error : null))); return res.status(404).json({ success: false, error: 'Deal not found' });
+      console.warn('[Deals] 404 Deal not found:', dealId); return res.status(404).json({ success: false, error: 'Deal not found' });
     }
 
     const dealBrandEmail = String((deal as any).brand_email || '').toLowerCase() || null;
@@ -2692,7 +2692,7 @@ router.patch('/:id/submit-content', authMiddleware, async (req: AuthenticatedReq
     const dealId = await resolveDealId(rawId);
     if (!dealId) {
       console.warn('[Deals] submit-content: could not resolve deal id', { rawId });
-      console.error("404 Deal not found", dealId, (typeof dealError !== "undefined" ? dealError : (typeof error !== "undefined" ? error : null))); return res.status(404).json({ success: false, error: 'Deal not found' });
+      console.warn('[Deals] 404 Deal not found:', dealId); return res.status(404).json({ success: false, error: 'Deal not found' });
     }
 
     // Verify access — fetch with extended columns for gate checks
@@ -2719,7 +2719,7 @@ router.patch('/:id/submit-content', authMiddleware, async (req: AuthenticatedReq
     }
     if (dealError || !deal) {
       console.warn('[Deals] submit-content: deal not found after resolve', { rawId, dealId });
-      console.error("404 Deal not found", dealId, (typeof dealError !== "undefined" ? dealError : (typeof error !== "undefined" ? error : null))); return res.status(404).json({ success: false, error: 'Deal not found' });
+      console.warn('[Deals] 404 Deal not found:', dealId); return res.status(404).json({ success: false, error: 'Deal not found' });
     }
 
     if (deal.creator_id !== userId && req.user!.role !== 'admin') {
@@ -2729,26 +2729,17 @@ router.patch('/:id/submit-content', authMiddleware, async (req: AuthenticatedReq
     const current = normalizeStatus((deal as any).status);
     const isAdminOverride = req.user!.role === 'admin';
 
-    // ── GATE 1: Hard payment gate for paid deals ──────────────────────────────
-    // A paid deal must sit in PAYMENT_PENDING (brand committed to pay) before
-    // the creator can submit content. This prevents "deliver first, get paid maybe".
     if (!isAdminOverride && inferRequiresPayment(deal)) {
-      const hasFunded = (Number(deal?.amount_paid || 0) > 0);
+      const hasFunded = (Number(deal?.amount_paid || 0) > 0) || deal?.payment_status === 'captured';
       
-      if (current === 'FULLY_EXECUTED' && !hasFunded) {
+      // If deal is signed/executed but not funded, it's in PAYMENT_PENDING state (or should be).
+      // We ONLY allow content submission if it has been funded (captured).
+      if (!hasFunded) {
         return res.status(402).json({
           success: false,
-          error: 'Payment must be confirmed by the brand before you can deliver content.',
+          error: 'Payment must be confirmed (escrow funded) by the brand before you can deliver content.',
           gate: 'PAYMENT_PENDING',
-        });
-      }
-      // PAYMENT_PENDING or CONTENT_MAKING or REVISION_REQUESTED are the normal green-lit states.
-      // We also allow if hasFunded is true regardless of status (failsafe).
-      if (!hasFunded && current !== 'PAYMENT_PENDING' && current !== 'CONTENT_MAKING' && current !== 'REVISION_REQUESTED') {
-        return res.status(409).json({
-          success: false,
-          error: `Cannot submit content from status ${current || 'UNKNOWN'}. Wait for payment confirmation.`,
-          gate: 'PAYMENT_PENDING',
+          currentStatus: current
         });
       }
     }
@@ -2883,7 +2874,7 @@ router.patch('/:id/review-content', authMiddleware, async (req: AuthenticatedReq
     const { deal, error: dealError } = await fetchDealForBrandMutation(dealId);
 
     if (dealError || !deal) {
-      console.error("404 Deal not found", dealId, (typeof dealError !== "undefined" ? dealError : (typeof error !== "undefined" ? error : null))); return res.status(404).json({ success: false, error: 'Deal not found' });
+      console.warn('[Deals] 404 Deal not found:', dealId); return res.status(404).json({ success: false, error: 'Deal not found' });
     }
 
     const dealBrandEmail = String((deal as any).brand_email || '').toLowerCase() || null;
@@ -3034,7 +3025,7 @@ router.patch('/:id/release-payment', authMiddleware, async (req: AuthenticatedRe
     const { deal, error: dealError } = await fetchDealForBrandMutation(dealId);
 
     if (dealError || !deal) {
-      console.error("404 Deal not found", dealId, (typeof dealError !== "undefined" ? dealError : (typeof error !== "undefined" ? error : null))); return res.status(404).json({ success: false, error: 'Deal not found' });
+      console.warn('[Deals] 404 Deal not found:', dealId); return res.status(404).json({ success: false, error: 'Deal not found' });
     }
 
     const dealBrandEmail = String((deal as any).brand_email || '').toLowerCase() || null;
@@ -3155,7 +3146,7 @@ router.patch('/:id/confirm-payment-received', authMiddleware, async (req: Authen
 
     const { deal, error: dealError } = await fetchDealForCreatorMutation(dealId);
     if (dealError || !deal) {
-      console.error("404 Deal not found", dealId, (typeof dealError !== "undefined" ? dealError : (typeof error !== "undefined" ? error : null))); return res.status(404).json({ success: false, error: 'Deal not found' });
+      console.warn('[Deals] 404 Deal not found:', dealId); return res.status(404).json({ success: false, error: 'Deal not found' });
     }
 
     const creatorId = String((deal as any).creator_id || '');
@@ -3217,7 +3208,7 @@ router.patch('/:id/unconfirm-payment-received', authMiddleware, async (req: Auth
     }
 
     const { deal, error: dealError } = await fetchDealForCreatorMutation(dealId);
-    if (dealError || !deal) { console.error("404 Deal not found", dealId, (typeof dealError !== "undefined" ? dealError : (typeof error !== "undefined" ? error : null))); return res.status(404).json({ success: false, error: 'Deal not found' }); }
+    if (dealError || !deal) { console.warn('[Deals] 404 Deal not found:', dealId); return res.status(404).json({ success: false, error: 'Deal not found' }); }
 
     const creatorId = String((deal as any).creator_id || '');
     if (role !== 'admin' && creatorId !== String(userId)) {
@@ -3283,7 +3274,7 @@ router.patch('/:id/mark-complete', authMiddleware, async (req: AuthenticatedRequ
       .maybeSingle();
 
     if (dealError || !deal) {
-      console.error("404 Deal not found", dealId, (typeof dealError !== "undefined" ? dealError : (typeof error !== "undefined" ? error : null))); return res.status(404).json({ success: false, error: 'Deal not found' });
+      console.warn('[Deals] 404 Deal not found:', dealId); return res.status(404).json({ success: false, error: 'Deal not found' });
     }
 
     const dealBrandEmail = String(deal.brand_email || '').toLowerCase() || null;

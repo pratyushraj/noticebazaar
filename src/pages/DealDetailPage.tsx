@@ -1214,7 +1214,7 @@ function DealDetailPageContent() {
     const isShippingDeliveryPending = requiresShipping
       && statusLower === 'drafting'
       && !(deal as any)?.delivery_address;
-    const isPaidDrafting = dealTypeLower !== 'barter' && statusLower === 'drafting';
+    const isPaidDrafting = isPaidLikeCollab(deal) && !isBarterLikeCollab(deal) && statusLower === 'drafting';
 
     if (deal?.payment_received_date) return 'COMPLETED';
     if (statusLower.includes('paid') || statusLower.includes('payment_released') || statusLower.includes('payment sent')) return 'PAID';

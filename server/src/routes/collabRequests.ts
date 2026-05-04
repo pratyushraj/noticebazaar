@@ -3530,6 +3530,7 @@ router.patch('/:id/accept', async (req: AuthenticatedRequest, res: Response) => 
   try {
     const userId = req.user!.id;
     const { id } = req.params;
+    const { shipping_address, otp_verified, otp_verified_at } = req.body || {};
 
     // Get the collab request
     const { data: request, error: requestError } = await supabase
@@ -3614,8 +3615,8 @@ router.patch('/:id/accept', async (req: AuthenticatedRequest, res: Response) => 
        status: 'Drafting',
        deal_type: isBarter ? 'barter' : 'paid',
        collab_type: normalizeCollabTypeForApi(request.collab_type) || request.collab_type,
-       campaign_description: request.campaign_description || null,
-       campaign_goal: request.campaign_goal || null,
+       campaign_description: request.campaign_description || request.selected_package_label || null,
+       campaign_goal: request.selected_package_label || request.campaign_goal || null,
        campaign_category: request.campaign_category || null,
        shipping_required: (request as any).shipping_required === true || isBarterLikeCollab(request.collab_type),
        created_via: 'collab_request',
@@ -3624,6 +3625,9 @@ router.patch('/:id/accept', async (req: AuthenticatedRequest, res: Response) => 
        barter_product_image_url: normalizedProductImage,
        form_data: persistedFormData,
        collab_request_id: request.id,
+       delivery_address: shipping_address || (request as any).shipping_address,
+       creator_otp_verified: otp_verified === true,
+       creator_otp_verified_at: otp_verified_at || (otp_verified === true ? new Date().toISOString() : null),
      };
 
     const dealOptionalFields = new Set([
