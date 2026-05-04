@@ -5604,23 +5604,8 @@ const MobileDashboardDemo = ({
                                                                     })()}
                                                                 </div>
                                                             </div>
-
-                                                            {/* ── COLLAPSIBLE BRIEF ── */}
+{/* ── COLLAPSIBLE BRIEF ── */}
                                                             {(() => {
-                                                                    const rawDesc = selectedItem.campaign_description || selectedItem.description || selectedItem.raw?.campaign_description || selectedItem.raw?.description || "";
-
-                                                                    // Resolve package name: try regex on description first, then direct fields
-                                                                    const packageMatch = rawDesc.match(/Selected package:\s*([🚀📈🎯💼]?\s*.*?)(?=\s*Collab Duration:|\n|Additional|$)/i);
-                                                                    const resolvedPackageName = 
-                                                                        selectedItem.campaign_goal ||
-                                                                        (packageMatch ? packageMatch[1].trim() : null) ||
-                                                                        selectedItem.package_name || selectedItem.package_tier ||
-                                                                        selectedItem.raw?.package_name || selectedItem.raw?.package_tier || 'Starter Collab';
-
-                                                                    const durationMatch = rawDesc.match(/Collab Duration:\s*(.*?)(?=\s*Additional|\n|$)/i);
-                                                                    const extractedDuration = durationMatch ? durationMatch[1].trim() : null;
-
-                                                                    const otherNeedsMatch = rawDesc.match(/Other Needs:\s*(.*?)(?=\s*Selected package:|Collab Duration:|Additional|\n|$)/i);
                                                                     const extractedOtherNeeds = otherNeedsMatch ? otherNeedsMatch[1].trim() : null;
 
                                                                     // Strip metadata lines from display text
@@ -6241,7 +6226,7 @@ const MobileDashboardDemo = ({
                                                         ? parsedDeliverables.slice(1).map(s => ({ label: s }))
                                                         : parsedDeliverables.filter(d => d !== primaryDeliverable);
 // Multi-source package name resolution
-                                                     const packageMatch = rawDesc.match(/Selected package:\s*([🚀📈🎯💼]?\s*.*?)(?=\s*Collab Duration:|\n|Additional|$)/i);
+                                                     const packageMatch = rawDesc.match(/(?:Selected package:|\|\|Package:)\s*([🚀📈🎯💼⭐🎁]?\s*.*?)(?=\s*Collab Duration:|\n|Additional|\|\||$)/i);
                                                      const resolvedPackageName =
                                                          selectedItem.campaign_goal ||
                                                          (packageMatch ? packageMatch[1].trim() : null) ||
@@ -6257,8 +6242,8 @@ const MobileDashboardDemo = ({
                                                      const isExchange = pkgLower.includes('exchange') || pkgLower.includes('product');
                                                      const packageIcon = isStarter ? "🚀" : isGrowth ? "📈" : isExchange ? "🎁" : "";
 
-                                                      const displayPackageName = (resolvedPackageName || "Collaboration Details").replace(/^[🚀📈🎯💼📄]\s*/u, "");
-                                                      const cleanDesc = rawDesc.split(/Selected package:|Collab Duration:|Additional Commercial Terms:|Collab content category:|Product for collab:/i)[0].trim() || "Professional collaboration focused on high-quality content and audience engagement.";
+                                                      const displayPackageName = (resolvedPackageName || "Collaboration Details").replace(/^[🚀📈🎯💼⭐🎁📄]\s*/u, "");
+                                                      const cleanDesc = (selectedItem.campaign_description || rawDesc).split(/Selected package:|\|\|Package:|Collab Duration:|Additional Commercial Terms:|Collab content category:|Product for collab:/i)[0].trim() || "Professional collaboration focused on high-quality content and audience engagement.";
 
                                                      const otherNeedsMatch = rawDesc.match(/Other Needs:\s*(.*?)(?=\s*Selected package:|Collab Duration:|Additional|\n|$)/i);
                                                      const extractedOtherNeeds = otherNeedsMatch ? otherNeedsMatch[1].trim() : null;
