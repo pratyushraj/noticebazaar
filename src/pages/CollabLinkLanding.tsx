@@ -801,6 +801,7 @@ const CollabLinkLanding = () => {
   const [useBrandProfile, setUseBrandProfile] = useState(false)
 
   const [campaignDescription, setCampaignDescription] = useState('')
+  const [anyOtherNeeds, setAnyOtherNeeds] = useState('')
   const [deliverables, setDeliverables] = useState<string[]>([])
   const [deliverableQuantities, setDeliverableQuantities] = useState<Record<string, number>>({})
   const [contentQuantity, setContentQuantity] = useState<number | '3+'>(1)
@@ -2310,6 +2311,7 @@ const CollabLinkLanding = () => {
           barter_types: barterTypes.map(t => BARTER_OPTIONS.find(o => o.id === t)?.label || t),
           campaign_description: [
             campaignDescription,
+            anyOtherNeeds ? `\nOther Needs: ${anyOtherNeeds}` : '',
             selectedTemplate ? `\nSelected package: ${selectedTemplate.label}` : '',
             contentRequirements.length > 0 ? `\nRequirements: ${contentRequirements.map(r => CONTENT_REQUIREMENT_LABELS[r] || r).join(', ')}` : '',
             contentQuantity !== 1 ? `\nQuantity: ${contentQuantity}` : '',
@@ -3845,7 +3847,7 @@ const CollabLinkLanding = () => {
                             <div className="flex items-center gap-3">
                               <div className="w-8 h-8 rounded-xl bg-slate-900 flex items-center justify-center text-white font-black text-xs">03</div>
                               <label className="text-[16px] font-black text-slate-900 tracking-tight">
-                                Campaign Brief
+                                {paymentType === 'barter' ? "Any other requirements" : "Campaign Brief"}
                               </label>
                             </div>
                             <button 
@@ -3869,7 +3871,9 @@ const CollabLinkLanding = () => {
                               id="campaign-description-input"
                               value={campaignDescription}
                               onChange={e => setCampaignDescription(e.target.value)}
-                              placeholder="Example:&#10;• 1 Instagram Reel (30–45 sec)&#10;• Show product usage naturally&#10;• Mention brand name in first 5 sec&#10;• Tag @brand_handle"
+                              placeholder={paymentType === 'barter' 
+                                ? "Any specific requirements or instructions for this collaboration?" 
+                                : "Example:&#10;• 1 Instagram Reel (30–45 sec)&#10;• Show product usage naturally&#10;• Mention brand name in first 5 sec&#10;• Tag @brand_handle"}
                               className="min-h-[180px] rounded-2xl border-slate-100 bg-slate-50/50 px-5 py-5 font-semibold text-[15px] text-slate-900 placeholder:text-slate-400 shadow-inner resize-none focus-visible:ring-4 focus-visible:ring-emerald-500/10 focus-visible:border-emerald-500 transition-all leading-relaxed"
                             />
                             <div className="absolute bottom-5 right-5 opacity-20 pointer-events-none">
@@ -3883,6 +3887,22 @@ const CollabLinkLanding = () => {
                             </p>
                           )}
                         </div>
+
+                        {/* Additional Needs for Packages */}
+                        {selectedTemplateId && (selectedTemplateId.includes('starter') || selectedTemplateId.includes('growth')) && (
+                          <div className="bg-white rounded-3xl p-6 border border-slate-100 shadow-[0_8px_40px_rgba(0,0,0,0.05)] space-y-4">
+                            <label className="text-[14px] font-black text-slate-900 tracking-tight flex items-center gap-2">
+                              <Plus className="h-4 w-4 text-emerald-500" />
+                              Any other needs?
+                            </label>
+                            <Textarea
+                              value={anyOtherNeeds}
+                              onChange={e => setAnyOtherNeeds(e.target.value)}
+                              placeholder="Add any specific instructions or extra requirements for this package..."
+                              className="min-h-[100px] rounded-2xl border-slate-100 bg-slate-50/50 px-5 py-4 font-semibold text-[14px] text-slate-900 placeholder:text-slate-400 shadow-inner resize-none focus-visible:ring-4 focus-visible:ring-emerald-500/10 focus-visible:border-emerald-500 transition-all"
+                            />
+                          </div>
+                        )}
 
                         {/* Section 5: Content Details (Quantities & Specifics) - Hidden for Barter */}
                         {paymentType !== 'barter' && (

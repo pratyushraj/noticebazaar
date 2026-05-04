@@ -5593,8 +5593,11 @@ const MobileDashboardDemo = ({
                                                                     const durationMatch = rawDesc.match(/Collab Duration:\s*(.*?)(?=\s*Additional|\n|$)/i);
                                                                     const extractedDuration = durationMatch ? durationMatch[1].trim() : null;
 
+                                                                    const otherNeedsMatch = rawDesc.match(/Other Needs:\s*(.*?)(?=\s*Selected package:|Collab Duration:|Additional|\n|$)/i);
+                                                                    const extractedOtherNeeds = otherNeedsMatch ? otherNeedsMatch[1].trim() : null;
+
                                                                     // Strip metadata lines from display text
-                                                                    const cleanDesc = rawDesc.split(/Selected package:|Collab Duration:|Additional Commercial Terms:|Collab content category:|Product for collab:/i)[0].trim() || "High-energy Reel optimized for organic reach. Best for first-time brand discovery.";
+                                                                    const cleanDesc = rawDesc.split(/Selected package:|Collab Duration:|Other Needs:|Additional Commercial Terms:|Collab content category:|Product for collab:/i)[0].trim() || "High-energy Reel optimized for organic reach. Best for first-time brand discovery.";
 
                                                                     const pkgLower = (resolvedPackageName || "").toLowerCase();
                                                                     const isStarter = pkgLower.includes('starter');
@@ -5632,6 +5635,17 @@ const MobileDashboardDemo = ({
                                                                                     <p className={cn("text-[15px] font-medium leading-relaxed opacity-70 mb-6 whitespace-pre-wrap px-1", textColor)}>
                                                                                         {cleanDesc}
                                                                                     </p>
+
+                                                                                    {extractedOtherNeeds && (
+                                                                                        <div className={cn("mb-6 p-5 rounded-3xl border", isDark ? "bg-amber-500/5 border-amber-500/10" : "bg-amber-50 border-amber-100")}>
+                                                                                            <p className={cn("text-[10px] font-black uppercase tracking-widest mb-2 flex items-center gap-2", isDark ? "text-amber-400" : "text-amber-700")}>
+                                                                                                <Plus className="w-3 h-3" /> Other Requirements
+                                                                                            </p>
+                                                                                            <p className={cn("text-[14px] font-semibold leading-relaxed", textColor)}>
+                                                                                                {extractedOtherNeeds}
+                                                                                            </p>
+                                                                                        </div>
+                                                                                    )}
             
                                                                                     {/* WHAT THE BRAND GETS (Exactly like screenshot) */}
                                                                                     <div className={cn("rounded-[32px] p-8 border backdrop-blur-md", 
