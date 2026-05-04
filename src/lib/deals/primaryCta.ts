@@ -139,7 +139,7 @@ export const getCanonicalDealStatus = (deal: any): CanonicalDealStatus => {
 
   // New enforcement statuses
   if (lower === 'payment_pending') {
-    if (deal?.payment_status === 'captured' || deal?.amount_paid > 0) {
+    if (deal?.payment_status === 'captured') {
       if (isBarter && !hasAddress) {
         return 'AWAITING_BRAND_ADDRESS';
       }

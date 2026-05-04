@@ -2288,8 +2288,6 @@ router.post('/:id/create-payment-order', authMiddleware, async (req: Authenticat
       
       // Hardening: only update columns if they exist in the schema
       if ('payment_id' in (deal || {})) updateData.payment_id = order.id;
-      if ('amount_paid' in (deal || {})) updateData.amount_paid = breakdown.brandTotal;
-      if ('creator_amount' in (deal || {})) updateData.creator_amount = breakdown.creatorPayout;
       if ('platform_fee' in (deal || {})) updateData.platform_fee = breakdown.platformFee;
 
       const { error: updateError } = await supabase.from('brand_deals').update(updateData).eq('id', dealId);

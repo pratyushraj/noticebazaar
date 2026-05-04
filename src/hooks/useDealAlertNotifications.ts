@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { getApiBaseUrl, fetchWithTimeout } from '@/lib/utils/api';
+import { getApiBaseUrl, fetchWithTimeout, isNetworkError } from '@/lib/utils/api';
+import { withRetry } from '@/lib/utils/retry';
 import { logger } from '@/lib/utils/logger';
 
 const PROMPT_DISMISSED_KEY = 'deal_alert_prompt_dismissed';
@@ -97,15 +98,18 @@ export const useDealAlertNotifications = () => {
       }
 
       // Canonical source is server-side: push delivery depends on the server storing a subscription.
-      const statusResponse = await fetchWithTimeout(
-        `${pushApiBase}/api/push/status`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
+      const statusResponse = await withRetry(() => 
+        fetchWithTimeout(
+          `${pushApiBase}/api/push/status`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
           },
-        },
-        5000
-      ); // 5s timeout for status check
+          5000
+        ),
+        { maxRetries: 1 } // Just one quick retry for status check
+      );
 
       if (!statusResponse.ok) {
         setIsSubscribed(false);
@@ -144,7 +148,10 @@ export const useDealAlertNotifications = () => {
 
       setIsSubscribed(serverHasSubscription);
     } catch (error: any) {
-      logger.warn('Push status check failed', { error: error?.message });
+      // Don't spam warnings for common/transient network errors (e.g. laptop sleeping)
+      if (!isNetworkError(error)) {
+        logger.warn('Push status check failed', { error: error?.message });
+      }
       setIsSubscribed(false);
     }
   }, [pushApiBase, isLocalhostDev]);
@@ -158,7 +165,7 @@ export const useDealAlertNotifications = () => {
     setIsSupported(supported);
     setPromptDismissed(localStorage.getItem(PROMPT_DISMISSED_KEY) === 'true');
     if (!supported) return;
-    syncSubscriptionStatus();
+    syncSubscriptionStatus().catch(() => {});
   }, [syncSubscriptionStatus, isLocalhostDev]);
 
   const dismissPrompt = useCallback(() => {
@@ -289,7 +296,7 @@ export const useDealAlertNotifications = () => {
     } finally {
       setIsBusy(false);
       // Refresh from canonical sources.
-      syncSubscriptionStatus();
+      syncSubscriptionStatus().catch(() => {});
     }
   }, [isSupported, pushApiBase, syncSubscriptionStatus]);
 

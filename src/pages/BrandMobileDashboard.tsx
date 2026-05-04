@@ -2684,7 +2684,8 @@ const BrandMobileDashboard = ({
                     <p className={cn('text-[10px] font-black uppercase tracking-widest opacity-40', textColor)}>Amount Due</p>
                     <p className={cn('text-[16px] font-black', textColor)}>₹{amount.toLocaleString('en-IN')}</p>
                   </div>
-                  {creatorUpiId && !isEscrowDeal && (
+                  {/* Creator UPI hidden to ensure escrow compliance */}
+                  {false && creatorUpiId && !isEscrowDeal && (
                     <div className="flex items-center justify-between pt-4 border-t border-white/5">
                       <p className={cn('text-[10px] font-black uppercase tracking-widest opacity-40', textColor)}>Creator UPI</p>
                       <div className="flex items-center gap-2">

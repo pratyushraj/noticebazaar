@@ -215,7 +215,9 @@ export const isNetworkError = (error: unknown): boolean => {
     errorMessage.includes('network') ||
     errorMessage.includes('failed to fetch') ||
     errorMessage.includes('err_failed') ||
+    errorMessage.includes('err_network_io_suspended') ||
     errorMessage.includes('connection') ||
+    errorMessage.includes('suspended') ||
     !navigator.onLine
   );
 };
