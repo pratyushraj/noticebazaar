@@ -5485,7 +5485,6 @@ const MobileDashboardDemo = ({
                                                     const primaryLabel = primaryDeliverable.label || primaryDeliverable.name || primaryDeliverable.type || 'Instagram Reel';
                                                     const secondaryDeliverables = parsedDeliverables.filter(d => d !== primaryDeliverable);
                                                     
-                                                    // Parse Requirements
                                                     const requirementsList = [];
                                                     const rawReqs = selectedItem.requirements || selectedItem.raw?.requirements;
                                                     try {
@@ -5498,6 +5497,8 @@ const MobileDashboardDemo = ({
                                                     } catch (e) {}
 
                                                     const expiryDate = selectedItem.expiry_date || selectedItem.raw?.expiry_date;
+                                                    const contentDuration = selectedItem.content_duration || selectedItem.raw?.content_duration || selectedItem.form_data?.content_duration;
+                                                    const usageDuration = selectedItem.usage_duration || selectedItem.raw?.usage_duration || selectedItem.form_data?.usage_duration;
                                                     const daysLeft = expiryDate ? Math.max(0, Math.ceil((new Date(expiryDate).getTime() - Date.now()) / (1000 * 60 * 60 * 24))) : null;
 
                                                     return (
@@ -5597,7 +5598,7 @@ const MobileDashboardDemo = ({
 
                                                                     // Format primary deliverable with count + duration
                                                                     const rawCount = parsedDeliverables[0]?.count || parsedDeliverables[0]?.quantity || 1;
-                                                                    const reelDuration = extractedDuration || (isStarter ? "15-30s" : isGrowth ? "30-60s" : null);
+                                                                    const reelDuration = contentDuration || extractedDuration || (isStarter ? "15-30s" : isGrowth ? "30-60s" : null);
                                                                     const formattedPrimary = `${rawCount} ${primaryLabel}${reelDuration ? ` (${reelDuration})` : ""}`;
 
                                                                     return (
@@ -5647,58 +5648,6 @@ const MobileDashboardDemo = ({
                                                                                                     {formattedPrimary}
                                                                                                 </p>
                                                                                             </div>
-                                                                                            
-                                                                                            {/* Package Specific Deliverables */}
-                                                                                            {isStarter && (
-                                                                                                <>
-                                                                                                    <div className="flex items-center gap-4">
-                                                                                                        <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0">
-                                                                                                            <Check className="w-3.5 h-3.5 text-emerald-500" strokeWidth={4} />
-                                                                                                        </div>
-                                                                                                        <p className={cn("text-[15px] font-bold tracking-tight", textColor)}>Organic reach focus</p>
-                                                                                                    </div>
-                                                                                                    <div className="flex items-center gap-4">
-                                                                                                        <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0">
-                                                                                                            <Check className="w-3.5 h-3.5 text-emerald-500" strokeWidth={4} />
-                                                                                                        </div>
-                                                                                                        <p className={cn("text-[15px] font-bold tracking-tight", textColor)}>Basic editing</p>
-                                                                                                    </div>
-                                                                                                </>
-                                                                                            )}
-                                                                                            
-                                                                                            {isGrowth && (
-                                                                                                <>
-                                                                                                    <div className="flex items-center gap-4">
-                                                                                                        <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0">
-                                                                                                            <Check className="w-3.5 h-3.5 text-emerald-500" strokeWidth={4} />
-                                                                                                        </div>
-                                                                                                        <p className={cn("text-[15px] font-bold tracking-tight", textColor)}>SEO + Hook Optimization</p>
-                                                                                                    </div>
-                                                                                                    <div className="flex items-center gap-4">
-                                                                                                        <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0">
-                                                                                                            <Check className="w-3.5 h-3.5 text-emerald-500" strokeWidth={4} />
-                                                                                                        </div>
-                                                                                                        <p className={cn("text-[15px] font-bold tracking-tight", textColor)}>1 Story shoutout</p>
-                                                                                                    </div>
-                                                                                                </>
-                                                                                            )}
-
-                                                                                            {isExchange && (
-                                                                                                <>
-                                                                                                    <div className="flex items-center gap-4">
-                                                                                                        <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0">
-                                                                                                            <Check className="w-3.5 h-3.5 text-emerald-500" strokeWidth={4} />
-                                                                                                        </div>
-                                                                                                        <p className={cn("text-[15px] font-bold tracking-tight", textColor)}>Product Review / Unboxing</p>
-                                                                                                    </div>
-                                                                                                    <div className="flex items-center gap-4">
-                                                                                                        <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0">
-                                                                                                            <Check className="w-3.5 h-3.5 text-emerald-500" strokeWidth={4} />
-                                                                                                        </div>
-                                                                                                        <p className={cn("text-[15px] font-bold tracking-tight", textColor)}>1 Story mention</p>
-                                                                                                    </div>
-                                                                                                </>
-                                                                                            )}
 
                                                                                             {secondaryDeliverables.filter(d => d.label || d.name).map((d, i) => (
                                                                                                 <div key={i} className="flex items-center gap-4">
@@ -5710,38 +5659,32 @@ const MobileDashboardDemo = ({
                                                                                             ))}
                                                                                         </div>
 
-                                                                                        <p className={cn("text-[11px] font-black uppercase tracking-[0.3em] opacity-70 dark:opacity-40 mb-5 px-1", textColor)}>2. REQUIREMENTS</p>
-                                                                                        <div className="space-y-5 mb-10">
-                                                                                            <div className="flex items-center gap-4">
-                                                                                                <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0">
-                                                                                                    <Check className="w-3.5 h-3.5 text-emerald-500" strokeWidth={4} />
-                                                                                                </div>
-                                                                                                <p className={cn("text-[15px] font-bold tracking-tight", textColor)}>High-quality video editing</p>
-                                                                                            </div>
-                                                                                            <div className="flex items-center gap-4">
-                                                                                                <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0">
-                                                                                                    <Check className="w-3.5 h-3.5 text-emerald-500" strokeWidth={4} />
-                                                                                                </div>
-                                                                                                <p className={cn("text-[15px] font-bold tracking-tight", textColor)}>Mention brand name clearly</p>
-                                                                                            </div>
-                                                                                            {requirementsList.map((req, i) => (
-                                                                                                <div key={i} className="flex items-center gap-4">
-                                                                                                    <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0">
-                                                                                                        <Check className="w-3.5 h-3.5 text-emerald-500" strokeWidth={4} />
-                                                                                                    </div>
-                                                                                                    <p className={cn("text-[15px] font-bold tracking-tight opacity-80", textColor)}>{req}</p>
-                                                                                                </div>
-                                                                                            ))}
-                                                                                        </div>
+                                                                                        {requirementsList.length > 0 && (
+                                                                                            <>
+                                                                                               <p className={cn("text-[11px] font-black uppercase tracking-[0.3em] opacity-70 dark:opacity-40 mb-5 px-1", textColor)}>2. REQUIREMENTS</p>
+                                                                                               <div className="space-y-5 mb-10">
+                                                                                                   {requirementsList.map((req, i) => (
+                                                                                                       <div key={i} className="flex items-center gap-4">
+                                                                                                           <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0">
+                                                                                                               <Check className="w-3.5 h-3.5 text-emerald-500" strokeWidth={4} />
+                                                                                                           </div>
+                                                                                                           <p className={cn("text-[15px] font-bold tracking-tight opacity-80", textColor)}>{req}</p>
+                                                                                                       </div>
+                                                                                                   ))}
+                                                                                               </div>
+                                                                                            </>
+                                                                                        )}
 
                                                                                         <p className={cn("text-[11px] font-black uppercase tracking-[0.3em] opacity-70 dark:opacity-40 mb-5 px-1", textColor)}>3. USAGE RIGHTS</p>
                                                                                         <div className="space-y-5">
-                                                                                            <div className="flex items-center gap-4">
-                                                                                                <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0">
-                                                                                                    <Check className="w-3.5 h-3.5 text-emerald-500" strokeWidth={4} />
+                                                                                            {usageDuration && (
+                                                                                                <div className="flex items-center gap-4">
+                                                                                                    <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0">
+                                                                                                        <Check className="w-3.5 h-3.5 text-emerald-500" strokeWidth={4} />
+                                                                                                    </div>
+                                                                                                    <p className={cn("text-[15px] font-bold tracking-tight", textColor)}>{usageDuration} Usage</p>
                                                                                                 </div>
-                                                                                                <p className={cn("text-[15px] font-bold tracking-tight", textColor)}>30 Days Organic Usage</p>
-                                                                                            </div>
+                                                                                            )}
                                                                                             <div className="flex items-center gap-4">
                                                                                                 <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0">
                                                                                                     <Check className="w-3.5 h-3.5 text-emerald-500" strokeWidth={4} />
