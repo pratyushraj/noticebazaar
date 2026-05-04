@@ -3889,7 +3889,14 @@ const CollabLinkLanding = () => {
                         </div>
 
                         {/* Additional Needs for Packages */}
-                        {selectedTemplateId && (selectedTemplateId.includes('starter') || selectedTemplateId.includes('growth')) && (
+                        {selectedTemplate && (
+                          selectedTemplate.id.includes('basic') || 
+                          selectedTemplate.id.includes('standard') ||
+                          selectedTemplate.id.toLowerCase().includes('starter') ||
+                          selectedTemplate.id.toLowerCase().includes('growth') ||
+                          selectedTemplate.label.toLowerCase().includes('starter') ||
+                          selectedTemplate.label.toLowerCase().includes('growth')
+                        ) && (
                           <div className="bg-white rounded-3xl p-6 border border-slate-100 shadow-[0_8px_40px_rgba(0,0,0,0.05)] space-y-4">
                             <label className="text-[14px] font-black text-slate-900 tracking-tight flex items-center gap-2">
                               <Plus className="h-4 w-4 text-emerald-500" />
