@@ -5612,6 +5612,7 @@ const MobileDashboardDemo = ({
                                                                     // Resolve package name: try regex on description first, then direct fields
                                                                     const packageMatch = rawDesc.match(/Selected package:\s*([🚀📈🎯💼]?\s*.*?)(?=\s*Collab Duration:|\n|Additional|$)/i);
                                                                     const resolvedPackageName = 
+                                                                        selectedItem.campaign_goal ||
                                                                         (packageMatch ? packageMatch[1].trim() : null) ||
                                                                         selectedItem.package_name || selectedItem.package_tier ||
                                                                         selectedItem.raw?.package_name || selectedItem.raw?.package_tier || 'Starter Collab';
@@ -5684,12 +5685,7 @@ const MobileDashboardDemo = ({
                                                                                             {isStringList ? (
                                                                                                 // Render all items for string list format
                                                                                                 <>
-                                                                                                    <div className="flex items-center gap-4">
-                                                                                                        <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0">
-                                                                                                            <Check className="w-3.5 h-3.5 text-emerald-500" strokeWidth={4} />
-                                                                                                        </div>
-                                                                                                        <p className={cn("text-[15px] font-bold tracking-tight", textColor)}>1 Revision included</p>
-                                                                                                    </div>
+
                                                                                                     {parsedDeliverables.map((item, i) => (
                                                                                                         <div key={i} className="flex items-center gap-4">
                                                                                                             <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0">
@@ -5704,12 +5700,7 @@ const MobileDashboardDemo = ({
                                                                                             ) : (
                                                                                                 // Legacy structured format
                                                                                                 <>
-                                                                                                    <div className="flex items-center gap-4">
-                                                                                                        <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0">
-                                                                                                            <Check className="w-3.5 h-3.5 text-emerald-500" strokeWidth={4} />
-                                                                                                        </div>
-                                                                                                        <p className={cn("text-[15px] font-bold tracking-tight", textColor)}>1 Revision included</p>
-                                                                                                    </div>
+
                                                                                                     <div className="flex items-center gap-4">
                                                                                                         <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0">
                                                                                                             <Check className="w-3.5 h-3.5 text-emerald-500" strokeWidth={4} />
@@ -6225,6 +6216,7 @@ const MobileDashboardDemo = ({
 // Multi-source package name resolution
                                                      const packageMatch = rawDesc.match(/Selected package:\s*([🚀📈🎯💼]?\s*.*?)(?=\s*Collab Duration:|\n|Additional|$)/i);
                                                      const resolvedPackageName =
+                                                         selectedItem.campaign_goal ||
                                                          (packageMatch ? packageMatch[1].trim() : null) ||
                                                          selectedItem.package_name || selectedItem.package_tier ||
                                                          selectedItem.raw?.package_name || selectedItem.raw?.package_tier || 'Starter Collab';
