@@ -5616,7 +5616,6 @@ const MobileDashboardDemo = ({
                                                                             >
                                                                                 <div className="flex flex-col">
                                                                                     <div className="flex items-center gap-3 mb-1.5">
-                                                                                        {packageIcon && <span className="text-2xl">{packageIcon}</span>}
                                                                                         <span className={cn("text-[26px] font-black tracking-tighter leading-none", textColor)}>
                                                                                             {displayPackageName}
                                                                                         </span>
@@ -5625,19 +5624,12 @@ const MobileDashboardDemo = ({
                                                                                         {isExchange ? "PRODUCT ONLY" : "STANDARD DELIVERY"}
                                                                                     </span>
                                                                                 </div>
-                                                                                <div className="flex items-center gap-5">
-                                                                                    {packageIcon && (
-                                                                    <div className={cn("w-14 h-14 rounded-full flex items-center justify-center shadow-xl border shrink-0", 
-                                                                        isDark ? "bg-[#1A2235] border-white/10" : "bg-slate-50 border-slate-100")}>
-                                                                        <span className="text-2xl filter drop-shadow-md">{packageIcon}</span>
-                                                                    </div>
-                                                                )}
                                                                                     <ChevronDown className={cn("w-6 h-6 opacity-50 dark:opacity-20 transition-transform", showBrief && "rotate-180")} />
                                                                                 </div>
                                                                             </button>
                                                                             {showBrief && (
-                                                                                <div className="px-6 pb-10">
-                                                                                    <p className={cn("text-[15px] font-medium leading-relaxed opacity-70 mb-10 whitespace-pre-wrap px-1", textColor)}>
+                                                                                <div className="px-6 pb-6">
+                                                                                    <p className={cn("text-[15px] font-medium leading-relaxed opacity-70 mb-6 whitespace-pre-wrap px-1", textColor)}>
                                                                                         {cleanDesc}
                                                                                     </p>
             
@@ -5647,7 +5639,7 @@ const MobileDashboardDemo = ({
                                                                                         <p className={cn("text-[11px] font-black uppercase tracking-[0.3em] opacity-70 dark:opacity-40 mb-5 px-1", textColor)}>
                                                                                             {isStringList ? "WHAT THE BRAND GETS" : "1. DELIVERABLES"}
                                                                                         </p>
-                                                                                        <div className="space-y-5 mb-10">
+                                                                                        <div className="space-y-5 mb-2">
                                                                                             {isStringList ? (
                                                                                                 // Render all items for string list format
                                                                                                 parsedDeliverables.map((item, i) => (
