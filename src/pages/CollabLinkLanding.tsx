@@ -2766,7 +2766,7 @@ const CollabLinkLanding = () => {
     
     // Format brief exactly as shown in the package details
     const briefContent = template.deliverables.map((d, i) => i === 0 ? d : `• ${d}`).join('\n')
-    setCampaignDescription(template.type === 'barter' ? '' : briefContent)
+    setCampaignDescription('')
     setDeliverables(template.deliverables)
     setDeliverableQuantities(template.quantities)
 
