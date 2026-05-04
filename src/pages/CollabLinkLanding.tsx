@@ -3889,36 +3889,17 @@ const CollabLinkLanding = () => {
                           )}
                         </div>
 
-                        {/* Additional Needs for Packages */}
-                        {(
-                          (selectedTemplate && (
-                            selectedTemplate.id.includes('basic') || 
-                            selectedTemplate.id.includes('standard') ||
-                            selectedTemplate.id.toLowerCase().includes('starter') ||
-                            selectedTemplate.id.toLowerCase().includes('growth') ||
-                            selectedTemplate.label.toLowerCase().includes('starter') ||
-                            selectedTemplate.label.toLowerCase().includes('growth')
-                          )) ||
-                          (selectedTemplateId && (
-                            selectedTemplateId.includes('basic') || 
-                            selectedTemplateId.includes('standard') ||
-                            selectedTemplateId.toLowerCase().includes('starter') ||
-                            selectedTemplateId.toLowerCase().includes('growth')
-                          )) ||
-                          (campaignGoal && (
-                            campaignGoal.toLowerCase().includes('starter') || 
-                            campaignGoal.toLowerCase().includes('growth')
-                          ))
-                        ) && (
+                        {/* Additional Requirements for all Paid Deals */}
+                        {paymentType !== 'barter' && (
                           <div className="bg-white rounded-3xl p-6 border border-slate-100 shadow-[0_8px_40px_rgba(0,0,0,0.05)] space-y-4">
                             <label className="text-[14px] font-black text-slate-900 tracking-tight flex items-center gap-2">
                               <Plus className="h-4 w-4 text-emerald-500" />
-                              Any other needs?
+                              Any other requirements?
                             </label>
                             <Textarea
                               value={anyOtherNeeds}
                               onChange={e => setAnyOtherNeeds(e.target.value)}
-                              placeholder="Add any specific instructions or extra requirements for this package..."
+                              placeholder="Add any specific instructions or extra requirements for this collaboration..."
                               className="min-h-[100px] rounded-2xl border-slate-100 bg-slate-50/50 px-5 py-4 font-semibold text-[14px] text-slate-900 placeholder:text-slate-400 shadow-inner resize-none focus-visible:ring-4 focus-visible:ring-emerald-500/10 focus-visible:border-emerald-500 transition-all"
                             />
                           </div>
@@ -4468,30 +4449,50 @@ const CollabLinkLanding = () => {
                               className={`block text-[15px] font-black text-slate-800 mb-3 ${typeLabel} flex items-center gap-2`}
                             >
                               <Wallet className="h-5 w-5 text-slate-900" />
-                              What's your budget?
+                              {selectedTemplateId ? "Agreed Package Price" : "What's your budget?"}
                             </label>
-                            <div className="space-y-4">
-                              <div className="relative group">
-                                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-black text-[15px] group-focus-within:text-slate-900 transition-colors">
-                                  ₹
+                            
+                            {selectedTemplateId ? (
+                              <div className="flex items-center justify-between bg-white p-4 rounded-2xl border border-slate-100 shadow-sm">
+                                <div className="flex items-center gap-3">
+                                  <div className="w-10 h-10 rounded-full bg-emerald-500/10 flex items-center justify-center text-emerald-600">
+                                    <Check className="w-5 h-5" />
+                                  </div>
+                                  <div>
+                                    <p className="text-[16px] font-black text-slate-900">₹{formatNumberWithCommas(exactBudget)}</p>
+                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">Fixed Price Package</p>
+                                  </div>
                                 </div>
-                                <Input
-                                  id="budget-input"
-                                  type="number"
-                                  value={exactBudget}
-                                  onChange={e => setExactBudget(e.target.value)}
-                                  onKeyDown={e => e.key === 'Enter' && e.currentTarget.blur()}
-                                  enterKeyHint="done"
-                                  placeholder="Amount (e.g. 5000)"
-                                  className="h-14 pl-10 pr-6 rounded-2xl border-white bg-white font-black text-[15px] text-slate-900 placeholder:text-slate-500 shadow-sm focus-visible:ring-2 focus-visible:ring-emerald-500/30 transition-all"
-                                />
+                                <button 
+                                  type="button"
+                                  onClick={() => {
+                                    setSelectedTemplateId(null);
+                                    triggerHaptic(HapticPatterns.light);
+                                  }}
+                                  className="text-[10px] font-black text-emerald-600 uppercase tracking-tighter hover:underline"
+                                >
+                                  Change
+                                </button>
                               </div>
-                              <div className="flex items-center gap-2 flex-wrap">
-                                {[1000, 3000, 5000, 10000].map(amt => {
-                                  const matchesPackage = localDealTemplates.some(
-                                    t => t.budget === amt
-                                  )
-                                  return (
+                            ) : (
+                              <div className="space-y-4">
+                                <div className="relative group">
+                                  <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-black text-[15px] group-focus-within:text-slate-900 transition-colors">
+                                    ₹
+                                  </div>
+                                  <Input
+                                    id="budget-input"
+                                    type="number"
+                                    value={exactBudget}
+                                    onChange={e => setExactBudget(e.target.value)}
+                                    onKeyDown={e => e.key === 'Enter' && e.currentTarget.blur()}
+                                    enterKeyHint="done"
+                                    placeholder="Amount (e.g. 5000)"
+                                    className="h-14 pl-10 pr-6 rounded-2xl border-white bg-white font-black text-[15px] text-slate-900 placeholder:text-slate-500 shadow-sm focus-visible:ring-2 focus-visible:ring-emerald-500/30 transition-all"
+                                  />
+                                </div>
+                                <div className="flex items-center gap-2 flex-wrap">
+                                  {[1000, 3000, 5000, 10000].map(amt => (
                                     <button
                                       key={amt}
                                       type="button"
@@ -4500,32 +4501,25 @@ const CollabLinkLanding = () => {
                                         triggerHaptic(HapticPatterns.light)
                                       }}
                                       className={cn(
-                                        'px-3 py-1.5 rounded-lg border text-[11px] font-black transition-all active:scale-95',
+                                        'px-4 py-2 rounded-xl border font-bold text-xs transition-all',
                                         exactBudget === String(amt)
-                                          ? 'bg-slate-900 border-slate-900 text-white shadow-md scale-105'
-                                          : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300'
+                                          ? 'bg-slate-900 text-white border-slate-900'
+                                          : 'bg-white text-slate-600 border-slate-100 hover:border-slate-200'
                                       )}
                                     >
-                                      ₹{amt.toLocaleString('en-IN')}
+                                      ₹{amt.toLocaleString()}
                                     </button>
-                                  )
-                                })}
-                              </div>
-                              {selectedTemplate &&
-                                String(selectedTemplate.budget) === exactBudget && (
-                                  <p className="text-[11px] font-bold text-emerald-600 flex items-center gap-1.5 animate-in fade-in slide-in-from-left-2">
-                                    <Sparkles className="h-3 w-3" />
-                                    Matches '{selectedTemplate.label}' package price
-                                  </p>
-                                )}
-                              {/* Budget Guidance Hint */}
-                              {exactBudget && Number(exactBudget) > 0 && Number(exactBudget) < 3000 && (
-                                <div className="flex items-start gap-2 p-3 rounded-xl bg-amber-50 border border-amber-100 animate-in fade-in slide-in-from-top-1 duration-200">
-                                  <svg className="h-3.5 w-3.5 text-amber-600 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                                  <p className="text-[11px] font-bold text-amber-800">Creators are 4x more likely to accept offers above ₹3,000 — consider increasing your budget for better results.</p>
+                                  ))}
                                 </div>
-                              )}
-                            </div>
+                                {/* Budget Guidance Hint */}
+                                {exactBudget && Number(exactBudget) > 0 && Number(exactBudget) < 3000 && (
+                                  <div className="flex items-start gap-2 p-3 rounded-xl bg-amber-50 border border-amber-100 animate-in fade-in slide-in-from-top-1 duration-200">
+                                    <svg className="h-3.5 w-3.5 text-amber-600 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                    <p className="text-[11px] font-bold text-amber-800">Creators are 4x more likely to accept offers above ₹3,000 — consider increasing your budget for better results.</p>
+                                  </div>
+                                )}
+                              </div>
+                            )}
                           </div>
                         )}
 
