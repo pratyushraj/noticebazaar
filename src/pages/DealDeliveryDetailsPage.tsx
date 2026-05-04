@@ -135,10 +135,10 @@ export default function DealDeliveryDetailsPage() {
       navigate("/creator-dashboard", { replace: true });
       return;
     }
-    const requiresShipping = (deal as any)?.shipping_required;
-    // Only barter deals and paid deals with explicit shipping_required should see this page.
+    const requiresShipping = Boolean((deal as any)?.shipping_required) || dealType === "barter";
+    // Shipping deals and barter deals should see this page.
     // Pure paid/service deals without shipping_required skip to the deal page.
-    if (!requiresShipping && dealType !== "barter") {
+    if (!requiresShipping) {
       navigate(`/deal/${dealId}`, { replace: true });
       return;
     }
@@ -223,7 +223,7 @@ export default function DealDeliveryDetailsPage() {
     );
   }
 
-  if ((deal as any)?.shipping_required === false && dealType !== "barter") {
+  if (!(deal as any)?.shipping_required && dealType !== "barter") {
     return null;
   }
 

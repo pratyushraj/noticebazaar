@@ -87,7 +87,7 @@ const BrandDealDetailPage: React.FC = () => {
   const contentNotes = directContentNotes || loggedContentNotes;
   const brandApprovalStatus = String((deal as any)?.brand_approval_status || '').trim().toLowerCase();
   
-  const requiresShipping = isBarterLikeCollab(deal);
+  const requiresShipping = Boolean((deal as any)?.shipping_required) || isBarterLikeCollab(deal);
   const shippingStatus = String((deal as any)?.shipping_status || '').trim().toLowerCase();
   const isAwaitingShipment = requiresShipping && shippingStatus !== 'shipped' && shippingStatus !== 'delivered' && shippingStatus !== 'received';
 

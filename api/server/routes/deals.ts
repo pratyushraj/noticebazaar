@@ -1292,10 +1292,10 @@ router.patch('/:dealId/delivery-details', async (req: AuthenticatedRequest, res:
     if (deal.creator_id !== userId) {
       return res.status(403).json({ success: false, error: 'Access denied' });
     }
-    if ((deal as any).deal_type !== 'barter') {
-      return res.status(400).json({ success: false, error: 'Delivery details are only for barter deals' });
+    if (!(deal as any).shipping_required && (deal as any).deal_type !== 'barter') {
+      return res.status(400).json({ success: false, error: 'Delivery details are only for deals with shipping' });
     }
-    // Barter: delivery_address (and name/phone) required before contract generation — validated below
+    // Shipping deals: delivery_address (and name/phone) required before contract generation — validated below
 
     if (!delivery_name || typeof delivery_name !== 'string' || !delivery_name.trim()) {
       return res.status(400).json({ success: false, error: 'Full name is required' });
@@ -1554,8 +1554,8 @@ router.patch('/:dealId/shipping/confirm-received', async (req: AuthenticatedRequ
     if (deal.creator_id !== userId) {
       return res.status(403).json({ success: false, error: 'Access denied' });
     }
-    if ((deal as any).deal_type !== 'barter' || !(deal as any).shipping_required) {
-      return res.status(400).json({ success: false, error: 'Shipping confirmation is only for barter deals with shipping' });
+    if (!(deal as any).shipping_required) {
+      return res.status(400).json({ success: false, error: 'Shipping confirmation is only available for deals with shipping' });
     }
     if ((deal as any).shipping_status !== 'shipped') {
       return res.status(400).json({ success: false, error: 'Product must be marked as shipped before confirming receipt' });
@@ -1621,8 +1621,8 @@ router.patch('/:dealId/shipping/report-issue', async (req: AuthenticatedRequest,
     if (deal.creator_id !== userId) {
       return res.status(403).json({ success: false, error: 'Access denied' });
     }
-    if ((deal as any).deal_type !== 'barter' || !(deal as any).shipping_required) {
-      return res.status(400).json({ success: false, error: 'Shipping issue reporting is only for barter deals with shipping' });
+    if (!(deal as any).shipping_required) {
+      return res.status(400).json({ success: false, error: 'Shipping issue reporting is only available for deals with shipping' });
     }
     const currentStatus = (deal as any).shipping_status;
     if (currentStatus === 'delivered') {

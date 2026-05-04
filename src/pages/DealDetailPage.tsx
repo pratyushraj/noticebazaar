@@ -1137,7 +1137,7 @@ function DealDetailPageContent() {
 
     // Phase 1: Fully Executed / Shipping
     if (statusLower === 'fully_executed' || statusLower === 'executed' || executionStatus === 'signed' || executionStatus === 'completed') {
-      if (deal?.deal_type === 'barter' && (shippingStatus === 'shipped' || shippingStatus === 'in_transit')) {
+      if (((deal as any)?.shipping_required || deal?.deal_type === 'barter') && (shippingStatus === 'shipped' || shippingStatus === 'in_transit')) {
         return 'SHIPPING_IN_PROGRESS';
       }
       return 'Legally Active';
@@ -4215,8 +4215,8 @@ ${link}`;
                 </div>
               )}
 
-              {/* Product shipping (free products deals only) */}
-              {(deal as any)?.deal_type === 'barter' && (deal as any)?.shipping_required && (
+              {/* Product shipping */}
+              {Boolean((deal as any)?.shipping_required) && (
                 <div className="bg-card border border-border rounded-2xl p-5 md:p-6 shadow-lg shadow-black/20">
                   <div className="flex items-center gap-2 mb-4">
                     <Package className="w-5 h-5 text-warning" />
