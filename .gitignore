@@ -27,7 +27,7 @@ dist-ssr
 tsconfig.tsbuildinfo
 memory/
 MEMORY.md
-package-lock.json
+# package-lock.json (switched to npm to fix Vercel pnpm fetch bug)
 
 # Supabase
 supabase/.temp/
