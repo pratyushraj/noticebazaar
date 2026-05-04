@@ -210,7 +210,22 @@ type SuggestedCreator = {
 };
 
 function formatDeliverables(row: BrandDeal | null | undefined) {
-  // Prioritize package name if present in campaign_description
+  // 1. Check for explicit package label fields
+  const packageLabel = row?.selected_package_label || 
+                       (row as any)?.package_label ||
+                       (row as any)?.package_name ||
+                       (row as any)?.form_data?.selected_package_label || 
+                       (row as any)?.raw?.selected_package_label || 
+                       (row as any)?.raw?.form_data?.selected_package_label ||
+                       (row as any)?.form_data?.package_label ||
+                       (row as any)?.raw?.package_name ||
+                       (row as any)?.raw?.package?.name;
+  
+  if (packageLabel && String(packageLabel).trim()) {
+    return String(packageLabel).trim();
+  }
+
+  // 2. Prioritize package name if present in campaign_description
   if (row?.campaign_description) {
     const packageMatch = row.campaign_description.match(/\|\|Package: ([^|]+)/);
     if (packageMatch && packageMatch[1]) {
@@ -220,6 +235,14 @@ function formatDeliverables(row: BrandDeal | null | undefined) {
 
   const d = row?.deliverables;
   if (!d) return '';
+
+  // If we couldn't find a package name, and the deliverables look like a technical list (e.g. "1 Reel"),
+  // return a cleaner label like "Paid Collaboration" to avoid clutter as requested ("remove 1 reel etc").
+  if (typeof d === 'string' && /^\d+ /i.test(d.trim())) {
+    const type = String(row?.collab_type || row?.deal_type || 'Paid').trim().toLowerCase();
+    return type === 'barter' ? 'Barter Collaboration' : 'Paid Collaboration';
+  }
+
   const uniq = (parts: string[]) => {
     const seen = new Set<string>();
     const out: string[] = [];
@@ -2317,7 +2340,7 @@ const BrandMobileDashboard = ({
                 <div className="flex items-center justify-center gap-6 py-5 border-y border-white/5 bg-white/[0.02] -mx-4 px-4 mb-5">
                   <div className="text-center">
                     <p className={cn('text-[9px] font-black uppercase tracking-widest opacity-40 mb-1.5', textColor)}>Type</p>
-                    <p className={cn('text-[13px] font-bold', textColor)}>{String(deliverables).split('•')[0] || 'Reel'}</p>
+                    <p className={cn('text-[13px] font-bold', textColor)}>{String(deliverables).split('•')[0] || 'Collaboration'}</p>
                   </div>
                   <div className="w-px h-8 bg-white/10" />
                   <div className="text-center">

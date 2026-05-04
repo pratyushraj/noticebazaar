@@ -5511,9 +5511,9 @@ const MobileDashboardDemo = ({
                                                         : parsedDeliverables.find(d => 
                                                             d.type?.toLowerCase().includes('reel') || 
                                                             d.label?.toLowerCase().includes('reel')
-                                                        ) || parsedDeliverables[0] || { label: 'Instagram Reel' };
+                                                        ) || parsedDeliverables[0] || { label: 'Collaboration' };
                                                     
-                                                    const primaryLabel = isStringList ? parsedDeliverables[0] : (primaryDeliverable.label || primaryDeliverable.name || primaryDeliverable.type || 'Instagram Reel');
+                                                    const primaryLabel = isStringList ? parsedDeliverables[0] : (primaryDeliverable.label || primaryDeliverable.name || primaryDeliverable.type || 'Collaboration');
                                                     const secondaryDeliverables = isStringList 
                                                         ? parsedDeliverables.slice(1).map(s => ({ label: s }))
                                                         : parsedDeliverables.filter(d => d !== primaryDeliverable);
@@ -5624,7 +5624,7 @@ const MobileDashboardDemo = ({
                                                                     const extractedOtherNeeds = otherNeedsMatch ? otherNeedsMatch[1].trim() : null;
 
                                                                     // Strip metadata lines from display text
-                                                                    const cleanDesc = rawDesc.split(/Selected package:|Collab Duration:|Other Needs:|Additional Commercial Terms:|Collab content category:|Product for collab:/i)[0].trim() || "High-performing Reel optimized for organic reach. Best for first-time brand discovery.";
+                                                                    const cleanDesc = rawDesc.split(/Selected package:|Collab Duration:|Other Needs:|Additional Commercial Terms:|Collab content category:|Product for collab:/i)[0].trim() || "Professional collaboration focused on high-quality content and audience engagement.";
 
                                                                     const pkgLower = (resolvedPackageName || "").toLowerCase();
                                                                     const isStarter = pkgLower.includes('starter');
@@ -5649,8 +5649,8 @@ const MobileDashboardDemo = ({
                                                                         : parsedDeliverablesLocal.find(d => 
                                                                             d.type?.toLowerCase().includes('reel') || 
                                                                             d.label?.toLowerCase().includes('reel')
-                                                                        ) || parsedDeliverablesLocal[0] || { label: 'Instagram Reel' };
-                                                                    const primaryLabel = isStringList ? parsedDeliverablesLocal[0] : (primaryDeliverableLocal.label || primaryDeliverableLocal.name || primaryDeliverableLocal.type || 'Instagram Reel');
+                                                                        ) || parsedDeliverablesLocal[0] || { label: 'Collaboration' };
+                                                                    const primaryLabel = isStringList ? parsedDeliverablesLocal[0] : (primaryDeliverableLocal.label || primaryDeliverableLocal.name || primaryDeliverableLocal.type || 'Collaboration');
                                                                     const secondaryDeliverables = isStringList 
                                                                         ? parsedDeliverablesLocal.slice(1).map(s => ({ label: s }))
                                                                         : parsedDeliverablesLocal.filter(d => d !== primaryDeliverableLocal);
@@ -6258,7 +6258,7 @@ const MobileDashboardDemo = ({
                                                      const packageIcon = isStarter ? "🚀" : isGrowth ? "📈" : isExchange ? "🎁" : "";
 
                                                       const displayPackageName = (resolvedPackageName || "Collaboration Details").replace(/^[🚀📈🎯💼📄]\s*/u, "");
-                                                      const cleanDesc = rawDesc.split(/Selected package:|Collab Duration:|Additional Commercial Terms:|Collab content category:|Product for collab:/i)[0].trim() || "High-performing Reel optimized for organic reach. Best for first-time brand discovery.";
+                                                      const cleanDesc = rawDesc.split(/Selected package:|Collab Duration:|Additional Commercial Terms:|Collab content category:|Product for collab:/i)[0].trim() || "Professional collaboration focused on high-quality content and audience engagement.";
 
                                                      const otherNeedsMatch = rawDesc.match(/Other Needs:\s*(.*?)(?=\s*Selected package:|Collab Duration:|Additional|\n|$)/i);
                                                      const extractedOtherNeeds = otherNeedsMatch ? otherNeedsMatch[1].trim() : null;
@@ -7727,7 +7727,7 @@ const MobileDashboardDemo = ({
                                     <p className={cn("text-[11px] font-black uppercase tracking-[0.2em] px-4 opacity-60 dark:opacity-30", textColor)}>Campaign Intel</p>
                                     <div className="grid grid-cols-1 gap-3">
                                         {[
-                                            { label: 'Deliverables', value: pay.deliverables_summary || '1 Instagram Reel', icon: <FileText className="w-5 h-5" />, color: 'bg-blue-500' },
+                                            { label: 'Deliverables', value: pay.deliverables_summary || '1 Collaboration', icon: <FileText className="w-5 h-5" />, color: 'bg-blue-500' },
                                             { label: 'Agreement', value: pay.collab_type === 'barter' ? 'Free Product Collab' : 'Paid Campaign', icon: <Handshake className="w-5 h-5" />, color: 'bg-indigo-500' },
                                             { label: 'Method', value: pay.payment_terms || 'Direct Bank/UPI', icon: <CreditCard className="w-5 h-5" />, color: 'bg-amber-500' },
                                         ].map((row, i) => (
