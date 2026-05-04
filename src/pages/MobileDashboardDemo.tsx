@@ -8692,10 +8692,8 @@ const DealsTab = React.memo(({
                                                         }}
                                                     />
                                                 )}
-                                                {/* Bottom Scrim for Readability - Strengthened for white backgrounds */}
-                                                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent z-0" />
-                                                {/* Subtle overall dimming to reduce glare on pure white products */}
-                                                <div className="absolute inset-0 bg-black/5 z-0" />
+                                                {/* Bottom Scrim for Readability - Surgical approach (doesn't darken the whole photo) */}
+                                                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent z-0" />
                                             </div>
                                             <div className="relative h-full p-5 flex flex-col justify-between z-10">
                                                 <div className="flex items-center gap-2">
@@ -8749,10 +8747,8 @@ const DealsTab = React.memo(({
                                                         }}
                                                     />
                                                 )}
-                                                {/* Bottom Scrim for Readability - Strengthened for white backgrounds */}
-                                                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent z-0" />
-                                                {/* Subtle overall dimming to reduce glare on pure white products */}
-                                                <div className="absolute inset-0 bg-black/5 z-0" />
+                                                {/* Bottom Scrim for Readability - Surgical approach (doesn't darken the whole photo) */}
+                                                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent z-0" />
                                             </div>
                                             <div className="relative h-full p-5 flex flex-col justify-between z-10">
                                                 <div className="flex items-center gap-2">
@@ -8808,10 +8804,8 @@ const DealsTab = React.memo(({
                                                         }}
                                                     />
                                                 )}
-                                                {/* Bottom Scrim for Readability - Strengthened for white backgrounds */}
-                                                <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/60 to-transparent z-0" />
-                                                {/* Subtle overall dimming to reduce glare on pure white products */}
-                                                <div className="absolute inset-0 bg-black/10 z-0" />
+                                                {/* Bottom Scrim for Readability - Surgical approach (doesn't darken the whole photo) */}
+                                                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent z-0" />
                                             </div>
                                             <div className="relative h-full p-5 flex flex-col justify-between z-10">
                                                 <div className="flex items-center gap-2">
