@@ -7949,14 +7949,14 @@ const BottomNavigationBar = React.memo(({
                 isOverlayOpen && 'pointer-events-none'
             )}
             style={{ 
-                paddingBottom: 'max(env(safe-area-inset-bottom), 12px)',
+                paddingBottom: 'max(env(safe-area-inset-bottom), 6px)',
                 backdropFilter: 'blur(30px)', 
                 WebkitBackdropFilter: 'blur(30px)' 
             }}
         >
-            <div className="max-w-md md:max-w-2xl mx-auto flex items-center justify-between px-6 pt-3 gap-1 relative">
+            <div className="max-w-md md:max-w-2xl mx-auto flex items-center justify-between px-6 pt-2 gap-1 relative">
                 {/* Active Tab Background Indicator (Sliding) */}
-                <div className="absolute inset-x-6 top-3 h-[54px] pointer-events-none">
+                <div className="absolute inset-x-6 top-2 h-[54px] pointer-events-none">
                     <motion.div 
                         animate={{ 
                             left: effectiveTab === 'dashboard' ? '0%' 
