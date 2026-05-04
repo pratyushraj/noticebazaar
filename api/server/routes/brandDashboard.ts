@@ -38,9 +38,11 @@ router.get('/deals', async (req: AuthenticatedRequest, res: Response) => {
     const { data: deals, error } = await query;
     if (error) throw error;
 
-    // Attach creator profiles (best-effort).
+    // Attach creator profiles and original collab request package metadata (best-effort).
     const creatorIds = Array.from(new Set((deals || []).map((d: any) => String(d.creator_id || '')).filter(Boolean)));
+    const collabRequestIds = Array.from(new Set((deals || []).map((d: any) => String(d.collab_request_id || '').trim()).filter(Boolean)));
     let profilesById = new Map<string, any>();
+    let requestsById = new Map<string, any>();
     if (creatorIds.length > 0) {
       const { data: profs } = await supabase
         .from('profiles')
@@ -50,11 +52,33 @@ router.get('/deals', async (req: AuthenticatedRequest, res: Response) => {
         if (p?.id) profilesById.set(String(p.id), p);
       });
     }
+    if (collabRequestIds.length > 0) {
+      const { data: reqs } = await supabase
+        .from('collab_requests')
+        .select('id, selected_package_id, selected_package_label, selected_package_type, selected_addons, content_quantity, content_duration, content_requirements, barter_types, deliverables')
+        .in('id' as any, collabRequestIds as any[]);
+      (reqs || []).forEach((r: any) => {
+        if (r?.id) requestsById.set(String(r.id), r);
+      });
+    }
 
-    const enriched = (deals || []).map((d: any) => ({
-      ...d,
-      profiles: profilesById.get(String(d.creator_id)) || null,
-    }));
+    const enriched = (deals || []).map((d: any) => {
+      const request = requestsById.get(String(d.collab_request_id || '')) || null;
+      return {
+        ...request,
+        ...d,
+        selected_package_id: d.selected_package_id || request?.selected_package_id || null,
+        selected_package_label: d.selected_package_label || request?.selected_package_label || null,
+        selected_package_type: d.selected_package_type || request?.selected_package_type || null,
+        selected_addons: d.selected_addons || request?.selected_addons || [],
+        content_quantity: d.content_quantity || request?.content_quantity || null,
+        content_duration: d.content_duration || request?.content_duration || null,
+        content_requirements: d.content_requirements || request?.content_requirements || [],
+        barter_types: d.barter_types || request?.barter_types || [],
+        request_deliverables: request?.deliverables || null,
+        profiles: profilesById.get(String(d.creator_id)) || null,
+      };
+    });
 
     res.setHeader('Cache-Control', 'no-store');
     return res.json({ success: true, deals: enriched });
@@ -166,4 +190,3 @@ router.put('/profile', async (req: AuthenticatedRequest, res: Response) => {
 });
 
 export default router;
-

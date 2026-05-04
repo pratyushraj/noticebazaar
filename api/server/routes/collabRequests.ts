@@ -636,6 +636,14 @@ router.post('/:username/submit', async (req: Request, res: Response) => {
       deadline,
       campaign_category,
       campaign_goal,
+      selected_package_id,
+      selected_package_label,
+      selected_package_type,
+      selected_addons,
+      content_quantity,
+      content_duration,
+      content_requirements,
+      barter_types,
     } = req.body;
 
     // Validation
@@ -653,7 +661,7 @@ router.post('/:username/submit', async (req: Request, res: Response) => {
 	      });
 	    }
 
-    if (!collab_type || !['paid', 'barter', 'both'].includes(collab_type)) {
+    if (!collab_type || !['paid', 'barter', 'both', 'hybrid'].includes(collab_type)) {
       return res.status(400).json({
         success: false,
         error: 'Valid collaboration type is required',
@@ -667,7 +675,7 @@ router.post('/:username/submit', async (req: Request, res: Response) => {
       });
     }
 
-    if (collab_type === 'barter' || collab_type === 'both') {
+    if (collab_type === 'barter' || collab_type === 'both' || collab_type === 'hybrid') {
       const img = typeof barter_product_image_url === 'string' ? barter_product_image_url.trim() : '';
       if (!img || !(img.startsWith('http://') || img.startsWith('https://'))) {
         return res.status(400).json({
@@ -763,18 +771,26 @@ router.post('/:username/submit', async (req: Request, res: Response) => {
 	      deadline: deadline || null,
 	      campaign_category: campaign_category || null,
 	      campaign_goal: campaign_goal || null,
+	      selected_package_id: selected_package_id || null,
+	      selected_package_label: selected_package_label || null,
+	      selected_package_type: selected_package_type || null,
+	      selected_addons: Array.isArray(selected_addons) ? selected_addons : [],
+	      content_quantity: content_quantity || null,
+	      content_duration: content_duration || null,
+	      content_requirements: Array.isArray(content_requirements) ? content_requirements : [],
+	      barter_types: Array.isArray(barter_types) ? barter_types : [],
 	      submitted_ip: clientIp,
       submitted_user_agent: userAgent,
       ...(brandContactId ? { brand_contact_id: brandContactId } : {}),
     };
 
     // Add budget/barter fields based on collab_type
-    if (collab_type === 'paid' || collab_type === 'both') {
+    if (collab_type === 'paid' || collab_type === 'both' || collab_type === 'hybrid') {
       insertData.budget_range = budget_range || null;
       insertData.exact_budget = exact_budget ? parseFloat(exact_budget) : null;
     }
 
-    if (collab_type === 'barter' || collab_type === 'both') {
+    if (collab_type === 'barter' || collab_type === 'both' || collab_type === 'hybrid') {
       insertData.barter_description = barter_description?.trim() || null;
       insertData.barter_value = barter_value ? parseFloat(barter_value) : null;
       // Optional barter product image URL (basic validation)
@@ -1328,10 +1344,11 @@ router.post('/accept/confirm', async (req: AuthenticatedRequest, res: Response) 
       deliverablesArray = [];
     }
     let dealAmount = 0;
-    if (request.collab_type === 'paid' || request.collab_type === 'both') {
+    if (request.collab_type === 'paid' || request.collab_type === 'both' || request.collab_type === 'hybrid') {
       dealAmount = request.exact_budget || 0;
     }
      const isBarter = request.collab_type === 'barter';
+     const requiresShipping = request.collab_type === 'barter' || request.collab_type === 'hybrid' || request.collab_type === 'both';
 
      const dealData: any = {
        creator_id: userId,
@@ -1345,6 +1362,8 @@ router.post('/accept/confirm', async (req: AuthenticatedRequest, res: Response) 
        status: isBarter ? 'Drafting' : 'CONTRACT_READY',
        deal_type: isBarter ? 'barter' : 'paid',
        created_via: 'collab_request',
+       collab_request_id: id,
+       shipping_required: requiresShipping,
      };
     const { data: deal, error: dealError } = await supabase
       .from('brand_deals')
@@ -1424,7 +1443,7 @@ router.post('/accept/confirm', async (req: AuthenticatedRequest, res: Response) 
         const creatorEmail = creatorProfile?.email || req.user?.email || undefined;
         const creatorAddress = creatorProfile?.location || creatorProfile?.address || undefined;
         let paymentTerms: string | undefined;
-        if (request.collab_type === 'paid' || request.collab_type === 'both') {
+        if (request.collab_type === 'paid' || request.collab_type === 'both' || request.collab_type === 'hybrid') {
           paymentTerms = `Payment expected by ${request.deadline ? new Date(request.deadline).toLocaleDateString() : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString()}`;
         }
         const dealSchema = {
@@ -1462,7 +1481,7 @@ router.post('/accept/confirm', async (req: AuthenticatedRequest, res: Response) 
           exclusivityDuration: null,
           terminationNoticeDays: 7,
           jurisdictionCity: 'Mumbai',
-          additionalTerms: request.collab_type === 'barter' && request.barter_description ? `Barter Collaboration: ${request.barter_description}` : undefined,
+          additionalTerms: (request.collab_type === 'barter' || request.collab_type === 'hybrid') && request.barter_description ? `Barter Collaboration: ${request.barter_description}` : undefined,
         });
         const timestamp = Date.now();
         const storagePath = `contracts/${deal.id}/${timestamp}_${contractResult.fileName}`;
@@ -1559,11 +1578,12 @@ router.patch('/:id/accept', async (req: AuthenticatedRequest, res: Response) => 
 
     // Calculate deal amount
     let dealAmount = 0;
-    if (request.collab_type === 'paid' || request.collab_type === 'both') {
+    if (request.collab_type === 'paid' || request.collab_type === 'both' || request.collab_type === 'hybrid') {
       dealAmount = request.exact_budget || 0;
     }
 
     const isBarter = request.collab_type === 'barter';
+    const requiresShipping = request.collab_type === 'barter' || request.collab_type === 'hybrid' || request.collab_type === 'both';
 
     // Create brand deal
      const dealData: any = {
@@ -1578,6 +1598,8 @@ router.patch('/:id/accept', async (req: AuthenticatedRequest, res: Response) => 
        status: isBarter ? 'Drafting' : 'CONTRACT_READY',
        deal_type: isBarter ? 'barter' : 'paid',
        created_via: 'collab_request',
+       collab_request_id: id,
+       shipping_required: requiresShipping,
      };
 
     const { data: deal, error: dealError } = await supabase
@@ -1702,7 +1724,7 @@ router.patch('/:id/accept', async (req: AuthenticatedRequest, res: Response) => 
 
         // Build payment terms based on collab type
         let paymentTerms: string | undefined;
-        if (request.collab_type === 'paid' || request.collab_type === 'both') {
+        if (request.collab_type === 'paid' || request.collab_type === 'both' || request.collab_type === 'hybrid') {
           const paymentDate = request.deadline
             ? new Date(request.deadline).toLocaleDateString()
             : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString();
@@ -1766,7 +1788,7 @@ router.patch('/:id/accept', async (req: AuthenticatedRequest, res: Response) => 
           exclusivityDuration: null,
           terminationNoticeDays: 7,
           jurisdictionCity: 'Mumbai',
-          additionalTerms: request.collab_type === 'barter' && request.barter_description
+          additionalTerms: (request.collab_type === 'barter' || request.collab_type === 'hybrid') && request.barter_description
             ? `Barter Collaboration: ${request.barter_description}`
             : undefined,
         });

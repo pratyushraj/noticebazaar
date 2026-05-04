@@ -278,6 +278,8 @@ router.patch('/:id/accept-counter', async (req: AuthenticatedRequest, res: expre
       ?? 0;
 
     const isBarter = request.collab_type === 'barter';
+    const isHybrid = request.collab_type === 'hybrid' || request.collab_type === 'both';
+    const requiresShipping = isBarter || isHybrid;
 
     // Create the brand deal
     const dealData: any = {
@@ -292,6 +294,8 @@ router.patch('/:id/accept-counter', async (req: AuthenticatedRequest, res: expre
       status: 'Drafting',
       deal_type: isBarter ? 'barter' : 'paid',
       created_via: 'collab_request_counter',
+      collab_request_id: requestId,
+      shipping_required: requiresShipping,
     };
 
     const { data: deal, error: dealError } = await supabase
@@ -371,15 +375,15 @@ router.patch('/:id/accept-counter', async (req: AuthenticatedRequest, res: expre
         deliverables: deliverablesArray,
         contractReadyToken: undefined,
         contractUrl: undefined,
-        barterValue: isBarter ? dealAmount : undefined,
+        barterValue: requiresShipping ? dealAmount : undefined,
       }).catch((e) => console.error('[BrandCollabRequests] Accept counter: email error:', e));
     }
 
     res.json({
       success: true,
       deal: { id: deal.id },
-      needs_delivery_details: isBarter,
-      message: isBarter
+      needs_delivery_details: requiresShipping,
+      message: requiresShipping
         ? 'Counter accepted. Please add delivery details to generate the contract.'
         : 'Counter accepted! Deal has been created.',
     });

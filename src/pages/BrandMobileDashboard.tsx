@@ -209,8 +209,7 @@ type SuggestedCreator = {
   } | null;
 };
 
-function formatDeliverables(row: BrandDeal | null | undefined) {
-  // 1. Check for explicit package label fields
+function getSelectedPackageLabel(row: BrandDeal | null | undefined) {
   const packageLabel = row?.selected_package_label || 
                        (row as any)?.package_label ||
                        (row as any)?.package_name ||
@@ -225,23 +224,19 @@ function formatDeliverables(row: BrandDeal | null | undefined) {
     return String(packageLabel).trim();
   }
 
-  // 2. Prioritize package name if present in campaign_description
   if (row?.campaign_description) {
-    const packageMatch = row.campaign_description.match(/\|\|Package: ([^|]+)/);
+    const packageMatch = row.campaign_description.match(/(?:\|\|Package:|Selected package:)\s*([^|\n]+)/i);
     if (packageMatch && packageMatch[1]) {
       return packageMatch[1].trim();
     }
   }
 
-  const d = row?.deliverables;
-  if (!d) return '';
+  return '';
+}
 
-  // If we couldn't find a package name, and the deliverables look like a technical list (e.g. "1 Reel"),
-  // return a cleaner label like "Paid Collaboration" to avoid clutter as requested ("remove 1 reel etc").
-  if (typeof d === 'string' && /^\d+ /i.test(d.trim())) {
-    const type = String(row?.collab_type || row?.deal_type || 'Paid').trim().toLowerCase();
-    return type === 'barter' ? 'Barter Collaboration' : 'Paid Collaboration';
-  }
+function formatDeliverables(row: BrandDeal | null | undefined) {
+  const d = (row as any)?.request_deliverables || row?.deliverables;
+  if (!d) return '';
 
   const uniq = (parts: string[]) => {
     const seen = new Set<string>();
@@ -296,6 +291,10 @@ function formatDeliverables(row: BrandDeal | null | undefined) {
   } catch {
     return '';
   }
+}
+
+function formatPackageSummary(row: BrandDeal | null | undefined) {
+  return getSelectedPackageLabel(row) || formatDeliverables(row) || row?.collab_type || 'Collaboration';
 }
 
 const formatBudget = (row: BrandDeal | null | undefined) => {
@@ -1428,7 +1427,8 @@ const BrandMobileDashboard = ({
     const username = String(offer?.profiles?.username || '').trim();
     const isMarkedCompleted = normalizeStatus(offer?.status) === 'completed';
     const canMarkComplete = activeCollabTab === 'active' && !!offer?.id && !isMarkedCompleted && (offer?.deal_amount !== undefined || offer?.due_date !== undefined);
-    const deliverables = formatDeliverables(offer) || offer?.collab_type || 'Collaboration';
+    const packageSummary = formatPackageSummary(offer);
+    const deliverables = formatDeliverables(offer) || packageSummary;
     const budget = formatBudget(offer);
     const deadlineValue = offer?.due_date || offer?.deadline;
     const deadline = deadlineValue ? new Date(deadlineValue) : null;
@@ -1553,7 +1553,10 @@ const BrandMobileDashboard = ({
 	                  <div className="min-w-0">
 	                    <p className={cn('text-[11px] font-black uppercase tracking-widest opacity-50', textColor)}>Pending offer</p>
 	                    <h3 className={cn('text-[18px] font-bold tracking-tight truncate', textColor)}>{title}</h3>
-	                    <p className={cn('text-[12px] mt-1 opacity-60', textColor)}>{String(deliverables).replaceAll(',', ' • ')}</p>
+	                    <p className={cn('text-[12px] mt-1 opacity-60', textColor)}>{packageSummary}</p>
+	                    {deliverables && deliverables !== packageSummary && (
+	                      <p className={cn('text-[11px] mt-1 opacity-50 truncate', textColor)}>Brand gets: {String(deliverables).replaceAll(',', ' • ')}</p>
+	                    )}
 	                  </div>
 	                  <span className={cn('text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded-lg border', isDark ? 'border-border text-foreground/70 bg-card' : 'border-border text-muted-foreground bg-background')}>
 	                    {requestStage}
@@ -1733,7 +1736,10 @@ const BrandMobileDashboard = ({
 	                  <div className="min-w-0">
 	                    <p className={cn('text-[11px] font-black uppercase tracking-widest opacity-50', textColor)}>Deal offer</p>
 	                    <h3 className={cn('text-[18px] font-bold tracking-tight truncate', textColor)}>{title}</h3>
-	                    <p className={cn('text-[12px] mt-1 opacity-60', textColor)}>{deliverables}</p>
+	                    <p className={cn('text-[12px] mt-1 opacity-60', textColor)}>{packageSummary}</p>
+	                    {deliverables && deliverables !== packageSummary && (
+	                      <p className={cn('text-[11px] mt-1 opacity-50 truncate', textColor)}>Brand gets: {deliverables}</p>
+	                    )}
 	                  </div>
 	                  <span className={cn('text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded-lg border', isDark ? 'border-border text-foreground/70 bg-card' : 'border-border text-muted-foreground bg-background')}>
 	                    {status}
@@ -2045,7 +2051,8 @@ const BrandMobileDashboard = ({
 
     const creatorName = firstNameish(offer?.profiles, offer?.creator_name || offer?.creator_email);
     const creatorUsername = String(offer?.profiles?.username || '').trim();
-    const deliverables = formatDeliverables(offer) || offer?.collab_type || 'Collaboration';
+    const packageSummary = formatPackageSummary(offer);
+    const deliverables = formatDeliverables(offer) || packageSummary;
     const amount = Number(offer?.deal_amount || offer?.exact_budget || offer?.barter_value || offer?.product_value || 0);
     const deadlineValue = offer?.due_date || offer?.deadline;
     const deadline = deadlineValue ? new Date(deadlineValue) : null;
@@ -2057,6 +2064,10 @@ const BrandMobileDashboard = ({
     const contractUrl = offer?.safe_contract_url || offer?.signed_contract_url || offer?.contract_file_url || null;
     
     const collabType = String(offer?.collab_type || offer?.deal_type || offer?.raw?.collab_type || '').trim().toLowerCase();
+    const rightsLabel = offer?.usage_rights === true || String(offer?.usage_type || '').trim()
+      ? (offer?.usage_rights === true ? 'Usage included' : String(offer?.usage_type).trim())
+      : 'Not specified';
+    const platformLabel = String(offer?.platform || offer?.platforms || offer?.raw?.platform || '').trim() || 'Not specified';
     const isPureBarter = collabType === 'barter';
     const requiresPayment = isPaidLikeCollab(offer) && !isPureBarter;
     const requiresShipping = offer?.shipping_required === true || isBarterLikeCollab(offer);
@@ -2339,18 +2350,18 @@ const BrandMobileDashboard = ({
 
                 <div className="flex items-center justify-center gap-6 py-5 border-y border-white/5 bg-white/[0.02] -mx-4 px-4 mb-5">
                   <div className="text-center">
-                    <p className={cn('text-[9px] font-black uppercase tracking-widest opacity-40 mb-1.5', textColor)}>Type</p>
-                    <p className={cn('text-[13px] font-bold', textColor)}>{String(deliverables).split('•')[0] || 'Collaboration'}</p>
+                    <p className={cn('text-[9px] font-black uppercase tracking-widest opacity-40 mb-1.5', textColor)}>Package</p>
+                    <p className={cn('text-[13px] font-bold', textColor)}>{packageSummary}</p>
                   </div>
                   <div className="w-px h-8 bg-white/10" />
                   <div className="text-center">
                     <p className={cn('text-[9px] font-black uppercase tracking-widest opacity-40 mb-1.5', textColor)}>Rights</p>
-                    <p className={cn('text-[13px] font-bold', textColor)}>Organic</p>
+                    <p className={cn('text-[13px] font-bold', textColor)}>{rightsLabel}</p>
                   </div>
                   <div className="w-px h-8 bg-white/10" />
                   <div className="text-center">
                     <p className={cn('text-[9px] font-black uppercase tracking-widest opacity-40 mb-1.5', textColor)}>Platform</p>
-                    <p className={cn('text-[13px] font-bold', textColor)}>Instagram</p>
+                    <p className={cn('text-[13px] font-bold', textColor)}>{platformLabel}</p>
                   </div>
                 </div>
 
@@ -2377,6 +2388,21 @@ const BrandMobileDashboard = ({
               </div>
             </div>
           </div>
+
+          {/* What brand gets section */}
+          {deliverables && deliverables !== packageSummary && (
+            <div className="mb-6">
+              <div className="flex items-center justify-between mb-4 px-1">
+                <SectionTitle>What brand gets</SectionTitle>
+                <div className={cn('px-2.5 py-1 rounded-lg border text-[9px] font-black uppercase tracking-widest', isDark ? 'bg-primary/10 text-primary border-primary/20' : 'bg-primary/10 text-primary border-primary/20')}>
+                  Package
+                </div>
+              </div>
+              <div className={cn('p-5 rounded-[28px] border', isDark ? 'bg-card/40 border-white/5' : 'bg-white border-slate-100 shadow-sm')}>
+                <p className={cn('text-[13px] font-bold leading-relaxed', textColor)}>{deliverables}</p>
+              </div>
+            </div>
+          )}
 
           {/* Any other requirements section */}
           {offer?.campaign_description && (
@@ -4209,6 +4235,8 @@ const BrandCollabsTab = React.memo(({
               const due = isPendingItem ? offerExpiryLabel(item) : deadlineLabel(item);
               const amount = Number(item?.deal_amount || item?.exact_budget || item?.barter_value || item?.product_value || 0);
               const creatorName = firstNameish(item?.profiles, item?.creator_name || item?.creator_email);
+              const packageSummary = formatPackageSummary(item);
+              const deliverablesSummary = formatDeliverables(item);
               let creatorMeta = item?.profiles?.username || item?.creator_name || item?.creator_email || 'Creator';
               if (item?.profiles?.username && creatorMeta === item.profiles.username) creatorMeta = `@${creatorMeta}`;
               const creatorAvatar = item?.profiles?.avatar_url || item?.profiles?.profile_image_url || item?.profiles?.instagram_profile_photo || item?.creator_avatar_url || item?.creator_photo_url || '';
@@ -4266,7 +4294,7 @@ const BrandCollabsTab = React.memo(({
 
                     <div className="flex items-center justify-between gap-3 text-[12px] font-bold mb-4 relative z-10">
                       <div className={cn('min-w-0 truncate px-3 py-1.5 rounded-full border bg-white/5 border-white/5', secondaryTextColor)}>
-                        {String(formatDeliverables(item) || item?.collab_type || 'Collaboration').replaceAll(',', ' • ')}
+                        {packageSummary}
                       </div>
                       {due?.text && (
                         <div className={cn(
@@ -4282,6 +4310,12 @@ const BrandCollabsTab = React.memo(({
                         </div>
                       )}
                     </div>
+
+                    {deliverablesSummary && deliverablesSummary !== packageSummary && (
+                      <p className={cn('text-[11px] font-bold opacity-55 truncate -mt-2 mb-4 relative z-10', textColor)}>
+                        Brand gets: {String(deliverablesSummary).replaceAll(',', ' • ')}
+                      </p>
+                    )}
 
                     <div className={cn(
                       'flex items-center justify-between p-4 rounded-2xl border relative z-10 transition-colors',
@@ -4389,7 +4423,7 @@ const BrandCollabsTab = React.memo(({
 
                   <div className="flex items-center justify-between gap-3 text-[12px] font-bold mb-4 relative z-10">
                     <div className={cn('min-w-0 truncate px-3 py-1.5 rounded-full border bg-white/5 border-white/5', secondaryTextColor)}>
-                      {String(formatDeliverables(item) || item?.collab_type || 'Collaboration').replaceAll(',', ' • ')}
+                      {packageSummary}
                     </div>
                     {due?.text && (
                       <div className={cn(
@@ -4405,6 +4439,12 @@ const BrandCollabsTab = React.memo(({
                       </div>
                     )}
                   </div>
+
+                  {deliverablesSummary && deliverablesSummary !== packageSummary && (
+                    <p className={cn('text-[11px] font-bold opacity-55 truncate -mt-2 mb-4 relative z-10', textColor)}>
+                      Brand gets: {String(deliverablesSummary).replaceAll(',', ' • ')}
+                    </p>
+                  )}
 
                   <div className={cn(
                     'flex items-center justify-between p-4 rounded-[2rem] border relative z-10 transition-colors',

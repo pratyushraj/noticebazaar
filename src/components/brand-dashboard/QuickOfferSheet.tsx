@@ -256,6 +256,14 @@ export const QuickOfferSheet: React.FC<QuickOfferSheetProps> = ({
                 collabType,
                 deadline,
                 description: `${description} ||Package: ${packageName}`,
+                selected_package_id: selectedPackage?.key || null,
+                selected_package_label: packageName,
+                selected_package_type: selectedPackage?.type || collabType,
+                selected_addons: Array.isArray((selectedPackage as any)?.addons) ? (selectedPackage as any).addons : [],
+                content_quantity: deliverables.length || null,
+                content_duration: null,
+                content_requirements: description ? [description] : [],
+                barter_types: collabType === 'barter' ? ['product_exchange'] : [],
                 requiresShipping,
                 barterProductName,
                 barterProductImageUrl
@@ -289,8 +297,11 @@ export const QuickOfferSheet: React.FC<QuickOfferSheetProps> = ({
     };
 
     const handleSubmit = async () => {
-        if (!budget || deliverables.length === 0 || !deadline || !barterProductName || !barterProductImageUrl) {
-            toast.error('Please fill in all required fields including product details and photo');
+        const needsProductDetails = collabType === 'barter' || requiresShipping;
+        if (!budget || deliverables.length === 0 || !deadline || (needsProductDetails && (!barterProductName || !barterProductImageUrl))) {
+            toast.error(needsProductDetails
+                ? 'Please fill in all required fields including product details and photo'
+                : 'Please fill in budget, deliverables, and deadline');
             return;
         }
 
@@ -314,6 +325,14 @@ export const QuickOfferSheet: React.FC<QuickOfferSheetProps> = ({
                 barter_value: collabType === 'barter' ? parseFloat(budget) : null,
                 campaign_description: descriptionValue,
                 deliverables: deliverables,
+                selected_package_id: selectedPackage?.key || null,
+                selected_package_label: packageName,
+                selected_package_type: selectedPackage?.type || collabType,
+                selected_addons: Array.isArray((selectedPackage as any)?.addons) ? (selectedPackage as any).addons : [],
+                content_quantity: deliverables.length || null,
+                content_duration: null,
+                content_requirements: description ? [description] : [],
+                barter_types: collabType === 'barter' ? ['product_exchange'] : [],
                 deadline: deadline,
                 // These are required by the backend API 
                 campaign_category: 'General',
