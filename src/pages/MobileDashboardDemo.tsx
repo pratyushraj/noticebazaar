@@ -8706,10 +8706,10 @@ const DealsTab = React.memo(({
                                                     <div className="mb-3">
                                                         <h2 className="text-xl font-black italic uppercase text-white truncate mb-0.5">{deal.brand_name || 'Partner'}</h2>
                                                         <div className="flex items-baseline gap-1.5 flex-wrap">
-                                                            <p className={cn("text-lg font-black leading-none", isBarter ? "text-amber-400" : "text-white")}>
+                                                            <p className={cn("text-lg font-black leading-none", isBarter ? "text-white" : "text-white")}>
                                                                 {isBarter ? 'Free product' : `₹${budget.toLocaleString()}`}
                                                             </p>
-                                                            {isBarter && <span className="text-[10px] font-black uppercase tracking-widest text-amber-400">est. value ₹{budget.toLocaleString()}</span>}
+                                                            {isBarter && <span className="text-[10px] font-black uppercase tracking-widest text-white/80">est. value ₹{budget.toLocaleString()}</span>}
                                                         </div>
                                                     </div>
                                                     <div className="h-1 w-full bg-white/10 rounded-full overflow-hidden">
@@ -8762,10 +8762,10 @@ const DealsTab = React.memo(({
                                                     <div className="mb-3">
                                                         <h2 className="text-xl font-black italic uppercase text-white truncate mb-0.5">{deal.brand_name || 'Partner'}</h2>
                                                         <div className="flex items-baseline gap-1.5 flex-wrap">
-                                                            <p className={cn("text-lg font-black leading-none", isBarter ? "text-amber-400" : "text-white")}>
+                                                            <p className={cn("text-lg font-black leading-none", isBarter ? "text-white" : "text-white")}>
                                                                 {isBarter ? 'Free product' : `₹${budget.toLocaleString()}`}
                                                             </p>
-                                                            {isBarter && <span className="text-[10px] font-black uppercase tracking-widest text-amber-400">est. value ₹{budget.toLocaleString()}</span>}
+                                                            {isBarter && <span className="text-[10px] font-black uppercase tracking-widest text-white/80">est. value ₹{budget.toLocaleString()}</span>}
                                                         </div>
                                                     </div>
                                                     <div className="h-1 w-full bg-emerald-500/30 rounded-full overflow-hidden"><div className={cn("h-full w-full", isBarter ? "bg-amber-400" : "bg-emerald-400")} /></div>
@@ -8818,10 +8818,10 @@ const DealsTab = React.memo(({
                                                     <div className="mb-4">
                                                         <h2 className="text-xl font-black italic uppercase text-white truncate mb-0.5">{req.brand_name || 'Brand Partner'}</h2>
                                                         <div className="flex items-baseline gap-1.5 flex-wrap">
-                                                            <p className={cn("text-lg font-black leading-none", isBarter ? "text-amber-400" : "text-white")}>
+                                                            <p className={cn("text-lg font-black leading-none", isBarter ? "text-white" : "text-white")}>
                                                                 {isBarter ? 'Free product' : `₹${budget.toLocaleString()}`}
                                                             </p>
-	                                                            {isBarter && <span className="text-[10px] font-black uppercase tracking-widest text-amber-400/60">est. value ₹{budget.toLocaleString()}</span>}
+	                                                            {isBarter && <span className="text-[10px] font-black uppercase tracking-widest text-white/80">est. value ₹{budget.toLocaleString()}</span>}
 	                                                        </div>
 	                                                        {(packageLabel || contentQuantity || contentDuration || requirementsList.length > 0 || addonsList.length > 0) && (
 	                                                            <div className="mt-3 flex flex-wrap gap-1.5">
