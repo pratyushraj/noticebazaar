@@ -1,5 +1,5 @@
 import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
+import react from '@vitejs/plugin-react-swc'
 import path from 'path'
 
 export default defineConfig(() => ({
@@ -15,8 +15,6 @@ export default defineConfig(() => ({
     ],
     hmr: {
       overlay: false,
-      clientPort: 8080,
-      host: 'localhost',
     },
     headers: {
       'Permissions-Policy': 'accelerometer=(self "https://api.razorpay.com"), gyroscope=(self "https://api.razorpay.com"), magnetometer=(self "https://api.razorpay.com"), payment=(self)',
@@ -57,21 +55,16 @@ export default defineConfig(() => ({
     alias: {
       '@': path.resolve(__dirname, './src'),
     },
-    dedupe: ['react', 'react-dom'],
+    dedupe: ['react', 'react-dom', 'react-router-dom', '@tanstack/react-query'],
   },
   optimizeDeps: {
     include: [
       'react',
       'react-dom',
-      'react-dom/client',
-      'react/jsx-runtime',
-      'react/jsx-dev-runtime',
+      'react-router-dom',
+      '@tanstack/react-query',
       'framer-motion',
       'lucide-react',
-      '@supabase/supabase-js',
-      '@tanstack/react-query',
-      'react-router-dom',
     ],
-    holdUntilCrawlEnd: true,
   },
 }))

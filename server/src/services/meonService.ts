@@ -250,7 +250,7 @@ export async function downloadPDFFromUrl(url: string): Promise<Buffer> {
       const urlMatch = url.match(/\/storage\/v1\/object\/public\/([^/]+)\/(.+)$/);
       if (urlMatch) {
         const bucketName = urlMatch[1];
-        let filePath = decodeURIComponent(urlMatch[2].split('?')[0]);
+        const filePath = decodeURIComponent(urlMatch[2].split('?')[0]);
         
         console.log('[Meon] Trying Supabase Storage API:', { bucketName, filePath });
         

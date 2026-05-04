@@ -47,12 +47,9 @@ const CreatorDashboardContent = ({ navigate }: { navigate: any }) => {
   const { user, profile, loading: isLoadingProfile } = useSession();
   const queryClient = useQueryClient();
 
-  // If no user and not loading, we shouldn't be here (transitioning or logged out)
-  if (!user?.id && !isLoadingProfile) return null;
-
   const isBrandSession = profile?.role === 'brand' || user?.user_metadata?.account_mode === 'brand' || user?.user_metadata?.role === 'brand';
 
-  const collabQuery = useCollabRequests((isBrandSession || isLoadingProfile) ? undefined : user?.id);
+  const collabQuery = useCollabRequests((isBrandSession || isLoadingProfile || !user?.id) ? undefined : user?.id);
   const { requests: collabRequests, isLoading: isLoadingCollab, error: collabError } = collabQuery;
 
   const dealsQuery = useQuery({
@@ -62,6 +59,11 @@ const CreatorDashboardContent = ({ navigate }: { navigate: any }) => {
     retry: false, // Don't retry — backend may be unavailable, fail fast
     meta: { silent: true },
   });
+
+  // Early return if no user and not loading (transitioning or logged out)
+  // Hooks MUST be called before this.
+  if (!user?.id && !isLoadingProfile) return null;
+
   const brandDeals = (dealsQuery.data ?? []) as any[];
   const isLoadingBrandDeals = dealsQuery.isLoading;
 
@@ -268,12 +270,12 @@ const CreatorDashboardContent = ({ navigate }: { navigate: any }) => {
 
 // Wrapper component to handle Router context properly with lazy loading
 const CreatorDashboard = () => {
+  const navigate = useNavigate();
   const { loading: isLoadingProfile } = useSession();
   
   // Return null during initial load to ensure Router context is ready
   if (isLoadingProfile) return null;
   
-  const navigate = useNavigate();
   return <CreatorDashboardContent navigate={navigate} />;
 };
 

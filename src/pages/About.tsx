@@ -131,14 +131,14 @@ const About = () => {
                   An audit trail is just a fancy way of saying "we keep records of everything." Every message, every email, every contract, every payment—it's all saved and timestamped. If a brand says "we never agreed to that" or "we already paid," you can show them exactly when and how it happened.
                 </p>
                 <p className="text-secondary leading-relaxed">
-                  This isn't about being paranoid. It's about having proof when you need it. In India, consumer complaints and legal notices require evidence. An audit trail gives you that evidence.
+                  This isn't about being paranoid. It's about having proof when you need it. In India, legal disputes and notices require evidence. An audit trail gives you that evidence.
                 </p>
               </div>
 
               <div className="space-y-2">
                 <h3 className="text-xl font-semibold text-foreground">It Makes Recovery Possible</h3>
                 <p className="text-secondary leading-relaxed">
-                  Without a contract and audit trail, recovering unpaid money is nearly impossible. With them, you can send a legal notice. You can file a consumer complaint. You can take legal action if needed. You have options.
+                  Without a contract and audit trail, recovering unpaid money is nearly impossible. With them, you can send a legal notice. You can file a creator legal dispute. You can take legal action if needed. You have options.
                 </p>
                 <p className="text-secondary leading-relaxed">
                   Most creators never get to this point because they don't have the documents. We make sure you do.

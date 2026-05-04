@@ -130,7 +130,7 @@ router.get('/requests', async (req: AuthenticatedRequest, res: Response) => {
           };
 
           // Step 1: Resolve best available photo
-          let photoUrl = p.avatar_url || p.instagram_profile_photo || null;
+          const photoUrl = p.avatar_url || p.instagram_profile_photo || null;
 
           // Step 2: For everyone, return the photo
           return {

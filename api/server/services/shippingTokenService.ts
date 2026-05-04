@@ -93,7 +93,7 @@ export async function getShippingTokenInfo(token: string): Promise<{
       creatorCity = profile.location || null;
     }
   }
-  let productDescription = typeof deal.deliverables === 'string'
+  const productDescription = typeof deal.deliverables === 'string'
     ? deal.deliverables
     : Array.isArray(deal.deliverables)
       ? deal.deliverables.join(', ')

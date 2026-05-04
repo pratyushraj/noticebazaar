@@ -94,7 +94,7 @@ router.get('/dashboard-stats', adminOnly, async (req: AuthenticatedRequest, res:
     const totalUsers = await safeCount('profiles');
 
     // Fetch New Accounts Count (accounts created in date range, or last 30 days if no range specified)
-    let newAccountsQuery = (q: any) => {
+    const newAccountsQuery = (q: any) => {
       if (startDate) {
         const start = new Date(startDate as string);
         start.setHours(0, 0, 0, 0);

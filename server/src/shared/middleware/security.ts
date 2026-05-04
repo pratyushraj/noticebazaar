@@ -92,6 +92,49 @@ export const otpLimiter = rateLimit({
   legacyHeaders: false,
 });
 
+// Collab request submission limiter (per IP and per email domain)
+export const collabSubmissionLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hour
+  max: 3, // 3 submissions per hour per email domain
+  keyGenerator: (req) => {
+    const domain = req.body?.brand_email?.split('@')[1] || req.ip || 'unknown-ip';
+    return domain;
+  },
+  message: {
+    success: false,
+    error: 'Too many collab submissions from this domain. Please try again later.',
+    code: 'RATE_LIMIT_EXCEEDED',
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+// Brand dashboard limiter
+export const brandDashboardLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 30, // 30 requests per 15 min
+  message: {
+    success: false,
+    error: 'Too many requests, please try again later.',
+    code: 'RATE_LIMIT_EXCEEDED',
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+// Payment endpoint limiter
+export const paymentLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hour
+  max: 5, // 5 payment operations per hour
+  message: {
+    success: false,
+    error: 'Too many payment operations. Please try again later.',
+    code: 'PAYMENT_RATE_LIMIT_EXCEEDED',
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
 // Contract generation limiter
 export const contractLimiter = rateLimit({
   windowMs: 60 * 60 * 1000, // 1 hour

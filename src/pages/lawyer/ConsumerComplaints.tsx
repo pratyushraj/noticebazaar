@@ -1,5 +1,5 @@
-// Lawyer Complaint Dashboard - Manage consumer complaints
-// Internal tool for lawyers/admins to review and process complaints
+// Lawyer Filing Dashboard - Manage creator legal filings
+// Internal tool for lawyers/admins to review and process filings
 
 import { useState, useEffect, useMemo } from 'react';
 import { useSession } from '@/contexts/SessionContext';
@@ -289,8 +289,8 @@ export default function ConsumerComplaints() {
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-6">
-          <h1 className="text-3xl font-bold text-foreground mb-2">Consumer Complaints</h1>
-          <p className="text-foreground/60">Review and manage consumer complaints submitted by users</p>
+          <h1 className="text-3xl font-bold text-foreground mb-2">Creator Filings</h1>
+          <p className="text-foreground/60">Review and manage legal filings submitted by creators</p>
         </div>
 
         {/* Status Filter Bar */}
@@ -342,12 +342,12 @@ export default function ConsumerComplaints() {
           </button>
         </div>
 
-        {/* Complaints List */}
+        {/* Filing List */}
         {filteredComplaints.length === 0 ? (
           <div className="bg-card backdrop-blur-md rounded-2xl p-12 text-center border border-border">
             <FileText className="w-16 h-16 mx-auto mb-4 text-foreground/40" />
             <p className="text-foreground/60 text-lg">
-              {statusFilter === 'all' ? 'No complaints found' : `No complaints with status "${STATUS_CONFIG[statusFilter]?.label || statusFilter}"`}
+              {statusFilter === 'all' ? 'No filings found' : `No filings with status "${STATUS_CONFIG[statusFilter]?.label || statusFilter}"`}
             </p>
           </div>
         ) : (

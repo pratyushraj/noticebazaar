@@ -1684,11 +1684,11 @@ function DealDetailPageContent() {
 
       try {
         // Prioritize signed contract URL if available
-        let contractUrl = signedContractUrl || contractDocxUrl;
+        const contractUrl = signedContractUrl || contractDocxUrl;
 
         if (!contractUrl && deal?.id) {
           // Try the download-docx API endpoint as last resort
-          let apiBaseUrl =
+          const apiBaseUrl =
             import.meta.env.VITE_API_BASE_URL ||
             (typeof window !== 'undefined' && window.location.origin.includes('creatorarmour.com')
               ? 'https://api.creatorarmour.com'

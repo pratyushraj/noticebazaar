@@ -223,7 +223,7 @@ export async function submitDealDetails(
 
   // DO NOT create deal here - deals are only created when signed
   // Just save the submission and generate contract
-  let dealId: string | null = null;
+  const dealId: string | null = null;
 
   // Generate contract and store with submission (deals are only created when signed)
   try {

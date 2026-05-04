@@ -208,3 +208,53 @@ export async function sendDealPendingReminderToCreator(
   const html = getEmailLayout({ content, showFooter: true, backgroundStyle: 'purple' });
   return sendEmail(creatorEmail, subject, html);
 }
+
+/**
+ * Send reminder to brand to ship the product
+ */
+export async function sendAwaitingShipmentReminderEmail(
+  brandEmail: string,
+  data: { creatorName: string; brandName: string; shippingLink: string }
+): Promise<{ success: boolean; emailId?: string; error?: string }> {
+  const subject = 'Action Required: Please ship the product for ' + data.creatorName;
+  const content = `
+    <tr>
+      <td style="background-color: #10b981; padding: 44px 30px; text-align: center;">
+        <h1 style="margin: 0 0 8px 0; font-size: 22px; font-weight: 700; color: #ffffff !important;">
+          Shipment reminder
+        </h1>
+        <p style="margin: 0; font-size: 13px; color: #ffffff !important; opacity: 0.95;">
+          Keep your collaboration moving forward
+        </p>
+      </td>
+    </tr>
+    <tr>
+      <td style="padding: 24px 32px 6px 32px;">
+        <p style="margin: 0 0 10px 0; font-size: 15px; font-weight: 600; color: #111827;">Hi ${data.brandName || 'there'},</p>
+        <p style="margin: 0; font-size: 14px; color: #4b5563; line-height: 1.7;">
+          Your collaboration with ${data.creatorName} is active, but the product hasn't been shipped yet. Shipping promptly ensures the creator can stay on schedule with your content.
+        </p>
+      </td>
+    </tr>
+    \${getEmailSignal({
+      type: 'action',
+      message: 'Please ship the product and update the tracking details using the link below.'
+    })}
+    \${getEmailProgressCue([
+      { label: 'Contract Signed', status: 'completed' },
+      { label: 'Ship Product', status: 'current' },
+      { label: 'Content Creation', status: 'upcoming' }
+    ])}
+    \${getPrimaryCTA('Update Shipping Details', data.shippingLink)}
+    \${getCTATrustLine('Tracking updates are visible to the creator immediately.')}
+    <tr>
+      <td style="padding: 0 32px 28px 32px;">
+        <p style="margin: 0; font-size: 13px; color: #6b7280; line-height: 1.6;">
+          Need help? Contact <a href="mailto:support@creatorarmour.com" style="color: #4f46e5; text-decoration: none;">support@creatorarmour.com</a>.
+        </p>
+      </td>
+    </tr>
+  `;
+  const html = getEmailLayout({ content, showFooter: true, backgroundStyle: 'green' });
+  return sendEmail(brandEmail, subject, html);
+}

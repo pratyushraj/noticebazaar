@@ -272,7 +272,7 @@ async function extractTextFromPdf(buffer: Buffer): Promise<string> {
     const pdfjsLib: any = pdfjsModule.default || pdfjsModule;
 
     // Get getDocument function
-    let getDocument = pdfjsLib.getDocument || (pdfjsModule as any).getDocument;
+    const getDocument = pdfjsLib.getDocument || (pdfjsModule as any).getDocument;
 
     if (!getDocument || typeof getDocument !== 'function') {
       throw new Error('PDF.js getDocument function not found');
@@ -418,7 +418,7 @@ export function generateContractHtml(
   }
 ): string {
   // POST-PROCESSING: Clean artifacts before HTML conversion
-  let processedText = text
+  const processedText = text
     // Remove .; artifacts
     .replace(/\.\s*;\s*(\d)/g, '$1') // Remove .; before numbers
     .replace(/([a-zA-Z0-9])\s*\.\s*;\s*/g, '$1.') // Remove .; after text
@@ -682,7 +682,7 @@ export async function generateSafeContractPdf(text: string, reportId: string): P
   }
 
   // POST-PROCESSING: Clean artifacts before HTML conversion
-  let processedText = text
+  const processedText = text
     // Remove .; artifacts
     .replace(/\.\s*;\s*(\d)/g, '$1') // Remove .; before numbers
     .replace(/([a-zA-Z0-9])\s*\.\s*;\s*/g, '$1.') // Remove .; after text

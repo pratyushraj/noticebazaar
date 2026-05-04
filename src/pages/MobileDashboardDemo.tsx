@@ -203,7 +203,7 @@ const renderBudgetValue = (item: any) => {
 
     // Default fallback for barter deals if no value found
     if (item?.collab_type === 'barter' || item?.deal_type === 'barter' || !exact) {
-        return '₹2,499 (Est. Value)';
+        return '₹2,499';
     }
 
     return 'Barter Collaboration';
@@ -1089,7 +1089,7 @@ const MobileDashboardDemo = ({
     const subtabParam = (searchParams.get('subtab') as 'active' | 'pending' | 'completed' | null) || null;
 
     const [collabSubTab, setCollabSubTab] = useState<'active' | 'pending' | 'completed'>('pending');
-    const [showBrief, setShowBrief] = useState(false);
+    const [showBrief, setShowBrief] = useState(true);
     const [showSharingTips, setShowSharingTips] = useState(false);
     const hasHandledDeepLinkRef = useRef(false);
     useEffect(() => {
@@ -5580,25 +5580,17 @@ const MobileDashboardDemo = ({
                                                         ? parsedDeliverables.slice(1).map(s => ({ label: s }))
                                                         : parsedDeliverables.filter(d => d !== primaryDeliverable);
                                                     
-                                                    const requirementsList = [];
-                                                    const rawReqs = selectedItem.requirements || selectedItem.raw?.requirements;
-                                                    try {
-                                                        if (typeof rawReqs === 'string') {
-                                                            const parsed = JSON.parse(rawReqs);
-                                                            if (Array.isArray(parsed)) requirementsList.push(...parsed);
-                                                        } else if (Array.isArray(rawReqs)) {
-                                                            requirementsList.push(...rawReqs);
-                                                        }
-                                                    } catch (e) {}
+                                                    const requirementsList = getOfferRequirements(selectedItem);
 
                                                     const expiryDate = selectedItem.expiry_date || selectedItem.raw?.expiry_date;
                                                     const contentDuration = selectedItem.content_duration || selectedItem.raw?.content_duration || selectedItem.form_data?.content_duration;
                                                     const usageDuration = selectedItem.usage_duration || selectedItem.raw?.usage_duration || selectedItem.form_data?.usage_duration;
                                                     const daysLeft = expiryDate ? Math.max(0, Math.ceil((new Date(expiryDate).getTime() - Date.now()) / (1000 * 60 * 60 * 24))) : null;
 
-                                                    const rawDesc = selectedItem.campaign_description || selectedItem.description || selectedItem.raw?.campaign_description || selectedItem.raw?.description || "";
-                                                    const otherNeedsMatch = rawDesc.match(/Other Needs:\s*(.*?)(?=\s*Additional|$)/i);
-                                                    const packageMatch = rawDesc.match(/Selected package:\s*([🚀📈🎯💼]?\s*.*?)(?=\s*Collab Duration:|\n|Additional|$)/i);
+                                                    const campaignDescValue = selectedItem.campaign_description || selectedItem.description || selectedItem.raw?.campaign_description || selectedItem.raw?.description || "";
+                                                    const rawDesc = Array.isArray(campaignDescValue) ? campaignDescValue.join('\n') : String(campaignDescValue);
+                                                    const otherNeedsMatch = rawDesc.match(/Other Needs:\s*([\s\S]*?)(?=\s*Selected package:|Collab Duration:|Additional|\n\n|$)/i);
+                                                    const packageMatch = rawDesc.match(/Selected package:\s*([🚀📈🎯💼]?\s*[\s\S]*?)(?=\s*Collab Duration:|\n\n|Additional|$)/i);
                                                     const resolvedPackageNameOuter = resolveItemPackageLabel(selectedItem);
 
                                                     const durationMatch = rawDesc.match(/Collab Duration:\s*(.*?)(?=\s*Additional|\n|$)/i);
@@ -5674,7 +5666,7 @@ const MobileDashboardDemo = ({
                                                             </div>
 {/* ── COLLAPSIBLE BRIEF ── */}
                                                             {(() => {
-                                                                    let resolvedPackageName = resolvedPackageNameOuter;
+                                                                    const resolvedPackageName = resolvedPackageNameOuter;
                                                                     const extractedOtherNeeds = otherNeedsMatch ? otherNeedsMatch[1].trim() : null;
 
                                                                     // Strip metadata lines from display text
@@ -5962,7 +5954,8 @@ const MobileDashboardDemo = ({
                                                             <div className="flex flex-col items-start gap-3 sm:items-end">
                                                                 <div className={cn("flex flex-wrap gap-2 sm:justify-end", textColor)}>
                                                                     {(() => {
-                                                                        const rawDesc = selectedItem.campaign_description || selectedItem.raw?.campaign_description || selectedItem.description || selectedItem.raw?.description || "";
+                                                                        const campaignDescValue = selectedItem.campaign_description || selectedItem.raw?.campaign_description || selectedItem.description || selectedItem.raw?.description || "";
+                                                    const rawDesc = Array.isArray(campaignDescValue) ? campaignDescValue.join('\n') : String(campaignDescValue);
                                                                         const packageMatch = rawDesc.match(/Selected package:\s*([🚀📈🎯💼]?\s*.*?)(?=\s*Collab Duration:|\n|Additional|$)/i);
                                                                         let resolvedPackageName = resolveItemPackageLabel(selectedItem);
                                                                         
@@ -6288,7 +6281,8 @@ const MobileDashboardDemo = ({
                                         {selectedType === 'deal' && (
                                             <div className="mb-5">
                                                 {(() => {
-                                                    const rawDesc = selectedItem.campaign_description || selectedItem.raw?.campaign_description || selectedItem.description || selectedItem.raw?.description || "";
+                                                    const campaignDescValue = selectedItem.campaign_description || selectedItem.raw?.campaign_description || selectedItem.description || selectedItem.raw?.description || "";
+                                                    const rawDesc = Array.isArray(campaignDescValue) ? campaignDescValue.join('\n') : String(campaignDescValue);
 
                                                      
                                                     const rawDeliverables = selectedItem.deliverables || selectedItem.raw?.deliverables;
@@ -6315,7 +6309,7 @@ const MobileDashboardDemo = ({
                                                         : parsedDeliverables.filter(d => d !== primaryDeliverable);
                                                       const resolvedPackageName = resolveItemPackageLabel(selectedItem);
 
-                                                     const durationMatch = rawDesc.match(/Collab Duration:\s*(.*?)(?=\s*Additional|\n|$)/i);
+                                                     const durationMatch = rawDesc.match(/Collab Duration:\s*([\s\S]*?)(?=\s*Additional|\n\n|$)/i);
                                                      const extractedDuration = durationMatch ? durationMatch[1].trim() : null;
 
                                                      const pkgLower = (resolvedPackageName || "").toLowerCase();
@@ -6325,16 +6319,16 @@ const MobileDashboardDemo = ({
                                                      const packageIcon = isStarter ? "🚀" : isGrowth ? "📈" : isExchange ? "🎁" : "";
 
                                                       const displayPackageName = (resolvedPackageName || "Collaboration Details").replace(/^[🚀📈🎯💼⭐🎁📄]\s*/u, "");
-                                                      const cleanDesc = (selectedItem.campaign_description || rawDesc).split(/Selected package:|\|\|Package:|Collab Duration:|Additional Commercial Terms:|Collab content category:|Product for collab:/i)[0].trim() || "Professional collaboration focused on high-quality content and audience engagement.";
+                                                      const cleanDesc = rawDesc.split(/Selected package:|\|\|Package:|Collab Duration:|Additional Commercial Terms:|Collab content category:|Product for collab:/i)[0].trim() || "Professional collaboration focused on high-quality content and audience engagement.";
 
-                                                     const otherNeedsMatch = rawDesc.match(/Other Needs:\s*(.*?)(?=\s*Selected package:|Collab Duration:|Additional|\n|$)/i);
+                                                     const otherNeedsMatch = rawDesc.match(/Other Needs:\s*([\s\S]*?)(?=\s*Selected package:|Collab Duration:|Additional|\n\n|$)/i);
                                                      const extractedOtherNeeds = otherNeedsMatch ? otherNeedsMatch[1].trim() : null;
 
                                                      const reelDuration = extractedDuration || (isStarter ? "15-30s" : isGrowth ? "30-60s" : null);
                                                      const formattedPrimary = `1 ${primaryLabel}${reelDuration ? ` (${reelDuration})` : ""}`;
 
 
-                                                    let requirementsList = getOfferRequirements(selectedItem);
+                                                    const requirementsList = getOfferRequirements(selectedItem);
 
                                                     return (
                                                         <div className={cn("rounded-[32px] border overflow-hidden backdrop-blur-2xl transition-all", isDark ? "bg-white/[0.02] border-white/6" : "bg-white/60 border-slate-200/60 shadow-xl")}>

@@ -752,7 +752,7 @@ ${creatorName}`;
         }
 
         if (dealAmount === 0) {
-          let cleanedValue = dealValueStr
+          const cleanedValue = dealValueStr
             .replace(/[₹Rs$€£,\s]/g, '')
             .trim();
           const parsed = parseFloat(cleanedValue);
@@ -910,7 +910,7 @@ ${creatorName}`;
       }
 
       let newDeal: any = null;
-      let insertError: any = null;
+      const insertError: any = null;
 
       // Try inserting with all fields first
       const { data, error } = await supabase
@@ -1720,7 +1720,7 @@ ${creatorName}`;
       setStep('analyzing');
 
       // Try real API first
-      let apiBaseUrl = getApiBaseUrl();
+      const apiBaseUrl = getApiBaseUrl();
 
       let report: NonNullable<typeof analysisResults> | null = null;
 
@@ -2073,7 +2073,7 @@ ${creatorName}`;
     setReviewError(null);
 
     try {
-      let apiBaseUrl = getApiBaseUrl();
+      const apiBaseUrl = getApiBaseUrl();
 
       const { data: { session } } = await supabase.auth.getSession();
 

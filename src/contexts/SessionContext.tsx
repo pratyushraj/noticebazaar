@@ -280,7 +280,7 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
         debugWarn('[SessionContext] onboarding_complete field not found in profiles table');
       }
 
-      let brandFields: Partial<Profile> = {};
+      const brandFields: Partial<Profile> = {};
       // 2. Fetch other groups sequentially but with internal parallelism for those that are likely to exist
       const fetchGroup = async () => {
         // Group handles and basic info

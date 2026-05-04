@@ -78,7 +78,7 @@ export const validateInstagramHandle = (handle: string): { isValid: boolean; san
   }
 
   // Remove @ symbol and trim
-  let cleanHandle = handle.replace(/^@+/, '').trim().toLowerCase();
+  const cleanHandle = handle.replace(/^@+/, '').trim().toLowerCase();
 
   // Check length
   if (cleanHandle.length < 1 || cleanHandle.length > 30) {
@@ -285,7 +285,7 @@ export const validateText = (text: string, options: { minLength?: number; maxLen
     return { isValid: !required, sanitized: '', error: required ? 'This field is required' : undefined };
   }
 
-  let sanitized = allowHtml ? sanitizeHtml(text) : sanitizeText(text, { allowNewlines: true, maxLength });
+  const sanitized = allowHtml ? sanitizeHtml(text) : sanitizeText(text, { allowNewlines: true, maxLength });
 
   if (sanitized.length < minLength) {
     return { isValid: false, sanitized, error: `Text must be at least ${minLength} characters` };

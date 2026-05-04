@@ -8,6 +8,7 @@ import {
   sendBrandSigningReminderEmail,
   sendDealPendingReminderToBrand,
   sendDealPendingReminderToCreator,
+  sendAwaitingShipmentReminderEmail,
 } from '../services/dealReminderEmailService.js';
 import { syncInstagramStats } from '../jobs/instagramSync.js';
 
@@ -80,7 +81,7 @@ router.post('/deal-reminders', async (req: Request, res: Response) => {
     }
 
     const frontendUrl = getFrontendUrl();
-    const results = { brandSigning: 0, dealPendingBrand: 0, dealPendingCreator: 0, creatorSigningSafetyNet: 0, creatorDeliverableReminder: 0, errors: [] as string[] };
+    const results = { brandSigning: 0, dealPendingBrand: 0, dealPendingCreator: 0, creatorSigningSafetyNet: 0, creatorDeliverableReminder: 0, awaitingShipment: 0, errors: [] as string[] };
 
     // 1) Deals where contract is ready but brand hasn't signed — remind brand (at most every 3 days)
     const { data: dealsAwaitingSignature, error: e1 } = await supabase
@@ -282,6 +283,58 @@ router.post('/deal-reminders', async (req: Request, res: Response) => {
             await logReminder(deal.id, 'CREATOR_DELIVERABLE_DUE_REMINDER_SENT');
             results.creatorDeliverableReminder++;
           } else results.errors.push(`deliverable reminder ${deal.id}: ${r.error}`);
+        }
+      }
+    }
+
+    // 5) Awaiting Shipment: Status is FULLY_EXECUTED or content_making, shipping_required=true, shipping_status=pending
+    const { data: dealsAwaitingShipment, error: e5 } = await supabase
+      .from('brand_deals')
+      .select('id, brand_name, brand_email, creator_id, status')
+      .in('status', ['FULLY_EXECUTED', 'content_making'])
+      .eq('shipping_required', true)
+      .eq('shipping_status', 'pending');
+
+    if (!e5 && dealsAwaitingShipment?.length) {
+      const { createShippingToken } = await import('../services/shippingTokenService.js');
+
+      for (const deal of dealsAwaitingShipment) {
+        // Remind every 3 days
+        if (await lastReminderSentWithin(deal.id, 'AWAITING_SHIPMENT_REMINDER_SENT', 3))
+          continue;
+
+        // Fetch creator name
+        const { data: creatorProfile } = await supabase
+          .from('profiles')
+          .select('first_name, last_name, business_name')
+          .eq('id', deal.creator_id)
+          .maybeSingle();
+        
+        const creatorName =
+          [creatorProfile?.first_name, creatorProfile?.last_name].filter(Boolean).join(' ') ||
+          (creatorProfile as any)?.business_name ||
+          'Creator';
+
+        // Generate shipping link
+        let shippingLink = `${frontendUrl}/brand/deals/${deal.id}`;
+        try {
+          const { token: shipToken } = await createShippingToken({ dealId: deal.id });
+          shippingLink = `${frontendUrl}/ship/${shipToken}`;
+        } catch (shipErr) {
+          console.error('[Cron] Failed to generate shipping token for reminder:', shipErr);
+        }
+
+        const r = await sendAwaitingShipmentReminderEmail(deal.brand_email, {
+          creatorName,
+          brandName: deal.brand_name || 'there',
+          shippingLink,
+        });
+
+        if (r.success) {
+          await logReminder(deal.id, 'AWAITING_SHIPMENT_REMINDER_SENT');
+          results.awaitingShipment++;
+        } else {
+          results.errors.push(`awaiting shipment ${deal.id}: ${r.error}`);
         }
       }
     }

@@ -41,8 +41,8 @@ router.get('/deals', async (req: AuthenticatedRequest, res: Response) => {
     // Attach creator profiles and original collab request package metadata (best-effort).
     const creatorIds = Array.from(new Set((deals || []).map((d: any) => String(d.creator_id || '')).filter(Boolean)));
     const collabRequestIds = Array.from(new Set((deals || []).map((d: any) => String(d.collab_request_id || '').trim()).filter(Boolean)));
-    let profilesById = new Map<string, any>();
-    let requestsById = new Map<string, any>();
+    const profilesById = new Map<string, any>();
+    const requestsById = new Map<string, any>();
     if (creatorIds.length > 0) {
       const { data: profs } = await supabase
         .from('profiles')

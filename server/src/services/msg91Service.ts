@@ -117,7 +117,7 @@ export async function sendCollabRequestWhatsApp(
         const url = 'https://control.msg91.com/api/v5/flow/';
 
         // Construct payload based on template type
-        let recipientData: any = {
+        const recipientData: any = {
             mobiles: cleanPhone,
             brand_name: data.brand_name,
             deliverables: data.deliverables,

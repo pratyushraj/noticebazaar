@@ -104,29 +104,117 @@ router.post('/confirm', async (req, res) => {
             return res.status(400).json({ success: false, error: 'Request already processed' });
         }
 
-        // 2. Create Brand Deal (Contract Generation Logic)
+        // Parse deliverables safely
+        let deliverablesArray: string[] = [];
+        try {
+            deliverablesArray = typeof request.deliverables === 'string'
+                ? (request.deliverables.startsWith('[') ? JSON.parse(request.deliverables) : [request.deliverables])
+                : (Array.isArray(request.deliverables) ? request.deliverables : []);
+        } catch (e) {
+            console.warn('[CollabAction] Failed to parse deliverables:', e);
+            deliverablesArray = typeof request.deliverables === 'string' ? [request.deliverables] : [];
+        }
+
+        const requiresLogistics = 
+            request.shipping_required === true || 
+            request.collab_type === 'barter' || 
+            request.collab_type === 'both' || 
+            request.collab_type === 'hybrid' || 
+            request.collab_type === 'paid_barter';
+
+        const isBarter = request.collab_type === 'barter' || request.collab_type === 'paid_barter';
+
+        // 2. Create Brand Deal
         const dealData: any = {
             brand_id: request.brand_id,
             creator_id: request.creator_id,
             brand_name: request.brand_name,
             brand_email: request.brand_email,
-            deal_type: request.collab_type === 'both' ? 'paid' : request.collab_type,
-            deal_amount: request.collab_type === 'paid' || request.collab_type === 'both' ? request.exact_budget : request.barter_value,
+            deal_type: isBarter ? 'barter' : 'paid',
+            deal_amount: (request.collab_type === 'paid' || request.collab_type === 'both') ? request.exact_budget : request.barter_value,
             currency: 'INR',
-            deliverables: request.deliverables,
-            status: request.collab_type === 'barter' ? 'contract_ready' : 'PAYMENT_PENDING',
-            progress_percentage: request.collab_type === 'barter' ? 20 : 10,
+            deliverables: deliverablesArray,
+            status: requiresLogistics ? 'AWAITING_DELIVERY_DETAILS' : 'PAYMENT_PENDING',
+            progress_percentage: requiresLogistics ? 15 : 10,
             platform: 'instagram',
-            collab_request_id: request.id
+            collab_request_id: request.id,
+            shipping_required: requiresLogistics,
+
+            // Preserve campaign metadata
+            campaign_goal: request.campaign_goal || null,
+            campaign_description: request.campaign_description || null,
+            campaign_category: request.campaign_category || null,
+            selected_package_id: (request as any).selected_package_id || null,
+            selected_package_label: (request as any).selected_package_label || null,
+            selected_package_type: (request as any).selected_package_type || null,
+            selected_addons: (request as any).selected_addons || [],
+            content_quantity: (request as any).content_quantity || null,
+            content_duration: (request as any).content_duration || null,
+            content_requirements: (request as any).content_requirements || [],
+            barter_types: (request as any).barter_types || [],
+            form_data: (request as any).form_data || {}
         };
 
-        const { data: deal, error: dealError } = await supabase
-            .from('brand_deals')
-            .insert(dealData)
-            .select()
-            .single();
+        const dealOptionalFields = new Set([
+            'collab_request_id',
+            'campaign_goal',
+            'campaign_category',
+            'campaign_description',
+            'selected_package_id',
+            'selected_package_label',
+            'selected_package_type',
+            'selected_addons',
+            'content_quantity',
+            'content_duration',
+            'content_requirements',
+            'barter_types',
+            'form_data'
+        ]);
 
-        if (dealError) throw dealError;
+        const extractMissingColumn = (message: string): string | null => {
+            if (!message) return null;
+            const quoted = message.match(/'([^']+)' column/i);
+            if (quoted?.[1]) return quoted[1];
+            const quotedAlt = message.match(/column\s+"([^"]+)"/i);
+            if (quotedAlt?.[1]) return quotedAlt[1];
+            const unquoted = message.match(/column\s+([a-z_][a-z0-9_]*)/i);
+            if (unquoted?.[1]) return unquoted[1];
+            return null;
+        };
+
+        const dealInsertPayload: any = { ...dealData };
+        let deal: any = null;
+        let dealError: any = null;
+
+        for (let attempt = 0; attempt < 15; attempt++) {
+            const result = await supabase
+                .from('brand_deals')
+                .insert(dealInsertPayload)
+                .select()
+                .single();
+
+            deal = result.data;
+            dealError = result.error;
+
+            if (!dealError) {
+                break;
+            }
+
+            const missingColumn = extractMissingColumn(String(dealError.message || ''));
+            if (missingColumn && dealOptionalFields.has(missingColumn) && missingColumn in dealInsertPayload) {
+                console.warn(`[CollabAction] Skipping missing column: ${missingColumn}`);
+                delete dealInsertPayload[missingColumn];
+                continue;
+            }
+
+            // Not a missing column error or not an optional field
+            break;
+        }
+
+        if (dealError) {
+            console.error('[CollabAction] Failed to create deal:', dealError);
+            throw dealError;
+        }
 
         // 3. Update Request Status
         await supabase
@@ -150,7 +238,7 @@ router.post('/confirm', async (req, res) => {
             brandName: request.brand_name,
             dealType: dealData.deal_type as 'paid' | 'barter',
             dealAmount: dealData.deal_amount,
-            deliverables: dealData.deliverables,
+            deliverables: deliverablesArray,
             contractReadyToken: contractToken.id,
             barterValue: request.barter_value
         });

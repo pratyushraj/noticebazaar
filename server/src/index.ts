@@ -58,6 +58,7 @@ import complaintsRouter from './routes/complaints.js';
 import influencersRouter from './routes/influencers.js';
 import collabRequestsRouter from './routes/collabRequests.js';
 import remindersRouter from './routes/reminders.js';
+import collabActionRouter from './routes/collabAction.js';
 import collabAnalyticsRouter from './routes/collabAnalytics.js';
 import creatorsRouter from './routes/creators.js';
 import pushNotificationsRouter from './routes/pushNotifications.js';
@@ -78,6 +79,7 @@ import { rateLimitMiddleware } from './middleware/rateLimit.js';
 import { errorHandler } from './middleware/errorHandler.js';
 
 const app = express();
+app.set('trust proxy', 1);
 const PORT = process.env.PORT || 3001; // Fly.io uses 8080, but we keep 3001 for local dev
 
 // Initialize Supabase client
@@ -406,6 +408,7 @@ app.use('/api/shipping', shippingRouter); // Public shipping update (brand, no a
 app.use('/api/cron', cronDealRemindersRouter); // Cron: deal reminders (protected by CRON_SECRET in route)
 app.use('/api/cron', cronOnboardingEmailsRouter); // Cron: creator onboarding sequence (protected by CRON_SECRET)
 app.use('/api/og', ogRouter); // Public OG bot scraper routes
+app.use('/api/collab-action', collabActionRouter); // Public collab action routes (accept/decline via token)
 
 // Authentication Routes - Must be registered before catch-all and after other public routes
  console.log('[Server] Registering auth routes at /api/auth');

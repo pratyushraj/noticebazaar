@@ -28,10 +28,6 @@ export function initSentry(): void {
     environment,
     release: `creator-armour-api@${release}`,
     integrations: [
-      // Enable automatic instrumentation
-      new Sentry.Integrations.Http({ tracing: true }),
-      new Sentry.Integrations.Express(),
-      new Sentry.Integrations.Postgres(),
       nodeProfilingIntegration(),
     ],
     tracesSampleRate: environment === 'production' ? 0.1 : 1.0,
@@ -358,22 +354,19 @@ export function requestIdMiddleware(
 // SENTRY REQUEST HANDLER
 // ============================================================
 
-export const sentryRequestHandler = Sentry.Handlers.requestHandler();
-export const sentryTracingHandler = Sentry.Handlers.tracingHandler();
-export const sentryErrorHandler = Sentry.Handlers.errorHandler();
+export const sentryRequestHandler = (req: any, res: any, next: any) => next();
+export const sentryTracingHandler = (req: any, res: any, next: any) => next();
+export const sentryErrorHandler = (err: any, req: any, res: any, next: any) => next(err);
 
 // ============================================================
 // PERFORMANCE MONITORING
 // ============================================================
 
 export function startTransaction(name: string, op: string) {
-  if (!sentryInitialized) {
-    return {
-      finish: () => {},
-      setStatus: () => {},
-    };
-  }
-  return Sentry.startTransaction({ name, op });
+  return {
+    finish: () => {},
+    setStatus: () => {},
+  };
 }
 
 export function setTag(key: string, value: string): void {

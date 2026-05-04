@@ -1,7 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter } from "react-router-dom";
 import { SplashScreen } from "@/components/mobile/SplashScreen";
 import AppToaster from "./components/AppToaster";
 import FacebookPixelTracker from "./components/FacebookPixelTracker";
@@ -137,18 +135,16 @@ const App = () => {
       {/* Main App - Only show after splash is completely gone */}
       {splashComplete && (
         <div className="min-h-dvh bg-[#020D0A]">
-          <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-            <RouterInstrumentation />
-            <ScrollToTop />
-            <NetworkStatusWrapper>
-              <FacebookPixelTracker />
-              <GoogleAnalyticsTracker /> {/* Add GA4 tracker here */}
-              <WebVitalsTracker />
-              <TooltipProvider delayDuration={400}>
-                <AppRoutes />
-              </TooltipProvider>
-            </NetworkStatusWrapper>
-          </BrowserRouter>
+          <RouterInstrumentation />
+          <ScrollToTop />
+          <NetworkStatusWrapper>
+            <FacebookPixelTracker />
+            <GoogleAnalyticsTracker /> {/* Add GA4 tracker here */}
+            <WebVitalsTracker />
+            <TooltipProvider delayDuration={400}>
+              <AppRoutes />
+            </TooltipProvider>
+          </NetworkStatusWrapper>
         </div>
       )}
     </ErrorBoundary>

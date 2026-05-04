@@ -513,7 +513,7 @@ export function validateRequiredContractFields(
   // Creator address - must include city and state minimum
   // Handle undefined, null, and empty string cases
   const rawAddress = creatorInfo.address;
-  let creatorAddress = (rawAddress && typeof rawAddress === 'string') 
+  const creatorAddress = (rawAddress && typeof rawAddress === 'string') 
     ? rawAddress.trim() 
     : '';
   

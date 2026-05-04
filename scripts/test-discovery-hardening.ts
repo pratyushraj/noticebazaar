@@ -53,10 +53,10 @@ async function runTests() {
     // 2. TEST: State Transition (Left then Right)
     console.log('\n2. Testing State Transition (Left then Right)...');
     await supabase.from('brand_swipes').upsert({ ...swipe1, direction: 'left' }, { onConflict: 'brand_id,creator_id' });
-    let { data: leftState } = await supabase.from('brand_swipes').select('direction').match({ brand_id: TEST_BRAND_ID, creator_id: TEST_CREATOR_ID }).single();
+    const { data: leftState } = await supabase.from('brand_swipes').select('direction').match({ brand_id: TEST_BRAND_ID, creator_id: TEST_CREATOR_ID }).single();
     
     await supabase.from('brand_swipes').upsert({ ...swipe1, direction: 'right' }, { onConflict: 'brand_id,creator_id' });
-    let { data: rightState } = await supabase.from('brand_swipes').select('direction').match({ brand_id: TEST_BRAND_ID, creator_id: TEST_CREATOR_ID }).single();
+    const { data: rightState } = await supabase.from('brand_swipes').select('direction').match({ brand_id: TEST_BRAND_ID, creator_id: TEST_CREATOR_ID }).single();
 
     if (leftState?.direction === 'left' && rightState?.direction === 'right') {
       console.log('✅ PASS: Direction updated correctly from left to right.');

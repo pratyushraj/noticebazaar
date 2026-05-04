@@ -45,7 +45,7 @@ router.post('/webhook', async (req: Request, res: Response) => {
       }
 
       // Check current deal state for idempotency (Double Webhook Issue)
-      const selectFields = 'id, payment_status, status, creator_id, brand_name, creator_email, payment_id, amount_paid';
+      const selectFields = 'id, payment_status, status, creator_id, brand_name, payment_id, amount_paid';
       const { data: deal, error: fetchError } = await supabase
         .from('brand_deals')
         .select(selectFields)

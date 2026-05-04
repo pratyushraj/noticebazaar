@@ -594,7 +594,7 @@ export function getDealLifecycleService(
 ): DealLifecycleService {
   if (!lifecycleInstance) {
     // Lazy load to avoid circular dependencies
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
+     
     const { getSupabaseClient } = require('../../shared/lib/supabase.js');
     const client = supabaseClient || getSupabaseClient();
     lifecycleInstance = new DealLifecycleService(client);

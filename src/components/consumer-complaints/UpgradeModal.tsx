@@ -30,10 +30,10 @@ const UpgradeModal: React.FC<UpgradeModalProps> = ({
   };
 
   const features = [
-    'Unlimited consumer complaints',
-    'Faster resolutions',
-    'Priority support',
-    'Full Lifestyle Shield protection',
+    'Unlimited creator filing',
+    'Faster legal resolutions',
+    'Priority legal support',
+    'Full Legal Shield protection',
   ];
 
   return (
@@ -43,11 +43,11 @@ const UpgradeModal: React.FC<UpgradeModalProps> = ({
           <div className="flex items-center gap-3 mb-2">
             <Shield className="h-6 w-6 text-primary" />
             <DialogTitle className="text-2xl font-bold">
-              Lifestyle Shield is a Creator Pro benefit
+              Legal Shield is a Creator Pro benefit
             </DialogTitle>
           </div>
           <DialogDescription className="text-gray-300 text-base">
-            Get unlimited consumer complaints, faster resolutions, and priority support.
+            Get unlimited creator filing, faster legal resolutions, and priority support.
           </DialogDescription>
         </DialogHeader>
 

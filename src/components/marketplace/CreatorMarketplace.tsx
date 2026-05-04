@@ -201,7 +201,7 @@ export const CreatorMarketplace: React.FC = () => {
 
   // Filter and sort projects
   const filteredProjects = useMemo(() => {
-    let filtered = projects.filter(project => {
+    const filtered = projects.filter(project => {
       if (filters.search && !project.title.toLowerCase().includes(filters.search.toLowerCase()) &&
           !project.description.toLowerCase().includes(filters.search.toLowerCase())) {
         return false;

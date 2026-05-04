@@ -30,6 +30,8 @@ export interface SignatureRecord {
   ip_address: string;
   user_agent: string;
   device_info?: any;
+  creator_otp_verified_at?: string;
+  collab_type?: string;
   otp_verified: boolean;
   otp_verified_at?: string;
   signed: boolean;
@@ -315,14 +317,12 @@ export async function signContractAsBrand(
         if (newStatus === 'FULLY_EXECUTED') {
            const { data: freshDeal } = await supabase
              .from('brand_deals')
-             .select('collab_type, deal_type, deal_amount')
+             .select('deal_type, deal_amount') 
              .eq('id', request.dealId)
              .maybeSingle();
            
            if (freshDeal) {
-             const normalizeCollabKind = (raw: any) => String(raw || '').trim().toLowerCase();
-             const kind = normalizeCollabKind(freshDeal.collab_type || freshDeal.deal_type);
-             const requiresPayment = kind === 'paid' || kind === 'both' || kind === 'hybrid' || kind === 'paid_barter' || (!kind && Number(freshDeal.deal_amount || 0) > 0);
+            const requiresPayment = (freshDeal.deal_type === 'paid' || freshDeal.collab_type === 'paid' || freshDeal.collab_type === 'both' || freshDeal.collab_type === 'hybrid' || Number(freshDeal.deal_amount || 0) > 0);
              
              if (requiresPayment) {
                 console.log(`[ContractSigningService] Transitioning deal ${request.dealId} to PAYMENT_PENDING`);
@@ -391,8 +391,14 @@ export async function signContractAsBrand(
 
     // Send email notifications (non-blocking)
     try {
-      const { sendBrandSigningConfirmationEmail, sendCreatorSigningNotificationEmail } = await import('./contractSigningEmailService.js');
+      const { 
+        sendBrandSigningConfirmationEmail, 
+        sendCreatorSigningNotificationEmail,
+        sendBrandExecutionEmail,
+        sendCreatorSigningConfirmationEmail
+      } = await import('./contractSigningEmailService.js');
       const { generateCreatorSigningToken } = await import('./creatorSigningTokenService.js');
+      const { createShippingToken } = await import('./shippingTokenService.js');
 
       // Fetch creator details for email
       const { data: creator, error: creatorError } = await supabase
@@ -432,9 +438,11 @@ export async function signContractAsBrand(
         }
       }
 
-      // Generate creator signing token (magic link)
+      // Generate creator signing token (magic link) - only if NOT signed yet
       let creatorSigningToken: string | undefined;
-      if (creatorEmail && deal.creator_id) {
+      const isCreatorSigned = !!creatorSignature?.signed;
+      
+      if (!isCreatorSigned && creatorEmail && deal.creator_id) {
         const tokenResult = await generateCreatorSigningToken(
           deal.id,
           deal.creator_id,
@@ -445,6 +453,17 @@ export async function signContractAsBrand(
           console.log('[ContractSigningService] Creator signing token generated:', creatorSigningToken);
         } else {
           console.error('[ContractSigningService] Failed to generate creator signing token:', tokenResult.error);
+        }
+      }
+
+      // Generate shipping link if required
+      let shippingLink: string | undefined;
+      if (deal.shipping_required) {
+        try {
+          const { token: shipToken } = await createShippingToken({ dealId: deal.id });
+          shippingLink = `${process.env.FRONTEND_URL || 'https://creatorarmour.com'}/ship/${shipToken}`;
+        } catch (shipErr) {
+          console.error('[ContractSigningService] Shipping link generation failed:', shipErr);
         }
       }
 
@@ -468,32 +487,36 @@ export async function signContractAsBrand(
         ),
         deadline: deal.due_date || undefined,
         contractUrl: deal.contract_file_url || undefined,
-        creatorSigningToken: creatorSigningToken, // Magic link token
+        creatorSigningToken: creatorSigningToken, 
+        shippingRequired: !!deal.shipping_required,
+        shippingLink: shippingLink
       };
 
-      // CRITICAL: Always attempt to send creator email if we have an email address
-      // Log warning if email is missing
-      if (!creatorEmail) {
-        console.error('[ContractSigningService] CRITICAL: Creator email not found! Cannot send notification. Creator ID:', deal.creator_id);
+      // Send emails based on finality
+      const isExecuted = newStatus === 'FULLY_EXECUTED';
+      const promises = [];
+      
+      if (isExecuted) {
+        promises.push(sendBrandExecutionEmail(request.signerEmail, request.signerName, emailData));
+        if (creatorEmail) {
+          promises.push(sendCreatorSigningConfirmationEmail(creatorEmail, creatorName, emailData));
+        }
+      } else {
+        promises.push(sendBrandSigningConfirmationEmail(request.signerEmail, request.signerName, emailData));
+        if (creatorEmail) {
+          promises.push(sendCreatorSigningNotificationEmail(creatorEmail, creatorName, emailData));
+        }
       }
 
-      // Send emails in parallel — MUST await to prevent Vercel from killing the function
-      const [brandResult, creatorResult] = await Promise.all([
-        sendBrandSigningConfirmationEmail(request.signerEmail, request.signerName, emailData),
-        creatorEmail ? sendCreatorSigningNotificationEmail(creatorEmail, creatorName, emailData) : Promise.resolve({ success: false, error: 'Creator email not found' })
-      ]);
+      const results = await Promise.all(promises);
+      results.forEach((res, idx) => {
+        if (res.success) {
+           console.log(`[ContractSigningService] Notification ${idx} sent successfully`);
+        } else {
+           console.error(`[ContractSigningService] Notification ${idx} failed:`, res.error);
+        }
+      });
 
-      if (brandResult.success) {
-        console.log('[ContractSigningService] Brand confirmation email sent');
-      } else {
-        console.error('[ContractSigningService] Failed to send brand confirmation email:', brandResult.error || 'Unknown error');
-      }
-      if (creatorResult.success) {
-        console.log('[ContractSigningService] Creator notification email sent');
-      } else {
-        const creatorError = (creatorResult as any).error;
-        console.error('[ContractSigningService] Failed to send creator notification email:', creatorError || 'Unknown error');
-      }
     } catch (emailServiceError) {
       console.error('[ContractSigningService] Email service error (non-fatal):', emailServiceError);
     }
@@ -682,14 +705,12 @@ export async function signContractAsCreator(
       if (newStatus === 'FULLY_EXECUTED') {
          const { data: freshDeal } = await supabase
            .from('brand_deals')
-           .select('collab_type, deal_type, deal_amount')
+           .select('deal_type, deal_amount')
            .eq('id', request.dealId)
            .maybeSingle();
          
          if (freshDeal) {
-           const normalizeCollabKind = (raw: any) => String(raw || '').trim().toLowerCase();
-           const kind = normalizeCollabKind(freshDeal.collab_type || freshDeal.deal_type);
-           const requiresPayment = kind === 'paid' || kind === 'both' || kind === 'hybrid' || kind === 'paid_barter' || (!kind && Number(freshDeal.deal_amount || 0) > 0);
+           const requiresPayment = (freshDeal.deal_type === 'paid' || freshDeal.collab_type === 'paid' || freshDeal.collab_type === 'both' || freshDeal.collab_type === 'hybrid' || Number(freshDeal.deal_amount || 0) > 0);
            
            if (requiresPayment) {
               console.log(`[ContractSigningService] Transitioning deal ${request.dealId} to PAYMENT_PENDING (creator signed)`);
@@ -757,12 +778,17 @@ export async function signContractAsCreator(
 
     // Send email notifications (non-blocking)
     try {
-      const { sendCreatorSigningConfirmationEmail, sendBrandSigningNotificationEmail } = await import('./contractSigningEmailService.js');
+      const { 
+        sendCreatorSigningConfirmationEmail, 
+        sendBrandSigningNotificationEmail,
+        sendBrandExecutionEmail 
+      } = await import('./contractSigningEmailService.js');
+      const { createShippingToken } = await import('./shippingTokenService.js');
 
       // Fetch brand details for email
       const { data: brandDeal, error: brandDealError } = await supabase
         .from('brand_deals' as any)
-        .select('brand_name, brand_email, deal_amount, amount, deal_type, deliverables, due_date, contract_file_url')
+        .select('brand_name, brand_email, deal_amount, amount, deal_type, deliverables, due_date, contract_file_url, shipping_required')
         .eq('id', request.dealId)
         .single();
 
@@ -773,6 +799,17 @@ export async function signContractAsCreator(
             ? (brandDealData.deliverables.includes('[') ? JSON.parse(brandDealData.deliverables) : [brandDealData.deliverables])
             : Array.isArray(brandDealData.deliverables) ? brandDealData.deliverables : [])
           : [];
+
+        // Generate shipping link if required
+        let shippingLink: string | undefined;
+        if (brandDealData.shipping_required) {
+          try {
+            const { token: shipToken } = await createShippingToken({ dealId: request.dealId });
+            shippingLink = `${process.env.FRONTEND_URL || 'https://creatorarmour.com'}/ship/${shipToken}`;
+          } catch (shipErr) {
+            console.error('[ContractSigningService] Shipping link generation failed (creator flow):', shipErr);
+          }
+        }
 
         const emailData = {
           dealId: request.dealId,
@@ -787,26 +824,33 @@ export async function signContractAsCreator(
           ),
           deadline: brandDealData.due_date || undefined,
           contractUrl: brandDealData.contract_file_url || undefined,
+          shippingRequired: !!brandDealData.shipping_required,
+          shippingLink: shippingLink
         };
 
-        // Send Creator Confirmation + Brand Notification — MUST await for Vercel
-        const [creatorConfirmResult, brandNotifyResult] = await Promise.all([
-          sendCreatorSigningConfirmationEmail(request.signerEmail, request.signerName, emailData),
-          emailData.brandEmail
-            ? sendBrandSigningNotificationEmail(emailData.brandEmail, emailData.brandName, emailData)
-            : Promise.resolve({ success: false, error: 'Brand email not found' })
-        ]);
+        const isExecuted = newStatus === 'FULLY_EXECUTED';
+        const promises = [];
 
-        if (creatorConfirmResult.success) {
-          console.log('[ContractSigningService] Creator confirmation email sent');
+        if (isExecuted) {
+          promises.push(sendCreatorSigningConfirmationEmail(request.signerEmail, request.signerName, emailData));
+          if (emailData.brandEmail) {
+            promises.push(sendBrandExecutionEmail(emailData.brandEmail, emailData.brandName, emailData));
+          }
         } else {
-          console.error('[ContractSigningService] Failed to send creator confirmation email:', creatorConfirmResult.error || 'Unknown error');
+          promises.push(sendCreatorSigningConfirmationEmail(request.signerEmail, request.signerName, emailData));
+          if (emailData.brandEmail) {
+            promises.push(sendBrandSigningNotificationEmail(emailData.brandEmail, emailData.brandName, emailData));
+          }
         }
-        if (brandNotifyResult.success) {
-          console.log('[ContractSigningService] Brand signing notification email sent');
-        } else {
-          console.error('[ContractSigningService] Failed to send brand notification email:', (brandNotifyResult as any).error || 'Unknown error');
-        }
+
+        const results = await Promise.all(promises);
+        results.forEach((res, idx) => {
+          if (res.success) {
+            console.log(`[ContractSigningService] Creator flow notification ${idx} sent successfully`);
+          } else {
+            console.error(`[ContractSigningService] Creator flow notification ${idx} failed:`, res.error);
+          }
+        });
       }
     } catch (emailServiceError) {
       console.error('[ContractSigningService] Email service error (non-fatal):', emailServiceError);

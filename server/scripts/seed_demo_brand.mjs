@@ -8,7 +8,7 @@ const SERVICE_ROLE_KEY =
   process.env.VITE_SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 if (!SUPABASE_URL || !SERVICE_ROLE_KEY) {
-  // eslint-disable-next-line no-console
+   
   console.error('Missing SUPABASE env vars (VITE_SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY).');
   process.exit(1);
 }
@@ -37,7 +37,7 @@ const findUserIdByEmail = async (email) => {
 const main = async () => {
   const userId = await findUserIdByEmail(DEMO_BRAND_EMAIL);
   if (!userId) {
-    // eslint-disable-next-line no-console
+     
     console.error(`Could not find auth user for ${DEMO_BRAND_EMAIL}`);
     process.exit(1);
   }
@@ -76,7 +76,7 @@ const main = async () => {
       .select('id, name, external_id, logo_url, industry')
       .single();
     if (error) throw error;
-    // eslint-disable-next-line no-console
+     
     console.log('Updated demo brand:', updated);
     return;
   }
@@ -87,12 +87,12 @@ const main = async () => {
     .select('id, name, external_id, logo_url, industry')
     .single();
   if (error) throw error;
-  // eslint-disable-next-line no-console
+   
   console.log('Inserted demo brand:', inserted);
 };
 
 main().catch((e) => {
-  // eslint-disable-next-line no-console
+   
   console.error('seed_demo_brand failed:', e?.message || e);
   process.exit(1);
 });

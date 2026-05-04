@@ -9,7 +9,7 @@ RED='\033[0;31m'
 YELLOW='\033[1;33m'
 NC='\033[0m'
 
-PROJECT_ROOT="/Users/pratyushraj/Desktop/creatorarmour"
+PROJECT_ROOT="/Users/pratyushraj/Desktop/noticebazaar"
 cd "$PROJECT_ROOT" || { echo -e "${RED}❌ Project not found at $PROJECT_ROOT${NC}"; exit 1; }
 
 echo -e "${BLUE}🚀 Starting CreatorArmour...${NC}"

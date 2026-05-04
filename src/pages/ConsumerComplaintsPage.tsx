@@ -87,7 +87,7 @@ const categories: Category[] = [
     icon: MoreHorizontal,
     color: '#64748B',
     bgColor: 'rgba(100, 116, 139, 0.15)',
-    helperText: 'Any other consumer service issue',
+    helperText: 'Any other legal issue',
   },
 ];
 
@@ -149,11 +149,11 @@ const ConsumerComplaintsPage: React.FC = () => {
           <div className="flex items-center gap-3 mb-3">
               <Shield className="w-8 h-8 text-secondary" />
             <h1 className="text-3xl font-bold text-foreground">
-                Consumer Complaints
+                Legal Shield
               </h1>
             </div>
           <p className="text-foreground/70 text-base">
-              Resolve everyday refund and service issues without stress.
+              Resolve everyday legal and service disputes without stress.
             </p>
           </div>
 

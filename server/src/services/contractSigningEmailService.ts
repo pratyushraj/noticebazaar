@@ -30,6 +30,8 @@ interface ContractSigningData {
   contractUrl?: string;
   creatorSigningToken?: string;
   brandSigningLink?: string;
+  shippingRequired?: boolean;
+  shippingLink?: string;
 }
 
 /**
@@ -786,6 +788,102 @@ export async function sendBrandSigningConfirmationEmail(
       return { success: true, emailId: data.id };
     } catch (error: any) {
       return { success: false, error: error.message || 'Internal error' };
+    }
+  }
+
+  /**
+   * Send execution confirmation to brand when contract is FULLY signed
+   */
+  export async function sendBrandExecutionEmail(
+    brandEmail: string,
+    brandName: string,
+    dealData: ContractSigningData
+  ): Promise<{ success: boolean; emailId?: string; error?: string }> {
+    try {
+      const apiKey = process.env.RESEND_API_KEY;
+      if (!apiKey || apiKey === 'your_resend_api_key_here' || apiKey.trim() === '') {
+        return { success: false, error: 'Resend API key not configured' };
+      }
+
+      const dealAmount = dealData.dealType === 'paid' && dealData.dealAmount
+        ? `₹${parseFloat(dealData.dealAmount.toString()).toLocaleString('en-IN')}`
+        : 'Barter';
+
+      const deliverablesList = dealData.deliverables.map((d, idx) => `${idx + 1}. ${d}`).join('<br>');
+      const pdfDownloadUrl = dealData.contractUrl || `${process.env.FRONTEND_URL || 'https://creatorarmour.com'}/brand/deals/${dealData.dealId}`;
+
+      let nextStepTitle = 'Next Step: Proceed to Payment';
+      let nextStepDesc = 'The agreement is executed. Please proceed to pay the escrow amount to activate the collaboration.';
+      let ctaText = 'Proceed to Payment';
+      let ctaLink = `${process.env.FRONTEND_URL || 'https://creatorarmour.com'}/brand/deals/${dealData.dealId}`;
+
+      if (dealData.dealType === 'barter' || dealData.shippingRequired) {
+        nextStepTitle = 'Next Step: Ship Product';
+        nextStepDesc = 'The agreement is executed. Please ship the product to the creator and update the tracking details.';
+        ctaText = 'Update Shipping Details';
+        ctaLink = dealData.shippingLink || `${process.env.FRONTEND_URL || 'https://creatorarmour.com'}/brand/deals/${dealData.dealId}`;
+      }
+
+      const emailSubject = `Collaboration finalized with ${dealData.creatorName} — Action Required`;
+      const mainContent = `
+        <tr>
+          <td style="background-color: #10b981; padding: 40px 30px; text-align: center;">
+            <h1 style="color: #ffffff; margin: 0; font-size: 24px;">🤝 Agreement Finalized!</h1>
+          </td>
+        </tr>
+        ${getEmailSignal({
+          type: 'action',
+          message: nextStepDesc
+        })}
+        <tr>
+          <td style="padding: 40px 30px;">
+            <p style="margin: 0 0 20px 0; font-size: 16px; color: #2d3748; line-height: 1.6;">
+              Hi ${getFirstName(brandName)},
+            </p>
+            <p style="margin: 0 0 24px 0; font-size: 15px; color: #4a5568; line-height: 1.6;">
+              Your collaboration with <strong>${dealData.creatorName}</strong> is now officially active. Both parties have signed the legally binding agreement.
+            </p>
+            
+            <div style="background: #f9fafb; border-radius: 8px; padding: 20px; margin: 20px 0; border: 1px solid #e5e7eb;">
+              <h3 style="color: #111827; margin-top: 0; font-size: 16px;">${nextStepTitle}</h3>
+              <p style="color: #4b5563; font-size: 14px; margin-bottom: 20px;">${nextStepDesc}</p>
+              <div style="text-align: center;">
+                ${getPrimaryCTA(ctaText, ctaLink)}
+              </div>
+            </div>
+
+            <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" style="margin: 32px 0;">
+              <tr>
+                <td align="center">
+                  <a href="${pdfDownloadUrl}" style="color: #10b981; font-size: 14px; font-weight: 600; text-decoration: underline;">Download Signed Agreement (PDF)</a>
+                </td>
+              </tr>
+            </table>
+
+            <div style="border-top: 1px solid #e5e7eb; padding-top: 24px;">
+              <h4 style="color: #374151; font-size: 14px; margin-bottom: 12px;">Deliverables Summary</h4>
+              <div style="color: #6b7280; font-size: 14px; line-height: 1.6;">${deliverablesList}</div>
+            </div>
+          </td>
+        </tr>
+      `;
+
+      const emailHtml = getEmailLayout({ content: mainContent, showFooter: true });
+      const response = await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          from: 'CreatorArmour <noreply@creatorarmour.com>',
+          to: [brandEmail],
+          subject: emailSubject,
+          html: emailHtml,
+        }),
+      });
+
+      const data = await response.json();
+      return response.ok ? { success: true, emailId: data.id } : { success: false, error: data.error?.message };
+    } catch (error: any) {
+      return { success: false, error: error.message };
     }
   }
 

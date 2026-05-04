@@ -99,7 +99,7 @@ async function seed() {
     
     // Step 1: Check if user exists in auth.users
     const { data: usersList } = await supabase.auth.admin.listUsers();
-    let user = usersList?.users?.find(u => u.email === email);
+    const user = usersList?.users?.find(u => u.email === email);
     let userId = user?.id;
 
     if (!user) {

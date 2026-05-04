@@ -14,10 +14,10 @@ const UpgradePage: React.FC = () => {
   const { profile } = useSession();
 
   const features = [
-    'Unlimited consumer complaints',
-    'Faster resolutions',
-    'Priority support',
-    'Full Lifestyle Shield protection',
+    'Unlimited creator filing',
+    'Faster legal resolutions',
+    'Priority legal support',
+    'Full Legal Shield protection',
     'Unlimited AI contract scans',
     'Lawyer contract review and drafting',
     '24-hour legal notice delivery',
@@ -53,7 +53,7 @@ const UpgradePage: React.FC = () => {
           </div>
           {source === 'consumer-complaints' && (
             <p className="text-foreground/70 text-lg">
-              Lifestyle Shield is a Creator Pro benefit
+              Legal Shield is a Creator Pro benefit
             </p>
           )}
         </div>

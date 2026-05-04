@@ -802,7 +802,6 @@ const CollabLinkLanding = () => {
   const [useBrandProfile, setUseBrandProfile] = useState(false)
 
   const [campaignDescription, setCampaignDescription] = useState('')
-  const [anyOtherNeeds, setAnyOtherNeeds] = useState('')
   const [deliverables, setDeliverables] = useState<string[]>([])
   const [deliverableQuantities, setDeliverableQuantities] = useState<Record<string, number>>({})
   const [contentQuantity, setContentQuantity] = useState<number | '3+'>(1)
@@ -1457,7 +1456,7 @@ const CollabLinkLanding = () => {
     setProfileSaveStatus('saving')
 
     try {
-      let updatePayload: any = { id: creator.id }
+      const updatePayload: any = { id: creator.id }
 
       if (field === 'name') {
         const nameStr = toTitleCaseName(String(value || ''))
@@ -2317,13 +2316,12 @@ const CollabLinkLanding = () => {
           content_requirements: contentRequirements.map(r => CONTENT_REQUIREMENT_LABELS[r] || r),
           barter_types: barterTypes.map(t => BARTER_OPTIONS.find(o => o.id === t)?.label || t),
           campaign_description: [
-            campaignDescription,
-            anyOtherNeeds ? `\nOther Needs: ${anyOtherNeeds}` : '',
+            campaignDescription ? `Other Needs: ${campaignDescription}` : '',
             selectedTemplate ? `\nSelected package: ${selectedTemplate.label}` : '',
             contentRequirements.length > 0 ? `\nRequirements: ${contentRequirements.map(r => CONTENT_REQUIREMENT_LABELS[r] || r).join(', ')}` : '',
             contentQuantity !== 1 ? `\nQuantity: ${contentQuantity}` : '',
             contentDuration ? `\nDuration: ${contentDuration}` : '',
-          ].filter(Boolean).join(''),
+          ].filter(Boolean).join('\n'),
           deliverables: selectedTemplate
             ? deliverables.map(
                 d => `${d}${deliverableQuantities[d] > 1 ? ` (x${deliverableQuantities[d]})` : ''}`

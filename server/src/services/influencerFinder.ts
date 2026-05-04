@@ -572,7 +572,7 @@ Return ONLY a valid JSON object with this exact structure:
     const response = await callLLM(prompt);
     
     // Extract JSON from response
-    let jsonMatch = response.match(/\{[\s\S]*\}/);
+    const jsonMatch = response.match(/\{[\s\S]*\}/);
     if (!jsonMatch) {
       throw new Error('No JSON found in AI response');
     }

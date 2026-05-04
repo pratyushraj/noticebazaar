@@ -43,7 +43,7 @@ async function fallbackDirectQuery(dateRange?: DateRange): Promise<AdminDashboar
   const totalUsers = await safeCount('profiles');
 
   // Fetch New Accounts Count
-  let newAccountsQuery = (q: any) => {
+  const newAccountsQuery = (q: any) => {
     if (dateRange?.startDate) {
       const start = new Date(dateRange.startDate);
       start.setHours(0, 0, 0, 0);

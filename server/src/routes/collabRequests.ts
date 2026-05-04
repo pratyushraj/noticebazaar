@@ -6,7 +6,7 @@ import express, { Request, Response } from 'express';
 import multer from 'multer';
 import crypto from 'crypto';
 import { supabase, supabaseInitialized } from '../lib/supabase.js';
-import { AuthenticatedRequest } from '../middleware/auth.js';
+import { authMiddleware, AuthenticatedRequest } from '../middleware/auth.js';
 import { generateContractFromScratch } from '../services/contractGenerator.js';
 import { createContractReadyToken } from '../services/contractReadyTokenService.js';
 import {
@@ -29,6 +29,7 @@ import { recordMarketplaceEvent } from '../shared/lib/marketplaceAnalytics.js';
 import { invalidateDealsMineCache } from './deals.js';
 import { saveExternalImageToStorage } from '../services/imageStorageService.js';
 import { logFailedNotification } from '../utils/outbox.js';
+import { collabSubmissionLimiter } from '../shared/middleware/security.js';
 
 const router = express.Router();
 
@@ -126,12 +127,12 @@ const normalizeCollabTypeForApi = (value: unknown): CollabTypeValue | null => {
 
 const isPaidLikeCollab = (value: unknown): boolean => {
   const normalized = normalizeCollabTypeForDb(value);
-  return normalized === 'paid' || normalized === 'both';
+  return normalized === 'paid' || normalized === 'both' || normalized === 'hybrid' || normalized === 'paid_barter';
 };
 
 const isBarterLikeCollab = (value: unknown): boolean => {
   const normalized = normalizeCollabTypeForDb(value);
-  return normalized === 'barter' || normalized === 'both';
+  return normalized === 'barter' || normalized === 'both' || normalized === 'hybrid' || normalized === 'paid_barter';
 };
 
 const normalizeHandle = (value: unknown): string | null => {
@@ -757,7 +758,7 @@ async function attachPendingCollabLeadsForCreator(creatorId: string): Promise<{ 
       ];
 
       let requestId: string | null = null;
-      let requestInsertPayload: any = { ...insertData };
+      const requestInsertPayload: any = { ...insertData };
       let insertedRequest: any = null;
       let insertError: any = null;
 
@@ -1691,8 +1692,8 @@ router.get('/:username', async (req: Request, res: Response) => {
     }
 
     // Get creator name
-    let creatorName = resolvedName || primaryPublicHandle || 'Creator';
-    let profilePhoto = resolvedProfilePhoto;
+    const creatorName = resolvedName || primaryPublicHandle || 'Creator';
+    const profilePhoto = resolvedProfilePhoto;
 
     // Public trust metrics for conversion (safe aggregates only)
     let trustStats: {
@@ -1948,32 +1949,74 @@ router.post(
 
 /**
  * POST /api/collab/:username/upload-brand-logo
- * Upload optional brand logo (public, no auth). Returns public URL.
+ * Upload optional brand logo (requires authentication and ownership verification)
  */
 router.post(
   '/:username/upload-brand-logo',
-  barterImageUpload.single('file'), // Reusing barterImageUpload for same limits
-  async (req: Request & { file?: Express.Multer.File }, res: Response) => {
+  authMiddleware,
+  barterImageUpload.single('file'),
+  async (req: AuthenticatedRequest & { file?: Express.Multer.File }, res: Response) => {
     try {
       const file = req.file;
       if (!file || !file.buffer) {
         return res.status(400).json({ success: false, error: 'No image file provided' });
       }
+
+      // Verify user owns the brand profile
+      const { data: brandProfile } = await supabase
+        .from('brand_profiles')
+        .select('id, owner_id')
+        .eq('username', req.params.username)
+        .eq('owner_id', req.user.id)
+        .single();
+
+      if (!brandProfile) {
+        return res.status(403).json({ 
+          success: false, 
+          error: 'Access denied: you do not own this brand profile' 
+        });
+      }
+
       const allowed = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/svg+xml'];
       if (!allowed.includes(file.mimetype)) {
         return res.status(400).json({ success: false, error: 'Only JPEG, PNG, WebP, SVG, and GIF are allowed' });
       }
-      const ext = file.mimetype.split('/')[1].split('+')[0]; // Simple extension Extraction
-      const path = `collab-requests/logos/${crypto.randomUUID()}.${ext}`;
+
+      // Verify file content (basic magic byte check)
+      const mimeType = file.mimetype;
+      const isImage = file.buffer.slice(0, 4).toString('hex').match(/^(ffd8ffe0|89504e47|47494638|52494646|57454250)/);
+      if (!isImage && mimeType !== 'image/svg+xml') {
+        return res.status(400).json({ 
+          success: false, 
+          error: 'File content does not match declared MIME type. SVG files not supported via this endpoint.' 
+        });
+      }
+
+      const ext = mimeType.split('/')[1].split('+')[0];
+      const path = `collab-requests/logos/brand_${brandProfile.id}/${crypto.randomUUID()}.${ext}`;
+      
       const { error: uploadError } = await supabase.storage
         .from('creator-assets')
-        .upload(path, file.buffer, { contentType: file.mimetype, upsert: false });
+        .upload(path, file.buffer, { 
+          contentType: file.mimetype, 
+          upsert: false,
+          cacheControl: '3600'
+        });
+      
       if (uploadError) {
         console.error('[CollabRequests] Brief logo upload error:', uploadError);
         return res.status(500).json({ success: false, error: 'Failed to upload logo' });
       }
+
+      // Update brand profile with logo path
+      await supabase
+        .from('brand_profiles')
+        .update({ logo_url: path })
+        .eq('id', brandProfile.id);
+
       const { data: urlData } = supabase.storage.from('creator-assets').getPublicUrl(path);
       return res.status(200).json({ success: true, url: urlData.publicUrl });
+
     } catch (e) {
       console.error('[CollabRequests] Logo upload exception:', e);
       return res.status(500).json({ success: false, error: 'Failed to upload logo' });
@@ -1983,9 +2026,9 @@ router.post(
 
 /**
  * POST /api/collab/:username/submit
- * Submit a collaboration request (public, no auth)
+ * Submit a collaboration request (public, rate-limited)
  */
-router.post('/:username/submit', async (req: Request, res: Response) => {
+router.post('/:username/submit', collabSubmissionLimiter, async (req: Request, res: Response) => {
   try {
     const { username } = req.params;
     const {
@@ -2029,6 +2072,27 @@ router.post('/:username/submit', async (req: Request, res: Response) => {
       cancellation_policy,
       offer_expires_at,
     } = req.body;
+
+    // Validate brand email domain
+    // Extract domain from email
+    let brand_domain = '';
+    if (brand_email) {
+      const emailParts = brand_email.toLowerCase().split('@');
+      if (emailParts.length !== 2 || !emailParts[1]) {
+        return res.status(400).json({
+          success: false,
+          error: 'Invalid brand email format',
+        });
+      }
+      brand_domain = emailParts[1];
+
+      // Check for common personal email domains
+      const personalDomains = ['gmail.com', 'yahoo.com', 'hotmail.com', 'outlook.com', 'aol.com'];
+      if (personalDomains.includes(brand_domain)) {
+        console.warn(`[CollabRequests] Personal email used for brand: ${brand_email}`);
+        // Allow but log - could require additional verification
+      }
+    }
 
     // Validation
     if (!username || username.trim() === '') {
@@ -2433,7 +2497,7 @@ router.post('/:username/submit', async (req: Request, res: Response) => {
       return null;
     };
 
-    let requestInsertPayload: any = { ...insertData };
+    const requestInsertPayload: any = { ...insertData };
     let collabRequest: any = null;
     let insertError: any = null;
 
@@ -3217,6 +3281,16 @@ router.post('/accept/confirm', async (req: AuthenticatedRequest, res: Response) 
       barter_product_image_url: normalizedProductImage,
       form_data: persistedFormData,
       collab_request_id: request.id,
+
+      // Preserve campaign metadata
+      selected_package_id: (request as any).selected_package_id || null,
+      selected_package_label: (request as any).selected_package_label || null,
+      selected_package_type: (request as any).selected_package_type || null,
+      selected_addons: (request as any).selected_addons || [],
+      content_quantity: (request as any).content_quantity || null,
+      content_duration: (request as any).content_duration || null,
+      content_requirements: (request as any).content_requirements || [],
+      barter_types: (request as any).barter_types || [],
     };
     const dealOptionalFields = new Set([
       'brand_id',
@@ -3233,6 +3307,14 @@ router.post('/accept/confirm', async (req: AuthenticatedRequest, res: Response) 
       'campaign_category',
       'campaign_description',
       'brand_logo_url',
+      'selected_package_id',
+      'selected_package_label',
+      'selected_package_type',
+      'selected_addons',
+      'content_quantity',
+      'content_duration',
+      'content_requirements',
+      'barter_types',
     ]);
 
     const extractMissingColumn = (message: string): string | null => {
@@ -3246,7 +3328,7 @@ router.post('/accept/confirm', async (req: AuthenticatedRequest, res: Response) 
       return null;
     };
 
-    let dealInsertPayload: any = { ...dealData };
+    const dealInsertPayload: any = { ...dealData };
     let deal: any = null;
     let dealError: any = null;
 
@@ -3628,6 +3710,16 @@ router.patch('/:id/accept', async (req: AuthenticatedRequest, res: Response) => 
        delivery_address: shipping_address || (request as any).shipping_address,
        creator_otp_verified: otp_verified === true,
        creator_otp_verified_at: otp_verified_at || (otp_verified === true ? new Date().toISOString() : null),
+
+       // Preserve campaign metadata
+       selected_package_id: (request as any).selected_package_id || null,
+       selected_package_label: (request as any).selected_package_label || null,
+       selected_package_type: (request as any).selected_package_type || null,
+       selected_addons: (request as any).selected_addons || [],
+       content_quantity: (request as any).content_quantity || null,
+       content_duration: (request as any).content_duration || null,
+       content_requirements: (request as any).content_requirements || [],
+       barter_types: (request as any).barter_types || [],
      };
 
     const dealOptionalFields = new Set([
@@ -3645,6 +3737,14 @@ router.patch('/:id/accept', async (req: AuthenticatedRequest, res: Response) => 
       'campaign_category',
       'campaign_description',
       'brand_logo_url',
+      'selected_package_id',
+      'selected_package_label',
+      'selected_package_type',
+      'selected_addons',
+      'content_quantity',
+      'content_duration',
+      'content_requirements',
+      'barter_types',
     ]);
 
     const extractMissingColumn = (message: string): string | null => {
@@ -3658,7 +3758,7 @@ router.patch('/:id/accept', async (req: AuthenticatedRequest, res: Response) => 
       return null;
     };
 
-    let dealInsertPayload: any = { ...dealData };
+    const dealInsertPayload: any = { ...dealData };
     let deal: any = null;
     let dealError: any = null;
 
