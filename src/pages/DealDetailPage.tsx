@@ -1136,8 +1136,10 @@ function DealDetailPageContent() {
     const shippingStatus = (deal as any)?.shipping_status?.toLowerCase() || '';
 
     // Phase 1: Fully Executed / Shipping
+    const requiresShipping = Boolean((deal as any)?.shipping_required) || isBarterLikeCollab(deal);
+
     if (statusLower === 'fully_executed' || statusLower === 'executed' || executionStatus === 'signed' || executionStatus === 'completed') {
-      if (((deal as any)?.shipping_required || deal?.deal_type === 'barter') && (shippingStatus === 'shipped' || shippingStatus === 'in_transit')) {
+      if (requiresShipping && (shippingStatus === 'shipped' || shippingStatus === 'in_transit')) {
         return 'SHIPPING_IN_PROGRESS';
       }
       return 'Legally Active';
@@ -1204,7 +1206,7 @@ function DealDetailPageContent() {
     const approvalStatus = String((deal as any)?.brand_approval_status || '').toLowerCase();
     const responseStatus = String((deal as any)?.brand_response_status || '').toLowerCase();
     const executionStatus = String(dealExecutionStatus || '').toLowerCase();
-    const isBarterDeliveryPending = dealTypeLower === 'barter'
+    const isShippingDeliveryPending = Boolean((deal as any)?.shipping_required)
       && statusLower === 'drafting'
       && !(deal as any)?.delivery_address;
     const isPaidDrafting = dealTypeLower !== 'barter' && statusLower === 'drafting';
@@ -1219,13 +1221,13 @@ function DealDetailPageContent() {
     if (executionStatus === 'signed' || executionStatus === 'completed' || bothSigned) {
       const shippingStatus = String((deal as any)?.shipping_status || '').trim().toLowerCase();
       const hasReceived = shippingStatus === 'delivered' || shippingStatus === 'received';
-      if (isBarterLikeCollab(deal) && !hasReceived) {
+      if (requiresShipping && !hasReceived) {
         return 'AWAITING_PRODUCT';
       }
       return 'CONTRACT_SIGNED';
     }
     if (statusLower.includes('contract_ready') || statusLower.includes('signed_by_brand') || responseStatus === 'accepted_verified' || !!contractDocxUrl) return 'CONTRACT_SENT';
-    if (isBarterDeliveryPending) return 'OFFER_ACCEPTED';
+    if (isShippingDeliveryPending) return 'OFFER_ACCEPTED';
     return 'OFFER_SENT';
   }, [deal, dealExecutionStatus, bothSigned, contractDocxUrl]);
 
@@ -4216,7 +4218,7 @@ ${link}`;
               )}
 
               {/* Product shipping */}
-              {Boolean((deal as any)?.shipping_required) && (
+              {Boolean((deal as any)?.shipping_required || isBarterLikeCollab(deal)) && (
                 <div className="bg-card border border-border rounded-2xl p-5 md:p-6 shadow-lg shadow-black/20">
                   <div className="flex items-center gap-2 mb-4">
                     <Package className="w-5 h-5 text-warning" />

@@ -350,6 +350,7 @@ const collectSignatureHints = (row: BrandDeal | null | undefined) => {
 
 const dealStageLabel = (row: BrandDeal | null | undefined) => {
   const s = effectiveDealStatus(row);
+  const requiresShipping = Boolean(row?.shipping_required) || isBarterLikeCollab(row);
   const isBarterDeal = isBarterLikeCollab(row) && !isPaidLikeCollab(row);
   if (!s) return 'In Progress';
   if (s === 'DISPUTED') return 'Issue Reported';
@@ -420,7 +421,7 @@ const brandDealCardUi = (row: BrandDeal | null | undefined) => {
       : s === 'DISPUTE_PARTIAL_REFUND'
         ? 'Partial refund is currently processing'
       : s === 'PAYMENT_PENDING'
-        ? ((isBarterDeal || row?.shipping_required === true) 
+        ? (requiresShipping
             ? (row?.brand_address ? 'Review the agreement to get started' : 'Add shipping details to start the collaboration') 
             : 'Fund the escrow to start collaboration')
       : s === 'AWAITING_BRAND_ADDRESS'
@@ -434,7 +435,7 @@ const brandDealCardUi = (row: BrandDeal | null | undefined) => {
           : s === 'REVISION_REQUESTED'
             ? 'Awaiting revised content from creator'
             : s === 'CONTENT_MAKING'
-              ? (((isBarterDeal || row?.shipping_required === true) && (primaryActionLabel === 'Track Progress' || primaryActionLabel === 'Confirm Product Receipt'))
+              ? ((requiresShipping && (primaryActionLabel === 'Track Progress' || primaryActionLabel === 'Confirm Product Receipt'))
                   ? (row?.shipping_status === 'delivered' || row?.shipping_status === 'received' 
                       ? 'Creator has received the product' 
                       : 'Creator is waiting for product delivery confirmation')
@@ -442,7 +443,7 @@ const brandDealCardUi = (row: BrandDeal | null | undefined) => {
                     ? 'Please ship the product to the creator'
                     : 'Creator is now crafting your content')
               : (s === 'FULLY_EXECUTED' || s === 'CONTRACT_READY')
-                ? ((isBarterDeal || row?.shipping_required === true) 
+                ? (requiresShipping
                     ? (row?.brand_address ? 'Creator is now crafting your content' : 'Contract signed — please ship the product') 
                     : 'Contract signed — awaiting content')
                 : s === 'AWAITING_CREATOR_SIGNATURE' || s === 'SENT'
