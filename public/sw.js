@@ -10,7 +10,7 @@ const FONT_CACHE = 'creator-armour-fonts-v8';
 const PRECACHE_URLS = [
   '/',
   '/index.html',
-  '/manifest.json',
+  '/site.webmanifest',
 ];
 
 // Install: precache static assets
