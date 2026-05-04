@@ -29,7 +29,7 @@ export interface DrawerMenuItem {
 export interface DrawerMenuData {
   main: DrawerMenuItem[];
   quickActions: DrawerMenuItem[];
-  lifestyleShield?: DrawerMenuItem[];
+  legalShield?: DrawerMenuItem[];
   settings: DrawerMenuItem[];
 }
 
@@ -239,9 +239,9 @@ export default function PremiumDrawer({
       { id: 'add-deal', label: 'Add New Deal', icon: Plus, path: '/contract-upload', variant: 'primary' },
       { id: 'schedule-call', label: 'Schedule Call', icon: CalendarCheck, variant: 'accent' },
     ],
-    lifestyleShield: [
-      { id: 'consumer-complaints', label: 'Consumer Complaints', icon: Shield, path: '/lifestyle/consumer-complaints', variant: 'accent' },
-      { id: 'my-complaints', label: 'My Complaints', icon: FileText, path: '/dashboard/consumer-complaints', variant: 'default' },
+    legalShield: [
+      { id: 'consumer-complaints', label: 'Creator Filing', icon: Shield, path: '/lifestyle/consumer-complaints', variant: 'accent' },
+      { id: 'my-complaints', label: 'My Filing History', icon: FileText, path: '/dashboard/consumer-complaints', variant: 'default' },
       { id: 'contact-lawyer', label: 'Contact Lawyer', icon: Scale, path: 'https://wa.me/916207479248', variant: 'primary' },
     ],
     settings: [
@@ -400,11 +400,11 @@ export default function PremiumDrawer({
               ))}
             </div>
 
-            {/* Lifestyle Shield */}
-            {menuData.lifestyleShield && menuData.lifestyleShield.length > 0 && (
+            {/* Legal Shield */}
+            {menuData.legalShield && menuData.legalShield.length > 0 && (
               <div className="relative z-10">
-                <DrawerSection title="🛡 Lifestyle Shield">
-                  {menuData.lifestyleShield.map((item) => (
+                <DrawerSection title="🛡 Legal Shield">
+                  {menuData.legalShield.map((item) => (
                     <DrawerItem
                       key={item.id}
                       item={item}
@@ -453,9 +453,9 @@ export const DEFAULT_MENU_DATA: DrawerMenuData = {
     { id: 'add-deal', label: 'Add New Deal', icon: Plus, path: '/contract-upload', variant: 'primary' },
     { id: 'schedule-call', label: 'Schedule Call', icon: CalendarCheck, variant: 'accent' },
   ],
-  lifestyleShield: [
-    { id: 'consumer-complaints', label: 'Consumer Complaints', icon: Shield, path: '/lifestyle/consumer-complaints', variant: 'accent' },
-    { id: 'my-complaints', label: 'My Complaints', icon: FileText, path: '/dashboard/consumer-complaints', variant: 'default' },
+  legalShield: [
+    { id: 'consumer-complaints', label: 'Creator Filing', icon: Shield, path: '/lifestyle/consumer-complaints', variant: 'accent' },
+    { id: 'my-complaints', label: 'Filing History', icon: FileText, path: '/dashboard/consumer-complaints', variant: 'default' },
   ],
   settings: [
     { id: 'profile', label: 'Profile Settings', icon: Settings, path: '/creator-profile' },

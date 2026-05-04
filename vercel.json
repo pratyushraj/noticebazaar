@@ -31,7 +31,7 @@
       "destination": "https://creatorarmour-api.onrender.com/api/:path*"
     },
     {
-      "source": "/((?!api|assets|public|favicon|apple-touch-icon|manifest|creator-armour-icon|og-preview|robots|sitemap|[^/]+\\.[^/]+$).*)",
+      "source": "/((?!api|assets|public|favicon|apple-touch-icon|manifest|creator-armour-icon|og-preview|robots|sitemap).*)",
       "destination": "/index.html"
     }
   ],

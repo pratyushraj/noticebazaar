@@ -637,13 +637,15 @@ const DashboardLoadingStage = ({ isDark, tab = 'analytics' }: { isDark: boolean;
                                                          <Shield className="w-6 h-6" />
                                                      </div>
                                                      <div className="flex-1 min-w-0">
-                                                         <p className={cn("text-[11px] font-black uppercase tracking-widest opacity-70 dark:opacity-40 mb-0.5", textColor)}>Consumer Protection</p>
-                                                         <h3 className={cn("text-lg font-black tracking-tight italic uppercase", textColor)}>Legal Shield</h3>
+                                                         <p className={cn("text-[11px] font-black uppercase tracking-widest opacity-70 dark:opacity-40 mb-0.5", textColor)}>Professional Protection</p>
+                                                         <div className="flex-1 min-w-0">
+                                                             <h3 className={cn("text-[17px] font-black tracking-tight", textColor)}>Legal Shield</h3>
+                                                             <p className={cn("text-[12px] font-medium opacity-60 leading-tight mt-1", textColor)}>
+                                                                 Delayed payout or contract breach? File a legal notice in minutes.
+                                                             </p>
+                                                         </div>
                                                      </div>
                                                  </div>
-                                                 <p className={cn("text-xs font-medium opacity-70 dark:opacity-40 leading-relaxed mt-4 relative z-10", textColor)}>
-                                                     Got cheated by a brand or service? File a legal notice in minutes.
-                                                 </p>
                                                  <div className="flex gap-3 mt-6 relative z-10">
                                                      <button 
                                                          onClick={() => { triggerHaptic(); setActiveTab('profile'); setActiveSettingsPage('consumer-complaints'); }}
@@ -654,7 +656,7 @@ const DashboardLoadingStage = ({ isDark, tab = 'analytics' }: { isDark: boolean;
                                                      <button 
                                                          onClick={() => {
                                                              triggerHaptic();
-                                                             window.open(`https://wa.me/916207479248?text=I%20need%20help%20with%20a%20consumer%20complaint`, '_blank');
+                                                             window.open(`https://wa.me/916207479248?text=I%20need%20help%20with%20a%20creator%20legal%20dispute`, '_blank');
                                                          }}
                                                          className={cn(
                                                              "px-5 py-3 rounded-xl border flex items-center justify-center transition-all active:scale-95",
@@ -4590,9 +4592,9 @@ const MobileDashboardDemo = ({
                 return (
                     <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} className="pb-20 touch-pan-y">
                         <PageHeader 
-                            title="Consumer Complaints" 
+                            title="Legal Shield" 
                             subtitle={
-                                complaintStep === 'initial' ? "File a legal notice for your consumer issues" :
+                                complaintStep === 'initial' ? "File a professional legal notice for your creator disputes" :
                                 complaintStep === 'category' ? "Select issue category" :
                                 complaintStep === 'company' ? "Select the company" :
                                 complaintStep === 'details' ? "Describe your issue" :
