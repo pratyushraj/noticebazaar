@@ -20,6 +20,7 @@ import {
     Laugh, Coffee, Layers, Flame, Clapperboard, BadgeCheck, Check, 
     IndianRupee, Utensils, Building2, Plane, DollarSign, Image, ScrollText
 } from 'lucide-react';
+import { withRetry } from '@/lib/utils/retry';
 import { cn } from '@/lib/utils';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useSignOut } from '@/lib/hooks/useAuth';
@@ -8513,100 +8514,113 @@ const DashboardTab = React.memo(({
                         isDark ? "bg-emerald-500/20" : "bg-emerald-500/10"
                     )} />
                     
-                    <div className="relative z-10 flex flex-col gap-8">
-                        <div className="flex items-start justify-between">
+                    <div className="relative z-10 flex flex-col gap-6">
+                        <div className="flex items-start justify-between gap-4">
                             <div className="min-w-0">
-                                <div className="flex items-center gap-2 mb-3">
-                                    <p className={cn("text-[10px] font-black uppercase tracking-[0.25em]", isDark ? "text-emerald-400/80" : "text-emerald-600/80")}>
+                                <div className="flex items-center gap-2 mb-2">
+                                    <p className={cn("text-[10px] font-black uppercase tracking-[0.28em]", isDark ? "text-emerald-400/80" : "text-emerald-600/80")}>
                                         {monthlyRevenue === 0 ? "Potential Earnings" : "Total Earnings"}
                                     </p>
-                                    <div className="h-[1px] w-6 bg-emerald-500/30" />
+                                    <div className="h-[1px] w-8 bg-emerald-500/30" />
                                 </div>
-                                <div className="flex items-baseline gap-2.5">
+                                <div className="flex items-end gap-3 flex-wrap">
                                     <span className={cn(
-                                        "text-[44px] font-black tracking-tighter leading-none italic",
+                                        "text-[44px] md:text-[48px] font-black tracking-tighter leading-none italic",
                                         isDark ? "text-white" : "text-slate-900",
                                         "drop-shadow-sm"
                                     )}>
                                         {monthlyRevenue === 0 ? "₹0.00" : `₹${monthlyRevenue.toLocaleString()}`}
                                     </span>
                                     {completedDealsCount > 0 && (
-                                        <motion.span 
-                                            initial={{ scale: 0.8, opacity: 0 }}
+                                        <motion.span
+                                            initial={{ scale: 0.92, opacity: 0 }}
                                             animate={{ scale: 1, opacity: 1 }}
-                                            className="px-2.5 py-1 rounded-full text-[10px] font-black bg-emerald-500 text-white shadow-lg shadow-emerald-500/30"
+                                            className="h-9 px-3 rounded-full text-[10px] font-black uppercase tracking-[0.18em] bg-emerald-500 text-white shadow-lg shadow-emerald-500/25 inline-flex items-center"
                                         >
-                                            +{(completedDealsCount > 5 ? 3 : 1)} Today
+                                            +{completedDealsCount > 5 ? 3 : 1} today
                                         </motion.span>
                                     )}
                                 </div>
                                 <div className="flex items-center gap-2 mt-4">
                                     <div className={cn("w-1.5 h-1.5 rounded-full animate-pulse", activeDealsCount > 0 ? "bg-emerald-500" : "bg-slate-400")} />
-                                    <p className={cn("text-[13px] font-bold tracking-tight opacity-70", isDark ? "text-white" : "text-slate-500")}>
-                                        {activeDealsCount > 0 
-                                            ? `${activeDealsCount} Collaboration${activeDealsCount === 1 ? '' : 's'} running`
-                                            : "Start sharing your link to get your first deal"}
+                                    <p className={cn("text-[13px] font-semibold tracking-tight opacity-70", isDark ? "text-white" : "text-slate-500")}>
+                                        {activeDealsCount > 0
+                                            ? `${activeDealsCount} collaboration${activeDealsCount === 1 ? '' : 's'} running`
+                                            : "Share your link to get your first deal"}
                                     </p>
                                 </div>
                             </div>
                             <div className={cn(
-                                "w-14 h-14 rounded-3xl flex items-center justify-center backdrop-blur-3xl border transition-all duration-500 group-hover:scale-110 group-hover:rotate-6", 
+                                "w-12 h-12 rounded-2xl flex items-center justify-center backdrop-blur-3xl border transition-all duration-500 shrink-0",
                                 isDark ? "bg-white/5 border-white/10 shadow-2xl" : "bg-emerald-50 border-emerald-100 shadow-xl shadow-emerald-500/10"
                             )}>
-                                <BarChart3 className={cn("w-7 h-7", isDark ? "text-emerald-400" : "text-emerald-500")} strokeWidth={2.5} />
+                                <BarChart3 className={cn("w-6 h-6", isDark ? "text-emerald-400" : "text-emerald-500")} strokeWidth={2.5} />
                             </div>
                         </div>
 
                         {monthlyRevenue === 0 && (
-                            <button 
+                            <button
                                 onClick={() => { triggerHaptic(); handleCopyStorefront(); }}
-                                className="w-full bg-emerald-500 text-white font-black italic py-4.5 rounded-2xl text-[11px] uppercase tracking-[0.25em] active:scale-[0.97] transition-all shadow-xl shadow-emerald-500/25 hover:bg-emerald-400"
+                                className={cn(
+                                    "w-full relative group/share overflow-hidden",
+                                    "h-12 rounded-[1.4rem] transition-all duration-500",
+                                    "active:scale-[0.98] active:brightness-95",
+                                    "flex items-center justify-center gap-2.5",
+                                    "text-[11px] font-black uppercase tracking-[0.22em]",
+                                    isDark
+                                        ? "bg-emerald-500 text-white shadow-[0_8px_30px_rgba(16,185,129,0.28)] hover:shadow-[0_10px_42px_rgba(16,185,129,0.42)]"
+                                        : "bg-emerald-600 text-white shadow-[0_8px_25px_rgba(5,150,105,0.2)] hover:shadow-[0_8px_35px_rgba(5,150,105,0.4)]"
+                                )}
                             >
-                                Share Collab Link 🚀
+                                <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 -translate-x-full group-hover/share:translate-x-full transition-transform duration-1000 ease-in-out" />
+                                <Share2 className="w-4 h-4 relative" />
+                                <span className="relative">Share Collab Link</span>
                             </button>
                         )}
 
                         {/* Integrated Actions Card if pending offers exist */}
                         {pendingOffersCount > 0 && (
                             <div className={cn(
-                                "p-5 rounded-[2.5rem] border backdrop-blur-xl transition-all duration-500 hover:scale-[1.02]", 
+                                "rounded-[2rem] border backdrop-blur-xl transition-all duration-500 p-4.5",
                                 isDark 
                                   ? "bg-white/[0.03] border-white/10 shadow-2xl" 
                                   : "bg-emerald-500/[0.03] border-emerald-500/10 shadow-inner"
                             )}>
-                                <div className="flex items-center justify-between gap-4">
-                                    <div className="flex items-center gap-4">
+                                <div className="flex items-center gap-3.5">
+                                    <div className="flex items-center gap-3.5 min-w-0 flex-1">
                                         <div className={cn(
-                                            "w-12 h-12 rounded-2xl flex items-center justify-center relative",
+                                            "w-11 h-11 rounded-2xl flex items-center justify-center relative shrink-0",
                                             isDark ? "bg-emerald-500/10 text-emerald-400" : "bg-emerald-500 text-white shadow-lg shadow-emerald-500/20"
                                         )}>
-                                            <Zap className="w-6 h-6" fill="currentColor" />
+                                            <Zap className="w-5.5 h-5.5" fill="currentColor" />
                                             <div className="absolute inset-0 bg-emerald-400 blur-lg opacity-20 animate-pulse" />
                                         </div>
-                                        <div>
-                                            <p className={cn("text-[15px] font-black italic tracking-tight", isDark ? "text-white" : "text-slate-900")}>
+                                        <div className="min-w-0">
+                                            <p className={cn("text-[15px] font-black tracking-tight leading-tight", isDark ? "text-white" : "text-slate-900")}>
                                                 {pendingOffersCount} Brand {pendingOffersCount === 1 ? 'Proposal' : 'Proposals'}
                                             </p>
-                                            <p className={cn("text-[11px] font-bold opacity-60 uppercase tracking-widest mt-0.5", isDark ? "text-white" : "text-slate-500")}>Waiting for you</p>
+                                            <p className={cn("text-[11px] font-semibold opacity-60 uppercase tracking-[0.18em] mt-1", isDark ? "text-white" : "text-slate-500")}>Waiting for review</p>
                                         </div>
                                     </div>
-                                    <button 
+                                    <button
                                         onClick={() => { triggerHaptic(); setActiveTab('deals'); }}
                                         className={cn(
-                                            "px-6 py-3 rounded-2xl text-[11px] font-black uppercase tracking-[0.15em] shadow-2xl active:scale-95 transition-all",
-                                            isDark 
-                                              ? "bg-emerald-500 text-white shadow-emerald-500/40" 
+                                            "h-11 px-4.5 rounded-2xl text-[11px] font-black uppercase tracking-[0.16em] shadow-2xl active:scale-95 transition-all shrink-0",
+                                            isDark
+                                              ? "bg-emerald-500 text-white shadow-emerald-500/35"
                                               : "bg-emerald-600 text-white shadow-emerald-600/30"
                                         )}
                                     >
                                         Review
                                     </button>
                                 </div>
-                                
-                                <div className={cn("mt-4 flex items-center gap-2 border-t pt-4", isDark ? "border-white/5" : "border-slate-100")}>
+                                <div className={cn("mt-4 flex items-center justify-between gap-3 border-t pt-4", isDark ? "border-white/5" : "border-slate-100")}>
                                     <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                                     <span className={cn("text-[10px] font-black uppercase tracking-widest opacity-40", isDark ? "text-white" : "text-slate-600")}>
-                                        {pendingOffersCount} Incoming • 0 Counters
+                                        {pendingOffersCount} incoming
+                                    </span>
+                                    <span className={cn("text-[10px] font-black uppercase tracking-widest opacity-40", isDark ? "text-white" : "text-slate-400")}>
+                                        {counterOfferCount} counters
                                     </span>
                                 </div>
                             </div>
