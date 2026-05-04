@@ -4022,58 +4022,71 @@ const CollabLinkLanding = () => {
 
                         {/* Section 6: Deal Strength Indicator (The Intelligent Score) */}
                         <div className="bg-white rounded-3xl p-6 border border-slate-100 shadow-sm space-y-4">
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-2">
-                              <span className="text-[13px] font-black text-slate-900 tracking-tight">Deal Strength:</span>
-                              <div className="flex gap-0.5">
-                                {[1, 2, 3, 4, 5].map(star => (
-                                  <Star 
-                                    key={star} 
-                                    className={cn(
-                                      "h-4 w-4 transition-all duration-500", 
-                                      star <= (paymentType === 'paid' ? 4 : 3) ? "fill-amber-400 text-amber-400" : "text-slate-200"
-                                    )} 
-                                  />
-                                ))}
-                              </div>
-                              <span className={cn(
-                                "text-[12px] font-black ml-1",
-                                paymentType === 'paid' ? "text-emerald-600" : "text-amber-600"
-                              )}>
-                                {paymentType === 'paid' ? 'STRONG OFFER' : 'FAIR VALUE'}
-                              </span>
-                            </div>
-                          </div>
-
-                          <div className="space-y-3">
-                            <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden flex shadow-inner">
-                              <div className={cn(
-                                "h-full transition-all duration-1000 ease-out",
-                                paymentType === 'paid' ? "bg-emerald-500 w-[85%]" : "bg-amber-500 w-[60%]"
-                              )} />
-                            </div>
+                          {(() => {
+                            const strengthItems = [
+                              { cond: deliverables.length > 0, label: 'Clear deliverables' },
+                              { cond: paymentType === 'paid', label: 'Cash payment' },
+                              { cond: includesProduct, label: 'Product included' },
+                              { cond: campaignDescription.length > 20, label: 'Detailed brief' },
+                            ];
+                            const score = strengthItems.filter(i => i.cond).length;
+                            const percentage = (score / strengthItems.length) * 100;
                             
-                            <div className="grid grid-cols-2 gap-x-4 gap-y-2 pt-2 border-t border-slate-50">
-                              {[
-                                { cond: true, label: 'Clear deliverables' },
-                                { cond: paymentType === 'paid', label: 'Cash payment' },
-                                { cond: includesProduct, label: 'Product included' },
-                                { cond: campaignDescription.length > 50, label: 'Detailed brief' },
-                              ].map((item, idx) => (
-                                <div key={idx} className={cn(
-                                  "flex items-center gap-2 text-[11px] font-bold transition-all",
-                                  item.cond ? "text-slate-700" : "text-slate-300"
-                                )}>
-                                  {item.cond ? (
-                                    <CheckCircle2 className="h-3 w-3 text-emerald-500" />
-                                  ) : (
-                                    <div className="w-3 h-3 rounded-full border border-slate-200" />
-                                  )}
-                                  {item.label}
+                            return (
+                              <>
+                                <div className="flex items-center justify-between">
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-[13px] font-black text-slate-900 tracking-tight">Deal Strength:</span>
+                                    <div className="flex gap-0.5">
+                                      {[1, 2, 3, 4, 5].map(star => (
+                                        <Star 
+                                          key={star} 
+                                          className={cn(
+                                            "h-4 w-4 transition-all duration-500", 
+                                            star <= Math.max(1, score + 1) ? "fill-amber-400 text-amber-400" : "text-slate-200"
+                                          )} 
+                                        />
+                                      ))}
+                                    </div>
+                                    <span className={cn(
+                                      "text-[12px] font-black ml-1 transition-colors duration-300",
+                                      percentage >= 75 ? "text-emerald-600" : percentage >= 50 ? "text-amber-600" : "text-slate-400"
+                                    )}>
+                                      {percentage >= 75 ? 'STRONG OFFER' : percentage >= 50 ? 'FAIR VALUE' : 'BASIC OFFER'}
+                                    </span>
+                                  </div>
                                 </div>
-                              ))}
-                            </div>
-                          </div>
+
+                                <div className="space-y-3">
+                                  <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden flex shadow-inner">
+                                    <div 
+                                      className={cn(
+                                        "h-full transition-all duration-700 ease-out",
+                                        percentage >= 75 ? "bg-emerald-500" : percentage >= 50 ? "bg-amber-500" : "bg-slate-400"
+                                      )} 
+                                      style={{ width: `${Math.max(5, percentage)}%` }}
+                                    />
+                                  </div>
+                                  
+                                  <div className="grid grid-cols-2 gap-x-4 gap-y-2 pt-2 border-t border-slate-50">
+                                    {strengthItems.map((item, idx) => (
+                                      <div key={idx} className={cn(
+                                        "flex items-center gap-2 text-[11px] font-bold transition-all",
+                                        item.cond ? "text-slate-700" : "text-slate-300"
+                                      )}>
+                                        {item.cond ? (
+                                          <CheckCircle2 className="h-3 w-3 text-emerald-500" />
+                                        ) : (
+                                          <div className="w-3 h-3 rounded-full border border-slate-200" />
+                                        )}
+                                        {item.label}
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                              </>
+                            );
+                          })()}
                         </div>
                       </div>
                     )}
