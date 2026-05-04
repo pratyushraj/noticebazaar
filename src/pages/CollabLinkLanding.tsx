@@ -3890,13 +3890,25 @@ const CollabLinkLanding = () => {
                         </div>
 
                         {/* Additional Needs for Packages */}
-                        {selectedTemplate && (
-                          selectedTemplate.id.includes('basic') || 
-                          selectedTemplate.id.includes('standard') ||
-                          selectedTemplate.id.toLowerCase().includes('starter') ||
-                          selectedTemplate.id.toLowerCase().includes('growth') ||
-                          selectedTemplate.label.toLowerCase().includes('starter') ||
-                          selectedTemplate.label.toLowerCase().includes('growth')
+                        {(
+                          (selectedTemplate && (
+                            selectedTemplate.id.includes('basic') || 
+                            selectedTemplate.id.includes('standard') ||
+                            selectedTemplate.id.toLowerCase().includes('starter') ||
+                            selectedTemplate.id.toLowerCase().includes('growth') ||
+                            selectedTemplate.label.toLowerCase().includes('starter') ||
+                            selectedTemplate.label.toLowerCase().includes('growth')
+                          )) ||
+                          (selectedTemplateId && (
+                            selectedTemplateId.includes('basic') || 
+                            selectedTemplateId.includes('standard') ||
+                            selectedTemplateId.toLowerCase().includes('starter') ||
+                            selectedTemplateId.toLowerCase().includes('growth')
+                          )) ||
+                          (campaignGoal && (
+                            campaignGoal.toLowerCase().includes('starter') || 
+                            campaignGoal.toLowerCase().includes('growth')
+                          ))
                         ) && (
                           <div className="bg-white rounded-3xl p-6 border border-slate-100 shadow-[0_8px_40px_rgba(0,0,0,0.05)] space-y-4">
                             <label className="text-[14px] font-black text-slate-900 tracking-tight flex items-center gap-2">
