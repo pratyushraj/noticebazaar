@@ -1376,7 +1376,7 @@ router.post('/accept/confirm', async (req: AuthenticatedRequest, res: Response) 
        due_date: request.deadline || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
        payment_expected_date: request.deadline || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
        platform: inferPlatformFromDeliverables(request.deliverables),
-       status: isBarter ? 'Drafting' : 'CONTRACT_READY',
+       status: 'accepted_pending_otp',
        deal_type: isBarter ? 'barter' : 'paid',
        created_via: 'collab_request',
        collab_request_id: id,
@@ -1408,7 +1408,7 @@ router.post('/accept/confirm', async (req: AuthenticatedRequest, res: Response) 
     await supabase
       .from('collab_requests')
       .update({
-        status: 'accepted',
+        status: 'accepted_pending_otp',
         deal_id: deal.id,
         accepted_at: now,
         accepted_by_creator_id: userId,

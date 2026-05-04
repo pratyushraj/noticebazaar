@@ -1256,6 +1256,7 @@ const BrandMobileDashboard = ({
     const fromDeals = uniqDeals((deals || []).filter((d: any) => {
       const s = normalizeStatus(d?.status);
       if (!s) return true;
+      if (s === 'accepted_pending_otp') return false;
       // Explicitly exclude statuses that are clearly finished
       if (s.includes('cancel')) return false;
       if (s.includes('complete') || s.includes('completed') || s.includes('closed') || s.includes('paid') || s.includes('released')) return false;

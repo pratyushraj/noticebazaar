@@ -3203,7 +3203,7 @@ router.post('/accept/confirm', async (req: AuthenticatedRequest, res: Response) 
       due_date: request.deadline || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
       payment_expected_date: request.deadline || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
       platform: 'Other',
-      status: isBarter ? 'Drafting' : 'CONTRACT_READY',
+       status: 'accepted_pending_otp',
       progress_percentage: isBarter ? 15 : 20,
       deal_type: isBarter ? 'barter' : 'paid',
       collab_type: normalizeCollabTypeForApi(request.collab_type) || request.collab_type,
@@ -3232,6 +3232,7 @@ router.post('/accept/confirm', async (req: AuthenticatedRequest, res: Response) 
       'campaign_goal',
       'campaign_category',
       'campaign_description',
+      'brand_logo_url',
     ]);
 
     const extractMissingColumn = (message: string): string | null => {
@@ -3249,7 +3250,7 @@ router.post('/accept/confirm', async (req: AuthenticatedRequest, res: Response) 
     let deal: any = null;
     let dealError: any = null;
 
-    for (let attempt = 0; attempt < 6; attempt++) {
+    for (let attempt = 0; attempt < 15; attempt++) {
       const result = await supabase
         .from('brand_deals')
         .insert(dealInsertPayload)
@@ -3275,7 +3276,7 @@ router.post('/accept/confirm', async (req: AuthenticatedRequest, res: Response) 
 
     if (dealError || !deal) {
       console.error('[CollabRequests] Accept confirm: create deal error:', dealError);
-      return res.status(500).json({ success: false, error: 'Failed to create deal' });
+      return res.status(500).json({ success: false, error: dealError?.message || 'Failed to create deal' });
     }
 
     const dealBrandContactId = await resolveOrCreateBrandContact({
@@ -3295,7 +3296,7 @@ router.post('/accept/confirm', async (req: AuthenticatedRequest, res: Response) 
     const { error: updateError } = await supabase
       .from('collab_requests')
       .update({
-        status: 'accepted',
+        status: 'accepted_pending_otp',
         deal_id: deal.id,
         updated_at: now,
       })
@@ -3639,6 +3640,7 @@ router.patch('/:id/accept', async (req: AuthenticatedRequest, res: Response) => 
       'campaign_goal',
       'campaign_category',
       'campaign_description',
+      'brand_logo_url',
     ]);
 
     const extractMissingColumn = (message: string): string | null => {
@@ -3656,7 +3658,7 @@ router.patch('/:id/accept', async (req: AuthenticatedRequest, res: Response) => 
     let deal: any = null;
     let dealError: any = null;
 
-    for (let attempt = 0; attempt < 6; attempt++) {
+    for (let attempt = 0; attempt < 15; attempt++) {
       const result = await supabase
         .from('brand_deals')
         .insert(dealInsertPayload)
@@ -3683,7 +3685,7 @@ router.patch('/:id/accept', async (req: AuthenticatedRequest, res: Response) => 
       console.error('[CollabRequests] Error creating deal:', dealError);
       return res.status(500).json({
         success: false,
-        error: 'Failed to create deal',
+        error: dealError?.message || 'Failed to create deal',
       });
     }
 
@@ -3917,7 +3919,8 @@ router.patch('/:id/accept', async (req: AuthenticatedRequest, res: Response) => 
             hasBrandAddress: !!brandAddress,
             hasCreatorAddress: !!creatorAddress,
           });
-          throw new Error('Missing required information for paid contract generation.');
+          // For now, don't throw error - allow acceptance to proceed even if contract generation fails
+          // throw new Error('Missing required information for paid contract generation.');
         } else {
           // Generate contract
           const contractResult = await generateContractFromScratch({
