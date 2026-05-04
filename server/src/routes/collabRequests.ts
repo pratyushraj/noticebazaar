@@ -3218,11 +3218,61 @@ router.post('/accept/confirm', async (req: AuthenticatedRequest, res: Response) 
       form_data: persistedFormData,
       collab_request_id: request.id,
     };
-    const { data: deal, error: dealError } = await supabase
-      .from('brand_deals')
-      .insert(dealData)
-      .select('id')
-      .single();
+    const dealOptionalFields = new Set([
+      'brand_id',
+      'collab_type',
+      'shipping_required',
+      'created_via',
+      'brand_address',
+      'brand_phone',
+      'barter_product_image_url',
+      'form_data',
+      'progress_percentage',
+      'collab_request_id',
+      'campaign_goal',
+      'campaign_category',
+      'campaign_description',
+    ]);
+
+    const extractMissingColumn = (message: string): string | null => {
+      if (!message) return null;
+      const quoted = message.match(/'([^']+)' column/i);
+      if (quoted?.[1]) return quoted[1];
+      const quotedAlt = message.match(/column\s+"([^"]+)"/i);
+      if (quotedAlt?.[1]) return quotedAlt[1];
+      const unquoted = message.match(/column\s+([a-z_][a-z0-9_]*)/i);
+      if (unquoted?.[1]) return unquoted[1];
+      return null;
+    };
+
+    let dealInsertPayload: any = { ...dealData };
+    let deal: any = null;
+    let dealError: any = null;
+
+    for (let attempt = 0; attempt < 6; attempt++) {
+      const result = await supabase
+        .from('brand_deals')
+        .insert(dealInsertPayload)
+        .select('id')
+        .single();
+
+      deal = result.data;
+      dealError = result.error;
+
+      if (!dealError) {
+        break;
+      }
+
+      const missingColumn = extractMissingColumn(String(dealError.message || ''));
+      if (missingColumn && dealOptionalFields.has(missingColumn) && missingColumn in dealInsertPayload) {
+        console.log(`[CollabRequests] Accept confirm: stripping missing column "${missingColumn}" and retrying...`);
+        delete dealInsertPayload[missingColumn];
+        continue;
+      }
+
+      break;
+    }
+
     if (dealError || !deal) {
       console.error('[CollabRequests] Accept confirm: create deal error:', dealError);
       return res.status(500).json({ success: false, error: 'Failed to create deal' });
@@ -3563,6 +3613,9 @@ router.patch('/:id/accept', async (req: AuthenticatedRequest, res: Response) => 
        status: 'Drafting',
        deal_type: isBarter ? 'barter' : 'paid',
        collab_type: normalizeCollabTypeForApi(request.collab_type) || request.collab_type,
+       campaign_description: request.campaign_description || null,
+       campaign_goal: request.campaign_goal || null,
+       campaign_category: request.campaign_category || null,
        shipping_required: (request as any).shipping_required === true || isBarterLikeCollab(request.collab_type),
        created_via: 'collab_request',
        brand_address: request.brand_address,
@@ -3583,6 +3636,9 @@ router.patch('/:id/accept', async (req: AuthenticatedRequest, res: Response) => 
       'form_data',
       'progress_percentage',
       'collab_request_id',
+      'campaign_goal',
+      'campaign_category',
+      'campaign_description',
     ]);
 
     const extractMissingColumn = (message: string): string | null => {
