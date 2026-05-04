@@ -3345,15 +3345,6 @@ const CollabLinkLanding = () => {
                                 </span>
                               </div>
                             </div>
-                            <div
-                              className={cn(
-                                'w-12 h-12 rounded-2xl flex items-center justify-center text-xl shadow-inner border transition-transform group-hover:rotate-6',
-                                template.isPopular
-                                  ? 'bg-emerald-50 border-emerald-100'
-                                  : 'bg-slate-50 border-slate-100'
-                              )}
-                            >
-                              {template.icon || '📦'}
                             </div>
                           </div>
 
