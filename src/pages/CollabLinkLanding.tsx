@@ -68,6 +68,7 @@ import {
   Upload,
   Camera,
   Star,
+  RefreshCcw,
   Image as ImageIcon,
 } from 'lucide-react'
 import { toast } from 'sonner'
