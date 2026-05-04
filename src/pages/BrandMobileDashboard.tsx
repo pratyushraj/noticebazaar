@@ -396,6 +396,7 @@ const offerExpiryLabel = (row: BrandDeal | null | undefined) => {
 
 const brandDealCardUi = (row: BrandDeal | null | undefined) => {
   const s = effectiveDealStatus(row);
+  const requiresShipping = Boolean(row?.shipping_required) || isBarterLikeCollab(row);
   const isBarterDeal = isBarterLikeCollab(row) && !isPaidLikeCollab(row);
   const human = dealStageLabel({ status: s });
   const stageBadge =
