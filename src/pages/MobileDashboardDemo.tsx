@@ -8692,14 +8692,16 @@ const DealsTab = React.memo(({
                                                         }}
                                                     />
                                                 )}
-                                                {/* Bottom Scrim for Readability */}
-                                                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-80" />
+                                                {/* Bottom Scrim for Readability - Strengthened for white backgrounds */}
+                                                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent z-0" />
+                                                {/* Subtle overall dimming to reduce glare on pure white products */}
+                                                <div className="absolute inset-0 bg-black/5 z-0" />
                                             </div>
                                             <div className="relative h-full p-5 flex flex-col justify-between z-10">
                                                 <div className="flex items-center gap-2">
-                                                    <div className="px-2.5 py-1.5 rounded-full bg-emerald-500 self-start text-[11px] font-black text-white uppercase tracking-widest shadow-sm">{ux.stagePill}</div>
+                                                    <div className="px-2.5 py-1.5 rounded-full bg-emerald-500 self-start text-[11px] font-black text-white uppercase tracking-widest shadow-sm drop-shadow-md">{ux.stagePill}</div>
                                                     {!isBarter && (
-                                                        <div className="px-2.5 py-1.5 rounded-full bg-blue-500 text-white shadow-sm text-[11px] font-black uppercase tracking-widest">
+                                                        <div className="px-2.5 py-1.5 rounded-full bg-blue-500 text-white shadow-sm text-[11px] font-black uppercase tracking-widest drop-shadow-md">
                                                             Paid
                                                         </div>
                                                     )}
@@ -8747,14 +8749,16 @@ const DealsTab = React.memo(({
                                                             (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&q=80&w=500';
                                                         }}
                                                     />
-                                                )}
-
+                                                {/* Bottom Scrim for Readability - Strengthened for white backgrounds */}
+                                                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent z-0" />
+                                                {/* Subtle overall dimming to reduce glare on pure white products */}
+                                                <div className="absolute inset-0 bg-black/5 z-0" />
                                             </div>
                                             <div className="relative h-full p-5 flex flex-col justify-between z-10">
                                                 <div className="flex items-center gap-2">
-                                                    <div className="px-2.5 py-1.5 rounded-full bg-slate-500 self-start text-[11px] font-black text-white uppercase tracking-widest shadow-sm">Completed</div>
+                                                    <div className="px-2.5 py-1.5 rounded-full bg-slate-500 self-start text-[11px] font-black text-white uppercase tracking-widest shadow-sm drop-shadow-md">Completed</div>
                                                     {!isBarter && (
-                                                        <div className="px-2.5 py-1.5 rounded-full bg-blue-500 text-white shadow-sm text-[11px] font-black uppercase tracking-widest">
+                                                        <div className="px-2.5 py-1.5 rounded-full bg-blue-500 text-white shadow-sm text-[11px] font-black uppercase tracking-widest drop-shadow-md">
                                                             Paid
                                                         </div>
                                                     )}
@@ -8804,37 +8808,39 @@ const DealsTab = React.memo(({
                                                         }}
                                                     />
                                                 )}
-                                                {/* Bottom Scrim for Readability */}
-                                                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-80" />
+                                                {/* Bottom Scrim for Readability - Strengthened for white backgrounds */}
+                                                <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/60 to-transparent z-0" />
+                                                {/* Subtle overall dimming to reduce glare on pure white products */}
+                                                <div className="absolute inset-0 bg-black/10 z-0" />
                                             </div>
                                             <div className="relative h-full p-5 flex flex-col justify-between z-10">
                                                 <div className="flex items-center gap-2">
-                                                    <div className="px-2.5 py-1.5 rounded-full bg-violet-600 self-start text-[11px] font-black text-white uppercase tracking-widest shadow-sm">New Offer</div>
+                                                    <div className="px-2.5 py-1.5 rounded-full bg-violet-600 self-start text-[11px] font-black text-white uppercase tracking-widest shadow-sm drop-shadow-md">New Offer</div>
                                                     {!isBarter && (
-                                                        <div className="px-2.5 py-1.5 rounded-full bg-blue-500 text-white shadow-sm text-[11px] font-black uppercase tracking-widest">
+                                                        <div className="px-2.5 py-1.5 rounded-full bg-blue-500 text-white shadow-sm text-[11px] font-black uppercase tracking-widest drop-shadow-md">
                                                             Paid
                                                         </div>
                                                     )}
                                                 </div>
                                                 <div className="mt-auto">
                                                     <div className="mb-4">
-                                                        <h2 className="text-xl font-black italic uppercase text-white truncate mb-0.5 drop-shadow-lg">{req.brand_name || 'Brand Partner'}</h2>
-                                                        <div className="flex items-baseline gap-1.5 flex-wrap drop-shadow-md">
-                                                            <p className={cn("text-lg font-black leading-none", isBarter ? "text-white" : "text-white")}>
+                                                        <h2 className="text-xl font-black italic uppercase text-white truncate mb-0.5 drop-shadow-xl">{req.brand_name || 'Brand Partner'}</h2>
+                                                        <div className="flex items-baseline gap-1.5 flex-wrap">
+                                                            <p className={cn("text-lg font-black leading-none text-white drop-shadow-lg")}>
                                                                 {isBarter ? 'Free product' : `₹${budget.toLocaleString()}`}
                                                             </p>
-	                                                            {isBarter && <span className="text-[10px] font-black uppercase tracking-widest text-white/80">est. value ₹{budget.toLocaleString()}</span>}
+	                                                            {isBarter && <span className="text-[10px] font-black uppercase tracking-widest text-white/90 drop-shadow-md">est. value ₹{budget.toLocaleString()}</span>}
 	                                                        </div>
 	                                                        {(packageLabel || contentQuantity || contentDuration || requirementsList.length > 0 || addonsList.length > 0) && (
 	                                                            <div className="mt-3 flex flex-wrap gap-1.5">
-	                                                                {packageLabel && <span className="px-2.5 py-1 rounded-lg bg-white/10 text-white text-[10px] font-black border border-white/10">{packageLabel}</span>}
-	                                                                {contentQuantity && <span className="px-2.5 py-1 rounded-lg bg-white/10 text-white/80 text-[10px] font-black border border-white/10">Qty {contentQuantity}</span>}
-	                                                                {contentDuration && <span className="px-2.5 py-1 rounded-lg bg-white/10 text-white/80 text-[10px] font-black border border-white/10">{contentDuration}</span>}
+	                                                                {packageLabel && <span className="px-2.5 py-1 rounded-lg bg-black/30 backdrop-blur-md text-white text-[10px] font-black border border-white/10 shadow-sm">{packageLabel}</span>}
+	                                                                {contentQuantity && <span className="px-2.5 py-1 rounded-lg bg-black/30 backdrop-blur-md text-white/90 text-[10px] font-black border border-white/10 shadow-sm">Qty {contentQuantity}</span>}
+	                                                                {contentDuration && <span className="px-2.5 py-1 rounded-lg bg-black/30 backdrop-blur-md text-white/90 text-[10px] font-black border border-white/10 shadow-sm">{contentDuration}</span>}
 	                                                                {requirementsList.slice(0, 2).map((label) => (
-	                                                                    <span key={label} className="px-2.5 py-1 rounded-lg bg-emerald-500/20 text-emerald-100 text-[10px] font-black border border-emerald-400/20">{label}</span>
+	                                                                    <span key={label} className="px-2.5 py-1 rounded-lg bg-emerald-500/30 backdrop-blur-md text-white text-[10px] font-black border border-emerald-400/30 shadow-sm">{label}</span>
 	                                                                ))}
 	                                                                {addonsList.slice(0, 1).map((label) => (
-	                                                                    <span key={label} className="px-2.5 py-1 rounded-lg bg-sky-500/20 text-sky-100 text-[10px] font-black border border-sky-400/20">{label}</span>
+	                                                                    <span key={label} className="px-2.5 py-1 rounded-lg bg-sky-500/30 backdrop-blur-md text-white text-[10px] font-black border border-sky-400/30 shadow-sm">{label}</span>
 	                                                                ))}
 	                                                            </div>
 	                                                        )}
@@ -8847,8 +8853,8 @@ const DealsTab = React.memo(({
                                                                 handleAccept(req); 
                                                             }}
                                                             className={cn(
-                                                                "flex-1 h-11 rounded-xl font-black uppercase tracking-widest text-[10px] flex items-center justify-center gap-2 active:scale-95 transition-all shadow-lg",
-                                                                isBarter ? "bg-amber-500 text-white" : "bg-white text-black"
+                                                                "flex-1 h-11 rounded-xl font-black uppercase tracking-widest text-[10px] flex items-center justify-center gap-2 active:scale-95 transition-all shadow-xl backdrop-blur-md",
+                                                                isBarter ? "bg-amber-500 text-white border border-amber-400/30" : "bg-white text-black border border-white/20"
                                                             )}
                                                         >
                                                             {isBarter ? 'Claim Product' : 'Accept'}
@@ -8859,7 +8865,7 @@ const DealsTab = React.memo(({
                                                                 triggerHaptic(); 
                                                                 if (onDeclineRequest) onDeclineRequest(req.id);
                                                             }}
-                                                            className="flex-1 h-11 rounded-xl bg-white/10 border border-white/10 text-white font-black uppercase tracking-widest text-[10px] flex items-center justify-center active:scale-95 transition-all"
+                                                            className="flex-1 h-11 rounded-xl bg-black/60 backdrop-blur-md border border-white/10 text-white font-black uppercase tracking-widest text-[10px] flex items-center justify-center active:scale-95 transition-all shadow-lg"
                                                         >
                                                             Decline
                                                         </button>
