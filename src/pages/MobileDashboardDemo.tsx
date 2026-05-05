@@ -456,12 +456,15 @@ const getCreatorDealCardUX = (deal: any) => {
         rawStatus.includes('awaiting_approval') ||
         isRevisionDone;
     const isPendingOTP = rawStatus.includes('accepted_pending_otp');
+    const paymentStatus = String(deal?.payment_status || deal?.raw?.payment_status || '').trim().toLowerCase();
+    const paymentId = String(deal?.payment_id || deal?.raw?.payment_id || '').trim();
+    const hasCapturedPayment = paymentStatus === 'captured' || (paymentId.startsWith('pay_') && Number(deal?.amount_paid || deal?.raw?.amount_paid || 0) > 0);
     const isApproved = rawStatus.includes('content_approved') || rawStatus.includes('approved');
     const isPaymentReleased = rawStatus.includes('payment_released') || rawStatus.includes('released');
     const isMaking = rawStatus.includes('content_making') || rawStatus.includes('drafting');
-    const isFullyExecuted = rawStatus.includes('fully_executed') || rawStatus === 'signed' || rawStatus === 'accepted';
+    const isFullyExecuted = rawStatus.includes('fully_executed') || rawStatus === 'signed' || rawStatus === 'accepted' || hasCapturedPayment;
     const isPaymentPending = rawStatus.includes('payment_pending');
-    const isContractPending = rawStatus.includes('contract_ready') || rawStatus === 'sent' || rawStatus.includes('signed_pending_creator') || rawStatus.includes('signed_by_brand') || rawStatus.includes('needs signature');
+    const isContractPending = (rawStatus.includes('contract_ready') || rawStatus === 'sent' || rawStatus.includes('signed_pending_creator') || rawStatus.includes('signed_by_brand') || rawStatus.includes('needs signature')) && !hasCapturedPayment;
 
     const dueDate = parseDealDate(deal?.due_date || deal?.deadline || deal?.raw?.deadline || deal?.raw?.due_date);
     const daysUntilDue = getDaysUntil(dueDate);
@@ -478,7 +481,7 @@ const getCreatorDealCardUX = (deal: any) => {
     else if (isPendingOTP) progressStep = 0.5;
 
     const contractLabel = isContractPending
-        ? (rawStatus.includes('signed_by_brand') ? 'Contract: waiting for your signature' : 'Contract: pending signature')
+        ? (rawStatus.includes('signed_by_brand') || hasCapturedPayment ? 'Contract: waiting for your signature' : 'Contract: pending signature')
         : (isFullyExecuted || isMaking || isDelivered || isApproved || isPaymentReleased || isCompleted || rawStatus === 'accepted' ? 'Contract: signed' : null);
 
     const needsSignature = isContractPending;

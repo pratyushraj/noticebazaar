@@ -348,8 +348,17 @@ const collectSignatureHints = (row: BrandDeal | null | undefined) => {
     creatorHints.push('status_accepted');
   }
 
+  const brandHints = truthyKeys(/(brand.*signed|signed.*brand|brand_signature|brand_esign|brand_signed_at|brand_otp_verified)/i);
+  const paymentStatus = String((row as any)?.payment_status || row?.raw?.payment_status || '').trim().toLowerCase();
+  const paymentId = String((row as any)?.payment_id || row?.raw?.payment_id || '').trim();
+  const hasCapturedPayment = paymentStatus === 'captured' || (paymentId.startsWith('pay_') && Number((row as any)?.amount_paid || row?.raw?.amount_paid || 0) > 0);
+  
+  if (hasCapturedPayment) {
+    brandHints.push('payment_captured');
+  }
+
   return {
-    brand: truthyKeys(/(brand.*signed|signed.*brand|brand_signature|brand_esign|brand_signed_at)/i),
+    brand: brandHints,
     creator: creatorHints,
   };
 };

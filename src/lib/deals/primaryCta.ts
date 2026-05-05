@@ -95,11 +95,15 @@ export const getCanonicalDealStatus = (deal: any): CanonicalDealStatus => {
     deal?.signatures,
   ].filter((x) => x && typeof x === 'object');
 
+  const paymentStatus = String(deal?.payment_status || deal?.raw?.payment_status || '').trim().toLowerCase();
+  const paymentId = String(deal?.payment_id || deal?.raw?.payment_id || '').trim();
+  const hasCapturedPayment = paymentStatus === 'captured' || (paymentId.startsWith('pay_') && Number(deal?.amount_paid || deal?.raw?.amount_paid || 0) > 0);
+
   const creatorSigned = 
     hasTruthyKeyMatch(signatureSources, /(creator.*signed|signed.*creator|creator_signature|creator_esign|creator_signed_at|creator_otp_verified)/i) || 
     lower === 'accepted' || 
     lower.includes('accepted_pending_otp');
-  const brandSigned = hasTruthyKeyMatch(signatureSources, /(brand.*signed|signed.*brand|brand_signature|brand_esign|brand_signed_at|brand_otp_verified)/i);
+  const brandSigned = hasTruthyKeyMatch(signatureSources, /(brand.*signed|signed.*brand|brand_signature|brand_esign|brand_signed_at|brand_otp_verified)/i) || hasCapturedPayment;
 
   // For barter deals, once the address is provided, we effectively move to the active stage
   // unless it's already completed or disputed, or content has already been delivered.
