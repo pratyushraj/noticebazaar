@@ -21,6 +21,7 @@ const CREATOR_PREFIXES = [
   '/ai-pitch-generator',
   '/creator-profile',
   '/creator-analytics',
+  '/collab-requests',
   '/brand-directory',
   '/brands',
 ];

@@ -331,60 +331,13 @@ const CollabRequestBriefPage = () => {
         return;
       }
 
-      setIsAccepting(true);
-      const { data: session } = await supabase.auth.getSession();
-      const token = session.session?.access_token;
-      if (!token) {
-        toast.error('Please log in to accept offers');
-        return;
-      }
-
-      const response = await fetch(`${getApiBaseUrl()}/api/collab-requests/${effectiveRequestId}/accept`, {
-        method: 'PATCH',
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-      });
-
-      const data: any = await response.json().catch(() => ({}));
-      if (!response.ok || !data?.success) {
-        toast.error(data?.error || 'Failed to accept offer');
-        return;
-      }
-
-      trackEvent('creator_accepted_request', {
-        deal_id: data?.deal?.id,
+      trackEvent('creator_accept_started', {
         creator_id: profile?.id,
+        request_id: effectiveRequestId,
         collab_type: request.collab_type || 'paid',
       });
-      trackEvent('offer_accepted', {
-        deal_id: data?.deal?.id,
-        creator_id: profile?.id,
-        request_id: effectiveRequestId,
-      });
-      trackEvent('deal_started', {
-        deal_id: data?.deal?.id,
-        creator_id: profile?.id,
-        request_id: effectiveRequestId,
-      });
-
-      toast.success(data?.needs_delivery_details ? 'Offer accepted. Add your address next.' : 'Offer accepted.');
-      const acceptedDealId = typeof data?.deal?.id === 'string' ? data.deal.id : null;
-      if (acceptedDealId) {
-        const targetPath = data?.needs_delivery_details
-          ? `/deal-delivery-details/${acceptedDealId}`
-          : `/deal/${acceptedDealId}`;
-
-        if (typeof window !== 'undefined') {
-          window.location.replace(targetPath);
-          return;
-        }
-
-        navigate(targetPath, { replace: true });
-      } else {
-        navigate('/creator-dashboard?tab=deals&subtab=active', { replace: true });
-      }
+      toast.message('Verify OTP to accept this offer.');
+      navigate(`/creator-dashboard?tab=deals&subtab=pending&requestId=${encodeURIComponent(effectiveRequestId)}`, { replace: true });
     } catch (err: any) {
       toast.error(err?.message || 'Failed to accept offer');
     } finally {
