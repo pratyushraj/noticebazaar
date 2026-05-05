@@ -295,37 +295,51 @@ export function ConfirmPaymentPendingModal({ dealId, dealAmount, creatorName, on
                 )}
               </Button>
 
-              <button
-                type="button"
-                onClick={async () => {
-                  triggerHaptic(HapticPatterns.light);
-                  setIsLoading(true);
-                  try {
-                    // Manual UPI/External payment marking
-                    const res = await fetch(`${getApiBaseUrl()}/api/deals/${dealId}/verify-payment`, {
-                      method: 'POST',
-                      headers: { Authorization: `Bearer ${session?.access_token}`, 'Content-Type': 'application/json' },
-                      body: JSON.stringify({ manual_mark_paid: true })
-                    });
-                    const data = await res.json();
-                    if (data.success) {
-                      toast.success("Payment marked as successful!");
-                      onSuccess?.();
-                    } else {
+              <div className="pt-2 border-t border-white/5">
+                <button
+                  type="button"
+                  onClick={async () => {
+                    triggerHaptic(HapticPatterns.light);
+                    setIsLoading(true);
+                    try {
+                      // Manual UPI/External payment marking
+                      const res = await fetch(`${getApiBaseUrl()}/api/deals/${dealId}/verify-payment`, {
+                        method: 'POST',
+                        headers: { 
+                          Authorization: `Bearer ${session?.access_token}`,
+                          'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ 
+                          manual_mark_paid: true,
+                          payment_method: 'upi_manual',
+                          mark_as_sent: true 
+                        })
+                      });
+                      const data = await res.json();
+                      if (data.success || res.ok) {
+                        toast.success("Payment marked as sent! Verifying...");
+                        setTimeout(() => {
+                          onSuccess?.();
+                        }, 1500);
+                      } else {
+                        toast.error(data.error || "Failed to mark as paid.");
+                      }
+                    } catch (e) {
                       toast.info("Marking as paid. Please wait for verification.");
                       onSuccess?.();
+                    } finally {
+                      setIsLoading(false);
                     }
-                  } catch (e) {
-                    onSuccess?.();
-                  } finally {
-                    setIsLoading(false);
-                  }
-                }}
-                disabled={isLoading}
-                className="w-full py-2 text-[10px] font-bold uppercase tracking-widest text-emerald-400/40 hover:text-emerald-400/80 transition-colors border border-emerald-500/10 rounded-xl"
-              >
-                I've paid via UPI. Mark as Sent
-              </button>
+                  }}
+                  disabled={isLoading}
+                  className="w-full py-4 text-[11px] font-black uppercase tracking-[0.2em] text-emerald-400 hover:text-emerald-300 transition-all border-2 border-emerald-500/20 hover:border-emerald-500/40 rounded-2xl bg-emerald-500/5"
+                >
+                  Already Paid via UPI? Mark as Sent
+                </button>
+                <p className="text-[10px] text-center text-white/30 mt-3 px-4">
+                  Use this if you've already transferred funds via PhonePe/GPay directly.
+                </p>
+              </div>
             </div>
 
             <div className="flex items-center justify-center gap-2 pt-2 grayscale opacity-40">
