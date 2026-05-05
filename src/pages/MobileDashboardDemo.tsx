@@ -98,6 +98,15 @@ import { DisputeEscalationModal } from '@/components/deals/DisputeEscalationModa
 import PushNotificationPrompt from '@/components/dashboard/PushNotificationPrompt';
 import { CreatorShippingConfirmationModal } from '@/components/deals/CreatorShippingConfirmationModal';
 
+import { 
+    normalizeDealStatus, 
+    parseDealDate, 
+    getDaysUntil, 
+    inferCreatorRequiresPayment,
+    resolvedDealAmount,
+    renderBudgetValue
+} from '@/lib/utils/creator-dashboard';
+
 interface MobileDashboardProps {
     profile?: any;
     collabRequests?: any[];
