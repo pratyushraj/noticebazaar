@@ -3066,7 +3066,8 @@ const MobileDashboardDemo = ({
 
             const data = await resp.json();
             if (data.success) {
-                if (data.mockOtp) {
+                const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+                if (data.mockOtp && isLocal) {
                     toast.success(`Development Mode: OTP is ${data.mockOtp}`, {
                         description: 'Real email skipped (missing API key).',
                         duration: 8000
