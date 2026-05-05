@@ -4603,18 +4603,55 @@ const BrandCollabsTab = React.memo(({
                     </div>
                   </div>
 
-                  <button
-                    type="button"
-                    onClick={(e) => handleBrandDealPrimaryAction(e, item, ui)}
-                    disabled={Boolean(ui?.ctaDisabled)}
-                    className={cn(
-                      'mt-4 h-12 w-full rounded-2xl text-[13px] font-black transition active:scale-[0.98]',
-                      dealPrimaryCtaButtonClass(ui?.ctaTone || (ui.needsAction ? 'action' : 'view')),
-                      Boolean(ui?.ctaDisabled) && 'opacity-60 cursor-not-allowed active:scale-100'
+                  <div className="flex flex-col gap-2.5">
+                    {ui?.ctaAction === 'confirm_payment' && (
+                      <button
+                        type="button"
+                        onClick={async (e) => {
+                          e.stopPropagation();
+                          triggerHaptic(HapticPatterns.light);
+                          const dealId = item.id;
+                          try {
+                            const res = await fetch(`${getApiBaseUrl()}/api/deals/${dealId}/verify-payment`, {
+                              method: 'POST',
+                              headers: { 
+                                Authorization: `Bearer ${session?.access_token}`,
+                                'Content-Type': 'application/json'
+                              },
+                              body: JSON.stringify({ 
+                                manual_mark_paid: true,
+                                mark_as_sent: true 
+                              })
+                            });
+                            const data = await res.json();
+                            if (data.success) {
+                              toast.success("Marked as paid! Refreshing...");
+                              setTimeout(() => onRefresh?.(), 1000);
+                            } else {
+                              handleBrandDealPrimaryAction(e, item, ui);
+                            }
+                          } catch (err) {
+                            handleBrandDealPrimaryAction(e, item, ui);
+                          }
+                        }}
+                        className="h-10 w-full rounded-xl text-[10px] font-black uppercase tracking-[0.2em] text-emerald-400 border border-emerald-500/20 bg-emerald-500/5 hover:bg-emerald-500/10 transition-all"
+                      >
+                        Already Paid? One-tap Confirm
+                      </button>
                     )}
-                  >
-                    {ui.primaryActionLabel}
-                  </button>
+                    <button
+                      type="button"
+                      onClick={(e) => handleBrandDealPrimaryAction(e, item, ui)}
+                      disabled={Boolean(ui?.ctaDisabled)}
+                      className={cn(
+                        'h-12 w-full rounded-2xl text-[13px] font-black transition active:scale-[0.98]',
+                        dealPrimaryCtaButtonClass(ui?.ctaTone || (ui.needsAction ? 'action' : 'view')),
+                        Boolean(ui?.ctaDisabled) && 'opacity-60 cursor-not-allowed active:scale-100'
+                      )}
+                    >
+                      {ui.primaryActionLabel}
+                    </button>
+                  </div>
                 </motion.div>
               );
             })}
