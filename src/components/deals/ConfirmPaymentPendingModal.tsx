@@ -144,10 +144,19 @@ export function ConfirmPaymentPendingModal({ dealId, dealAmount, creatorName, on
     }
   };
 
+  useEffect(() => {
+    if (!dealId || isLoading) return;
+    
+    // Auto-polling for payment verification while modal is open
+    const interval = setInterval(() => {
+      handleVerify();
+    }, 4000);
+    
+    return () => clearInterval(interval);
+  }, [dealId]);
+
   const handleVerify = async () => {
     if (isLoading) return;
-    triggerHaptic(HapticPatterns.light);
-    setIsLoading(true);
     try {
       const res = await fetch(`${getApiBaseUrl()}/api/deals/${dealId}/verify-payment`, {
         method: 'POST',
@@ -155,8 +164,6 @@ export function ConfirmPaymentPendingModal({ dealId, dealAmount, creatorName, on
       });
       const data = await res.json();
       if (data.success) {
-        triggerHaptic(HapticPatterns.success);
-        toast.success(data.message || "Payment verified!");
         if (data.status === 'content_making' || data.success) {
           if (onSuccess) {
             onSuccess();
@@ -165,13 +172,9 @@ export function ConfirmPaymentPendingModal({ dealId, dealAmount, creatorName, on
             window.location.reload();
           }
         }
-      } else {
-        toast.error(data.error || "Could not verify payment status.");
       }
     } catch (err) {
-      toast.error("Failed to verify payment. Please try again later.");
-    } finally {
-      setIsLoading(false);
+      // Ignore errors during auto-polling
     }
   };
 
@@ -294,15 +297,6 @@ export function ConfirmPaymentPendingModal({ dealId, dealAmount, creatorName, on
 
               <button
                 type="button"
-                onClick={handleVerify}
-                disabled={isLoading}
-                className="w-full py-2 text-[11px] font-black uppercase tracking-widest text-white/30 hover:text-white/60 transition-colors"
-              >
-                Paid in Razorpay? Verify capture status
-              </button>
-
-              <button
-                type="button"
                 onClick={async () => {
                   triggerHaptic(HapticPatterns.light);
                   setIsLoading(true);
@@ -310,14 +304,14 @@ export function ConfirmPaymentPendingModal({ dealId, dealAmount, creatorName, on
                     // Manual UPI/External payment marking
                     const res = await fetch(`${getApiBaseUrl()}/api/deals/${dealId}/verify-payment`, {
                       method: 'POST',
-                      headers: { Authorization: `Bearer ${session?.access_token}` }
+                      headers: { Authorization: `Bearer ${session?.access_token}`, 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ manual_mark_paid: true })
                     });
                     const data = await res.json();
                     if (data.success) {
                       toast.success("Payment marked as successful!");
                       onSuccess?.();
                     } else {
-                      // Even if verify fails, we allow "success" if the user insists they paid
                       toast.info("Marking as paid. Please wait for verification.");
                       onSuccess?.();
                     }
