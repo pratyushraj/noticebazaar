@@ -60,20 +60,41 @@ const BrandDashboard: React.FC = () => {
         fetch(`${apiBase}/api/brand-dashboard/requests?t=${timestamp}`, { headers }),
       ]);
 
+      // Handle auth errors specifically
+      if (dealsRes.status === 401 || requestsRes.status === 401) {
+        console.error('[BrandDashboard] Authentication failed');
+        setDeals([]);
+        setRequests([]);
+        return;
+      }
+
+      if (dealsRes.status === 403 || requestsRes.status === 403) {
+        console.error('[BrandDashboard] Access denied - brand role required');
+        setDeals([]);
+        setRequests([]);
+        return;
+      }
+
       const [dealsJson, requestsJson] = await Promise.all([
         dealsRes.json().catch(() => ({})),
         requestsRes.json().catch(() => ({})),
       ]);
 
       if (!dealsRes.ok || !(dealsJson as any)?.success) {
-        console.warn('[BrandDashboard] Deals fetch unsuccessful:', dealsJson);
+        console.warn('[BrandDashboard] Deals fetch unsuccessful:', {
+          status: dealsRes.status,
+          error: (dealsJson as any)?.error,
+        });
         setDeals([]);
       } else {
         setDeals((((dealsJson as any).deals as BrandDeal[]) || []) as BrandDeal[]);
       }
 
       if (!requestsRes.ok || !(requestsJson as any)?.success) {
-        console.warn('[BrandDashboard] Requests fetch unsuccessful:', requestsJson);
+        console.warn('[BrandDashboard] Requests fetch unsuccessful:', {
+          status: requestsRes.status,
+          error: (requestsJson as any)?.error,
+        });
         setRequests([]);
       } else {
         setRequests((((requestsJson as any).requests as any[]) || []) as any[]);
@@ -82,6 +103,11 @@ const BrandDashboard: React.FC = () => {
       console.error('[BrandDashboard] Failed to load dashboard:', err);
       setDeals([]);
       setRequests([]);
+      if (!isSilent) {
+        toast.error('Failed to load dashboard', {
+          description: 'Please check your connection and try again.',
+        });
+      }
     } finally {
       if (!isSilent) setIsLoading(false);
     }

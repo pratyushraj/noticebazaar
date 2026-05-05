@@ -8,6 +8,7 @@ import { getApiBaseUrl } from '@/lib/utils/api';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { triggerHaptic } from '@/lib/utils/haptics';
+import { useMutation } from '@tanstack/react-query';
 
 async function fetchBrandDeals() {
   const { data: sessionData } = await supabase.auth.getSession();
@@ -44,8 +45,15 @@ async function fetchBrandDeals() {
 }
 
 const CreatorDashboardContent = ({ navigate }: { navigate: any }) => {
-  const { user, profile, loading: isLoadingProfile } = useSession();
+  const { user, profile, loading: isLoadingProfile, signOut } = useSession();
   const queryClient = useQueryClient();
+
+  const signOutMutation = useMutation({
+    mutationFn: signOut,
+    onSuccess: () => {
+      navigate('/login', { replace: true });
+    }
+  });
 
   const isBrandSession = profile?.role === 'brand' || user?.user_metadata?.account_mode === 'brand' || user?.user_metadata?.role === 'brand';
 

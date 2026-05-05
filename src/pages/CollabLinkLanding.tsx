@@ -1530,19 +1530,28 @@ const CollabLinkLanding = () => {
     budgetRange,
     exactBudget,
     barterValue,
+    barterTypes,
     barterProductName,
     barterProductCategory,
     barterProductImageUrl,
+    paymentType,
+    includesProduct,
     campaignCategory,
+    campaignGoal,
     campaignDescription,
     deliverables,
+    deliverableQuantities,
+    contentQuantity,
+    contentDuration,
+    contentRequirements,
+    selectedTemplateId,
     deadline,
   })
 
   const applyDraftFormData = (data: Record<string, unknown>) => {
     if (
       typeof data.collabType === 'string' &&
-      ['paid', 'barter', 'hybrid', 'both'].includes(data.collabType)
+      ['paid', 'barter', 'hybrid', 'both', 'affiliate'].includes(data.collabType)
     ) {
       setCollabType(data.collabType as CollabType)
     }
@@ -1552,16 +1561,35 @@ const CollabLinkLanding = () => {
     if (typeof data.budgetRange === 'string') setBudgetRange(data.budgetRange)
     if (typeof data.exactBudget === 'string') setExactBudget(data.exactBudget)
     if (typeof data.barterValue === 'string') setBarterValue(data.barterValue)
+    if (Array.isArray(data.barterTypes))
+      setBarterTypes(data.barterTypes.filter((t): t is string => typeof t === 'string'))
     if (typeof data.barterProductName === 'string') setBarterProductName(data.barterProductName)
     if (typeof data.barterProductCategory === 'string')
       setBarterProductCategory(data.barterProductCategory)
     if (typeof data.barterProductImageUrl === 'string')
       setBarterProductImageUrl(data.barterProductImageUrl)
+    if (typeof data.paymentType === 'string') setPaymentType(data.paymentType as 'paid' | 'barter')
+    if (typeof data.includesProduct === 'boolean') setIncludesProduct(data.includesProduct)
     if (typeof data.campaignCategory === 'string') setCampaignCategory(data.campaignCategory)
+    if (typeof data.campaignGoal === 'string') setCampaignGoal(data.campaignGoal)
     if (typeof data.campaignDescription === 'string')
       setCampaignDescription(data.campaignDescription)
     if (Array.isArray(data.deliverables))
       setDeliverables(data.deliverables.filter((d): d is string => typeof d === 'string'))
+    if (data.deliverableQuantities && typeof data.deliverableQuantities === 'object')
+      setDeliverableQuantities(
+        Object.fromEntries(
+          Object.entries(data.deliverableQuantities).filter(
+            ([key, value]): value is number => typeof key === 'string' && typeof value === 'number'
+          )
+        )
+      )
+    if (typeof data.contentQuantity === 'number' || data.contentQuantity === '3+')
+      setContentQuantity(data.contentQuantity as number | '3+')
+    if (typeof data.contentDuration === 'string') setContentDuration(data.contentDuration)
+    if (Array.isArray(data.contentRequirements))
+      setContentRequirements(data.contentRequirements.filter((r): r is string => typeof r === 'string'))
+    if (typeof data.selectedTemplateId === 'string') setSelectedTemplateId(data.selectedTemplateId)
     if (typeof data.deadline === 'string') setDeadline(data.deadline)
   }
 
@@ -2170,6 +2198,7 @@ const CollabLinkLanding = () => {
 
   const validateForm = (): { valid: boolean; firstErrorMessage?: string } => {
     const newErrors: FormErrors = {}
+    const isCustomOffer = !selectedTemplate
 
     if (!brandName.trim()) {
       newErrors.brandName = 'Enter your brand name'
@@ -2203,7 +2232,9 @@ const CollabLinkLanding = () => {
 
     if (!campaignDescription.trim()) {
       newErrors.campaignDescription = 'Describe what you want'
-    } else if (campaignDescription.trim().length < 10) {
+    } else if (isCustomOffer && campaignDescription.trim().length < 20) {
+      newErrors.campaignDescription = 'Add a bit more detail for a custom offer'
+    } else if (!isCustomOffer && campaignDescription.trim().length < 10) {
       newErrors.campaignDescription = 'Add a bit more detail'
     }
 
@@ -2272,73 +2303,89 @@ const CollabLinkLanding = () => {
 
     try {
       const apiBaseUrl = getApiBaseUrl()
+      const submitPayload = {
+        brand_name: brandName,
+        brand_email: brandEmail,
+        brand_address: null,
+        brand_gstin: null,
+        brand_phone: null,
+        brand_website: null,
+        brand_instagram: brandInstagram || null,
+        brand_logo_url: brandLogoUrl ? String(brandLogoUrl).trim() : null,
+        collab_type: collabType,
+        budget_range: budgetRange || null,
+        exact_budget: exactBudget ? parseFloat(exactBudget) : null,
+        campaign_category: campaignCategory || 'General',
+        campaign_goal: campaignGoal || null,
+        barter_value: barterValue ? parseFloat(barterValue) : null,
+        barter_description: paymentType === 'barter'
+          ? [
+              barterProductName ? `Product: ${barterProductName}` : '',
+              barterTypes.length > 0 ? `Value offered: ${barterTypes.join(', ')}` : '',
+              barterProductCategory ? `Category: ${barterProductCategory}` : '',
+            ].filter(Boolean).join(' | ')
+          : includesProduct && barterProductName
+            ? `Product included: ${barterProductName}`
+            : selectedTemplate
+              ? `Paid collaboration for ${selectedTemplate.label}`
+              : 'Paid collaboration',
+        barter_product_name: barterProductName || null,
+        barter_product_category: barterProductCategory || null,
+        barter_product_image_url: barterProductImageUrl
+          ? String(barterProductImageUrl).trim()
+          : null,
+        selected_package_id: selectedTemplate?.id || null,
+        selected_package_label: selectedTemplate?.label || null,
+        selected_package_type: selectedTemplate?.type || null,
+        selected_addons: selectedTemplate?.addons || [],
+        content_quantity: String(contentQuantity || ''),
+        content_duration: contentDuration || null,
+        content_requirements: contentRequirements,
+        barter_types: barterTypes,
+        campaign_description: campaignDescription.trim(),
+        custom_offer: selectedTemplate ? false : true,
+        offer_mode: selectedTemplate ? 'package' : 'custom',
+        form_data: {
+          collabType,
+          paymentType,
+          includesProduct,
+          campaignCategory,
+          campaignGoal,
+          campaignDescription: campaignDescription.trim(),
+          deliverables,
+          deliverableQuantities,
+          contentQuantity,
+          contentDuration,
+          contentRequirements,
+          selectedTemplateId,
+          selectedPackageLabel: selectedTemplate?.label || null,
+          selectedAddons: selectedTemplate?.addons || [],
+          barterTypes,
+          barterProductName: barterProductName || null,
+          barterProductCategory: barterProductCategory || null,
+          barterProductImageUrl: barterProductImageUrl ? String(barterProductImageUrl).trim() : null,
+          deadline: deadline || null,
+        },
+        deliverables,
+        usage_rights: false,
+        deadline: deadline || null,
+        offer_expires_at: null,
+        authorized_signer_name: null,
+        authorized_signer_role: null,
+        usage_duration: null,
+        payment_terms: null,
+        approval_sla_hours: null,
+        requires_shipping: paymentType === 'barter' || includesProduct,
+        shipping_timeline_days: null,
+        cancellation_policy: null,
+      }
+
       const response = await fetch(`${apiBaseUrl}/api/collab/${username}/submit`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          brand_name: brandName,
-          brand_email: brandEmail,
-          brand_address: null,
-          brand_gstin: null,
-          brand_phone: null,
-          brand_website: null,
-          brand_instagram: brandInstagram || null,
-          brand_logo_url: brandLogoUrl ? String(brandLogoUrl).trim() : null,
-          collab_type: collabType,
-          budget_range: budgetRange || null,
-          exact_budget: exactBudget ? parseFloat(exactBudget) : null,
-          campaign_category: campaignCategory || 'General',
-          campaign_goal: campaignGoal || null,
-          barter_value: barterValue ? parseFloat(barterValue) : null,
-          barter_description: paymentType === 'barter'
-            ? [
-                barterProductName ? `Product: ${barterProductName}` : '',
-                barterTypes.length > 0
-                  ? `Value offered: ${barterTypes.map(t => BARTER_OPTIONS.find(o => o.id === t)?.label || t).join(', ')}`
-                  : '',
-              ].filter(Boolean).join(' | ')
-            : includesProduct && barterProductName
-              ? `Product included: ${barterProductName}`
-              : 'Paid Collaboration',
-          barter_product_name: barterProductName || null,
-          barter_product_category: barterProductCategory || null,
-          barter_product_image_url: barterProductImageUrl
-            ? String(barterProductImageUrl).trim()
-            : null,
-          selected_package_id: selectedTemplate?.id || null,
-          selected_package_label: selectedTemplate?.label || null,
-          selected_package_type: selectedTemplate?.type || null,
-          selected_addons: selectedTemplate?.addons || [],
-          content_quantity: String(contentQuantity || ''),
-          content_duration: contentDuration || null,
-          content_requirements: contentRequirements.map(r => CONTENT_REQUIREMENT_LABELS[r] || r),
-          barter_types: barterTypes.map(t => BARTER_OPTIONS.find(o => o.id === t)?.label || t),
-          campaign_description: [
-            campaignDescription ? `Other Needs: ${campaignDescription}` : '',
-            selectedTemplate ? `\nSelected package: ${selectedTemplate.label}` : '',
-            contentRequirements.length > 0 ? `\nRequirements: ${contentRequirements.map(r => CONTENT_REQUIREMENT_LABELS[r] || r).join(', ')}` : '',
-            contentQuantity !== 1 ? `\nQuantity: ${contentQuantity}` : '',
-            contentDuration ? `\nDuration: ${contentDuration}` : '',
-          ].filter(Boolean).join('\n'),
-          deliverables: selectedTemplate
-            ? deliverables.map(
-                d => `${d}${deliverableQuantities[d] > 1 ? ` (x${deliverableQuantities[d]})` : ''}`
-              )
-            : deliverables.length > 0 ? deliverables : ['Custom collaboration deliverables'],
-          usage_rights: false,
-          deadline: deadline || null,
-          offer_expires_at: null,
-          authorized_signer_name: null,
-          authorized_signer_role: null,
-          usage_duration: null,
-          payment_terms: null,
-          approval_sla_hours: null,
-          requires_shipping: paymentType === 'barter' || includesProduct,
-          shipping_timeline_days: null,
-          cancellation_policy: null,
-        }),
+        body: JSON.stringify(submitPayload),
       })
 
       const data = await response.json()

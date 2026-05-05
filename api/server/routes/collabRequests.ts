@@ -773,35 +773,34 @@ router.post('/:username/submit', async (req: Request, res: Response) => {
 	    });
 
     // Create collab request
-	    const insertData: any = {
-	      creator_id: creator.id,
-	      brand_name: brand_name.trim(),
-	      brand_email: brand_email.toLowerCase().trim(),
-	      brand_phone: brand_phone?.trim() || null,
-	      brand_website: brand_website?.trim() || null,
-	      brand_instagram: brand_instagram?.trim() || null,
-	      collab_type,
-	      campaign_description: campaign_description.trim(),
-	      // jsonb column; insert raw array/object, not a JSON string
-	      deliverables,
-	      usage_rights: usage_rights === true || usage_rights === 'true',
-	      deadline: deadline || null,
-	      campaign_category: campaign_category || null,
-	      campaign_goal: campaign_goal || null,
-	      selected_package_id: selected_package_id || null,
-	      selected_package_label: selected_package_label || null,
-	      selected_package_type: selected_package_type || null,
-	      selected_addons: Array.isArray(selected_addons) ? selected_addons : [],
-	      content_quantity: content_quantity || null,
-	      content_duration: content_duration || null,
-	      content_requirements: Array.isArray(content_requirements) ? content_requirements : [],
-	      barter_types: Array.isArray(barter_types) ? barter_types : [],
-	      submitted_ip: clientIp,
+    const insertData: any = {
+      creator_id: creator.id,
+      brand_name: brand_name.trim(),
+      brand_email: brand_email.toLowerCase().trim(),
+      brand_phone: brand_phone?.trim() || null,
+      brand_website: brand_website?.trim() || null,
+      brand_instagram: brand_instagram?.trim() || null,
+      collab_type,
+      campaign_description: campaign_description.trim(),
+      // jsonb column; insert raw array/object, not a JSON string
+      deliverables,
+      usage_rights: usage_rights === true || usage_rights === 'true',
+      deadline: deadline || null,
+      campaign_category: campaign_category || null,
+      campaign_goal: campaign_goal || null,
+      selected_package_id: selected_package_id || null,
+      selected_package_label: selected_package_label || null,
+      selected_package_type: selected_package_type || null,
+      selected_addons: Array.isArray(selected_addons) ? selected_addons : [],
+      content_quantity: content_quantity || null,
+      content_duration: content_duration || null,
+      content_requirements: Array.isArray(content_requirements) ? content_requirements : [],
+      barter_types: Array.isArray(barter_types) ? barter_types : [],
+      submitted_ip: clientIp,
       submitted_user_agent: userAgent,
       ...(brandContactId ? { brand_contact_id: brandContactId } : {}),
     };
 
-    // Add budget/barter fields based on collab_type
     if (collab_type === 'paid' || collab_type === 'both' || collab_type === 'hybrid') {
       insertData.budget_range = budget_range || null;
       insertData.exact_budget = exact_budget ? parseFloat(exact_budget) : null;
@@ -810,7 +809,6 @@ router.post('/:username/submit', async (req: Request, res: Response) => {
     if (collab_type === 'barter' || collab_type === 'both' || collab_type === 'hybrid') {
       insertData.barter_description = barter_description?.trim() || null;
       insertData.barter_value = barter_value ? parseFloat(barter_value) : null;
-      // Optional barter product image URL (basic validation)
       if (barter_product_image_url != null && typeof barter_product_image_url === 'string') {
         const trimmed = barter_product_image_url.trim();
         if (trimmed && (trimmed.startsWith('http://') || trimmed.startsWith('https://'))) {
@@ -819,20 +817,24 @@ router.post('/:username/submit', async (req: Request, res: Response) => {
       }
     }
 
+    if (typeof req.body.form_data === 'object' && req.body.form_data !== null) {
+      insertData.form_data = req.body.form_data
+    }
+
     const { data: collabRequest, error: insertError } = await supabase
       .from('collab_requests')
       .insert(insertData)
       .select('id, brand_name, created_at')
       .single();
 
-	    if (insertError) {
-	      console.error('[CollabRequests] Error creating request:', insertError);
-	      return res.status(500).json({
-	        success: false,
-	        error: 'Failed to submit collaboration request',
-	        ...(isDevelopment ? { debug: insertError } : {}),
-	      });
-	    }
+    if (insertError || !collabRequest) {
+      console.error('[CollabRequests] Error creating request:', insertError)
+      return res.status(500).json({
+        success: false,
+        error: 'Failed to submit collaboration request',
+        ...(isDevelopment ? { debug: insertError } : {}),
+      });
+    }
 
     // Fetch creator profile once for both emails (async, non-blocking)
     let creatorProfile: any = null;
