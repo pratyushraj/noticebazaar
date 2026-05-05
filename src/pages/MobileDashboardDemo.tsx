@@ -3219,6 +3219,7 @@ const MobileDashboardDemo = ({
                     await handleSignAsCreator();
                 }
             } else {
+                console.warn('[MobileDashboard] OTP verification failed:', data.error);
                 toast.error(data.error || 'Invalid OTP');
             }
         } catch (error: any) {
