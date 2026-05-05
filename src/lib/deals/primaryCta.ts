@@ -232,8 +232,12 @@ export const getDealPrimaryCta = (params: { role: DealRole; deal: any }): DealPr
     deal?.signature,
     deal?.signatures,
   ].filter((x) => x && typeof x === 'object');
-  const creatorSigned = hasTruthyKeyMatch(signatureSources, /(creator.*signed|signed.*creator|creator_signature|creator_esign|creator_signed_at)/i);
-  const brandSigned = hasTruthyKeyMatch(signatureSources, /(brand.*signed|signed.*brand|brand_signature|brand_esign|brand_signed_at)/i);
+  const rawStatus = normalizeStatusText(deal?.status ?? deal?.deal_status ?? deal?.raw?.status ?? deal?.raw?.deal_status).toLowerCase();
+  const creatorSigned = 
+    hasTruthyKeyMatch(signatureSources, /(creator.*signed|signed.*creator|creator_signature|creator_esign|creator_signed_at|creator_otp_verified)/i) || 
+    rawStatus === 'accepted' || 
+    rawStatus.includes('accepted_pending_otp');
+  const brandSigned = hasTruthyKeyMatch(signatureSources, /(brand.*signed|signed.*brand|brand_signature|brand_esign|brand_signed_at|brand_otp_verified)/i) || hasCapturedPayment;
 
   // Brand
   if (role === 'brand') {
