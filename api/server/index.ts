@@ -72,6 +72,8 @@ import creatorsRouter from './routes/creators';
 import shippingRouter from './routes/shipping';
 import cronDealRemindersRouter from './routes/cronDealReminders';
 import pushNotificationsRouter from './routes/pushNotifications';
+import authRouter from './routes/auth';
+import profileRouter from './routes/profile';
 import { sendCollabRequestAcceptedEmail, sendCollabRequestCreatorNotificationEmail } from './services/collabRequestEmailService';
 import { createContractReadyToken } from './services/contractReadyTokenService';
 // Log router import for debugging
@@ -330,6 +332,10 @@ app.get('/health', (req: express.Request, res: express.Response) => {
       timestamp: new Date().toISOString(),
       supabaseInitialized: supabaseInitialized,
       nodeEnv: process.env.NODE_ENV || 'not set',
+      emailService: {
+        configured: !!process.env.RESEND_API_KEY && process.env.RESEND_API_KEY !== 'your_resend_api_key_here',
+        provider: 'resend'
+      },
       llm: {
         provider: llmProvider,
         model: llmModel,
@@ -359,6 +365,7 @@ app.use('/api/collab-analytics', collabAnalyticsRouter); // Public analytics tra
 app.use('/api/creators', creatorsRouter); // Public creator directory routes
 app.use('/api/shipping', shippingRouter); // Public shipping update (brand, no auth)
 app.use('/api/cron', cronDealRemindersRouter); // Cron: deal reminders (protected by CRON_SECRET in route)
+app.use('/api/auth', authRouter); // Auth resolution routes (public)
 
 // API Routes (protected)
 app.use('/api/brand-reply-tokens', authMiddleware, rateLimitMiddleware, brandReplyTokensRouter);
@@ -366,6 +373,7 @@ app.use('/api/conversations', authMiddleware, rateLimitMiddleware, conversations
 app.use('/api/conversations', authMiddleware, rateLimitMiddleware, messagesRouter);
 app.use('/api/conversations', authMiddleware, rateLimitMiddleware, attachmentsRouter);
 app.use('/api/payments', authMiddleware, rateLimitMiddleware, paymentsRouter);
+app.use('/api/profile', authMiddleware, rateLimitMiddleware, profileRouter);
 
 // Demo email (only when ALLOW_DEMO_EMAIL=true; restricted to *@yopmail.com)
 app.post('/api/demo-email/barter-accepted', async (req: express.Request, res: express.Response) => {

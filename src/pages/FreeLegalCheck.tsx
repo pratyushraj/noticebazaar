@@ -2,27 +2,13 @@
 
 import React, { useRef, useState, useEffect } from 'react';
 import { SEOHead } from '@/components/seo/SEOHead';
+import { FAQSchema } from '@/components/seo/SchemaMarkup';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { ArrowDown, ShieldCheck, Users, Gavel, Zap, Clock, IndianRupee, Star, ArrowRight, FileText, Lock, AlertTriangle } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import LegalCheckForm from '@/components/forms/LegalCheckForm';
 import { cn } from '@/lib/utils';
-
-// Helper function to update document metadata
-const updateMetadata = (title: string, description: string) => {
-  document.title = title;
-  const metaDescription = document.querySelector('meta[name="description"]');
-  if (metaDescription) {
-    metaDescription.setAttribute('content', description);
-  }
-  // Update OG tags dynamically (best effort without a dedicated library)
-  document.querySelector('meta[property="og:title"]')?.setAttribute('content', title);
-  document.querySelector('meta[property="og:description"]')?.setAttribute('content', description);
-  document.querySelector('meta[property="og:url"]')?.setAttribute('content', 'https://creatorarmour.com/free-legal-check');
-  document.querySelector('meta[property="og:image"]')?.setAttribute('content', 'https://creatorarmour.com/legal-check-banner.png'); // Updated image path
-  document.querySelector('meta[name="twitter:card"]')?.setAttribute('content', 'summary_large_image');
-};
 
 // New constant for the Supabase hosted PDF URL
 const SAMPLE_REPORT_URL = 'https://ooaxtwmqrvfzdqzoijcj.supabase.co/storage/v1/object/public/marketing-assets/legal_health_check.pdf';
@@ -31,27 +17,11 @@ const FreeLegalCheck = () => {
   const formRef = useRef<HTMLDivElement>(null);
   const [showFloatingCta, setShowFloatingCta] = useState(false);
 
-  // Dynamic Metadata Update
   useEffect(() => {
-    // 1. Recommended New Title: Get Your Free Legal Health Check | Creator Armour
-    // 2. Recommended New Description: Worried about due diligence? Get a free, 60-second Legal Health Check from Creator Armour. We'll find your compliance gaps *before* investors do. Get your free report.
-    updateMetadata(
-      "Get Your Free Legal Health Check | Creator Armour",
-      "Worried about due diligence? Get a free, 60-second Legal Health Check from Creator Armour. We'll find your compliance gaps *before* investors do. Get your free report."
-    );
-    
     // Meta Pixel Event 1: ViewContent
     if (typeof (window as any).fbq === 'function') {
       (window as any).fbq('track', 'ViewContent');
     }
-
-    // Cleanup function to reset title/description when component unmounts (or navigates away)
-    return () => {
-      updateMetadata(
-        "Creator Armour: Legal & CA Services for SMEs | Compliance, Debt Recovery & Contracts", // Revert to default
-        "Get dedicated Advocates & CAs for compliance, debt recovery & contracts at ₹2,999/month. Trusted by 500+ SMEs. Free legal health check available."
-      );
-    };
   }, []);
 
   const scrollToForm = () => {
@@ -118,11 +88,7 @@ const FreeLegalCheck = () => {
         canonicalUrl="https://creatorarmour.com/free-legal-check"
       />
 
-      {/* Inject FAQ Schema */}
-      <script 
-        type="application/ld+json" 
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} 
-      />
+      <FAQSchema faqs={faqSchema.mainEntity.map(q => ({ question: q.name, answer: q.acceptedAnswer.text }))} />
 
       {/* Header/Navigation */}
       <header className="sticky top-0 z-50 bg-card/90 backdrop-blur-sm border-b border-border">

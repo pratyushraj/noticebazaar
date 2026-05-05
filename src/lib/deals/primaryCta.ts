@@ -14,6 +14,7 @@ export type CanonicalDealStatus =
   | 'DISPUTED'
   | 'DISPUTE_ARBITRATION'
   | 'DISPUTE_PARTIAL_REFUND'
+  | 'ACCEPTED_PENDING_OTP'
   | 'COMPLETED'
   | 'CANCELLED'
   | 'UNKNOWN';
@@ -79,6 +80,7 @@ export const getCanonicalDealStatus = (deal: any): CanonicalDealStatus => {
   const lower = raw.toLowerCase();
 
   if (!raw) return 'UNKNOWN';
+  if (lower.includes('accepted_pending_otp')) return 'ACCEPTED_PENDING_OTP';
 
   const isBarter = isBarterLikeCollab(deal);
   const hasAddress = !!String(deal?.brand_address || '').trim();
@@ -328,6 +330,9 @@ export const getDealPrimaryCta = (params: { role: DealRole; deal: any }): DealPr
   }
 
   // Creator
+  if (status === 'ACCEPTED_PENDING_OTP') {
+    return { status, label: 'Verify OTP', disabled: false, tone: 'action', action: 'review_sign_contract' };
+  }
   if (status === 'COMPLETED') {
     return { status, label: 'View Summary', disabled: false, tone: 'view', action: 'view_summary' };
   }

@@ -122,6 +122,8 @@ interface MobileDashboardProps {
     isLoadingDealsOverride?: boolean;
     /** Show skeleton loading for profile section */
     isLoadingProfile?: boolean;
+    /** Show skeleton loading for offers section */
+    isLoadingCollab?: boolean;
     /** Real profile views count from database */
     profileViewsToday?: number;
 }
@@ -436,6 +438,7 @@ const getCreatorDealCardUX = (deal: any) => {
         rawStatus.includes('waiting_for_review') ||
         rawStatus.includes('awaiting_approval') ||
         isRevisionDone;
+    const isPendingOTP = rawStatus.includes('accepted_pending_otp');
     const isApproved = rawStatus.includes('content_approved') || rawStatus.includes('approved');
     const isPaymentReleased = rawStatus.includes('payment_released') || rawStatus.includes('released');
     const isMaking = rawStatus.includes('content_making') || rawStatus.includes('drafting');
@@ -455,13 +458,14 @@ const getCreatorDealCardUX = (deal: any) => {
     else if (isPaymentPending) progressStep = 2.5;
     else if (isFullyExecuted) progressStep = 2;
     else if (isContractPending) progressStep = 1;
+    else if (isPendingOTP) progressStep = 0.5;
 
     const contractLabel = isContractPending
         ? (rawStatus.includes('signed_by_brand') ? 'Contract: waiting for your signature' : 'Contract: pending signature')
         : (isFullyExecuted || isMaking || isDelivered || isApproved || isPaymentReleased || isCompleted ? 'Contract: signed' : null);
 
     const needsSignature = isContractPending;
-    const needsCreatorAction = !isCompleted && !isApproved && !isPaymentReleased && !isAwaitingShipment && (needsSignature || isRevisionRequested || isMaking);
+    const needsCreatorAction = !isCompleted && !isApproved && !isPaymentReleased && !isAwaitingShipment && (needsSignature || isRevisionRequested || isMaking || isPendingOTP);
 
     const urgencyLevel: 'critical' | 'warning' | 'normal' = daysUntilDue !== null && daysUntilDue <= 2
         ? 'critical'
@@ -473,7 +477,11 @@ const getCreatorDealCardUX = (deal: any) => {
     let nextStep = 'Open deal';
     let cta = 'Open';
 
-    if (isCompleted) {
+    if (isPendingOTP) {
+        stagePill = 'OTP REQUIRED';
+        nextStep = 'Verify OTP to start deal';
+        cta = 'Verify';
+    } else if (isCompleted) {
         stagePill = 'COMPLETED';
         nextStep = 'View deal summary';
         cta = 'View Summary';
@@ -1036,6 +1044,7 @@ const MobileDashboardDemo = ({
     offersError,
     dealsError,
     isLoadingDealsOverride = false,
+    isLoadingCollab = false,
     isLoadingProfile = false,
     profileViewsToday = 0
 }: MobileDashboardProps) => {
@@ -2087,7 +2096,8 @@ const MobileDashboardDemo = ({
         }
         return { ids, combos };
     }, [brandDeals]);
-    const collabRequestImageByDealKey = React.useMemo(() => {
+
+    const collabRequestByDealKey = React.useMemo(() => {
         const byRequestId = new Map<string, any>();
         const byCombo = new Map<string, any>();
         for (const req of (collabRequests || [])) {
@@ -2102,10 +2112,8 @@ const MobileDashboardDemo = ({
         }
         return { byRequestId, byCombo };
     }, [collabRequests]);
-    const hydrateDealWithRequestMedia = React.useCallback((deal: any) => {
-        const existingProductImage = resolveCreatorDealProductImage(deal);
-        if (existingProductImage) return deal;
 
+    const hydrateDealWithRequestMedia = React.useCallback((deal: any) => {
         const requestId = String(
             deal?.collab_request_id ||
             deal?.request_id ||
@@ -2121,19 +2129,32 @@ const MobileDashboardDemo = ({
         ].filter(Boolean).join('|');
 
         const matchedRequest =
-            (requestId ? collabRequestImageByDealKey.byRequestId.get(requestId) : null) ||
-            (comboKey ? collabRequestImageByDealKey.byCombo.get(comboKey) : null) ||
+            (requestId ? collabRequestByDealKey.byRequestId.get(requestId) : null) ||
+            (comboKey ? collabRequestByDealKey.byCombo.get(comboKey) : null) ||
             null;
 
+        if (!matchedRequest) return deal;
+
         const recoveredImage = resolveCreatorDealProductImage(matchedRequest);
-        if (!recoveredImage) return deal;
+        const recoveredName = matchedRequest?.barter_product_name || matchedRequest?.product_name || matchedRequest?.barter_description;
+        const recoveredValue = matchedRequest?.barter_value;
+        const recoveredShippingDays = matchedRequest?.shipping_timeline_days;
 
         return {
             ...deal,
-            barter_product_image_url: recoveredImage,
-            raw: deal?.raw ? { ...deal.raw, barter_product_image_url: recoveredImage } : deal?.raw,
+            barter_product_image_url: deal.barter_product_image_url || recoveredImage,
+            product_name: deal.product_name || recoveredName,
+            barter_value: deal.barter_value || recoveredValue,
+            shipping_timeline_days: deal.shipping_timeline_days || recoveredShippingDays,
+            raw: deal?.raw ? { 
+                ...deal.raw, 
+                barter_product_image_url: deal.raw.barter_product_image_url || recoveredImage,
+                product_name: deal.raw.product_name || recoveredName,
+                barter_value: deal.raw.barter_value || recoveredValue,
+                shipping_timeline_days: deal.raw.shipping_timeline_days || recoveredShippingDays
+            } : deal?.raw,
         };
-    }, [collabRequestImageByDealKey]);
+    }, [collabRequestByDealKey]);
     const pendingOffersDeduplicated = React.useMemo(() => {
         const seen = new Set<string>();
         return (collabRequests || []).filter((req: any) => {
@@ -2172,7 +2193,8 @@ const MobileDashboardDemo = ({
         return (brandDeals || []).filter((d: any) => {
             const s = normalizeDealStatus(d);
             // Exclude completed, paid, payment released, approved AND rejected/cancelled/declined deals
-            return !(s.includes('accepted_pending_otp') || s.includes('completed') || s === 'paid' || s === 'payment_released' || s === 'declined' || s === 'rejected' || s === 'cancelled');
+            // Include accepted_pending_otp as active (it requires action)
+            return !(s.includes('completed') || s === 'paid' || s === 'payment_released' || s === 'declined' || s === 'rejected' || s === 'cancelled');
         }).map((deal: any) => hydrateDealWithRequestMedia(deal));
     }, [brandDeals, hydrateDealWithRequestMedia]);
     const actionRequiredDealsList = React.useMemo(() => {
@@ -2982,6 +3004,7 @@ const MobileDashboardDemo = ({
             return String(
                 pendingAcceptDealId ||
                 pendingAcceptReq?.deal_id ||
+                pendingAcceptReq?.id ||
                 pendingAcceptReq?.raw?.deal_id ||
                 pendingAcceptReq?.brand_deal_id ||
                 ''
@@ -3043,7 +3066,14 @@ const MobileDashboardDemo = ({
 
             const data = await resp.json();
             if (data.success) {
-                toast.success('OTP sent to your email');
+                if (data.mockOtp) {
+                    toast.success(`Development Mode: OTP is ${data.mockOtp}`, {
+                        description: 'Real email skipped (missing API key).',
+                        duration: 8000
+                    });
+                } else {
+                    toast.success('OTP sent to your email');
+                }
                 setCreatorSigningStep('verify');
             } else {
                 toast.error(data.error || 'Failed to send OTP');
@@ -5430,7 +5460,7 @@ const MobileDashboardDemo = ({
                     {activeTab === 'dashboard' && (
                         <DashboardTab
                             isDark={isDark} textColor={textColor} secondaryTextColor={secondaryTextColor}
-                            isLoadingDeals={isLoadingDeals} activeDealsCount={activeDealsCount}
+                            isLoadingDeals={isLoadingDeals} isLoadingCollab={isLoadingCollab} activeDealsCount={activeDealsCount}
                             activeDealsList={activeDealsList}
                             completedDealsCount={completedDealsCount} monthlyRevenue={monthlyRevenue}
                             totalEarnings={totalEarnings}
@@ -5488,7 +5518,8 @@ const MobileDashboardDemo = ({
                     {activeTab === 'deals' && (
                         <DealsTab
                             isDark={isDark} textColor={textColor} secondaryTextColor={secondaryTextColor}
-                            isLoadingDeals={isLoadingDeals} activeDealsCount={activeDealsCount}
+                            isLoadingDeals={isLoadingDeals} isLoadingCollab={isLoadingCollab}
+                            activeDealsCount={activeDealsCount}
                             completedDealsCount={completedDealsCount} pendingOffersCount={pendingOffersCount}
                             collabSubTab={collabSubTab} setCollabSubTab={setCollabSubTab}
                             searchParams={searchParams} setSearchParams={setSearchParams}
@@ -6474,6 +6505,21 @@ const MobileDashboardDemo = ({
                                                         return (
                                                             <>
                                                                 {/* "Next" hint — HIGH PRIORITY BLOCKER */}
+                                                                {normalizeDealStatus(selectedItem).includes('accepted_pending_otp') && (
+                                                                    <div className={cn(
+                                                                        "mb-5 rounded-[20px] border px-4 py-3 flex items-start gap-3 backdrop-blur-md",
+                                                                        isDark ? "bg-emerald-500/[0.08] border-emerald-500/30" : "bg-emerald-50/60 border-emerald-300/50 shadow-md"
+                                                                    )}>
+                                                                        <div className="w-8 h-8 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0 mt-0.5">
+                                                                            <ShieldCheck className="w-5 h-5 text-emerald-500" />
+                                                                        </div>
+                                                                        <div>
+                                                                            <p className={cn("text-[13px] font-black tracking-tight", isDark ? "text-emerald-400" : "text-emerald-800")}>OTP Verification Required</p>
+                                                                            <p className={cn("text-[11px] font-medium opacity-80 mt-0.5 leading-snug", isDark ? "text-emerald-200/80" : "text-emerald-900/80")}>You need to verify your email to officially start this collaboration.</p>
+                                                                        </div>
+                                                                    </div>
+                                                                )}
+
                                                                 {isPaymentPending && !isBarterDeal && (
                                                                     <div className={cn(
                                                                         "mb-5 rounded-[20px] border px-4 py-3 flex items-start gap-3 backdrop-blur-md",
@@ -6877,7 +6923,7 @@ const MobileDashboardDemo = ({
                                                     </div>
                                                     <div className="flex-1 min-w-0">
                                                         <p className={cn("text-[18px] font-black leading-tight tracking-tight", textColor)}>
-                                                            {selectedItem.product_name || (selectedItem.brand_name?.toLowerCase().includes('mellow') ? 'Signature Product' : 'Signature Hoodie + Apparel Box')}
+                                                            {selectedItem.product_name || selectedItem.barter_product_name || (selectedItem.brand_name?.toLowerCase().includes('mellow') ? 'Signature Product' : 'Collaboration Product')}
                                                         </p>
                                                         <div className="flex flex-col gap-2 mt-3">
                                                             <div className="flex items-center gap-2.5">
@@ -6890,7 +6936,7 @@ const MobileDashboardDemo = ({
                                                                 <div className={cn("w-5 h-5 rounded-lg flex items-center justify-center", isDark ? "bg-sky-500/20" : "bg-sky-50")}>
                                                                     <Truck className="w-3 h-3 text-sky-500" />
                                                                 </div>
-                                                                <p className={cn("text-[13px] font-black tracking-tight", isDark ? "text-sky-200/70" : "text-sky-700")}>Ships within 3 days</p>
+                                                                <p className={cn("text-[13px] font-black tracking-tight", isDark ? "text-sky-200/70" : "text-sky-700")}>Ships within {selectedItem?.shipping_timeline_days || 3} days</p>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -7234,7 +7280,17 @@ const MobileDashboardDemo = ({
                                                             if (cta.disabled) return;
                                                             if (cta.action === 'confirm_receipt') { void handleConfirmReceipt(); return; }
                                                             if (cta.action === 'mark_delivered' || cta.action === 'upload_revision') { setShowDeliverContentModal(true); return; }
-                                                            if (cta.action === 'review_sign_contract') { setCreatorSigningStep('send'); setCreatorOTP(''); setShowCreatorSigningModal(true); return; }
+                                                            if (cta.action === 'review_sign_contract') {
+                                                                const ux = getCreatorDealCardUX(selectedItem);
+                                                                setCreatorSigningMode(ux.rawStatus.includes('accepted_pending_otp') ? 'accept' : 'sign');
+                                                                if (ux.rawStatus.includes('accepted_pending_otp')) {
+                                                                    setPendingAcceptReq(selectedItem);
+                                                                }
+                                                                setCreatorSigningStep('send');
+                                                                setCreatorOTP('');
+                                                                setShowCreatorSigningModal(true);
+                                                                return;
+                                                            }
                                                             if (cta.action === 'start_working') { void handleProgressStageSelect('content_making'); return; }
                                                             if (cta.action === 'view_contract') { contractSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }); return; }
                                                             if (cta.action === 'view_summary') { toast.success("Collaboration Completed", { description: "This deal is successfully finalized." }); triggerHaptic(HapticPatterns.success); return; }
@@ -7764,15 +7820,15 @@ const MobileDashboardDemo = ({
                     <div className="px-6 py-5">
                         {creatorSigningStep === 'send' ? (
                             <div className="space-y-6">
-                                <div className={cn("p-4 rounded-2xl flex items-start gap-3 border",
-                                    isDark ? "bg-primary/5 border-primary/20" : "bg-primary/50 border-primary")}>
-                                    <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-                                        <Mail className="w-5 h-5 text-primary" />
+                                <div className={cn("p-5 rounded-2xl flex items-start gap-4 border",
+                                    isDark ? "bg-emerald-500/5 border-emerald-500/20" : "bg-emerald-50 border-emerald-200/60")}>
+                                    <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 flex items-center justify-center shrink-0">
+                                        <Mail className="w-6 h-6 text-emerald-500" />
                                     </div>
                                     <div className="min-w-0">
-                                        <p className="text-[14px] font-bold tracking-tight">OTP Verification</p>
-                                        <p className="text-[12px] opacity-60 font-medium truncate mt-0.5">
-                                            Signing as: <span className="font-bold opacity-40 dark:opacity-100">{profile?.email || 'Your registered email'}</span>
+                                        <p className={cn("text-[15px] font-black tracking-tight", isDark ? "text-emerald-400" : "text-emerald-900")}>OTP Verification</p>
+                                        <p className={cn("text-[12px] font-bold truncate mt-0.5", isDark ? "text-emerald-400/60" : "text-emerald-700/70")}>
+                                            Signing as: <span className={cn("font-black", isDark ? "text-emerald-400" : "text-emerald-600")}>{profile?.email || user?.email || 'Your registered email'}</span>
                                         </p>
                                     </div>
                                 </div>
@@ -7799,7 +7855,7 @@ const MobileDashboardDemo = ({
                         ) : (
                             <div className="space-y-6">
                                 <div className="space-y-3">
-                                    <label className="text-[10px] font-black uppercase tracking-[0.2em] opacity-70 dark:opacity-40 px-1">Verification Code</label>
+                                    <label className={cn("text-[10px] font-black uppercase tracking-[0.2em] px-1", isDark ? "text-emerald-400/60" : "text-slate-500")}>Verification Code</label>
                                     <input
                                         type="text"
                                         maxLength={6}
@@ -7810,18 +7866,18 @@ const MobileDashboardDemo = ({
                                         autoComplete="one-time-code"
                                         className={cn(
                                             "w-full rounded-2xl px-4 py-5 text-center text-4xl tracking-[0.3em] font-black font-outfit focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all placeholder:text-slate-400 border",
-                                            isDark ? "bg-card border-border text-foreground focus:border-primary/50" : "bg-background border-border text-muted-foreground focus:border-primary/50"
+                                            isDark ? "bg-card border-border text-foreground focus:border-emerald-500/50" : "bg-background border-border text-muted-foreground focus:border-emerald-500/50"
                                         )}
                                     />
                                     <div className="flex items-center justify-between px-1">
-                                        <p className="text-[11px] font-bold opacity-70 dark:opacity-40 italic">Exp. in 10 minutes</p>
+                                        <p className={cn("text-[11px] font-bold italic", isDark ? "text-emerald-400/50" : "text-slate-500/60")}>Exp. in 10 minutes</p>
                                         <button type="button"
                                             onClick={() => {
                                                 setCreatorSigningStep('send');
                                                 setCreatorOTP('');
                                             }}
                                             disabled={isVerifyingCreatorOTP || isSigningAsCreator}
-                                            className="text-[11px] font-black uppercase tracking-widest text-primary hover:opacity-70 transition-opacity"
+                                            className="text-[11px] font-black uppercase tracking-widest text-emerald-600 dark:text-emerald-400 hover:opacity-70 transition-opacity"
                                         >
                                             Resend
                                         </button>
@@ -8523,7 +8579,7 @@ BottomNavigationBar.displayName = 'BottomNavigationBar';
 
 
 const DashboardTab = React.memo(({
-    isDark, textColor, secondaryTextColor, isLoadingDeals,
+    isDark, textColor, secondaryTextColor, isLoadingDeals, isLoadingCollab,
     activeDealsCount, activeDealsList = [], completedDealsCount, monthlyRevenue, totalEarnings,
     availableAmount, inEscrowAmount, processingAmount, pendingAmount,
     pendingOffersCount, pendingOffersDeduplicated, displayName, username,
@@ -8576,8 +8632,8 @@ const DashboardTab = React.memo(({
         }
     };
 
-    // Get the most recent active deal for the hero tracker
-    const featuredDeal = activeDealsList[0];
+    // Get the most recent active deals for the hero tracker
+    const featuredDeals = activeDealsList.slice(0, 3);
 
     const getDealProgress = (deal: any) => {
         if (!deal) return { step: 0, label: 'Inactive' };
@@ -8604,20 +8660,7 @@ const DashboardTab = React.memo(({
         return { step: 1, label: 'Agreement' }; // Fallback
     };
 
-    const progress = getDealProgress(featuredDeal);
 
-    if (isLoadingDeals) {
-        return (
-            <DashboardLoadingStage 
-                isDark={isDark} 
-                tab="dashboard" 
-                triggerHaptic={triggerHaptic}
-                setActiveTab={setActiveTab}
-                setActiveSettingsPage={setActiveSettingsPage}
-                userId={profile?.id}
-            />
-        );
-    }
 
     return (
         <div className="space-y-6 pb-32 pt-6">
@@ -8628,12 +8671,13 @@ const DashboardTab = React.memo(({
                 animate={{ opacity: 1, scale: 1 }}
                 className="px-5"
             >
-                <div className="relative h-[220px] rounded-[2.5rem] bg-slate-950 overflow-hidden shadow-2xl">
+                <div className="relative h-[310px] rounded-[3rem] bg-slate-950 overflow-hidden shadow-2xl">
                     <div className="absolute inset-0 bg-gradient-to-br from-emerald-600 via-teal-700 to-slate-950" />
                     <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-400/20 rounded-full blur-[80px] -mr-20 -mt-20" />
                     <div className="absolute bottom-0 left-0 w-48 h-48 bg-teal-500/10 rounded-full blur-[60px] -ml-10 -mb-10" />
+                    <div className="absolute bottom-0 right-0 w-32 h-32 bg-emerald-300/10 rounded-full blur-[40px] -mr-5 -mb-5" />
 
-                    <div className="relative h-full p-8 flex flex-col justify-between z-10">
+                    <div className="relative h-full p-8 pb-9 flex flex-col justify-between z-10">
                         <div>
                             <p className="text-emerald-300/80 text-[11px] font-black uppercase tracking-[0.2em] mb-2">Welcome Back</p>
                             <h1 className="text-white text-[28px] font-black tracking-tighter leading-tight">
@@ -8642,18 +8686,39 @@ const DashboardTab = React.memo(({
                             </h1>
                         </div>
 
-                        <div className="flex gap-3">
-                            <button
-                                onClick={() => { triggerHaptic(); setActiveTab('deals'); }}
-                                className="h-12 px-6 rounded-2xl bg-white text-slate-950 font-black text-[11px] uppercase tracking-widest shadow-xl active:scale-95 transition-all"
+                        {/* Collab Link Section (Full width, perfectly aligned) */}
+                        <div className="flex items-center justify-between p-2 px-4 rounded-xl bg-white/10 border border-white/10 backdrop-blur-md w-full mt-4">
+                            <div className="flex items-center gap-3">
+                                <Link2 className="w-3.5 h-3.5 text-emerald-400" />
+                                <span className="text-white/90 text-[10px] font-bold">{storefrontUrl}</span>
+                            </div>
+                            <button 
+                                onClick={(e) => { e.stopPropagation(); handleCopyStorefront(); }}
+                                className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white transition-all active:scale-90"
                             >
-                                Find Deals
+                                <Copy className="w-3 h-3" />
+                            </button>
+                        </div>
+
+                        <div className="flex items-center justify-center gap-2 mt-2 mb-5">
+                            <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
+                            <p className="text-[12px] font-black uppercase tracking-widest text-emerald-300/90">
+                                Add to Bio to get more deals
+                            </p>
+                        </div>
+
+                        <div className="flex gap-3 w-full">
+                            <button
+                                onClick={handleWhatsAppShare}
+                                className="flex-1 h-12 rounded-2xl bg-[#25D366] text-white font-black text-[11px] uppercase tracking-widest shadow-lg active:scale-95 transition-all flex items-center justify-center gap-2"
+                            >
+                                <MessageCircle className="w-4 h-4 fill-white" /> WhatsApp
                             </button>
                             <button
-                                onClick={() => { triggerHaptic(); setActiveTab('analytics'); }}
-                                className="h-12 px-6 rounded-2xl bg-white/10 border border-white/20 text-white font-black text-[11px] uppercase tracking-widest backdrop-blur-md active:scale-95 transition-all"
+                                onClick={handleInstagramShare}
+                                className="flex-1 h-12 rounded-2xl bg-gradient-to-tr from-[#f9ce34] via-[#ee2a7b] to-[#6228d7] text-white font-black text-[11px] uppercase tracking-widest shadow-lg active:scale-95 transition-all flex items-center justify-center gap-2"
                             >
-                                View Stats
+                                <Instagram className="w-4 h-4" /> Instagram
                             </button>
                         </div>
                     </div>
@@ -8683,9 +8748,13 @@ const DashboardTab = React.memo(({
                         </div>
 
                         <div className="space-y-1">
-                            <h2 className={cn("text-4xl font-black tracking-tight", isDark ? "text-white" : "text-slate-900")}>
-                                ₹{totalEarnings.toLocaleString('en-IN')}
-                            </h2>
+                            {isLoadingDeals ? (
+                                <div className={cn("h-10 w-48 animate-pulse rounded-xl", isDark ? "bg-white/10" : "bg-slate-200")} />
+                            ) : (
+                                <h2 className={cn("text-4xl font-black tracking-tight", isDark ? "text-white" : "text-slate-900")}>
+                                    ₹{totalEarnings.toLocaleString('en-IN')}
+                                </h2>
+                            )}
                             <p className="text-[12px] font-medium text-slate-500">Total lifetime earnings</p>
                         </div>
 
@@ -8747,100 +8816,113 @@ const DashboardTab = React.memo(({
                 </div>
             </motion.div>
 
-            {/* Active Deal Hero Tracker (Redesigned Timeline UI) */}
-            {activeDealsCount > 0 && featuredDeal ? (
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.15 }}
-                    className="px-5"
-                >
-                    <div className={cn(
-                        "p-7 rounded-[2.5rem] border overflow-hidden transition-all duration-500",
-                        isDark
-                            ? "bg-[#0B1324] border-white/5 shadow-2xl"
-                            : "bg-white border-slate-200 shadow-[0_15px_40px_rgba(0,0,0,0.04)]"
-                    )}
-                    onClick={() => { triggerHaptic(); setSelectedItem(featuredDeal); setSelectedType('deal'); }}
-                    >
-                        <div className="flex items-center justify-between mb-8">
-                            <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 rounded-full bg-emerald-500 flex items-center justify-center text-white">
-                                    <Zap className="w-5 h-5" />
-                                </div>
-                                <div>
-                                    <h3 className={cn("text-[14px] font-black uppercase tracking-widest", isDark ? "text-white" : "text-slate-900")}>Active Deal</h3>
-                                    <p className="text-[11px] font-medium text-slate-500">{featuredDeal.brand_name || 'Brand Partner'}</p>
-                                </div>
-                            </div>
-                            <div className={cn("text-lg font-black", isDark ? "text-white" : "text-slate-900")}>
-                                {renderBudgetValue(featuredDeal)}
-                            </div>
-                        </div>
-
-                        {/* Timeline UI */}
-                        <div className="relative flex justify-between items-start mb-8">
-                            <div className="absolute top-[15px] left-0 right-0 h-[2px] bg-slate-100 z-0 mx-8">
-                                <motion.div
-                                    initial={{ width: 0 }}
-                                    animate={{ width: `${Math.min(100, ((progress.step - 1) / 3) * 100)}%` }}
-                                    transition={{ duration: 1.5, ease: "circOut" }}
-                                    className="h-full bg-emerald-500"
-                                />
-                            </div>
-
-                            {[
-                                { id: 1, label: 'Agreement' },
-                                { id: 2, label: 'Shipping' },
-                                { id: 3, label: 'Content' },
-                                { id: 4, label: 'Payment' }
-                            ].map((step) => {
-                                const isActive = progress.step === step.id;
-                                const isCompleted = progress.step > step.id;
-                                return (
-                                    <div key={step.id} className="relative z-10 flex flex-col items-center gap-3 w-16">
-                                        <div className={cn(
-                                            "w-8 h-8 rounded-full border-2 flex items-center justify-center transition-all duration-500 bg-white",
-                                            isCompleted
-                                                ? "bg-emerald-500 border-emerald-500 text-white"
-                                                : isActive
-                                                    ? "border-emerald-500 text-emerald-500 shadow-[0_0_15px_rgba(16,163,74,0.3)]"
-                                                    : "border-slate-200 text-slate-300"
-                                        )}>
-                                            {isCompleted ? <CheckCircle2 className="w-4 h-4" /> : <span className="text-[10px] font-bold">{step.id}</span>}
+            {/* Active Deal Hero Tracker (Horizontal Carousel for Space Efficiency) */}
+            {isLoadingDeals ? (
+                <div className="px-5">
+                    <div className={cn("h-64 rounded-[2.5rem] animate-pulse", isDark ? "bg-white/5" : "bg-slate-100")} />
+                </div>
+            ) : activeDealsCount > 0 && featuredDeals.length > 0 ? (
+                <div className="flex overflow-x-auto snap-x snap-mandatory no-scrollbar gap-4 px-5 pb-4">
+                    {featuredDeals.map((deal: any, index: number) => {
+                        const progress = getDealProgress(deal);
+                        return (
+                            <motion.div
+                                key={deal.id || index}
+                                initial={{ opacity: 0, scale: 0.9 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                transition={{ delay: 0.15 + (index * 0.1) }}
+                                className="min-w-[88vw] max-w-[88vw] snap-center"
+                            >
+                                <div className={cn(
+                                    "p-6 rounded-[2.5rem] border overflow-hidden transition-all duration-500 h-full",
+                                    isDark
+                                        ? "bg-[#0B1324] border-white/5 shadow-2xl"
+                                        : "bg-white border-slate-200 shadow-[0_15px_40px_rgba(0,0,0,0.04)]"
+                                )}
+                                onClick={() => { triggerHaptic(); setSelectedItem(deal); setSelectedType('deal'); }}
+                                >
+                                    <div className="flex items-center justify-between mb-6">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-9 h-9 rounded-full bg-emerald-500 flex items-center justify-center text-white">
+                                                <Zap className="w-4 h-4" />
+                                            </div>
+                                            <div>
+                                                <h3 className={cn("text-[12px] font-black uppercase tracking-widest", isDark ? "text-white" : "text-slate-900")}>Active Deal</h3>
+                                                <p className="text-[10px] font-medium text-slate-500 truncate max-w-[120px]">{deal.brand_name || 'Brand Partner'}</p>
+                                            </div>
                                         </div>
-                                        <span className={cn(
-                                            "text-[9px] font-black uppercase tracking-widest text-center",
-                                            isActive ? "text-emerald-600" : isCompleted ? "text-slate-900" : "text-slate-400"
-                                        )}>
-                                            {step.label}
-                                        </span>
+                                        <div className={cn("text-base font-black", isDark ? "text-white" : "text-slate-900")}>
+                                            {renderBudgetValue(deal)}
+                                        </div>
                                     </div>
-                                );
-                            })}
-                        </div>
-
-                        <div className={cn(
-                            "p-4 rounded-2xl flex items-center justify-between",
-                            isDark ? "bg-white/5" : "bg-slate-50"
-                        )}>
-                            <p className="text-[11px] font-medium text-slate-600">
-                                {progress.step === 1 && "Waiting for agreement signature"}
-                                {progress.step === 2 && "Waiting for brand to ship product"}
-                                {progress.step === 3 && "Submit your content for review"}
-                                {progress.step === 4 && "Final payment being processed"}
-                            </p>
-                            <div className="flex gap-2">
-                                <button className="h-9 px-4 rounded-xl bg-white border border-slate-200 text-[10px] font-bold uppercase tracking-wider text-slate-600 shadow-sm active:scale-95 transition-all">
-                                    Message
-                                </button>
-                                <button className="h-9 px-4 rounded-xl bg-slate-900 text-white text-[10px] font-bold uppercase tracking-wider shadow-sm active:scale-95 transition-all">
-                                    Details
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </motion.div>
+    
+                                    {/* Timeline UI */}
+                                    <div className="relative flex justify-between items-start mb-6">
+                                        <div className="absolute top-[13px] left-0 right-0 h-[2px] bg-slate-100 z-0 mx-6">
+                                            <motion.div
+                                                initial={{ width: 0 }}
+                                                animate={{ width: `${Math.min(100, ((progress.step - 1) / 3) * 100)}%` }}
+                                                transition={{ duration: 1.5, ease: "circOut" }}
+                                                className="h-full bg-emerald-500"
+                                            />
+                                        </div>
+    
+                                        {[
+                                            { id: 1, label: 'Agreement' },
+                                            { id: 2, label: 'Shipping' },
+                                            { id: 3, label: 'Content' },
+                                            { id: 4, label: 'Payment' }
+                                        ].map((step) => {
+                                            const isActive = progress.step === step.id;
+                                            const isCompleted = progress.step > step.id;
+    
+                                            return (
+                                                <div key={step.id} className="relative z-10 flex flex-col items-center gap-1.5 w-14">
+                                                    <div className={cn(
+                                                        "w-7 h-7 rounded-full flex items-center justify-center transition-all duration-500 border-2",
+                                                        isCompleted 
+                                                            ? "bg-emerald-500 border-emerald-500 text-white" 
+                                                            : isActive 
+                                                                ? "bg-white border-emerald-500 text-emerald-500 scale-110 shadow-lg shadow-emerald-500/20" 
+                                                                : "bg-slate-50 border-slate-200 text-slate-300"
+                                                    )}>
+                                                        {isCompleted ? (
+                                                            <CheckCircle2 className="w-4 h-4" />
+                                                        ) : (
+                                                            <span className="text-[10px] font-bold">{step.id}</span>
+                                                        )}
+                                                    </div>
+                                                    <span className={cn(
+                                                        "text-[8px] font-black uppercase tracking-widest text-center",
+                                                        isActive ? "text-emerald-500" : "text-slate-400"
+                                                    )}>
+                                                        {step.label}
+                                                    </span>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+    
+                                    <div className={cn(
+                                        "flex items-center justify-between p-3.5 rounded-2xl border",
+                                        isDark ? "bg-white/[0.02] border-white/5" : "bg-slate-50 border-slate-100"
+                                    )}>
+                                        <div className="flex items-center gap-2">
+                                            <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                                            <span className={cn("text-[10px] font-black uppercase tracking-widest", isDark ? "text-white/60" : "text-slate-500")}>Next Action</span>
+                                        </div>
+                                        <div className={cn("text-[10px] font-bold", isDark ? "text-white" : "text-slate-900")}>
+                                            {progress.step === 1 && "Sign Contract"}
+                                            {progress.step === 2 && "Track Package"}
+                                            {progress.step === 3 && "Upload Post"}
+                                            {progress.step === 4 && "Verify Payout"}
+                                        </div>
+                                    </div>
+                                </div>
+                            </motion.div>
+                        );
+                    })}
+                </div>
             ) : (
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
@@ -8865,73 +8947,7 @@ const DashboardTab = React.memo(({
                 </motion.div>
             )}
 
-            {/* 5. Share Link (Growth Engine Redesigned) */}
-            <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2 }}
-                className="px-5"
-            >
-                <div className={cn(
-                    "p-7 rounded-[2.5rem] border transition-all duration-500",
-                    isDark ? "bg-[#0B1324] border-white/5 shadow-2xl" : "bg-white border-slate-200 shadow-[0_15px_40px_rgba(0,0,0,0.04)]"
-                )}>
-                    <div className="flex items-center justify-between mb-6">
-                        <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center text-emerald-600">
-                                <Link2 className="w-5 h-5" />
-                            </div>
-                            <h3 className={cn("text-[14px] font-black uppercase tracking-widest", isDark ? "text-white" : "text-slate-900")}>Get More Deals</h3>
-                        </div>
-                        <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-md tracking-tight">+12 creators got deals today</span>
-                    </div>
 
-                    <div className="relative mb-6">
-                        <div className="h-14 w-full bg-slate-50 border border-slate-200 rounded-2xl flex items-center px-4 text-[13px] font-medium text-slate-500 truncate">
-                            creatorarmour.com/{username || displayName}
-                        </div>
-                        <button
-                            onClick={handleCopyStorefront}
-                            className="absolute right-2 top-2 h-10 px-4 rounded-xl bg-emerald-600 text-white text-[10px] font-bold uppercase tracking-widest active:scale-95 transition-all"
-                        >
-                            Copy Link
-                        </button>
-                    </div>
-
-                    <div className="grid grid-cols-3 gap-3 mb-6">
-                        <button 
-                            onClick={handleWhatsAppShare}
-                            className="h-12 rounded-2xl bg-[#25D366] text-white flex items-center justify-center gap-2 active:scale-95 transition-all shadow-lg shadow-[#25D366]/20"
-                        >
-                            <span className="text-[10px] font-black uppercase tracking-widest">WhatsApp</span>
-                        </button>
-                        <button 
-                            onClick={handleInstagramShare}
-                            className="h-12 rounded-2xl bg-gradient-to-tr from-[#F58529] via-[#DD2A7B] to-[#8134AF] text-white flex items-center justify-center gap-2 active:scale-95 transition-all shadow-lg shadow-pink-500/20"
-                        >
-                            <span className="text-[10px] font-black uppercase tracking-widest">Instagram</span>
-                        </button>
-                        <button 
-                            onClick={handleNativeShare}
-                            className="h-12 rounded-2xl bg-slate-100 text-slate-600 flex items-center justify-center gap-2 active:scale-95 transition-all"
-                        >
-                            <span className="text-[10px] font-black uppercase tracking-widest">Share</span>
-                        </button>
-                    </div>
-
-                    <div className={cn(
-                        "flex items-center gap-3 p-4 rounded-2xl border border-dashed",
-                        isDark ? "bg-white/5 border-white/10" : "bg-emerald-50/50 border-emerald-100"
-                    )}>
-                        <div className="w-8 h-8 rounded-full bg-emerald-500/10 flex items-center justify-center text-emerald-600 flex-shrink-0">
-                            <ShieldCheck className="w-4 h-4" />
-                        </div>
-                        <p className={cn("text-[11px] font-medium leading-relaxed", isDark ? "text-slate-400" : "text-slate-600")}>
-                            <span className="font-bold text-emerald-600">Pro Tip:</span> Add this to your <span className="font-bold">Instagram Bio</span> to attract 3x more brand deals.
-                        </p>
-                    </div>
-                </div>
-            </motion.div>
 
             {/* 6. Link Visits Widget (Redesigned) */}
             {(analyticsSummary?.weeklyViews || 0) > 0 && (
@@ -9112,7 +9128,7 @@ const AnalyticsTab = React.memo(({
 
 
 const DealsTab = React.memo(({
-    isDark, textColor, collabSubTab,
+    isDark, textColor, collabSubTab, isLoadingDeals, isLoadingCollab,
     setCollabSubTab, searchParams, setSearchParams, triggerHaptic,
     activeDealsCount, activeDealsList, completedDealsCount,
     completedDealsList, pendingOffersDeduplicated, getCreatorDealCardUX,
@@ -9154,7 +9170,13 @@ const DealsTab = React.memo(({
                 {collabSubTab === 'active' ? (
                     <motion.div key="active" initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 10 }}>
                         <h2 className={cn("text-[20px] font-bold tracking-tight mb-4", textColor)}>Active Deals</h2>
-                        {activeDealsCount > 0 ? (
+                        {isLoadingDeals ? (
+                            <div className="space-y-4">
+                                {[0, 1].map(i => (
+                                    <div key={i} className={cn("h-64 rounded-[3rem] animate-pulse", isDark ? "bg-white/5" : "bg-slate-200")} />
+                                ))}
+                            </div>
+                        ) : activeDealsCount > 0 ? (
                             <div className="space-y-4">
                                 {activeDealsList.map((deal: any, idx: number) => {
                                     const productImage = resolveCreatorDealProductImage(deal);
@@ -9168,7 +9190,7 @@ const DealsTab = React.memo(({
                                             whileTap={{ scale: 0.98 }}
                                             onClick={() => { triggerHaptic(); setSelectedItem(deal); setSelectedType('deal'); }}
                                             className={cn(
-                                                "relative w-full aspect-[1.1/1] rounded-[3rem] overflow-hidden bg-[#0B1220] border border-white/5 shadow-2xl mb-8 group"
+                                                "relative w-full aspect-[1.6/1] rounded-[2.5rem] overflow-hidden bg-[#0B1220] border border-white/5 shadow-2xl mb-6 group"
                                             )}
                                         >
                                              <div className="absolute inset-0">
@@ -9276,7 +9298,7 @@ const DealsTab = React.memo(({
                                     const productImage = resolveCreatorDealProductImage(deal);
                                     const isBarter = String(deal?.collab_type || deal?.deal_type || deal?.raw?.collab_type || '').toLowerCase().includes('barter');
                                     return (
-                                        <motion.div key={deal.id || idx} whileTap={{ scale: 0.98 }} onClick={() => { triggerHaptic(); setSelectedItem(deal); setSelectedType('deal'); }} className={cn("relative w-full aspect-[1.2/1] rounded-[2.5rem] overflow-hidden bg-[#0B1220] border-0 shadow-2xl mb-6")}>
+                                        <motion.div key={deal.id || idx} whileTap={{ scale: 0.98 }} onClick={() => { triggerHaptic(); setSelectedItem(deal); setSelectedType('deal'); }} className={cn("relative w-full aspect-[1.6/1] rounded-[2.5rem] overflow-hidden bg-[#0B1220] border-0 shadow-2xl mb-6")}>
                                             <div className="absolute inset-0">
                                                 {productImage && (
                                                     <img
@@ -9330,7 +9352,13 @@ const DealsTab = React.memo(({
                 ) : (
                     <motion.div key="pending" initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -10 }}>
                         <h2 className={cn("text-[20px] font-bold tracking-tight mb-4", textColor)}>Offers</h2>
-                        {pendingOffersCount > 0 ? (
+                        {isLoadingCollab ? (
+                            <div className="space-y-4">
+                                {[0, 1].map(i => (
+                                    <div key={i} className={cn("h-64 rounded-[3rem] animate-pulse", isDark ? "bg-white/5" : "bg-slate-200")} />
+                                ))}
+                            </div>
+                        ) : pendingOffersCount > 0 ? (
                             <div className="space-y-4">
                                 {pendingOffersDeduplicated.map((req: any, idx: number) => {
 	                                    const productImage = resolveCreatorDealProductImage(req);
@@ -9348,7 +9376,7 @@ const DealsTab = React.memo(({
                                         const usageLabel = req?.usage_rights === true || req?.raw?.usage_rights === true ? 'Usage rights' : '';
                                         const paymentTermsLabel = String(req?.payment_terms || req?.raw?.payment_terms || '').trim();
 	                                    return (
-                                        <motion.div key={req.id || idx} whileTap={{ scale: 0.98 }} onClick={() => { triggerHaptic(); setSelectedItem(req); setSelectedType('offer'); }} className={cn("relative w-full aspect-[1.2/1] rounded-[2.5rem] overflow-hidden bg-[#0B1220] border-0 shadow-2xl mb-6")}>
+                                        <motion.div key={req.id || idx} whileTap={{ scale: 0.98 }} onClick={() => { triggerHaptic(); setSelectedItem(req); setSelectedType('offer'); }} className={cn("relative w-full aspect-[1.5/1] rounded-[2.5rem] overflow-hidden bg-[#0B1220] border-0 shadow-2xl mb-6")}>
                                             <div className="absolute inset-0">
                                                 {productImage && (
                                                     <img

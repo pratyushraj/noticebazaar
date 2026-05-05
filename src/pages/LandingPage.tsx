@@ -317,15 +317,16 @@ const LandingPage = () => {
             <div className="w-8 h-8 bg-[#16A34A] rounded-xl flex items-center justify-center shadow-lg shadow-[#16A34A]/20 shrink-0">
               <ShieldCheck className="w-5 h-5 text-white" />
             </div>
-            <h1 className="text-[16px] sm:text-[17px] font-black tracking-tight text-[#0F172A] whitespace-nowrap hidden min-[380px]:block">
+            <span className="text-[16px] sm:text-[17px] font-black tracking-tight text-[#0F172A] whitespace-nowrap hidden min-[380px]:block">
               Creator Armour
-            </h1>
+            </span>
           </Link>
 
           <div className="hidden lg:flex items-center gap-6 bg-white/95 backdrop-blur-md px-6 py-2 rounded-full border border-[#E5E7EB] shadow-sm">
             <a href="#how-it-works" className="text-[13px] font-bold text-[#0F172A] hover:text-[#16A34A] transition-colors whitespace-nowrap">How it Works</a>
             <a href="#marketplace" className="text-[13px] font-bold text-[#0F172A] hover:text-[#16A34A] transition-colors whitespace-nowrap">Packages</a>
             <a href="#social-proof" className="text-[13px] font-bold text-[#0F172A] hover:text-[#16A34A] transition-colors whitespace-nowrap">Creators</a>
+            <Link to="/blog" className="text-[13px] font-bold text-[#0F172A] hover:text-[#16A34A] transition-colors whitespace-nowrap">Blog</Link>
           </div>
 
           <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
@@ -363,6 +364,7 @@ const LandingPage = () => {
             <a href="#how-it-works" onClick={() => setMobileMenuOpen(false)} className="block px-4 py-3 text-[15px] font-bold text-[#0F172A] hover:bg-[#F8FAF9] rounded-xl transition-colors">How it Works</a>
             <a href="#marketplace" onClick={() => setMobileMenuOpen(false)} className="block px-4 py-3 text-[15px] font-bold text-[#0F172A] hover:bg-[#F8FAF9] rounded-xl transition-colors">Packages</a>
             <a href="#social-proof" onClick={() => setMobileMenuOpen(false)} className="block px-4 py-3 text-[15px] font-bold text-[#0F172A] hover:bg-[#F8FAF9] rounded-xl transition-colors">Creators</a>
+            <Link to="/blog" onClick={() => setMobileMenuOpen(false)} className="block px-4 py-3 text-[15px] font-bold text-[#0F172A] hover:bg-[#F8FAF9] rounded-xl transition-colors">Blog</Link>
             <div className="pt-2 border-t border-[#E5E7EB] space-y-1">
               <Link to="/login" onClick={() => setMobileMenuOpen(false)} className="block md:hidden px-4 py-3 text-[15px] font-bold text-[#0F172A] hover:bg-[#F8FAF9] rounded-xl transition-colors">Log In</Link>
               <Link to="/signup?mode=brand" onClick={() => setMobileMenuOpen(false)} className="block lg:hidden px-4 py-3 text-[15px] font-bold text-[#0F172A] hover:bg-[#F8FAF9] rounded-xl transition-colors">Brand Console</Link>
@@ -862,25 +864,25 @@ const LandingPage = () => {
               <div className="space-y-6">
                 <p className="text-[13px] font-black uppercase tracking-[0.25em] text-white/30">Platform</p>
                 <div className="flex flex-col gap-4 text-[16px] font-bold text-slate-400">
-                  <Link to="/signup" className="hover:text-white transition-colors w-fit">Collab Link</Link>
+                  <Link to="/" className="hover:text-white transition-colors w-fit">Collab Link</Link>
                   <a href="#marketplace" className="hover:text-white transition-colors w-fit">Marketplace</a>
-                  <Link to="/signup" className="hover:text-white transition-colors w-fit">Brand Offers</Link>
-                  <Link to="/signup" className="hover:text-white transition-colors w-fit">Pricing</Link>
+                  <Link to="/brands" className="hover:text-white transition-colors w-fit">Brand Offers</Link>
+                  <Link to="/pricing-comparison" className="hover:text-white transition-colors w-fit">Pricing</Link>
                 </div>
               </div>
               <div className="space-y-6">
                 <p className="text-[13px] font-black uppercase tracking-[0.25em] text-white/30">Resources</p>
                 <div className="flex flex-col gap-4 text-[16px] font-bold text-slate-400">
-                  <Link to="/signup" className="hover:text-white transition-colors w-fit">Creator Blog</Link>
+                  <Link to="/blog" className="hover:text-white transition-colors w-fit">Creator Blog</Link>
                   <a href="mailto:support@creatorarmour.com" className="hover:text-white transition-colors w-fit">Help Center</a>
-                  <Link to="/signup" className="hover:text-white transition-colors w-fit">Contract Templates</Link>
-                  <Link to="/signup" className="hover:text-white transition-colors w-fit">Rate Tool</Link>
+                  <Link to="/free-influencer-contract" className="hover:text-white transition-colors w-fit">Contract Templates</Link>
+                  <Link to="/rate-calculator" className="hover:text-white transition-colors w-fit">Rate Tool</Link>
                 </div>
               </div>
               <div className="space-y-6">
                 <p className="text-[13px] font-black uppercase tracking-[0.25em] text-white/30">Company</p>
                 <div className="flex flex-col gap-4 text-[16px] font-bold text-slate-400">
-                  <Link to="/signup" className="hover:text-white transition-colors w-fit">About Us</Link>
+                  <Link to="/about" className="hover:text-white transition-colors w-fit">About Us</Link>
                   <Link to="/privacy-policy" className="hover:text-white transition-colors w-fit">Privacy</Link>
                   <Link to="/terms-of-service" className="hover:text-white transition-colors w-fit">Terms</Link>
                   <a href="mailto:support@creatorarmour.com" className="hover:text-white transition-colors w-fit">Contact</a>

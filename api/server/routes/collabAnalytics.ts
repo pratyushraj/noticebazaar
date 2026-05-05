@@ -344,120 +344,70 @@ router.get('/', authMiddleware, async (req: AuthenticatedRequest, res: Response)
 router.get('/summary', authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
   try {
     const userId = req.user!.id;
-    console.log('[CollabAnalytics] GET /summary - User ID:', userId);
-
-    // Get last 7 days
+    
+    // Get last 7 days date
     const sevenDaysAgo = new Date();
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
     const sevenDaysAgoStr = sevenDaysAgo.toISOString();
 
-    // Get all time stats - use service role to bypass RLS
-    console.log('[CollabAnalytics] Fetching events for creator_id:', userId);
-    console.log('[CollabAnalytics] Supabase client initialized:', supabaseInitialized);
-    
-    // Try the query with explicit error handling
-    let allTimeEvents: any[] | null = null;
-    let allTimeError: any = null;
-    
-    try {
-      const result = await supabase
+    // Perform counts in parallel for efficiency
+    const [
+      { count: totalSubmissions, error: totalSubmissionsError },
+      { count: weeklySubmissions, error: weeklySubmissionsError },
+      { data: viewData, error: viewsError }
+    ] = await Promise.all([
+      // Total All-Time Submissions
+      supabase
         .from('collab_link_events')
-        .select('event_type, ip_hash, created_at')
-        .eq('creator_id', userId);
-      
-      allTimeEvents = result.data;
-      allTimeError = result.error;
-      
-      console.log('[CollabAnalytics] Query result:', {
-        hasData: !!allTimeEvents,
-        dataLength: allTimeEvents?.length || 0,
-        hasError: !!allTimeError,
-        errorCode: allTimeError?.code,
-        errorMessage: allTimeError?.message,
-      });
-    } catch (queryError: any) {
-      console.error('[CollabAnalytics] Query exception:', queryError);
-      allTimeError = queryError;
-    }
+        .select('*', { count: 'exact', head: true })
+        .eq('creator_id', userId)
+        .eq('event_type', 'submit'),
+        
+      // Weekly Submissions
+      supabase
+        .from('collab_link_events')
+        .select('*', { count: 'exact', head: true })
+        .eq('creator_id', userId)
+        .eq('event_type', 'submit')
+        .gte('created_at', sevenDaysAgoStr),
 
-    if (allTimeError) {
-      console.error('[CollabAnalytics] Error fetching all-time events:', allTimeError);
-      console.error('[CollabAnalytics] Error code:', allTimeError.code);
-      console.error('[CollabAnalytics] Error message:', allTimeError.message);
-      console.error('[CollabAnalytics] Error details:', JSON.stringify(allTimeError, null, 2));
-      console.error('[CollabAnalytics] Error hint:', allTimeError.hint);
-      console.error('[CollabAnalytics] User ID:', userId);
-      console.error('[CollabAnalytics] Supabase initialized:', supabaseInitialized);
-      
-      // Return detailed error in development
-      return res.status(500).json({
-        success: false,
-        error: 'Failed to fetch analytics',
-        details: process.env.NODE_ENV === 'development' ? {
-          message: allTimeError.message,
-          code: allTimeError.code,
-          hint: allTimeError.hint,
-          details: allTimeError.details,
-          fullError: JSON.stringify(allTimeError, null, 2),
-        } : undefined,
-        code: allTimeError.code,
+      // Fetch ONLY ip_hash and created_at for views to calculate uniqueness without heavy payload
+      supabase
+        .from('collab_link_events')
+        .select('ip_hash, created_at')
+        .eq('creator_id', userId)
+        .eq('event_type', 'view')
+    ]);
+
+    if (totalSubmissionsError || weeklySubmissionsError || viewsError) {
+      console.error('[CollabAnalytics] Summary data error:', { 
+        totalSubmissionsError, weeklySubmissionsError, viewsError 
       });
     }
 
-    console.log('[CollabAnalytics] Fetched', allTimeEvents?.length || 0, 'events');
-
-    // Get weekly events (last 7 days)
-    const weeklyEvents = allTimeEvents?.filter(
-      e => new Date(e.created_at) >= sevenDaysAgo
-    ) || [];
-
-    // Count unique weekly views (using IP hash as proxy for uniqueness)
+    // Process views for uniqueness in memory (much faster since we only have ip_hash and created_at)
+    const allViews = viewData || [];
+    const totalUniqueViews = new Set(allViews.map(v => v.ip_hash)).size;
+    
+    const sevenDaysAgoTime = sevenDaysAgo.getTime();
     const weeklyUniqueViews = new Set(
-      weeklyEvents
-        .filter(e => e.event_type === 'view')
-        .map(e => e.ip_hash || 'unknown')
+      allViews
+        .filter(v => new Date(v.created_at).getTime() >= sevenDaysAgoTime)
+        .map(v => v.ip_hash)
     ).size;
-
-    // Count total weekly views
-    const weeklyViews = weeklyEvents.filter(e => e.event_type === 'view').length;
-
-    // Count weekly submissions
-    const weeklySubmissions = weeklyEvents.filter(e => e.event_type === 'submit').length;
-
-    // Count all-time unique views
-    const totalUniqueViews = new Set(
-      allTimeEvents
-        ?.filter(e => e.event_type === 'view')
-        .map(e => e.ip_hash || 'unknown') || []
-    ).size;
-
-    // Count all-time total views
-    const totalViews = allTimeEvents?.filter(e => e.event_type === 'view').length || 0;
-
-    // Count all-time submissions
-    const totalSubmissions = allTimeEvents?.filter(e => e.event_type === 'submit').length || 0;
-
-    console.log('[CollabAnalytics] Summary calculated:', {
-      weeklyUniqueViews,
-      totalUniqueViews,
-      totalSubmissions,
-      weeklySubmissions,
-    });
 
     res.json({
       success: true,
-      weeklyViews: weeklyUniqueViews, // Unique views in last 7 days
-      totalViews: totalUniqueViews, // All-time unique views
-      submissions: totalSubmissions, // All-time submissions
-      weeklySubmissions, // Submissions in last 7 days
+      weeklyViews: weeklyUniqueViews,
+      totalViews: totalUniqueViews,
+      submissions: totalSubmissions || 0,
+      weeklySubmissions: weeklySubmissions || 0,
     });
   } catch (error: any) {
     console.error('[CollabAnalytics] Error in GET /summary:', error);
-    console.error('[CollabAnalytics] Error stack:', error.stack);
     res.status(500).json({
       success: false,
       error: 'Internal server error',
-      details: process.env.NODE_ENV === 'development' ? error.message : undefined,
     });
   }
 });

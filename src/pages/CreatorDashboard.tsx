@@ -117,8 +117,8 @@ const CreatorDashboardContent = ({ navigate }: { navigate: any }) => {
   const profileViewsToday = 0;
 
   // Production safety: avoid partial render flicker on first load.
-  // We only "release" the dashboard once both endpoints have settled (success or error).
-  const isDashboardSettled = !!user?.id && !isLoadingCollab && !isLoadingBrandDeals && !isLoadingProfile;
+  // We settled once the identity is known. Individual data fetches will show their own skeletons.
+  const isDashboardSettled = !!user?.id && !isLoadingProfile;
 
   // Onboarding enforcement: Ensure creators complete onboarding before accessing the full dashboard
   useEffect(() => {
@@ -310,8 +310,9 @@ const CreatorDashboardContent = ({ navigate }: { navigate: any }) => {
       collabRequests={collabRequests}
       brandDeals={brandDeals}
       profileViewsToday={profileViewsToday}
-      isLoadingProfile={!user?.id || isLoadingProfile}
-      isLoadingDealsOverride={!user?.id || !isDashboardSettled}
+      isLoadingProfile={isLoadingProfile}
+      isLoadingDealsOverride={isLoadingBrandDeals}
+      isLoadingCollab={isLoadingCollab}
       offersError={parseErrorMessage(collabError, 'Offers')}
       dealsError={parseErrorMessage(dealsQuery.error, 'Deals')}
       onAcceptRequest={handleAcceptRequest}

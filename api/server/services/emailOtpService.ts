@@ -24,10 +24,16 @@ export async function sendEmailOTP(
     const apiKey = process.env.RESEND_API_KEY;
     
     if (!apiKey || apiKey === 'your_resend_api_key_here' || apiKey.trim() === '') {
-      console.error('[EmailOTP] API key not configured or is placeholder');
+      console.warn('[EmailOTP] API key not configured. RUNNING IN MOCK MODE.');
+      console.log('-------------------------------------------');
+      console.log(`[MOCK OTP] To: ${email}`);
+      console.log(`[MOCK OTP] Code: ${otp}`);
+      console.log('-------------------------------------------');
+      
       return {
-        success: false,
-        error: 'Resend API key is not configured. Please set RESEND_API_KEY in server/.env with your actual API key from https://resend.com',
+        success: true,
+        emailId: 'mock-email-id-' + Date.now(),
+        mockOtp: process.env.NODE_ENV !== 'production' ? otp : undefined // Only reveal OTP in non-production
       };
     }
 
@@ -85,8 +91,9 @@ export async function sendEmailOTP(
       </html>
     `;
 
+    const fromEmail = process.env.RESEND_FROM_EMAIL || 'onboarding@resend.dev';
     const requestBody = {
-      from: 'CreatorArmour <noreply@creatorarmour.com>',
+      from: fromEmail.includes('<') ? fromEmail : `CreatorArmour <${fromEmail}>`,
       to: email,
       subject: emailSubject,
       html: emailHtml,
@@ -94,7 +101,8 @@ export async function sendEmailOTP(
 
     console.log('[EmailOTP] Sending OTP email:', {
       url,
-      email,
+      from: fromEmail,
+      to: email,
       otpLength: otp.length,
       hasApiKey: !!apiKey,
     });

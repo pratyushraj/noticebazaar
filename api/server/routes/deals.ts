@@ -398,11 +398,12 @@ router.get('/mine', async (req: AuthenticatedRequest, res: Response) => {
       }
     }
 
-    // Final Sanitization: Single pass filtering
     const sanitized = rows.filter((d) => {
       const brand = String(d.brand_name || '').trim();
       const amt = Number(d.deal_amount || 0);
-      return !!brand && Number.isFinite(amt) && amt > 0;
+      const status = String(d.status || '').toLowerCase();
+      // Allow deals with 0 amount ONLY if they are in pending states (like OTP verification)
+      return !!brand && Number.isFinite(amt) && (amt > 0 || status === 'accepted_pending_otp');
     });
 
     const responseData = { 

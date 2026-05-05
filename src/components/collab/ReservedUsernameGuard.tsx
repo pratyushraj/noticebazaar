@@ -39,6 +39,17 @@ export const RESERVED_ROUTES = new Set<string>([
   "ca-dashboard",
   "lawyer-dashboard",
   "collab",
+  "about",
+  "careers",
+  "pricing-comparison",
+  "free-legal-check",
+  "free-influencer-contract",
+  "contract-analyzer",
+  "rate-calculator",
+  "collaboration-agreement-generator",
+  "brand-directory",
+  "discover",
+  "blog",
 ]);
 
 export default function ReservedUsernameGuard({ children }: { children: ReactNode }) {

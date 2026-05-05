@@ -7,8 +7,8 @@ Disallow: /admin/
 Disallow: /dashboard/
 Disallow: /login/
 Disallow: /signup/
-Disallow: /_next/
 Disallow: /static/
 Disallow: /dist/
+Disallow: /build/
 
 Sitemap: https://creatorarmour.com/sitemap.xml

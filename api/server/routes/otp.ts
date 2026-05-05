@@ -337,6 +337,7 @@ publicRouter.post('/send', async (req: express.Request, res: Response) => {
       success: true,
       message: 'OTP sent successfully to your email',
       emailId: emailResult.emailId,
+      mockOtp: (emailResult as any).mockOtp,
     });
   } catch (error: any) {
     console.error('[OTP] Unhandled error:', error);
@@ -753,34 +754,14 @@ router.post('/send-creator', async (req: AuthenticatedRequest, res: Response) =>
       });
     }
 
-    // Get creator's email from auth.users (email is in auth, not profiles)
-    const { data: authUser, error: authError } = await supabase.auth.admin.getUserById(req.user.id);
+    // Get creator's email from the request (populated by authMiddleware from JWT)
+    const creatorEmail = req.user.email?.trim();
     
-    if (authError) {
-      console.error('[OTP] Error fetching user from auth:', authError);
-      return res.status(500).json({
-        success: false,
-        error: 'Failed to fetch user information',
-      });
-    }
-    
-    if (!authUser?.user?.email) {
-      console.error('[OTP] Creator email not found for user:', req.user.id);
+    if (!creatorEmail) {
+      console.error('[OTP] Creator email not found in session for user:', req.user.id);
       return res.status(404).json({
         success: false,
-        error: 'Creator email not found. Please ensure your account has a valid email address.',
-      });
-    }
-
-    const creatorEmail = authUser.user.email.trim();
-    
-    // Validate email format before sending
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(creatorEmail)) {
-      console.error('[OTP] Invalid email format:', creatorEmail);
-      return res.status(400).json({
-        success: false,
-        error: 'Invalid email address format',
+        error: 'Creator email not found in session. Please sign out and sign in again.',
       });
     }
 
@@ -789,7 +770,7 @@ router.post('/send-creator', async (req: AuthenticatedRequest, res: Response) =>
     const otpHash = hashOTP(otp);
     const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
 
-    // Send OTP email (function signature: email, otp, brandName?)
+    // Send OTP email
     const emailResult = await sendEmailOTP(creatorEmail, otp, (deal as any).brand_name);
 
     if (!emailResult.success) {
@@ -799,22 +780,20 @@ router.post('/send-creator', async (req: AuthenticatedRequest, res: Response) =>
       });
     }
 
-    // Store OTP hash in deal (for creator signing)
-    const updateData: any = {
-      creator_otp_hash: otpHash,
-      creator_otp_expires_at: expiresAt.toISOString(),
-      creator_otp_attempts: 0,
-      creator_otp_verified: false,
-      updated_at: new Date().toISOString(),
-    };
-
+    // Update deal with creator OTP hash and expiration
     const { error: updateError } = await supabase
       .from('brand_deals')
-      .update(updateData)
+      .update({
+        creator_otp_hash: otpHash,
+        creator_otp_expires_at: expiresAt.toISOString(),
+        creator_otp_attempts: 0,
+        creator_otp_verified: false,
+        updated_at: new Date().toISOString(),
+      })
       .eq('id', dealId);
 
     if (updateError) {
-      console.error('[OTP] Failed to update deal:', updateError);
+      console.error('[OTP] Failed to update deal with creator OTP:', updateError);
       return res.status(500).json({
         success: false,
         error: `Failed to save OTP: ${updateError.message}`,
@@ -833,6 +812,7 @@ router.post('/send-creator', async (req: AuthenticatedRequest, res: Response) =>
       success: true,
       message: 'OTP sent successfully to your email',
       emailId: emailResult.emailId,
+      mockOtp: (emailResult as any).mockOtp,
     });
   } catch (error: any) {
     console.error('[OTP] Unhandled error:', error);
