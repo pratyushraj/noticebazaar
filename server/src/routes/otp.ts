@@ -610,8 +610,10 @@ router.post('/verify-creator', authMiddleware, async (req: AuthenticatedRequest,
     }
 
     const { dealId, otp } = req.body;
+    console.log('[OTP] Received verify-creator request:', { dealId, otp: '******', userId: req.user.id });
 
     if (!dealId || !otp) {
+      console.warn('[OTP] verify-creator failed: Missing dealId or otp');
       return res.status(400).json({
         success: false,
         error: 'Missing required fields: dealId and otp',
@@ -620,6 +622,7 @@ router.post('/verify-creator', authMiddleware, async (req: AuthenticatedRequest,
 
     // Verify OTP format (6 digits)
     if (!/^\d{6}$/.test(otp)) {
+      console.warn('[OTP] verify-creator failed: Invalid OTP format:', otp);
       return res.status(400).json({
         success: false,
         error: 'Invalid OTP format. OTP must be 6 digits',
@@ -666,6 +669,7 @@ router.post('/verify-creator', authMiddleware, async (req: AuthenticatedRequest,
     // Check if OTP exists (use creator-specific fields)
     const storedHash = (deal as any).creator_otp_hash;
     if (!storedHash) {
+      console.warn('[OTP] verify-creator failed: No OTP found in DB for deal:', dealId);
       return res.status(400).json({
         success: false,
         error: 'No OTP found. Please request a new OTP',
@@ -674,9 +678,10 @@ router.post('/verify-creator', authMiddleware, async (req: AuthenticatedRequest,
 
     // Check if OTP is already verified
     if ((deal as any).creator_otp_verified === true) {
-      return res.status(400).json({
-        success: false,
-        error: 'OTP has already been verified',
+      console.log('[OTP] verify-creator: OTP already verified for deal:', dealId);
+      return res.json({
+        success: true,
+        message: 'OTP already verified',
       });
     }
 

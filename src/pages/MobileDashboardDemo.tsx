@@ -3152,6 +3152,7 @@ const MobileDashboardDemo = ({
         }
 
         setIsVerifyingCreatorOTP(true);
+        console.log('[MobileDashboard] Verifying OTP for deal:', dealId, 'OTP:', creatorOTP ? '******' : 'MISSING');
         try {
             const apiBaseUrl = getApiBaseUrl();
             const resp = await fetch(`${apiBaseUrl}/api/otp/verify-creator`, {
