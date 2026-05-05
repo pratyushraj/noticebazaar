@@ -13,28 +13,38 @@ import { useMutation } from '@tanstack/react-query';
 async function fetchBrandDeals() {
   const { data: sessionData } = await supabase.auth.getSession();
   if (!sessionData.session) {
-    // If no session, return empty deals instead of throwing.
-    // This prevents console noise during logout/transition.
     return [];
   }
 
+  // Offline Detection
+  if (!navigator.onLine) {
+    const error = new Error('No internet connection');
+    (error as any).status = 'OFFLINE';
+    throw error;
+  }
+
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 15000); // 15s — more lenient for complex deal queries
+  const timeoutId = setTimeout(() => controller.abort(), 15000);
   try {
     const res = await fetch(`${getApiBaseUrl()}/api/deals/mine`, {
       headers: { Authorization: `Bearer ${sessionData.session.access_token}` },
       signal: controller.signal,
     });
     clearTimeout(timeoutId);
+
     if (!res.ok) {
+      console.error(`[Deals] API Error: ${res.status} ${res.statusText}`);
       if (res.status === 401) throw new Error('SESSION_EXPIRED');
       if (res.status === 504) throw new Error('API_TIMEOUT');
       throw new Error(`Failed to fetch deals: ${res.status}`);
     }
+
     const data = await res.json().catch(() => ({}));
     return data?.deals || [];
   } catch (err: any) {
     clearTimeout(timeoutId);
+    console.error('[Deals] Fetch Exception:', err);
+
     if (err.name === 'AbortError') {
       const e: any = new Error('API_TIMEOUT');
       e.status = 0;
@@ -125,137 +135,116 @@ const CreatorDashboardContent = ({ navigate }: { navigate: any }) => {
   useEffect(() => {
     if (!user?.id) return;
 
-    // Listen for ANY changes to this creator's data
-    const channel = supabase
-      .channel(`dashboard-realtime:${user.id}`)
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'collab_requests',
-          filter: `creator_id=eq.${user.id}`,
-        },
-        (payload) => {
-          console.log('[Realtime] Collab request update received:', payload);
-          // Use a broader invalidation to catch all variants of the collab-requests key
-          queryClient.invalidateQueries({ queryKey: ['collab-requests'] });
-          
-          // Also refetch immediately to be sure
-          collabQuery.refetch();
+    let retryCount = 0;
+    const MAX_RETRIES = 3;
 
-          // Only toast on NEW offers to avoid double-toasts from subsequent server-side updates (like last_notified_at)
-          if (payload.eventType === 'INSERT' && document.visibilityState === 'visible') {
-            triggerHaptic();
-            toast.success('🔥 New offer received!', {
-              description: 'A brand just sent you a new collaboration request.',
-              duration: 5000,
-            });
-          }
+    const setupSubscription = () => {
+      const channel = supabase
+        .channel(`dashboard-realtime:${user.id}`)
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'collab_requests',
+            filter: `creator_id=eq.${user.id}`,
+          },
+          (payload) => {
+            console.log('[Realtime] Collab request update received:', payload);
+            queryClient.invalidateQueries({ queryKey: ['collab-requests'] });
+            collabQuery.refetch();
 
-          // Notify if a brand withdraws a request
-          if (
-            payload.eventType === 'UPDATE' && 
-            payload.new.status === 'declined' && 
-            payload.new.decline_reason === 'withdrawn_by_brand' &&
-            payload.old?.status !== 'declined' &&
-            document.visibilityState === 'visible'
-          ) {
-            triggerHaptic();
-            toast.info('Offer Withdrawn', {
-              description: `A brand has withdrawn their collaboration request.`,
-              duration: 5000,
-            });
+            if (payload.eventType === 'INSERT' && document.visibilityState === 'visible') {
+              triggerHaptic();
+              toast.success('🔥 New offer received!', {
+                description: 'A brand just sent you a new collaboration request.',
+                duration: 5000,
+              });
+            }
+
+            if (
+              payload.eventType === 'UPDATE' && 
+              payload.new.status === 'declined' && 
+              payload.new.decline_reason === 'withdrawn_by_brand' &&
+              payload.old?.status !== 'declined' &&
+              document.visibilityState === 'visible'
+            ) {
+              triggerHaptic();
+              toast.info('Offer Withdrawn', {
+                description: `A brand has withdrawn their collaboration request.`,
+                duration: 5000,
+              });
+            }
           }
-        }
-      )
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'brand_deals',
-          filter: `creator_id=eq.${user.id}`,
-        },
-        (payload) => {
-          console.log('[Realtime] Brand deal update received:', payload);
-          queryClient.invalidateQueries({ queryKey: ['brand-deals'] });
-          dealsQuery.refetch();
-        }
-      )
-      .subscribe((status) => {
-        if (status === 'SUBSCRIBED') {
-          console.log('[Realtime] Creator dashboard is now LIVE and listening for updates');
-        }
-      });
+        )
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'brand_deals',
+            filter: `creator_id=eq.${user.id}`,
+          },
+          (payload) => {
+            console.log('[Realtime] Brand deal update received:', payload);
+            queryClient.invalidateQueries({ queryKey: ['brand-deals'] });
+            dealsQuery.refetch();
+          }
+        )
+        .subscribe((status, err) => {
+          if (status === 'SUBSCRIBED') {
+            console.log('[Realtime] Creator dashboard is now LIVE');
+            retryCount = 0;
+          }
+          if (status === 'CHANNEL_ERROR' || status === 'CLOSED') {
+            console.error('[Realtime] Subscription error/closed:', err || status);
+            if (retryCount < MAX_RETRIES) {
+              retryCount++;
+              console.log(`[Realtime] Retrying subscription (${retryCount}/${MAX_RETRIES})...`);
+              setTimeout(setupSubscription, 5000 * retryCount);
+            }
+          }
+        });
+
+      return channel;
+    };
+
+    const channel = setupSubscription();
 
     return () => {
+      console.log('[Realtime] Cleaning up dashboard subscription');
       void supabase.removeChannel(channel);
     };
   }, [user?.id, queryClient]);
 
-  const handleRefresh = () => {
-    queryClient.invalidateQueries({ queryKey: ['collab-requests'] });
-    queryClient.invalidateQueries({ queryKey: ['brand-deals'] });
+  const handleRefresh = async () => {
+    try {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['collab-requests'] }),
+        queryClient.invalidateQueries({ queryKey: ['brand-deals'] }),
+        collabQuery.refetch(),
+        dealsQuery.refetch()
+      ]);
+      toast.success('Dashboard updated');
+    } catch (err) {
+      console.error('[Dashboard] Refresh failed:', err);
+      toast.error('Failed to refresh data. Please check your connection.');
+    }
   };
 
-  const handleAcceptRequest = async (req: any, addressData?: { address: string; pincode: string }, otpVerified?: boolean, otpVerifiedAt?: string) => {
-    const { data: sessionData } = await supabase.auth.getSession();
-    if (!sessionData.session) throw new Error('Not authenticated');
-
-    const res = await fetch(`${getApiBaseUrl()}/api/collab-requests/${req.id}/accept`, {
-      method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${sessionData.session.access_token}`,
-      },
-      body: JSON.stringify({
-        shipping_address: addressData?.address,
-        pincode: addressData?.pincode,
-        otp_verified: otpVerified,
-        otp_verified_at: otpVerifiedAt,
-      }),
-    });
-    const data = await res.json();
-    // Always invalidate so list refreshes even on "already processed" errors
-    queryClient.invalidateQueries({ queryKey: ['collab-requests'] });
-    queryClient.invalidateQueries({ queryKey: ['brand-deals'] });
-    if (!res.ok || !data.success) {
-      const msg = data?.error || '';
-      if (msg.includes('already been processed') || msg.includes('already accepted') || msg.includes('already declined')) {
-        toast.info('This offer was already processed.');
-        return data; // Return data anyway so caller knows it was processed
-      }
-      throw new Error(data.error || 'Failed to accept');
+  const parseErrorMessage = (err: any, type: 'Offers' | 'Deals') => {
+    if (!err) return undefined;
+    const msg = String(err?.message || err || '').toUpperCase();
+    if (msg.includes('OFFLINE') || msg.includes('NETWORK') || !navigator.onLine) {
+      return `${type} could not load. Check your internet and retry.`;
     }
-    return data;
-  };
-
-  const handleDeclineRequest = async (req: any) => {
-    const { data: sessionData } = await supabase.auth.getSession();
-    if (!sessionData.session) throw new Error('Not authenticated');
-    const requestId = typeof req === 'string' ? req : req?.id;
-    if (!requestId) { throw new Error('Request ID missing'); }
-    const res = await fetch(`${getApiBaseUrl()}/api/collab-requests/${requestId}/decline`, {
-      method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${sessionData.session.access_token}`,
-      },
-    });
-    const data = await res.json();
-    // Always invalidate so list refreshes even on "already processed" errors
-    queryClient.invalidateQueries({ queryKey: ['collab-requests'] });
-    if (!res.ok || !data.success) {
-      const msg = data?.error || '';
-      if (msg.includes('already been processed') || msg.includes('already declined') || msg.includes('already accepted')) {
-        toast.info('This offer was already processed.');
-      } else {
-        throw new Error(data.error || 'Failed to decline');
-      }
-      return;
+    if (msg.includes('TIMEOUT')) {
+      return `${type} request timed out. Please retry.`;
     }
-    toast.success('Offer declined');
+    if (msg.includes('SESSION_EXPIRED') || msg.includes('401')) {
+      return 'Session expired. Please sign in again.';
+    }
+    return `${type} could not load (Server Error). Please retry.`;
   };
 
   return (
@@ -265,26 +254,9 @@ const CreatorDashboardContent = ({ navigate }: { navigate: any }) => {
       brandDeals={brandDeals}
       profileViewsToday={profileViewsToday}
       isLoadingProfile={!user?.id || isLoadingProfile}
-      // Hold skeleton until both offers+deals have resolved; prevents 0-count flicker and cross-tab ghosting.
       isLoadingDealsOverride={!user?.id || !isDashboardSettled}
-      offersError={
-        collabError
-          ? ((collabError as any)?.message === 'API_TIMEOUT'
-            ? 'Offers could not load (timeout). Please retry.'
-            : (collabError as any)?.message === 'Session expired'
-              ? 'Session expired. Please sign in again.'
-              : 'Offers could not load. Please retry.')
-          : undefined
-      }
-      dealsError={
-        dealsQuery.error
-          ? ((dealsQuery.error as any)?.message === 'API_TIMEOUT'
-            ? 'Deals could not load (timeout). Please retry.'
-            : (dealsQuery.error as any)?.message === 'SESSION_EXPIRED'
-              ? 'Session expired. Please sign in again.'
-              : 'Deals could not load. Please retry.')
-          : undefined
-      }
+      offersError={parseErrorMessage(collabError, 'Offers')}
+      dealsError={parseErrorMessage(dealsQuery.error, 'Deals')}
       onAcceptRequest={handleAcceptRequest}
       onDeclineRequest={handleDeclineRequest}
       onRefresh={handleRefresh}

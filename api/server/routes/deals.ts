@@ -12,6 +12,18 @@ import { sendCollabRequestAcceptedEmail } from '../services/collabRequestEmailSe
 import { createShippingToken } from '../services/shippingTokenService';
 import { sendBrandShippingUpdateEmail, sendBrandShippingIssueEmail } from '../services/shippingEmailService';
 
+// Simple in-memory cache for /deals/mine
+const dealsCache = new Map<string, { data: any; timestamp: number }>();
+const CACHE_TTL = 30000; // 30 seconds
+
+function invalidateDealsCache(userId: string) {
+  for (const key of dealsCache.keys()) {
+    if (key.startsWith(`${userId}:`)) {
+      dealsCache.delete(key);
+    }
+  }
+}
+
 const normalizeStatus = (raw: any) =>
   String(raw || '')
     .trim()
@@ -302,69 +314,118 @@ router.get('/mine', async (req: AuthenticatedRequest, res: Response) => {
     const role = String(req.user?.role || '').toLowerCase();
 
     if (!userId) {
-      return res.status(401).json({ success: false, error: 'Authentication required' });
+      return res.status(401).json({ 
+        success: false, 
+        error: 'Authentication required',
+        code: 'MISSING_USER_ID'
+      });
     }
-    if (role !== 'creator' && role !== 'admin' && role !== 'client') {
-      return res.status(403).json({ success: false, error: 'Creator access required' });
+    
+    // Safety check: 'client' was a typo in previous versions
+    if (role !== 'creator' && role !== 'admin') {
+      return res.status(403).json({ 
+        success: false, 
+        error: 'Creator access required',
+        code: 'INSUFFICIENT_PERMISSIONS'
+      });
     }
 
-    const { data: deals, error } = await supabase
+    // Pagination Support
+    const limit = Math.min(Number(req.query.limit) || 50, 100);
+    const offset = Number(req.query.offset) || 0;
+    const cacheKey = `${userId}:${limit}:${offset}`;
+
+    // Return cached result if valid
+    const cached = dealsCache.get(cacheKey);
+    if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
+      return res.json(cached.data);
+    }
+
+    const { data: deals, error, count } = await supabase
       .from('brand_deals')
-      .select('*')
+      .select('*', { count: 'exact' })
       .eq('creator_id', userId)
-      .order('updated_at', { ascending: false });
+      .order('updated_at', { ascending: false })
+      .range(offset, offset + limit - 1);
 
     if (error) {
-      console.error('[Deals] mine query error:', error);
-      return res.status(500).json({ success: false, error: error.message || 'Failed to fetch deals' });
+      console.error('[Deals] mine query database error:', error);
+      return res.status(500).json({ 
+        success: false, 
+        error: 'Failed to fetch deals from database',
+        details: process.env.NODE_ENV === 'development' ? error.message : undefined
+      });
     }
 
     const rows = (deals || []) as any[];
 
-    // Hardening: ensure creator dashboard never receives deals with 0/invalid amount.
-    // Mirror the filtering behavior from server/src/routes/deals.ts for consistency.
-    const needsAmountFix = rows.filter((d) => {
-      const amt = Number((d as any)?.deal_amount || 0);
-      const collabLike = String((d as any)?.collab_type || (d as any)?.deal_type || '').toLowerCase();
-      return (!Number.isFinite(amt) || amt <= 0) && !!String((d as any)?.collab_request_id || '').trim() && (collabLike.includes('barter') || collabLike.includes('hybrid') || collabLike.includes('both'));
+    // Optimized Amount Fixing: Only fetch collab requests if we actually have deals needing fixes
+    const needsFix = rows.filter((d) => {
+      const amt = Number(d.deal_amount || 0);
+      const type = String(d.deal_type || d.collab_type || '').toLowerCase();
+      const hasReq = !!String(d.collab_request_id || '').trim();
+      return hasReq && (!Number.isFinite(amt) || amt <= 0) && (type.includes('barter') || type.includes('hybrid') || type.includes('both'));
     });
 
-    if (needsAmountFix.length > 0) {
-      const ids = Array.from(new Set(needsAmountFix.map((d) => String((d as any).collab_request_id)).filter(Boolean)));
-      try {
-        const { data: requests } = await (supabase as any)
-          .from('collab_requests')
-          .select('id, exact_budget, barter_value, collab_type')
-          .in('id', ids);
+    if (needsFix.length > 0) {
+      const collabIds = Array.from(new Set(needsFix.map(d => String(d.collab_request_id))));
+      
+      const { data: requests, error: collabErr } = await supabase
+        .from('collab_requests')
+        .select('id, exact_budget, barter_value')
+        .in('id', collabIds);
 
-        const byId = new Map<string, any>();
-        for (const r of (requests || []) as any[]) byId.set(String(r.id), r);
-
+      if (collabErr) {
+        console.warn('[Deals] Failed to fetch collab requests for amount fix:', collabErr);
+      } else {
+        const reqMap = new Map(requests?.map(r => [String(r.id), r]) || []);
+        
         for (const d of rows) {
-          const id = String((d as any)?.collab_request_id || '').trim();
-          if (!id) continue;
-          const r = byId.get(id);
+          const rid = String(d.collab_request_id || '').trim();
+          if (!rid) continue;
+          
+          const r = reqMap.get(rid);
           if (!r) continue;
-          const exact = r.exact_budget != null ? Number(r.exact_budget) : null;
-          const barter = r.barter_value != null ? Number(r.barter_value) : null;
-          const computed = exact && exact > 0 ? exact : barter && barter > 0 ? barter : null;
-          if (computed && computed > 0) (d as any).deal_amount = computed;
+
+          const exact = Number(r.exact_budget || 0);
+          const barter = Number(r.barter_value || 0);
+          const computed = exact > 0 ? exact : (barter > 0 ? barter : 0);
+          
+          if (computed > 0) {
+            d.deal_amount = computed;
+          }
         }
-      } catch {
-        // ignore lookup failures; we'll filter invalid items below.
       }
     }
 
+    // Final Sanitization: Single pass filtering
     const sanitized = rows.filter((d) => {
-      const brand = String((d as any)?.brand_name || '').trim();
-      const amt = Number((d as any)?.deal_amount || 0);
+      const brand = String(d.brand_name || '').trim();
+      const amt = Number(d.deal_amount || 0);
       return !!brand && Number.isFinite(amt) && amt > 0;
     });
 
-    return res.json({ success: true, deals: sanitized });
+    const responseData = { 
+      success: true, 
+      deals: sanitized,
+      pagination: {
+        total: count || 0,
+        limit,
+        offset
+      }
+    };
+
+    // Update cache
+    dealsCache.set(cacheKey, { data: responseData, timestamp: Date.now() });
+
+    return res.json(responseData);
   } catch (error: any) {
-    console.error('[Deals] mine error:', error);
-    return res.status(500).json({ success: false, error: error?.message || 'Internal server error' });
+    console.error('[Deals] mine internal error:', error);
+    return res.status(500).json({ 
+      success: false, 
+      error: 'An unexpected error occurred while processing your deals',
+      details: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
   }
 });
 
@@ -377,7 +438,7 @@ router.patch('/:id/confirm-payment-received', async (req: AuthenticatedRequest, 
     const role = String(req.user?.role || '').toLowerCase();
 
     if (!userId) return res.status(401).json({ success: false, error: 'Authentication required' });
-    if (role !== 'creator' && role !== 'admin' && role !== 'client') {
+    if (role !== 'creator' && role !== 'admin') {
       return res.status(403).json({ success: false, error: 'Creator access required' });
     }
 
@@ -425,7 +486,7 @@ router.patch('/:id/unconfirm-payment-received', async (req: AuthenticatedRequest
     const role = String(req.user?.role || '').toLowerCase();
 
     if (!userId) return res.status(401).json({ success: false, error: 'Authentication required' });
-    if (role !== 'creator' && role !== 'admin' && role !== 'client') {
+    if (role !== 'creator' && role !== 'admin') {
       return res.status(403).json({ success: false, error: 'Creator access required' });
     }
 
@@ -478,7 +539,7 @@ router.patch('/:id/submit-content', async (req: AuthenticatedRequest, res: Respo
     const accessToken = String(req.headers?.authorization || '').replace(/^Bearer\s+/i, '').trim();
 
     if (!userId) return res.status(401).json({ success: false, error: 'Authentication required' });
-    if (role !== 'creator' && role !== 'admin' && role !== 'client') {
+    if (role !== 'creator' && role !== 'admin') {
       return res.status(403).json({ success: false, error: 'Creator access required' });
     }
 
