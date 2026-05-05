@@ -365,6 +365,11 @@ const getCreatorDealCardUX = (deal: any) => {
         cta,
     };
 };
+const parseLocationParts = (location?: string | null) => {
+    const raw = (location || '').trim();
+    if (!raw) return { address: '', city: '', pincode: '' };
+    const pincodeMatch = raw.match(/\b\d{6}\b/);
+    const pincode = pincodeMatch ? pincodeMatch[0] : '';
 
     const parts = raw.split(',').map(p => p.trim()).filter(Boolean);
     const nonPincodeParts = parts.filter(p => !/\b\d{6}\b/.test(p));
