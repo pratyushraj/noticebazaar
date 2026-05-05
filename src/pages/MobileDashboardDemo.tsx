@@ -57,7 +57,7 @@ const renderClickableLinks = (text: string, isDark: boolean) => {
 };
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import ProgressUpdateSheet from '@/components/deals/ProgressUpdateSheet';
-import { triggerHaptic as globalTriggerHaptic, HapticPatterns } from '@/lib/utils/haptics';
+import { triggerHaptic as globalHaptic, HapticPatterns } from '@/lib/utils/haptics';
 import PremiumDrawer from '@/components/drawer/PremiumDrawer';
 import { supabase } from '@/integrations/supabase/client';
 import { DealStage, getDealStageFromStatus, STAGE_TO_PROGRESS, STAGE_TO_STATUS, useUpdateDealProgress } from '@/lib/hooks/useBrandDeals';
@@ -755,6 +755,10 @@ const MobileDashboardDemo = ({
         // Default to light as requested
         return 'light';
     });
+
+    const triggerHaptic = (pattern: any = HapticPatterns.light) => {
+        globalHaptic(pattern);
+    };
     const [showItemMenu, setShowItemMenu] = useState(false);
     const [showProgressSheet, setShowProgressSheet] = useState(false);
     const [showPushPrompt, setShowPushPrompt] = useState(false);
@@ -2087,11 +2091,6 @@ const MobileDashboardDemo = ({
         document.body.appendChild(el);
         setItemDetailPortalRoot(el);
         // Keep node for the app lifetime to avoid iOS unmount race conditions.
-    }, []);
-
-
-    const triggerHaptic = React.useCallback((pattern: any = HapticPatterns.light) => {
-        globalTriggerHaptic(pattern);
     }, []);
 
     // Auto-sync Instagram stats if stale
