@@ -97,7 +97,11 @@ export const getCanonicalDealStatus = (deal: any): CanonicalDealStatus => {
 
   const paymentStatus = String(deal?.payment_status || deal?.raw?.payment_status || '').trim().toLowerCase();
   const paymentId = String(deal?.payment_id || deal?.raw?.payment_id || '').trim();
-  const hasCapturedPayment = ['captured', 'paid', 'authorized', 'processed', 'successful'].includes(paymentStatus) || (paymentId.startsWith('pay_') && Number(deal?.amount_paid || deal?.raw?.amount_paid || 0) > 0);
+  const hasCapturedPayment = 
+    ['captured', 'paid', 'authorized', 'processed', 'successful'].includes(paymentStatus) || 
+    (paymentId.startsWith('pay_') && Number(deal?.amount_paid || deal?.raw?.amount_paid || 0) > 0) ||
+    !!(deal?.paid_at || deal?.raw?.paid_at) ||
+    String(deal?.escrow_status || deal?.raw?.escrow_status || '').toLowerCase() === 'funded';
 
   const creatorSigned = 
     hasTruthyKeyMatch(signatureSources, /(creator.*signed|signed.*creator|creator_signature|creator_esign|creator_signed_at|creator_otp_verified)/i) || 
@@ -165,7 +169,11 @@ export const getCanonicalDealStatus = (deal: any): CanonicalDealStatus => {
   if (lower === 'payment_pending') {
     const paymentStatus = String(deal?.payment_status || deal?.raw?.payment_status || '').trim().toLowerCase();
     const paymentId = String(deal?.payment_id || deal?.raw?.payment_id || '').trim();
-    const hasCapturedPayment = ['captured', 'paid', 'authorized', 'processed', 'successful'].includes(paymentStatus) || (paymentId.startsWith('pay_') && Number(deal?.amount_paid || deal?.raw?.amount_paid || 0) > 0);
+    const hasCapturedPayment = 
+      ['captured', 'paid', 'authorized', 'processed', 'successful'].includes(paymentStatus) || 
+      (paymentId.startsWith('pay_') && Number(deal?.amount_paid || deal?.raw?.amount_paid || 0) > 0) ||
+      !!(deal?.paid_at || deal?.raw?.paid_at) ||
+      String(deal?.escrow_status || deal?.raw?.escrow_status || '').toLowerCase() === 'funded';
     if (hasCapturedPayment) {
       // (This redundancy is safe as it's also handled by the global isBarter check above)
       if (isBarter && !hasAddress) {
@@ -221,7 +229,11 @@ export const getDealPrimaryCta = (params: { role: DealRole; deal: any }): DealPr
   const hasReceivedShipment = shippingStatus === 'delivered' || shippingStatus === 'received';
   const paymentStatus = String(deal?.payment_status || deal?.raw?.payment_status || '').trim().toLowerCase();
   const paymentId = String(deal?.payment_id || deal?.raw?.payment_id || '').trim();
-  const hasCapturedPayment = ['captured', 'paid', 'authorized', 'processed', 'successful'].includes(paymentStatus) || (paymentId.startsWith('pay_') && Number(deal?.amount_paid || deal?.raw?.amount_paid || 0) > 0);
+  const hasCapturedPayment = 
+    ['captured', 'paid', 'authorized', 'processed', 'successful'].includes(paymentStatus) || 
+    (paymentId.startsWith('pay_') && Number(deal?.amount_paid || deal?.raw?.amount_paid || 0) > 0) ||
+    !!(deal?.paid_at || deal?.raw?.paid_at) ||
+    String(deal?.escrow_status || deal?.raw?.escrow_status || '').toLowerCase() === 'funded';
   const signatureSources = [
     deal,
     deal?.raw,
