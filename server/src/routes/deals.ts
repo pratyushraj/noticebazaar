@@ -1817,14 +1817,67 @@ router.post('/:id/sign-creator', async (req: AuthenticatedRequest, res: Response
     }
 
     // 1. Fetch deal to verify OTP status
-    const { data: deal, error: dealError } = await supabase
-      .from('brand_deals')
-      .select('creator_otp_verified, creator_otp_verified_at, creator_id')
+    let { data: deal, error: dealError } = await supabase
+      .from('brand_deals' as any)
+      .select('*') // Get all columns for service requirements
       .eq('id', dealId)
       .maybeSingle();
 
+    // Fallback: Check if this is a collab_request ID
+    if (!deal && !dealError) {
+      console.log('[Deals] sign-creator - Deal not found, checking if ID is a collab_request:', dealId);
+      const { data: collabReq } = await supabase
+        .from('collab_requests' as any)
+        .select('*')
+        .eq('id', dealId)
+        .maybeSingle();
+      
+      if (collabReq) {
+        console.log('[Deals] sign-creator - Found ID in collab_requests instead of brand_deals:', {
+          id: dealId,
+          status: collabReq.status,
+          hasDealId: !!collabReq.deal_id
+        });
+
+        if (collabReq.deal_id) {
+          console.log('[Deals] sign-creator - Using linked deal_id from collab_request:', collabReq.deal_id);
+          // Update dealId to the actual brand_deal ID
+          const actualDealId = collabReq.deal_id;
+          
+          // Retry with the actual deal_id
+          const { data: linkedDeal, error: linkedDealError } = await supabase
+            .from('brand_deals' as any)
+            .select('*')
+            .eq('id', actualDealId)
+            .maybeSingle();
+          
+          if (linkedDeal) {
+            deal = linkedDeal;
+            dealError = linkedDealError;
+            // IMPORTANT: Update the dealId variable for the rest of the handler
+            (dealId as any) = actualDealId;
+          }
+        } else {
+          console.warn('[Deals] sign-creator - ID is a collab request but no deal_id is linked yet. Status:', collabReq.status);
+          return res.status(404).json({
+            success: false,
+            error: 'Deal not found (collaboration not yet accepted)',
+            details: 'This ID belongs to a collab request that has not been converted to a deal yet.',
+            status: collabReq.status,
+            requestId: dealId
+          });
+        }
+      }
+    }
+
     if (dealError || !deal) {
-      console.warn('[Deals] 404 Deal not found:', dealId); return res.status(404).json({ success: false, error: 'Deal not found' });
+      console.warn('[Deals] 404 Deal not found:', dealId); 
+      return res.status(404).json({ 
+        success: false, 
+        error: 'Deal not found',
+        details: dealError?.message || `No deal found with ID ${dealId} in brand_deals table`,
+        requestId: dealId
+      });
     }
 
     const dealData = deal as any;
@@ -2408,7 +2461,8 @@ router.post('/:id/verify-payment', authMiddleware, async (req: AuthenticatedRequ
         // Success! Update manually.
         const now = new Date().toISOString();
         const updateData: any = {
-          status: 'content_making',
+          status: 'CONTENT_MAKING',
+          payment_sent_at: now,
           updated_at: now
         };
         
@@ -2748,7 +2802,10 @@ router.patch('/:id/submit-content', authMiddleware, async (req: AuthenticatedReq
     // ── GATE 2: Shipping-address gate ─────────────────────────────────────────
     // For any deal that requires shipping (barter, hybrid, or explicit flag),
     // the brand must have provided their shipping address before creator delivers.
-    if (!isAdminOverride && inferRequiresShipping(deal)) {
+    const shippingStatus = String(deal?.shipping_status || (deal as any)?.raw?.shipping_status || '').trim().toLowerCase();
+    const hasStartedShipping = ['shipped', 'delivered', 'received', 'transit'].includes(shippingStatus);
+
+    if (!isAdminOverride && inferRequiresShipping(deal) && !hasStartedShipping) {
       const hasBrandAddress = !!(deal as any).brand_address && String((deal as any).brand_address).trim().length > 5;
       if (!hasBrandAddress) {
         return res.status(402).json({
@@ -2906,21 +2963,25 @@ router.patch('/:id/review-content', authMiddleware, async (req: AuthenticatedReq
     };
 
     if (status === 'approved') {
+      const isBarter = String((deal as any).deal_type || '').toLowerCase() === 'barter';
       updateData.brand_approved_at = now;
       updateData.milestone_status = 'approved';
-      updateData.status = 'CONTENT_APPROVED';
+      updateData.status = isBarter ? 'Completed' : 'CONTENT_APPROVED';
       updateData.content_approved_at = now;
-      updateData.progress_percentage = 95;
-      updateData.payout_release_at = calculatePayoutReleaseAt(new Date(now));
-      minimalUpdate.status = 'CONTENT_APPROVED';
-      minimalUpdate.progress_percentage = 95;
+      updateData.progress_percentage = isBarter ? 100 : 95;
+      
+      if (!isBarter) {
+        updateData.payout_release_at = calculatePayoutReleaseAt(new Date(now));
+      }
+      
+      minimalUpdate.status = updateData.status;
+      minimalUpdate.progress_percentage = updateData.progress_percentage;
     } else if (status === 'changes_requested') {
       updateData.milestone_status = 'feedback_given';
-      // Use a status value that exists in older environments and matches client filters.
-      updateData.status = 'Content Making';
+      updateData.status = 'REVISION_REQUESTED';
       updateData.revision_requested_at = now;
       updateData.progress_percentage = 85;
-      minimalUpdate.status = 'Content Making';
+      minimalUpdate.status = 'REVISION_REQUESTED';
       minimalUpdate.progress_percentage = 85;
     } else {
       updateData.milestone_status = 'disputed';

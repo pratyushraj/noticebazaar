@@ -6,7 +6,10 @@ import express, { Response } from 'express';
 import crypto from 'crypto';
 import { supabase } from '../lib/supabase.js';
 import { sendOTPEmail } from '../services/otpEmailService.js';
+import { sendGenericPushNotificationToCreator } from '../services/pushNotificationService.js';
 import { AuthenticatedRequest, authMiddleware } from '../middleware/auth.js';
+import { generateContractFromScratch } from '../services/contractGenerator.js';
+import { signContractAsCreator } from '../services/contractSigningService.js';
 
 const router = express.Router();
 
@@ -702,10 +705,25 @@ router.post('/verify-creator', authMiddleware, async (req: AuthenticatedRequest,
 
     // Verify OTP
     const inputHash = hashOTP(otp);
-    const isValid = crypto.timingSafeEqual(
-      Buffer.from(storedHash),
-      Buffer.from(inputHash)
-    );
+    
+    let isValid = false;
+    try {
+      const storedBuffer = Buffer.from(storedHash);
+      const inputBuffer = Buffer.from(inputHash);
+      
+      if (storedBuffer.length === inputBuffer.length) {
+        isValid = crypto.timingSafeEqual(storedBuffer, inputBuffer);
+      } else {
+        console.warn('[OTP] Hash length mismatch:', {
+          stored: storedBuffer.length,
+          input: inputBuffer.length
+        });
+        isValid = (storedHash === inputHash);
+      }
+    } catch (e) {
+      console.error('[OTP] timingSafeEqual error:', e);
+      isValid = (storedHash === inputHash);
+    }
 
     if (!isValid) {
       // Increment attempts
@@ -778,6 +796,115 @@ router.post('/verify-creator', authMiddleware, async (req: AuthenticatedRequest,
         status: finalizedStatus,
         verifiedAt,
       });
+
+      // ── SIMULTANEOUS SIGNING FLOW ───────────────────────────────────────────
+      // Automatically generate and sign the contract if it doesn't exist/isn't signed
+      try {
+        const creatorName = creatorProfile 
+          ? `${creatorProfile.first_name || ''} ${creatorProfile.last_name || ''}`.trim() || creatorProfile.business_name || 'Creator'
+          : 'Creator';
+          
+        const creatorEmail = req.user?.email || (creatorProfile as any)?.email || '';
+
+        // 1. Ensure contract exists
+        const { data: freshDeal } = await supabase
+          .from('brand_deals')
+          .select('contract_file_url, deal_type')
+          .eq('id', dealId)
+          .single();
+
+        if (freshDeal && !freshDeal.contract_file_url && freshDeal.deal_type !== 'barter') {
+          console.log('[OTP] Auto-generating contract for deal:', dealId);
+          await generateContractFromScratch({ dealId }).catch(err => {
+            console.error('[OTP] Contract auto-generation failed:', err.message);
+          });
+        }
+
+        // 2. Sign as creator
+        console.log('[OTP] Auto-signing contract for creator:', creatorEmail);
+        await signContractAsCreator({
+          dealId,
+          creatorId: req.user.id,
+          signerName: creatorName,
+          signerEmail: creatorEmail,
+          ipAddress: req.ip || 'unknown',
+          userAgent: req.headers['user-agent'] || 'unknown',
+          otpVerified: true,
+          otpVerifiedAt: verifiedAt
+        }).then(res => {
+          if (res.success) {
+            console.log('[OTP] Auto-signing successful for deal:', dealId);
+          } else {
+            console.warn('[OTP] Auto-signing skipped/failed:', res.error);
+          }
+        }).catch(err => {
+          console.error('[OTP] Auto-signing exception:', err.message);
+        });
+      } catch (signingFlowErr) {
+        console.error('[OTP] Unified signing flow failed (non-fatal):', signingFlowErr.message);
+      }
+      // ───────────────────────────────────────────────────────────────────────
+
+      // Notify the brand that the creator has accepted and verified
+      const brandId = (deal as any).brand_id;
+      const brandEmail = (deal as any).brand_email;
+      const brandName = (deal as any).brand_name || 'Brand';
+      // Get creator profile for notification
+      const { data: creatorProfile } = await supabase
+        .from('profiles')
+        .select('first_name, last_name, business_name')
+        .eq('id', req.user.id)
+        .maybeSingle();
+
+      const creatorName = creatorProfile 
+        ? `${creatorProfile.first_name || ''} ${creatorProfile.last_name || ''}`.trim() || creatorProfile.business_name 
+        : 'Creator';
+
+      if (brandId || brandEmail) {
+        // Resolve brand user id for push
+        let targetBrandUserId = brandId;
+        if (!targetBrandUserId && brandEmail) {
+          const { data: brandProfile } = await supabase
+            .from('profiles')
+            .select('id')
+            .eq('email', brandEmail)
+            .maybeSingle();
+          targetBrandUserId = brandProfile?.id;
+        }
+
+        if (targetBrandUserId) {
+          const isBarter = String((deal as any).deal_type || (deal as any).collab_type || '').trim().toLowerCase() === 'barter';
+          const body = isBarter
+            ? `${creatorName} accepted. Add shipping details to keep the deal moving.`
+            : `${creatorName} accepted. Review the deal and complete the next step.`;
+          const url = `/brand-dashboard?tab=collabs&subtab=active&dealId=${encodeURIComponent(dealId)}`;
+
+          await sendGenericPushNotificationToCreator({
+            creatorId: targetBrandUserId,
+            title: 'Creator accepted your offer',
+            body,
+            url,
+            data: {
+              type: 'brand_offer_accepted',
+              dealId,
+              collabRequestId: (deal as any).collab_request_id,
+            },
+          }).catch(err => console.warn('[OTP] Failed to notify brand:', err.message));
+
+          // Also create an in-app notification
+          await supabase.from('notifications').insert({
+            user_id: targetBrandUserId,
+            type: 'deal',
+            category: 'collab_request',
+            title: 'Creator accepted your offer',
+            message: body,
+            link: url,
+            priority: 'high',
+            data: { dealId, type: 'brand_offer_accepted' },
+            read: false,
+          }).catch(err => console.warn('[OTP] Failed to create brand in-app notification:', err.message));
+        }
+      }
     }
 
     console.log('[OTP] Creator OTP verified successfully for deal:', dealId);

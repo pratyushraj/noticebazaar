@@ -37,10 +37,33 @@ export const renderBudgetValue = (item: any) => {
     const min = Number(item?.budget_range?.min || item?.form_data?.budget_range?.min || (item?.budget_range && typeof item.budget_range === 'object' && item.budget_range.min));
     if (Number.isFinite(min) && min > 0) return `₹${min.toLocaleString()}+`;
 
-    const barter = Number(item?.barter_value || item?.form_data?.barter_value);
-    if (Number.isFinite(barter) && barter > 0) return `₹${barter.toLocaleString()} (Free products)`;
+    const barter = Number(item?.barter_value || item?.form_data?.barter_value || item?.raw?.barter_value);
+    if (Number.isFinite(barter) && barter > 0) {
+        if (barter <= 1) return 'Product value TBD';
+        return `₹${barter.toLocaleString()} (Free products)`;
+    }
 
-    return 'Flexible Budget';
+    const productName = (
+        item?.barter_product_name ||
+        item?.product_name ||
+        item?.form_data?.barterProductName ||
+        item?.form_data?.product_name ||
+        item?.raw?.barter_product_name ||
+        item?.raw?.product_name ||
+        item?.barter_product_category ||
+        item?.form_data?.barterProductCategory ||
+        item?.barter_description ||
+        item?.raw?.barter_description
+    );
+
+    if (item?.collab_type === 'barter' || item?.deal_type === 'barter' || (item && typeof item === 'object' && String(item.collab_type || item.deal_type || '').toLowerCase().includes('barter'))) {
+        if (productName && typeof productName === 'string' && productName.trim().length > 0) {
+            return productName;
+        }
+        return 'Product value TBD';
+    }
+
+    return 'Budget TBD';
 };
 
 export const parseDealDate = (value: any): Date | null => {
@@ -73,10 +96,12 @@ export const inferCreatorRequiresPayment = (deal: any) => {
 };
 
 export const inferCreatorRequiresShipping = (deal: any) => {
-    if (typeof deal?.requires_shipping === 'boolean') return Boolean(deal.requires_shipping);
-    if (typeof deal?.shipping_required === 'boolean') return Boolean(deal.shipping_required);
+    if (deal?.requires_shipping === true || deal?.shipping_required === true || 
+        deal?.raw?.requires_shipping === true || deal?.raw?.shipping_required === true) {
+        return true;
+    }
     const kind = String(deal?.collab_type || deal?.deal_type || deal?.raw?.collab_type || '').trim().toLowerCase();
-    return kind === 'barter' || kind === 'both' || kind === 'hybrid' || kind === 'paid_barter';
+    return kind.includes('barter') || kind === 'both' || kind === 'hybrid' || kind === 'paid_barter';
 };
 
 export const getCreatorDealCardUX = (deal: any) => {

@@ -33,7 +33,7 @@ const BlogListing = () => {
           <Badge className="mb-6 bg-emerald-500/10 text-emerald-400 border-emerald-500/20 px-4 py-1 text-xs uppercase tracking-widest font-black">
             Creator Education
           </Badge>
-          <h1 className="text-4xl md:text-6xl font-black mb-6 tracking-tight italic uppercase italic">
+          <h1 className="text-4xl md:text-6xl font-black mb-6 tracking-tight italic uppercase">
             The Creator <span className="text-emerald-500">Armour</span> Blog
           </h1>
           <p className="text-lg md:text-xl text-slate-400 max-w-2xl mx-auto font-medium">

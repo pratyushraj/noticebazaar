@@ -101,6 +101,7 @@ export const getCanonicalDealStatus = (deal: any): CanonicalDealStatus => {
   // For barter deals, once the address is provided, we effectively move to the active stage
   // unless it's already completed or disputed, or content has already been delivered.
   const isPostContractStatus = 
+    lower.includes('content_making') ||
     lower.includes('content_delivered') || 
     lower.includes('revision') || 
     lower.includes('awaiting_review') || 
@@ -109,6 +110,7 @@ export const getCanonicalDealStatus = (deal: any): CanonicalDealStatus => {
     lower.includes('approved') || 
     lower.includes('released') || 
     lower.includes('paid') || 
+    lower.includes('transit') ||
     lower.includes('dispute');
 
   if (lower.includes('cancel')) return 'CANCELLED';
@@ -117,7 +119,10 @@ export const getCanonicalDealStatus = (deal: any): CanonicalDealStatus => {
 
   // ── Shipping address gate: ensure address is provided for shipping-required deals ──
   // This must come before CONTENT_MAKING or SENT to ensure brands don't skip this step.
-  if (isBarter && !hasAddress && !isPostContractStatus) {
+  const shippingStatus = String(deal?.shipping_status || deal?.raw?.shipping_status || '').trim().toLowerCase();
+  const hasStartedShipping = ['shipped', 'delivered', 'received', 'transit'].includes(shippingStatus);
+
+  if (isBarter && !hasAddress && !isPostContractStatus && !hasStartedShipping) {
     // For paid deals, only show address gate AFTER payment is captured.
     const requiresPayment = isPaidLikeCollab(deal);
     const paymentStatus = String(deal?.payment_status || deal?.raw?.payment_status || '').trim().toLowerCase();

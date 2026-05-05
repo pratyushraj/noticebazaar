@@ -1,34 +1,39 @@
-CreatorArmour
+# Creator Armour
 
-CreatorArmour is a creator collaboration platform for structured brand deals.
-Creators publish a collab link with packages, prices, and deal preferences.
-Brands can review creator details, choose a package, and submit collaboration offers.
+> Professional infrastructure for Indian creators to close brand deals, manage contracts, and track revenue.
 
-Primary URL: https://creatorarmour.com/
+Creator Armour is a high-performance platform designed to replace messy Instagram DMs with structured professional workflows. It provides creators with a dedicated collaboration link where brands can view packages, check rates, and submit formal offers.
 
-Key pages:
-- Homepage: https://creatorarmour.com/
-- Discover creators: https://creatorarmour.com/discover
-- Creator directory: https://creatorarmour.com/creators
-- Blog: https://creatorarmour.com/blog
-- Free influencer contract: https://creatorarmour.com/free-influencer-contract
-- Creator profile example: https://creatorarmour.com/collab/example-creator
+## Core Services
 
-Core capabilities:
-- Creator collab link for brand inquiries
-- Structured package-based offers
-- Collaboration workflows and tracking
-- Creator-focused business tooling
+- **Creator Collab Link**: A professional storefront for creators to list services and receive offers.
+- **Structured Offers**: Standardized deal formats that eliminate ambiguity in deliverables and timelines.
+- **Contract Management**: Automated generation and tracking of collaboration agreements.
+- **Revenue Tracking**: Dashboards for monitoring paid, pending, and overdue brand payments.
+- **Legal Support**: On-demand legal aid for payment recovery and contract disputes.
 
-Brand:
-- Primary brand name: CreatorArmour
-- Alternate spelling: CreatorArmour
+## Key Resources
 
-Official social profiles:
-- Instagram: https://www.instagram.com/creatorarmour
-- X: https://x.com/creatorarmour
-- LinkedIn: https://www.linkedin.com/company/creatorarmour
+- [Home](https://creatorarmour.com/)
+- [Blog / Creator Guides](https://creatorarmour.com/blog)
+- [Influencer Rate Calculator](https://creatorarmour.com/rate-calculator)
+- [Free Contract Templates](https://creatorarmour.com/free-influencer-contract)
+- [Legal Health Check](https://creatorarmour.com/free-legal-check)
+- [Brand Directory](https://creatorarmour.com/brand-directory)
+- [Discover Creators](https://creatorarmour.com/discover)
 
-Indexing notes:
-- Public marketing and creator profile pages may be indexed.
-- Authenticated dashboard and admin surfaces are restricted.
+## Technical Integration
+
+- **Primary URL**: https://creatorarmour.com
+- **API Endpoint**: https://creatorarmour.com/api (Internal use only)
+- **Sitemap**: https://creatorarmour.com/sitemap.xml
+
+## Business Context
+
+Creator Armour targets the Indian creator economy, focusing on the "middle-class" of creators who need professional tools but aren't yet represented by agencies. It operates as a business-in-a-box for independent influencers.
+
+## Social Profiles
+
+- [Instagram](https://www.instagram.com/creatorarmour)
+- [Twitter / X](https://x.com/creatorarmour)
+- [LinkedIn](https://www.linkedin.com/company/creatorarmour)

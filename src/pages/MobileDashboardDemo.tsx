@@ -435,8 +435,9 @@ const buildPortfolioSlots = (rawItems: any, legacyLinks?: string[] | null): Port
 
 const getCreatorDealCardUX = (deal: any) => {
     const rawStatus = normalizeDealStatus(deal);
+    const isBarter = isBarterLikeCollab(deal);
 
-    const isCompleted = rawStatus.includes('completed') || rawStatus === 'paid' || rawStatus === 'finished';
+    const isCompleted = rawStatus.includes('completed') || rawStatus === 'paid' || rawStatus === 'finished' || (isBarter && (rawStatus.includes('approved') || rawStatus.includes('content_approved')));
     const isRevisionRequested = rawStatus.includes('revision_requested') || rawStatus.includes('changes_requested') || rawStatus.includes('brand_revision_requested');
     const isRevisionDone = rawStatus.includes('revision_done') || rawStatus.includes('revision_submitted');
     const requiresShipping = isBarterLikeCollab(deal);
@@ -467,8 +468,8 @@ const getCreatorDealCardUX = (deal: any) => {
 
     let progressStep = 1;
     if (isCompleted) progressStep = 7;
-    else if (isPaymentReleased) progressStep = 6;
-    else if (isApproved) progressStep = 5;
+    else if (isPaymentReleased) progressStep = requiresShipping ? 7 : 6;
+    else if (isApproved) progressStep = requiresShipping ? 7 : 5;
     else if (isDelivered || isRevisionRequested) progressStep = 4;
     else if (isMaking) progressStep = 3;
     else if (isPaymentPending) progressStep = 2.5;
@@ -1599,7 +1600,29 @@ const MobileDashboardDemo = ({
     }, [selectedItem, selectedType]);
 
     const selectedDealStatus = normalizeDealStatus(selectedItem);
+    const selectedRawStatus = String(selectedItem?.status || '').toLowerCase();
     const selectedIsPureBarter = (selectedType === 'deal' || selectedType === 'offer') && String(selectedItem?.collab_type || selectedItem?.deal_type || selectedItem?.raw?.collab_type || '').trim().toLowerCase() === 'barter';
+    
+    // P0 FIX: More robust funded check to avoid premature "Payment Secured" labels
+    const isFunded = React.useMemo(() => {
+        if (!selectedItem) return false;
+        if (selectedIsPureBarter) return true; // Barter deals are "funded" by product linking/agreement
+        const raw = String(selectedItem.status || '').toLowerCase();
+        
+        // Explicitly funded states
+        const fundedStates = ['active', 'working', 'in_production', 'content_delivered', 'approved', 'payout_released', 'completed', 'delivered', 'review'];
+        if (fundedStates.some(s => raw.includes(s)) && !raw.includes('pending')) return true;
+        
+        // If amount_paid is present and > 0, it's definitely funded
+        if ((selectedItem as any).amount_paid > 0) return true;
+        
+        // Default to not funded if in any of these early states
+        const earlyStates = ['payment_pending', 'pending', 'contract', 'fully_executed', 'executed', 'signed', 'accepted', 'confirmed'];
+        if (earlyStates.some(s => raw.includes(s))) return false;
+        
+        return false;
+    }, [selectedItem, selectedIsPureBarter]);
+
     const selectedRequiresPayment = selectedType === 'deal' && !!selectedItem ? inferCreatorRequiresPayment(selectedItem) : false;
     const selectedRequiresShipping = (selectedType === 'deal' || selectedType === 'offer') && !!selectedItem
         ? Boolean(selectedItem?.shipping_required || selectedItem?.raw?.shipping_required) || isBarterLikeCollab(selectedItem)
@@ -1703,14 +1726,18 @@ const MobileDashboardDemo = ({
             const requiresPayment = isPaidLikeCollab(selectedItem);
             const requiresShipping = Boolean(selectedItem?.shipping_required) || isBarterLikeCollab(selectedItem);
             const rawStatus = String(selectedItem?.status || '').toLowerCase();
-            const isFunded = !rawStatus.includes('payment_pending') &&
-                             rawStatus !== 'pending' &&
-                             !rawStatus.includes('contract') &&
-                             rawStatus !== 'fully_executed' &&
-                             rawStatus !== 'executed' &&
-                             rawStatus !== 'signed';
+            const isFundedInternal = (selectedItem?.amount_paid || 0) > 0 || (
+                !rawStatus.includes('payment_pending') &&
+                rawStatus !== 'pending' &&
+                !rawStatus.includes('contract') &&
+                !rawStatus.includes('fully_executed') &&
+                !rawStatus.includes('executed') &&
+                !rawStatus.includes('signed') &&
+                !rawStatus.includes('accepted') &&
+                !rawStatus.includes('confirmed')
+            );
 
-            if (requiresPayment && !isFunded && (selectedItem?.amount_paid || 0) <= 0) {
+            if (requiresPayment && !isFundedInternal && (selectedItem?.amount_paid || 0) <= 0) {
                 toast.error('Payment Required', {
                     description: 'The brand must fund this deal in escrow before you can deliver work. Please remind them to pay first.'
                 });
@@ -1792,16 +1819,12 @@ const MobileDashboardDemo = ({
         try {
             const { data: { session } } = await supabase.auth.getSession();
             const apiBase = getApiBaseUrl();
-            const response = await fetch(`${apiBase}/api/deals/${dealId}/shipping/update`, {
+            const response = await fetch(`${apiBase}/api/deals/${dealId}/shipping/confirm-received`, {
                 method: 'PATCH',
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${session?.access_token}`
-                },
-                body: JSON.stringify({
-                    status: 'received',
-                    shipping_status: 'received'
-                })
+                }
             });
 
             const data = await response.json();
@@ -1820,7 +1843,7 @@ const MobileDashboardDemo = ({
                 }));
 
                 patchDealInCache(dealId, {
-                    shipping_status: 'received',
+                    shipping_status: 'delivered',
                     status: 'content_making'
                 });
 
@@ -2201,16 +2224,21 @@ const MobileDashboardDemo = ({
     const completedDealsList = React.useMemo(() => {
         return (brandDeals || []).filter((d: any) => {
             const s = normalizeDealStatus(d);
-            // Completed, paid, payment released OR declined/cancelled/rejected
-            return s.includes('completed') || s === 'paid' || s === 'payment_released' || s === 'declined' || s === 'rejected' || s === 'cancelled';
+            const isApproved = s.includes('approved') || s.includes('content_approved');
+            const requiresShipping = isBarterLikeCollab(d);
+            
+            return s.includes('completed') || s === 'paid' || s === 'payment_released' || s === 'declined' || s === 'rejected' || s === 'cancelled' || (isApproved && requiresShipping);
         }).map((deal: any) => hydrateDealWithRequestMedia(deal));
     }, [brandDeals, hydrateDealWithRequestMedia]);
+
     const activeDealsList = React.useMemo(() => {
         return (brandDeals || []).filter((d: any) => {
             const s = normalizeDealStatus(d);
-            // Exclude completed, paid, payment released, approved AND rejected/cancelled/declined deals
-            // Include accepted_pending_otp as active (it requires action)
-            return !(s.includes('completed') || s === 'paid' || s === 'payment_released' || s === 'declined' || s === 'rejected' || s === 'cancelled');
+            const isApproved = s.includes('approved') || s.includes('content_approved');
+            const requiresShipping = isBarterLikeCollab(d);
+
+            const isActuallyCompleted = s.includes('completed') || s === 'paid' || s === 'payment_released' || s === 'declined' || s === 'rejected' || s === 'cancelled' || (isApproved && requiresShipping);
+            return !isActuallyCompleted;
         }).map((deal: any) => hydrateDealWithRequestMedia(deal));
     }, [brandDeals, hydrateDealWithRequestMedia]);
     const actionRequiredDealsList = React.useMemo(() => {
@@ -3026,7 +3054,6 @@ const MobileDashboardDemo = ({
             return String(
                 pendingAcceptDealId ||
                 pendingAcceptReq?.deal_id ||
-                pendingAcceptReq?.id ||
                 pendingAcceptReq?.raw?.deal_id ||
                 pendingAcceptReq?.brand_deal_id ||
                 ''
@@ -3137,6 +3164,7 @@ const MobileDashboardDemo = ({
                     triggerHaptic();
                     setProcessingDeal(pendingAcceptReq.id);
                     try {
+                        console.log('[MobileDashboard] Auto-signing contract for deal:', dealId);
                         const signResp = await fetch(`${getApiBaseUrl()}/api/deals/${dealId}/sign-creator`, {
                             method: 'POST',
                             headers: {
@@ -3167,7 +3195,8 @@ const MobileDashboardDemo = ({
                             toast.message('Next: Submit content links in Active tab → Deliver Content', { description: 'Brand gets notified. Payment held until you deliver.' });
                         } else {
                             const errorData = await signResp.json().catch(() => ({}));
-                            throw new Error(errorData.error || 'Failed to auto-sign contract');
+                            console.error('[MobileDashboard] Contract signing failed:', errorData);
+                            throw new Error(errorData.error || errorData.details || 'Failed to auto-sign contract');
                         }
                     } catch (error: any) {
                         console.error("Accept error:", error);
@@ -6023,13 +6052,14 @@ const MobileDashboardDemo = ({
                                                                     <div className="flex items-end justify-between px-2">
                                                                         <div className="flex-1 min-w-0">
                                                                             <div className={cn("inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full mb-3 border shadow-sm backdrop-blur-xl",
-                                                                                isDark ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400" : "bg-emerald-50/60 border-emerald-100 text-emerald-700"
+                                                                                isFunded ? (isDark ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400" : "bg-emerald-50/60 border-emerald-100 text-emerald-700")
+                                                                                         : (isDark ? "bg-amber-500/10 border-amber-500/20 text-amber-400" : "bg-amber-50/60 border-amber-100 text-amber-700")
                                                                             )}>
                                                                                 <ShieldCheck className="w-3.5 h-3.5" />
-                                                                                <span className="text-[11px] font-black uppercase tracking-widest">{isBarterLikeCollab(selectedItem) ? 'Product Secured' : `${renderBudgetValue(selectedItem)} Secured`}</span>
+                                                                                <span className="text-[11px] font-black uppercase tracking-widest">{selectedIsPureBarter ? 'Product Secured' : isFunded ? `${renderBudgetValue(selectedItem)} Secured` : 'Awaiting Escrow'}</span>
                                                                             </div>
                                                                             <h2 className={cn("text-[44px] leading-[0.9] font-black tracking-tighter uppercase mb-1", textColor)}>
-                                                                                {isBarterLikeCollab(selectedItem) ? "Free Product" : renderBudgetValue(selectedItem)}
+                                                                                {selectedIsPureBarter ? "Free Product" : renderBudgetValue(selectedItem)}
                                                                             </h2>
                                                                             <p className={cn("text-[11px] font-bold opacity-80 uppercase tracking-[0.2em]", textColor)}>
                                                                                 {isBarterLikeCollab(selectedItem) ? `Est. Value ${renderBudgetValue(selectedItem)}` : "Net Payout"}
@@ -6311,7 +6341,7 @@ const MobileDashboardDemo = ({
                                                                 <div className="flex items-center gap-2 mb-1.5">
                                                                     {selectedIsPureBarter && <Package className="w-3.5 h-3.5 text-amber-400" />}
                                                                     <p className={cn("text-[10px] font-black uppercase tracking-[0.25em] opacity-80", textColor)}>
-                                                                        {selectedIsPureBarter ? 'Free Product Collab' : 'Pending Payout'}
+                                                                        {selectedIsPureBarter ? 'Free Product Collab' : isFunded ? 'Escrow Secured' : 'Payment Pending'}
                                                                     </p>
                                                                 </div>
                                                                 {selectedIsPureBarter ? (
@@ -6340,7 +6370,9 @@ const MobileDashboardDemo = ({
                                                                             </span>
                                                                             <span className={cn("text-[15px] font-black opacity-60", textColor)}>INR</span>
                                                                         </div>
-                                                                        <p className={cn("text-[11px] font-bold mt-1 flex items-center gap-1.5", isDark ? "text-emerald-400/80" : "text-emerald-700")}>💰 Releases after approval</p>
+                                                                        <p className={cn("text-[11px] font-bold mt-1 flex items-center gap-1.5", isFunded ? (isDark ? "text-emerald-400/80" : "text-emerald-700") : (isDark ? "text-amber-400/80" : "text-amber-700"))}>
+                                                                            {isFunded ? "💰 Releases after approval" : "⌛ Awaiting brand payment"}
+                                                                        </p>
                                                                     </div>
                                                                 )}
                                                             </div>
@@ -6381,9 +6413,9 @@ const MobileDashboardDemo = ({
                                                                         "text-[11px] font-black uppercase tracking-wider",
                                                                         selectedIsPureBarter
                                                                             ? (isDark ? "text-amber-300" : "text-amber-700")
-                                                                            : (isDark ? "text-emerald-300" : "text-emerald-700")
+                                                                            : isFunded ? (isDark ? "text-emerald-300" : "text-emerald-700") : (isDark ? "text-amber-300" : "text-amber-700")
                                                                     )}>
-                                                                        {selectedIsPureBarter ? 'Product Linked' : 'Payment Secured'}
+                                                                        {selectedIsPureBarter ? 'Product Linked' : isFunded ? 'Payment Secured' : 'Escrow Pending'}
                                                                     </p>
                                                                 </div>
                                                             </div>
@@ -6509,19 +6541,20 @@ const MobileDashboardDemo = ({
                                                             else if (isSigned) currentStep = 1;
                                                             else currentStep = 0;
                                                         } else if (selectedRequiresShipping) {
+                                                            const isFundedTimeline = isFunded;
                                                             if (isPaid) currentStep = 4;
-                                                            else if (isReceived && !isPaymentPending) currentStep = 3;
-                                                            else if (isShipped && !isPaymentPending) currentStep = 2;
+                                                            else if (isReceived && isFundedTimeline) currentStep = 3;
+                                                            else if (isShipped && isFundedTimeline) currentStep = 2;
                                                             else if (isApproved || isDelivered) currentStep = 3;
-                                                            else if (!isPaymentPending) currentStep = 2;
-                                                            else if (isPaymentPending) currentStep = 1;
-                                                            else currentStep = 0;
+                                                            else if (isFundedTimeline) currentStep = 2;
+                                                            else currentStep = 1;
                                                         } else {
+                                                            const isFundedTimeline = isFunded;
                                                             if (isPaid) currentStep = 4;
                                                             else if (isApproved || isDelivered) currentStep = 3;
-                                                            else if (isMaking && !isPaymentPending) currentStep = 2;
-                                                            else if (isPaymentPending) currentStep = 1;
-                                                            else currentStep = 0;
+                                                            else if (isMaking && isFundedTimeline) currentStep = 2;
+                                                            else if (isFundedTimeline) currentStep = 2;
+                                                            else currentStep = 1;
                                                         }
 
                                                         if (selectedType === 'offer') currentStep = 0;
@@ -6577,9 +6610,8 @@ const MobileDashboardDemo = ({
 
                                                                     {/* Active Progress Track */}
                                                                     <div className={cn("absolute left-4 right-4 top-[8px] h-[3px] z-0 rounded-full overflow-hidden", isDark ? "bg-white/5" : "bg-slate-100")}>
-                                                                        <motion.div
-                                                                            initial={{ width: 0 }}
-                                                                            animate={{ width: `${(currentStep / (steps.length - 1)) * 100}%` }}
+                                                                        <div 
+                                                                            style={{ width: `${(currentStep / (steps.length - 1)) * 100}%` }}
                                                                             className="h-full bg-info shadow-[0_0_10px_rgba(59,130,246,0.5)]"
                                                                         />
                                                                     </div>
@@ -6597,7 +6629,7 @@ const MobileDashboardDemo = ({
                                                                                         (isDark ? "bg-[#0B0F14] border-white/10" : "bg-white border-slate-200")
                                                                                     )}>
                                                                                         {isDone ? <Check className="w-2.5 h-2.5 text-white" /> :
-                                                                                         isActive ? <div className="w-1.5 h-1.5 rounded-full bg-info animate-pulse" /> :
+                                                                                         isActive ? <div className="w-1.5 h-1.5 rounded-full bg-info" /> :
                                                                                          <span className="text-[8px] font-black opacity-60 dark:opacity-30">{idx + 1}</span>}
                                                                                     </div>
                                                                                     <span className={cn(
@@ -7996,12 +8028,7 @@ const MobileDashboardDemo = ({
                     const shippingStatus = String(pay.shipping_status || '').trim().toLowerCase();
                     const hasShippingDetails = Boolean(String(pay.brand_address || '').trim().length > 4 || String(pay.delivery_address || '').trim().length > 4);
                     const hasShipmentReceived = shippingStatus === 'delivered' || shippingStatus === 'received';
-                    const isFunded = !rawStatus.includes('payment_pending') &&
-                                     rawStatus !== 'pending' &&
-                                     !rawStatus.includes('contract') &&
-                                     rawStatus !== 'fully_executed' &&
-                                     rawStatus !== 'executed' &&
-                                     rawStatus !== 'signed';
+                    const isFundedPanel = isFunded;
                     const isSubmitted = !!(pay.submission_link || pay.content_url) || status.includes('delivered') || status.includes('review') || status.includes('approved');
                     const isReleased = isPaid || status.includes('released');
 
@@ -8014,7 +8041,7 @@ const MobileDashboardDemo = ({
                     ] : [
                         { label: 'Deal accepted', done: true },
                         { label: 'Contract signed', done: true },
-                        { label: selectedRequiresPayment ? 'Payment secured' : 'Product secured', done: isFunded, active: !isFunded },
+                        { label: selectedRequiresPayment ? 'Payment secured' : 'Product secured', done: isFundedPanel, active: !isFundedPanel },
                         { label: 'Content submitted', done: isSubmitted, active: isFunded && !isSubmitted },
                         { label: 'Payout released', done: isReleased, active: isSubmitted && !isReleased },
                     ];
@@ -9239,7 +9266,7 @@ const DealsTab = React.memo(({
                                                  <div className="flex items-center justify-between">
                                                      <div className="flex items-center gap-2">
                                                          <div className={cn(
-                                                             "px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-[0.15em] shadow-lg backdrop-blur-xl border border-white/10",
+                                                             "px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-[0.15em] shadow-lg backdrop-blur-xl border border-white/10 whitespace-nowrap",
                                                              ux.stagePill.includes('COMPLETED') || ux.stagePill.includes('DONE') || ux.stagePill.includes('APPROVED')
                                                                  ? "bg-emerald-500/80 text-white"
                                                                  : ux.stagePill.includes('REVISION') || ux.stagePill.includes('NOTICE')
@@ -9249,7 +9276,7 @@ const DealsTab = React.memo(({
                                                              {ux.stagePill}
                                                          </div>
                                                          {!isBarter && (
-                                                             <div className="px-3 py-1.5 rounded-full bg-blue-600/80 text-white shadow-lg text-[10px] font-black uppercase tracking-[0.15em] backdrop-blur-xl border border-white/10">
+                                                             <div className="px-3 py-1.5 rounded-full bg-blue-600/80 text-white shadow-lg text-[10px] font-black uppercase tracking-[0.15em] backdrop-blur-xl border border-white/10 whitespace-nowrap">
                                                                  Escrow Active
                                                              </div>
                                                          )}
@@ -9288,7 +9315,7 @@ const DealsTab = React.memo(({
 
                                                      <div className="space-y-2">
                                                          <div className="flex justify-between items-end">
-                                                            <p className="text-[10px] font-black uppercase tracking-widest text-white/50">Production Progress</p>
+                                                            <p className="text-[10px] font-black uppercase tracking-widest text-white/50">{Math.round((ux.progressStep / 7) * 100) >= 100 ? 'Collaboration Complete' : 'Production Progress'}</p>
                                                             <p className="text-[10px] font-black text-white/80">{Math.round((ux.progressStep / 7) * 100)}%</p>
                                                          </div>
                                                          <div className="h-1.5 w-full bg-white/10 rounded-full overflow-hidden backdrop-blur-sm">

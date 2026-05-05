@@ -7,40 +7,50 @@
 
 import { test, expect } from '@playwright/test';
 
-const BASE_URL = process.env.PLAYWRIGHT_TEST_BASE_URL || 'http://localhost:8080';
+const BASE_URL = process.env.PLAYWRIGHT_TEST_BASE_URL || 'http://127.0.0.1:8080';
 
 test.describe('CreatorArmour Smoke Tests', () => {
   test.beforeEach(async ({ page }) => {
-    // Set mobile viewport for some tests
+    // Set mobile viewport for all tests
     await page.setViewportSize({ width: 390, height: 844 });
   });
+
+  async function login(page) {
+    await page.goto(`${BASE_URL}/login`);
+    const emailInput = page.locator('input#identifier, input[type="text"]').first();
+    const passwordInput = page.locator('input[type="password"]').first();
+    const submitButton = page.locator('button[type="submit"]').first();
+    
+    await emailInput.fill('test@creatorarmour.com');
+    await passwordInput.fill('Test123!@#');
+    await submitButton.click();
+    await page.waitForURL(/\/(creator-dashboard|dashboard)/, { timeout: 15000 });
+  }
 
   test('1. Login Flow', async ({ page }) => {
     await page.goto(`${BASE_URL}/login`);
     
     // Check login page loads
-    await expect(page.locator('h1, h2')).toContainText(/login|sign in/i);
+    await expect(page.locator('h1, h2').filter({ hasText: /login|sign in/i })).toBeVisible();
     
-    // Fill login form (adjust selectors based on actual form)
-    const emailInput = page.locator('input[type="email"]').first();
+    // Fill login form
+    const emailInput = page.locator('input#identifier, input[type="text"]').first();
     const passwordInput = page.locator('input[type="password"]').first();
     const submitButton = page.locator('button[type="submit"]').first();
     
-    if (await emailInput.isVisible()) {
-      await emailInput.fill('demo@creatorarmour.com');
-      await passwordInput.fill('demo123');
-      await submitButton.click();
-      
-      // Wait for redirect to dashboard
-      await page.waitForURL(/\/(creator-dashboard|dashboard)/, { timeout: 10000 });
-      
-      // Verify dashboard loaded
-      await expect(page).toHaveURL(/\/(creator-dashboard|dashboard)/);
-    }
+    await emailInput.fill('test@creatorarmour.com');
+    await passwordInput.fill('Test123!@#');
+    await submitButton.click();
+    
+    // Wait for redirect to dashboard
+    await page.waitForURL(/\/(creator-dashboard|dashboard)/, { timeout: 15000 });
+    
+    // Verify dashboard loaded
+    await expect(page).toHaveURL(/\/(creator-dashboard|dashboard)/);
   });
 
   test('2. Dashboard Load', async ({ page }) => {
-    // Assuming user is logged in (or add login step)
+    await login(page);
     await page.goto(`${BASE_URL}/creator-dashboard`);
     
     // Check key elements load
@@ -59,6 +69,7 @@ test.describe('CreatorArmour Smoke Tests', () => {
   });
 
   test('3. Download Contract', async ({ page }) => {
+    await login(page);
     // Navigate to deal detail page
     await page.goto(`${BASE_URL}/creator-dashboard`);
     
@@ -90,6 +101,7 @@ test.describe('CreatorArmour Smoke Tests', () => {
   });
 
   test('4. Report Issue', async ({ page }) => {
+    await login(page);
     // Navigate to deal detail page
     await page.goto(`${BASE_URL}/creator-dashboard`);
     
@@ -134,6 +146,7 @@ test.describe('CreatorArmour Smoke Tests', () => {
   });
 
   test('5. Upgrade Plan', async ({ page }) => {
+    await login(page);
     // Navigate to profile/billing page
     await page.goto(`${BASE_URL}/creator-profile?tab=billing`);
     

@@ -214,9 +214,43 @@ async function seedTestData() {
     }
     console.log('✅ Creator profile created');
 
+    // Step 3.5: Create organization for the user
+    console.log('\n🏢 Creating organization for test user...');
+    const { data: org, error: orgError } = await supabase
+      .from('organizations')
+      .insert({
+        owner_id: userId,
+        org_type: 'creator_account',
+        name: `${TEST_USER.displayName}'s Organization`,
+        created_at: new Date().toISOString(),
+      })
+      .select()
+      .single();
+
+    if (orgError) {
+      console.warn(`⚠️  Warning: Failed to create organization: ${orgError.message}`);
+      // Fallback: try to find any existing organization
+      const { data: existingOrgs } = await supabase.from('organizations').select('id').limit(1);
+      if (existingOrgs?.[0]) {
+        console.log(`ℹ️  Using existing organization: ${existingOrgs[0].id}`);
+        (newUser.user as any).organization_id = existingOrgs[0].id;
+      }
+    } else {
+      console.log(`✅ Organization created: ${org.id}`);
+      (newUser.user as any).organization_id = org.id;
+      
+      // Update profile with organization_id
+      await supabase.from('profiles').update({ organization_id: org.id }).eq('id', userId);
+    }
+
+    const organizationId = (newUser.user as any).organization_id || userId;
+
     // Step 4: Create brand deals
     console.log('\n💼 Creating sample brand deals...');
-    const brandDeals = getSampleBrandDeals(userId);
+    const brandDeals = getSampleBrandDeals(userId).map(deal => ({
+      ...deal,
+      organization_id: organizationId
+    }));
     
     const { error: dealsError } = await supabase
       .from('brand_deals')

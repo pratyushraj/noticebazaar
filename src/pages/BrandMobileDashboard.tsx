@@ -1259,8 +1259,11 @@ const BrandMobileDashboard = ({
       if (s === 'accepted_pending_otp') return false;
       // Explicitly exclude statuses that are clearly finished
       if (s.includes('cancel')) return false;
-      if (s.includes('complete') || s.includes('completed') || s.includes('closed') || s.includes('paid') || s.includes('released')) return false;
-      // Include everything else as active (including approved, content_making, payment_pending, etc.)
+      const isActuallyCompleted = s.includes('complete') || s.includes('completed') || s.includes('closed') || s.includes('paid') || s.includes('released');
+      const isApprovedBarter = (s === 'approved' || s === 'content_approved') && isBarterLikeCollab(d) && !isPaidLikeCollab(d);
+      
+      if (isActuallyCompleted || isApprovedBarter) return false;
+      // Include everything else as active (including pending payment for paid deals, content_making, etc.)
       return true;
     }));
     // Also include collab_requests accepted by creator (these are active collabs)
@@ -1279,7 +1282,9 @@ const BrandMobileDashboard = ({
     return uniqDeals((deals || []).filter((d: any) => {
       const s = normalizeStatus(d?.status);
       if (!s) return false;
-      return s.includes('complete') || s.includes('completed') || s.includes('closed') || s.includes('paid') || s.includes('released') || s.includes('cancel');
+      const isActuallyCompleted = s.includes('complete') || s.includes('completed') || s.includes('closed') || s.includes('paid') || s.includes('released') || s.includes('cancel');
+      const isApprovedBarter = (s === 'approved' || s === 'content_approved') && isBarterLikeCollab(d) && !isPaidLikeCollab(d);
+      return isActuallyCompleted || isApprovedBarter;
     }) as any[]);
   }, [deals]);
 

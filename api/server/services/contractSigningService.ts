@@ -443,12 +443,18 @@ export async function signContractAsCreator(
       .from('brand_deals' as any)
       .select('*')
       .eq('id', request.dealId)
-      .single();
+      .maybeSingle();
 
     if (dealError || !deal) {
+      console.error('[ContractSigningService] Deal not found for signing:', {
+        dealId: request.dealId,
+        error: dealError?.message,
+        code: dealError?.code
+      });
       return {
         success: false,
-        error: 'Deal not found'
+        error: 'Deal not found',
+        details: dealError?.message || `No deal found with ID ${request.dealId}`
       };
     }
 

@@ -48,6 +48,9 @@ export async function callLLM(prompt: string): Promise<string> {
   } else if (provider === 'gemini') {
     if (!apiKey) throw new Error('Gemini API key required');
     return await callGemini(model, prompt, apiKey);
+  } else if (provider === 'nvidia') {
+    if (!apiKey) throw new Error('NVIDIA API key required');
+    return await callNvidia(model, prompt, apiKey);
   } else {
     throw new Error(`Unsupported provider: ${provider}`);
   }
@@ -180,6 +183,9 @@ Return ONLY the JSON object, no markdown, no explanations, no additional text.`;
     } else if (provider === 'gemini') {
       if (!apiKey) throw new Error('Gemini API key required');
       aiResponse = await callGemini(model, prompt, apiKey);
+    } else if (provider === 'nvidia') {
+      if (!apiKey) throw new Error('NVIDIA API key required');
+      aiResponse = await callNvidia(model, prompt, apiKey);
     } else {
       throw new Error(`Unsupported provider: ${provider}`);
     }
@@ -420,6 +426,44 @@ async function callGemini(model: string, prompt: string, apiKey: string): Promis
   }
   
   throw new Error('Unexpected response format from Gemini API');
+}
+
+/**
+ * Call NVIDIA NIM API (OpenAI-compatible)
+ */
+async function callNvidia(model: string, prompt: string, apiKey: string): Promise<string> {
+  const modelName = model || 'meta/llama-3.1-8b-instruct';
+  const response = await fetch('https://integrate.api.nvidia.com/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${apiKey}`,
+    },
+    body: JSON.stringify({
+      model: modelName,
+      messages: [
+        { role: 'system', content: 'You are an expert contract analyst. Return only valid JSON, no additional text or markdown.' },
+        { role: 'user', content: prompt },
+      ],
+      temperature: 0.3,
+      max_tokens: 2000,
+      top_p: 1,
+    }),
+  });
+
+  if (!response.ok) {
+    let errorMessage = response.statusText;
+    try {
+      const error = await response.json().catch(() => ({}));
+      errorMessage = error.error?.message || error.message || response.statusText;
+    } catch (e) {
+      // Ignore parse error
+    }
+    throw new Error(`NVIDIA API error (${response.status}): ${errorMessage}`);
+  }
+
+  const data = await response.json() as any;
+  return data.choices[0]?.message?.content || '';
 }
 
 /**

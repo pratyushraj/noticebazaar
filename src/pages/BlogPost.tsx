@@ -2,7 +2,7 @@
 import React, { useMemo } from 'react';
 import { useParams, Link, Navigate } from 'react-router-dom';
 import { SEOHead } from '@/components/seo/SEOHead';
-import { ArticleSchema, FAQSchema } from '@/components/seo/SchemaMarkup';
+import { ArticleSchema, FAQSchema, BreadcrumbSchema } from '@/components/seo/SchemaMarkup';
 import { blogPosts, getBlogPostBySlug } from '@/data/blogPosts';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -29,7 +29,8 @@ const BlogPost = () => {
   // Related posts (simple category based)
   const relatedPosts = blogPosts
     .filter(p => p.category === post.category && p.slug !== post.slug)
-    .slice(0, 2);
+    .sort(() => 0.5 - Math.random()) // Randomize slightly
+    .slice(0, 3);
 
   return (
     <div className="min-h-screen bg-[#020D0A] text-white pb-32">
@@ -38,6 +39,13 @@ const BlogPost = () => {
         description={post.metaDescription}
         keywords={post.keywords}
         canonicalUrl={`https://creatorarmour.com/blog/${post.slug}`}
+      />
+      <BreadcrumbSchema
+        items={[
+          { name: 'Home', url: 'https://creatorarmour.com/' },
+          { name: 'Blog', url: 'https://creatorarmour.com/blog' },
+          { name: post.title, url: `https://creatorarmour.com/blog/${post.slug}` },
+        ]}
       />
       <ArticleSchema 
         title={post.title}

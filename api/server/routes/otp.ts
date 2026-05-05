@@ -732,17 +732,33 @@ router.post('/send-creator', async (req: AuthenticatedRequest, res: Response) =>
       });
     }
 
-    // Fetch deal
-    const { data: deal, error: dealError } = await supabase
+    // Fetch deal or collab_request
+    let targetTable = 'brand_deals';
+    let { data: deal, error: dealError } = await supabase
       .from('brand_deals')
       .select('*')
       .eq('id', dealId)
       .maybeSingle();
 
-    if (dealError || !deal) {
+    if (!deal && !dealError) {
+      // Fallback to collab_requests
+      const { data: request } = await supabase
+        .from('collab_requests')
+        .select('*')
+        .eq('id', dealId)
+        .maybeSingle();
+      
+      if (request) {
+        deal = request;
+        targetTable = 'collab_requests';
+      }
+    }
+
+    if (!deal) {
       return res.status(404).json({
         success: false,
-        error: 'Deal not found',
+        error: 'Offer or Deal not found',
+        details: dealError?.message
       });
     }
 
@@ -780,9 +796,9 @@ router.post('/send-creator', async (req: AuthenticatedRequest, res: Response) =>
       });
     }
 
-    // Update deal with creator OTP hash and expiration
+    // Update target table with creator OTP hash and expiration
     const { error: updateError } = await supabase
-      .from('brand_deals')
+      .from(targetTable)
       .update({
         creator_otp_hash: otpHash,
         creator_otp_expires_at: expiresAt.toISOString(),
@@ -851,17 +867,33 @@ router.post('/verify-creator', async (req: AuthenticatedRequest, res: Response) 
       });
     }
 
-    // Fetch deal with OTP info
-    const { data: deal, error: dealError } = await supabase
+    // Fetch deal or collab_request with OTP info
+    let targetTable = 'brand_deals';
+    let { data: deal, error: dealError } = await supabase
       .from('brand_deals')
       .select('*')
       .eq('id', dealId)
       .maybeSingle();
 
-    if (dealError || !deal) {
+    if (!deal && !dealError) {
+      // Fallback to collab_requests
+      const { data: request } = await supabase
+        .from('collab_requests')
+        .select('*')
+        .eq('id', dealId)
+        .maybeSingle();
+      
+      if (request) {
+        deal = request;
+        targetTable = 'collab_requests';
+      }
+    }
+
+    if (!deal) {
       return res.status(404).json({
         success: false,
-        error: 'Deal not found',
+        error: 'Offer or Deal not found',
+        details: dealError?.message
       });
     }
 
@@ -915,16 +947,37 @@ router.post('/verify-creator', async (req: AuthenticatedRequest, res: Response) 
 
     // Verify OTP
     const inputHash = hashOTP(otp);
-    const isValid = crypto.timingSafeEqual(
-      Buffer.from(storedHash),
-      Buffer.from(inputHash)
-    );
+    console.log('[OTP] Verifying hash match:', {
+      storedHashExists: !!storedHash,
+      storedHashLength: storedHash?.length,
+      inputHashLength: inputHash?.length,
+      targetTable
+    });
+
+    let isValid = false;
+    try {
+      if (storedHash && inputHash && storedHash.length === inputHash.length) {
+        isValid = crypto.timingSafeEqual(
+          Buffer.from(storedHash),
+          Buffer.from(inputHash)
+        );
+      } else {
+        console.warn('[OTP] Hash length mismatch or missing:', {
+          storedLen: storedHash?.length,
+          inputLen: inputHash?.length
+        });
+        isValid = (storedHash === inputHash); // Fallback to safe comparison
+      }
+    } catch (e) {
+      console.error('[OTP] crypto.timingSafeEqual failed:', e);
+      isValid = (storedHash === inputHash); // Final fallback
+    }
 
     if (!isValid) {
       // Increment attempts
       const newAttempts = attempts + 1;
       await supabase
-        .from('brand_deals')
+        .from(targetTable)
         .update({
           creator_otp_attempts: newAttempts,
           updated_at: new Date().toISOString(),
@@ -960,16 +1013,22 @@ router.post('/verify-creator', async (req: AuthenticatedRequest, res: Response) 
       updateData.status = finalizedStatus;
     }
 
+    console.log('[OTP] Attempting to update targetTable:', { targetTable, dealId, updateData });
     const { error: updateError } = await supabase
-      .from('brand_deals')
+      .from(targetTable)
       .update(updateData)
       .eq('id', dealId);
 
     if (updateError) {
-      console.error('[OTP] Failed to update deal:', updateError);
+      console.error('[OTP] Failed to update verification status:', {
+        error: updateError,
+        table: targetTable,
+        id: dealId
+      });
       return res.status(500).json({
         success: false,
-        error: `Failed to verify OTP: ${updateError.message}`,
+        error: `Database update failed: ${updateError.message}`,
+        details: updateError
       });
     }
 
@@ -997,6 +1056,7 @@ router.post('/verify-creator', async (req: AuthenticatedRequest, res: Response) 
 
       // Trigger brand push notification
       try {
+        console.log('[OTP] Attempting push notification to brand for:', dealId);
         let brandUserId = (deal as any).brand_id;
         if (!brandUserId && (deal as any).brand_email) {
           const { data: brandUser } = await supabase
@@ -1009,7 +1069,7 @@ router.post('/verify-creator', async (req: AuthenticatedRequest, res: Response) 
         }
 
         if (brandUserId) {
-          const creatorName = req.user.full_name || req.user.email || 'A creator';
+          const creatorName = req.user.email || 'A creator';
           const payload = {
             userId: brandUserId,
             title: 'Offer Accepted! 🚀',
@@ -1021,14 +1081,18 @@ router.post('/verify-creator', async (req: AuthenticatedRequest, res: Response) 
             }
           };
 
-          fetch('https://creatorarmour-api.onrender.com/api/push/send', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-          }).catch(e => console.error('[OTP] Push notify fetch failed:', e));
+          if (typeof fetch !== 'undefined') {
+            fetch('https://creatorarmour-api.onrender.com/api/push/send', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(payload)
+            }).catch(e => console.error('[OTP] Push notify fetch failed:', e));
+          } else {
+            console.warn('[OTP] fetch is not defined, skipping push notification');
+          }
         }
       } catch (pushErr) {
-        console.error('[OTP] Push notify error:', pushErr);
+        console.error('[OTP] Push notify block error:', pushErr);
       }
     }
 

@@ -614,7 +614,8 @@ router.patch('/:id/submit-content', async (req: AuthenticatedRequest, res: Respo
     }
 
     // Additional guard: enforce pre-conditions based on deal type
-    if (inferRequiresShipping(deal) && deal.shipping_status !== 'delivered') {
+    const shippingStatus = String(deal?.shipping_status || (deal as any)?.raw?.shipping_status || '').trim().toLowerCase();
+    if (inferRequiresShipping(deal) && !['delivered', 'received'].includes(shippingStatus)) {
       return res.status(409).json({
         success: false,
         error: 'Cannot submit content until you have received the product. Please confirm delivery first.',
@@ -1206,26 +1207,73 @@ const signAsCreatorHandler = async (req: AuthenticatedRequest, res: Response) =>
     }
 
     // Verify deal exists and belongs to current creator
-    // Note: contract_version column may not exist in all databases, so we don't select it
-    const { data: deal, error: dealError } = await supabase
+    // Use select(*) to be resilient to missing columns in types, and maybeSingle() to handle missing rows manually
+    let { data: deal, error: dealError } = await supabase
       .from('brand_deals')
-      .select('id, creator_id, contract_file_url, creator_otp_verified, creator_otp_verified_at')
+      .select('*')
       .eq('id', dealId)
-      .single();
+      .maybeSingle();
+
+    // Fallback: Check if this is a collab_request ID
+    if (!deal && !dealError) {
+      console.log('[Deals] sign-creator - Deal not found, checking if ID is a collab_request:', dealId);
+      const { data: collabReq } = await supabase
+        .from('collab_requests')
+        .select('*')
+        .eq('id', dealId)
+        .maybeSingle();
+      
+      if (collabReq) {
+        console.log('[Deals] sign-creator - Found ID in collab_requests instead of brand_deals:', {
+          id: dealId,
+          status: collabReq.status,
+          hasDealId: !!collabReq.deal_id
+        });
+
+        if (collabReq.deal_id) {
+          console.log('[Deals] sign-creator - Using linked deal_id from collab_request:', collabReq.deal_id);
+          // Update dealId to the actual brand_deal ID
+          const actualDealId = collabReq.deal_id;
+          
+          // Retry with the actual deal_id
+          const { data: linkedDeal, error: linkedDealError } = await supabase
+            .from('brand_deals')
+            .select('*')
+            .eq('id', actualDealId)
+            .maybeSingle();
+          
+          if (linkedDeal) {
+            deal = linkedDeal;
+            dealError = linkedDealError;
+            // IMPORTANT: Update the dealId variable for the rest of the handler
+            (dealId as any) = actualDealId;
+          }
+        } else {
+          console.warn('[Deals] sign-creator - ID is a collab request but no deal_id is linked yet. Status:', collabReq.status);
+          return res.status(404).json({
+            success: false,
+            error: 'Deal not found (collaboration not yet accepted)',
+            details: 'This ID belongs to a collab request that has not been converted to a deal yet.',
+            status: collabReq.status,
+            requestId: dealId
+          });
+        }
+      }
+    }
 
     console.log('[Deals] sign-creator - deal lookup result:', {
       dealExists: !!deal,
       dealError: dealError?.message,
       dealId: deal?.id,
       creatorId: deal?.creator_id,
-      userId
+      userId,
+      requestedId: dealId
     });
 
     if (dealError || !deal) {
-      console.error('[Deals] sign-creator - Deal not found:', {
+      console.error('[Deals] sign-creator - Deal not found or query error:', {
         dealError: dealError?.message,
         dealErrorCode: dealError?.code,
-        dealErrorDetails: dealError?.details,
         dealId: dealId,
         hasDeal: !!deal,
         supabaseInitialized: !!supabase
@@ -1233,7 +1281,8 @@ const signAsCreatorHandler = async (req: AuthenticatedRequest, res: Response) =>
       return res.status(404).json({
         success: false,
         error: 'Deal not found',
-        details: dealError?.message || 'No deal returned from database',
+        details: dealError?.message || `No deal found with ID ${dealId} in brand_deals table`,
+        requestId: dealId
       });
     }
 
