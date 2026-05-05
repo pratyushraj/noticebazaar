@@ -859,3 +859,44 @@ export async function sendCollabDraftResumeEmail(
 </html>`;
   return sendEmail(brandEmail, subject, html);
 }
+/**
+ * 6. Send legal check notification email to admins
+ */
+export async function sendLegalCheckNotificationEmail(
+  data: any
+): Promise<{ success: boolean; emailId?: string; error?: string }> {
+  const adminEmail = 'pratyushraj@outlook.com'; // Admin notification email
+  
+  const subject = `New Legal Health Check Submission: ${data.fullName || 'Anonymous'}`;
+  
+  const content = `
+    <div style="background-color: #f7fafc; padding: 24px; border-radius: 12px; border: 1px solid #e2e8f0;">
+      <h3 style="margin-top: 0; color: #1a202c;">Legal Health Check Details</h3>
+      <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+        <tr><td style="padding: 8px 0; font-weight: 600; width: 40%;">Full Name:</td><td>${data.fullName || 'N/A'}</td></tr>
+        <tr><td style="padding: 8px 0; font-weight: 600;">Email:</td><td>${data.email || 'N/A'}</td></tr>
+        <tr><td style="padding: 8px 0; font-weight: 600;">Phone:</td><td>${data.phone || 'N/A'}</td></tr>
+        <tr><td style="padding: 8px 0; font-weight: 600;">Company Name:</td><td>${data.companyName || 'N/A'}</td></tr>
+        <tr><td style="padding: 8px 0; font-weight: 600;">Company Type:</td><td>${data.companyType || 'N/A'}</td></tr>
+        <tr><td style="padding: 8px 0; font-weight: 600;">Business Stage:</td><td>${data.businessStage || 'N/A'}</td></tr>
+        <tr><td style="padding: 8px 0; font-weight: 600;">Entity Type:</td><td>${data.entityType || 'N/A'}</td></tr>
+        <tr><td style="padding: 8px 0; font-weight: 600;">Has GST:</td><td>${data.hasGst || 'N/A'}</td></tr>
+        <tr><td style="padding: 8px 0; font-weight: 600;">Client/Vendor Agrmnts:</td><td>${data.hasClientVendorAgreements || 'N/A'}</td></tr>
+        <tr><td style="padding: 8px 0; font-weight: 600;">Employee Agrmnts:</td><td>${data.hasEmployeeAgreements || 'N/A'}</td></tr>
+        <tr><td style="padding: 8px 0; font-weight: 600;">Annual Returns Filed:</td><td>${data.hasFiledAnnualReturns || 'N/A'}</td></tr>
+        <tr><td style="padding: 8px 0; font-weight: 600;">Ongoing Disputes:</td><td>${data.ongoingDisputes || 'N/A'}</td></tr>
+        <tr><td style="padding: 8px 0; font-weight: 600;">Debt Recovery Issues:</td><td>${data.debtRecoveryChallenge || 'N/A'}</td></tr>
+        <tr><td style="padding: 8px 0; font-weight: 600;">Contact Method:</td><td>${data.preferredContactMethod || 'N/A'}</td></tr>
+        <tr><td style="padding: 8px 0; font-weight: 600;">Wants Consultation:</td><td>${data.wantsConsultation || 'N/A'}</td></tr>
+      </table>
+    </div>
+  `;
+
+  const html = getEmailTemplate(
+    '⚖️ New Legal Check Submission',
+    'Hello Admin,',
+    content
+  );
+
+  return sendEmail(adminEmail, subject, html);
+}

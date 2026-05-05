@@ -17,6 +17,7 @@ import {
   sendCollabRequestCreatorNotificationEmail,
   sendCollabAcceptMagicLinkEmail,
   sendCollabDraftResumeEmail,
+  sendLegalCheckNotificationEmail,
 } from '../services/collabRequestEmailService';
 import { resolveOrCreateBrandContact } from '../services/brandContactService';
 
@@ -188,6 +189,30 @@ router.get('/:username/resume', async (req: Request, res: Response) => {
   } catch (e) {
     console.error('[CollabRequests] Resume draft error:', e);
     return res.status(500).json({ success: false, error: 'Failed to load draft' });
+  }
+});
+
+/**
+ * POST /api/collab/legal-check-email
+ * Send legal health check submission details to admin (no auth)
+ */
+router.post('/legal-check-email', async (req: Request, res: Response) => {
+  try {
+    const formData = req.body;
+    if (!formData || !formData.email) {
+      return res.status(400).json({ success: false, error: 'Invalid form data' });
+    }
+
+    const result = await sendLegalCheckNotificationEmail(formData);
+    
+    if (result.success) {
+      return res.json({ success: true, message: 'Legal check submitted successfully' });
+    } else {
+      return res.status(500).json({ success: false, error: result.error });
+    }
+  } catch (e) {
+    console.error('[CollabRequests] Legal check email error:', e);
+    return res.status(500).json({ success: false, error: 'Failed to process legal check' });
   }
 });
 
