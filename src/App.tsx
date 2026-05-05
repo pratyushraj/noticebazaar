@@ -27,20 +27,28 @@ const App = () => {
   useEffect(() => {
     if (typeof window === "undefined" || !("serviceWorker" in navigator)) return;
 
-    // Register service worker unconditionally for offline support
-    navigator.serviceWorker.register('/sw.js')
-      .then((registration) => {
-        // If a new version is available, the browser will handle the update in the background.
-        // We can explicitly trigger an update check if needed.
-        const previousVersion = window.localStorage.getItem('app_shell_version');
-        if (previousVersion !== APP_SHELL_VERSION) {
-          registration.update().catch(() => {});
-          window.localStorage.setItem('app_shell_version', APP_SHELL_VERSION);
+    // ONLY register service worker in production to avoid dev preamble/cache conflicts
+    if (import.meta.env.PROD) {
+      navigator.serviceWorker.register('/sw.js')
+        .then((registration) => {
+          const previousVersion = window.localStorage.getItem('app_shell_version');
+          if (previousVersion !== APP_SHELL_VERSION) {
+            registration.update().catch(() => {});
+            window.localStorage.setItem('app_shell_version', APP_SHELL_VERSION);
+          }
+        })
+        .catch((error) => {
+          console.error('[App] Service worker registration failed:', error);
+        });
+    } else {
+      // In development, ensure any active service worker is removed to prevent cache interference
+      navigator.serviceWorker.getRegistrations().then(registrations => {
+        for (const registration of registrations) {
+          registration.unregister();
+          console.log('[App] Unregistered active Service Worker in development mode to prevent preamble errors.');
         }
-      })
-      .catch((error) => {
-        console.error('[App] Service worker registration failed:', error);
       });
+    }
   }, []);
 
   // Removed the temporary useEffect block for role update
