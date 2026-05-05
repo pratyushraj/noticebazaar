@@ -351,7 +351,7 @@ const collectSignatureHints = (row: BrandDeal | null | undefined) => {
   const brandHints = truthyKeys(/(brand.*signed|signed.*brand|brand_signature|brand_esign|brand_signed_at|brand_otp_verified)/i);
   const paymentStatus = String((row as any)?.payment_status || row?.raw?.payment_status || '').trim().toLowerCase();
   const paymentId = String((row as any)?.payment_id || row?.raw?.payment_id || '').trim();
-  const hasCapturedPayment = paymentStatus === 'captured' || (paymentId.startsWith('pay_') && Number((row as any)?.amount_paid || row?.raw?.amount_paid || 0) > 0);
+  const hasCapturedPayment = ['captured', 'paid', 'authorized', 'processed', 'successful'].includes(paymentStatus) || (paymentId.startsWith('pay_') && Number((row as any)?.amount_paid || row?.raw?.amount_paid || 0) > 0);
   
   if (hasCapturedPayment) {
     brandHints.push('payment_captured');
@@ -420,7 +420,7 @@ const brandDealCardUi = (row: BrandDeal | null | undefined) => {
   const requiresPayment = isPaidLikeCollab(row) && !isBarterDeal;
   const paymentStatus = String((row as any)?.payment_status || '').trim().toLowerCase();
   const paymentId = String((row as any)?.payment_id || '').trim();
-  const hasCapturedPayment = paymentStatus === 'captured' || (paymentId.startsWith('pay_') && Number((row as any)?.amount_paid || 0) > 0);
+  const hasCapturedPayment = ['captured', 'paid', 'authorized', 'processed', 'successful'].includes(paymentStatus) || (paymentId.startsWith('pay_') && Number((row as any)?.amount_paid || 0) > 0);
   const shippingStatus = String((row as any)?.shipping_status || '').trim().toLowerCase();
   const hasShipped = shippingStatus === 'shipped' || shippingStatus === 'in_transit';
   const hasDeliveredShipping = shippingStatus === 'delivered' || shippingStatus === 'received';
