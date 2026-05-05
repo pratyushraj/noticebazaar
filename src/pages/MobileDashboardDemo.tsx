@@ -461,7 +461,7 @@ const getCreatorDealCardUX = (deal: any) => {
     const hasCapturedPayment = 
         ['captured', 'paid', 'authorized', 'processed', 'successful'].includes(paymentStatus) || 
         (paymentId.startsWith('pay_') && Number(deal?.amount_paid || deal?.raw?.amount_paid || 0) > 0) ||
-        !!(deal?.paid_at || deal?.raw?.paid_at) ||
+        !!(deal?.paid_at || deal?.raw?.paid_at || deal?.payment_sent_at || deal?.raw?.payment_sent_at) ||
         String(deal?.escrow_status || deal?.raw?.escrow_status || '').toLowerCase() === 'funded';
     const isApproved = rawStatus.includes('content_approved') || rawStatus.includes('approved');
     const isPaymentReleased = rawStatus.includes('payment_released') || rawStatus.includes('released');

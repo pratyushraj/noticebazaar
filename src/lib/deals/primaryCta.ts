@@ -100,7 +100,7 @@ export const getCanonicalDealStatus = (deal: any): CanonicalDealStatus => {
   const hasCapturedPayment = 
     ['captured', 'paid', 'authorized', 'processed', 'successful'].includes(paymentStatus) || 
     (paymentId.startsWith('pay_') && Number(deal?.amount_paid || deal?.raw?.amount_paid || 0) > 0) ||
-    !!(deal?.paid_at || deal?.raw?.paid_at) ||
+    !!(deal?.paid_at || deal?.raw?.paid_at || deal?.payment_sent_at || deal?.raw?.payment_sent_at) ||
     String(deal?.escrow_status || deal?.raw?.escrow_status || '').toLowerCase() === 'funded';
 
   const creatorSigned = 
@@ -172,7 +172,7 @@ export const getCanonicalDealStatus = (deal: any): CanonicalDealStatus => {
     const hasCapturedPayment = 
       ['captured', 'paid', 'authorized', 'processed', 'successful'].includes(paymentStatus) || 
       (paymentId.startsWith('pay_') && Number(deal?.amount_paid || deal?.raw?.amount_paid || 0) > 0) ||
-      !!(deal?.paid_at || deal?.raw?.paid_at) ||
+      !!(deal?.paid_at || deal?.raw?.paid_at || deal?.payment_sent_at || deal?.raw?.payment_sent_at) ||
       String(deal?.escrow_status || deal?.raw?.escrow_status || '').toLowerCase() === 'funded';
     if (hasCapturedPayment) {
       // (This redundancy is safe as it's also handled by the global isBarter check above)
@@ -232,7 +232,7 @@ export const getDealPrimaryCta = (params: { role: DealRole; deal: any }): DealPr
   const hasCapturedPayment = 
     ['captured', 'paid', 'authorized', 'processed', 'successful'].includes(paymentStatus) || 
     (paymentId.startsWith('pay_') && Number(deal?.amount_paid || deal?.raw?.amount_paid || 0) > 0) ||
-    !!(deal?.paid_at || deal?.raw?.paid_at) ||
+    !!(deal?.paid_at || deal?.raw?.paid_at || deal?.payment_sent_at || deal?.raw?.payment_sent_at) ||
     String(deal?.escrow_status || deal?.raw?.escrow_status || '').toLowerCase() === 'funded';
   const signatureSources = [
     deal,

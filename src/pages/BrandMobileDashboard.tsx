@@ -354,7 +354,7 @@ const collectSignatureHints = (row: BrandDeal | null | undefined) => {
   const hasCapturedPayment = 
     ['captured', 'paid', 'authorized', 'processed', 'successful'].includes(paymentStatus) || 
     (paymentId.startsWith('pay_') && Number((row as any)?.amount_paid || row?.raw?.amount_paid || 0) > 0) ||
-    !!((row as any)?.paid_at || row?.raw?.paid_at) ||
+    !!((row as any)?.paid_at || row?.raw?.paid_at || (row as any)?.payment_sent_at || row?.raw?.payment_sent_at) ||
     String((row as any)?.escrow_status || row?.raw?.escrow_status || '').toLowerCase() === 'funded';
   
   if (hasCapturedPayment) {
@@ -427,7 +427,7 @@ const brandDealCardUi = (row: BrandDeal | null | undefined) => {
   const hasCapturedPayment = 
     ['captured', 'paid', 'authorized', 'processed', 'successful'].includes(paymentStatus) || 
     (paymentId.startsWith('pay_') && Number((row as any)?.amount_paid || 0) > 0) ||
-    !!((row as any)?.paid_at || (row as any)?.raw?.paid_at) ||
+    !!((row as any)?.paid_at || (row as any)?.raw?.paid_at || (row as any)?.payment_sent_at || (row as any)?.raw?.payment_sent_at) ||
     String((row as any)?.escrow_status || (row as any)?.raw?.escrow_status || '').toLowerCase() === 'funded';
   const shippingStatus = String((row as any)?.shipping_status || '').trim().toLowerCase();
   const hasShipped = shippingStatus === 'shipped' || shippingStatus === 'in_transit';
