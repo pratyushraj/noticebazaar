@@ -49,6 +49,7 @@ import dealDetailsTokensRouter from './routes/dealDetailsTokens.js';
 import contractReadyTokensRouter from './routes/contractReadyTokens.js';
 import gstRouter from './routes/gst.js';
 import aiRouter from './routes/ai.js';
+import botRouter from './routes/bot.js';
 import creatorSignRouter from './routes/creatorSign.js';
 import otpRouter from './routes/otp.js';
 import profileRouter from './routes/profile.js';
@@ -408,6 +409,7 @@ app.use('/api/shipping', shippingRouter); // Public shipping update (brand, no a
 app.use('/api/cron', cronDealRemindersRouter); // Cron: deal reminders (protected by CRON_SECRET in route)
 app.use('/api/cron', cronOnboardingEmailsRouter); // Cron: creator onboarding sequence (protected by CRON_SECRET)
 app.use('/api/og', ogRouter); // Public OG bot scraper routes
+app.use('/api/bot', botRouter); // OpenClaw bot access to admin operations
 app.use('/api/collab-action', collabActionRouter); // Public collab action routes (accept/decline via token)
 
 // Authentication Routes - Must be registered before catch-all and after other public routes

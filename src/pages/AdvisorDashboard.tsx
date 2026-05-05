@@ -285,8 +285,12 @@ export default function AdvisorDashboard() {
                   <MessageSquare className={iconSizes.md} />
                 </div>
                 <div>
-                  <div className="font-semibold">Chartered Accountant</div>
-                  <div className="text-xs text-foreground/60">Tax & Finance</div>
+                  <div className="font-semibold">
+                    {profile?.role === 'admin' ? 'Admin Dashboard' : 'Chartered Accountant'}
+                  </div>
+                  <div className="text-xs text-foreground/60">
+                    {profile?.role === 'admin' ? 'Management & Support' : 'Tax & Finance'}
+                  </div>
                 </div>
               </div>
               <motion.button

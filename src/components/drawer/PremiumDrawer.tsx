@@ -247,7 +247,7 @@ export default function PremiumDrawer({
     settings: [
       { id: 'profile', label: 'Account', icon: Settings, path: '/creator-profile?section=account' },
       { id: 'notification-settings', label: 'Notifications', icon: Bell, path: '/creator-profile?section=notifications' },
-      { id: 'help', label: 'Help & Support', icon: HelpCircle },
+      { id: 'help', label: 'Help & Support', icon: HelpCircle, path: '/creator-profile?section=support' },
     ],
   };
 

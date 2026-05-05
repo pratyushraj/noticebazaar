@@ -13,6 +13,12 @@ interface DashboardMetricsCardsProps {
   avgDealDuration?: number;
   isDark?: boolean;
   textColor?: string;
+  trends?: {
+    revenue?: string;
+    active?: string;
+    outstanding?: string;
+    duration?: string;
+  };
 }
 
 const DashboardMetricsCards: React.FC<DashboardMetricsCardsProps> = ({
@@ -22,6 +28,12 @@ const DashboardMetricsCards: React.FC<DashboardMetricsCardsProps> = ({
   avgDealDuration = 0,
   isDark = true,
   textColor = '',
+  trends = {
+    revenue: '+12%',
+    active: '+2',
+    outstanding: '−₹0',
+    duration: '−1d'
+  }
 }) => {
   const metrics = [
     {
@@ -32,7 +44,7 @@ const DashboardMetricsCards: React.FC<DashboardMetricsCardsProps> = ({
       gradient: 'from-blue-600 to-indigo-600',
       bgGradient: 'from-blue-500/5 to-indigo-500/5',
       borderColor: 'border-blue-500/20',
-      trend: '+12%',
+      trend: trends.revenue || '+0%',
     },
     {
       id: 'active',
@@ -42,7 +54,7 @@ const DashboardMetricsCards: React.FC<DashboardMetricsCardsProps> = ({
       gradient: 'from-emerald-600 to-teal-600',
       bgGradient: 'from-emerald-500/5 to-teal-500/5',
       borderColor: 'border-emerald-500/20',
-      trend: '+3',
+      trend: trends.active || '+0',
     },
     {
       id: 'pending',
@@ -52,7 +64,7 @@ const DashboardMetricsCards: React.FC<DashboardMetricsCardsProps> = ({
       gradient: 'from-orange-600 to-rose-600',
       bgGradient: 'from-orange-500/5 to-rose-500/5',
       borderColor: 'border-orange-500/20',
-      trend: '−₹2K',
+      trend: trends.outstanding || '−₹0',
     },
     {
       id: 'duration',
@@ -62,72 +74,96 @@ const DashboardMetricsCards: React.FC<DashboardMetricsCardsProps> = ({
       gradient: 'from-purple-600 to-pink-600',
       bgGradient: 'from-purple-500/5 to-pink-500/5',
       borderColor: 'border-purple-500/20',
-      trend: '−2d',
+      trend: trends.duration || '−0d',
     },
   ];
 
   return (
-    <div className="grid grid-cols-2 gap-3.5 sm:grid-cols-4">
+    <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
       {metrics.map((metric, idx) => {
         const Icon = metric.icon;
         return (
           <motion.div
             key={metric.id}
-            initial={{ opacity: 0, y: 15 }}
+            initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: idx * 0.05, duration: 0.5 }}
+            transition={{ 
+              delay: idx * 0.1, 
+              duration: 0.8,
+              ease: [0.16, 1, 0.3, 1]
+            }}
           >
             <Card
               className={cn(
-                'relative overflow-hidden border-0 transition-all duration-500 h-[110px] group active:scale-[0.98]',
+                'relative overflow-hidden border-0 transition-all duration-700 h-[120px] group active:scale-[0.97] cursor-default',
                 isDark
-                  ? `bg-[#0B1220] border-[#223046] shadow-[0_10px_30px_rgb(0,0,0,0.2)]`
-                  : 'bg-white border-slate-200/60 shadow-[0_8px_30px_rgb(0,0,0,0.04)]'
+                  ? 'bg-gradient-to-br from-white/[0.03] to-transparent border border-white/[0.05] shadow-[0_20px_50px_rgba(0,0,0,0.3)] backdrop-blur-md'
+                  : 'bg-white border border-slate-200/60 shadow-[0_10px_40px_rgba(0,0,0,0.04)]'
               )}
             >
-              {/* Subtle top-left gradient glow */}
+              {/* Premium Glow Effect */}
               <div className={cn(
-                'absolute -top-4 -left-4 w-12 h-12 blur-2xl opacity-20',
+                'absolute -top-12 -right-12 w-32 h-32 blur-[60px] opacity-20 transition-opacity duration-700 group-hover:opacity-40',
                 `bg-gradient-to-br ${metric.gradient}`
+              )} />
+              
+              <div className={cn(
+                'absolute -bottom-12 -left-12 w-24 h-24 blur-[40px] opacity-10',
+                `bg-gradient-to-tr ${metric.gradient}`
               )} />
 
               <CardContent className="p-4 h-full flex flex-col justify-between relative z-10">
                 <div className="flex items-start justify-between">
                   <div className={cn(
-                    'w-8 h-8 rounded-xl flex items-center justify-center transition-transform duration-500 group-hover:scale-110 shadow-sm',
-                    isDark ? `bg-gradient-to-br ${metric.gradient} text-white` : 'bg-slate-50 text-slate-600 border border-slate-100'
+                    'w-9 h-9 rounded-2xl flex items-center justify-center transition-all duration-700 group-hover:scale-110 shadow-lg',
+                    isDark 
+                      ? `bg-gradient-to-br ${metric.gradient} text-white shadow-${metric.id}-500/20` 
+                      : 'bg-slate-50 text-slate-600 border border-slate-100'
                   )}>
-                    <Icon className="w-4 h-4" strokeWidth={2.5} />
+                    <Icon className="w-4.5 h-4.5" strokeWidth={2.2} />
                   </div>
-                  <div className={cn(
-                    "px-1.5 py-0.5 rounded-lg text-[9px] font-black flex items-center gap-0.5",
-                    idx === 2 || idx === 3 ? (isDark ? "bg-rose-500/10 text-rose-400" : "bg-rose-50 text-rose-600") : (isDark ? "bg-emerald-500/10 text-emerald-400" : "bg-emerald-50 text-emerald-600")
-                  )}>
-                    <ArrowUpRight className={cn("w-2.5 h-2.5", idx >= 2 ? "rotate-90" : "")} />
+                  <motion.div 
+                    initial={{ opacity: 0, x: 5 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.3 + idx * 0.1 }}
+                    className={cn(
+                      "px-2 py-0.5 rounded-full text-[10px] font-black flex items-center gap-0.5 backdrop-blur-xl border",
+                      idx === 2 || idx === 3 
+                        ? (isDark ? "bg-rose-500/10 text-rose-400 border-rose-500/20" : "bg-rose-50 text-rose-600 border-rose-200") 
+                        : (isDark ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" : "bg-emerald-50 text-emerald-600 border-emerald-200")
+                    )}
+                  >
+                    <ArrowUpRight className={cn("w-3 h-3", idx >= 2 ? "rotate-90" : "")} />
                     {metric.trend}
-                  </div>
+                  </motion.div>
                 </div>
 
-                <div className="mt-2">
+                <div className="mt-auto">
                   <p className={cn(
-                    'text-[10px] font-black uppercase tracking-[0.12em] opacity-40 mb-0.5',
+                    'text-[10px] font-black uppercase tracking-[0.15em] opacity-40 mb-1',
                     textColor
                   )}>
                     {metric.label}
                   </p>
-                  <h3 className={cn(
-                    'text-xl font-black tracking-tight leading-none',
-                    isDark ? 'text-white' : 'text-slate-900'
-                  )}>
-                    {metric.value}
-                  </h3>
+                  <div className="flex items-baseline gap-1">
+                    <h3 className={cn(
+                      'text-2xl font-black tracking-tight leading-none',
+                      isDark ? 'text-white' : 'text-slate-900'
+                    )}>
+                      {metric.value}
+                    </h3>
+                  </div>
                 </div>
 
-                {/* Animated progress accent bottom line */}
-                <div className={cn(
-                  'absolute bottom-0 left-0 h-0.5 bg-gradient-to-r opacity-30',
-                  metric.gradient
-                )} style={{ width: '100%' }} />
+                {/* Animated Bottom Bar */}
+                <div className="absolute bottom-0 left-0 h-[2px] w-full overflow-hidden opacity-30">
+                  <motion.div 
+                    initial={{ x: '-100%' }}
+                    animate={{ x: '0%' }}
+                    transition={{ delay: 0.5 + idx * 0.1, duration: 1.5, ease: "easeOut" }}
+                    className={cn('h-full w-full bg-gradient-to-r', metric.gradient)} 
+                  />
+                </div>
               </CardContent>
             </Card>
           </motion.div>

@@ -144,6 +144,21 @@ const CreatorDashboardContent = ({ navigate }: { navigate: any }) => {
               duration: 5000,
             });
           }
+
+          // Notify if a brand withdraws a request
+          if (
+            payload.eventType === 'UPDATE' && 
+            payload.new.status === 'declined' && 
+            payload.new.decline_reason === 'withdrawn_by_brand' &&
+            payload.old?.status !== 'declined' &&
+            document.visibilityState === 'visible'
+          ) {
+            triggerHaptic();
+            toast.info('Offer Withdrawn', {
+              description: `A brand has withdrawn their collaboration request.`,
+              duration: 5000,
+            });
+          }
         }
       )
       .on(
@@ -265,6 +280,7 @@ const CreatorDashboardContent = ({ navigate }: { navigate: any }) => {
       onAcceptRequest={handleAcceptRequest}
       onDeclineRequest={handleDeclineRequest}
       onRefresh={handleRefresh}
+      onLogout={() => signOutMutation.mutate()}
     />
   );
 };

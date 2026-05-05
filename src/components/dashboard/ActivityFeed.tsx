@@ -63,7 +63,7 @@ const ActivityFeed: React.FC<ActivityFeedProps> = ({
     },
   ];
 
-  const displayActivities = activities.length > 0 ? activities : defaultActivities;
+  const displayActivities = activities;
   const truncatedActivities = displayActivities.slice(0, maxItems);
 
   const typeConfig: Record<string, { color: string; bgColor: string; icon: React.ReactNode }> = {

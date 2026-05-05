@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
-import { ArrowLeft, User, Mail, Phone, MapPin, Instagram, Lock, CreditCard, Shield, HelpCircle, FileText, LogOut, ChevronRight, ChevronDown, Check, Download, Trash2, Star, TrendingUp, Award, MessageCircle, Loader2, Sparkles, Camera, Link2, Copy, ExternalLink, AlertCircle, Eye, SlidersHorizontal, Zap } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { ArrowLeft, User, Mail, Phone, MapPin, Instagram, Lock, CreditCard, Shield, HelpCircle, FileText, LogOut, ChevronRight, ChevronDown, Check, Download, Trash2, Star, TrendingUp, Award, MessageCircle, Loader2, Sparkles, Camera, Link2, Copy, ExternalLink, AlertCircle, Eye, SlidersHorizontal, Zap, BellRing } from 'lucide-react';
 import NotificationPreferences from '@/components/notifications/NotificationPreferences';
 
 import { useLocation, useNavigate } from 'react-router-dom';
@@ -223,7 +224,7 @@ const ProfileSettings = () => {
   const signOutMutation = useSignOut();
   const getInitialSection = () => {
     const section = new URLSearchParams(location.search).get('section');
-    return section === 'profile' || section === 'account' || section === 'collab' || section === 'support'
+    return section === 'profile' || section === 'account' || section === 'collab' || section === 'support' || section === 'notifications'
       ? section
       : 'profile';
   };
@@ -558,8 +559,8 @@ const ProfileSettings = () => {
       return;
     }
 
-    if (section === 'profile' || section === 'account' || section === 'collab' || section === 'support') {
-      setActiveSection(section);
+    if (section === 'profile' || section === 'account' || section === 'collab' || section === 'support' || section === 'notifications') {
+      setActiveSection(section as any);
     }
 
     // Deep-link focus: scroll to specific field and enable edit mode
@@ -589,7 +590,7 @@ const ProfileSettings = () => {
     }
   }, [location.search]);
 
-  const handleSectionChange = (section: 'profile' | 'account' | 'collab' | 'support') => {
+  const handleSectionChange = (section: 'profile' | 'account' | 'collab' | 'support' | 'notifications') => {
     if (dealSettingsRequired && section !== 'collab') {
       toast.message('Complete Deal Settings first to continue.');
       return;
@@ -3297,6 +3298,30 @@ const ProfileSettings = () => {
                 <button type="button" className="text-[9px] font-black uppercase tracking-[0.2em] opacity-40 hover:opacity-100 transition-opacity">Privacy Protocol</button>
               </div>
             </div>
+          </div>
+        )}
+
+        {activeSection === 'notifications' && (
+          <div className="space-y-6 pb-20">
+            <motion.div 
+              initial={{ y: 20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              className={cn(
+                "rounded-[2.5rem] p-8 border backdrop-blur-2xl transition-all duration-500",
+                isDark ? "bg-white/[0.02] border-white/10 shadow-2xl" : "bg-white border-slate-200 shadow-xl shadow-slate-200/30"
+              )}
+            >
+              <div className="flex items-center gap-3 mb-8">
+                <div className="w-10 h-10 rounded-2xl bg-orange-500/10 flex items-center justify-center">
+                  <BellRing className="w-5 h-5 text-orange-500" />
+                </div>
+                <div>
+                  <h2 className={cn("text-lg font-black tracking-tight", isDark ? "text-white" : "text-slate-900")}>Notification Center</h2>
+                  <p className={cn("text-[10px] font-bold uppercase tracking-widest opacity-40", isDark ? "text-white" : "text-slate-900")}>Preferences & Protocol</p>
+                </div>
+              </div>
+              <NotificationPreferences />
+            </motion.div>
           </div>
         )}
 

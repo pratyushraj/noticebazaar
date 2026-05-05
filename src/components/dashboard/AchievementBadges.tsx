@@ -93,7 +93,7 @@ const AchievementBadges: React.FC<AchievementBadgesProps> = ({
     },
   ];
 
-  const displayAchievements = achievements.length > 0 ? achievements : defaultAchievements;
+  const displayAchievements = achievements;
   const unlockedAchievements = displayAchievements.filter(a => a.earned);
   const lockedAchievements = displayAchievements.filter(a => !a.earned);
 

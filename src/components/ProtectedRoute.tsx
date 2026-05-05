@@ -50,7 +50,7 @@ function isCollabProfileComplete(profile: any): boolean {
 /** Determine the target dashboard for a user based on role */
 function getTargetDashboard(profile: any): string {
   switch (profile?.role) {
-    case 'admin': return '/admin-dashboard';
+    case 'admin': return '/admin';
     case 'chartered_accountant': return '/ca-dashboard';
     case 'brand': return profile?.onboarding_complete ? '/brand-dashboard' : '/brand-onboarding';
     case 'lawyer': return '/lawyer-dashboard';

@@ -73,7 +73,7 @@ const SmartNotificationsCenter: React.FC<SmartNotificationsCenterProps> = ({
     },
   ];
 
-  const displayNotifications = notifications.length > 0 ? notifications : defaultNotifications;
+  const displayNotifications = notifications;
 
   const typeConfig = {
     payment: {

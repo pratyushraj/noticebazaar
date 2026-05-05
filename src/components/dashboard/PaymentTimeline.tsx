@@ -76,7 +76,7 @@ const PaymentTimeline: React.FC<PaymentTimelineProps> = ({
     },
   ];
 
-  const displayMilestones = milestones.length > 0 ? milestones : defaultMilestones;
+  const displayMilestones = milestones;
   const sortedMilestones = [...displayMilestones].sort((a, b) => a.date.getTime() - b.date.getTime());
   const truncatedMilestones = sortedMilestones.slice(0, maxItems);
 
@@ -257,58 +257,60 @@ const PaymentTimeline: React.FC<PaymentTimelineProps> = ({
         )}
 
         {/* Quick Stats */}
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-          className={cn(
-            'mt-6 pt-4 border-t grid grid-cols-3 gap-3',
-            isDark ? 'border-border' : 'border-border'
-          )}
-        >
-          <div className="text-center">
-            <p className={cn(
-              'text-xs font-semibold mb-1',
-              isDark ? 'text-foreground/60' : 'text-muted-foreground'
-            )}>
-              Expected
-            </p>
-            <p className={cn(
-              'text-lg font-bold',
-              isDark ? 'text-primary' : 'text-primary'
-            )}>
-              ₹45K
-            </p>
-          </div>
-          <div className="text-center">
-            <p className={cn(
-              'text-xs font-semibold mb-1',
-              isDark ? 'text-foreground/60' : 'text-muted-foreground'
-            )}>
-              Pending
-            </p>
-            <p className={cn(
-              'text-lg font-bold',
-              isDark ? 'text-info' : 'text-info'
-            )}>
-              ₹25K
-            </p>
-          </div>
-          <div className="text-center">
-            <p className={cn(
-              'text-xs font-semibold mb-1',
-              isDark ? 'text-foreground/60' : 'text-muted-foreground'
-            )}>
-              Overdue
-            </p>
-            <p className={cn(
-              'text-lg font-bold',
-              isDark ? 'text-destructive' : 'text-destructive'
-            )}>
-              ₹25K
-            </p>
-          </div>
-        </motion.div>
+        {displayMilestones.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className={cn(
+              'mt-6 pt-4 border-t grid grid-cols-3 gap-3',
+              isDark ? 'border-border' : 'border-border'
+            )}
+          >
+            <div className="text-center">
+              <p className={cn(
+                'text-xs font-semibold mb-1',
+                isDark ? 'text-foreground/60' : 'text-muted-foreground'
+              )}>
+                Expected
+              </p>
+              <p className={cn(
+                'text-lg font-bold',
+                isDark ? 'text-primary' : 'text-primary'
+              )}>
+                ₹{Math.round(displayMilestones.reduce((sum, m) => sum + m.amount, 0) / 1000)}K
+              </p>
+            </div>
+            <div className="text-center">
+              <p className={cn(
+                'text-xs font-semibold mb-1',
+                isDark ? 'text-foreground/60' : 'text-muted-foreground'
+              )}>
+                Pending
+              </p>
+              <p className={cn(
+                'text-lg font-bold',
+                isDark ? 'text-info' : 'text-info'
+              )}>
+                ₹{Math.round(displayMilestones.filter(m => m.status === 'pending').reduce((sum, m) => sum + m.amount, 0) / 1000)}K
+              </p>
+            </div>
+            <div className="text-center">
+              <p className={cn(
+                'text-xs font-semibold mb-1',
+                isDark ? 'text-foreground/60' : 'text-muted-foreground'
+              )}>
+                Overdue
+              </p>
+              <p className={cn(
+                'text-lg font-bold',
+                isDark ? 'text-destructive' : 'text-destructive'
+              )}>
+                ₹{Math.round(displayMilestones.filter(m => m.status === 'overdue').reduce((sum, m) => sum + m.amount, 0) / 1000)}K
+              </p>
+            </div>
+          </motion.div>
+        )}
       </CardContent>
     </Card>
   );

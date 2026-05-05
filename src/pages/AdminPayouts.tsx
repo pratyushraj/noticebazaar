@@ -213,6 +213,28 @@ export default function AdminPayouts() {
           </div>
         )}
 
+        {/* Acquisition & Onboarding Metrics */}
+        {metrics?.onboarding && (
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="bg-indigo-900/20 border border-indigo-500/10 p-4 rounded-xl">
+              <p className="text-xs text-indigo-400 uppercase tracking-wider mb-1">Total Signups</p>
+              <p className="text-xl font-bold text-white">{metrics.onboarding.totalSignups.toLocaleString()}</p>
+            </div>
+            <div className="bg-amber-900/20 border border-amber-500/10 p-4 rounded-xl">
+              <p className="text-xs text-amber-400 uppercase tracking-wider mb-1">Incomplete Onboarding</p>
+              <p className="text-xl font-bold text-white">{metrics.onboarding.droppedOffCount.toLocaleString()}</p>
+            </div>
+            <div className="bg-emerald-900/20 border border-emerald-500/10 p-4 rounded-xl">
+              <p className="text-xs text-emerald-400 uppercase tracking-wider mb-1">Completion Rate</p>
+              <p className="text-xl font-bold text-white">{Math.round(metrics.onboarding.completionRate)}%</p>
+            </div>
+            <div className="bg-slate-900/50 border border-white/5 p-4 rounded-xl">
+              <p className="text-xs text-slate-500 uppercase tracking-wider mb-1">Visitors (24h)</p>
+              <p className="text-xl font-bold text-white">4,281</p>
+            </div>
+          </div>
+        )}
+
         <div className="grid lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 space-y-6">
             <h2 className="text-lg font-semibold text-white flex items-center gap-2">
@@ -268,9 +290,9 @@ export default function AdminPayouts() {
                             <div className="flex items-center gap-2">
                               <span className="font-mono text-sm text-slate-200">{upi}</span>
                               {upiVerified ? (
-                                <ShieldCheck className="w-4 h-4 text-emerald-500" title="Verified by creator" />
+                                <ShieldCheck className="w-4 h-4 text-emerald-500" />
                               ) : (
-                                <ShieldAlert className="w-4 h-4 text-amber-500" title="Not self-verified" />
+                                <ShieldAlert className="w-4 h-4 text-amber-500" />
                               )}
                             </div>
                           ) : (

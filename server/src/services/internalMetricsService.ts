@@ -22,6 +22,17 @@ export interface PlatformMetrics {
         averageApprovalVelocityHours: number;
         ghostingRate: number;
     };
+    onboarding: {
+        totalSignups: number;
+        droppedOffCount: number; // Users who started but didn't finish onboarding
+        completionRate: number;
+    };
+    growth: {
+        totalCreators: number;
+        totalBrands: number;
+        activeDealsCount: number;
+        totalGTV: number; // Gross Transaction Value
+    };
 }
 
 /**
@@ -32,7 +43,9 @@ export async function getPlatformMetrics(): Promise<PlatformMetrics> {
         timeToCreatorSignature: { averageHours: 0, medianHours: 0, totalSigned: 0 },
         shipmentToReceipt: { averageDays: 0, totalConfirmed: 0 },
         remindersEfficiency: { totalRemindersSent: 0, deliverablesSubmittedAfterReminder: 0, lateSubmissionRateAfterReminder: 0 },
-        escrow: { totalVolumeLocked: 0, payoutVolumePending: 0, averageApprovalVelocityHours: 0, ghostingRate: 0 }
+        escrow: { totalVolumeLocked: 0, payoutVolumePending: 0, averageApprovalVelocityHours: 0, ghostingRate: 0 },
+        onboarding: { totalSignups: 0, droppedOffCount: 0, completionRate: 0 },
+        growth: { totalCreators: 0, totalBrands: 0, activeDealsCount: 0, totalGTV: 0 }
     };
 
     try {
@@ -130,21 +143,28 @@ export async function getPlatformMetrics(): Promise<PlatformMetrics> {
             }
         }
 
-        // 4. Escrow Health Metrics
-        const { data: escrowDeals, error: escrowError } = await supabase
+        // 4. Escrow Health Metrics & Growth
+        const { data: allDeals, error: escrowError } = await supabase
             .from('brand_deals')
-            .select('status, deal_amount, updated_at, created_at')
-            .not('status', 'in', '("DRAFT", "CANCELLED", "COMPLETED")');
+            .select('status, deal_amount, updated_at, created_at');
 
-        if (!escrowError && escrowDeals) {
+        if (!escrowError && allDeals) {
             let tvl = 0;
             let pendingPayout = 0;
+            let activeDeals = 0;
+            let totalGTV = 0;
             
-            escrowDeals.forEach(deal => {
+            allDeals.forEach(deal => {
                 const status = (deal.status || '').toUpperCase();
                 const amount = Number(deal.deal_amount || 0);
+                
+                if (!['DRAFT', 'CANCELLED', 'REJECTED'].includes(status)) {
+                    totalGTV += amount;
+                }
+
                 if (['CONTENT_MAKING', 'CONTENT_DELIVERED', 'REVISION_REQUESTED', 'REVISION_DONE', 'CONTENT_APPROVED'].includes(status)) {
                     tvl += amount;
+                    activeDeals++;
                 }
                 if (status === 'CONTENT_APPROVED') {
                     pendingPayout += amount;
@@ -152,6 +172,8 @@ export async function getPlatformMetrics(): Promise<PlatformMetrics> {
             });
             metrics.escrow.totalVolumeLocked = tvl;
             metrics.escrow.payoutVolumePending = pendingPayout;
+            metrics.growth.activeDealsCount = activeDeals;
+            metrics.growth.totalGTV = totalGTV;
         }
 
         // 5. Velocity & Ghosting
@@ -194,9 +216,74 @@ export async function getPlatformMetrics(): Promise<PlatformMetrics> {
             metrics.escrow.ghostingRate = totalDelivered > 0 ? (ghostCount / totalDelivered) * 100 : 0;
         }
 
+        // 6. Onboarding Funnel Metrics & User Growth
+        const { data: profiles, error: profileError } = await supabase
+            .from('profiles')
+            .select('onboarding_complete, created_at, role');
+
+        if (!profileError && profiles) {
+            const total = profiles.length;
+            const completed = profiles.filter(p => p.onboarding_complete === true).length;
+            const droppedOff = profiles.filter(p => p.onboarding_complete === false).length;
+            
+            metrics.onboarding.totalSignups = total;
+            metrics.onboarding.droppedOffCount = droppedOff;
+            metrics.onboarding.completionRate = total > 0 ? (completed / total) * 100 : 0;
+
+            metrics.growth.totalCreators = profiles.filter(p => p.role === 'creator').length;
+            metrics.growth.totalBrands = profiles.filter(p => p.role === 'brand' || p.role === 'client').length;
+        }
+
     } catch (err) {
         console.error('[InternalMetrics] Calculation error:', err);
     }
 
     return metrics;
+}
+
+/**
+ * Get time-series metrics for charts
+ */
+export async function getTimeSeriesMetrics(days: number = 30): Promise<any[]> {
+    try {
+        const startDate = new Date();
+        startDate.setDate(startDate.getDate() - days);
+        const startDateStr = startDate.toISOString();
+
+        // Fetch deals created in the timeframe
+        const { data: deals, error } = await supabase
+            .from('brand_deals')
+            .select('created_at, deal_amount, status')
+            .gte('created_at', startDateStr)
+            .order('created_at', { ascending: true });
+
+        if (error || !deals) return [];
+
+        // Aggregate by day
+        const dailyData: Record<string, { date: string, gtv: number, deals: number }> = {};
+        
+        // Initialize all days in range
+        for (let i = 0; i <= days; i++) {
+            const d = new Date(startDate);
+            d.setDate(d.getDate() + i);
+            const dateStr = d.toISOString().split('T')[0];
+            dailyData[dateStr] = { date: dateStr, gtv: 0, deals: 0 };
+        }
+
+        deals.forEach(deal => {
+            const dateStr = new Date(deal.created_at).toISOString().split('T')[0];
+            if (dailyData[dateStr]) {
+                const status = (deal.status || '').toUpperCase();
+                if (!['DRAFT', 'CANCELLED', 'REJECTED'].includes(status)) {
+                    dailyData[dateStr].gtv += Number(deal.deal_amount || 0);
+                    dailyData[dateStr].deals += 1;
+                }
+            }
+        });
+
+        return Object.values(dailyData);
+    } catch (err) {
+        console.error('[InternalMetrics] Time-series calculation error:', err);
+        return [];
+    }
 }

@@ -14,9 +14,20 @@ const AdminProfile = lazy(() => import("@/pages/AdminProfile"));
 const AdminInfluencers = lazy(() => import("@/pages/AdminInfluencers"));
 const AdminDiscovery = lazy(() => import("@/pages/AdminDiscovery"));
 const AdminPayouts = lazy(() => import("@/pages/AdminPayouts"));
+const AdminDashboard = lazy(() => import("@/pages/AdminDashboard"));
 
 export const AdminRoutes = () => (
   <>
+    <Route
+      path="/admin"
+      element={
+        <LazyRoute>
+          <ProtectedLayout allowedRoles={["admin"]}>
+            <AdminDashboard />
+          </ProtectedLayout>
+        </LazyRoute>
+      }
+    />
     <Route
       path="/admin-dashboard"
       element={

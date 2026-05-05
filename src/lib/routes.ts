@@ -42,7 +42,7 @@ function matchesPrefix(path: string, prefixes: string[]): boolean {
 export const routes = {
   isCreator: (path: string) => matchesPrefix(path, CREATOR_PREFIXES),
   isOnboarding: (path: string) => path === '/creator-onboarding',
-  isAdmin: (path: string) => path.startsWith('/admin-'),
+  isAdmin: (path: string) => path === '/admin' || path.startsWith('/admin-'),
   isCA: (path: string) => path.startsWith('/ca-dashboard'),
   isLawyer: (path: string) => path.startsWith('/lawyer-dashboard'),
   isAdvisor: (path: string) => path.startsWith('/advisor-dashboard'),

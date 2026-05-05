@@ -542,7 +542,22 @@ const getCreatorDealCardUX = (deal: any) => {
     };
 };
 
-const DashboardLoadingStage = ({ isDark, tab = 'analytics' }: { isDark: boolean; tab?: string }) => {
+const DashboardLoadingStage = ({ 
+    isDark, 
+    tab = 'analytics',
+    triggerHaptic = () => {},
+    setActiveTab = () => {},
+    setActiveSettingsPage = () => {},
+    userId
+}: { 
+    isDark: boolean; 
+    tab?: string;
+    triggerHaptic?: any;
+    setActiveTab?: any;
+    setActiveSettingsPage?: any;
+    userId?: string;
+}) => {
+    const textColor = isDark ? "text-slate-100" : "text-slate-900";
     return (
         <div className="space-y-6 animate-in fade-in duration-500">
             {tab === 'dashboard' ? (
@@ -2399,16 +2414,6 @@ const MobileDashboardDemo = ({
         }, 0) || 19500; // Keep fallback for visual demo if empty
     }, [completedDealsList]);
 
-    const availableAmount = React.useMemo(() => {
-        return totalEarnings; // In a real app, this would be total - withdrawn
-    }, [totalEarnings]);
-
-    const inEscrowAmount = React.useMemo(() => {
-        return activeDealsList.reduce((sum: number, deal: any) => {
-            return sum + (Number(deal.deal_amount || deal.budget_amount || 0));
-        }, 0);
-    }, [activeDealsList]);
-
     const processingAmount = React.useMemo(() => {
         // Find deals where payout is already requested/processing
         return (brandDeals || []).reduce((sum: number, deal: any) => {
@@ -2417,6 +2422,17 @@ const MobileDashboardDemo = ({
             return sum + (isProcessing ? (Number(deal.deal_amount || deal.budget_amount || 0)) : 0);
         }, 0);
     }, [brandDeals]);
+
+    const availableAmount = React.useMemo(() => {
+        // Funds ready for withdrawal = Completed Earnings - Processing Withdrawals
+        return Math.max(0, totalEarnings - processingAmount);
+    }, [totalEarnings, processingAmount]);
+
+    const inEscrowAmount = React.useMemo(() => {
+        return activeDealsList.reduce((sum: number, deal: any) => {
+            return sum + (Number(deal.deal_amount || deal.budget_amount || 0));
+        }, 0);
+    }, [activeDealsList]);
 
     const pendingAmount = React.useMemo(() => {
         return pendingOffersDeduplicated.reduce((sum: number, req: any) => {
@@ -4798,6 +4814,89 @@ const MobileDashboardDemo = ({
                         </div>
                     </motion.div>
                 );
+            case 'support':
+                return (
+                    <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} drag="x" dragConstraints={{ left: 0, right: 0 }} dragElastic={0.2} onDragEnd={(e, { offset, velocity }) => { if (offset.x > 50 || velocity.x > 500) { triggerHaptic(); setActiveSettingsPage(null); } }} className="pb-20 touch-pan-y">
+                        <PageHeader title="Command Bridge" subtitle="Help & Support Protocol" />
+                        <div className="px-4 space-y-6">
+                            <div className={cn(
+                                "p-8 rounded-[2.5rem] border backdrop-blur-2xl transition-all duration-500",
+                                isDark ? "bg-white/[0.02] border-white/10 shadow-2xl" : "bg-white border-slate-200 shadow-xl shadow-slate-200/30"
+                            )}>
+                                <div className="flex items-center gap-3 mb-8">
+                                    <div className="w-10 h-10 rounded-2xl bg-amber-500/10 flex items-center justify-center">
+                                        <MessageCircle className="w-5 h-5 text-amber-500" />
+                                    </div>
+                                    <div>
+                                        <h2 className={cn("text-lg font-black tracking-tight", textColor)}>Support Hub</h2>
+                                        <p className="text-[10px] font-bold uppercase tracking-widest opacity-40">Intelligence Center</p>
+                                    </div>
+                                </div>
+
+                                <div className="space-y-3">
+                                    {[
+                                        { icon: MessageCircle, label: 'Contact Support', sub: 'Chat with the Elite team', primary: true },
+                                        { icon: HelpCircle, label: 'Intelligence Center', sub: 'Protocol Guides' },
+                                    ].map((item, idx) => (
+                                        <button key={idx} className={cn(
+                                            "w-full flex items-center justify-between p-5 rounded-2xl border transition-all active:scale-[0.98]",
+                                            item.primary 
+                                                ? (isDark ? "bg-amber-500/10 border-amber-500/20" : "bg-amber-50 border-amber-100")
+                                                : (isDark ? "bg-white/[0.03] border-white/5 hover:bg-white/[0.05]" : "bg-slate-50 border-slate-100 hover:bg-slate-100")
+                                        )}>
+                                            <div className="flex items-center gap-4">
+                                                <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center", item.primary ? "bg-amber-500 text-white" : "bg-slate-500/10 text-slate-500")}>
+                                                    <item.icon className="w-5 h-5" />
+                                                </div>
+                                                <div className="text-left">
+                                                    <div className={cn("text-[10px] font-black uppercase tracking-widest mb-0.5", item.primary && "text-amber-500")}>{item.label}</div>
+                                                    <div className="text-[9px] font-bold opacity-40 uppercase tracking-widest">{item.sub}</div>
+                                                </div>
+                                            </div>
+                                            <ChevronRight className={cn("w-4 h-4", item.primary ? "text-amber-500" : "opacity-20")} />
+                                        </button>
+                                    ))}
+
+                                    <button
+                                        onClick={() => {
+                                            triggerHaptic();
+                                            if (userId) {
+                                                localStorage.removeItem(`dashboard-tutorial-completed-${userId}`);
+                                                localStorage.removeItem(`dashboard-tutorial-dismissed-${userId}`);
+                                                toast.success('Protocol sequence reset. Re-initializing tutorial...');
+                                                setActiveSettingsPage(null);
+                                            } else {
+                                                toast.error('User context not found. Cannot reset protocol.');
+                                            }
+                                        }}
+                                        className={cn(
+                                            "w-full flex items-center justify-between p-5 rounded-2xl border transition-all active:scale-[0.98] mt-4",
+                                            isDark ? "bg-blue-500/5 border-blue-500/10 hover:bg-blue-500/10" : "bg-blue-50 border-blue-100 hover:bg-blue-100"
+                                        )}
+                                    >
+                                        <div className="flex items-center gap-4">
+                                            <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center">
+                                                <Sparkles className="w-5 h-5 text-blue-500" />
+                                            </div>
+                                            <div className="text-left">
+                                                <div className="text-[10px] font-black uppercase tracking-widest mb-0.5 text-blue-500">Restart Training</div>
+                                                <div className="text-[9px] font-bold opacity-40 uppercase tracking-widest text-blue-500">Guided Dashboard Protocol</div>
+                                            </div>
+                                        </div>
+                                        <ChevronRight className="w-4 h-4 text-blue-500/20" />
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div className="px-4 py-8 space-y-4">
+                                <div className="flex flex-wrap gap-6 justify-center">
+                                    <button type="button" className="text-[9px] font-black uppercase tracking-[0.2em] opacity-40 hover:opacity-100 transition-opacity">Terms of Service</button>
+                                    <button type="button" className="text-[9px] font-black uppercase tracking-[0.2em] opacity-40 hover:opacity-100 transition-opacity">Privacy Protocol</button>
+                                </div>
+                            </div>
+                        </div>
+                    </motion.div>
+                );
             case 'consumer-complaints':
                 return (
                     <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} className="pb-20 touch-pan-y">
@@ -5128,13 +5227,25 @@ const MobileDashboardDemo = ({
                     open={showMenu}
                     onClose={() => setShowMenu(false)}
                     onNavigate={(path) => {
-                        if (path === '/lifestyle/consumer-complaints') {
+                        // Standardize navigation for mobile-first SPA experience
+                        const [basePath, query] = path.split('?');
+                        const urlParams = new URLSearchParams(query || '');
+                        const section = urlParams.get('section');
+
+                        // Intercept profile sub-sections to keep user within the mobile dashboard context
+                        if (basePath === '/creator-profile' && section) {
+                            setActiveTab('profile');
+                            // Map 'account' section to the 'personal' settings page in MobileDashboardDemo
+                            setActiveSettingsPage(section === 'account' ? 'personal' : section);
+                        } else if (path === '/lifestyle/consumer-complaints') {
                             setActiveTab('profile');
                             setActiveSettingsPage('consumer-complaints');
                         } else if (path === '/dashboard/consumer-complaints') {
                             setActiveTab('profile');
                             setActiveSettingsPage('my-complaints');
-                        } else if (!path.startsWith('http')) navigate(path);
+                        } else if (!path.startsWith('http')) {
+                            navigate(path);
+                        }
                         setShowMenu(false);
                     }}
                     onSetActiveTab={(tab) => { setShowMenu(false); }}
@@ -5341,6 +5452,8 @@ const MobileDashboardDemo = ({
                             handleAccept={handleAccept} onDeclineRequest={onDeclineRequest}
                             analyticsSummary={analyticsSummary} analyticsLoading={analyticsLoading}
                             counterOfferCount={counterOfferCount}
+                            profile={profile}
+                            setActiveSettingsPage={setActiveSettingsPage}
                         />
                     )}
 
@@ -5364,6 +5477,9 @@ const MobileDashboardDemo = ({
                             DealTimelineView={DealTimelineView} SmartNotificationsCenter={SmartNotificationsCenter}
                             analyticsSummary={analyticsSummary} analyticsLoading={analyticsLoading}
                             Menu={Menu} ShieldCheck={ShieldCheck}
+                            triggerHaptic={triggerHaptic}
+                            setActiveSettingsPage={setActiveSettingsPage}
+                            profile={profile}
                         />
                     )}
 
@@ -8412,9 +8528,9 @@ const DashboardTab = React.memo(({
     availableAmount, inEscrowAmount, processingAmount, pendingAmount,
     pendingOffersCount, pendingOffersDeduplicated, displayName, username,
     avatarUrl, avatarFallbackUrl, shouldShowPushPrompt,
-    isPushSubscribed, triggerHaptic, setActiveTab,
+    isPushSubscribed, triggerHaptic, setActiveTab, setActiveSettingsPage,
     setCollabSubTab, navigate, resolveCreatorDealProductImage, getBrandIcon,
-    counterOfferCount,
+    counterOfferCount, profile,
     TrendingUp, ArrowRight, ArrowUpRight, Clock, ChevronRight, User, DollarSign, Zap,
     setSelectedItem, setSelectedType, setShowShareSheet, handleCopyStorefront,
     Instagram, Copy, Eye, MessageCircleMore, handleAccept, onDeclineRequest,
@@ -8453,7 +8569,16 @@ const DashboardTab = React.memo(({
     const progress = getDealProgress(featuredDeal);
 
     if (isLoadingDeals) {
-        return <DashboardLoadingStage isDark={isDark} tab="dashboard" />;
+        return (
+            <DashboardLoadingStage 
+                isDark={isDark} 
+                tab="dashboard" 
+                triggerHaptic={triggerHaptic}
+                setActiveTab={setActiveTab}
+                setActiveSettingsPage={setActiveSettingsPage}
+                userId={profile?.id}
+            />
+        );
     }
 
     return (
@@ -8799,7 +8924,8 @@ const AnalyticsTab = React.memo(({
     AchievementBadges,
     DealTimelineView, SmartNotificationsCenter,
     analyticsSummary, analyticsLoading,
-    Menu, ShieldCheck
+    Menu, ShieldCheck,
+    triggerHaptic, setActiveSettingsPage, profile
 }: any) => {
     const linkViews = Number(analyticsSummary?.totalViews || 0);
     const weeklyViews = Number(analyticsSummary?.weeklyViews || 0);
@@ -8828,7 +8954,13 @@ const AnalyticsTab = React.memo(({
                     <h3 className={cn('text-sm font-bold tracking-tight mb-3', textColor)}>Your Performance</h3>
                 </motion.div>
                 {isLoadingDeals ? (
-                    <DashboardLoadingStage isDark={isDark} />
+                    <DashboardLoadingStage 
+                        isDark={isDark} 
+                        triggerHaptic={triggerHaptic}
+                        setActiveTab={setActiveTab}
+                        setActiveSettingsPage={setActiveSettingsPage}
+                        userId={profile?.id}
+                    />
                 ) : (
                     <DashboardMetricsCards
                         totalDealValue={brandDeals?.reduce((sum: number, deal: any) => sum + (deal.deal_amount || 0), 0) || 0}

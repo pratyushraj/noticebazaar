@@ -103,7 +103,7 @@ const getFallbackRedirectPath = (
   onboardingComplete?: boolean | null,
 ) => {
   if (role === 'brand') return onboardingComplete ? '/brand-dashboard' : '/brand-onboarding';
-  if (role === 'admin') return '/admin-dashboard';
+  if (role === 'admin') return '/admin';
   if (role === 'chartered_accountant') return '/ca-dashboard';
   if (role === 'lawyer') return '/lawyer-dashboard';
   // Default to creator role and check onboarding status
@@ -975,7 +975,7 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
           }
 
           // If we're already on a dashboard path, skip profile fetch and redirect (avoids timeout + log spam on token refresh / repeated SIGNED_IN)
-          const dashboardPaths = ['/creator-dashboard', '/brand-dashboard', '/brand-onboarding', '/admin-dashboard', '/ca-dashboard', '/lawyer-dashboard'];
+          const dashboardPaths = ['/admin', '/admin-dashboard', '/creator-dashboard', '/brand-dashboard', '/brand-onboarding', '/ca-dashboard', '/lawyer-dashboard'];
           if (dashboardPaths.includes(pathname)) {
             setIsAuthInitializing(false);
             return;
