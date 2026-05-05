@@ -730,14 +730,26 @@ router.post('/verify-creator', authMiddleware, async (req: AuthenticatedRequest,
       });
     }
 
+    const verifiedAt = new Date().toISOString();
+    const statusLower = String((deal as any).status || '').trim().toLowerCase();
+    const shouldFinalizeOfferAcceptance = targetTable === 'brand_deals' && statusLower === 'accepted_pending_otp';
+    const finalizedStatus = String((deal as any).deal_type || (deal as any).collab_type || '').trim().toLowerCase() === 'barter'
+      ? 'Drafting'
+      : 'CONTRACT_READY';
+
+    const updateData: Record<string, any> = {
+      creator_otp_verified: true,
+      creator_otp_verified_at: verifiedAt,
+      updated_at: verifiedAt,
+    };
+    if (shouldFinalizeOfferAcceptance) {
+      updateData.status = finalizedStatus;
+    }
+
     // Update verification status in target table
     const { error: updateError } = await supabase
       .from(targetTable)
-      .update({
-        creator_otp_verified: true,
-        creator_otp_verified_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      })
+      .update(updateData)
       .eq('id', dealId);
 
     if (updateError) {
@@ -747,15 +759,34 @@ router.post('/verify-creator', authMiddleware, async (req: AuthenticatedRequest,
 
     // Log successful verification
     await logDealAction(dealId, 'CREATOR_OTP_VERIFIED', {
-      verifiedAt: new Date().toISOString(),
+      verifiedAt,
     });
+
+    if (shouldFinalizeOfferAcceptance && (deal as any).collab_request_id) {
+      await supabase
+        .from('collab_requests')
+        .update({
+          status: 'accepted',
+          accepted_at: verifiedAt,
+          accepted_by_creator_id: req.user.id,
+          updated_at: verifiedAt,
+        })
+        .eq('id', (deal as any).collab_request_id);
+
+      await logDealAction(dealId, 'OFFER_ACCEPTED_AFTER_CREATOR_OTP', {
+        collabRequestId: (deal as any).collab_request_id,
+        status: finalizedStatus,
+        verifiedAt,
+      });
+    }
 
     console.log('[OTP] Creator OTP verified successfully for deal:', dealId);
 
     return res.json({
       success: true,
       message: 'OTP verified successfully',
-      verifiedAt: new Date().toISOString(),
+      verifiedAt,
+      finalized: shouldFinalizeOfferAcceptance,
     });
   } catch (error: any) {
     console.error('[OTP] verify-creator error:', error);

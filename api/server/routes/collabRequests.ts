@@ -1578,6 +1578,14 @@ router.patch('/:id/accept', async (req: AuthenticatedRequest, res: Response) => 
     }
 
     if (request.status !== 'pending') {
+      if (request.status === 'accepted_pending_otp' && request.deal_id) {
+        return res.json({
+          success: true,
+          deal: { id: request.deal_id },
+          needs_otp: true,
+          message: 'OTP verification is still required before this offer is accepted.',
+        });
+      }
       return res.status(400).json({
         success: false,
         error: 'Request has already been processed',
@@ -1615,7 +1623,7 @@ router.patch('/:id/accept', async (req: AuthenticatedRequest, res: Response) => 
        due_date: request.deadline || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
        payment_expected_date: request.deadline || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
        platform: dealPlatform,
-       status: isBarter ? 'Drafting' : 'CONTRACT_READY',
+       status: 'accepted_pending_otp',
        deal_type: isBarter ? 'barter' : 'paid',
        created_via: 'collab_request',
        collab_request_id: id,
@@ -1658,12 +1666,8 @@ router.patch('/:id/accept', async (req: AuthenticatedRequest, res: Response) => 
     const { error: updateError } = await supabase
       .from('collab_requests')
       .update({
-        status: 'accepted',
+        status: 'accepted_pending_otp',
         deal_id: deal.id,
-        accepted_at: now,
-        accepted_by_creator_id: userId,
-        accepted_ip: clientIp,
-        accepted_user_agent: userAgent,
         updated_at: now,
       })
       .eq('id', id);
@@ -1675,13 +1679,20 @@ router.patch('/:id/accept', async (req: AuthenticatedRequest, res: Response) => 
 
     await supabase.from('collab_request_audit_log').insert({
       collab_request_id: id,
-      action: 'accepted',
+      action: 'accepted_pending_otp',
       actor_id: userId,
       auth_method: 'session',
       ip_address: clientIp,
       user_agent: userAgent,
       metadata: {},
     }).then(({ error: logErr }) => { if (logErr) console.warn('[CollabRequests] Audit log insert failed:', logErr); });
+
+    return res.json({
+      success: true,
+      deal: { id: deal.id },
+      needs_otp: true,
+      message: 'OTP sent next. Verify it to accept and sign this collaboration.',
+    });
 
     // Barter: require delivery details before contract generation. Redirect creator to delivery-details screen.
     if (isBarter) {

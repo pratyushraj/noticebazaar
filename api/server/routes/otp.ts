@@ -963,12 +963,22 @@ router.post('/verify-creator', async (req: AuthenticatedRequest, res: Response) 
       });
     }
 
+    const verifiedAt = new Date().toISOString();
+    const statusLower = String((deal as any).status || '').trim().toLowerCase();
+    const shouldFinalizeOfferAcceptance = statusLower === 'accepted_pending_otp';
+    const finalizedStatus = String((deal as any).deal_type || (deal as any).collab_type || '').trim().toLowerCase() === 'barter'
+      ? 'Drafting'
+      : 'CONTRACT_READY';
+
     // OTP is valid - mark as verified
     const updateData: any = {
       creator_otp_verified: true,
-      creator_otp_verified_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
+      creator_otp_verified_at: verifiedAt,
+      updated_at: verifiedAt,
     };
+    if (shouldFinalizeOfferAcceptance) {
+      updateData.status = finalizedStatus;
+    }
 
     const { error: updateError } = await supabase
       .from('brand_deals')
@@ -988,12 +998,31 @@ router.post('/verify-creator', async (req: AuthenticatedRequest, res: Response) 
       verifiedAt: updateData.creator_otp_verified_at,
     });
 
+    if (shouldFinalizeOfferAcceptance && (deal as any).collab_request_id) {
+      await supabase
+        .from('collab_requests')
+        .update({
+          status: 'accepted',
+          accepted_at: verifiedAt,
+          accepted_by_creator_id: req.user.id,
+          updated_at: verifiedAt,
+        })
+        .eq('id', (deal as any).collab_request_id);
+
+      await logDealAction(dealId, 'OFFER_ACCEPTED_AFTER_CREATOR_OTP', {
+        collabRequestId: (deal as any).collab_request_id,
+        status: finalizedStatus,
+        verifiedAt,
+      });
+    }
+
     console.log('[OTP] Creator OTP verified successfully for deal:', dealId);
 
     return res.json({
       success: true,
       message: 'OTP verified successfully',
-      verifiedAt: updateData.otp_verified_at,
+      verifiedAt,
+      finalized: shouldFinalizeOfferAcceptance,
     });
   } catch (error: any) {
     console.error('[OTP] Unhandled error:', error);

@@ -3630,6 +3630,14 @@ router.patch('/:id/accept', async (req: AuthenticatedRequest, res: Response) => 
     }
 
     if (request.status !== 'pending') {
+      if (request.status === 'accepted_pending_otp' && (request as any).deal_id) {
+        return res.json({
+          success: true,
+          deal: { id: (request as any).deal_id },
+          needs_otp: true,
+          message: 'OTP verification is still required before this offer is accepted.',
+        });
+      }
       console.log(`[CollabRequests] Accept failed: Request ${id} has status "${request.status}" (expected "pending")`);
       return res.status(400).json({
         success: false,
@@ -3694,7 +3702,7 @@ router.patch('/:id/accept', async (req: AuthenticatedRequest, res: Response) => 
        due_date: request.deadline || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
        payment_expected_date: request.deadline || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
        platform: 'Other',
-       status: 'Drafting',
+       status: 'accepted_pending_otp',
        deal_type: isBarter ? 'barter' : 'paid',
        collab_type: normalizeCollabTypeForApi(request.collab_type) || request.collab_type,
        campaign_description: request.campaign_description || request.selected_package_label || null,
@@ -3815,7 +3823,7 @@ router.patch('/:id/accept', async (req: AuthenticatedRequest, res: Response) => 
     const { error: updateError } = await supabase
       .from('collab_requests')
       .update({
-        status: 'accepted',
+        status: 'accepted_pending_otp',
         deal_id: deal.id,
         updated_at: now,
       })
@@ -3840,10 +3848,10 @@ router.patch('/:id/accept', async (req: AuthenticatedRequest, res: Response) => 
     await supabase.from('deal_action_logs').insert({
       deal_id: deal.id,
       user_id: userId,
-      event: 'DEAL_LOCKED',
+      event: 'DEAL_PENDING_CREATOR_OTP',
       metadata: {
         collab_request_id: id,
-        message: 'Creator has locked the terms. Mutual commitment activated.',
+        message: 'Creator opened OTP verification. Offer is not accepted until OTP is verified.',
         creator_name: creatorProfile ? `${creatorProfile.first_name || ''} ${creatorProfile.last_name || ''}`.trim() : 'Creator'
       },
     });
@@ -3851,17 +3859,27 @@ router.patch('/:id/accept', async (req: AuthenticatedRequest, res: Response) => 
     await supabase.from('deal_action_logs').insert({
       deal_id: deal.id,
       user_id: userId,
-      event: isBarter ? 'AWAITING_DELIVERY_DETAILS' : 'DEAL_ACCEPTED',
+      event: 'CREATOR_ACCEPT_PENDING_OTP',
       metadata: {
         collab_request_id: id,
         auth_method: 'session',
         ip_address: clientIp,
         user_agent: userAgent,
         collab_type: normalizeCollabTypeForApi(request.collab_type) || request.collab_type,
-        status: isBarter ? 'Drafting' : 'Drafting'
+        status: 'accepted_pending_otp'
       },
     }).then(({ error: logErr }) => {
       if (logErr) console.warn('[CollabRequests] Audit log insert failed:', logErr);
+    });
+
+    invalidateCollabRequestsCache(userId);
+    invalidateDealsMineCache(userId);
+
+    return res.json({
+      success: true,
+      deal: { id: deal.id },
+      needs_otp: true,
+      message: 'OTP sent next. Verify it to accept and sign this collaboration.',
     });
 
     const creatorNameForBrandPush =

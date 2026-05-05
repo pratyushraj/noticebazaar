@@ -462,14 +462,8 @@ export async function signContractAsCreator(
       };
     }
 
-    // Check if brand has signed first
+    // Check brand signature for later status decisions. Creator acceptance can sign first.
     const brandSignature = await getSignature(request.dealId, 'brand');
-    if (!brandSignature || !brandSignature.signed) {
-      return {
-        success: false,
-        error: 'Brand must sign the contract first'
-      };
-    }
 
     // Check if already signed
     const { data: existingSignature, error: checkError } = await supabase
@@ -661,4 +655,3 @@ export async function getSignature(
     return null;
   }
 }
-
