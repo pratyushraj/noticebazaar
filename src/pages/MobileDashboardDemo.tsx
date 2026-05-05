@@ -201,7 +201,23 @@ const renderBudgetValue = (item: any) => {
         return `₹${barter.toLocaleString('en-IN')}`;
     }
 
-    if (item?.collab_type === 'barter' || item?.deal_type === 'barter' || !exact) {
+    const productName = (
+        item?.barter_product_name ||
+        item?.product_name ||
+        item?.form_data?.barterProductName ||
+        item?.form_data?.product_name ||
+        item?.raw?.barter_product_name ||
+        item?.raw?.product_name ||
+        item?.barter_product_category ||
+        item?.form_data?.barterProductCategory ||
+        item?.barter_description ||
+        item?.raw?.barter_description
+    );
+
+    if (item?.collab_type === 'barter' || item?.deal_type === 'barter' || isBarterLikeCollab(item)) {
+        if (productName && typeof productName === 'string' && productName.trim().length > 0) {
+            return productName;
+        }
         return 'Product value TBD';
     }
 
@@ -2461,6 +2477,12 @@ const MobileDashboardDemo = ({
             return sum + (Number(req.deal_amount || req.budget_amount || 0));
         }, 0);
     }, [pendingOffersDeduplicated]);
+
+    const earningsProgress = React.useMemo(() => {
+        const total = totalEarnings + inEscrowAmount;
+        if (total === 0) return 0;
+        return (totalEarnings / total) * 100;
+    }, [totalEarnings, inEscrowAmount]);
 
     useEffect(() => {
         const titles: Record<string, string> = {
@@ -5469,6 +5491,7 @@ const MobileDashboardDemo = ({
                             inEscrowAmount={inEscrowAmount}
                             processingAmount={processingAmount}
                             pendingAmount={pendingAmount}
+                            earningsProgress={earningsProgress}
                             pendingOffersCount={pendingOffersCount} pendingOffersDeduplicated={pendingOffersDeduplicated}
                             displayName={displayName} username={username} avatarUrl={avatarVersionedUrl}
                             avatarFallbackUrl={avatarFallbackUrl} shouldShowPushPrompt={shouldShowPushPrompt}
@@ -8582,7 +8605,7 @@ BottomNavigationBar.displayName = 'BottomNavigationBar';
 const DashboardTab = React.memo(({
     isDark, textColor, secondaryTextColor, isLoadingDeals, isLoadingCollab,
     activeDealsCount, activeDealsList = [], completedDealsCount, monthlyRevenue, totalEarnings,
-    availableAmount, inEscrowAmount, processingAmount, pendingAmount,
+    availableAmount, inEscrowAmount, processingAmount, pendingAmount, earningsProgress,
     pendingOffersCount, pendingOffersDeduplicated, displayName, username,
     avatarUrl, avatarFallbackUrl, shouldShowPushPrompt,
     isPushSubscribed, triggerHaptic, setActiveTab, setActiveSettingsPage,
@@ -8764,7 +8787,7 @@ const DashboardTab = React.memo(({
                             <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
                                 <motion.div
                                     initial={{ width: 0 }}
-                                    animate={{ width: '65%' }}
+                                    animate={{ width: `${Math.min(100, Math.max(0, earningsProgress))}%` }}
                                     transition={{ duration: 1, ease: "easeOut" }}
                                     className="h-full bg-emerald-500"
                                 />

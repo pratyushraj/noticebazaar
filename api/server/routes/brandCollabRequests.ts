@@ -8,6 +8,7 @@ import { supabase } from '../index';
 import { AuthenticatedRequest } from '../middleware/auth';
 import { sendCollabRequestAcceptedEmail } from '../services/collabRequestEmailService';
 import { resolveOrCreateBrandContact } from '../services/brandContactService';
+import { createDealFromCollabRequest } from '../services/dealCreationService';
 
 const router = express.Router();
 
@@ -299,33 +300,11 @@ router.patch('/:id/accept-counter', async (req: AuthenticatedRequest, res: expre
     const requiresShipping = isBarter || isHybrid;
     const dealPlatform = String(request.platform || inferPlatformFromDeliverables(request.deliverables) || 'Multiple Platforms').trim();
 
-    // Create the brand deal
-    const dealData: any = {
-      creator_id: request.creator_id,
-      brand_name: request.brand_name,
-      brand_email: request.brand_email,
-      deal_amount: dealAmount,
-      deliverables: deliverablesArray.join(', '),
-      due_date: request.deadline || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-      payment_expected_date: request.deadline || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-      platform: dealPlatform,
-      status: 'Drafting',
-      deal_type: isBarter ? 'barter' : 'paid',
-      created_via: 'collab_request_counter',
-      collab_request_id: requestId,
-      shipping_required: requiresShipping,
-    };
-
-    const { data: deal, error: dealError } = await supabase
-      .from('brand_deals')
-      .insert(dealData)
-      .select('id')
-      .single();
-
-    if (dealError || !deal) {
-      console.error('[BrandCollabRequests] Accept counter: deal creation error:', dealError);
-      return res.status(500).json({ success: false, error: 'Failed to create deal' });
-    }
+    // Create deal via centralized service
+    // This enforces OTP (accepted_pending_otp) for creators by default
+    const deal = await createDealFromCollabRequest(request, request.creator_id, {
+      created_via: 'collab_request_counter'
+    });
 
     // Link brand contact
     const brandContactId = await resolveOrCreateBrandContact({

@@ -17,7 +17,8 @@ export type DealStageKey =
   | 'awaiting_product_shipment'
   | 'negotiation'
   | 'content_making'
-  | 'content_delivered';
+  | 'content_delivered'
+  | 'accepted_pending_otp';
 
 export type DealTypeForFlow = 'paid' | 'barter';
 
@@ -114,6 +115,12 @@ export const DEAL_STAGE_DISPLAY: Record<DealStageKey, StageDisplayConfig> = {
     helperTextPaid: 'Brand will review and release payment',
     helperTextBarter: 'Brand received · waiting for your content',
     colorClass: 'bg-indigo-500/20 text-indigo-400 border-indigo-500/30',
+  },
+  accepted_pending_otp: {
+    label: 'Verify OTP',
+    shortLabel: 'Verify OTP',
+    helperText: 'Enter the 6-digit code sent to your email',
+    colorClass: 'bg-amber-500/20 text-amber-400 border-amber-500/30',
   },
 };
 

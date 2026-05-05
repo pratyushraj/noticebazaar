@@ -7,10 +7,10 @@ export const isBarterLikeCollab = (deal: any): boolean => {
   if (!deal) return false;
   
   // Use explicit flags if available (highest priority)
-  if (typeof deal.requires_shipping === 'boolean') return deal.requires_shipping;
-  if (typeof deal.shipping_required === 'boolean') return deal.shipping_required;
-  if (typeof deal.raw?.requires_shipping === 'boolean') return deal.raw.requires_shipping;
-  if (typeof deal.raw?.shipping_required === 'boolean') return deal.raw.shipping_required;
+  if (deal.requires_shipping === true || deal.shipping_required === true || 
+      deal.raw?.requires_shipping === true || deal.raw?.shipping_required === true) {
+    return true;
+  }
   
   // Infer from collab_type / deal_type
   const type = String(

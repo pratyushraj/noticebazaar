@@ -21,23 +21,9 @@ import {
   handleListResult,
   mapSupabaseError,
 } from './types';
+import { DEAL_STATUS, DealStatus as CanonicalDealStatus } from '@/lib/constants/dealStatuses';
 
-// ============================================
-// Types
-// ============================================
-
-export type DealStatus =
-  | 'Draft'
-  | 'Negotiation'
-  | 'Sent'
-  | 'CONTRACT_READY'
-  | 'SIGNED_BY_BRAND'
-  | 'SIGNED_BY_CREATOR'
-  | 'Content Making'
-  | 'Content Delivered'
-  | 'Payment Pending'
-  | 'Completed'
-  | 'Cancelled';
+export type DealStatus = CanonicalDealStatus | 'Draft' | 'Sent' | 'Negotiation'; // Keep legacy for compatibility if needed, but prefer CanonicalDealStatus
 
 export type DealStage =
   | 'details_submitted'
@@ -51,7 +37,12 @@ export type DealStage =
   | 'awaiting_product_shipment'
   | 'negotiation'
   | 'content_making'
-  | 'content_delivered';
+  | 'content_delivered'
+  | 'accepted_pending_otp'
+  | 'content_approved'
+  | 'payment_released'
+  | 'revision_requested'
+  | 'revision_done';
 
 export interface CreateDealInput {
   creator_id: string;
@@ -83,6 +74,8 @@ export interface UpdateDealInput {
   due_date?: string;
   payment_expected_date?: string;
   payment_received_date?: string;
+  payment_sent_at?: string;
+  payment_released_at?: string;
   status?: DealStatus;
   contract_file_url?: string;
   invoice_file_url?: string;
@@ -173,18 +166,32 @@ export class DealService implements IDealService {
   ): Promise<ServiceResult<BrandDeal[]>> {
     const { filters, sortBy = 'created_at', sortOrder = 'desc', limit } = options || {};
 
-    // Signed statuses that should be visible
+    // Canonical statuses that should be visible
     const signedStatuses = [
+      DEAL_STATUS.CONTRACT_READY,
+      DEAL_STATUS.SIGNED_BY_BRAND,
+      DEAL_STATUS.SIGNED_BY_CREATOR,
+      DEAL_STATUS.FULLY_EXECUTED,
+      DEAL_STATUS.ACTIVE,
+      DEAL_STATUS.CONTENT_MAKING,
+      DEAL_STATUS.CONTENT_DELIVERED,
+      DEAL_STATUS.CONTENT_APPROVED,
+      DEAL_STATUS.REVISION_REQUESTED,
+      DEAL_STATUS.REVISION_DONE,
+      DEAL_STATUS.PAYMENT_PENDING,
+      DEAL_STATUS.PAYMENT_RELEASED,
+      DEAL_STATUS.COMPLETED,
+      DEAL_STATUS.DRAFTING,
+      DEAL_STATUS.AWAITING_PRODUCT_SHIPMENT,
+      DEAL_STATUS.DISPUTED,
+      // Legacy variants for safety
       'sent', 'CONTRACT_READY', 'contract_ready', 'signed',
-      'SIGNED_BY_BRAND', 'SIGNED_BY_CREATOR', 'content_making',
-      'Content Making', 'content_delivered', 'Content Delivered',
+      'Content Making', 'Content Delivered',
       'DISPUTED', 'disputed',
-      'REVISION_REQUESTED', 'revision_requested', 'Revision Requested',
-      'REVISION_DONE', 'revision_done', 'Revision Done',
-      'CONTENT_APPROVED', 'content_approved', 'Content Approved',
-      'PAYMENT_RELEASED', 'payment_released', 'Payment Released',
-      'completed', 'COMPLETED', 'FULLY_EXECUTED', 'fully_executed',
-      'Drafting', 'drafting', 'Awaiting Product Shipment',
+      'REVISION_REQUESTED', 'revision_requested',
+      'PAYMENT_PENDING', 'payment_pending',
+      'accepted_pending_otp',
+      DEAL_STATUS.SIGNED_BY_CREATOR,
     ];
 
     let query = this.supabase
@@ -258,8 +265,10 @@ export class DealService implements IDealService {
 
     // Consistency: If payment received, force status to Completed
     if (input.payment_received_date) {
-      updatePayload.status = 'Completed';
+      updatePayload.status = DEAL_STATUS.COMPLETED;
     }
+
+    // Consistency: DISPUTED is terminal in logic, but allows updates if explicitly sent
 
     const { data, error } = await this.supabase
       .from('brand_deals')
@@ -305,21 +314,31 @@ export class DealService implements IDealService {
       negotiation: 30,
       content_making: 85,
       content_delivered: 95,
+      accepted_pending_otp: 10,
+      content_approved: 80,
+      payment_released: 95,
+      revision_requested: 55,
+      revision_done: 65,
     };
 
     const stageToStatus: Record<DealStage, string> = {
-      details_submitted: 'Draft',
-      contract_ready: 'CONTRACT_READY',
-      brand_signed: 'SIGNED_BY_BRAND',
-      fully_executed: 'FULLY_EXECUTED',
-      live_deal: 'Content Making',
-      needs_changes: 'Draft',
-      declined: 'Cancelled',
-      completed: 'Completed',
-      awaiting_product_shipment: 'Draft',
-      negotiation: 'Negotiation',
-      content_making: 'Content Making',
-      content_delivered: 'Content Delivered',
+      details_submitted: DEAL_STATUS.BRAND_DETAILS_SUBMITTED,
+      contract_ready: DEAL_STATUS.CONTRACT_READY,
+      brand_signed: DEAL_STATUS.SIGNED_BY_BRAND,
+      fully_executed: DEAL_STATUS.FULLY_EXECUTED,
+      live_deal: DEAL_STATUS.CONTENT_MAKING,
+      needs_changes: DEAL_STATUS.NEGOTIATION,
+      declined: DEAL_STATUS.REJECTED,
+      completed: DEAL_STATUS.COMPLETED,
+      awaiting_product_shipment: DEAL_STATUS.AWAITING_PRODUCT_SHIPMENT,
+      negotiation: DEAL_STATUS.NEGOTIATION,
+      content_making: DEAL_STATUS.CONTENT_MAKING,
+      content_delivered: DEAL_STATUS.CONTENT_DELIVERED,
+      accepted_pending_otp: 'accepted_pending_otp',
+      content_approved: DEAL_STATUS.CONTENT_APPROVED,
+      payment_released: DEAL_STATUS.PAYMENT_RELEASED,
+      revision_requested: DEAL_STATUS.REVISION_REQUESTED,
+      revision_done: DEAL_STATUS.REVISION_DONE,
     };
 
     return this.update(dealId, {
@@ -340,7 +359,7 @@ export class DealService implements IDealService {
     return this.update(dealId, {
       utr_number: utrNumber,
       payment_received_date: date,
-      status: 'Completed',
+      status: DEAL_STATUS.COMPLETED,
     });
   }
 
@@ -385,11 +404,11 @@ export class DealService implements IDealService {
     const stats: DealStats = {
       totalDeals: deals.length,
       activeDeals: deals.filter(d => 
-        !['Completed', 'Cancelled'].includes(d.status)
+        ![DEAL_STATUS.COMPLETED, DEAL_STATUS.REJECTED, DEAL_STATUS.DISPUTED].includes(d.status as any)
       ).length,
-      completedDeals: deals.filter(d => d.status === 'Completed').length,
+      completedDeals: deals.filter(d => d.status === DEAL_STATUS.COMPLETED).length,
       totalRevenue: deals
-        .filter(d => d.status === 'Completed')
+        .filter(d => d.status === DEAL_STATUS.COMPLETED)
         .reduce((sum, d) => sum + (d.deal_amount || 0), 0),
       pendingPayments: deals
         .filter(d => !d.payment_received_date)

@@ -20,6 +20,11 @@ import {
   sendLegalCheckNotificationEmail,
 } from '../services/collabRequestEmailService';
 import { resolveOrCreateBrandContact } from '../services/brandContactService';
+import { 
+  isPaidLikeCollab, 
+  isBarterLikeCollab 
+} from '../lib/collabUtils';
+import { createDealFromCollabRequest } from '../services/dealCreationService';
 
 // Helper: delegate collab push to Render server (which has matching VAPID keys for all subscriptions)
 async function sendCollabPushViaRender(params: {
@@ -1394,48 +1399,17 @@ router.post('/accept/confirm', async (req: AuthenticatedRequest, res: Response) 
      const isBarter = request.collab_type === 'barter';
      const requiresShipping = request.collab_type === 'barter' || request.collab_type === 'hybrid' || request.collab_type === 'both';
 
-     const dealData: any = {
-       creator_id: userId,
-       brand_name: request.brand_name,
-       brand_email: request.brand_email,
-       deal_amount: dealAmount,
-       deliverables: deliverablesArray.join(', '),
-       due_date: request.deadline || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-       payment_expected_date: request.deadline || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-       platform: inferPlatformFromDeliverables(request.deliverables),
-       status: 'accepted_pending_otp',
-       deal_type: isBarter ? 'barter' : 'paid',
-       created_via: 'collab_request',
-       collab_request_id: id,
-       shipping_required: requiresShipping,
-     };
-    const { data: deal, error: dealError } = await supabase
-      .from('brand_deals')
-      .insert(dealData)
-      .select('id')
-      .single();
-    if (dealError || !deal) {
-      console.error('[CollabRequests] Accept confirm: create deal error:', dealError);
-      return res.status(500).json({ success: false, error: 'Failed to create deal' });
-    }
-
-    const dealBrandContactId = await resolveOrCreateBrandContact({
-      legalName: request.brand_name || '',
-      email: request.brand_email || '',
-      phone: request.brand_phone || null,
-      website: null,
-      instagram: null,
-      address: request.brand_address?.trim() || null,
-      gstin: request.brand_gstin?.trim().toUpperCase() || null,
+    // Create deal via centralized service
+    const deal = await createDealFromCollabRequest(request, userId, {
+      status: isBarter ? 'Drafting' : 'CONTRACT_READY',
+      otp_verified: true,
+      otp_verified_at: now
     });
-    if (dealBrandContactId) {
-      await supabase.from('brand_deals').update({ brand_contact_id: dealBrandContactId, updated_at: now }).eq('id', deal.id);
-    }
 
     await supabase
       .from('collab_requests')
       .update({
-        status: 'accepted_pending_otp',
+        status: 'accepted',
         deal_id: deal.id,
         accepted_at: now,
         accepted_by_creator_id: userId,
@@ -1640,57 +1614,15 @@ router.patch('/:id/accept', async (req: AuthenticatedRequest, res: Response) => 
     const inferredPlatform = inferPlatformFromDeliverables(request.deliverables);
     const dealPlatform = String(request.platform || inferredPlatform || 'Multiple Platforms').trim();
 
-    // Create brand deal
-     const dealData: any = {
-       creator_id: userId,
-       brand_name: request.brand_name,
-       brand_email: request.brand_email,
-       deal_amount: dealAmount,
-       deliverables: deliverablesArray.join(', '),
-       due_date: request.deadline || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-       payment_expected_date: request.deadline || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-       platform: dealPlatform,
-       status: 'accepted_pending_otp',
-       deal_type: isBarter ? 'barter' : 'paid',
-       created_via: 'collab_request',
-       collab_request_id: id,
-       shipping_required: requiresShipping,
-     };
-
-    const { data: deal, error: dealError } = await supabase
-      .from('brand_deals')
-      .insert(dealData)
-      .select('id')
-      .single();
-
-    if (dealError || !deal) {
-      console.error('[CollabRequests] Error creating deal:', dealError);
-      return res.status(500).json({
-        success: false,
-        error: 'Failed to create deal',
-      });
-    }
-
-    // Link deal to canonical brand for agency
-    const dealBrandContactId = await resolveOrCreateBrandContact({
-      legalName: request.brand_name || '',
-      email: request.brand_email || '',
-      phone: request.brand_phone || null,
-      website: null,
-      instagram: null,
-      address: request.brand_address?.trim() || null,
-      gstin: request.brand_gstin?.trim().toUpperCase() || null,
-    });
-    if (dealBrandContactId) {
-      await supabase.from('brand_deals').update({ brand_contact_id: dealBrandContactId, updated_at: new Date().toISOString() }).eq('id', deal.id);
-    }
+    // Create deal via centralized service (sets status: accepted_pending_otp)
+    const deal = await createDealFromCollabRequest(request, userId);
 
     const now = new Date().toISOString();
     const clientIp = req.ip || (req.socket as any)?.remoteAddress || 'unknown';
     const userAgent = req.get('user-agent') || 'unknown';
 
     // Update collab request status and acceptance metadata
-    const { error: updateError } = await supabase
+    await supabase
       .from('collab_requests')
       .update({
         status: 'accepted_pending_otp',
@@ -1698,11 +1630,6 @@ router.patch('/:id/accept', async (req: AuthenticatedRequest, res: Response) => 
         updated_at: now,
       })
       .eq('id', id);
-
-    if (updateError) {
-      console.error('[CollabRequests] Error updating request:', updateError);
-      // Deal was created, so continue anyway
-    }
 
     await supabase.from('collab_request_audit_log').insert({
       collab_request_id: id,
@@ -1714,234 +1641,11 @@ router.patch('/:id/accept', async (req: AuthenticatedRequest, res: Response) => 
       metadata: {},
     }).then(({ error: logErr }) => { if (logErr) console.warn('[CollabRequests] Audit log insert failed:', logErr); });
 
-    return res.json({
+return res.json({
       success: true,
       deal: { id: deal.id },
       needs_otp: true,
       message: 'OTP sent next. Verify it to accept and sign this collaboration.',
-    });
-
-    // Barter: require delivery details before contract generation. Redirect creator to delivery-details screen.
-    if (isBarter) {
-      return res.json({
-        success: true,
-        deal: { id: deal.id },
-        needs_delivery_details: true,
-        message: 'Deal accepted. Please add delivery details so we can generate the contract.',
-      });
-    }
-
-    // Auto-generate contract (paid deals only; barter requires delivery details first)
-    const { data: dealCheck } = await supabase
-      .from('brand_deals')
-      .select('deal_type')
-      .eq('id', deal.id)
-      .single();
-    if ((dealCheck as any)?.deal_type === 'barter') {
-      return res.status(400).json({
-        success: false,
-        error: 'Delivery details required for barter deals',
-      });
-    }
-
-    let contractUrl: string | null = null;
-    let contractReadyToken: string | null = null;
-
-    try {
-      // Check if contract already exists for this deal
-      const { data: existingDeal } = await supabase
-        .from('brand_deals')
-        .select('contract_file_url')
-        .eq('id', deal.id)
-        .single();
-
-      if (existingDeal?.contract_file_url) {
-        // Contract already exists, skip generation
-        console.log('[CollabRequests] Contract already exists for deal:', deal.id);
-        contractUrl = existingDeal.contract_file_url;
-      } else {
-        // Fetch creator profile for contract generation
-        const { data: creatorProfile, error: creatorError } = await supabase
-          .from('profiles')
-          .select('first_name, last_name, email, location, address')
-          .eq('id', userId)
-          .maybeSingle();
-
-        if (creatorError) {
-          console.error('[CollabRequests] Error fetching creator profile:', creatorError);
-          throw new Error('Failed to fetch creator profile');
-        }
-
-        // Build creator name
-        const creatorName = creatorProfile
-          ? `${creatorProfile.first_name || ''} ${creatorProfile.last_name || ''}`.trim() || 'Creator'
-          : 'Creator';
-
-        const creatorEmail = creatorProfile?.email || req.user?.email || undefined;
-        const creatorAddress = creatorProfile?.location || creatorProfile?.address || undefined;
-
-        // Build payment terms based on collab type
-        let paymentTerms: string | undefined;
-        if (request.collab_type === 'paid' || request.collab_type === 'both' || request.collab_type === 'hybrid') {
-          const paymentDate = request.deadline
-            ? new Date(request.deadline).toLocaleDateString()
-            : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString();
-          paymentTerms = `Payment expected by ${paymentDate}`;
-        }
-        const usagePlatforms = dealPlatform ? [dealPlatform] : [];
-
-        // Build deal schema for contract
-        const dealSchema = {
-          deal_amount: dealAmount,
-          deliverables: deliverablesArray.length > 0 ? deliverablesArray : ['As per agreement'],
-          delivery_deadline: request.deadline || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-          payment: {
-            method: 'Bank Transfer',
-            timeline: paymentTerms || 'Within 7 days of content delivery',
-          },
-          usage: {
-            type: request.usage_rights ? 'Exclusive' : 'Non-exclusive',
-            platforms: usagePlatforms,
-            duration: '6 months',
-            paid_ads: false,
-            whitelisting: false,
-          },
-          exclusivity: {
-            enabled: false,
-            category: null,
-            duration: null,
-          },
-          termination: {
-            notice_days: 7,
-          },
-          jurisdiction_city: 'Mumbai', // Default to Mumbai, India
-        };
-
-        // Generate contract
-        const contractResult = await generateContractFromScratch({
-          brandName: request.brand_name,
-          creatorName,
-          creatorEmail,
-          dealAmount,
-          deliverables: deliverablesArray.length > 0 ? deliverablesArray : ['As per agreement'],
-          paymentTerms,
-          dueDate: request.deadline
-            ? new Date(request.deadline).toLocaleDateString()
-            : undefined,
-          paymentExpectedDate: request.deadline
-            ? new Date(request.deadline).toLocaleDateString()
-            : undefined,
-          platform: dealPlatform,
-          brandEmail: request.brand_email || undefined,
-          brandAddress: request.brand_address?.trim() || undefined,
-          brandGstin: request.brand_gstin?.trim() || undefined,
-          creatorAddress,
-          dealSchema,
-          usageType: request.usage_rights ? 'Exclusive' : 'Non-exclusive',
-          usagePlatforms,
-          usageDuration: '6 months',
-          paidAdsAllowed: false,
-          whitelistingAllowed: false,
-          exclusivityEnabled: false,
-          exclusivityCategory: null,
-          exclusivityDuration: null,
-          terminationNoticeDays: 7,
-          jurisdictionCity: 'Mumbai',
-          additionalTerms: (request.collab_type === 'barter' || request.collab_type === 'hybrid') && request.barter_description
-            ? `Barter Collaboration: ${request.barter_description}`
-            : undefined,
-        });
-
-        // Upload contract DOCX to storage
-        const timestamp = Date.now();
-        const storagePath = `contracts/${deal.id}/${timestamp}_${contractResult.fileName}`;
-
-        const { error: uploadError } = await supabase.storage
-          .from('creator-assets')
-          .upload(storagePath, contractResult.contractDocx, {
-            contentType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-            upsert: false,
-          });
-
-        if (uploadError) {
-          console.error('[CollabRequests] Contract upload error:', uploadError);
-          throw new Error('Failed to upload contract');
-        }
-
-        // Get public URL
-        const { data: publicUrlData } = supabase.storage
-          .from('creator-assets')
-          .getPublicUrl(storagePath);
-
-        contractUrl = publicUrlData?.publicUrl || null;
-
-        if (!contractUrl) {
-          throw new Error('Failed to get contract URL');
-        }
-
-         // Update deal with contract URL
-         const { error: contractUpdateError } = await supabase
-           .from('brand_deals')
-           .update({
-             contract_file_url: contractUrl,
-             status: 'CONTRACT_READY', // Contract is ready, awaiting brand signature (paid deals only)
-             updated_at: new Date().toISOString(),
-           })
-           .eq('id', deal.id);
-
-        if (contractUpdateError) {
-          console.error('[CollabRequests] Error updating deal with contract:', contractUpdateError);
-          // Contract was uploaded, so continue anyway
-        }
-
-        // Create contract ready token for brand signing
-        try {
-          const token = await createContractReadyToken({
-            dealId: deal.id,
-            creatorId: userId,
-            expiresAt: null, // No expiry
-          });
-          contractReadyToken = token.id;
-
-          // Send acceptance email to brand (async, don't await)
-          if (request.brand_email && contractReadyToken) {
-            sendCollabRequestAcceptedEmail(request.brand_email, {
-              creatorName,
-              brandName: request.brand_name,
-              dealAmount,
-              dealType: request.collab_type === 'barter' ? 'barter' : 'paid',
-              deliverables: deliverablesArray.length > 0 ? deliverablesArray : ['As per agreement'],
-              contractReadyToken,
-              contractUrl: contractUrl || undefined,
-            }).catch((emailError) => {
-              console.error('[CollabRequests] Acceptance email sending failed (non-fatal):', emailError);
-            });
-          }
-        } catch (tokenError) {
-          console.error('[CollabRequests] Error creating contract ready token:', tokenError);
-          // Contract was created, so continue anyway
-        }
-
-        console.log('[CollabRequests] Contract generated successfully for deal:', deal.id);
-      }
-    } catch (contractError: any) {
-      // Log error but don't fail the request - deal was created successfully
-      console.error('[CollabRequests] Error generating contract:', contractError);
-      // Continue - deal exists, creator can generate contract manually if needed
-    }
-
-    res.json({
-      success: true,
-      deal: {
-        id: deal.id,
-      },
-      contract: contractUrl ? {
-        url: contractUrl,
-        token: contractReadyToken,
-      } : null,
-      message: contractUrl
-        ? 'Collaboration request accepted. Deal created and contract generated successfully.'
-        : 'Collaboration request accepted. Deal created successfully.',
     });
   } catch (error: any) {
     console.error('[CollabRequests] Error in PATCH /:id/accept:', error);

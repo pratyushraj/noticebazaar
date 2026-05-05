@@ -994,6 +994,42 @@ router.post('/verify-creator', async (req: AuthenticatedRequest, res: Response) 
         status: finalizedStatus,
         verifiedAt,
       });
+
+      // Trigger brand push notification
+      try {
+        let brandUserId = (deal as any).brand_id;
+        if (!brandUserId && (deal as any).brand_email) {
+          const { data: brandUser } = await supabase
+            .from('profiles')
+            .select('id')
+            .eq('email', (deal as any).brand_email)
+            .eq('role', 'brand')
+            .maybeSingle();
+          if (brandUser) brandUserId = brandUser.id;
+        }
+
+        if (brandUserId) {
+          const creatorName = req.user.full_name || req.user.email || 'A creator';
+          const payload = {
+            userId: brandUserId,
+            title: 'Offer Accepted! 🚀',
+            body: `${creatorName} has accepted your collaboration request.`,
+            data: {
+              type: 'OFFER_ACCEPTED',
+              dealId: dealId,
+              click_action: '/brand-deals/' + dealId
+            }
+          };
+
+          fetch('https://creatorarmour-api.onrender.com/api/push/send', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          }).catch(e => console.error('[OTP] Push notify fetch failed:', e));
+        }
+      } catch (pushErr) {
+        console.error('[OTP] Push notify error:', pushErr);
+      }
     }
 
     console.log('[OTP] Creator OTP verified successfully for deal:', dealId);

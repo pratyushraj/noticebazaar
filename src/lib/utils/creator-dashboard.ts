@@ -267,8 +267,31 @@ export const renderBudgetValue = (item: any) => {
     const min = Number(item?.budget_range?.min || item?.form_data?.budget_range?.min || (item?.budget_range && typeof item.budget_range === 'object' && item.budget_range.min));
     if (Number.isFinite(min) && min > 0) return `₹${min.toLocaleString()}+`;
 
-    const barter = Number(item?.barter_value || item?.form_data?.barter_value);
-    if (Number.isFinite(barter) && barter > 0) return `₹${barter.toLocaleString()} (Free products)`;
+    const barter = Number(item?.barter_value || item?.form_data?.barter_value || item?.raw?.barter_value);
+    if (Number.isFinite(barter) && barter > 0) {
+        if (barter <= 1) return 'Product value TBD';
+        return `₹${barter.toLocaleString()} (Free products)`;
+    }
 
-    return 'Flexible Budget';
+    const productName = (
+        item?.barter_product_name ||
+        item?.product_name ||
+        item?.form_data?.barterProductName ||
+        item?.form_data?.product_name ||
+        item?.raw?.barter_product_name ||
+        item?.raw?.product_name ||
+        item?.barter_product_category ||
+        item?.form_data?.barterProductCategory ||
+        item?.barter_description ||
+        item?.raw?.barter_description
+    );
+
+    if (item?.collab_type === 'barter' || item?.deal_type === 'barter' || isBarterLikeCollab(item)) {
+        if (productName && typeof productName === 'string' && productName.trim().length > 0) {
+            return productName;
+        }
+        return 'Product value TBD';
+    }
+
+    return 'Budget TBD';
 };

@@ -72,6 +72,17 @@ const hasCapturedEscrow = (deal: any): boolean => {
   return paymentStatus === 'captured' || (paymentId.startsWith('pay_') && amountPaid > 0);
 };
 
+const checkStatusLock = (deal: any, role: string) => {
+  const current = normalizeStatus(deal?.status);
+  if (current === 'DISPUTED' && role !== 'admin') {
+    return { locked: true, error: 'Deal is currently DISPUTED and locked. Please contact support.' };
+  }
+  if ((current === 'COMPLETED' || current === 'REJECTED') && role !== 'admin') {
+    return { locked: true, error: 'Deal is in a terminal state and cannot be modified.' };
+  }
+  return { locked: false };
+};
+
 /**
  * Payment fee calculator — single source of truth.
  * All amounts in PAISE (integers) for Razorpay, converted to rupees for display.
@@ -550,6 +561,11 @@ router.patch('/:id/submit-content', async (req: AuthenticatedRequest, res: Respo
     if (!contentUrl || !/^https?:\/\//i.test(contentUrl)) {
       return res.status(400).json({ success: false, error: 'Paste a full Instagram post or reel link' });
     }
+    const INSTAGRAM_REEL_RE = /^https?:\/\/(www\.)?(instagram\.com\/reel\/|instagram\.com\/p\/)/i;
+    const YOUTUBE_RE = /^https?:\/\/(www\.)?(youtube\.com\/watch\?v=|youtu\.be\/)/i;
+    if (!INSTAGRAM_REEL_RE.test(contentUrl) && !YOUTUBE_RE.test(contentUrl)) {
+      return res.status(400).json({ success: false, error: 'Only Instagram (reel/post) and YouTube links are accepted' });
+    }
 
     // Resolve deal id (some pages pass tokens/collab ids)
     const resolveDealId = async (id: string): Promise<string | null> => {
@@ -584,14 +600,15 @@ router.patch('/:id/submit-content', async (req: AuthenticatedRequest, res: Respo
       return res.status(403).json({ success: false, error: 'Access denied' });
     }
 
+    const lock = checkStatusLock(deal, role);
+    if (lock.locked) return res.status(403).json({ success: false, error: lock.error });
+
     const current = normalizeStatus((deal as any).status);
     const canSubmit =
       current === 'CONTENT_MAKING' ||
-      current === 'DRAFTING' ||
       current === 'CONTENT_IN_PROGRESS' ||
-      current === 'FULLY_EXECUTED' ||
-      current === 'SIGNED' ||
-      current === 'REVISION_REQUESTED';
+      current === 'REVISION_REQUESTED' ||
+      current === 'REVISION_DONE';
     if (!canSubmit) {
       return res.status(409).json({ success: false, error: `Cannot submit content from status ${current || 'UNKNOWN'}.` });
     }
@@ -603,7 +620,7 @@ router.patch('/:id/submit-content', async (req: AuthenticatedRequest, res: Respo
         error: 'Cannot submit content until you have received the product. Please confirm delivery first.',
       });
     }
-    if (isPaidType(deal) && !hasCapturedEscrow(deal)) {
+    if (isPaidType(deal) && !!(deal as any).payment_id && !hasCapturedEscrow(deal)) {
       return res.status(409).json({
         success: false,
         error: 'Cannot submit content until payment is escrowed. Please wait for the brand to fund the escrow.',
@@ -693,8 +710,14 @@ router.patch('/:id/review-content', async (req: AuthenticatedRequest, res: Respo
       role === 'admin';
     if (!hasAccess) return res.status(403).json({ success: false, error: 'Access denied' });
 
+    const lock = checkStatusLock(deal, role);
+    if (lock.locked) return res.status(403).json({ success: false, error: lock.error });
+
     const current = normalizeStatus((deal as any).status);
-    if (status === 'approved' && inferRequiresPayment(deal) && !hasCapturedEscrow(deal)) {
+    // Only require escrow when a Razorpay order actually exists.
+    // Non-escrow deals pay off-platform (UPI) and should not be blocked.
+    const hasPaymentId = !!(deal as any).payment_id;
+    if (status === 'approved' && inferRequiresPayment(deal) && hasPaymentId && !hasCapturedEscrow(deal)) {
       return res.status(409).json({
         success: false,
         error: 'Escrow must be captured before paid content can be approved.',
@@ -774,6 +797,9 @@ router.patch('/:id/release-payment', async (req: AuthenticatedRequest, res: Resp
       role === 'admin';
     if (!hasAccess) return res.status(403).json({ success: false, error: 'Access denied' });
 
+    const lock = checkStatusLock(deal, role);
+    if (lock.locked) return res.status(403).json({ success: false, error: lock.error });
+
     if (!inferRequiresPayment(deal)) {
       return res.status(409).json({ success: false, error: 'This deal does not require creator payment.' });
     }
@@ -796,13 +822,14 @@ router.patch('/:id/release-payment', async (req: AuthenticatedRequest, res: Resp
     const fullUpdate: any = {
       status: 'PAYMENT_RELEASED',
       payment_released_at: now,
+      payment_sent_at: now, // Audit Low #17: Add explicit sent timestamp
       payment_received_date: paymentReceivedDate || null,
       utr_number: paymentReference,
       payment_proof_url: paymentProofUrl,
       payment_notes: paymentNotes,
       updated_at: now,
     };
-    const minimalUpdate: any = { status: 'PAYMENT_RELEASED', payment_released_at: now, updated_at: now };
+    const minimalUpdate: any = { status: 'PAYMENT_RELEASED', payment_released_at: now, payment_sent_at: now, updated_at: now };
 
     const { error: updErr } = await supabase.from('brand_deals').update(fullUpdate).eq('id', dealId);
     if (updErr) {

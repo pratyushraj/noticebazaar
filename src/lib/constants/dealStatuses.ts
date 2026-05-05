@@ -11,6 +11,7 @@
 export const DEAL_STATUS = {
   // ── Pre-contract ──────────────────────────────────────────────
   BRAND_DETAILS_SUBMITTED: 'Brand_Details_Submitted',
+  ACCEPTED_PENDING_OTP: 'accepted_pending_otp',
   NEGOTIATION: 'Negotiation',
 
   // ── Contract flow ─────────────────────────────────────────────
@@ -62,6 +63,7 @@ export const LIVE_DEAL_STATUSES: readonly string[] = [
   DEAL_STATUS.COMPLETED,
   DEAL_STATUS.DRAFTING,
   DEAL_STATUS.AWAITING_PRODUCT_SHIPMENT,
+  DEAL_STATUS.ACCEPTED_PENDING_OTP,
   DEAL_STATUS.DISPUTED,
   // Legacy lowercase / mixed-case variants still in DB
   'sent',
@@ -85,6 +87,7 @@ export const LIVE_DEAL_STATUSES: readonly string[] = [
 export const DEAL_ALLOWED_TRANSITIONS: Record<string, readonly string[]> = {
   [DEAL_STATUS.BRAND_DETAILS_SUBMITTED]: [DEAL_STATUS.CONTRACT_READY, DEAL_STATUS.NEGOTIATION, DEAL_STATUS.REJECTED],
   [DEAL_STATUS.NEGOTIATION]: [DEAL_STATUS.CONTRACT_READY, DEAL_STATUS.REJECTED],
+  'accepted_pending_otp': [DEAL_STATUS.CONTENT_MAKING, DEAL_STATUS.CONTRACT_READY, DEAL_STATUS.DRAFTING, DEAL_STATUS.REJECTED],
   [DEAL_STATUS.CONTRACT_READY]: [DEAL_STATUS.SIGNED_BY_BRAND, DEAL_STATUS.SIGNED_BY_CREATOR, DEAL_STATUS.REJECTED],
   [DEAL_STATUS.SIGNED_BY_BRAND]: [DEAL_STATUS.SIGNED_BY_CREATOR, DEAL_STATUS.FULLY_EXECUTED],
   [DEAL_STATUS.SIGNED_BY_CREATOR]: [DEAL_STATUS.SIGNED_BY_BRAND, DEAL_STATUS.FULLY_EXECUTED],
@@ -117,8 +120,15 @@ export function validateStatusTransition(from: string, to: string): string | nul
 
   const allowed = DEAL_ALLOWED_TRANSITIONS[from];
   if (!allowed) {
-    // Unknown status — allow (backward compat)
-    return null;
+    // Allow transitions from known statuses not in the map (e.g. accepted_pending_otp)
+    const knownStatuses = [
+      ...Object.values(DEAL_STATUS),
+      'accepted_pending_otp',
+    ];
+    if (knownStatuses.includes(from)) {
+      return null;
+    }
+    return `Unknown status "${from}". Cannot validate transition.`;
   }
 
   if (!allowed.includes(to)) {
