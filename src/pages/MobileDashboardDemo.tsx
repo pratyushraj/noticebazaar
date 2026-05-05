@@ -3320,11 +3320,68 @@ const MobileDashboardDemo = ({
 
     const toggleTheme = () => { triggerHaptic(); setTheme(p => p === 'dark' ? 'light' : 'dark'); };
 
+    const processAcceptance = async (req: any, addressData?: { address: string; pincode: string }) => {
+        if (!onAcceptRequest || !session?.access_token) return;
+        
+        setProcessingDeal(req.id);
+        triggerHaptic();
+        
+        try {
+            // 1. Accept the offer (creates deal in backend with otp_verified=true)
+            const result = await onAcceptRequest(req, addressData, true);
+            const dealId = String(
+                (result as any)?.deal?.id ||
+                (result as any)?.dealId ||
+                (result as any)?.id ||
+                ''
+            ).trim();
+
+            if (!dealId) throw new Error('Failed to create deal');
+
+            // 2. Auto-sign the contract
+            const signResp = await fetch(`${getApiBaseUrl()}/api/deals/${dealId}/sign-creator`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${session.access_token}`,
+                },
+                body: JSON.stringify({
+                    signerName: profile?.first_name ? `${profile.first_name} ${profile.last_name || ''}`.trim() : 'Creator',
+                    signerEmail: user?.email || profile?.email || '',
+                    contractSnapshotHtml: `Contract auto-signed during acceptance at: ${new Date().toISOString()}`,
+                }),
+            });
+
+            if (signResp.ok) {
+                patchDealInCache(dealId, {
+                    status: 'signed_by_creator',
+                    creator_signed_at: new Date().toISOString()
+                });
+                queryClient.invalidateQueries({ queryKey: ['brand_deals'] });
+                queryClient.invalidateQueries({ queryKey: ['brand-deals'] });
+                queryClient.invalidateQueries({ queryKey: ['collab-requests'] });
+
+                closeItemDetail();
+                confetti({ particleCount: 80, spread: 60, origin: { y: 0.7 }, colors: ['#10B981', '#059669', '#34D399'] });
+                toast.success('🎉 Collab accepted & contract signed!');
+            } else {
+                const errorData = await signResp.json().catch(() => ({}));
+                throw new Error(errorData.error || 'Failed to auto-sign contract');
+            }
+        } catch (error: any) {
+            console.error("Acceptance error:", error);
+            toast.error(error?.message || 'Failed to accept offer');
+        } finally {
+            setProcessingDeal(null);
+            setPendingAcceptReq(null);
+            setPendingAddressData(null);
+        }
+    };
+
     const handleAccept = async (req: any) => {
         if (!onAcceptRequest) return;
         setSelectedItem(req);
         setSelectedType('offer');
-        setPendingAcceptDealId(null);
 
         // If it's a barter-like deal, we MUST confirm shipping address first
         const isBarter = isBarterLikeCollab(req);
@@ -3334,13 +3391,8 @@ const MobileDashboardDemo = ({
             return;
         }
 
-        // Trigger OTP Verification flow before acceptance
-        triggerHaptic();
-        setPendingAcceptReq(req);
-        setCreatorSigningMode('accept');
-        setCreatorSigningStep('send');
-        setCreatorOTP('');
-        setShowCreatorSigningModal(true);
+        // Directly process acceptance without OTP
+        await processAcceptance(req);
     };
 
     const handleOpenBarterShippingFlow = (req: any) => {
@@ -3352,17 +3404,8 @@ const MobileDashboardDemo = ({
 
     const handleConfirmCreatorShipping = async (addressData: { address: string; pincode: string }) => {
         if (!pendingAcceptReq || !onAcceptRequest) return;
-
         setShowCreatorShippingModal(false);
-        setPendingAddressData(addressData);
-
-        // After shipping is confirmed, move to OTP Signing flow
-        triggerHaptic();
-        setCreatorSigningMode('accept');
-        setCreatorSigningStep('send');
-        setCreatorOTP('');
-        setPendingAcceptDealId(null);
-        setShowCreatorSigningModal(true);
+        await processAcceptance(pendingAcceptReq, addressData);
     };
 
     const [showMenu, setShowMenu] = useState(false);
@@ -6544,26 +6587,29 @@ const MobileDashboardDemo = ({
                                                         if (isBarterDeal) {
                                                             const isSigned = raw.includes('contract') || raw.includes('signed') || status.includes('fully_executed');
                                                             if (status.includes('completed')) currentStep = 4;
-                                                            else if (isSubmitted) currentStep = 4;
-                                                            else if (isReceived || isApproved) currentStep = 3;
+                                                            else if (isApproved) currentStep = 4;
+                                                            else if (isSubmitted) currentStep = 3;
+                                                            else if (isReceived) currentStep = 3;
                                                             else if (isShipped) currentStep = 2;
                                                             else if (isSigned) currentStep = 1;
                                                             else currentStep = 0;
                                                         } else if (selectedRequiresShipping) {
                                                             const isFundedTimeline = isFunded;
-                                                            if (isPaid) currentStep = 4;
+                                                            if (isPaid || status.includes('completed')) currentStep = 4;
+                                                            else if (isApproved) currentStep = 4;
+                                                            else if (isDelivered || isSubmitted) currentStep = 3;
                                                             else if (isReceived && isFundedTimeline) currentStep = 3;
                                                             else if (isShipped && isFundedTimeline) currentStep = 2;
-                                                            else if (isApproved || isDelivered) currentStep = 3;
                                                             else if (isFundedTimeline) currentStep = 2;
                                                             else currentStep = 1;
                                                         } else {
                                                             const isFundedTimeline = isFunded;
-                                                            if (isPaid) currentStep = 4;
-                                                            else if (isApproved || isDelivered) currentStep = 3;
+                                                            if (isPaid || status.includes('completed')) currentStep = 3;
+                                                            else if (isApproved) currentStep = 3;
+                                                            else if (isDelivered || isSubmitted) currentStep = 2;
                                                             else if (isMaking && isFundedTimeline) currentStep = 2;
-                                                            else if (isFundedTimeline) currentStep = 2;
-                                                            else currentStep = 1;
+                                                            else if (isFundedTimeline) currentStep = 1;
+                                                            else currentStep = 0;
                                                         }
 
                                                         if (selectedType === 'offer') currentStep = 0;
@@ -6700,8 +6746,8 @@ const MobileDashboardDemo = ({
                                                                                 } else {
                                                                                     items = [
                                                                                         { text: 'Brand payment locked in escrow', done: true },
-                                                                                        { text: 'Content submitted — awaiting approval', done: true },
-                                                                                        { text: 'Payout releases within 72h', done: false },
+                                                                                        { text: isApproved ? 'Content approved' : 'Content submitted — awaiting approval', done: true },
+                                                                                        { text: isPaid ? 'Payout released' : 'Payout releases within 72h', done: isPaid },
                                                                                     ];
                                                                                 }
 

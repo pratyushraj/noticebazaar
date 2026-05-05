@@ -2239,9 +2239,9 @@ router.post('/:id/verify-payment', async (req: AuthenticatedRequest, res: Respon
         return res.json({ success: true, status: 'content_making', message: 'Payment verified and deal updated!' });
       } else {
         return res.json({ 
-          success: true, 
+          success: false, 
           status: (deal as any).status, 
-          message: 'No captured payment found yet. If you just paid, please wait 2-3 minutes.' 
+          message: 'No captured payment found yet. If you just paid, please wait a moment.' 
         });
       }
     } catch (rzpErr: any) {

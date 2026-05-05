@@ -270,8 +270,8 @@ export const getDealPrimaryCta = (params: { role: DealRole; deal: any }): DealPr
           // Escrow held, brand can release after content approved
           return { status, label: 'Release Payment', disabled: false, tone: 'action', action: 'confirm_payment' };
         } else {
-          // No escrow, brand pays outside then marks sent
-          return { status, label: 'Pay via UPI / Mark Sent', disabled: false, tone: 'action', action: 'confirm_payment' };
+          // Standard escrow initialization flow
+          return { status, label: 'Initialize Escrow', disabled: false, tone: 'action', action: 'confirm_payment' };
         }
       }
       if (requiresShipping) {
@@ -284,7 +284,8 @@ export const getDealPrimaryCta = (params: { role: DealRole; deal: any }): DealPr
         };
       }
       // No payment or shipping required (should not happen for PAYMENT_PENDING)
-      return { status, label: 'Mark Payment Sent', disabled: false, tone: 'action', action: 'confirm_payment' };
+      // Default fallback
+      return { status, label: 'Initialize Escrow', disabled: false, tone: 'action', action: 'confirm_payment' };
     }
     // ── Shipping address gate: brand must provide address ─────────────────────
     if (status === 'AWAITING_BRAND_ADDRESS') {
@@ -334,7 +335,7 @@ export const getDealPrimaryCta = (params: { role: DealRole; deal: any }): DealPr
     }
     if (status === 'FULLY_EXECUTED') {
       if (requiresPayment && !hasCapturedPayment) {
-        return { status, label: 'Mark Payment Sent', disabled: false, tone: 'action', action: 'confirm_payment' };
+        return { status, label: 'Initialize Escrow', disabled: false, tone: 'action', action: 'confirm_payment' };
       }
       if (requiresShipping && !hasReceivedShipment) {
         return { 

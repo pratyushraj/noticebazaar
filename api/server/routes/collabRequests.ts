@@ -1583,8 +1583,8 @@ router.patch('/:id/accept', async (req: AuthenticatedRequest, res: Response) => 
         return res.json({
           success: true,
           deal: { id: request.deal_id },
-          needs_otp: true,
-          message: 'OTP verification is still required before this offer is accepted.',
+          needs_otp: false,
+          message: 'Offer already accepted and ready for signing.',
         });
       }
       return res.status(400).json({
@@ -1614,8 +1614,12 @@ router.patch('/:id/accept', async (req: AuthenticatedRequest, res: Response) => 
     const inferredPlatform = inferPlatformFromDeliverables(request.deliverables);
     const dealPlatform = String(request.platform || inferredPlatform || 'Multiple Platforms').trim();
 
-    // Create deal via centralized service (sets status: accepted_pending_otp)
-    const deal = await createDealFromCollabRequest(request, userId);
+    // Create deal via centralized service (OTP bypassed)
+    const deal = await createDealFromCollabRequest(request, userId, {
+      status: 'CONTRACT_READY',
+      otp_verified: true,
+      otp_verified_at: new Date().toISOString()
+    });
 
     const now = new Date().toISOString();
     const clientIp = req.ip || (req.socket as any)?.remoteAddress || 'unknown';
@@ -1625,7 +1629,7 @@ router.patch('/:id/accept', async (req: AuthenticatedRequest, res: Response) => 
     await supabase
       .from('collab_requests')
       .update({
-        status: 'accepted_pending_otp',
+        status: 'accepted',
         deal_id: deal.id,
         updated_at: now,
       })
@@ -1633,19 +1637,19 @@ router.patch('/:id/accept', async (req: AuthenticatedRequest, res: Response) => 
 
     await supabase.from('collab_request_audit_log').insert({
       collab_request_id: id,
-      action: 'accepted_pending_otp',
+      action: 'accepted',
       actor_id: userId,
       auth_method: 'session',
       ip_address: clientIp,
       user_agent: userAgent,
-      metadata: {},
+      metadata: { otp_bypassed: true },
     }).then(({ error: logErr }) => { if (logErr) console.warn('[CollabRequests] Audit log insert failed:', logErr); });
 
-return res.json({
+    return res.json({
       success: true,
       deal: { id: deal.id },
-      needs_otp: true,
-      message: 'OTP sent next. Verify it to accept and sign this collaboration.',
+      needs_otp: false,
+      message: 'Collaboration accepted and deal created.',
     });
   } catch (error: any) {
     console.error('[CollabRequests] Error in PATCH /:id/accept:', error);

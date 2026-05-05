@@ -300,10 +300,11 @@ router.patch('/:id/accept-counter', async (req: AuthenticatedRequest, res: expre
     const requiresShipping = isBarter || isHybrid;
     const dealPlatform = String(request.platform || inferPlatformFromDeliverables(request.deliverables) || 'Multiple Platforms').trim();
 
-    // Create deal via centralized service
-    // This enforces OTP (accepted_pending_otp) for creators by default
+    // Create deal via centralized service (OTP bypassed)
     const deal = await createDealFromCollabRequest(request, request.creator_id, {
-      created_via: 'collab_request_counter'
+      created_via: 'collab_request_counter',
+      otp_verified: true,
+      otp_verified_at: now
     });
 
     // Link brand contact

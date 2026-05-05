@@ -7,12 +7,12 @@ const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_KEY;
 const supabase = createClient(supabaseUrl, supabaseKey);
 
-async function checkDeal() {
+async function checkMellowDeals() {
   const { data, error } = await supabase
     .from('brand_deals')
-    .select('id, status, payment_status, payment_id, amount_paid, deal_type, shipping_required')
-    .eq('id', 'a0284c59-9043-446f-b9cc-aa4556debd9f')
-    .maybeSingle();
+    .select('*')
+    .ilike('brand_name', '%Mellow%')
+    .order('updated_at', { ascending: false });
 
   if (error) {
     console.error(error);
@@ -22,4 +22,4 @@ async function checkDeal() {
   console.log(JSON.stringify(data, null, 2));
 }
 
-checkDeal();
+checkMellowDeals();

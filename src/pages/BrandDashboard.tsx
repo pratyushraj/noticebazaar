@@ -221,14 +221,6 @@ const BrandDashboard: React.FC = () => {
     }
   }, [profile, sessionLoading, navigate]);
 
-  if (sessionLoading || (isLoading && requests.length === 0)) {
-    return (
-      <div className="min-h-[100dvh] bg-[#0D0F1A] flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-emerald-500" />
-      </div>
-    );
-  }
-
   // Background polling for "Action Required" deals (especially payments)
   useEffect(() => {
     if (!user?.id || !isBrandUser) return;
@@ -248,6 +240,14 @@ const BrandDashboard: React.FC = () => {
     
     return () => clearInterval(interval);
   }, [user?.id, isBrandUser, deals.length, loadBrandDashboard]);
+
+  if (sessionLoading || (isLoading && requests.length === 0)) {
+    return (
+      <div className="min-h-[100dvh] bg-[#0D0F1A] flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-emerald-500" />
+      </div>
+    );
+  }
 
   if (!user?.id) {
     return null;

@@ -53,7 +53,7 @@ export function ConfirmPaymentPendingModal({ dealId, dealAmount, creatorName, on
   const amount = Number(dealAmount || 0);
   const breakdown = amount > 0 ? computeBreakdown(amount) : null;
 
-  const [utrNumber, setUtrNumber] = useState("");
+
 
   const handlePayNow = async () => {
     if (!session?.access_token) {
@@ -112,15 +112,29 @@ export function ConfirmPaymentPendingModal({ dealId, dealAmount, creatorName, on
               method: 'POST',
               headers: { Authorization: `Bearer ${session?.access_token}` }
             });
-            await verifyRes.json();
+            const verifyData = await verifyRes.json();
+            
+            if (verifyData.success && (verifyData.status === 'content_making' || verifyData.status === 'CONTENT_MAKING')) {
+              if (onSuccess) {
+                onSuccess();
+              } else {
+                window.location.reload();
+              }
+              return;
+            }
           } catch (e) {
-            // ignore silently, the reload will happen anyway
+            console.error('[Verify] Verification failed:', e);
           }
-          if (onSuccess) {
-            onSuccess();
-          } else {
-            window.location.reload();
-          }
+          
+          // If not verified immediately, wait for a bit and reload anyway as a fallback
+          // but give it 2 seconds to let Razorpay webhooks/state settle
+          setTimeout(() => {
+            if (onSuccess) {
+              onSuccess();
+            } else {
+              window.location.reload();
+            }
+          }, 2000);
         },
       };
 
@@ -272,31 +286,6 @@ export function ConfirmPaymentPendingModal({ dealId, dealAmount, creatorName, on
               </div>
             )}
 
-            {/* UTR Input for manual payments */}
-            <div className="space-y-3 pt-2">
-              <div className="flex items-center justify-between px-1">
-                <span className="text-[10px] font-black uppercase tracking-widest text-white/40">Manual Payment Reference</span>
-                <span className="text-[10px] font-bold text-emerald-500/60 italic">For PhonePe / GPay</span>
-              </div>
-              <div className="relative">
-                <input
-                  type="text"
-                  placeholder="Enter UTR / Transaction ID"
-                  value={utrNumber}
-                  onChange={(e) => setUtrNumber(e.target.value)}
-                  className="w-full h-14 bg-white/5 border border-white/10 rounded-2xl px-6 text-sm font-medium focus:outline-none focus:border-emerald-500/50 transition-all placeholder:text-white/20"
-                />
-                {utrNumber && (
-                  <button 
-                    onClick={() => setUtrNumber("")}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 p-1 text-white/20 hover:text-white/40"
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
-                )}
-              </div>
-            </div>
-
             {/* Actions */}
             <div className="space-y-4 pt-2">
               <Button
@@ -321,58 +310,6 @@ export function ConfirmPaymentPendingModal({ dealId, dealAmount, creatorName, on
                   </span>
                 )}
               </Button>
-
-              <div className="pt-2 border-t border-white/5">
-                <button
-                  type="button"
-                  onClick={async () => {
-                    triggerHaptic(HapticPatterns.light);
-                    setIsLoading(true);
-                    try {
-                      // Manual UPI/External payment marking
-                      const res = await fetch(`${getApiBaseUrl()}/api/deals/${dealId}/verify-payment`, {
-                        method: 'POST',
-                        headers: { 
-                          Authorization: `Bearer ${session?.access_token}`,
-                          'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({ 
-                          manual_mark_paid: true,
-                          payment_method: 'upi_manual',
-                          mark_as_sent: true,
-                          utr_number: utrNumber 
-                        })
-                      });
-                      const data = await res.json();
-                      if (data.success || res.ok) {
-                        toast.success("Payment marked as sent! Verifying...");
-                        setTimeout(() => {
-                          onSuccess?.();
-                        }, 1500);
-                      } else {
-                        toast.error(data.error || "Failed to mark as paid.");
-                      }
-                    } catch (e) {
-                      toast.info("Marking as paid. Please wait for verification.");
-                      onSuccess?.();
-                    } finally {
-                      setIsLoading(false);
-                    }
-                  }}
-                  disabled={isLoading}
-                  className={cn(
-                    "w-full py-4 text-[11px] font-black uppercase tracking-[0.2em] transition-all border-2 rounded-2xl",
-                    utrNumber 
-                      ? "text-emerald-400 border-emerald-500/40 bg-emerald-500/10" 
-                      : "text-white/20 border-white/5 bg-white/5"
-                  )}
-                >
-                  {utrNumber ? "Confirm Payment with UTR" : "Already Paid? Mark as Sent"}
-                </button>
-                <p className="text-[10px] text-center text-white/30 mt-3 px-4">
-                  Enter the UTR from your PhonePe/GPay receipt to unblock the deal immediately.
-                </p>
-              </div>
             </div>
 
             <div className="flex items-center justify-center gap-2 pt-2 grayscale opacity-40">

@@ -1288,37 +1288,57 @@ const BrandMobileDashboard = ({
       const offers = pendingOffersList;
 
   const activeDealsList = useMemo(() => {
-    // Include brand_deals that are active (not cancelled/completed)
+    // 1. Get all creator IDs that have any deal (active or completed)
+    const allDealCreatorIds = new Set((deals || []).map((d: any) => String(d.creator_id || '')).filter(Boolean));
+
+    // 2. Filter active brand_deals
     const fromDeals = uniqDeals((deals || []).filter((d: any) => {
       const s = normalizeStatus(d?.status);
       if (!s) return true;
       if (s === 'accepted_pending_otp') return false;
+      
       // Explicitly exclude statuses that are clearly finished
       if (s.includes('cancel')) return false;
-      const isActuallyCompleted = s.includes('complete') || s.includes('completed') || s.includes('closed') || s.includes('paid') || s.includes('released');
+      
+      const isActuallyCompleted = 
+        s.includes('complete') || 
+        s.includes('completed') || 
+        s.includes('closed') || 
+        s.includes('paid') || 
+        s.includes('released') ||
+        s === 'content_approved' ||
+        s === 'payment_released';
+      
       const isApprovedBarter = (s === 'approved' || s === 'content_approved') && isBarterLikeCollab(d) && !isPaidLikeCollab(d);
       
       if (isActuallyCompleted || isApprovedBarter) return false;
-      // Include everything else as active (including pending payment for paid deals, content_making, etc.)
       return true;
     }));
-    // Also include collab_requests accepted by creator (these are active collabs)
+
+    // 3. Include collab_requests accepted by creator that DON'T have a deal yet
     const fromAcceptedRequests = (requests || []).filter((r: any) => {
       const s = normalizeStatus(r?.status);
-      return s === 'accepted';
+      const rid = String(r.creator_id || '');
+      return s === 'accepted' && !allDealCreatorIds.has(rid);
     });
-    // Merge: prefer brand_deals entry if we have one for same creator
-    const dealCreatorIds = new Set(fromDeals.map((d: any) => String(d.creator_id || '')).filter(Boolean));
-    const acceptedNotInDeals = fromAcceptedRequests.filter((r: any) => !dealCreatorIds.has(String(r.creator_id || '')));
-    // Avoid merging duplicates by contract fingerprint as well.
-    return uniqDeals([...fromDeals, ...acceptedNotInDeals] as any[]);
+
+    return uniqDeals([...fromDeals, ...fromAcceptedRequests] as any[]);
   }, [deals, requests]);
 
   const completedDealsList = useMemo(() => {
     return uniqDeals((deals || []).filter((d: any) => {
       const s = normalizeStatus(d?.status);
       if (!s) return false;
-      const isActuallyCompleted = s.includes('complete') || s.includes('completed') || s.includes('closed') || s.includes('paid') || s.includes('released') || s.includes('cancel');
+      const isActuallyCompleted = 
+        s.includes('complete') || 
+        s.includes('completed') || 
+        s.includes('closed') || 
+        s.includes('paid') || 
+        s.includes('released') ||
+        s === 'content_approved' ||
+        s === 'payment_released' ||
+        s.includes('cancel');
+      
       const isApprovedBarter = (s === 'approved' || s === 'content_approved') && isBarterLikeCollab(d) && !isPaidLikeCollab(d);
       return isActuallyCompleted || isApprovedBarter;
     }) as any[]);
@@ -4356,7 +4376,8 @@ const BrandCollabsTab = React.memo(({
             {visibleCollabItems.slice(0, 50).map((item: any, idx: number) => {
               const itemKey = `collab-list-${item.id || idx}-${item.updated_at || ''}`;
               const isPendingItem = activeCollabTab === 'action_required';
-              const due = isPendingItem ? offerExpiryLabel(item) : deadlineLabel(item);
+              const isCompletedItem = activeCollabTab === 'completed';
+              const due = isPendingItem ? offerExpiryLabel(item) : (isCompletedItem ? null : deadlineLabel(item));
               const amount = Number(item?.deal_amount || item?.exact_budget || item?.barter_value || item?.product_value || 0);
               const creatorName = firstNameish(item?.profiles, item?.creator_name || item?.creator_email);
               const packageSummary = formatPackageSummary(item);
@@ -4604,41 +4625,7 @@ const BrandCollabsTab = React.memo(({
                   </div>
 
                   <div className="flex flex-col gap-2.5">
-                    {ui?.ctaAction === 'confirm_payment' && (
-                      <button
-                        type="button"
-                        onClick={async (e) => {
-                          e.stopPropagation();
-                          triggerHaptic(HapticPatterns.light);
-                          const dealId = item.id;
-                          try {
-                            const res = await fetch(`${getApiBaseUrl()}/api/deals/${dealId}/verify-payment`, {
-                              method: 'POST',
-                              headers: { 
-                                Authorization: `Bearer ${session?.access_token}`,
-                                'Content-Type': 'application/json'
-                              },
-                              body: JSON.stringify({ 
-                                manual_mark_paid: true,
-                                mark_as_sent: true 
-                              })
-                            });
-                            const data = await res.json();
-                            if (data.success) {
-                              toast.success("Marked as paid! Refreshing...");
-                              setTimeout(() => onRefresh?.(), 1000);
-                            } else {
-                              handleBrandDealPrimaryAction(e, item, ui);
-                            }
-                          } catch (err) {
-                            handleBrandDealPrimaryAction(e, item, ui);
-                          }
-                        }}
-                        className="h-10 w-full rounded-xl text-[10px] font-black uppercase tracking-[0.2em] text-emerald-400 border border-emerald-500/20 bg-emerald-500/5 hover:bg-emerald-500/10 transition-all"
-                      >
-                        Already Paid? One-tap Confirm
-                      </button>
-                    )}
+
                     <button
                       type="button"
                       onClick={(e) => handleBrandDealPrimaryAction(e, item, ui)}

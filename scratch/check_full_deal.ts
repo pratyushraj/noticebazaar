@@ -10,9 +10,9 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 async function checkDeal() {
   const { data, error } = await supabase
     .from('brand_deals')
-    .select('id, status, payment_status, payment_id, amount_paid, deal_type, shipping_required')
+    .select('*')
     .eq('id', 'a0284c59-9043-446f-b9cc-aa4556debd9f')
-    .maybeSingle();
+    .single();
 
   if (error) {
     console.error(error);

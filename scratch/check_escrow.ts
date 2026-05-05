@@ -5,21 +5,28 @@ dotenv.config();
 
 const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_KEY;
+
+if (!supabaseUrl || !supabaseKey) {
+  console.error('Missing Supabase credentials');
+  process.exit(1);
+}
+
 const supabase = createClient(supabaseUrl, supabaseKey);
 
-async function checkDeal() {
+async function getRecentEscrow() {
   const { data, error } = await supabase
     .from('brand_deals')
-    .select('id, status, payment_status, payment_id, amount_paid, deal_type, shipping_required')
-    .eq('id', 'a0284c59-9043-446f-b9cc-aa4556debd9f')
-    .maybeSingle();
+    .select('id, brand_name, creator_id, deal_amount, status, payment_status, payment_id, updated_at')
+    .not('payment_id', 'is', null)
+    .order('updated_at', { ascending: false })
+    .limit(3);
 
   if (error) {
-    console.error(error);
+    console.error('Error fetching escrow:', error);
     return;
   }
 
   console.log(JSON.stringify(data, null, 2));
 }
 
-checkDeal();
+getRecentEscrow();
