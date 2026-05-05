@@ -30,6 +30,7 @@ export const CreatorRoutes = () => (
     <Route path="/creator-contracts" element={<Navigate to="/creator-dashboard" replace />} />
     <Route path="/creator-contracts/:dealId" element={<Navigate to="/deal/:dealId" replace />} />
     <Route path="/creator-contracts/:dealId/delivery-details" element={<Navigate to="/deal-delivery-details/:dealId" replace />} />
+    <Route path="/creator-analytics" element={<Navigate to="/creator-dashboard?tab=analytics" replace />} />
     <Route path="/creator-payments" element={<Navigate to="/creator-dashboard?tab=payments" replace />} />
     <Route path="/creator-collab" element={<Navigate to="/creator-dashboard?tab=deals" replace />} />
     <Route path="/brand-deal-console" element={<Navigate to="/creator-dashboard" replace />} />

@@ -461,6 +461,6 @@ export const DEFAULT_MENU_DATA: DrawerMenuData = {
     { id: 'profile', label: 'Profile Settings', icon: Settings, path: '/creator-profile' },
     { id: 'notification-settings', label: 'Notification Settings', icon: Bell, path: '/creator-profile?section=account' },
     { id: 'help', label: 'Help & Support', icon: HelpCircle },
-    { id: 'analytics', label: 'Analytics', icon: BarChart3, path: '/creator-analytics' },
+    { id: 'analytics', label: 'Analytics', icon: BarChart3, path: '/creator-dashboard?tab=analytics' },
   ],
 };

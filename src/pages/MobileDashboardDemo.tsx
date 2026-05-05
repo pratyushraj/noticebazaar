@@ -5362,6 +5362,7 @@ const MobileDashboardDemo = ({
                             ActivityFeed={ActivityFeed} PaymentTimeline={PaymentTimeline}
                             AchievementBadges={AchievementBadges}
                             DealTimelineView={DealTimelineView} SmartNotificationsCenter={SmartNotificationsCenter}
+                            analyticsSummary={analyticsSummary} analyticsLoading={analyticsLoading}
                             Menu={Menu} ShieldCheck={ShieldCheck}
                         />
                     )}
@@ -8797,8 +8798,14 @@ const AnalyticsTab = React.memo(({
     DashboardLoadingStage, DashboardMetricsCards, DealSearchFilter,
     AchievementBadges,
     DealTimelineView, SmartNotificationsCenter,
+    analyticsSummary, analyticsLoading,
     Menu, ShieldCheck
 }: any) => {
+    const linkViews = Number(analyticsSummary?.totalViews || 0);
+    const weeklyViews = Number(analyticsSummary?.weeklyViews || 0);
+    const submissions = Number(analyticsSummary?.submissions || 0);
+    const conversionRate = linkViews > 0 ? Math.round((submissions / linkViews) * 100) : 0;
+
     return (
         <>
         <div className="px-5 pb-6 pt-8">
@@ -8834,6 +8841,38 @@ const AnalyticsTab = React.memo(({
                         isDark={isDark}
                     />
                 )}
+            </div>
+
+            <div className="px-5 mb-8">
+                <div className={cn(
+                    "rounded-[2rem] border p-5",
+                    isDark ? "bg-white/[0.03] border-white/10" : "bg-white border-slate-200 shadow-sm"
+                )}>
+                    <div className="flex items-center justify-between gap-3 mb-4">
+                        <div>
+                            <h3 className={cn("text-sm font-black tracking-tight", textColor)}>Collab Link Funnel</h3>
+                            <p className={cn("text-[11px] font-bold mt-0.5", secondaryTextColor)}>Brand visits and request conversion</p>
+                        </div>
+                        {analyticsLoading && <Loader2 className="w-4 h-4 animate-spin text-primary" />}
+                    </div>
+                    <div className="grid grid-cols-3 gap-2">
+                        {[
+                            { label: "7d views", value: weeklyViews.toLocaleString('en-IN') },
+                            { label: "Total views", value: linkViews.toLocaleString('en-IN') },
+                            { label: "Requests", value: submissions.toLocaleString('en-IN') },
+                        ].map((metric) => (
+                            <div key={metric.label} className={cn("rounded-2xl border p-3", isDark ? "bg-black/20 border-white/10" : "bg-slate-50 border-slate-100")}>
+                                <p className={cn("text-[9px] font-black uppercase tracking-widest", secondaryTextColor)}>{metric.label}</p>
+                                <p className={cn("text-lg font-black mt-1", textColor)}>{metric.value}</p>
+                            </div>
+                        ))}
+                    </div>
+                    <div className={cn("mt-3 rounded-2xl px-4 py-3 text-[12px] font-bold", isDark ? "bg-emerald-500/10 text-emerald-300" : "bg-emerald-50 text-emerald-700")}>
+                        {linkViews > 0
+                            ? `${conversionRate}% of link visits became brand requests.`
+                            : "Share your collab link on Instagram or WhatsApp to start tracking brand interest."}
+                    </div>
+                </div>
             </div>
 
             <div className="px-5 mb-8">
