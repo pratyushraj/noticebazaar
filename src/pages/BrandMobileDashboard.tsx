@@ -359,7 +359,11 @@ const dealStageLabel = (row: BrandDeal | null | undefined) => {
   if (s === 'PAYMENT_PENDING') return isBarterDeal ? 'Shipping Required' : 'Payment Required';
   if (s === 'AWAITING_BRAND_ADDRESS') return 'Address Needed';
   if (s === 'CONTRACT_READY' || s === 'AWAITING_BRAND_SIGNATURE') return 'Ready to Sign';
-  if (s === 'SENT' || s === 'AWAITING_CREATOR_SIGNATURE') return 'Awaiting Creator';
+  if (s === 'SENT' || s === 'AWAITING_CREATOR_SIGNATURE') {
+    const hints = collectSignatureHints(row);
+    if (hints.creator.length > 0 && hints.brand.length === 0) return 'Your Signature';
+    return 'Awaiting Creator';
+  }
   if (s === 'FULLY_EXECUTED') return (isBarterDeal || row?.shipping_required === true) ? 'Awaiting Shipment' : 'Collab Active';
   if (s === 'CONTENT_MAKING') return 'In Production';
   if (s === 'REVISION_REQUESTED') return 'Revision Needed';
@@ -405,7 +409,12 @@ const brandDealCardUi = (row: BrandDeal | null | undefined) => {
   const shippingStatus = String((row as any)?.shipping_status || '').trim().toLowerCase();
   const hasShipped = shippingStatus === 'shipped' || shippingStatus === 'in_transit';
   const hasDeliveredShipping = shippingStatus === 'delivered' || shippingStatus === 'received';
-  const human = dealStageLabel({ status: s });
+  
+  const signatureHints = collectSignatureHints(row);
+  const brandSigned = signatureHints.brand.length > 0;
+  const creatorSigned = signatureHints.creator.length > 0;
+
+  const human = dealStageLabel(row);
   const stageBadge =
     s === 'DISPUTED' ? 'ISSUE'
       : (s === 'DISPUTE_ARBITRATION' || s === 'DISPUTE_PARTIAL_REFUND') ? 'DISPUTE'
@@ -463,7 +472,11 @@ const brandDealCardUi = (row: BrandDeal | null | undefined) => {
                             : 'Contract signed — please ship the product')
                     : 'Contract signed — awaiting content')
                 : s === 'AWAITING_CREATOR_SIGNATURE' || s === 'SENT'
-                  ? "Waiting for creator's signature"
+                  ? (creatorSigned && !brandSigned 
+                      ? "Creator has signed — Review and sign to start" 
+                      : brandSigned && !creatorSigned
+                        ? "Waiting for creator's signature"
+                        : "Agreement sent — waiting for signatures")
                   : 'Review the agreement to get started';
 
   const step =
@@ -1577,9 +1590,7 @@ const BrandMobileDashboard = ({
 	                    <p className={cn('text-[11px] font-black uppercase tracking-widest opacity-50', textColor)}>Pending offer</p>
 	                    <h3 className={cn('text-[18px] font-bold tracking-tight truncate', textColor)}>{title}</h3>
 	                    <p className={cn('text-[12px] mt-1 opacity-60', textColor)}>{packageSummary}</p>
-	                    {deliverables && deliverables !== packageSummary && (
-	                      <p className={cn('text-[11px] mt-1 opacity-50 truncate', textColor)}>Brand gets: {String(deliverables).replaceAll(',', ' • ')}</p>
-	                    )}
+	                    {/* Removed Brand gets line as per request */}
 	                  </div>
 	                  <span className={cn('text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded-lg border', isDark ? 'border-border text-foreground/70 bg-card' : 'border-border text-muted-foreground bg-background')}>
 	                    {requestStage}
@@ -1760,9 +1771,7 @@ const BrandMobileDashboard = ({
 	                    <p className={cn('text-[11px] font-black uppercase tracking-widest opacity-50', textColor)}>Deal offer</p>
 	                    <h3 className={cn('text-[18px] font-bold tracking-tight truncate', textColor)}>{title}</h3>
 	                    <p className={cn('text-[12px] mt-1 opacity-60', textColor)}>{packageSummary}</p>
-	                    {deliverables && deliverables !== packageSummary && (
-	                      <p className={cn('text-[11px] mt-1 opacity-50 truncate', textColor)}>Brand gets: {deliverables}</p>
-	                    )}
+	                    {/* Removed Brand gets line as per request */}
 	                  </div>
 	                  <span className={cn('text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded-lg border', isDark ? 'border-border text-foreground/70 bg-card' : 'border-border text-muted-foreground bg-background')}>
 	                    {status}
@@ -4398,11 +4407,7 @@ const BrandCollabsTab = React.memo(({
                       )}
                     </div>
 
-                    {deliverablesSummary && deliverablesSummary !== packageSummary && (
-                      <p className={cn('text-[11px] font-bold opacity-55 truncate -mt-2 mb-4 relative z-10', textColor)}>
-                        Brand gets: {String(deliverablesSummary).replaceAll(',', ' • ')}
-                      </p>
-                    )}
+                    {/* Removed Brand gets line as per request */}
 
                     <div className={cn(
                       'flex items-center justify-between p-4 rounded-2xl border relative z-10 transition-colors',
@@ -4527,11 +4532,7 @@ const BrandCollabsTab = React.memo(({
                     )}
                   </div>
 
-                  {deliverablesSummary && deliverablesSummary !== packageSummary && (
-                    <p className={cn('text-[11px] font-bold opacity-55 truncate -mt-2 mb-4 relative z-10', textColor)}>
-                      Brand gets: {String(deliverablesSummary).replaceAll(',', ' • ')}
-                    </p>
-                  )}
+                  {/* Removed Brand gets line as per request */}
 
                   <div className={cn(
                     'flex items-center justify-between p-4 rounded-[2rem] border relative z-10 transition-colors',
