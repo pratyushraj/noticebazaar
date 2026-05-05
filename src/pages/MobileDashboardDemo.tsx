@@ -2411,7 +2411,7 @@ const MobileDashboardDemo = ({
     const totalEarnings = React.useMemo(() => {
         return completedDealsList.reduce((sum: number, deal: any) => {
             return sum + (Number(deal.deal_amount || deal.budget_amount || 0));
-        }, 0) || 19500; // Keep fallback for visual demo if empty
+        }, 0);
     }, [completedDealsList]);
 
     const processingAmount = React.useMemo(() => {
@@ -8537,6 +8537,44 @@ const DashboardTab = React.memo(({
     analyticsSummary, analyticsLoading
 }: any) => {
     const hasDeals = activeDealsCount > 0 || completedDealsCount > 0;
+    const storefrontUrl = `creatorarmour.com/${username}`;
+
+    const handleWhatsAppShare = () => {
+        triggerHaptic();
+        const text = `Check out my creator profile on Creator Armour: ${storefrontUrl}`;
+        window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+        trackEvent('collab_link_shared', { method: 'whatsapp' });
+    };
+
+    const handleInstagramShare = () => {
+        triggerHaptic();
+        handleCopyStorefront();
+        toast.success("Link copied! Paste it in your Instagram Bio settings.", {
+            duration: 4000,
+            icon: '📸'
+        });
+        trackEvent('collab_link_shared', { method: 'instagram' });
+    };
+
+    const handleNativeShare = async () => {
+        triggerHaptic();
+        if (navigator.share) {
+            try {
+                await navigator.share({
+                    title: 'My Creator Profile',
+                    text: 'Check out my work and collaborate with me on Creator Armour!',
+                    url: `https://${storefrontUrl}`
+                });
+                trackEvent('collab_link_shared', { method: 'native' });
+            } catch (err) {
+                if ((err as Error).name !== 'AbortError') {
+                    handleCopyStorefront();
+                }
+            }
+        } else {
+            handleCopyStorefront();
+        }
+    };
 
     // Get the most recent active deal for the hero tracker
     const featuredDeal = activeDealsList[0];
@@ -8693,7 +8731,14 @@ const DashboardTab = React.memo(({
                         </div>
 
                         <button
-                            onClick={() => { triggerHaptic(); toast.success('Withdrawal request initiated!'); }}
+                            onClick={() => { 
+                                triggerHaptic(); 
+                                if (availableAmount > 0) {
+                                    toast.success('Withdrawal request initiated!'); 
+                                } else {
+                                    toast.info("No funds available to withdraw yet. Complete deals to earn!");
+                                }
+                            }}
                             className="w-full h-14 rounded-[1.2rem] bg-emerald-600 text-white font-bold text-[11px] uppercase tracking-[0.2em] shadow-lg shadow-emerald-600/20 active:scale-[0.96] transition-all"
                         >
                             Withdraw Now
@@ -8811,7 +8856,7 @@ const DashboardTab = React.memo(({
                             <p className="text-sm text-slate-500">We’ll help you get your first brand deal</p>
                         </div>
                         <button
-                            onClick={() => { triggerHaptic(); setActiveTab('deals'); }}
+                            onClick={() => { triggerHaptic(); setActiveTab('collabs'); }}
                             className="h-12 px-8 rounded-2xl bg-emerald-600 text-white font-bold text-[11px] uppercase tracking-widest shadow-lg shadow-emerald-600/20 active:scale-95 transition-all"
                         >
                             Get Matched Now
@@ -8853,16 +8898,37 @@ const DashboardTab = React.memo(({
                         </button>
                     </div>
 
-                    <div className="grid grid-cols-3 gap-3">
-                        <button className="h-12 rounded-2xl bg-[#25D366] text-white flex items-center justify-center gap-2 active:scale-95 transition-all">
+                    <div className="grid grid-cols-3 gap-3 mb-6">
+                        <button 
+                            onClick={handleWhatsAppShare}
+                            className="h-12 rounded-2xl bg-[#25D366] text-white flex items-center justify-center gap-2 active:scale-95 transition-all shadow-lg shadow-[#25D366]/20"
+                        >
                             <span className="text-[10px] font-black uppercase tracking-widest">WhatsApp</span>
                         </button>
-                        <button className="h-12 rounded-2xl bg-gradient-to-tr from-[#F58529] via-[#DD2A7B] to-[#8134AF] text-white flex items-center justify-center gap-2 active:scale-95 transition-all">
+                        <button 
+                            onClick={handleInstagramShare}
+                            className="h-12 rounded-2xl bg-gradient-to-tr from-[#F58529] via-[#DD2A7B] to-[#8134AF] text-white flex items-center justify-center gap-2 active:scale-95 transition-all shadow-lg shadow-pink-500/20"
+                        >
                             <span className="text-[10px] font-black uppercase tracking-widest">Instagram</span>
                         </button>
-                        <button className="h-12 rounded-2xl bg-slate-100 text-slate-600 flex items-center justify-center gap-2 active:scale-95 transition-all">
+                        <button 
+                            onClick={handleNativeShare}
+                            className="h-12 rounded-2xl bg-slate-100 text-slate-600 flex items-center justify-center gap-2 active:scale-95 transition-all"
+                        >
                             <span className="text-[10px] font-black uppercase tracking-widest">Share</span>
                         </button>
+                    </div>
+
+                    <div className={cn(
+                        "flex items-center gap-3 p-4 rounded-2xl border border-dashed",
+                        isDark ? "bg-white/5 border-white/10" : "bg-emerald-50/50 border-emerald-100"
+                    )}>
+                        <div className="w-8 h-8 rounded-full bg-emerald-500/10 flex items-center justify-center text-emerald-600 flex-shrink-0">
+                            <ShieldCheck className="w-4 h-4" />
+                        </div>
+                        <p className={cn("text-[11px] font-medium leading-relaxed", isDark ? "text-slate-400" : "text-slate-600")}>
+                            <span className="font-bold text-emerald-600">Pro Tip:</span> Add this to your <span className="font-bold">Instagram Bio</span> to attract 3x more brand deals.
+                        </p>
                     </div>
                 </div>
             </motion.div>

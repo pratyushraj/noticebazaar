@@ -974,10 +974,12 @@ export const useUpdateProfile = () => {
 
       const filteredUpdateData = omitUnsupportedProfileColumns(updateData as Record<string, unknown>);
 
+      // Include id for upsert
+      filteredUpdateData.id = id;
+
       const { error } = await supabase
         .from('profiles')
-        .update(filteredUpdateData as any)
-        .eq('id' as any, id);
+        .upsert(filteredUpdateData as any, { onConflict: 'id' });
 
       if (error) {
         // Check if error is due to missing columns (migration not run)
@@ -1133,10 +1135,12 @@ export const useUpdateProfile = () => {
               persistUnsupportedProfileColumns();
             }
 
+            // Include id for upsert
+            safeUpdateData.id = id;
+
             const result = await (supabase
               .from('profiles')
-              .update(safeUpdateData as any)
-              .eq('id' as any, id) as any);
+              .upsert(safeUpdateData as any, { onConflict: 'id' }) as any);
 
             if (!result.error) {
               if (droppedFields.size > 0 && import.meta.env.DEV) {

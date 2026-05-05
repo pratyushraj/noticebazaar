@@ -138,7 +138,7 @@ const CITY_ALIASES: Record<string, string> = {
 };
 
 const STEP_ORDER: OnboardingStep[] = ['identity', 'reach', 'audience', 'style', 'collab', 'payout', 'verification', 'notifications'];
-const ONBOARDING_DRAFT_KEY = 'creator-onboarding-draft-v1';
+const getOnboardingDraftKey = (userId: string) => `creator-onboarding-draft-v1-${userId}`;
 
 const normalizeCityValue = (value: string) => {
   const cleaned = value.trim().replace(/\s+/g, ' ');
@@ -308,9 +308,10 @@ export default function CreatorOnboarding() {
   }, [profile, instagramHandle, selectedNiches, contentVibes, baseRate, bio, upiId, shippingAddress, topCity1, topCity2, topCity3, phone, followerCount, pincode, legalAddress, isPhoneVerified]);
 
   useEffect(() => {
-    if (typeof window === 'undefined') return;
+    if (typeof window === 'undefined' || !profile?.id) return;
     try {
-      const raw = window.localStorage.getItem(ONBOARDING_DRAFT_KEY);
+      const draftKey = getOnboardingDraftKey(profile.id);
+      const raw = window.localStorage.getItem(draftKey);
       if (!raw) return;
       const draft = JSON.parse(raw);
       if (typeof draft.step === 'string' && ['identity', 'reach', 'audience', 'style', 'collab', 'videoSuccess', 'payout', 'logistics', 'notifications'].includes(draft.step)) {
@@ -338,12 +339,13 @@ export default function CreatorOnboarding() {
     } catch (error) {
       console.warn('Failed to restore onboarding draft', error);
     }
-  }, []);
+  }, [profile?.id]);
 
   useEffect(() => {
-    if (typeof window === 'undefined') return;
+    if (typeof window === 'undefined' || !profile?.id) return;
     try {
-      window.localStorage.setItem(ONBOARDING_DRAFT_KEY, JSON.stringify({
+      const draftKey = getOnboardingDraftKey(profile.id);
+      window.localStorage.setItem(draftKey, JSON.stringify({
         step,
         instagramHandle,
         selectedNiches,
@@ -389,6 +391,7 @@ export default function CreatorOnboarding() {
     baseCity,
     audienceGenderSplit,
     audienceAgeRange,
+    profile?.id
   ]);
 
   // Helper to map count to range ID
@@ -491,15 +494,23 @@ export default function CreatorOnboarding() {
         return;
       }
       
-      // Optimistic transition
-      setStep('reach');
-      
-      // Save in background
-      updateProfileMutation.mutate({
-        id: profile!.id,
-        instagram_handle: instagramHandle.replace(/^@+/, '').trim().toLowerCase(),
-        username: instagramHandle.replace(/^@+/, '').trim().toLowerCase(),
-      } as any);
+      // Save and validate username availability
+      try {
+        await updateProfileMutation.mutateAsync({
+          id: profile!.id,
+          instagram_handle: instagramHandle.replace(/^@+/, '').trim().toLowerCase(),
+          username: instagramHandle.replace(/^@+/, '').trim().toLowerCase(),
+        } as any);
+        
+        // Transition only if successful
+        setStep('reach');
+      } catch (error: any) {
+        if (error?.message?.includes('profiles_username_key')) {
+          toast.error('This Instagram handle is already registered. Please use a different one or contact support.');
+        } else {
+          toast.error(error?.message || 'Failed to update profile');
+        }
+      }
       return;
     }
 
@@ -799,8 +810,8 @@ export default function CreatorOnboarding() {
         open_to_collabs: true,
       } as any);
 
-      if (typeof window !== 'undefined') {
-        window.localStorage.removeItem(ONBOARDING_DRAFT_KEY);
+      if (typeof window !== 'undefined' && profile?.id) {
+        window.localStorage.removeItem(getOnboardingDraftKey(profile.id));
       }
 
       await refetchProfile?.();
