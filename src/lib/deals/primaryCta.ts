@@ -302,8 +302,11 @@ export const getDealPrimaryCta = (params: { role: DealRole; deal: any }): DealPr
       if (brandSigned && !creatorSigned) {
         return { status, label: 'Waiting for Creator', disabled: true, tone: 'waiting', action: 'none' };
       }
-      // If creator has signed but the brand has not, wait for brand signature instead of starting work.
+      // If creator has signed but the brand has not, show payment CTA for paid deals.
       if (creatorSigned && !brandSigned) {
+        if (requiresPayment) {
+          return { status, label: 'Fund Escrow', disabled: false, tone: 'action', action: 'review_sign_contract' };
+        }
         return { status, label: 'Waiting for Brand Signature', disabled: true, tone: 'waiting', action: 'none' };
       }
       // If both sides signed, let the brand view collaboration.
