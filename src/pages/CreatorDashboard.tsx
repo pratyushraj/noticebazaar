@@ -217,6 +217,63 @@ const CreatorDashboardContent = ({ navigate }: { navigate: any }) => {
     };
   }, [user?.id, queryClient]);
 
+  const handleAcceptRequest = async (req: any, addressData?: { address: string; pincode: string }, otpVerified?: boolean, otpVerifiedAt?: string) => {
+    const { data: sessionData } = await supabase.auth.getSession();
+    if (!sessionData.session) throw new Error('Not authenticated');
+
+    const res = await fetch(`${getApiBaseUrl()}/api/collab-requests/${req.id}/accept`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${sessionData.session.access_token}`,
+      },
+      body: JSON.stringify({
+        shipping_address: addressData?.address,
+        pincode: addressData?.pincode,
+        otp_verified: otpVerified,
+        otp_verified_at: otpVerifiedAt,
+      }),
+    });
+    const data = await res.json();
+    queryClient.invalidateQueries({ queryKey: ['collab-requests'] });
+    queryClient.invalidateQueries({ queryKey: ['brand-deals'] });
+    if (!res.ok || !data.success) {
+      const msg = data?.error || '';
+      if (msg.includes('already been processed') || msg.includes('already accepted') || msg.includes('already declined')) {
+        toast.info('This offer was already processed.');
+        return data;
+      }
+      throw new Error(data.error || 'Failed to accept');
+    }
+    return data;
+  };
+
+  const handleDeclineRequest = async (req: any) => {
+    const { data: sessionData } = await supabase.auth.getSession();
+    if (!sessionData.session) throw new Error('Not authenticated');
+    const requestId = typeof req === 'string' ? req : req?.id;
+    if (!requestId) { throw new Error('Request ID missing'); }
+    const res = await fetch(`${getApiBaseUrl()}/api/collab-requests/${requestId}/decline`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${sessionData.session.access_token}`,
+      },
+    });
+    const data = await res.json();
+    queryClient.invalidateQueries({ queryKey: ['collab-requests'] });
+    if (!res.ok || !data.success) {
+      const msg = data?.error || '';
+      if (msg.includes('already been processed') || msg.includes('already declined') || msg.includes('already accepted')) {
+        toast.info('This offer was already processed.');
+      } else {
+        throw new Error(data.error || 'Failed to decline');
+      }
+      return;
+    }
+    toast.success('Offer declined');
+  };
+
   const handleRefresh = async () => {
     try {
       await Promise.all([
