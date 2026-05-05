@@ -342,9 +342,15 @@ const collectSignatureHints = (row: BrandDeal | null | undefined) => {
     return Array.from(new Set(keys)).slice(0, 6);
   };
 
+  const creatorHints = truthyKeys(/(creator.*signed|signed.*creator|creator_signature|creator_esign|creator_signed_at|creator_otp_verified)/i);
+  const status = normalizeStatus(row?.status);
+  if (status === 'accepted' || status.includes('accepted_pending_otp')) {
+    creatorHints.push('status_accepted');
+  }
+
   return {
     brand: truthyKeys(/(brand.*signed|signed.*brand|brand_signature|brand_esign|brand_signed_at)/i),
-    creator: truthyKeys(/(creator.*signed|signed.*creator|creator_signature|creator_esign|creator_signed_at)/i),
+    creator: creatorHints,
   };
 };
 

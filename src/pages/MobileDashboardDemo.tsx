@@ -144,7 +144,7 @@ const StatusBadge = ({ status }: { status: string }) => {
         if (s.includes('payment_released') || s.includes('paid_out')) return 'payment_released';
         if (s.includes('complete') || s.includes('closed') || s.includes('paid')) return 'completed';
         if (s.includes('payment_pending')) return 'payment_pending';
-        if (s.includes('active') || s.includes('sign') || s.includes('execut') || s.includes('making') || s.includes('deliver') || s.includes('ship')) return 'active';
+        if (s.includes('active') || s.includes('sign') || s.includes('execut') || s.includes('making') || s.includes('deliver') || s.includes('ship') || s.includes('accepted')) return 'active';
         if (s.includes('neg')) return 'negotiating';
         return 'pending';
     };
@@ -459,9 +459,9 @@ const getCreatorDealCardUX = (deal: any) => {
     const isApproved = rawStatus.includes('content_approved') || rawStatus.includes('approved');
     const isPaymentReleased = rawStatus.includes('payment_released') || rawStatus.includes('released');
     const isMaking = rawStatus.includes('content_making') || rawStatus.includes('drafting');
-    const isFullyExecuted = rawStatus.includes('fully_executed') || rawStatus === 'signed';
+    const isFullyExecuted = rawStatus.includes('fully_executed') || rawStatus === 'signed' || rawStatus === 'accepted';
     const isPaymentPending = rawStatus.includes('payment_pending');
-    const isContractPending = rawStatus.includes('contract_ready') || rawStatus === 'sent' || rawStatus.includes('signed_pending_creator') || rawStatus.includes('signed_by_brand') || rawStatus.includes('needs signature') || rawStatus === 'accepted';
+    const isContractPending = rawStatus.includes('contract_ready') || rawStatus === 'sent' || rawStatus.includes('signed_pending_creator') || rawStatus.includes('signed_by_brand') || rawStatus.includes('needs signature');
 
     const dueDate = parseDealDate(deal?.due_date || deal?.deadline || deal?.raw?.deadline || deal?.raw?.due_date);
     const daysUntilDue = getDaysUntil(dueDate);
@@ -479,7 +479,7 @@ const getCreatorDealCardUX = (deal: any) => {
 
     const contractLabel = isContractPending
         ? (rawStatus.includes('signed_by_brand') ? 'Contract: waiting for your signature' : 'Contract: pending signature')
-        : (isFullyExecuted || isMaking || isDelivered || isApproved || isPaymentReleased || isCompleted ? 'Contract: signed' : null);
+        : (isFullyExecuted || isMaking || isDelivered || isApproved || isPaymentReleased || isCompleted || rawStatus === 'accepted' ? 'Contract: signed' : null);
 
     const needsSignature = isContractPending;
     const needsCreatorAction = !isCompleted && !isApproved && !isPaymentReleased && !isAwaitingShipment && (needsSignature || isRevisionRequested || isMaking || isPendingOTP);

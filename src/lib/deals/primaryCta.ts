@@ -95,7 +95,10 @@ export const getCanonicalDealStatus = (deal: any): CanonicalDealStatus => {
     deal?.signatures,
   ].filter((x) => x && typeof x === 'object');
 
-  const creatorSigned = hasTruthyKeyMatch(signatureSources, /(creator.*signed|signed.*creator|creator_signature|creator_esign|creator_signed_at|creator_otp_verified)/i);
+  const creatorSigned = 
+    hasTruthyKeyMatch(signatureSources, /(creator.*signed|signed.*creator|creator_signature|creator_esign|creator_signed_at|creator_otp_verified)/i) || 
+    lower === 'accepted' || 
+    lower.includes('accepted_pending_otp');
   const brandSigned = hasTruthyKeyMatch(signatureSources, /(brand.*signed|signed.*brand|brand_signature|brand_esign|brand_signed_at|brand_otp_verified)/i);
 
   // For barter deals, once the address is provided, we effectively move to the active stage
