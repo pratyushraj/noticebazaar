@@ -2410,13 +2410,33 @@ router.post('/:id/verify-payment', authMiddleware, async (req: AuthenticatedRequ
       return res.status(403).json({ success: false, error: 'Access denied' });
     }
 
-    // 3. If already captured/content_making, skip expensive Razorpay call
-    const current = String(deal.status || '').toLowerCase();
-    if (current === 'content_making' || current === 'content-making') {
-       return res.json({ success: true, status: 'content_making', message: 'Payment already confirmed' });
+    // 4. Handle manual mark as paid flag (forced transition)
+    if (req.body?.manual_mark_paid || req.body?.mark_as_sent) {
+      const now = new Date().toISOString();
+      const utr = req.body?.utr_number || req.body?.utrNumber || 'MANUAL_UPI_SENT';
+      
+      const updateData: any = {
+        status: 'CONTENT_MAKING',
+        payment_sent_at: now,
+        updated_at: now,
+        utr_number: utr
+      };
+      
+      if ('payment_status' in (deal || {})) updateData.payment_status = 'sent';
+      
+      await supabase.from('brand_deals').update(updateData).eq('id', dealId);
+      
+      await supabase.from('deal_action_logs').insert({
+        deal_id: dealId,
+        user_id: userId,
+        event: 'PAYMENT_MARKED_SENT_MANUAL',
+        metadata: { source: 'manual_button', utr }
+      });
+
+      return res.json({ success: true, status: 'content_making', message: 'Payment marked as sent! Verifying manually now.' });
     }
 
-    // 4. Query Razorpay API
+    // 5. Query Razorpay API
     try {
       const Razorpay = (await import('razorpay')).default;
       const rzp = new Razorpay({

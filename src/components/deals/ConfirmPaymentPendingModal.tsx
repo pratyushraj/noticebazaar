@@ -53,6 +53,8 @@ export function ConfirmPaymentPendingModal({ dealId, dealAmount, creatorName, on
   const amount = Number(dealAmount || 0);
   const breakdown = amount > 0 ? computeBreakdown(amount) : null;
 
+  const [utrNumber, setUtrNumber] = useState("");
+
   const handlePayNow = async () => {
     if (!session?.access_token) {
       toast.error("Session expired. Please refresh and try again.");
@@ -270,8 +272,33 @@ export function ConfirmPaymentPendingModal({ dealId, dealAmount, creatorName, on
               </div>
             )}
 
+            {/* UTR Input for manual payments */}
+            <div className="space-y-3 pt-2">
+              <div className="flex items-center justify-between px-1">
+                <span className="text-[10px] font-black uppercase tracking-widest text-white/40">Manual Payment Reference</span>
+                <span className="text-[10px] font-bold text-emerald-500/60 italic">For PhonePe / GPay</span>
+              </div>
+              <div className="relative">
+                <input
+                  type="text"
+                  placeholder="Enter UTR / Transaction ID"
+                  value={utrNumber}
+                  onChange={(e) => setUtrNumber(e.target.value)}
+                  className="w-full h-14 bg-white/5 border border-white/10 rounded-2xl px-6 text-sm font-medium focus:outline-none focus:border-emerald-500/50 transition-all placeholder:text-white/20"
+                />
+                {utrNumber && (
+                  <button 
+                    onClick={() => setUtrNumber("")}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 p-1 text-white/20 hover:text-white/40"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                )}
+              </div>
+            </div>
+
             {/* Actions */}
-            <div className="space-y-4">
+            <div className="space-y-4 pt-2">
               <Button
                 type="button"
                 onClick={handlePayNow}
@@ -312,7 +339,8 @@ export function ConfirmPaymentPendingModal({ dealId, dealAmount, creatorName, on
                         body: JSON.stringify({ 
                           manual_mark_paid: true,
                           payment_method: 'upi_manual',
-                          mark_as_sent: true 
+                          mark_as_sent: true,
+                          utr_number: utrNumber 
                         })
                       });
                       const data = await res.json();
@@ -332,12 +360,17 @@ export function ConfirmPaymentPendingModal({ dealId, dealAmount, creatorName, on
                     }
                   }}
                   disabled={isLoading}
-                  className="w-full py-4 text-[11px] font-black uppercase tracking-[0.2em] text-emerald-400 hover:text-emerald-300 transition-all border-2 border-emerald-500/20 hover:border-emerald-500/40 rounded-2xl bg-emerald-500/5"
+                  className={cn(
+                    "w-full py-4 text-[11px] font-black uppercase tracking-[0.2em] transition-all border-2 rounded-2xl",
+                    utrNumber 
+                      ? "text-emerald-400 border-emerald-500/40 bg-emerald-500/10" 
+                      : "text-white/20 border-white/5 bg-white/5"
+                  )}
                 >
-                  Already Paid via UPI? Mark as Sent
+                  {utrNumber ? "Confirm Payment with UTR" : "Already Paid? Mark as Sent"}
                 </button>
                 <p className="text-[10px] text-center text-white/30 mt-3 px-4">
-                  Use this if you've already transferred funds via PhonePe/GPay directly.
+                  Enter the UTR from your PhonePe/GPay receipt to unblock the deal immediately.
                 </p>
               </div>
             </div>

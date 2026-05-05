@@ -10,6 +10,7 @@ import { supabase } from '@/integrations/supabase/client';
 
 import { toast } from 'sonner';
 import { triggerHaptic } from '@/lib/utils/haptics';
+import { getCanonicalDealStatus } from '@/lib/deals/primaryCta';
 
 type BrandDashboardStats = {
   totalSent: number;
@@ -226,6 +227,30 @@ const BrandDashboard: React.FC = () => {
         <Loader2 className="w-8 h-8 animate-spin text-emerald-500" />
       </div>
     );
+  }
+
+  // Background polling for "Action Required" deals (especially payments)
+  useEffect(() => {
+    if (!user?.id || !isBrandUser) return;
+    
+    const interval = setInterval(() => {
+      // Only poll if there's at least one deal in a pending state
+      const hasPending = deals.some(d => {
+        const s = getCanonicalDealStatus(d);
+        return s === 'PAYMENT_PENDING' || s === 'SENT' || s === 'AWAITING_BRAND_SIGNATURE';
+      });
+      
+      if (hasPending) {
+        console.log('[BrandDashboard] Polling for pending deal updates...');
+        loadBrandDashboard(true);
+      }
+    }, 10000); // 10 seconds
+    
+    return () => clearInterval(interval);
+  }, [user?.id, isBrandUser, deals.length, loadBrandDashboard]);
+
+  if (!user?.id) {
+    return null;
   }
 
   if (!isBrandUser) {
