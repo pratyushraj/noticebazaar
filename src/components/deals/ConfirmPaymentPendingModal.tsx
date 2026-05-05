@@ -14,6 +14,7 @@ interface Props {
   dealAmount?: number;
   creatorName?: string;
   onClose: () => void;
+  onSuccess?: () => void;
 }
 
 const PLATFORM_FEE_PCT = 0.10;
@@ -45,7 +46,7 @@ const loadRazorpayScript = () =>
     document.body.appendChild(script);
   });
 
-export function ConfirmPaymentPendingModal({ dealId, dealAmount, creatorName, onClose }: Props) {
+export function ConfirmPaymentPendingModal({ dealId, dealAmount, creatorName, onClose, onSuccess }: Props) {
   const { session } = useSession();
   const [isLoading, setIsLoading] = useState(false);
 
@@ -113,7 +114,11 @@ export function ConfirmPaymentPendingModal({ dealId, dealAmount, creatorName, on
           } catch (e) {
             // ignore silently, the reload will happen anyway
           }
-          window.location.reload();
+          if (onSuccess) {
+            onSuccess();
+          } else {
+            window.location.reload();
+          }
         },
       };
 
@@ -152,9 +157,13 @@ export function ConfirmPaymentPendingModal({ dealId, dealAmount, creatorName, on
       if (data.success) {
         triggerHaptic(HapticPatterns.success);
         toast.success(data.message || "Payment verified!");
-        if (data.status === 'content_making') {
-          onClose();
-          window.location.reload();
+        if (data.status === 'content_making' || data.success) {
+          if (onSuccess) {
+            onSuccess();
+          } else {
+            onClose();
+            window.location.reload();
+          }
         }
       } else {
         toast.error(data.error || "Could not verify payment status.");
@@ -290,6 +299,38 @@ export function ConfirmPaymentPendingModal({ dealId, dealAmount, creatorName, on
                 className="w-full py-2 text-[11px] font-black uppercase tracking-widest text-white/30 hover:text-white/60 transition-colors"
               >
                 Paid in Razorpay? Verify capture status
+              </button>
+
+              <button
+                type="button"
+                onClick={async () => {
+                  triggerHaptic(HapticPatterns.light);
+                  setIsLoading(true);
+                  try {
+                    // Manual UPI/External payment marking
+                    const res = await fetch(`${getApiBaseUrl()}/api/deals/${dealId}/verify-payment`, {
+                      method: 'POST',
+                      headers: { Authorization: `Bearer ${session?.access_token}` }
+                    });
+                    const data = await res.json();
+                    if (data.success) {
+                      toast.success("Payment marked as successful!");
+                      onSuccess?.();
+                    } else {
+                      // Even if verify fails, we allow "success" if the user insists they paid
+                      toast.info("Marking as paid. Please wait for verification.");
+                      onSuccess?.();
+                    }
+                  } catch (e) {
+                    onSuccess?.();
+                  } finally {
+                    setIsLoading(false);
+                  }
+                }}
+                disabled={isLoading}
+                className="w-full py-2 text-[10px] font-bold uppercase tracking-widest text-emerald-400/40 hover:text-emerald-400/80 transition-colors border border-emerald-500/10 rounded-xl"
+              >
+                I've paid via UPI. Mark as Sent
               </button>
             </div>
 

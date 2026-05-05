@@ -3220,6 +3220,11 @@ const BrandMobileDashboard = ({
               setShowConfirmPaymentModal(false);
               setOverlayDeal(null);
             }}
+            onSuccess={() => {
+              setShowConfirmPaymentModal(false);
+              setOverlayDeal(null);
+              onRefresh?.();
+            }}
           />
         )}
 
