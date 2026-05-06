@@ -1082,7 +1082,18 @@ router.post('/verify-creator', async (req: AuthenticatedRequest, res: Response) 
           };
 
           if (typeof fetch !== 'undefined') {
-            fetch('https://creatorarmour-api.onrender.com/api/push/send', {
+            const configuredPushBase =
+              process.env.PUSH_API_BASE_URL ||
+              process.env.API_BASE_URL ||
+              process.env.BACKEND_URL ||
+              process.env.FRONTEND_API_URL ||
+              '';
+            const pushBase = configuredPushBase.replace(/\/$/, '');
+            const pushEndpoint = pushBase
+              ? `${pushBase}/api/push/send`
+              : '/api/push/send';
+
+            fetch(pushEndpoint, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify(payload)

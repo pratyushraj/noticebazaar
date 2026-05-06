@@ -45,6 +45,9 @@ export const useDealAlertNotifications = () => {
     const host = window.location.hostname.toLowerCase();
     return host === 'localhost' || host === '127.0.0.1';
   }, []);
+  const hasLocalPushOverride = useMemo(() => {
+    return !!String((import.meta as any)?.env?.VITE_PUSH_API_BASE_URL || '').trim();
+  }, []);
 
   const pushApiBase = useMemo(() => {
     if (typeof window === 'undefined') return getApiBaseUrl();
@@ -163,12 +166,12 @@ export const useDealAlertNotifications = () => {
       'Notification' in window &&
       'serviceWorker' in navigator &&
       'PushManager' in window &&
-      !isLocalhostDev;
+      (!isLocalhostDev || hasLocalPushOverride);
     setIsSupported(supported);
     setPromptDismissed(localStorage.getItem(PROMPT_DISMISSED_KEY) === 'true');
     if (!supported) return;
     syncSubscriptionStatus().catch(() => {});
-  }, [syncSubscriptionStatus, isLocalhostDev]);
+  }, [syncSubscriptionStatus, isLocalhostDev, hasLocalPushOverride]);
 
   const dismissPrompt = useCallback(() => {
     localStorage.setItem(PROMPT_DISMISSED_KEY, 'true');
@@ -179,7 +182,7 @@ export const useDealAlertNotifications = () => {
     if (!isSupported) {
       return { success: false, reason: 'unsupported' };
     }
-    if (isLocalhostDev) {
+    if (isLocalhostDev && !hasLocalPushOverride) {
       return { success: false, reason: 'localhost_disabled' };
     }
     if (!hasVapidKey) {

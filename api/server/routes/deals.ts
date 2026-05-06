@@ -161,7 +161,15 @@ async function sendGenericPushViaRender(params: {
   url: string;
   data?: any;
 }): Promise<void> {
-  const renderUrl = 'https://creatorarmour-api.onrender.com/api/push/notify-generic';
+  const renderBase =
+    process.env.PUSH_API_BASE_URL ||
+    process.env.API_BASE_URL ||
+    process.env.BACKEND_URL ||
+    process.env.FRONTEND_API_URL ||
+    '';
+  const renderUrl = renderBase.replace(/\/$/, '')
+    ? `${renderBase.replace(/\/$/, '')}/api/push/notify-generic`
+    : '/api/push/notify-generic';
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
   try {
     const resp = await fetch(renderUrl, {

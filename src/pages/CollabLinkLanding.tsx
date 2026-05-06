@@ -1709,7 +1709,7 @@ const CollabLinkLanding = () => {
       formData.append('file', file)
       const apiBaseUrl = getApiBaseUrl()
       const res = await fetch(
-        `${apiBaseUrl}/api/collab/${encodeURIComponent(username)}/upload-brand-logo`,
+        `${apiBaseUrl}/api/collab/${encodeURIComponent(username)}/upload-public-brand-logo`,
         {
           method: 'POST',
           body: formData,
@@ -4188,67 +4188,53 @@ const CollabLinkLanding = () => {
                               </div>
                             )}
 
-                            <div className="space-y-1">
-                              <label htmlFor="brand-name-input" className="sr-only">
-                                Brand name
-                              </label>
-                              <Input
-                                id="brand-name-input"
-                                value={brandName}
-                                onChange={e => setBrandName(e.target.value)}
-                                onKeyDown={e => e.key === 'Enter' && e.currentTarget.blur()}
-                                enterKeyHint="done"
-                                placeholder="Brand or company name"
-                                className={cn(
-                                  "h-14 px-4 rounded-xl border-white bg-white font-bold text-base text-slate-900 placeholder:text-slate-500 shadow-sm focus-visible:ring-2 focus-visible:ring-emerald-500/30 transition-all",
-                                  errors.brandName && "border-destructive ring-1 ring-destructive"
+                             {!useBrandProfile && (
+                              <div className="space-y-1">
+                                <label htmlFor="brand-name-input" className="sr-only">
+                                  Brand name
+                                </label>
+                                <Input
+                                  id="brand-name-input"
+                                  value={brandName}
+                                  onChange={e => setBrandName(e.target.value)}
+                                  onKeyDown={e => e.key === 'Enter' && e.currentTarget.blur()}
+                                  enterKeyHint="done"
+                                  placeholder="Brand or company name"
+                                  className={cn(
+                                    "h-14 px-4 rounded-xl border-white bg-white font-bold text-base text-slate-900 placeholder:text-slate-500 shadow-sm focus-visible:ring-2 focus-visible:ring-emerald-500/30 transition-all",
+                                    errors.brandName && "border-destructive ring-1 ring-destructive"
+                                  )}
+                                />
+                                {errors.brandName && (
+                                  <p className="mt-1 text-[11px] font-bold text-destructive">
+                                    {errors.brandName}
+                                  </p>
                                 )}
-                              />
-                              {errors.brandName && (
-                                <p className="mt-1 text-[11px] font-bold text-destructive">
-                                  {errors.brandName}
-                                </p>
-                              )}
-                            </div>
+                              </div>
+                            )}
 
-                            <label htmlFor="brand-instagram-input" className="sr-only">
-                              Brand Instagram
-                            </label>
-                            <Input
-                              id="brand-instagram-input"
-                              value={brandInstagram}
-                              onChange={e => setBrandInstagram(e.target.value)}
-                              onKeyDown={e => e.key === 'Enter' && e.currentTarget.blur()}
-                              enterKeyHint="done"
-                              placeholder="@brand_instagram (optional)"
-                              className="h-12 px-4 rounded-xl border-white bg-white font-semibold text-[14px] text-slate-900 placeholder:text-slate-500 shadow-sm focus-visible:ring-2 focus-visible:ring-emerald-500/30 transition-all"
-                            />
+                            {!useBrandProfile && (
+                              <>
+                                <label htmlFor="brand-instagram-input" className="sr-only">
+                                  Brand Instagram
+                                </label>
+                                <Input
+                                  id="brand-instagram-input"
+                                  value={brandInstagram}
+                                  onChange={e => setBrandInstagram(e.target.value)}
+                                  onKeyDown={e => e.key === 'Enter' && e.currentTarget.blur()}
+                                  enterKeyHint="done"
+                                  placeholder="@brand_instagram (optional)"
+                                  className="h-12 px-4 rounded-xl border-white bg-white font-semibold text-[14px] text-slate-900 placeholder:text-slate-500 shadow-sm focus-visible:ring-2 focus-visible:ring-emerald-500/30 transition-all"
+                                />
+                              </>
+                            )}
 
-                            <div className="relative group">
-                              <label htmlFor="brand-pincode-input" className="sr-only">
-                                Pincode
-                              </label>
-                              <Input
-                                id="brand-pincode-input"
-                                value={brandPincode}
-                                onChange={e => {
-                                  const val = e.target.value.replace(/\D/g, '').slice(0, 6)
-                                  setBrandPincode(val)
-                                }}
-                                onKeyDown={e => e.key === 'Enter' && e.currentTarget.blur()}
-                                enterKeyHint="done"
-                                placeholder="Brand Pincode (e.g. 110001)"
-                                className={cn(
-                                  "h-12 px-4 rounded-xl border-white bg-white font-semibold text-[14px] text-slate-900 placeholder:text-slate-500 shadow-sm focus-visible:ring-2 focus-visible:ring-emerald-500/30 transition-all",
-                                  errors.brandPincode && "border-destructive ring-1 ring-destructive"
-                                )}
-                              />
-                              {errors.brandPincode && (
-                                <p className="mt-1 text-[11px] font-bold text-destructive">
-                                  {errors.brandPincode}
-                                </p>
-                              )}
-                            </div>
+                            {!useBrandProfile && (
+                              <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-[11px] font-medium text-slate-500">
+                                Brand pincode is no longer required here. We’ll auto-detect it from your brand profile when available.
+                              </div>
+                            )}
 
                             {(useBrandProfile || lookupStatus === 'found') && (
                               <Button
@@ -4268,7 +4254,7 @@ const CollabLinkLanding = () => {
                                 Not your brand? Use different details
                               </Button>
                             )}
-                            {/* Brand Logo Upload */}
+                            {/* Brand Logo */}
                             <div id="brand-logo-upload" className="pt-2">
                               <div className="flex items-center justify-between mb-2">
                                 <p className="text-[11px] font-black uppercase tracking-widest text-slate-500">
@@ -4282,8 +4268,8 @@ const CollabLinkLanding = () => {
                                     </span>
                                   )}
                               </div>
-                              {brandLogoUrl ? (
-                                <div className="flex items-center gap-3 bg-white p-2.5 rounded-2xl shadow-sm border border-slate-200 animate-in fade-in zoom-in-95 duration-200">
+                              {brandLogoUrl && (
+                                <div className="mb-3 flex items-center gap-3 bg-white p-2.5 rounded-2xl shadow-sm border border-slate-200 animate-in fade-in zoom-in-95 duration-200">
                                   <Avatar className="h-12 w-12 rounded-[14px] bg-slate-50 border border-slate-100 overflow-hidden flex-shrink-0">
                                     <AvatarImage
                                       src={failedLogos.has(brandLogoUrl) ? undefined : safeAvatarSrc(brandLogoUrl)}
@@ -4293,20 +4279,13 @@ const CollabLinkLanding = () => {
                                       fetchpriority="high"
                                       loading="eager"
                                       onLoadingStatusChange={status => {
-                                        if (status === 'error') {
-                                          console.log(
-                                            '[CollabLinkLanding] Logo failed to load:',
-                                            brandLogoUrl
-                                          )
-                                          if (brandLogoUrl) {
-                                            setFailedLogos(prev => {
-                                              const next = new Set(prev)
-                                              next.add(brandLogoUrl)
-                                              return next
-                                            })
-                                          }
-                                          // We keep brandLogoUrl as is for a moment so the initials can show,
-                                          // but the blacklist will prevent further network attempts.
+                                        if (status === 'error' && brandLogoUrl) {
+                                          console.log('[CollabLinkLanding] Logo failed to load:', brandLogoUrl)
+                                          setFailedLogos(prev => {
+                                            const next = new Set(prev)
+                                            next.add(brandLogoUrl)
+                                            return next
+                                          })
                                         }
                                       }}
                                     />
@@ -4325,52 +4304,38 @@ const CollabLinkLanding = () => {
                                     <p className="text-[13px] font-bold text-slate-900 leading-tight">
                                       Logo Ready
                                     </p>
-                                    <Button
-                                      type="button"
-                                      variant="ghost"
-                                      onClick={() => {
-                                        setBrandLogoUrl('')
-                                        setIsLogoUserUploaded(false)
-                                      }}
-                                      className="h-auto p-0 text-[11px] font-bold text-red-500 hover:text-red-600 hover:bg-transparent mt-1"
-                                    >
-                                      Change logo
-                                    </Button>
-                                  </div>
-                                </div>
-                              ) : (
-                                <div className="relative">
-                                  <input
-                                    type="file"
-                                    accept="image/*"
-                                    onChange={handleLogoChange}
-                                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-                                    disabled={brandLogoUploading}
-                                  />
-                                  <div
-                                    className={cn(
-                                      'w-full h-14 rounded-xl border-2 border-dashed flex items-center justify-center gap-2 transition-all',
-                                      errors.brandLogoUrl
-                                        ? 'border-red-300 bg-red-50/50 text-red-600'
-                                        : 'border-slate-200 bg-white hover:border-slate-400 hover:bg-slate-50 text-slate-600'
-                                    )}
-                                  >
-                                    {brandLogoUploading ? (
-                                      <Loader2 className="w-4 h-4 animate-spin" />
-                                    ) : (
-                                      <ImageIcon className="w-4 h-4" />
-                                    )}
-                                    <span className="text-[13px] font-bold">
-                                      {brandLogoUploading ? 'Uploading...' : 'Upload brand logo'}
-                                    </span>
+                                    <p className="text-[11px] text-slate-500 mt-0.5">
+                                      Prefilled from your brand profile.
+                                    </p>
                                   </div>
                                 </div>
                               )}
-                              {errors.brandLogoUrl && (
-                                <p className="text-red-500 text-[11px] font-bold mt-1.5 ml-1">
-                                  {errors.brandLogoUrl}
-                                </p>
-                              )}
+                              <div className="relative">
+                                <input
+                                  type="file"
+                                  accept="image/*"
+                                  onChange={handleLogoChange}
+                                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                                  disabled={brandLogoUploading}
+                                />
+                                <div
+                                  className={cn(
+                                    'w-full h-14 rounded-xl border-2 border-dashed flex items-center justify-center gap-2 transition-all',
+                                    errors.brandLogoUrl
+                                      ? 'border-red-300 bg-red-50/50 text-red-600'
+                                      : 'border-slate-200 bg-white hover:border-slate-400 hover:bg-slate-50 text-slate-600'
+                                  )}
+                                >
+                                  {brandLogoUploading ? (
+                                    <Loader2 className="w-4 h-4 animate-spin" />
+                                  ) : (
+                                    <ImageIcon className="w-4 h-4" />
+                                  )}
+                                  <span className="text-[13px] font-bold">
+                                    {brandLogoUrl ? 'Replace brand logo' : 'Upload brand logo'}
+                                  </span>
+                                </div>
+                              </div>
                             </div>
                           </div>
                         </div>

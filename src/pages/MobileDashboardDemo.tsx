@@ -523,7 +523,7 @@ const DashboardLoadingStage = ({
                                                  </div>
                                                  <div className="flex gap-3 mt-6 relative z-10">
                                                      <button
-                                                         onClick={() => { triggerHaptic(); setActiveTab('profile'); setActiveSettingsPage('consumer-complaints'); }}
+                                                         onClick={() => { triggerHaptic(); setActiveTab('profile'); handleOpenSettings('consumer-complaints'); }}
                                                          className="flex-1 bg-primary text-white font-black italic py-3 rounded-xl text-xs uppercase tracking-widest active:scale-95 transition-all shadow-lg shadow-primary/20"
                                                      >
                                                          File Notice
@@ -915,13 +915,14 @@ const MobileDashboardDemo = ({
         startTransition(() => {
             const next = new URLSearchParams(searchParams);
             next.set('tab', tab);
-            // If we navigate away from deals, clear deals-specific params so we don't get forced back.
+            // If we navigate away from deals, clear deals-specific params.
             if (tab !== 'deals') {
                 next.delete('subtab');
                 next.delete('requestId');
                 next.delete('dealId');
             }
-            setSearchParams(next, { replace: true });
+            // Use replace: false (default) to enable "Swipe to Back" support between tabs.
+            setSearchParams(next, { replace: false });
         });
     }, [searchParams, setSearchParams]);
 
@@ -935,6 +936,7 @@ const MobileDashboardDemo = ({
     const requestIdParam = (searchParams.get('requestId') || '').trim() || null;
     const dealIdParam = (searchParams.get('dealId') || '').trim() || null;
     const subtabParam = (searchParams.get('subtab') as 'active' | 'pending' | 'completed' | null) || null;
+    const settingsParam = searchParams.get('settings');
 
     const [collabSubTab, setCollabSubTab] = useState<'active' | 'pending' | 'completed'>('pending');
     const [showBrief, setShowBrief] = useState(true);
@@ -1247,7 +1249,7 @@ const MobileDashboardDemo = ({
             sessionTracked.current = true;
         }
     }, []);
-    const [activeSettingsPage, setActiveSettingsPage] = useState<string | null>(null);
+
     const [hasFiledComplaint, setHasFiledComplaint] = useState(false);
     const [filedComplaints, setFiledComplaints] = useState<any[]>(() => {
         try {
@@ -1261,6 +1263,7 @@ const MobileDashboardDemo = ({
     useEffect(() => {
         localStorage.setItem('nb_filed_complaints', JSON.stringify(filedComplaints));
     }, [filedComplaints]);
+
     const [complaintStep, setComplaintStep] = useState<'initial' | 'category' | 'company' | 'details' | 'submitting'>('initial');
     const [selectedComplaintCategory, setSelectedComplaintCategory] = useState<string | null>(null);
     const [selectedComplaintCompany, setSelectedComplaintCompany] = useState<string | null>(null);
@@ -1272,12 +1275,73 @@ const MobileDashboardDemo = ({
         setSelectedComplaintCompany(null);
         setComplaintDescription('');
     };
+
     const [activeSettingsAnchor, setActiveSettingsAnchor] = useState<string | null>(null);
     const [expandedSection, setExpandedSection] = useState<string>('identity');
     const [showPushInstallGuide, setShowPushInstallGuide] = useState(false);
     const [showShareSheet, setShowShareSheet] = useState(false);
     const [processingDeal, setProcessingDeal] = React.useState<string | null>(null);
+
+    const [activeSettingsPage, setActiveSettingsPage] = useState<string | null>(null);
     const [selectedItem, setSelectedItem] = useState<any | null>(null);
+    const [selectedType, setSelectedType] = useState<'offer' | 'deal' | null>(null);
+
+    // Synchronize UI State with URL (The Single Source of Truth)
+    useEffect(() => {
+        // 1. Sync Settings Page
+        if (settingsParam !== activeSettingsPage) {
+            setActiveSettingsPage(settingsParam);
+        }
+
+        // 2. Sync Selected Item (Deals/Offers)
+        if (!requestIdParam && !dealIdParam) {
+            if (selectedItem) {
+                setSelectedItem(null);
+                setSelectedType(null);
+            }
+        } else {
+            const currentId = String(selectedItem?.id || selectedItem?.raw?.id || '');
+            if (requestIdParam && requestIdParam !== currentId) {
+                const match = (collabRequests || []).find((r: any) => String(r?.id || r?.raw?.id || '') === requestIdParam);
+                if (match) {
+                    setSelectedItem(match);
+                    setSelectedType('offer');
+                }
+            } else if (dealIdParam && dealIdParam !== currentId) {
+                const match = (brandDeals || []).find((d: any) => String(d?.id || d?.raw?.id || '') === dealIdParam);
+                if (match) {
+                    setSelectedItem(match);
+                    setSelectedType('deal');
+                }
+            }
+        }
+    }, [settingsParam, requestIdParam, dealIdParam, collabRequests, brandDeals]);
+
+    // Helpers to update URL (which in turn updates state via the effect above)
+    const handleOpenSettings = (page: string | null) => {
+        const next = new URLSearchParams(searchParams);
+        if (page) next.set('settings', page);
+        else next.delete('settings');
+        setSearchParams(next, { replace: false });
+    };
+
+    const handleOpenItem = (item: any | null, type?: 'offer' | 'deal') => {
+        const next = new URLSearchParams(searchParams);
+        if (!item) {
+            next.delete('dealId');
+            next.delete('requestId');
+        } else {
+            const itemId = String(item.id || item.raw?.id || '');
+            if (type === 'deal') {
+                next.set('dealId', itemId);
+                next.delete('requestId');
+            } else {
+                next.set('requestId', itemId);
+                next.delete('dealId');
+            }
+        }
+        setSearchParams(next, { replace: false });
+    };
     const [showDeliverContentModal, setShowDeliverContentModal] = useState(false);
     const [showDisputeModal, setShowDisputeModal] = useState(false);
     const [uploadedFileName, setUploadedFileName] = useState<string | null>(null);
@@ -3398,7 +3462,7 @@ const MobileDashboardDemo = ({
             <div className={cn("px-5 pb-4 flex items-center gap-4 bg-transparent")} style={{ paddingTop: 'max(env(safe-area-inset-top), 20px)' }}>
                 <motion.button
                     whileTap={{ scale: 0.9 }}
-                    onClick={() => setActiveSettingsPage(null)}
+                    onClick={() => handleOpenSettings(null)}
                     className={cn("w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 border transition-all", isDark ? "bg-card border-white/5 text-foreground" : "bg-white border-slate-200 text-black shadow-sm")}
                 >
                     <ChevronRight className="w-5 h-5 rotate-180" />
@@ -3423,7 +3487,7 @@ const MobileDashboardDemo = ({
                             <div className="flex items-center gap-4">
                                 <motion.button
                                     whileTap={{ scale: 0.9 }}
-                                    onClick={() => { setActiveSettingsPage(null); setIsEditMode(false); }}
+                                    onClick={() => { handleOpenSettings(null); setIsEditMode(false); }}
                                     className={cn("p-2 rounded-full transition-all", isDark ? "bg-slate-800" : "bg-white shadow-sm border border-slate-200")}
                                 >
                                     <ChevronRight className="w-5 h-5 rotate-180" />
@@ -3974,7 +4038,7 @@ const MobileDashboardDemo = ({
                 );
             case 'portfolio':
                 return (
-                    <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} drag="x" dragConstraints={{ left: 0, right: 0 }} dragElastic={0.2} onDragEnd={(e, { offset, velocity }) => { if (offset.x > 50 || velocity.x > 500) { triggerHaptic(); setActiveSettingsPage(null); } }} className="pb-20 touch-pan-y">
+                    <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} drag="x" dragConstraints={{ left: 0, right: 0 }} dragElastic={0.2} onDragEnd={(e, { offset, velocity }) => { if (offset.x > 50 || velocity.x > 500) { triggerHaptic(); handleOpenSettings(null); } }} className="pb-20 touch-pan-y">
                         <PageHeader title="Your Public Profile" />
                         <div className="px-4 space-y-6">
                             <div ref={pricingSectionRef}>
@@ -4033,9 +4097,9 @@ const MobileDashboardDemo = ({
                             </div>
                             <SectionHeader title="Storefront Controls" isDark={isDark} />
                             <SettingsGroup isDark={isDark}>
-                                <SettingsRow icon={<Info />} iconBg="bg-indigo-500" label="Bio & Headline" subtext="Your creator pitch" isDark={isDark} textColor={textColor} hasChevron onClick={() => setActiveSettingsPage('personal')} />
+                                <SettingsRow icon={<Info />} iconBg="bg-indigo-500" label="Bio & Headline" subtext="Your creator pitch" isDark={isDark} textColor={textColor} hasChevron onClick={() => handleOpenSettings('personal')} />
                                 <SettingsRow icon={<Star />} iconBg="bg-warning" label="Featured Content" subtext="Showcase high-performing reels" isDark={isDark} textColor={textColor} hasChevron onClick={() => toast("Integration coming soon!")} />
-                                <SettingsRow icon={<Link2 />} iconBg="bg-info" label="Media Kit" subtext="Connect your external deck" isDark={isDark} textColor={textColor} hasChevron onClick={() => setActiveSettingsPage('personal')} />
+                                <SettingsRow icon={<Link2 />} iconBg="bg-info" label="Media Kit" subtext="Connect your external deck" isDark={isDark} textColor={textColor} hasChevron onClick={() => handleOpenSettings('personal')} />
                             </SettingsGroup>
                             <div className="px-4 pt-4">
                                 <button type="button" onClick={handleSaveProfile} disabled={isSavingProfile} className="w-full bg-info text-foreground font-bold py-3 rounded-xl active:scale-95 transition-all uppercase tracking-widest text-[11px] disabled:opacity-80 dark:opacity-50 disabled:active:scale-100">
@@ -4047,7 +4111,7 @@ const MobileDashboardDemo = ({
                 );
             case 'verification':
                 return (
-                    <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} drag="x" dragConstraints={{ left: 0, right: 0 }} dragElastic={0.2} onDragEnd={(e, { offset, velocity }) => { if (offset.x > 50 || velocity.x > 500) { triggerHaptic(); setActiveSettingsPage(null); } }} className="pb-20 touch-pan-y">
+                    <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} drag="x" dragConstraints={{ left: 0, right: 0 }} dragElastic={0.2} onDragEnd={(e, { offset, velocity }) => { if (offset.x > 50 || velocity.x > 500) { triggerHaptic(); handleOpenSettings(null); } }} className="pb-20 touch-pan-y">
                         <PageHeader title="Armour Verification" />
                         <div className="px-4 space-y-6">
                             <div className={cn("p-8 rounded-[2.5rem] relative overflow-hidden", isDark ? "bg-card border border-[#2C2C2E]" : "bg-card border-[#E5E5EA] shadow-sm")}>
@@ -4083,7 +4147,7 @@ const MobileDashboardDemo = ({
                         onDragEnd={(e, { offset, velocity }) => {
                             if (offset.x > 50 || velocity.x > 500) {
                                 triggerHaptic();
-                                setActiveSettingsPage(null);
+                                handleOpenSettings(null);
                             }
                         }}
                         className="pb-28 touch-pan-y"
@@ -4093,7 +4157,7 @@ const MobileDashboardDemo = ({
                             {/* Back Button */}
                             <motion.button
                                 whileTap={{ scale: 0.9 }}
-                                onClick={() => { triggerHaptic(); setActiveSettingsPage(null); }}
+                                onClick={() => { triggerHaptic(); handleOpenSettings(null); }}
                                 className="absolute top-6 left-5 z-20 w-10 h-10 rounded-2xl flex items-center justify-center bg-white/10 border border-white/20 text-white backdrop-blur-md transition-all active:scale-90"
                             >
                                 <ChevronRight className="w-5 h-5 rotate-180" />
@@ -4660,7 +4724,7 @@ const MobileDashboardDemo = ({
                 );
             case 'dark-mode':
                 return (
-                    <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} drag="x" dragConstraints={{ left: 0, right: 0 }} dragElastic={0.2} onDragEnd={(e, { offset, velocity }) => { if (offset.x > 50 || velocity.x > 500) { triggerHaptic(); setActiveSettingsPage(null); } }} className="pb-20 touch-pan-y">
+                    <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} drag="x" dragConstraints={{ left: 0, right: 0 }} dragElastic={0.2} onDragEnd={(e, { offset, velocity }) => { if (offset.x > 50 || velocity.x > 500) { triggerHaptic(); handleOpenSettings(null); } }} className="pb-20 touch-pan-y">
                         <PageHeader title="Appearance" />
                         <div className="px-4 space-y-6">
                             <SettingsGroup isDark={isDark}>
@@ -4678,7 +4742,7 @@ const MobileDashboardDemo = ({
                 );
             case 'notifications':
                 return (
-                    <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} drag="x" dragConstraints={{ left: 0, right: 0 }} dragElastic={0.2} onDragEnd={(e, { offset, velocity }) => { if (offset.x > 50 || velocity.x > 500) { triggerHaptic(); setActiveSettingsPage(null); } }} className="pb-20 touch-pan-y">
+                    <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} drag="x" dragConstraints={{ left: 0, right: 0 }} dragElastic={0.2} onDragEnd={(e, { offset, velocity }) => { if (offset.x > 50 || velocity.x > 500) { triggerHaptic(); handleOpenSettings(null); } }} className="pb-20 touch-pan-y">
                         <PageHeader title="Notifications" />
                         <div className="px-4 space-y-6">
                             <SectionHeader title="Deal Alerts" isDark={isDark} />
@@ -4847,7 +4911,7 @@ const MobileDashboardDemo = ({
                                     <button
                                         onClick={async () => {
                                             triggerHaptic();
-                                            setActiveSettingsPage(null);
+                                            handleOpenSettings(null);
                                             navigate('/delete-account');
                                         }}
                                         className="w-full py-4 rounded-2xl bg-red-500 text-white font-black text-xs uppercase tracking-widest active:scale-95 transition-all shadow-lg shadow-red-500/20"
@@ -4855,7 +4919,7 @@ const MobileDashboardDemo = ({
                                         Yes, Delete Everything
                                     </button>
                                     <button
-                                        onClick={() => { triggerHaptic(); setActiveSettingsPage(null); }}
+                                        onClick={() => { triggerHaptic(); handleOpenSettings(null); }}
                                         className={cn("w-full py-4 rounded-2xl font-black text-xs uppercase tracking-widest active:scale-95 transition-all", isDark ? "bg-white/5 text-white/40" : "bg-slate-100 text-slate-500")}
                                     >
                                         Cancel
@@ -4867,7 +4931,7 @@ const MobileDashboardDemo = ({
                 );
             case 'support':
                 return (
-                    <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} drag="x" dragConstraints={{ left: 0, right: 0 }} dragElastic={0.2} onDragEnd={(e, { offset, velocity }) => { if (offset.x > 50 || velocity.x > 500) { triggerHaptic(); setActiveSettingsPage(null); } }} className="pb-20 touch-pan-y">
+                    <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} drag="x" dragConstraints={{ left: 0, right: 0 }} dragElastic={0.2} onDragEnd={(e, { offset, velocity }) => { if (offset.x > 50 || velocity.x > 500) { triggerHaptic(); handleOpenSettings(null); } }} className="pb-20 touch-pan-y">
                         <PageHeader title="Command Bridge" subtitle="Help & Support Protocol" />
                         <div className="px-4 space-y-6">
                             <div className={cn(
@@ -4915,7 +4979,7 @@ const MobileDashboardDemo = ({
                                                 localStorage.removeItem(`dashboard-tutorial-completed-${userId}`);
                                                 localStorage.removeItem(`dashboard-tutorial-dismissed-${userId}`);
                                                 toast.success('Protocol sequence reset. Re-initializing tutorial...');
-                                                setActiveSettingsPage(null);
+                                                handleOpenSettings(null);
                                             } else {
                                                 toast.error('User context not found. Cannot reset protocol.');
                                             }
@@ -5110,7 +5174,7 @@ const MobileDashboardDemo = ({
                                                         duration: 5000,
                                                     });
                                                     resetComplaintForm();
-                                                    setActiveSettingsPage('my-complaints');
+                                                    handleOpenSettings('my-complaints');
                                                 }, 2000);
                                             }}
                                             className={cn(
@@ -5205,7 +5269,7 @@ const MobileDashboardDemo = ({
                     sessionStorage.clear();
                     window.location.href = '/login';
                 }
-                setActiveSettingsPage(null);
+                handleOpenSettings(null);
                 setActiveTab('dashboard');
                 return null;
             default:
@@ -5217,7 +5281,7 @@ const MobileDashboardDemo = ({
                         <h3 className={cn("text-xl font-bold mb-2", textColor)}>Refining Module</h3>
                         <p className={cn("opacity-70 dark:opacity-40 text-sm leading-relaxed mb-8", textColor)}>We're fine-tuning this control center for your creator business.</p>
                         <button type="button"
-                            onClick={() => setActiveSettingsPage(null)}
+                            onClick={() => handleOpenSettings(null)}
                             className="bg-info text-foreground font-black px-10 py-4 rounded-2xl active:scale-95 transition-all text-[13px] uppercase tracking-widest"
                         >
                             Back To Hub
@@ -5287,13 +5351,13 @@ const MobileDashboardDemo = ({
                         if (basePath === '/creator-profile' && section) {
                             setActiveTab('profile');
                             // Map 'account' section to the 'personal' settings page in MobileDashboardDemo
-                            setActiveSettingsPage(section === 'account' ? 'personal' : section);
+                            handleOpenSettings(section === 'account' ? 'personal' : section);
                         } else if (path === '/lifestyle/consumer-complaints') {
                             setActiveTab('profile');
-                            setActiveSettingsPage('consumer-complaints');
+                            handleOpenSettings('consumer-complaints');
                         } else if (path === '/dashboard/consumer-complaints') {
                             setActiveTab('profile');
-                            setActiveSettingsPage('my-complaints');
+                            handleOpenSettings('my-complaints');
                         } else if (!path.startsWith('http')) {
                             navigate(path);
                         }
@@ -5629,7 +5693,7 @@ const MobileDashboardDemo = ({
                     secondaryTextColor={secondaryTextColor}
                     pendingOffersCount={pendingOffersCount}
                     triggerHaptic={triggerHaptic}
-                    setActiveTab={setActiveTab}
+                    setActiveTab={handleTabChange}
                     scrollRef={scrollRef}
                     scrollPositionsRef={scrollPositionsRef}
                     isOverlayOpen={
@@ -8426,6 +8490,7 @@ const MobileDashboardDemo = ({
                     }}
                     isBusy={isPushBusy}
                     isDark={isDark}
+                    canPrompt={isPushSupported && pushPermission === 'default' && !isPushSubscribed}
                 />
             )}
 
@@ -8866,7 +8931,7 @@ const DashboardTab = React.memo(({
                                         ? "bg-[#0B1324] border-white/5 shadow-2xl"
                                         : "bg-white border-slate-200 shadow-[0_15px_40px_rgba(0,0,0,0.04)]"
                                 )}
-                                onClick={() => { triggerHaptic(); setSelectedItem(deal); setSelectedType('deal'); }}
+                                onClick={() => { triggerHaptic(); handleOpenItem(deal, 'deal'); }}
                                 >
                                     <div className="flex items-center justify-between mb-6">
                                         <div className="flex items-center gap-3">
@@ -9215,7 +9280,7 @@ const DealsTab = React.memo(({
                                         <motion.div
                                             key={deal.id || idx}
                                             whileTap={{ scale: 0.98 }}
-                                            onClick={() => { triggerHaptic(); setSelectedItem(deal); setSelectedType('deal'); }}
+                                            onClick={() => { triggerHaptic(); handleOpenItem(deal, 'deal'); }}
                                             className={cn(
                                                 "relative w-full aspect-[1.6/1] rounded-[2.5rem] overflow-hidden bg-[#0B1220] border border-white/5 shadow-2xl mb-6 group"
                                             )}
@@ -9325,7 +9390,7 @@ const DealsTab = React.memo(({
                                      const productImage = resolveCreatorDealProductImage(deal);
                                      const isPureBarter = isBarterLikeCollab(deal) && !isPaidLikeCollab(deal);
                                      return (
-                                         <motion.div key={deal.id || idx} whileTap={{ scale: 0.98 }} onClick={() => { triggerHaptic(); setSelectedItem(deal); setSelectedType('deal'); }} className={cn("relative w-full aspect-[1.6/1] rounded-[2.5rem] overflow-hidden bg-[#0B1220] border-0 shadow-2xl mb-6")}>
+                                         <motion.div key={deal.id || idx} whileTap={{ scale: 0.98 }} onClick={() => { triggerHaptic(); handleOpenItem(deal, 'deal'); }} className={cn("relative w-full aspect-[1.6/1] rounded-[2.5rem] overflow-hidden bg-[#0B1220] border-0 shadow-2xl mb-6")}>
                                              <div className="absolute inset-0">
                                                  {productImage && (
                                                      <img
@@ -9403,7 +9468,7 @@ const DealsTab = React.memo(({
                                         const usageLabel = req?.usage_rights === true || req?.raw?.usage_rights === true ? 'Usage rights' : '';
                                         const paymentTermsLabel = String(req?.payment_terms || req?.raw?.payment_terms || '').trim();
 	                                    return (
-                                        <motion.div key={req.id || idx} whileTap={{ scale: 0.98 }} onClick={() => { triggerHaptic(); setSelectedItem(req); setSelectedType('offer'); }} className={cn("relative w-full aspect-[1.5/1] rounded-[2.5rem] overflow-hidden bg-[#0B1220] border-0 shadow-2xl mb-6")}>
+                                        <motion.div key={req.id || idx} whileTap={{ scale: 0.98 }} onClick={() => { triggerHaptic(); handleOpenItem(req, 'offer'); }} className={cn("relative w-full aspect-[1.5/1] rounded-[2.5rem] overflow-hidden bg-[#0B1220] border-0 shadow-2xl mb-6")}>
                                             <div className="absolute inset-0">
                                                 {productImage && (
                                                     <img

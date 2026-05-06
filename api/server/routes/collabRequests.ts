@@ -35,7 +35,15 @@ async function sendCollabPushViaRender(params: {
   deliverables: string[];
   deadline?: string;
 }): Promise<void> {
-  const renderUrl = 'https://creatorarmour-api.onrender.com/api/push/notify-collab';
+  const renderBase =
+    process.env.PUSH_API_BASE_URL ||
+    process.env.API_BASE_URL ||
+    process.env.BACKEND_URL ||
+    process.env.FRONTEND_API_URL ||
+    '';
+  const renderUrl = renderBase.replace(/\/$/, '')
+    ? `${renderBase.replace(/\/$/, '')}/api/push/notify-collab`
+    : '/api/push/notify-collab';
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
   try {
     const resp = await fetch(renderUrl, {

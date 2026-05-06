@@ -10,6 +10,7 @@ interface PushNotificationPromptProps {
     onDismiss: () => void;
     isBusy?: boolean;
     isDark?: boolean;
+    canPrompt?: boolean;
 }
 
 const PushNotificationPrompt: React.FC<PushNotificationPromptProps> = ({
@@ -17,13 +18,15 @@ const PushNotificationPrompt: React.FC<PushNotificationPromptProps> = ({
     onDismiss,
     isBusy,
     isDark = true,
+    canPrompt = true,
 }) => {
     const [isVisible, setIsVisible] = useState(false);
 
     useEffect(() => {
+        if (!canPrompt) return;
         const timer = setTimeout(() => setIsVisible(true), 1000);
         return () => clearTimeout(timer);
-    }, []);
+    }, [canPrompt]);
 
     const handleEnable = async () => {
         triggerHaptic(HapticPatterns.light);
@@ -39,7 +42,7 @@ const PushNotificationPrompt: React.FC<PushNotificationPromptProps> = ({
 
     return (
         <AnimatePresence>
-            {isVisible && (
+            {isVisible && canPrompt && (
                 <>
                     {/* Backdrop */}
                     <motion.div

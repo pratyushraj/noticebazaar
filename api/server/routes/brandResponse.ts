@@ -652,7 +652,16 @@ router.post('/:token', async (req: Request, res: Response) => {
       }
 
       const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
-      fetch('https://creatorarmour-api.onrender.com/api/push/notify-generic', {
+      const pushBase =
+        process.env.PUSH_API_BASE_URL ||
+        process.env.API_BASE_URL ||
+        process.env.BACKEND_URL ||
+        process.env.FRONTEND_API_URL ||
+        '';
+      const pushUrl = pushBase.replace(/\/$/, '')
+        ? `${pushBase.replace(/\/$/, '')}/api/push/notify-generic`
+        : '/api/push/notify-generic';
+      fetch(pushUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

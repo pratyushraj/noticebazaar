@@ -4164,6 +4164,7 @@ const BrandMobileDashboard = ({
             }}
             isBusy={isPushBusy}
             isDark={isDark}
+            canPrompt={isPushSupported && hasVapidKey && pushPermission === 'default' && !isPushSubscribed}
           />
         )}
       </div>
