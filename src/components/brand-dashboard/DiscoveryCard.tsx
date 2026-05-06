@@ -133,8 +133,8 @@ export const DiscoveryCard: React.FC<DiscoveryCardProps> = ({
                 isDark ? "bg-[#0B1220] border-white/10" : "bg-white border-slate-200"
             )}
         >
-            {/* Visual Section (Flex-1) */}
-            <div className="relative flex-1 w-full overflow-hidden shrink-0 min-h-0 bg-black">
+            {/* Visual Section (Large Top Area) */}
+            <div className="relative h-[78%] w-full overflow-hidden shrink-0 bg-black rounded-b-[2rem] shadow-2xl z-10">
                 {creator.discovery_video_url ? (
                     <video
                         ref={videoRef}
@@ -202,7 +202,7 @@ export const DiscoveryCard: React.FC<DiscoveryCardProps> = ({
             </div>
 
             {/* Action Section (Below Video) */}
-            <div className="p-4 flex flex-col justify-end z-20 shrink-0">
+            <div className="flex-1 p-4 flex flex-col justify-end gap-3 z-20 -mt-2 bg-gradient-to-b from-transparent to-background/5">
                 {/* Trust Signal Strip */}
                 <div className="flex items-center justify-between px-2 pb-3 pt-1">
                     <div className={cn("flex items-center gap-1.5 opacity-50", isDark ? "text-white" : "text-slate-600")}>
