@@ -375,12 +375,17 @@ export const useDealAlertNotifications = () => {
       
       // If we get an error from the server, check for VAPID mismatch or stale subscription
       if (msg.includes('400') || msg.includes('all_push_attempts_failed')) {
+        // Trigger a background sync so the UI correctly reflects that we are now unsubscribed (due to server cleanup)
+        syncSubscriptionStatus().catch(() => {});
+        
         return { 
           success: false, 
           reason: 'Your notification link is stale. Please turn notifications OFF and then back ON to repair the connection.' 
         };
       }
 
+      // General failure: still sync just in case
+      syncSubscriptionStatus().catch(() => {});
       return { success: false, reason: msg };
     } finally {
       setIsBusy(false);
