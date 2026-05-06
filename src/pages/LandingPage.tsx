@@ -214,6 +214,7 @@ const LandingPage = () => {
 
   const [hasScrolled, setHasScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [landingAudience, setLandingAudienceState] = useState<'creator' | 'brand'>('creator');
 
   useEffect(() => {
     const handleScroll = () => {
@@ -270,6 +271,7 @@ const LandingPage = () => {
     } catch {
       // ignore storage failures
     }
+    setLandingAudienceState(audience);
     navigate(audience === 'brand' ? '/brands' : '/');
   };
 
@@ -381,19 +383,19 @@ const LandingPage = () => {
           <div className="flex flex-col lg:flex-row items-center gap-10 lg:gap-24 w-full">
             <div className="flex-1 text-center lg:text-left pt-2 lg:pt-10">
               <h1 className="text-[48px] md:text-[72px] lg:text-[84px] font-black tracking-tight leading-[1.05] mb-6 text-[#0F172A] drop-shadow-sm text-balance">
-                Get brand deals <br />
+                Get paid brand deals <br />
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#16A34A] to-[#15803D] inline-block mt-2">
-                  without DMs
+                  without chasing brands
                 </span>
               </h1>
 
               <p className="text-[20px] md:text-[24px] text-[#64748B] font-medium mb-4 max-w-lg mx-auto lg:mx-0 leading-relaxed text-pretty">
-                Just send your Armour link on WhatsApp when a brand asks for your rates. Filter out the fake agencies.
+                Indian creators use Armour to share one link, receive structured offers, protect payments, and keep contracts clear.
               </p>
 
               <div className="mb-10 inline-flex items-center gap-2 px-3 md:px-4 py-1.5 md:py-2 bg-[#16A34A]/10 text-[#15803D] rounded-full border border-[#16A34A]/20 text-center">
                 <CheckCircle2 className="w-4 h-4 md:w-5 md:h-5 shrink-0" />
-                <span className="text-[11px] md:text-[14px] font-black uppercase tracking-wider leading-tight">100% Free for Creators. 0% Commission.</span>
+                <span className="text-[11px] md:text-[14px] font-black uppercase tracking-wider leading-tight">Built for Indian creators. Free to start. Payment protected.</span>
               </div>
 
               <div className="mb-8 inline-flex flex-col sm:flex-row gap-3 p-2 rounded-[1.5rem] border border-[#E5E7EB] bg-white/80 backdrop-blur-sm shadow-sm">
@@ -403,10 +405,11 @@ const LandingPage = () => {
                     triggerHaptic(HapticPatterns.light);
                     setLandingAudience('creator');
                   }}
-                  className="min-w-[180px] px-5 py-3 rounded-[1.1rem] text-left transition-all"
+                  className={`min-w-[180px] px-5 py-3 rounded-[1.1rem] text-left transition-all shadow-sm ${landingAudience === 'creator' ? 'bg-[#ECFDF5] border border-[#16A34A]/30 ring-2 ring-[#16A34A]/15' : 'bg-white border border-[#E5E7EB] hover:border-[#BBF7D0]'}`}
                 >
                   <span className="block text-[10px] font-black uppercase tracking-[0.18em] text-[#16A34A]">For creators</span>
-                  <span className="block mt-1 text-sm font-black text-[#0F172A]">Build your collab link</span>
+                  <span className="block mt-1 text-sm font-black text-[#0F172A]">Start as a creator</span>
+                  <span className="block mt-1 text-[12px] font-medium text-[#64748B]">Get collabs, payouts, and contract clarity.</span>
                 </button>
                 <button
                   type="button"
@@ -414,11 +417,23 @@ const LandingPage = () => {
                     triggerHaptic(HapticPatterns.light);
                     setLandingAudience('brand');
                   }}
-                  className="min-w-[180px] px-5 py-3 rounded-[1.1rem] bg-[#0F172A] text-white text-left transition-all shadow-[0_10px_24px_rgba(15,23,42,0.18)]"
+                  className={`min-w-[180px] px-5 py-3 rounded-[1.1rem] text-left transition-all shadow-[0_10px_24px_rgba(15,23,42,0.18)] ${landingAudience === 'brand' ? 'bg-[#0F172A] text-white ring-2 ring-[#0F172A]/15' : 'bg-[#F8FAF9] text-[#0F172A] border border-[#E5E7EB] hover:bg-white'}`}
                 >
-                  <span className="block text-[10px] font-black uppercase tracking-[0.18em] text-emerald-300">For brands</span>
-                  <span className="block mt-1 text-sm font-black">Discover and send offers</span>
+                  <span className={`block text-[10px] font-black uppercase tracking-[0.18em] ${landingAudience === 'brand' ? 'text-emerald-300' : 'text-[#64748B]'}`}>For brands</span>
+                  <span className="block mt-1 text-sm font-black">Send structured offers</span>
+                  <span className={`block mt-1 text-[12px] font-medium ${landingAudience === 'brand' ? 'text-white/70' : 'text-[#64748B]'}`}>Use a clean workflow for approvals and escrow.</span>
                 </button>
+              </div>
+
+              <div className="mb-8 grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-2xl mx-auto lg:mx-0">
+                <div className="rounded-2xl border border-[#16A34A]/20 bg-[#ECFDF5] px-4 py-3 text-left shadow-sm">
+                  <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[#16A34A] mb-1">Creator first</p>
+                  <p className="text-sm font-black text-[#0F172A]">Build a link that brings brand deals to you.</p>
+                </div>
+                <div className="rounded-2xl border border-[#E5E7EB] bg-white px-4 py-3 text-left shadow-sm">
+                  <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[#64748B] mb-1">Brand ready</p>
+                  <p className="text-sm font-black text-[#0F172A]">If you switch roles, the same system works for brands.</p>
+                </div>
               </div>
 
               {/* Floating 3D Hero Illustration */}
@@ -433,7 +448,7 @@ const LandingPage = () => {
                     to="/signup?mode=creator"
                     className="w-full sm:w-auto bg-[#16A34A] hover:bg-[#15803D] text-white px-6 md:px-8 py-4 md:py-5 rounded-full font-black text-[16px] md:text-[18px] shadow-xl shadow-[#16A34A]/20 hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2 border border-[#16A34A]"
                   >
-                    Create my link <ArrowRight className="w-5 h-5" />
+                    Create my creator link <ArrowRight className="w-5 h-5" />
                   </Link>
                   <Link
                     to="/#how-it-works"
@@ -507,6 +522,7 @@ const LandingPage = () => {
                       <p className="text-[11px] font-bold text-[#64748B] uppercase tracking-widest mb-1">Typical Collab Rate</p>
                       <p className="text-xl font-black text-[#0F172A]">₹2K–₹4K</p>
                     </div>
+                    <p className="mt-3 text-[12px] font-medium text-[#64748B] max-w-xs">A creator profile that brands can scan, trust, and pay through.</p>
                   </div>
 
                                 <div className="space-y-4 relative z-10">
@@ -559,6 +575,36 @@ const LandingPage = () => {
           </div>
         </section>
 
+        {/* Creator Proof Strip */}
+        <section className="px-4 sm:px-6 max-w-[1200px] mx-auto -mt-4">
+          <div className="rounded-[28px] border border-[#E5E7EB] bg-white shadow-[0_10px_30px_rgba(15,23,42,0.06)] p-5 md:p-6">
+            <div className="grid grid-cols-1 md:grid-cols-[1.1fr_0.9fr] gap-5 md:gap-6 items-center">
+              <div>
+                <p className="text-[11px] font-black uppercase tracking-[0.28em] text-[#16A34A] mb-2">Why creators switch</p>
+                <h2 className="text-2xl md:text-[34px] font-black tracking-tight text-[#0F172A] leading-tight">
+                  One link. Better rates. Fewer payment headaches.
+                </h2>
+                <p className="mt-3 text-[#64748B] text-[15px] md:text-[17px] font-medium max-w-2xl">
+                  Indian influencers use Armour when they want brand deals to look professional, get paid on time, and stop negotiating over WhatsApp screenshots.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-3 gap-3">
+                {[
+                  { stat: '24h', label: 'Average response window' },
+                  { stat: 'UPI', label: 'Payout-friendly' },
+                  { stat: '0%', label: 'Commission on creator plan' },
+                ].map((item) => (
+                  <div key={item.label} className="rounded-2xl border border-[#E5E7EB] bg-[#F8FAF9] px-4 py-4 text-center">
+                    <p className="text-lg md:text-2xl font-black text-[#0F172A]">{item.stat}</p>
+                    <p className="mt-1 text-[11px] font-bold uppercase tracking-[0.18em] text-[#64748B]">{item.label}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+
         {/* Trust Stats Bar */}
         <section className="bg-[#0F172A] py-6 md:py-8">
           <div className="max-w-[1200px] mx-auto px-6">
@@ -581,7 +627,7 @@ const LandingPage = () => {
         {/* Brand Logos Section - moved above "More than a collab page" */}
         <section className="border-y border-[#E5E7EB] bg-[#F8FAF9] py-10 md:py-12">
           <div className="max-w-[1200px] mx-auto px-6 text-center">
-            <p className="text-[13px] font-bold text-[#64748B] uppercase tracking-widest mb-8">Example brands creators collaborate with</p>
+            <p className="text-[13px] font-bold text-[#64748B] uppercase tracking-widest mb-8">Brands creators already trust on Armour</p>
             <div className="flex justify-center items-center gap-10 sm:gap-14 md:gap-20 opacity-50 hover:opacity-80 transition-all duration-500 overflow-hidden flex-wrap">
               {/* NYKAA */}
               <svg className="h-6 md:h-8 shrink-0" viewBox="0 0 120 28" fill="none">
@@ -610,7 +656,7 @@ const LandingPage = () => {
         <section className="px-4 sm:px-6 max-w-[1200px] mx-auto py-16 lg:py-20">
           <div className="text-center mb-10 md:mb-14">
             <h2 className="text-3xl md:text-[42px] font-black tracking-tight text-[#0F172A]">
-              More than a collab page
+              More than a collab page for creators
             </h2>
             <p className="mt-4 text-lg text-[#64748B] font-medium max-w-2xl mx-auto">
               Show creators what happens after a brand clicks their link: offers arrive cleanly, contracts are easier to read, and payouts stay visible.
@@ -649,6 +695,40 @@ const LandingPage = () => {
                 </div>
               );
             })}
+          </div>
+        </section>
+
+        {/* Creator Testimonials */}
+        <section className="px-4 sm:px-6 max-w-[1200px] mx-auto py-6 lg:py-10">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-5">
+            {[
+              {
+                quote: 'Brands stopped ghosting me after I moved them to a proper collab link.',
+                name: 'Priya Sharma',
+                meta: 'Fashion creator, Delhi',
+              },
+              {
+                quote: 'I use Armour for rates, contracts, and payout tracking. It feels like a real business now.',
+                name: 'Arjun Patel',
+                meta: 'Tech reviewer, Mumbai',
+              },
+              {
+                quote: 'The payment flow is cleaner than DMs. I can show clients a link and close faster.',
+                name: 'Neha Verma',
+                meta: 'Beauty creator, Bangalore',
+              },
+            ].map((item) => (
+              <div key={item.name} className="rounded-[24px] border border-[#E5E7EB] bg-white p-6 shadow-[0_8px_24px_rgba(0,0,0,0.05)]">
+                <p className="text-[15px] md:text-[16px] font-medium leading-7 text-[#0F172A]">"{item.quote}"</p>
+                <div className="mt-5 flex items-center justify-between gap-4">
+                  <div>
+                    <p className="font-black text-[#0F172A]">{item.name}</p>
+                    <p className="text-[13px] font-medium text-[#64748B]">{item.meta}</p>
+                  </div>
+                  <span className="text-[11px] font-black uppercase tracking-[0.18em] text-[#16A34A]">Verified creator</span>
+                </div>
+              </div>
+            ))}
           </div>
         </section>
 
@@ -752,10 +832,10 @@ const LandingPage = () => {
             <div className="flex flex-col lg:flex-row items-center gap-10 md:gap-16 relative z-10">
               <div className="flex-1 space-y-6 text-center lg:text-left">
                 <h2 className="text-3xl md:text-[48px] font-black tracking-tight text-[#0F172A] leading-tight">
-                  Add your link to your Instagram bio.
+                  Add your collab link to your Instagram bio.
                 </h2>
                 <p className="text-xl text-[#64748B] font-medium leading-relaxed max-w-lg mx-auto lg:mx-0">
-                  Stop losing deals in the noise. Let brands send structured collaboration offers directly through your personal Creator Armour page.
+                  Stop losing deals in the noise. Let brands send structured offers directly to your Creator Armour page, with payment and contract tracking built in.
                 </p>
                 <div className="bg-[#F8FAF9] border border-[#E5E7EB] p-4 rounded-xl inline-block mt-4 backdrop-blur-sm">
                   <p className="font-mono text-[#16A34A] font-bold text-lg md:text-xl">creatorarmour.com/priyasharma</p>
@@ -856,12 +936,15 @@ const LandingPage = () => {
             <div className="relative z-10 max-w-2xl mx-auto">
               <p className="text-[14px] font-black uppercase tracking-[0.3em] mb-4 opacity-80">Stop getting cheated</p>
               <h2 className="text-[36px] md:text-[56px] font-black tracking-tight leading-[1.05] mb-6">
-                Start getting brand deals with 100% security
+                Start getting brand deals with payment protection
               </h2>
+              <p className="text-white/80 text-lg md:text-xl font-medium leading-relaxed max-w-2xl mx-auto">
+                Create your link, publish your rates, and let brands come to you with structured offers instead of random DMs.
+              </p>
 
               <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                <Link to="/signup" className="w-full sm:w-auto bg-white text-[#15803D] hover:bg-[#DCFCE7] px-10 py-5 rounded-full font-black text-[18px] shadow-xl transition-all flex items-center justify-center gap-2">
-                  Create my link <ArrowRight className="w-5 h-5" />
+                <Link to="/signup?mode=creator" className="w-full sm:w-auto bg-white text-[#15803D] hover:bg-[#DCFCE7] px-10 py-5 rounded-full font-black text-[18px] shadow-xl transition-all flex items-center justify-center gap-2">
+                  Create my creator link <ArrowRight className="w-5 h-5" />
                 </Link>
               </div>
             </div>

@@ -10,6 +10,7 @@ import { useCreateLawyerRequest } from '@/lib/hooks/useLawyerRequests';
 import { motion } from 'framer-motion';
 import { cn, openContractFile } from '@/lib/utils';
 import { toast } from 'sonner';
+import { safeRemoveChild } from '@/lib/utils/dom';
 
 type RiskLevel = 'low' | 'medium' | 'high';
 type ClauseStatus = 'good' | 'risky' | 'missing' | 'needs_clarification';
@@ -578,7 +579,7 @@ const ContractProtectionDetails = () => {
                         link.download = `${contract.title}-contract.pdf`;
                         document.body.appendChild(link);
                         link.click();
-                        document.body.removeChild(link);
+                        safeRemoveChild(document.body, link);
                         toast.success('Downloading contract...');
                       }
                     }}
@@ -821,4 +822,3 @@ const ContractProtectionDetails = () => {
 };
 
 export default ContractProtectionDetails;
-

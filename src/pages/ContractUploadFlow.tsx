@@ -16,6 +16,7 @@ import { useSession } from '@/contexts/SessionContext';
 import { useAddBrandDeal, useBrandDeals } from '@/lib/hooks/useBrandDeals';
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
+import { safeRemoveChild } from '@/lib/utils/dom';
 import { validateContractFile } from '@/lib/utils/contractValidation';
 import { supabase } from '@/integrations/supabase/client';
 import { uploadFile } from '@/lib/services/fileService';
@@ -296,7 +297,7 @@ const ContractUploadFlow = () => {
         textArea.select();
         textArea.setSelectionRange(0, text.length);
         const successful = document.execCommand('copy');
-        document.body.removeChild(textArea);
+        safeRemoveChild(document.body, textArea);
         return successful;
       } catch (err) {
         console.warn('[ContractUploadFlow] execCommand copy failed:', err);
@@ -447,7 +448,7 @@ const ContractUploadFlow = () => {
         textArea.select();
         textArea.setSelectionRange(0, text.length);
         const successful = document.execCommand('copy');
-        document.body.removeChild(textArea);
+        safeRemoveChild(document.body, textArea);
         return successful;
       } catch (err) {
         return false;
@@ -4904,7 +4905,7 @@ ${creatorName}`;
                             a.download = fileName || 'contract.pdf';
                             document.body.appendChild(a);
                             a.click();
-                            document.body.removeChild(a);
+                            safeRemoveChild(document.body, a);
                             toast.success('Contract downloaded!');
                           }
                         }}
@@ -5891,7 +5892,7 @@ ${creatorName}${session?.user?.email ? `\n${session.user.email}` : ''}`;
                                 document.body.appendChild(a);
                                 a.click();
                                 window.URL.revokeObjectURL(url);
-                                document.body.removeChild(a);
+                                safeRemoveChild(document.body, a);
                                 toast.success('Safe Version Downloaded');
                               } else {
                                 // JSON response with URL (legacy fallback)
@@ -5911,7 +5912,7 @@ ${creatorName}${session?.user?.email ? `\n${session.user.email}` : ''}`;
                                 document.body.appendChild(a);
                                 a.click();
                                 window.URL.revokeObjectURL(url);
-                                document.body.removeChild(a);
+                                safeRemoveChild(document.body, a);
                                 toast.success('Safe Version Downloaded');
                               }
                             } catch (error: any) {
@@ -6379,7 +6380,7 @@ ${creatorName}${session?.user?.email ? `\n${session.user.email}` : ''}`;
                                 document.body.appendChild(a);
                                 a.click();
                                 window.URL.revokeObjectURL(url);
-                                document.body.removeChild(a);
+                                safeRemoveChild(document.body, a);
                                 toast.success('Safe Version Downloaded');
                               } else {
                                 const data = await response.json();
@@ -6397,7 +6398,7 @@ ${creatorName}${session?.user?.email ? `\n${session.user.email}` : ''}`;
                                 document.body.appendChild(a);
                                 a.click();
                                 window.URL.revokeObjectURL(url);
-                                document.body.removeChild(a);
+                                safeRemoveChild(document.body, a);
                                 toast.success('Safe Version Downloaded');
                               }
                             } catch (error: any) {

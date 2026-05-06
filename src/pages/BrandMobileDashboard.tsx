@@ -1,6 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import type { MouseEvent, MutableRefObject, ReactNode } from 'react';
-import { createPortal } from 'react-dom';
 import { AlertTriangle, ArrowLeft, BarChart3, Bell, Briefcase, Calendar, Camera, Check, CheckCircle2, ChevronRight, Clock, Copy, CreditCard, ExternalLink, Eye, FileText, Globe, Handshake, History, Info, Landmark, LayoutDashboard, Loader2, Lock, Mail, MapPin, Menu, MessageSquare, Moon, MoreHorizontal, MoreVertical, Package, PenTool, Phone, Play, PlayCircle, Plus, RefreshCw, RotateCcw, Search, Send, Settings, Shield, ShieldCheck, Sparkles, Sun, Tag, Target, Truck, User, Video, Wallet, Zap } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -3330,8 +3329,7 @@ const BrandMobileDashboard = ({
 
 
   const renderBrandSigningPortal = (): ReactNode => {
-    if (typeof document === 'undefined') return null;
-    return createPortal(
+    return (
       <AnimatePresence>
         {showBrandSigningModal && (
           <>
@@ -3491,8 +3489,7 @@ const BrandMobileDashboard = ({
             </div>
           </>
         )}
-      </AnimatePresence>,
-      document.body
+      </AnimatePresence>
     );
   };
 
@@ -4172,8 +4169,6 @@ const BrandMobileDashboard = ({
       </div>
     );
 };
-
-export default BrandMobileDashboard;
 
 const BrandDashboardTab = React.memo(React.forwardRef(({
   isDark,
@@ -5014,4 +5009,6 @@ const BrandPaymentsTab = React.memo(React.forwardRef(({ isDark, textColor, secon
       </div>
     </motion.div>
   );
-});
+}));
+
+export default BrandMobileDashboard;

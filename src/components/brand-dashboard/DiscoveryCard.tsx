@@ -9,7 +9,7 @@ import { cn } from '@/lib/utils';
 import { triggerHaptic } from '@/lib/utils/haptics';
 
 import { safeAvatarSrc } from '@/lib/utils/image';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/integrations/supabase/client';
 
 interface CreatorProfile {
     id: string;

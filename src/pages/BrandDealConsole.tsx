@@ -58,6 +58,8 @@ const STAGES: { id: Stage; label: string; description: string }[] = [
 ];
 
 const BrandDealConsole = () => {
+    const [logoErrored, setLogoErrored] = useState(false);
+    const [avatarErrored, setAvatarErrored] = useState(false);
     const { token } = useParams<{ token: string }>();
     const location = useLocation();
     const navigate = useNavigate();
@@ -233,21 +235,17 @@ const BrandDealConsole = () => {
                 <div className="max-w-[1440px] mx-auto px-6 h-16 flex items-center justify-between">
                     <div className="flex items-center gap-4">
                         <div className="h-9 w-9 rounded-xl bg-card border border-border flex items-center justify-center overflow-hidden shadow-inner">
-                            {(brandDeal?.brand_logo_url || collabRequest?.brand_logo_url) ? (
+                                {(brandDeal?.brand_logo_url || collabRequest?.brand_logo_url) && !logoErrored ? (
                                 <img
                                     src={brandDeal?.brand_logo_url || collabRequest?.brand_logo_url}
                                     alt="Brand logo"
                                     className="max-h-full max-w-full object-contain p-1.5"
-                                    onError={(e) => {
-                                        (e.target as HTMLImageElement).style.display = 'none';
-                                        (e.target as HTMLImageElement).parentElement?.classList.add('flex', 'items-center', 'justify-center');
-                                        const icon = document.createElement('div');
-                                        icon.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5 text-muted-foreground"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>';
-                                        (e.target as HTMLImageElement).parentElement?.appendChild(icon.firstChild!);
-                                    }}
+                                    onError={() => setLogoErrored(true)}
                                 />
                             ) : (
-                                <Shield className="w-5 h-5 text-muted-foreground" />
+                                <div className="flex items-center justify-center w-full h-full">
+                                    <Shield className="w-5 h-5 text-muted-foreground" />
+                                </div>
                             )}
                         </div>
                         <div className="flex items-center gap-2">
@@ -255,19 +253,12 @@ const BrandDealConsole = () => {
                             <ChevronRight className="w-4 h-4 text-muted-foreground" />
                             <div className="flex items-center gap-2">
                                 <div className="w-6 h-6 rounded-full bg-background overflow-hidden">
-                                    {safeImageSrc(creator?.avatar_url) ? (
+                                    {safeImageSrc(creator?.avatar_url) && !avatarErrored ? (
                                         <img
                                             src={safeImageSrc(creator.avatar_url)}
                                             alt="Brand logo"
                                             className="w-full h-full object-cover"
-                                            onError={(e) => {
-                                                (e.target as HTMLImageElement).style.display = 'none';
-                                                (e.target as HTMLImageElement).parentElement?.classList.add('bg-primary/15', 'flex', 'items-center', 'justify-center');
-                                                const fallback = document.createElement('div');
-                                                fallback.className = 'w-full h-full flex items-center justify-center text-[10px] text-primary font-bold uppercase';
-                                                fallback.innerText = creator?.name?.slice(0, 2) || 'CR';
-                                                (e.target as HTMLImageElement).parentElement?.appendChild(fallback);
-                                            }}
+                                            onError={() => setAvatarErrored(true)}
                                         />
                                     ) : (
                                         <div className="w-full h-full bg-primary/15 flex items-center justify-center text-[10px] text-primary font-bold uppercase">

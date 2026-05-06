@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Download, Loader2 } from 'lucide-react';
 import { BrandDeal } from '@/types';
 import { toast } from 'sonner';
+import { safeRemoveChild } from '@/lib/utils/dom';
 
 interface ExportMonthlyReportProps {
   brandDeals: BrandDeal[] | undefined;
@@ -100,7 +101,7 @@ export const ExportMonthlyReport: React.FC<ExportMonthlyReportProps> = ({
       });
 
       // Remove temp div
-      document.body.removeChild(reportDiv);
+      safeRemoveChild(document.body, reportDiv);
 
       // Create PDF
       const imgData = canvas.toDataURL('image/png');
@@ -149,4 +150,3 @@ export const ExportMonthlyReport: React.FC<ExportMonthlyReportProps> = ({
 };
 
 export default ExportMonthlyReport;
-

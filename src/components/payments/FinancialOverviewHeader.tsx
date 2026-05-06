@@ -8,6 +8,7 @@ import { BrandDeal } from '@/types';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
+import { safeRemoveChild } from '@/lib/utils/dom';
 
 interface FinancialOverviewHeaderProps {
   allDeals: BrandDeal[];
@@ -116,7 +117,7 @@ ${stats.collectionRate}%
     a.download = `financial-summary-${new Date().toISOString().split('T')[0]}.txt`;
     document.body.appendChild(a);
     a.click();
-    document.body.removeChild(a);
+    safeRemoveChild(document.body, a);
     URL.revokeObjectURL(url);
     
     toast.success('Financial summary exported!', {
@@ -298,4 +299,3 @@ ${stats.collectionRate}%
 };
 
 export default FinancialOverviewHeader;
-

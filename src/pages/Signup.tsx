@@ -650,7 +650,7 @@ const Signup = () => {
 
   return (
     <div
-      className="min-h-screen bg-[#020D0A] text-white relative flex flex-col items-center py-12 px-6 font-outfit overflow-x-hidden overflow-y-auto"
+      className="bg-[#020D0A] text-white relative flex flex-col items-center py-12 px-6 font-outfit overflow-x-hidden"
       style={{
         minHeight: '100dvh',
         paddingTop: 'max(48px, env(safe-area-inset-top, 0px))',

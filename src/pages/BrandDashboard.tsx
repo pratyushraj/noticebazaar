@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSession } from '@/contexts/SessionContext';
 import { getApiBaseUrl } from '@/lib/utils/api';
@@ -38,18 +38,30 @@ const BrandDashboard: React.FC = () => {
   const isBrandUser = profile?.role === 'brand' || metadataRole === 'brand';
   const isDemoBrand = String(user?.email || '').toLowerCase() === 'brand-demo@creatorarmour.com';
 
+  const isMounted = useRef(true);
+
+  useEffect(() => {
+    isMounted.current = true;
+    return () => {
+      isMounted.current = false;
+    };
+  }, []);
+
   const loadBrandDashboard = useCallback(async (isSilent = false) => {
+    if (!isMounted.current) return;
     // Wait for session to be resolved
     if (sessionLoading) return;
 
     if (!isBrandUser || !session?.access_token) {
-      setDeals([]);
-      setRequests([]);
-      setIsLoading(false);
+      if (isMounted.current) {
+        setDeals([]);
+        setRequests([]);
+        setIsLoading(false);
+      }
       return;
     }
 
-    if (!isSilent) setIsLoading(true);
+    if (!isSilent && isMounted.current) setIsLoading(true);
     try {
       const apiBase = getApiBaseUrl();
       const headers = { Authorization: `Bearer ${session.access_token}` };
@@ -64,15 +76,21 @@ const BrandDashboard: React.FC = () => {
       // Handle auth errors specifically
       if (dealsRes.status === 401 || requestsRes.status === 401) {
         console.error('[BrandDashboard] Authentication failed');
-        setDeals([]);
-        setRequests([]);
+        if (isMounted.current) {
+          setDeals([]);
+          setRequests([]);
+          if (!isSilent) setIsLoading(false);
+        }
         return;
       }
 
       if (dealsRes.status === 403 || requestsRes.status === 403) {
         console.error('[BrandDashboard] Access denied - brand role required');
-        setDeals([]);
-        setRequests([]);
+        if (isMounted.current) {
+          setDeals([]);
+          setRequests([]);
+          if (!isSilent) setIsLoading(false);
+        }
         return;
       }
 
@@ -86,9 +104,9 @@ const BrandDashboard: React.FC = () => {
           status: dealsRes.status,
           error: (dealsJson as any)?.error,
         });
-        setDeals([]);
+        if (isMounted.current) setDeals([]);
       } else {
-        setDeals((((dealsJson as any).deals as BrandDeal[]) || []) as BrandDeal[]);
+        if (isMounted.current) setDeals((((dealsJson as any).deals as BrandDeal[]) || []) as BrandDeal[]);
       }
 
       if (!requestsRes.ok || !(requestsJson as any)?.success) {
@@ -96,21 +114,23 @@ const BrandDashboard: React.FC = () => {
           status: requestsRes.status,
           error: (requestsJson as any)?.error,
         });
-        setRequests([]);
+        if (isMounted.current) setRequests([]);
       } else {
-        setRequests((((requestsJson as any).requests as any[]) || []) as any[]);
+        if (isMounted.current) setRequests((((requestsJson as any).requests as any[]) || []) as any[]);
       }
     } catch (err) {
       console.error('[BrandDashboard] Failed to load dashboard:', err);
-      setDeals([]);
-      setRequests([]);
-      if (!isSilent) {
-        toast.error('Failed to load dashboard', {
-          description: 'Please check your connection and try again.',
-        });
+      if (isMounted.current) {
+        setDeals([]);
+        setRequests([]);
+        if (!isSilent) {
+          toast.error('Failed to load dashboard', {
+            description: 'Please check your connection and try again.',
+          });
+        }
       }
     } finally {
-      if (!isSilent) setIsLoading(false);
+      if (!isSilent && isMounted.current) setIsLoading(false);
     }
   }, [isBrandUser, session?.access_token, sessionLoading]);
 

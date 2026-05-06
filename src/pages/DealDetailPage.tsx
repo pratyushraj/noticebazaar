@@ -8,6 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Button } from '@/components/ui/button';
 import { Collapsible, CollapsibleTrigger, CollapsibleContent } from '@/components/ui/collapsible';
 import { toast } from 'sonner';
+import { safeRemoveChild } from '@/lib/utils/dom';
 import { useDealSignatures } from '@/lib/hooks/useDealSignatures';
 import { CreatorNavigationWrapper } from '@/components/navigation/CreatorNavigationWrapper';
 import { useDeal, DealProvider } from '@/contexts/DealContext';
@@ -82,10 +83,10 @@ const copyToClipboard = async (text: string): Promise<boolean> => {
 
   try {
     const successful = document.execCommand('copy');
-    document.body.removeChild(textArea);
+    safeRemoveChild(document.body, textArea);
     return successful;
   } catch (execError) {
-    document.body.removeChild(textArea);
+    safeRemoveChild(document.body, textArea);
     return false;
   }
 };
@@ -1712,7 +1713,7 @@ function DealDetailPageContent() {
           link.target = '_blank';
           document.body.appendChild(link);
           link.click();
-          document.body.removeChild(link);
+          safeRemoveChild(document.body, link);
 
           toast.success('Downloading contract...');
           return;

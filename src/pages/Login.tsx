@@ -162,7 +162,7 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#020D0A] text-white flex flex-col items-center py-12 font-outfit relative overflow-x-hidden overflow-y-auto"
+    <div className="bg-[#020D0A] text-white flex flex-col items-center py-12 font-outfit relative overflow-x-hidden"
       style={{
         minHeight: '100dvh',
         paddingTop: 'max(48px, env(safe-area-inset-top, 0px))',
