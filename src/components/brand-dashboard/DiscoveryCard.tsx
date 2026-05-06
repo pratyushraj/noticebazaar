@@ -129,12 +129,12 @@ export const DiscoveryCard: React.FC<DiscoveryCardProps> = ({
             animate={controls}
             exit={{ x: -1000, opacity: 0, transition: { duration: 0.3 } }}
             className={cn(
-                "absolute inset-0 w-full h-full rounded-[2.5rem] overflow-hidden border shadow-2xl",
-                isDark ? "bg-[#0B1220] border-white/10" : "bg-black border-slate-800"
+                "absolute inset-0 w-full h-full rounded-[2.5rem] overflow-hidden flex flex-col border shadow-2xl",
+                isDark ? "bg-[#0B1220] border-white/10" : "bg-white border-slate-200"
             )}
         >
-            {/* Visual Section (Full Background) */}
-            <div className="absolute inset-0 w-full h-full overflow-hidden">
+            {/* Visual Section (Flex-1) */}
+            <div className="relative flex-1 w-full overflow-hidden shrink-0 min-h-0 bg-black">
                 {creator.discovery_video_url ? (
                     <video
                         ref={videoRef}
@@ -161,8 +161,8 @@ export const DiscoveryCard: React.FC<DiscoveryCardProps> = ({
                 )}
 
                 {/* Overlays for Contrast */}
-                <div className="absolute top-0 inset-x-0 h-32 bg-gradient-to-b from-black/60 to-transparent z-10 pointer-events-none" />
-                <div className="absolute bottom-0 inset-x-0 h-[65%] bg-gradient-to-t from-black via-black/60 to-transparent z-10 pointer-events-none" />
+                <div className="absolute top-0 inset-x-0 h-24 bg-gradient-to-b from-black/50 to-transparent z-10 pointer-events-none" />
+                <div className="absolute bottom-0 inset-x-0 h-40 bg-gradient-to-t from-black/80 via-black/40 to-transparent z-10 pointer-events-none" />
                 
                 {/* Swipe Status Stamps */}
                 <motion.div style={{ opacity: likeOpacity }} className="absolute top-8 left-8 z-30 px-6 py-2 border-4 border-emerald-500 rounded-2xl rotate-[-15deg] pointer-events-none">
@@ -183,11 +183,8 @@ export const DiscoveryCard: React.FC<DiscoveryCardProps> = ({
                 )}
             </div>
 
-            {/* Info & Stats Section (Overlay on Bottom) */}
-            <div className="absolute bottom-0 inset-x-0 p-5 flex flex-col justify-end z-20">
-                
-                {/* Identity Block */}
-                <div className="mb-4 space-y-1">
+                {/* Identity Block (Inside Video) */}
+                <div className="absolute bottom-5 left-5 right-5 z-20 space-y-1">
                     <div className="flex items-center gap-2">
                         <h3 className="text-3xl font-black text-white tracking-tight leading-none uppercase italic drop-shadow-md">
                             {creator.first_name}
@@ -203,16 +200,17 @@ export const DiscoveryCard: React.FC<DiscoveryCardProps> = ({
                         <span className="text-white/70 text-[12px] font-bold drop-shadow-sm">@{creator.username}</span>
                     </div>
                 </div>
+            </div>
 
-                {/* Stats Bar Removed */}
-
+            {/* Action Section (Below Video) */}
+            <div className="p-4 flex flex-col justify-end z-20 shrink-0">
                 {/* Trust Signal Strip */}
-                <div className="flex items-center justify-between px-2 pb-3 pt-1 text-white">
-                    <div className="flex items-center gap-1.5 opacity-60 drop-shadow-sm">
+                <div className="flex items-center justify-between px-2 pb-3 pt-1">
+                    <div className={cn("flex items-center gap-1.5 opacity-50", isDark ? "text-white" : "text-slate-600")}>
                         <Shield className="w-3 h-3" />
                         <span className="text-[10px] font-bold uppercase tracking-widest">Aadhar Verified</span>
                     </div>
-                    <div className="flex items-center gap-1.5 opacity-60 drop-shadow-sm">
+                    <div className={cn("flex items-center gap-1.5 opacity-50", isDark ? "text-white" : "text-slate-600")}>
                         <Handshake className="w-3 h-3" />
                         <span className="text-[10px] font-bold uppercase tracking-widest">Instant Contract</span>
                     </div>
@@ -258,12 +256,15 @@ export const DiscoveryCard: React.FC<DiscoveryCardProps> = ({
                                 key={idx}
                                 whileTap={{ scale: 0.92 }}
                                 onClick={(e) => { e.stopPropagation(); btn.action(); }}
-                                className="flex flex-col items-center gap-1 py-2 rounded-2xl border transition-all bg-black/40 border-white/10 hover:bg-black/60 backdrop-blur-md"
+                                className={cn(
+                                    "flex flex-col items-center gap-1 py-2 rounded-2xl border transition-all",
+                                    isDark ? "bg-white/5 border-white/5 hover:bg-white/10" : "bg-white border-slate-100 shadow-sm"
+                                )}
                             >
-                                <div className="w-9 h-9 rounded-xl flex items-center justify-center bg-white/10 shadow-inner">
-                                    {React.cloneElement(btn.icon, { className: cn("w-4 h-4 drop-shadow-md", btn.color) })}
+                                <div className={cn("w-9 h-9 rounded-xl flex items-center justify-center", isDark ? "bg-white/5 shadow-inner" : "bg-slate-50")}>
+                                    {React.cloneElement(btn.icon, { className: cn("w-4 h-4", btn.color) })}
                                 </div>
-                                <span className="text-[9px] font-black uppercase tracking-[0.12em] text-white/60 drop-shadow-sm">
+                                <span className={cn("text-[9px] font-black uppercase tracking-[0.12em]", isDark ? "text-white/40" : "text-slate-500")}>
                                     {btn.label}
                                 </span>
                             </motion.button>
