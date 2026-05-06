@@ -6072,11 +6072,11 @@ const MobileDashboardDemo = ({
                                                                             const productImage = resolveCreatorDealProductImage(selectedItem) || selectedItem.brand_logo_url || selectedItem.brand_logo;
                                                                             return (
                                                                                 <img
-                                                                                    src={productImage || `https://images.unsplash.com/photo-1524169358666-79f22534bc6b?auto=format&fit=crop&q=80&w=1200`}
+                                                                                    src={productImage || `https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&q=80&w=1200`}
                                                                                     className="w-full h-full object-cover transition-transform duration-1000 group-hover/product:scale-110"
                                                                                     alt="Product"
                                                                                     onError={(e) => {
-                                                                                        (e.target as HTMLImageElement).src = `https://images.unsplash.com/photo-1524169358666-79f22534bc6b?auto=format&fit=crop&q=80&w=1200`;
+                                                                                        (e.target as HTMLImageElement).src = `https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&q=80&w=1200`;
                                                                                     }}
                                                                                 />
                                                                             );
@@ -6329,7 +6329,7 @@ const MobileDashboardDemo = ({
                                                         <div className={cn("w-full aspect-square rounded-[28px] overflow-hidden relative group",
                                                             isDark ? "bg-[#1C212B]" : "bg-white border-slate-100 border")}>
                                                             {(() => {
-                                                                const src = resolveCreatorDealProductImage(selectedItem) || 'https://images.unsplash.com/photo-1524169358666-79f22534bc6b?auto=format&fit=crop&q=80&w=1200';
+                                                                const src = resolveCreatorDealProductImage(selectedItem) || 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&q=80&w=1200';
                                                                 return (
                                                                         <img src={src} alt="" className="w-full h-full object-cover transition-all duration-1000 group-hover:scale-110" loading="lazy" />
 
