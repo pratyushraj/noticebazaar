@@ -204,18 +204,7 @@ export const DiscoveryCard: React.FC<DiscoveryCardProps> = ({
                     </div>
                 </div>
 
-                {/* Glass Stats Bar */}
-                <div className="grid grid-cols-3 gap-1 rounded-[1.75rem] p-1 border bg-white/10 border-white/10 shadow-inner backdrop-blur-xl mb-3">
-                    {stats.map((s, idx) => (
-                        <div key={idx} className="flex flex-col items-center justify-center py-2 gap-0.5 text-white">
-                            <div className="flex items-center gap-1 opacity-60">
-                                {s.icon}
-                                <span className="text-[8px] font-black uppercase tracking-widest">{s.label}</span>
-                            </div>
-                            <span className="text-[14px] font-black tracking-tight drop-shadow-sm">{s.value}</span>
-                        </div>
-                    ))}
-                </div>
+                {/* Stats Bar Removed */}
 
                 {/* Trust Signal Strip */}
                 <div className="flex items-center justify-between px-2 pb-3 pt-1 text-white">
