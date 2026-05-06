@@ -3,6 +3,7 @@ import { AuthenticatedRequest, authMiddleware } from '../middleware/auth.js';
 import { getPlatformMetrics, getTimeSeriesMetrics } from '../services/internalMetricsService.js';
 import { runAutoApprovalJob } from '../services/escrowAutomationService.js';
 import { sendCreatorPaymentReleasedEmail } from '../services/escrowEmailService.js';
+import { createDealFromCollabRequest } from '../services/dealCreationService.js';
 import { supabase } from '../lib/supabase.js';
 
 const router = Router();
@@ -240,6 +241,90 @@ router.post('/payouts/:id/force-approve', authMiddleware, adminOnly, async (req:
     return res.json({ success: true, message: 'Deal force-approved successfully' });
   } catch (error: any) {
     console.error('[AdminPayouts] Force-approve error:', error);
+    return res.status(500).json({ success: false, error: error.message || 'Internal server error' });
+  }
+});
+
+/**
+ * POST /api/admin/reconcile-collab-request
+ * Force-link a pending collaboration request to a deal and optional captured payment.
+ */
+router.post('/reconcile-collab-request', authMiddleware, adminOnly, async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const { requestId, paymentId, amountPaid } = req.body || {};
+    const cleanRequestId = String(requestId || '').trim();
+    const cleanPaymentId = String(paymentId || '').trim();
+
+    if (!cleanRequestId) {
+      return res.status(400).json({ success: false, error: 'requestId is required' });
+    }
+
+    const { data: request, error: requestError } = await supabase
+      .from('collab_requests')
+      .select('id, creator_id, brand_id, brand_name, brand_email, collab_type, exact_budget, barter_value, deliverables, deadline, campaign_description, campaign_goal, campaign_category, selected_package_id, selected_package_label, selected_package_type, selected_addons, content_quantity, content_duration, content_requirements, barter_types, form_data, brand_logo_url, brand_phone, brand_address, source_lead_id, deal_id, status, accepted_at, accepted_by_creator_id, updated_at')
+      .eq('id', cleanRequestId)
+      .maybeSingle();
+
+    if (requestError || !request) {
+      return res.status(404).json({ success: false, error: 'Collaboration request not found' });
+    }
+
+    let dealId = request.deal_id || null;
+    let deal: any = null;
+
+    if (dealId) {
+      const { data } = await supabase.from('brand_deals').select('*').eq('id', dealId).maybeSingle();
+      deal = data;
+    }
+
+    if (!deal) {
+      deal = await createDealFromCollabRequest(request, request.creator_id, {
+        otp_verified: true,
+        otp_verified_at: new Date().toISOString(),
+        status: request.source_lead_id ? 'accepted' : 'accepted_pending_otp',
+      });
+      dealId = deal.id;
+    }
+
+    const now = new Date().toISOString();
+    await supabase.from('collab_requests').update({
+      status: request.source_lead_id ? 'accepted' : 'accepted_pending_otp',
+      deal_id: dealId,
+      accepted_at: request.source_lead_id ? now : null,
+      accepted_by_creator_id: request.source_lead_id ? request.creator_id : null,
+      updated_at: now,
+    } as any).eq('id', cleanRequestId);
+
+    if (cleanPaymentId || amountPaid) {
+      const updateData: any = { updated_at: now };
+      if (cleanPaymentId) updateData.payment_id = cleanPaymentId;
+      if (amountPaid !== undefined && amountPaid !== null && amountPaid !== '') {
+        const n = Number(amountPaid);
+        if (!Number.isNaN(n)) updateData.amount_paid = n;
+      }
+      if ('payment_status' in (deal || {})) updateData.payment_status = cleanPaymentId ? 'captured' : 'sent';
+      await supabase.from('brand_deals').update(updateData).eq('id', dealId);
+    }
+
+    await supabase.from('deal_action_logs').insert({
+      deal_id: dealId,
+      user_id: req.user?.id,
+      event: 'ADMIN_RECONCILED_COLLAP_REQUEST',
+      metadata: {
+        collab_request_id: cleanRequestId,
+        payment_id: cleanPaymentId || null,
+        amount_paid: amountPaid ?? null,
+      }
+    });
+
+    return res.json({
+      success: true,
+      dealId,
+      requestId: cleanRequestId,
+      message: 'Collab request reconciled successfully',
+    });
+  } catch (error: any) {
+    console.error('[AdminReconcile] Error:', error);
     return res.status(500).json({ success: false, error: error.message || 'Internal server error' });
   }
 });

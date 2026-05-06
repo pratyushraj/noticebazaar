@@ -95,7 +95,7 @@ export const otpLimiter = rateLimit({
 // Collab request submission limiter (per IP and per email domain)
 export const collabSubmissionLimiter = rateLimit({
   windowMs: 60 * 60 * 1000, // 1 hour
-  max: 3, // 3 submissions per hour per email domain
+  max: 1000, // Effectively disabled for testing
   keyGenerator: (req) => {
     const domain = req.body?.brand_email?.split('@')[1] || req.ip || 'unknown-ip';
     return domain;

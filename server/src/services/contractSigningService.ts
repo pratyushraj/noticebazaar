@@ -690,6 +690,7 @@ export async function signContractAsCreator(
     try {
       const newStatus = (brandSignature && brandSignature.signed) ? 'FULLY_EXECUTED' : 'SIGNED_BY_CREATOR';
 
+      // Update initial status (SIGNED_BY_CREATOR or FULLY_EXECUTED)
       await supabase
         .from('brand_deals' as any)
         .update({
@@ -700,20 +701,24 @@ export async function signContractAsCreator(
 
       console.log(`[ContractSigningService] Deal status updated to ${newStatus}`);
 
-      // ── PAYMENT_PENDING auto-transition ──────────────────────────────────────
-      // If fully executed and paid, move to PAYMENT_PENDING
+      // Determine whether deal requires payment/shipping and perform appropriate auto-transitions
+      const { data: freshDeal } = await supabase
+        .from('brand_deals')
+        .select('deal_type, deal_amount, collab_type, shipping_required, brand_address')
+        .eq('id', request.dealId)
+        .maybeSingle();
+
+      const requiresPayment = freshDeal
+        ? (freshDeal.deal_type === 'paid' || freshDeal.collab_type === 'paid' || freshDeal.collab_type === 'both' || freshDeal.collab_type === 'hybrid' || Number(freshDeal.deal_amount || 0) > 0)
+        : false;
+
+      const requiresShipping = freshDeal ? Boolean(freshDeal.shipping_required) : false;
+
+      // If both parties signed, move to PAYMENT_PENDING for paid deals
       if (newStatus === 'FULLY_EXECUTED') {
-         const { data: freshDeal } = await supabase
-           .from('brand_deals')
-           .select('deal_type, deal_amount')
-           .eq('id', request.dealId)
-           .maybeSingle();
-         
          if (freshDeal) {
-           const requiresPayment = (freshDeal.deal_type === 'paid' || freshDeal.collab_type === 'paid' || freshDeal.collab_type === 'both' || freshDeal.collab_type === 'hybrid' || Number(freshDeal.deal_amount || 0) > 0);
-           
            if (requiresPayment) {
-              console.log(`[ContractSigningService] Transitioning deal ${request.dealId} to PAYMENT_PENDING (creator signed)`);
+              console.log(`[ContractSigningService] Transitioning deal ${request.dealId} to PAYMENT_PENDING (fully executed)`);
               await supabase
                 .from('brand_deals')
                 .update({ status: 'PAYMENT_PENDING', updated_at: new Date().toISOString() } as any)
@@ -721,12 +726,32 @@ export async function signContractAsCreator(
 
               await supabase.from('deal_action_logs').insert({
                 deal_id: request.dealId,
-                user_id: request.creatorId,
+                user_id: null,
                 event: 'PAYMENT_PENDING_STARTED',
                 metadata: { reason: 'Paid deal fully executed; awaiting brand payment confirmation.' },
               });
            }
          }
+      }
+
+      // If creator signed first for a paid deal, transition to PAYMENT_PENDING so brand must fund escrow
+      if (newStatus === 'SIGNED_BY_CREATOR' && requiresPayment) {
+        try {
+          console.log(`[ContractSigningService] Creator signed first; transitioning deal ${request.dealId} to PAYMENT_PENDING`);
+          await supabase
+            .from('brand_deals')
+            .update({ status: 'PAYMENT_PENDING', updated_at: new Date().toISOString() } as any)
+            .eq('id', request.dealId);
+
+          await supabase.from('deal_action_logs').insert({
+            deal_id: request.dealId,
+            user_id: request.creatorId,
+            event: 'PAYMENT_PENDING_STARTED',
+            metadata: { reason: 'Creator signed first; awaiting brand payment confirmation.' },
+          });
+        } catch (e) {
+          console.warn('[ContractSigningService] Failed to auto-transition SIGNED_BY_CREATOR -> PAYMENT_PENDING:', e);
+        }
       }
 
       // Trigger learned rate update if deal is fully executed

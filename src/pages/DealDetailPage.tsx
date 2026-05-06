@@ -654,6 +654,15 @@ function DealDetailPageContent() {
       });
 
       if (!resp.ok) {
+        // Business-rule conflict (e.g., waiting for brand funding) -> show friendly notice
+        if (resp.status === 409) {
+          const err = await resp.json().catch(() => ({ error: 'Conflict' }));
+          toast.info(err.error || 'Action pending: waiting for brand');
+          setIsSigningAsCreator(false);
+          setShowCreatorSigningModal(false);
+          return;
+        }
+
         const errorData = await resp.json().catch(() => ({ error: `Server error: ${resp.status}` }));
         const errorMessage = errorData.error || `Failed to sign contract: ${resp.status}`;
         const errorDetails = errorData.details || errorData.message || '';
@@ -4713,7 +4722,7 @@ ${link}`;
       <Dialog open={showCreatorSigningModal} onOpenChange={setShowCreatorSigningModal}>
         <DialogContent className="sm:max-w-[440px] bg-neutral-950/98 border-border text-foreground rounded-2xl p-0 overflow-hidden shadow-2xl shadow-black/60">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 px-6 pt-6 text-2xl font-semibold tracking-tight">
+            <DialogTitle className="flex items-center gap-2 px-6 pt-6 text-2xl font-semibold tracking-tight text-white">
               <FileText className="w-5 h-5 text-info" />
               Sign Agreement
             </DialogTitle>
@@ -4767,7 +4776,7 @@ ${link}`;
                     onChange={(e) => setCreatorOTP(e.target.value.replace(/\D/g, ''))}
                     inputMode="numeric"
                     autoComplete="one-time-code"
-                    className="w-full bg-neutral-900 border border-neutral-600 rounded-xl px-4 py-3.5 text-center text-3xl tracking-[0.32em] font-mono text-foreground focus:border-sky-400 focus:ring-2 focus:ring-sky-400/25 outline-none transition-all placeholder:text-neutral-500 placeholder:tracking-normal"
+                    className="w-full bg-neutral-900 border border-neutral-600 rounded-xl px-4 py-3.5 text-center text-3xl tracking-[0.32em] font-mono text-white focus:border-sky-400 focus:ring-2 focus:ring-sky-400/25 outline-none transition-all placeholder:text-neutral-500 placeholder:tracking-normal"
                   />
                   <p className="text-xs text-neutral-400 mt-2">Code expires in 10 minutes.</p>
                 </div>

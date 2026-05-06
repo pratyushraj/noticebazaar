@@ -137,9 +137,18 @@ const CreatorDashboardContent = ({ navigate }: { navigate: any }) => {
 
     let retryCount = 0;
     const MAX_RETRIES = 3;
+    let activeChannel: any = null;
 
     const setupSubscription = () => {
-      const channel = supabase
+      // Remove any existing channel with the same name before creating a new one
+      const existingChannel = supabase.getChannels().find(
+        (c: any) => c.topic === `dashboard-realtime:${user.id}`
+      );
+      if (existingChannel) {
+        void supabase.removeChannel(existingChannel);
+      }
+
+      activeChannel = supabase
         .channel(`dashboard-realtime:${user.id}`)
         .on(
           'postgres_changes',
@@ -163,8 +172,8 @@ const CreatorDashboardContent = ({ navigate }: { navigate: any }) => {
             }
 
             if (
-              payload.eventType === 'UPDATE' && 
-              payload.new.status === 'declined' && 
+              payload.eventType === 'UPDATE' &&
+              payload.new.status === 'declined' &&
               payload.new.decline_reason === 'withdrawn_by_brand' &&
               payload.old?.status !== 'declined' &&
               document.visibilityState === 'visible'
@@ -206,7 +215,7 @@ const CreatorDashboardContent = ({ navigate }: { navigate: any }) => {
           }
         });
 
-      return channel;
+      return activeChannel;
     };
 
     const channel = setupSubscription();
@@ -221,7 +230,16 @@ const CreatorDashboardContent = ({ navigate }: { navigate: any }) => {
     const { data: sessionData } = await supabase.auth.getSession();
     if (!sessionData.session) throw new Error('Not authenticated');
 
-    const res = await fetch(`${getApiBaseUrl()}/api/collab-requests/${req.id}/accept`, {
+    // Validate that request has an ID
+    const requestId = String(req?.id || '').trim();
+    if (!requestId) {
+      console.error('[handleAcceptRequest] Missing request ID. Request object:', req);
+      throw new Error('Invalid collaboration request: missing ID');
+    }
+
+    console.log('[handleAcceptRequest] Accepting request:', { requestId, hasOtpVerified: !!otpVerified });
+
+    const res = await fetch(`${getApiBaseUrl()}/api/collab-requests/${requestId}/accept`, {
       method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',
@@ -239,9 +257,13 @@ const CreatorDashboardContent = ({ navigate }: { navigate: any }) => {
     queryClient.invalidateQueries({ queryKey: ['brand-deals'] });
     if (!res.ok || !data.success) {
       const msg = data?.error || '';
+      console.error('[handleAcceptRequest] API error:', { status: res.status, error: msg, requestId });
       if (msg.includes('already been processed') || msg.includes('already accepted') || msg.includes('already declined')) {
         toast.info('This offer was already processed.');
         return data;
+      }
+      if (msg.includes('not found')) {
+        throw new Error('This collaboration request no longer exists. It may have been withdrawn or already processed.');
       }
       throw new Error(data.error || 'Failed to accept');
     }

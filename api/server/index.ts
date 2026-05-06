@@ -74,6 +74,7 @@ import cronDealRemindersRouter from './routes/cronDealReminders';
 import pushNotificationsRouter from './routes/pushNotifications';
 import authRouter from './routes/auth';
 import profileRouter from './routes/profile';
+import razorpayWebhooksRouter from './routes/razorpayWebhooks';
 import { sendCollabRequestAcceptedEmail, sendCollabRequestCreatorNotificationEmail } from './services/collabRequestEmailService';
 import { createContractReadyToken } from './services/contractReadyTokenService';
 // Log router import for debugging
@@ -256,7 +257,12 @@ app.use((req: express.Request, res: express.Response, next: express.NextFunction
   next();
 });
 
-app.use(express.json({ limit: '10mb' }));
+app.use(express.json({ 
+  limit: '10mb',
+  verify: (req: any, res, buf) => {
+    req.rawBody = buf;
+  }
+}));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 /**
@@ -361,7 +367,8 @@ app.use('/api/contract-ready-tokens', contractReadyTokensRouter); // Public rout
 app.use('/api/gst', gstRouter); // Public GST lookup route
 app.use('/api/otp', otpPublicRouter); // Public OTP routes for brand response page
 app.use('/api/collab', collabRequestsRouter); // Public collab link routes (/:username and /:username/submit)
-app.use('/api/collab-analytics', collabAnalyticsRouter); // Public analytics tracking + authenticated analytics endpoints
+app.use('/api/collab-analytics', collabAnalyticsRouter);
+app.use('/api/webhooks/razorpay/webhook', razorpayWebhooksRouter); // Matches Razorpay dashboard config
 app.use('/api/creators', creatorsRouter); // Public creator directory routes
 app.use('/api/shipping', shippingRouter); // Public shipping update (brand, no auth)
 app.use('/api/cron', cronDealRemindersRouter); // Cron: deal reminders (protected by CRON_SECRET in route)

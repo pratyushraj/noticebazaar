@@ -1186,7 +1186,7 @@ const signAsCreatorHandler = async (req: AuthenticatedRequest, res: Response) =>
   console.log('[Deals] sign-creator route hit:', req.method, req.path, req.params);
   try {
     const userId = req.user!.id;
-    const { dealId } = req.params;
+    let { dealId } = req.params;
     const {
       signerName,
       signerEmail,
@@ -2195,25 +2195,55 @@ router.post('/:id/verify-payment', async (req: AuthenticatedRequest, res: Respon
 
       let isPaid = false;
       let orderId = (deal as any).payment_id;
+      const { razorpay_payment_id, razorpay_order_id, razorpay_signature } = req.body;
 
-      if (orderId) {
-        const order = await rzp.orders.fetch(orderId);
-        if (order.status === 'paid') isPaid = true;
+      // 1. If we have signature data, verify it for maximum security
+      if (razorpay_payment_id && razorpay_signature) {
+        const secret = process.env.RAZORPAY_KEY_SECRET;
+        if (secret) {
+          const crypto = await import('crypto');
+          const hmac = crypto.createHmac('sha256', secret);
+          hmac.update(`${razorpay_order_id || orderId}|${razorpay_payment_id}`);
+          const generatedSignature = hmac.digest('hex');
+          
+          if (generatedSignature === razorpay_signature) {
+            console.log('[Razorpay] Signature verified for deal:', dealId);
+            isPaid = true;
+            orderId = razorpay_order_id || orderId;
+          } else {
+            console.warn('[Razorpay] Signature mismatch for deal:', dealId);
+          }
+        }
       }
 
+      // 2. Fallback/Double-check: Fetch directly from Razorpay API
       if (!isPaid) {
-        const payments = await rzp.payments.all({ 'notes[deal_id]': dealId } as any);
-        const capturedPayment = (payments.items || []).find((p: any) => p.status === 'captured' || p.status === 'authorized');
-        
-        if (capturedPayment) {
-          isPaid = true;
-          orderId = capturedPayment.order_id || orderId;
-        } else {
-          const orders = await rzp.orders.all({ 'notes[deal_id]': dealId } as any);
-          const paidOrder = (orders.items || []).find((o: any) => o.status === 'paid');
-          if (paidOrder) {
+        if (orderId) {
+          try {
+            const order = await rzp.orders.fetch(orderId);
+            if (order.status === 'paid') isPaid = true;
+          } catch (e) {
+            console.warn('[Razorpay] Failed to fetch order:', orderId, e.message);
+          }
+        }
+
+        if (!isPaid) {
+          // Search by notes[deal_id] as final fallback
+          const payments = await rzp.payments.all({ 'notes[deal_id]': dealId } as any);
+          const capturedPayment = (payments.items || []).find((p: any) => 
+            p.status === 'captured' || (p.status === 'authorized' && p.captured)
+          );
+          
+          if (capturedPayment) {
             isPaid = true;
-            orderId = paidOrder.id;
+            orderId = capturedPayment.order_id || orderId;
+          } else {
+            const orders = await rzp.orders.all({ 'notes[deal_id]': dealId } as any);
+            const paidOrder = (orders.items || []).find((o: any) => o.status === 'paid');
+            if (paidOrder) {
+              isPaid = true;
+              orderId = paidOrder.id;
+            }
           }
         }
       }
@@ -2227,16 +2257,39 @@ router.post('/:id/verify-payment', async (req: AuthenticatedRequest, res: Respon
         if ('payment_id' in (deal || {})) updateData.payment_id = orderId;
         if ('payment_status' in (deal || {})) updateData.payment_status = 'captured';
 
-        await supabase.from('brand_deals').update(updateData).eq('id', dealId);
+        const { error: updateError } = await supabase.from('brand_deals').update(updateData).eq('id', dealId);
+        
+        if (updateError) {
+          console.error('[Deals] Failed to update deal status after payment:', updateError);
+          return res.status(500).json({ success: false, error: 'Payment verified but failed to update deal status. Please contact support.' });
+        }
 
+        // Log action
         await supabase.from('deal_action_logs').insert({
           deal_id: dealId,
           user_id: userId,
           event: 'PAYMENT_VERIFIED_MANUAL',
           metadata: { order_id: orderId, source: 'manual_verification' }
-        });
+        }).catch(e => console.warn('[Deals] Failed to log payment verification:', e));
 
-        return res.json({ success: true, status: 'content_making', message: 'Payment verified and deal updated!' });
+        // Send confirmation email to brand/creator if possible
+        if (deal.brand_email) {
+          sendCollabRequestAcceptedEmail(deal.brand_email, {
+            creatorName: (deal as any).creator_name || 'Creator',
+            brandName: (deal as any).brand_name || 'Brand',
+            dealAmount: Number((deal as any).deal_amount || 0),
+            dealType: 'paid',
+            deliverables: Array.isArray((deal as any).deliverables) ? (deal as any).deliverables : ['Content Creation'],
+            contractReadyToken: 'paid_confirmed' // Placeholder since this is after signing
+          }).catch(e => console.warn('[Deals] Failed to send payment confirmation email:', e));
+        }
+
+        return res.json({ 
+          success: true, 
+          status: 'content_making', 
+          message: 'Payment verified and deal updated!',
+          deal: { ...deal, ...updateData }
+        });
       } else {
         return res.json({ 
           success: false, 

@@ -4453,6 +4453,29 @@ const CollabLinkLanding = () => {
                             )}
 
                           {collabType === 'hybrid' && (
+                            selectedTemplateId && selectedTemplate?.type !== 'barter' ? (
+                              <div className="flex items-center justify-between bg-white p-4 rounded-2xl border border-slate-100 shadow-sm">
+                                <div className="flex items-center gap-3">
+                                  <div className="w-10 h-10 rounded-full bg-emerald-500/10 flex items-center justify-center text-emerald-600">
+                                    <Check className="w-5 h-5" />
+                                  </div>
+                                  <div>
+                                    <p className="text-[16px] font-black text-slate-900">₹{Number(exactBudget).toLocaleString('en-IN')}</p>
+                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">Fixed Price Package</p>
+                                  </div>
+                                </div>
+                                <button 
+                                  type="button"
+                                  onClick={() => {
+                                    setSelectedTemplateId(null);
+                                    triggerHaptic(HapticPatterns.light);
+                                  }}
+                                  className="text-[10px] font-black text-emerald-600 uppercase tracking-tighter hover:underline"
+                                >
+                                  Change
+                                </button>
+                              </div>
+                            ) : (
                               <div className="relative group">
                                 <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-black text-[15px] group-focus-within:text-slate-900 transition-colors">
                                   ₹
@@ -4468,7 +4491,8 @@ const CollabLinkLanding = () => {
                                   className="h-14 pl-10 pr-6 rounded-2xl border-white bg-white font-black text-[15px] text-slate-900 placeholder:text-slate-500 shadow-sm focus-visible:ring-2 focus-visible:ring-emerald-500/30 transition-all"
                                 />
                               </div>
-                            )}
+                            )
+                          )}
                           </div>
 
                         {collabType === 'paid' && (
@@ -4478,10 +4502,10 @@ const CollabLinkLanding = () => {
                               className={`block text-[15px] font-black text-slate-800 mb-3 ${typeLabel} flex items-center gap-2`}
                             >
                               <Wallet className="h-5 w-5 text-slate-900" />
-                              {selectedTemplateId ? "Agreed Package Price" : "What's your budget?"}
+                              {selectedTemplateId && selectedTemplate?.type !== 'barter' ? "Agreed Package Price" : "What's your budget?"}
                             </label>
                             
-                            {selectedTemplateId ? (
+                            {selectedTemplateId && selectedTemplate?.type !== 'barter' ? (
                               <div className="flex items-center justify-between bg-white p-4 rounded-2xl border border-slate-100 shadow-sm">
                                 <div className="flex items-center gap-3">
                                   <div className="w-10 h-10 rounded-full bg-emerald-500/10 flex items-center justify-center text-emerald-600">

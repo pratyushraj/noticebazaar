@@ -104,6 +104,29 @@ router.post('/confirm', async (req, res) => {
             return res.status(400).json({ success: false, error: 'Request already processed' });
         }
 
+        // Self-healing: if the deal was already created but the request link is missing,
+        // restore it and avoid duplicate deal creation.
+        const { data: existingDeal } = await supabase
+            .from('brand_deals')
+            .select('id')
+            .eq('collab_request_id', request.id)
+            .maybeSingle();
+
+        if (existingDeal?.id) {
+            await supabase
+                .from('collab_requests')
+                .update({ status: 'accepted', deal_id: existingDeal.id })
+                .eq('id', request.id);
+
+            const contractToken = await createContractReadyToken({
+                dealId: existingDeal.id,
+                creatorId: request.creator_id,
+                expiresAt: null
+            });
+
+            return res.json({ success: true, dealId: existingDeal.id, contractReadyToken: contractToken.id });
+        }
+
         // Parse deliverables safely
         let deliverablesArray: string[] = [];
         try {

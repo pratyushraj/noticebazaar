@@ -2217,6 +2217,7 @@ router.post('/:username/submit', collabSubmissionLimiter, async (req: Request, r
     const allowDemoEmail = process.env.ALLOW_DEMO_EMAIL === 'true';
     const rateLimitMinutes = Number(process.env.COLLAB_REQUEST_RATE_LIMIT_MINUTES || '0');
 
+    /*
     if (rateLimitMinutes > 0 && !isDevelopment && !allowDemoEmail) {
       const windowAgo = new Date(Date.now() - rateLimitMinutes * 60 * 1000).toISOString();
 
@@ -2268,6 +2269,7 @@ router.post('/:username/submit', collabSubmissionLimiter, async (req: Request, r
     } else {
       console.log('[CollabRequests] Rate limiting disabled (COLLAB_REQUEST_RATE_LIMIT_MINUTES=0 or dev/demo)');
     }
+    */
 
     if (creatorError) {
       return res.status(500).json({
@@ -3422,6 +3424,8 @@ router.patch('/:id/accept', async (req: AuthenticatedRequest, res: Response) => 
     const { id } = req.params;
     const { shipping_address, otp_verified, otp_verified_at } = req.body || {};
 
+    console.log('[CollabRequests] Accept request:', { requestId: id, userId, hasBody: !!req.body });
+
     // Get the collab request
     const { data: request, error: requestError } = await supabase
       .from('collab_requests')
@@ -3430,7 +3434,16 @@ router.patch('/:id/accept', async (req: AuthenticatedRequest, res: Response) => 
       .eq('creator_id', userId)
       .maybeSingle();
 
-    if (requestError || !request) {
+    if (requestError) {
+      console.error('[CollabRequests] Database error querying request:', requestError);
+      return res.status(500).json({
+        success: false,
+        error: 'Database error while fetching collaboration request',
+      });
+    }
+
+    if (!request) {
+      console.warn('[CollabRequests] Request not found or not owned by user:', { requestId: id, userId, exists: request ? 'yes' : 'no' });
       return res.status(404).json({
         success: false,
         error: 'Collaboration request not found',
@@ -3439,6 +3452,7 @@ router.patch('/:id/accept', async (req: AuthenticatedRequest, res: Response) => 
 
     if (request.status !== 'pending') {
       if (request.status === 'accepted_pending_otp' && (request as any).deal_id) {
+        console.log('[CollabRequests] Request already in OTP flow:', { requestId: id, dealId: (request as any).deal_id });
         return res.json({
           success: true,
           deal: { id: (request as any).deal_id },
@@ -3450,6 +3464,34 @@ router.patch('/:id/accept', async (req: AuthenticatedRequest, res: Response) => 
       return res.status(400).json({
         success: false,
         error: `Request has already been processed (current status: ${request.status})`,
+      });
+    }
+
+    // Self-healing: if a deal already exists for this collab request but the request
+    // row was never updated, repair the link and continue instead of creating a duplicate.
+    const { data: existingDeal } = await supabase
+      .from('brand_deals')
+      .select('id')
+      .eq('collab_request_id', id)
+      .maybeSingle();
+    if (existingDeal?.id) {
+      const now = new Date().toISOString();
+      await supabase
+        .from('collab_requests')
+        .update({
+          status: request.source_lead_id ? 'accepted' : 'accepted_pending_otp',
+          deal_id: existingDeal.id,
+          accepted_at: request.source_lead_id ? now : null,
+          accepted_by_creator_id: request.source_lead_id ? userId : null,
+          updated_at: now,
+        } as any)
+        .eq('id', id);
+
+      return res.json({
+        success: true,
+        deal: { id: existingDeal.id },
+        needs_otp: !request.source_lead_id,
+        message: 'Existing deal link restored successfully.',
       });
     }
 

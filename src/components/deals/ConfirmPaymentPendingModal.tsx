@@ -14,7 +14,7 @@ interface Props {
   dealAmount?: number;
   creatorName?: string;
   onClose: () => void;
-  onSuccess?: () => void;
+  onSuccess?: (updatedDeal?: any) => void;
 }
 
 const PLATFORM_FEE_PCT = 0.10;
@@ -104,19 +104,28 @@ export function ConfirmPaymentPendingModal({ dealId, dealAmount, creatorName, on
           contact: '',
         },
         theme: { color: '#10b981' },
-        handler: async () => {
+        handler: async (response: any) => {
           triggerHaptic(HapticPatterns.success);
           toast.success('Payment submitted. Processing securely...');
           try {
             const verifyRes = await fetch(`${getApiBaseUrl()}/api/deals/${dealId}/verify-payment`, {
               method: 'POST',
-              headers: { Authorization: `Bearer ${session?.access_token}` }
+              headers: { 
+                Authorization: `Bearer ${session?.access_token}`,
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_signature: response.razorpay_signature
+              })
             });
             const verifyData = await verifyRes.json();
             
             if (verifyData.success && (verifyData.status === 'content_making' || verifyData.status === 'CONTENT_MAKING')) {
               if (onSuccess) {
-                onSuccess();
+                // Pass the updated deal data if available for optimistic UI
+                onSuccess(verifyData.deal);
               } else {
                 window.location.reload();
               }
@@ -127,7 +136,6 @@ export function ConfirmPaymentPendingModal({ dealId, dealAmount, creatorName, on
           }
           
           // If not verified immediately, wait for a bit and reload anyway as a fallback
-          // but give it 2 seconds to let Razorpay webhooks/state settle
           setTimeout(() => {
             if (onSuccess) {
               onSuccess();

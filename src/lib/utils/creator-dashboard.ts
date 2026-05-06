@@ -1,4 +1,3 @@
-import { DealStage, getDealStageFromStatus } from '@/lib/hooks/useBrandDeals';
 import { isBarterLikeCollab } from '@/lib/deals/collabType';
 
 export const normalizeDealStatus = (deal: any) =>
@@ -25,9 +24,17 @@ export const getDaysUntil = (date: Date | null) => {
 
 export const inferCreatorRequiresPayment = (deal: any) => {
     if (typeof deal?.requires_payment === 'boolean') return Boolean(deal.requires_payment);
-    const kind = String(deal?.collab_type || deal?.deal_type || deal?.raw?.collab_type || '').trim().toLowerCase();
+    const kind = String(deal?.collab_type || deal?.deal_type || deal?.raw?.collab_type || deal?.raw?.deal_type || '').trim().toLowerCase();
     const amount = Number(deal?.deal_amount || deal?.exact_budget || 0);
     return kind === 'paid' || kind === 'both' || kind === 'hybrid' || kind === 'paid_barter' || (kind !== 'barter' && amount > 0);
+};
+
+export const inferCreatorRequiresShipping = (deal: any) => {
+    if (deal?.requires_shipping === true || deal?.shipping_required === true || deal?.raw?.requires_shipping === true || deal?.raw?.shipping_required === true) {
+        return true;
+    }
+    const kind = String(deal?.collab_type || deal?.deal_type || deal?.raw?.collab_type || deal?.raw?.deal_type || '').trim().toLowerCase();
+    return kind.includes('barter') || kind === 'both' || kind === 'hybrid' || kind === 'paid_barter';
 };
 
 
@@ -37,12 +44,14 @@ export const getCreatorDealCardUX = (deal: any) => {
     const isCompleted = rawStatus.includes('completed') || rawStatus === 'paid';
     const isRevisionRequested = rawStatus.includes('revision_requested') || rawStatus.includes('changes_requested') || rawStatus.includes('brand_revision_requested');
     const isRevisionDone = rawStatus.includes('revision_done') || rawStatus.includes('revision_submitted');
-    const requiresShipping = isBarterLikeCollab(deal);
+    const requiresShipping = inferCreatorRequiresShipping(deal);
+    const shippingStatus = String(deal?.shipping_status || deal?.raw?.shipping_status || '').trim().toLowerCase();
     const isAwaitingShipment =
         requiresShipping &&
         (rawStatus.includes('awaiting_product_shipment') ||
             rawStatus.includes('awaiting_product') ||
-            rawStatus.includes('product_shipment_pending'));
+            rawStatus.includes('product_shipment_pending') ||
+            (shippingStatus && !['shipped', 'delivered', 'received', 'cancelled', 'returned', 'in_transit'].includes(shippingStatus)));
     const isDelivered =
         rawStatus.includes('content_delivered') ||
         rawStatus.includes('draft_review') ||
@@ -51,10 +60,11 @@ export const getCreatorDealCardUX = (deal: any) => {
         rawStatus.includes('waiting_for_review') ||
         rawStatus.includes('awaiting_approval') ||
         isRevisionDone;
+    const isPendingOTP = rawStatus.includes('accepted_pending_otp');
     const isApproved = rawStatus.includes('content_approved');
     const isPaymentReleased = rawStatus.includes('payment_released');
     const isMaking = rawStatus.includes('content_making') || rawStatus.includes('drafting');
-    const isFullyExecuted = rawStatus.includes('fully_executed') || rawStatus === 'signed';
+    const isFullyExecuted = rawStatus.includes('fully_executed') || rawStatus === 'signed' || rawStatus === 'accepted' || rawStatus.includes('contract_signed') || rawStatus.includes('active');
     const isContractPending = rawStatus.includes('contract_ready') || rawStatus === 'sent' || rawStatus.includes('signed_pending_creator') || rawStatus.includes('signed_by_brand') || rawStatus.includes('needs signature');
 
     const dueDate = parseDealDate(deal?.due_date || deal?.deadline || deal?.raw?.deadline || deal?.raw?.due_date);
@@ -68,6 +78,7 @@ export const getCreatorDealCardUX = (deal: any) => {
     else if (isMaking) progressStep = 3;
     else if (isFullyExecuted) progressStep = 2;
     else if (isContractPending) progressStep = 1;
+    else if (isPendingOTP) progressStep = 0.5;
 
     const contractLabel = isContractPending
         ? (rawStatus.includes('signed_by_brand') ? 'Contract: waiting for your signature' : 'Contract: pending signature')
@@ -94,6 +105,10 @@ export const getCreatorDealCardUX = (deal: any) => {
         stagePill = 'PAYMENT RELEASED';
         nextStep = 'Confirm completion and close the deal';
         cta = 'View Deal';
+    } else if (isPendingOTP) {
+        stagePill = 'OTP REQUIRED';
+        nextStep = 'Verify OTP to start deal';
+        cta = 'Verify';
     } else if (isApproved) {
         stagePill = 'APPROVED';
         nextStep = 'Waiting for payment release';
@@ -107,7 +122,7 @@ export const getCreatorDealCardUX = (deal: any) => {
         nextStep = 'Update content and resubmit';
         cta = 'Upload Revision';
     } else if (isDelivered) {
-        stagePill = 'AWAITING REVIEW';
+        stagePill = 'UNDER REVIEW';
         nextStep = 'Wait for brand approval';
         cta = 'Waiting for Review';
     } else if (isAwaitingShipment) {
@@ -115,9 +130,9 @@ export const getCreatorDealCardUX = (deal: any) => {
         nextStep = 'Waiting for product shipment from brand';
         cta = 'Waiting';
     } else if (isFullyExecuted) {
-        stagePill = 'COLLAB STARTED';
+        stagePill = 'READY TO START';
         nextStep = 'Start creating content';
-        cta = 'View Deal';
+        cta = 'Start Production';
     } else if (isMaking) {
         stagePill = 'MAKE CONTENT';
         nextStep = 'Deliver your Instagram link for review';

@@ -63,6 +63,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { DealStage, getDealStageFromStatus, STAGE_TO_PROGRESS, STAGE_TO_STATUS, useUpdateDealProgress } from '@/lib/hooks/useBrandDeals';
 import { dealPrimaryCtaButtonClass, getDealPrimaryCta, getCanonicalDealStatus } from '@/lib/deals/primaryCta';
 import { isBarterLikeCollab, isPaidLikeCollab } from '@/lib/deals/collabType';
+import { getCreatorDealCardUX, getCreatorPaymentListUX, normalizeDealStatus, inferCreatorRequiresPayment, parseDealDate, getDaysUntil } from '@/lib/utils/creator-dashboard';
 import FiverrPackageEditor from '@/components/profile/FiverrPackageEditor';
 import { useInstagramSync } from '@/lib/hooks/useInstagramSync';
 import { optimizeImage, safeAvatarSrc, withCacheBuster } from '@/lib/utils/image';
@@ -174,6 +175,9 @@ const POPULAR_COMPANIES: Record<string, string[]> = {
 };
 
 const renderBudgetValue = (item: any) => {
+    // Check if this is a barter deal - only show product value for barter deals
+    const isBarterItem = item?.collab_type === 'barter' || item?.deal_type === 'barter' || isBarterLikeCollab(item);
+    
     // Try all possible amount field names
     const exact = Number(
         item?.deal_amount ?? item?.exact_budget ?? item?.amount ??
@@ -186,35 +190,36 @@ const renderBudgetValue = (item: any) => {
     const min = Number(item?.budget_range?.min || item?.form_data?.budget_range?.min || (item?.budget_range && typeof item.budget_range === 'object' && item.budget_range.min));
     if (Number.isFinite(min) && min > 0) return `₹${min.toLocaleString()}+`;
 
-    const barter = Number(
-        item?.barter_value ??
-        item?.product_value ??
-        item?.form_data?.barter_value ??
-        item?.form_data?.product_value ??
-        item?.raw?.barter_value ??
-        item?.raw?.product_value ??
-        (item?.collab_type === 'barter' ? item?.deal_amount : 0)
-    );
+    // Only check barter/product value for barter deals
+    if (isBarterItem) {
+        const barter = Number(
+            item?.barter_value ??
+            item?.product_value ??
+            item?.form_data?.barter_value ??
+            item?.form_data?.product_value ??
+            item?.raw?.barter_value ??
+            item?.raw?.product_value ??
+            0
+        );
 
-    if (Number.isFinite(barter) && barter > 0) {
-        if (barter <= 1) return 'Product value TBD';
-        return `₹${barter.toLocaleString('en-IN')}`;
-    }
+        if (Number.isFinite(barter) && barter > 0) {
+            if (barter <= 1) return 'Product value TBD';
+            return `₹${barter.toLocaleString('en-IN')}`;
+        }
 
-    const productName = (
-        item?.barter_product_name ||
-        item?.product_name ||
-        item?.form_data?.barterProductName ||
-        item?.form_data?.product_name ||
-        item?.raw?.barter_product_name ||
-        item?.raw?.product_name ||
-        item?.barter_product_category ||
-        item?.form_data?.barterProductCategory ||
-        item?.barter_description ||
-        item?.raw?.barter_description
-    );
+        const productName = (
+            item?.barter_product_name ||
+            item?.product_name ||
+            item?.form_data?.barterProductName ||
+            item?.form_data?.product_name ||
+            item?.raw?.barter_product_name ||
+            item?.raw?.product_name ||
+            item?.barter_product_category ||
+            item?.form_data?.barterProductCategory ||
+            item?.barter_description ||
+            item?.raw?.barter_description
+        );
 
-    if (item?.collab_type === 'barter' || item?.deal_type === 'barter' || isBarterLikeCollab(item)) {
         if (productName && typeof productName === 'string' && productName.trim().length > 0) {
             return productName;
         }
@@ -289,37 +294,6 @@ const getOfferAddons = (item: any) => {
         return price > 0 ? `${label} (+₹${price.toLocaleString('en-IN')})` : label;
     }).filter(Boolean);
 };
-
-const parseDealDate = (value: any): Date | null => {
-    if (!value) return null;
-    if (value instanceof Date) return Number.isNaN(value.getTime()) ? null : value;
-    const asString = String(value);
-    const dt = new Date(asString);
-    return Number.isNaN(dt.getTime()) ? null : dt;
-};
-
-const getDaysUntil = (date: Date | null) => {
-    if (!date) return null;
-    const now = new Date();
-    const start = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    const end = new Date(date.getFullYear(), date.getMonth(), date.getDate());
-    return Math.round((end.getTime() - start.getTime()) / (24 * 60 * 60 * 1000));
-};
-
-const normalizeDealStatus = (deal: any) =>
-    String(deal?.status ?? deal?.raw?.status ?? '')
-        .trim()
-        .toLowerCase()
-        .replace(/[\s-]+/g, '_');
-
-const inferCreatorRequiresPayment = (deal: any) => {
-    if (typeof deal?.requires_payment === 'boolean') return Boolean(deal.requires_payment);
-    const kind = String(deal?.collab_type || deal?.deal_type || deal?.raw?.collab_type || '').trim().toLowerCase();
-    const amount = Number(deal?.deal_amount || deal?.exact_budget || 0);
-    if (kind === 'barter') return false;
-    return kind === 'paid' || kind === 'both' || kind === 'hybrid' || kind === 'paid_barter' || (kind !== 'barter' && amount > 0);
-};
-
 
 const resolveCreatorDealProductImage = (item: any) => {
     const candidates = [
@@ -431,147 +405,6 @@ const buildPortfolioSlots = (rawItems: any, legacyLinks?: string[] | null): Port
         });
     }
     return slots;
-};
-
-const getCreatorDealCardUX = (deal: any) => {
-    const rawStatus = normalizeDealStatus(deal);
-    const isBarter = isBarterLikeCollab(deal);
-
-    const isCompleted = rawStatus.includes('completed') || rawStatus === 'paid' || rawStatus === 'finished' || (isBarter && (rawStatus.includes('approved') || rawStatus.includes('content_approved')));
-    const isRevisionRequested = rawStatus.includes('revision_requested') || rawStatus.includes('changes_requested') || rawStatus.includes('brand_revision_requested');
-    const isRevisionDone = rawStatus.includes('revision_done') || rawStatus.includes('revision_submitted');
-    const requiresShipping = isBarterLikeCollab(deal);
-    const shippingStatus = String(deal?.shipping_status || deal?.raw?.shipping_status || '').trim().toLowerCase();
-    const isAwaitingShipment =
-        requiresShipping &&
-        shippingStatus !== 'shipped' &&
-        shippingStatus !== 'delivered' &&
-        shippingStatus !== 'received';
-    const isDelivered =
-        rawStatus.includes('content_delivered') ||
-        rawStatus.includes('draft_review') ||
-        rawStatus.includes('content_pending') ||
-        rawStatus.includes('awaiting_review') ||
-        rawStatus.includes('waiting_for_review') ||
-        rawStatus.includes('awaiting_approval') ||
-        isRevisionDone;
-    const isPendingOTP = rawStatus.includes('accepted_pending_otp');
-    const paymentStatus = String(deal?.payment_status || deal?.raw?.payment_status || '').trim().toLowerCase();
-    const paymentId = String(deal?.payment_id || deal?.raw?.payment_id || '').trim();
-    const hasCapturedPayment = 
-        ['captured', 'paid', 'authorized', 'processed', 'successful', 'sent'].includes(paymentStatus) || 
-        (paymentId.startsWith('pay_') && Number(deal?.amount_paid || deal?.raw?.amount_paid || 0) > 0) ||
-        !!(deal?.paid_at || deal?.raw?.paid_at || deal?.payment_sent_at || deal?.raw?.payment_sent_at || deal?.utr_number || deal?.raw?.utr_number) ||
-        String(deal?.escrow_status || deal?.raw?.escrow_status || '').toLowerCase() === 'funded';
-    const isApproved = rawStatus.includes('content_approved') || rawStatus.includes('approved');
-    const isPaymentReleased = rawStatus.includes('payment_released') || rawStatus.includes('released');
-    const isMaking = rawStatus.includes('content_making') || rawStatus.includes('drafting');
-    const isFullyExecuted = rawStatus.includes('fully_executed') || rawStatus === 'signed' || rawStatus === 'accepted' || hasCapturedPayment;
-    const isPaymentPending = rawStatus.includes('payment_pending');
-    const isContractPending = (rawStatus.includes('contract_ready') || rawStatus === 'sent' || rawStatus.includes('signed_pending_creator') || rawStatus.includes('signed_by_brand') || rawStatus.includes('needs signature')) && !hasCapturedPayment;
-
-    const dueDate = parseDealDate(deal?.due_date || deal?.deadline || deal?.raw?.deadline || deal?.raw?.due_date);
-    const daysUntilDue = getDaysUntil(dueDate);
-
-    let progressStep = 1;
-    if (isCompleted) progressStep = 7;
-    else if (isPaymentReleased) progressStep = requiresShipping ? 7 : 6;
-    else if (isApproved) progressStep = requiresShipping ? 7 : 5;
-    else if (isDelivered || isRevisionRequested) progressStep = 4;
-    else if (isMaking) progressStep = 3;
-    else if (isPaymentPending) progressStep = 2.5;
-    else if (isFullyExecuted) progressStep = 2;
-    else if (isContractPending) progressStep = 1;
-    else if (isPendingOTP) progressStep = 0.5;
-
-    const contractLabel = isContractPending
-        ? (rawStatus.includes('signed_by_brand') || hasCapturedPayment ? 'Contract: waiting for your signature' : 'Contract: pending signature')
-        : (isFullyExecuted || isMaking || isDelivered || isApproved || isPaymentReleased || isCompleted || rawStatus === 'accepted' ? 'Contract: signed' : null);
-
-    const needsSignature = isContractPending;
-    const needsCreatorAction = !isCompleted && !isApproved && !isPaymentReleased && !isAwaitingShipment && (needsSignature || isRevisionRequested || isMaking || isPendingOTP);
-
-    const urgencyLevel: 'critical' | 'warning' | 'normal' = daysUntilDue !== null && daysUntilDue <= 2
-        ? 'critical'
-        : daysUntilDue !== null && daysUntilDue <= 5
-            ? 'warning'
-            : 'normal';
-
-    let stagePill = 'IN PROGRESS';
-    let nextStep = 'Open deal';
-    let cta = 'Open';
-
-    if (isPendingOTP) {
-        stagePill = 'OTP REQUIRED';
-        nextStep = 'Verify OTP to start deal';
-        cta = 'Verify';
-    } else if (isCompleted) {
-        stagePill = 'COMPLETED';
-        nextStep = 'View deal summary';
-        cta = 'View Summary';
-    } else if (isPaymentReleased) {
-        stagePill = isBarterLikeCollab(deal) ? 'COLLABORATION DONE' : 'PAYMENT DONE';
-        nextStep = isBarterLikeCollab(deal) ? 'Collaboration successfully finalized.' : 'Payment released to your account.';
-        cta = 'View Details';
-    } else if (isApproved) {
-        stagePill = 'APPROVED';
-        nextStep = isBarterLikeCollab(deal) ? 'Content approved! Collaboration finalized.' : 'Content approved! Payout is in progress.';
-        cta = isBarterLikeCollab(deal) ? 'View Summary' : 'Track Payout';
-    } else if (needsSignature) {
-        stagePill = 'SIGN AGREEMENT';
-        nextStep = 'Review and sign the agreement to start';
-        cta = rawStatus.includes('signed_by_brand') ? 'Sign Agreement' : 'View Contract';
-    } else if (isRevisionRequested) {
-        stagePill = 'REVISION REQUESTED';
-        nextStep = 'Brand requested changes. Please revise.';
-        cta = 'Submit Revision';
-    } else if (isDelivered) {
-        stagePill = 'UNDER REVIEW';
-        nextStep = 'Content submitted. Waiting for brand approval.';
-        cta = 'View Submission';
-    } else if (isAwaitingShipment) {
-        stagePill = 'AWAITING PRODUCT';
-        nextStep = 'Waiting for brand to ship the product';
-        cta = 'Track Shipment';
-    } else if (isPaymentPending) {
-        stagePill = 'WAITING FOR PAYMENT';
-        nextStep = 'Waiting for brand to fund escrow';
-        cta = 'Check Status';
-    } else if (isFullyExecuted) {
-        stagePill = 'READY TO START';
-        nextStep = 'Agreement active. You can now start working.';
-        cta = 'Start Production';
-    } else if (isMaking) {
-        const shippingStatus = String(deal?.shipping_status || deal?.raw?.shipping_status || '').trim().toLowerCase();
-        const isShippedOnly = requiresShipping && shippingStatus === 'shipped';
-        stagePill = isShippedOnly ? 'SHIPPED' : 'IN PRODUCTION';
-        nextStep = 'Creator is crafting the content';
-        cta = 'Submit Content';
-    } else {
-        stagePill = 'WAITING';
-        nextStep = 'View deal details';
-        cta = 'View Deal';
-    }
-
-    return {
-        rawStatus,
-        dueDate,
-        daysUntilDue,
-        urgencyLevel,
-        progressStep,
-        contractLabel,
-        needsCreatorAction,
-        needsSignature,
-        isRevisionRequested,
-        isRevisionDone,
-        isApproved,
-        isPaymentReleased,
-        isAwaitingShipment,
-        isMaking,
-        stagePill,
-        nextStep,
-        cta,
-    };
 };
 
 const DashboardLoadingStage = ({ 
@@ -755,34 +588,6 @@ const DashboardLoadingStage = ({
             )}
         </div>
     );
-};
-
-const getCreatorPaymentListUX = (deal: any) => {
-    const ux = getCreatorDealCardUX(deal);
-    const rawStatus = ux.rawStatus;
-    const isPaid = rawStatus.includes('completed') || rawStatus === 'paid' || rawStatus.includes('payment_received');
-    const isPaymentReleased = rawStatus.includes('payment_released');
-    const isApproved = rawStatus.includes('content_approved');
-    const isAwaitingApproval = rawStatus.includes('content_delivered') || rawStatus.includes('revision_done') || rawStatus.includes('draft_review') || rawStatus.includes('content_pending');
-    const isContractPending = rawStatus.includes('contract_ready') || rawStatus === 'sent' || rawStatus.includes('needs signature');
-
-    if (isPaid || isPaymentReleased) return { label: 'PROCESSING', sublabel: 'Payment being settled', tone: 'success' as const };
-
-    if (ux.isRevisionRequested) return { label: 'REVISION REQUIRED', sublabel: 'Fix requested by brand', tone: 'warning' as const };
-
-    if (isApproved) return { label: 'APPROVED', sublabel: 'Ready for payout', tone: 'success' as const };
-
-    if (rawStatus.includes('content_delivered') || rawStatus.includes('revision_done')) {
-        return { label: 'AWAITING APPROVAL', sublabel: 'Brand is reviewing content', tone: 'warning' as const };
-    }
-
-    if (rawStatus.includes('draft_review') || rawStatus.includes('content_pending') || rawStatus.includes('active') || rawStatus.includes('working') || rawStatus.includes('ongoing')) {
-        return { label: 'AWAITING CONTENT', sublabel: 'Waiting for your delivery', tone: 'info' as const };
-    }
-
-    if (isAwaitingApproval) return { label: 'AWAITING APPROVAL', sublabel: 'Waiting for brand review', tone: 'warning' as const };
-
-    return { label: 'PENDING', sublabel: 'Transaction in progress', tone: 'info' as const };
 };
 
 // Animated Number Counter
@@ -3058,11 +2863,15 @@ const MobileDashboardDemo = ({
 
     const resolveCreatorOtpDealId = React.useCallback(() => {
         if (creatorSigningMode === 'accept') {
+            const rawStatus = String(pendingAcceptReq?.status || '').toLowerCase().trim();
+            const isAlreadyAccepted = rawStatus && !['pending', 'countered', 'declined'].includes(rawStatus);
+            
             return String(
                 pendingAcceptDealId ||
                 pendingAcceptReq?.deal_id ||
                 pendingAcceptReq?.raw?.deal_id ||
                 pendingAcceptReq?.brand_deal_id ||
+                (isAlreadyAccepted ? pendingAcceptReq?.id : '') ||
                 ''
             ).trim();
         }
@@ -3074,25 +2883,79 @@ const MobileDashboardDemo = ({
         const existingDealId = resolveCreatorOtpDealId();
         if (existingDealId) return existingDealId;
         if (!pendingAcceptReq?.id || !onAcceptRequest) {
+            console.error('[ensurePendingAcceptDeal] Missing request data:', {
+                hasId: !!pendingAcceptReq?.id,
+                hasOnAcceptRequest: !!onAcceptRequest,
+                pendingAcceptReq: pendingAcceptReq ? { id: pendingAcceptReq.id, ...Object.keys(pendingAcceptReq).slice(0, 5) } : null,
+            });
             throw new Error('Offer data missing. Reopen the offer and try again.');
         }
 
-        setProcessingDeal(pendingAcceptReq.id);
-        const result = await onAcceptRequest(pendingAcceptReq, pendingAddressData || undefined, false);
-        const dealId = String(
-            (result as any)?.deal?.id ||
-            (result as any)?.dealId ||
-            (result as any)?.id ||
-            ''
-        ).trim();
-        if (!dealId) {
-            throw new Error('Deal could not be prepared for OTP. Please try again.');
-        }
+        const requestId = String(pendingAcceptReq.id || '').trim();
+        console.log('[ensurePendingAcceptDeal] Processing accept for request:', requestId);
+        setProcessingDeal(requestId);
+        try {
+            // Pre-flight: Verify the request still exists before attempting to accept
+            console.log('[ensurePendingAcceptDeal] Pre-flight: Checking if request still exists...');
+            if (session?.access_token) {
+                try {
+                    const checkResp = await fetch(`${getApiBaseUrl()}/api/collab-requests/${requestId}`, {
+                        headers: {
+                            'Authorization': `Bearer ${session.access_token}`,
+                        },
+                    });
+                    
+                    if (!checkResp.ok) {
+                        console.warn('[ensurePendingAcceptDeal] Request pre-flight check failed:', {
+                            requestId,
+                            status: checkResp.status,
+                        });
+                        
+                        // Request doesn't exist - it was withdrawn/deleted
+                        if (checkResp.status === 404) {
+                            throw new Error('This collaboration request no longer exists. It may have been withdrawn by the brand or already processed.');
+                        }
+                    } else {
+                        const checkData = await checkResp.json();
+                        console.log('[ensurePendingAcceptDeal] Request exists:', {
+                            requestId,
+                            status: checkData?.status || 'unknown',
+                        });
+                    }
+                } catch (checkError: any) {
+                    // If the preflight check fails, still attempt to proceed but log it
+                    if (checkError?.message?.includes('no longer exists')) {
+                        throw checkError;
+                    }
+                    console.warn('[ensurePendingAcceptDeal] Pre-flight check error (proceeding anyway):', checkError?.message);
+                }
+            }
 
-        setPendingAcceptDealId(dealId);
-        setPendingAcceptReq((prev: any) => prev ? { ...prev, deal_id: dealId, status: 'accepted_pending_otp' } : prev);
-        setSelectedItem((prev: any) => prev ? { ...prev, deal_id: dealId, status: 'accepted_pending_otp' } : prev);
-        return dealId;
+            const result = await onAcceptRequest(pendingAcceptReq, pendingAddressData || undefined, false);
+            const dealId = String(
+                (result as any)?.deal?.id ||
+                (result as any)?.dealId ||
+                (result as any)?.id ||
+                ''
+            ).trim();
+            if (!dealId) {
+                throw new Error('Deal could not be prepared for OTP. Please try again.');
+            }
+
+            setPendingAcceptDealId(dealId);
+            setPendingAcceptReq((prev: any) => prev ? { ...prev, deal_id: dealId, status: 'accepted_pending_otp' } : prev);
+            setSelectedItem((prev: any) => prev ? { ...prev, deal_id: dealId, status: 'accepted_pending_otp' } : prev);
+            return dealId;
+        } catch (error: any) {
+            console.error('[ensurePendingAcceptDeal] Error during acceptance:', error);
+            
+            // Re-throw with context about why it failed
+            const errorMsg = error?.message || '';
+            if (errorMsg.includes('not found') || errorMsg.includes('no longer exists')) {
+                throw new Error('This collaboration request no longer exists. It may have been withdrawn by the brand or already processed.');
+            }
+            throw error;
+        }
     };
 
     const handleSendCreatorOTP = async () => {
@@ -3137,7 +3000,27 @@ const MobileDashboardDemo = ({
             }
         } catch (error: any) {
             console.error('[MobileDashboard] OTP send error:', error);
-            toast.error(error.message || 'Failed to send OTP');
+            
+            // Detect if the request was withdrawn/deleted by the brand
+            const errorMsg = error?.message || '';
+            if (errorMsg.includes('no longer exists') || errorMsg.includes('not found') || errorMsg.includes('withdrawn')) {
+                toast.error('This offer is no longer available', {
+                    description: 'The brand may have withdrawn it. Check your offers for active collaborations.',
+                    duration: 5000
+                });
+                
+                // Clear the stale offer from UI and refresh the list
+                setPendingAcceptReq(null);
+                setPendingAcceptDealId(null);
+                setSelectedItem(null);
+                setCreatorSigningMode('none');
+                setCreatorSigningStep('none');
+                
+                // Refresh offers list to remove the withdrawn offer
+                queryClient.invalidateQueries({ queryKey: ['collab-requests'] });
+            } else {
+                toast.error(error.message || 'Failed to send OTP');
+            }
         } finally {
             setIsSendingCreatorOTP(false);
             setProcessingDeal(null);
@@ -3186,7 +3069,15 @@ const MobileDashboardDemo = ({
                             }),
                         });
 
-                        if (signResp.ok) {
+                        const signData = await signResp.json().catch(() => ({}));
+                        const signError = String(signData.error || signData.details || '').toLowerCase();
+
+                        if (
+                            signResp.ok ||
+                            signResp.status === 409 ||
+                            signError.includes('already been signed') ||
+                            signError.includes('brand must sign')
+                        ) {
                             // Update UI cache immediately to prevent duplicate signing prompts
                             patchDealInCache(dealId, {
                                 status: 'signed_by_creator',
@@ -3202,9 +3093,8 @@ const MobileDashboardDemo = ({
                             toast.success(pendingAddressData ? '🎉 Deal accepted & contract signed!' : '🎉 Collab accepted & contract signed!');
                             toast.message('Next: Submit content links in Active tab → Deliver Content', { description: 'Brand gets notified. Payment held until you deliver.' });
                         } else {
-                            const errorData = await signResp.json().catch(() => ({}));
-                            console.error('[MobileDashboard] Contract signing failed:', errorData);
-                            throw new Error(errorData.error || errorData.details || 'Failed to auto-sign contract');
+                            console.error('[MobileDashboard] Contract signing failed:', signData);
+                            throw new Error(signData.error || signData.details || 'Failed to auto-sign contract');
                         }
                     } catch (error: any) {
                         console.error("Accept error:", error);
@@ -3250,6 +3140,15 @@ const MobileDashboardDemo = ({
             });
 
             if (!resp.ok) {
+                // Handle expected business-rule conflict (e.g., brand must sign / fund escrow)
+                if (resp.status === 409) {
+                    const errorData = await resp.json().catch(() => ({ error: 'Conflict' }));
+                    console.warn('[MobileDashboard] Sign conflict:', errorData);
+                    toast.error(errorData.error || 'Action not allowed: please wait for brand');
+                    setIsSigningAsCreator(false);
+                    return;
+                }
+
                 const errorData = await resp.json().catch(() => ({ error: `Server error: ${resp.status}` }));
                 throw new Error(errorData.error || 'Failed to sign contract');
             }
@@ -9284,10 +9183,10 @@ const DealsTab = React.memo(({
                             </div>
                         ) : activeDealsCount > 0 ? (
                             <div className="space-y-4">
-                                {activeDealsList.map((deal: any, idx: number) => {
-                                    const productImage = resolveCreatorDealProductImage(deal);
-                                    const isBarter = String(deal?.collab_type || deal?.deal_type || deal?.raw?.collab_type || '').toLowerCase().includes('barter');
-                                    const budget = Number(deal?.deal_amount || deal?.budget_amount || deal?.exact_budget || deal?.product_value || 0);
+{activeDealsList.map((deal: any, idx: number) => {
+                                     const productImage = resolveCreatorDealProductImage(deal);
+                                     const isPureBarter = isBarterLikeCollab(deal) && !isPaidLikeCollab(deal);
+                                     const budget = Number(deal?.deal_amount || deal?.budget_amount || deal?.exact_budget || deal?.product_value || 0);
                                     const ux = getCreatorDealCardUX(deal);
 
                                     return (
@@ -9330,7 +9229,7 @@ const DealsTab = React.memo(({
                                                          )}>
                                                              {ux.stagePill}
                                                          </div>
-                                                         {!isBarter && (
+                                                         {ux.hasCapturedPayment && (
                                                              <div className="px-3 py-1.5 rounded-full bg-blue-600/80 text-white shadow-lg text-[10px] font-black uppercase tracking-[0.15em] backdrop-blur-xl border border-white/10 whitespace-nowrap">
                                                                  Escrow Active
                                                              </div>
@@ -9349,15 +9248,15 @@ const DealsTab = React.memo(({
                                                              </div>
                                                              <p className="text-[10px] font-black uppercase tracking-widest text-white">{deal.brand_name || 'Brand Partner'}</p>
                                                          </div>
-                                                         <h2 className="text-2xl font-black italic uppercase text-white leading-tight drop-shadow-xl mb-1 group-hover:translate-x-1 transition-transform duration-500">
-                                                            {isBarter ? 'Product Collab' : renderBudgetValue(deal)}
-                                                         </h2>
-                                                         <div className="flex items-center gap-3">
-                                                            {isBarter && (
-                                                                <p className="text-[11px] font-bold text-white/70">
-                                                                    Est. Value {renderBudgetValue(deal)}
-                                                                </p>
-                                                            )}
+<h2 className="text-2xl font-black italic uppercase text-white leading-tight drop-shadow-xl mb-1 group-hover:translate-x-1 transition-transform duration-500">
+                                                             {isPureBarter ? 'Product Collab' : renderBudgetValue(deal)}
+                                                          </h2>
+                                                          <div className="flex items-center gap-3">
+                                                             {isPureBarter && (
+                                                                 <p className="text-[11px] font-bold text-white/70">
+                                                                     Est. Value {renderBudgetValue(deal)}
+                                                                 </p>
+                                                             )}
                                                             {(() => {
                                                                 const pkgLabel = resolveItemPackageLabel(deal);
                                                                 if (!pkgLabel) return null;
@@ -9380,7 +9279,7 @@ const DealsTab = React.memo(({
                                                                  transition={{ duration: 1.5, ease: "circOut" }}
                                                                  className={cn(
                                                                      "h-full transition-all duration-1000 relative",
-                                                                     isBarter ? "bg-amber-400" : "bg-emerald-400"
+                                                                     isPureBarter ? "bg-amber-400" : "bg-emerald-400"
                                                                  )}
                                                              >
                                                                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent animate-shimmer" />
@@ -9400,58 +9299,58 @@ const DealsTab = React.memo(({
                          <h2 className={cn("text-[20px] font-bold tracking-tight mb-4", textColor)}>Completed</h2>
                          {completedDealsCount > 0 ? (
                              <div className="space-y-4">
-                                {completedDealsList.map((deal: any, idx: number) => {
-                                    const productImage = resolveCreatorDealProductImage(deal);
-                                    const isBarter = String(deal?.collab_type || deal?.deal_type || deal?.raw?.collab_type || '').toLowerCase().includes('barter');
-                                    return (
-                                        <motion.div key={deal.id || idx} whileTap={{ scale: 0.98 }} onClick={() => { triggerHaptic(); setSelectedItem(deal); setSelectedType('deal'); }} className={cn("relative w-full aspect-[1.6/1] rounded-[2.5rem] overflow-hidden bg-[#0B1220] border-0 shadow-2xl mb-6")}>
-                                            <div className="absolute inset-0">
-                                                {productImage && (
-                                                    <img
-                                                        src={productImage}
-                                                        className="w-full h-full object-cover"
-                                                        onError={(e) => {
-                                                            (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&q=80&w=500';
-                                                        }}
-                                                    />
-                                                )}
-                                                {/* Bottom Scrim for Readability - Surgical approach (doesn't darken the whole photo) */}
-                                                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent z-0" />
-                                            </div>
-                                            <div className="relative h-full p-5 flex flex-col justify-between z-10">
-                                                <div className="flex items-center gap-2">
-                                                    <div className="px-2.5 py-1.5 rounded-full bg-slate-500 self-start text-[11px] font-black text-white uppercase tracking-widest shadow-sm drop-shadow-md">Completed</div>
-                                                    {!isBarter && (
-                                                        <div className="px-2.5 py-1.5 rounded-full bg-blue-500 text-white shadow-sm text-[11px] font-black uppercase tracking-widest drop-shadow-md">
-                                                            Paid
-                                                        </div>
-                                                    )}
-                                                </div>
-                                                <div>
-                                                    <div className="mb-3">
-                                                        <h2 className="text-xl font-black italic uppercase text-white truncate mb-0.5">{deal.brand_name || 'Partner'}</h2>
-                                                        <div className="flex items-baseline gap-1.5 flex-wrap">
-                                                            <p className={cn("text-lg font-black leading-none", isBarter ? "text-white" : "text-white")}>
-                                                                {isBarter ? 'Free product' : renderBudgetValue(deal)}
-                                                            </p>
-                                                            {isBarter && <span className="text-[10px] font-black uppercase tracking-widest text-white/80">est. value {renderBudgetValue(deal)}</span>}
-                                                        </div>
-                                                        {(() => {
-                                                            const pkgLabel = resolveItemPackageLabel(deal);
-                                                            if (!pkgLabel) return null;
-                                                            return (
-                                                                <div className="mt-2.5 flex flex-wrap gap-1.5">
-                                                                    <span className="px-2.5 py-1 rounded-lg bg-black/30 backdrop-blur-md text-white text-[10px] font-black border border-white/10 shadow-sm">{pkgLabel}</span>
-                                                                </div>
-                                                            );
-                                                        })()}
-                                                    </div>
-                                                    <div className="h-1 w-full bg-emerald-500/30 rounded-full overflow-hidden"><div className={cn("h-full w-full", isBarter ? "bg-amber-400" : "bg-emerald-400")} /></div>
-                                                </div>
-                                            </div>
-                                        </motion.div>
-                                    );
-                                })}
+{completedDealsList.map((deal: any, idx: number) => {
+                                     const productImage = resolveCreatorDealProductImage(deal);
+                                     const isPureBarter = isBarterLikeCollab(deal) && !isPaidLikeCollab(deal);
+                                     return (
+                                         <motion.div key={deal.id || idx} whileTap={{ scale: 0.98 }} onClick={() => { triggerHaptic(); setSelectedItem(deal); setSelectedType('deal'); }} className={cn("relative w-full aspect-[1.6/1] rounded-[2.5rem] overflow-hidden bg-[#0B1220] border-0 shadow-2xl mb-6")}>
+                                             <div className="absolute inset-0">
+                                                 {productImage && (
+                                                     <img
+                                                         src={productImage}
+                                                         className="w-full h-full object-cover"
+                                                         onError={(e) => {
+                                                             (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&q=80&w=500';
+                                                         }}
+                                                     />
+                                                 )}
+                                                 {/* Bottom Scrim for Readability - Surgical approach (doesn't darken the whole photo) */}
+                                                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent z-0" />
+                                             </div>
+                                             <div className="relative h-full p-5 flex flex-col justify-between z-10">
+                                                 <div className="flex items-center gap-2">
+                                                     <div className="px-2.5 py-1.5 rounded-full bg-slate-500 self-start text-[11px] font-black text-white uppercase tracking-widest shadow-sm drop-shadow-md">Completed</div>
+                                                     {!isPureBarter && (
+                                                         <div className="px-2.5 py-1.5 rounded-full bg-blue-500 text-white shadow-sm text-[11px] font-black uppercase tracking-widest drop-shadow-md">
+                                                             Paid
+                                                         </div>
+                                                     )}
+                                                 </div>
+                                                 <div>
+                                                     <div className="mb-3">
+                                                         <h2 className="text-xl font-black italic uppercase text-white truncate mb-0.5">{deal.brand_name || 'Partner'}</h2>
+                                                         <div className="flex items-baseline gap-1.5 flex-wrap">
+                                                             <p className={cn("text-lg font-black leading-none", isPureBarter ? "text-white" : "text-white")}>
+                                                                 {isPureBarter ? 'Free product' : renderBudgetValue(deal)}
+                                                             </p>
+                                                             {isPureBarter && <span className="text-[10px] font-black uppercase tracking-widest text-white/80">est. value {renderBudgetValue(deal)}</span>}
+                                                         </div>
+                                                         {(() => {
+                                                             const pkgLabel = resolveItemPackageLabel(deal);
+                                                             if (!pkgLabel) return null;
+                                                             return (
+                                                                 <div className="mt-2.5 flex flex-wrap gap-1.5">
+                                                                     <span className="px-2.5 py-1 rounded-lg bg-black/30 backdrop-blur-md text-white text-[10px] font-black border border-white/10 shadow-sm">{pkgLabel}</span>
+                                                                 </div>
+                                                             );
+                                                         })()}
+                                                     </div>
+                                                     <div className="h-1 w-full bg-emerald-500/30 rounded-full overflow-hidden"><div className={cn("h-full w-full", isPureBarter ? "bg-amber-400" : "bg-emerald-400")} /></div>
+                                                 </div>
+                                             </div>
+                                         </motion.div>
+                                     );
+                                 })}
                              </div>
                          ) : <div className="p-10 text-center opacity-70 dark:opacity-40">No completed deals</div>}
                     </motion.div>
@@ -9468,7 +9367,7 @@ const DealsTab = React.memo(({
                             <div className="space-y-4">
                                 {pendingOffersDeduplicated.map((req: any, idx: number) => {
 	                                    const productImage = resolveCreatorDealProductImage(req);
-	                                    const isBarter = String(req?.collab_type || req?.deal_type || req?.raw?.collab_type || '').toLowerCase().includes('barter');
+	                                    const isPureBarter = isBarterLikeCollab(req) && !isPaidLikeCollab(req);
 	                                    const packageLabel = getOfferPackageLabel(req);
 	                                    const requirementsList = getOfferRequirements(req);
 	                                    const addonsList = getOfferAddons(req);
@@ -9498,21 +9397,21 @@ const DealsTab = React.memo(({
                                             </div>
                                             <div className="relative h-full p-5 flex flex-col justify-between z-10">
                                                 <div className="flex items-center gap-2">
-                                                    <div className="px-2.5 py-1.5 rounded-full bg-violet-600 self-start text-[11px] font-black text-white uppercase tracking-widest shadow-sm drop-shadow-md">New Offer</div>
-                                                    {!isBarter && (
-                                                        <div className="px-2.5 py-1.5 rounded-full bg-blue-500 text-white shadow-sm text-[11px] font-black uppercase tracking-widest drop-shadow-md">
-                                                            Paid
-                                                        </div>
-                                                    )}
+<div className="px-2.5 py-1.5 rounded-full bg-violet-600 self-start text-[11px] font-black text-white uppercase tracking-widest shadow-sm drop-shadow-md">New Offer</div>
+                                                     {!isPureBarter && (
+                                                         <div className="px-2.5 py-1.5 rounded-full bg-blue-500 text-white shadow-sm text-[11px] font-black uppercase tracking-widest drop-shadow-md">
+                                                             Paid
+                                                         </div>
+                                                     )}
                                                 </div>
                                                 <div className="mt-auto">
                                                     <div className="mb-4">
                                                         <h2 className="text-xl font-black italic uppercase text-white truncate mb-0.5 drop-shadow-xl">{req.brand_name || 'Brand Partner'}</h2>
                                                         <div className="flex items-baseline gap-1.5 flex-wrap">
-                                                            <p className={cn("text-lg font-black leading-none text-white drop-shadow-lg")}>
-                                                                {isBarter ? 'Free product' : renderBudgetValue(req)}
-                                                            </p>
-	                                                            {isBarter && <span className="text-[10px] font-black uppercase tracking-widest text-white/90 drop-shadow-md">est. value {renderBudgetValue(req)}</span>}
+<p className={cn("text-lg font-black leading-none text-white drop-shadow-lg")}>
+                                                                     {isPureBarter ? 'Free product' : renderBudgetValue(req)}
+                                                                 </p>
+                                                                 {isPureBarter && <span className="text-[10px] font-black uppercase tracking-widest text-white/90 drop-shadow-md">est. value {renderBudgetValue(req)}</span>}
 	                                                        </div>
 	                                                        {(packageLabel || contentQuantity || contentDuration || offerPlatform || deadlineLabel || usageLabel || paymentTermsLabel || requirementsList.length > 0 || addonsList.length > 0) && (
 	                                                            <div className="mt-3 flex flex-wrap gap-1.5">
@@ -9539,12 +9438,12 @@ const DealsTab = React.memo(({
                                                                 e.stopPropagation();
                                                                 handleAccept(req);
                                                             }}
-                                                            className={cn(
-                                                                "flex-1 h-11 rounded-xl font-black uppercase tracking-widest text-[10px] flex items-center justify-center gap-2 active:scale-95 transition-all shadow-xl backdrop-blur-md",
-                                                                isBarter ? "bg-amber-500 text-white border border-amber-400/30" : "bg-white text-black border border-white/20"
-                                                            )}
-                                                        >
-                                                            {isBarter ? 'Claim Product' : 'Accept'}
+className={cn(
+                                                                     "flex-1 h-11 rounded-xl font-black uppercase tracking-widest text-[10px] flex items-center justify-center gap-2 active:scale-95 transition-all shadow-xl backdrop-blur-md",
+                                                                     isPureBarter ? "bg-amber-500 text-white border border-amber-400/30" : "bg-white text-black border border-white/20"
+                                                                 )}
+                                                             >
+                                                                 {isPureBarter ? 'Claim Product' : 'Accept'}
                                                         </button>
                                                         <button
                                                             onClick={(e) => {

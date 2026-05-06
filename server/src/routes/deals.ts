@@ -1910,6 +1910,15 @@ router.post('/:id/sign-creator', async (req: AuthenticatedRequest, res: Response
     });
 
     if (!signResult.success) {
+      if (typeof signResult.error === 'string') {
+        const errLower = signResult.error.toLowerCase();
+        if (errLower.includes('brand must sign')) {
+          return res.status(409).json({ success: false, error: signResult.error });
+        }
+        if (errLower.includes('already been signed') || errLower.includes('already been signed by creator') || errLower.includes('already been signed by brand')) {
+          return res.status(409).json({ success: false, error: signResult.error });
+        }
+      }
       return res.status(500).json({
         success: false,
         error: signResult.error || 'Failed to sign contract'
@@ -2389,16 +2398,34 @@ router.post('/:id/create-payment-order', authMiddleware, async (req: Authenticat
  */
 router.post('/:id/verify-payment', authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
   try {
-    const dealId = req.params.id;
+    let dealId = req.params.id;
     const userId = req.user?.id;
     if (!userId) return res.status(401).json({ success: false, error: 'Authentication required' });
 
     // 1. Fetch deal
-    const { data: deal, error } = await supabase
+    let { data: deal, error } = await supabase
       .from('brand_deals')
       .select('status, payment_id, brand_id, brand_email')
       .eq('id', dealId)
       .single();
+
+    // If the caller passed a collab request ID, try to resolve it to a linked deal.
+    if ((error || !deal) && dealId) {
+      const { data: collabReq } = await (supabase as any)
+        .from('collab_requests')
+        .select('deal_id, status')
+        .eq('id', dealId)
+        .maybeSingle();
+
+      if (collabReq?.deal_id) {
+        dealId = String(collabReq.deal_id);
+        ({ data: deal, error } = await supabase
+          .from('brand_deals')
+          .select('status, payment_id, brand_id, brand_email')
+          .eq('id', dealId)
+          .single());
+      }
+    }
 
     if (error || !deal) { console.error("404 Deal not found", dealId, error); return res.status(404).json({ success: false, error: 'Deal not found' }); }
 
@@ -2480,6 +2507,8 @@ router.post('/:id/verify-payment', authMiddleware, async (req: AuthenticatedRequ
       if (isPaid) {
         // Success! Update manually.
         const now = new Date().toISOString();
+        const capturedPayment = (payments.items || []).find((p: any) => p.status === 'captured' || p.status === 'authorized') || null;
+        const capturedPaymentId = capturedPayment?.id || null;
         const updateData: any = {
           status: 'CONTENT_MAKING',
           payment_sent_at: now,
@@ -2487,8 +2516,9 @@ router.post('/:id/verify-payment', authMiddleware, async (req: AuthenticatedRequ
         };
         
         // Save the IDs for future reference
-        if ('payment_id' in (deal || {})) updateData.payment_id = orderId;
+        if ('payment_id' in (deal || {})) updateData.payment_id = capturedPaymentId || orderId;
         if ('payment_status' in (deal || {})) updateData.payment_status = 'captured';
+        if ('amount_paid' in (deal || {}) && capturedPayment?.amount) updateData.amount_paid = capturedPayment.amount / 100;
 
         await supabase.from('brand_deals').update(updateData).eq('id', dealId);
 
@@ -2496,7 +2526,7 @@ router.post('/:id/verify-payment', authMiddleware, async (req: AuthenticatedRequ
           deal_id: dealId,
           user_id: userId,
           event: 'PAYMENT_VERIFIED_MANUAL',
-          metadata: { order_id: orderId, source: 'manual_verification' }
+          metadata: { order_id: orderId, payment_id: capturedPaymentId, source: 'manual_verification' }
         });
 
         return res.json({ success: true, status: 'content_making', message: 'Payment verified and deal updated!' });

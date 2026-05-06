@@ -149,6 +149,7 @@ export const QuickOfferSheet: React.FC<QuickOfferSheetProps> = ({
     const creatorName = normalizeCreatorName(creator);
     const creatorUsername = normalizeUsername(creator);
     const creatorPackages = getCreatorPackages(creator);
+    const brandName = profile?.business_name || profile?.first_name || 'Brand';
     
     // Form State
     const [budget, setBudget] = useState('');

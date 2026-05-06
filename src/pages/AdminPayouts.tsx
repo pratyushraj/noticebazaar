@@ -33,6 +33,9 @@ export default function AdminPayouts() {
   const queryClient = useQueryClient();
   const [releasingId, setReleasingId] = useState<string | null>(null);
   const [utrInput, setUtrInput] = useState<Record<string, string>>({});
+  const [reconcileRequestId, setReconcileRequestId] = useState('');
+  const [reconcilePaymentId, setReconcilePaymentId] = useState('');
+  const [reconcileAmountPaid, setReconcileAmountPaid] = useState('');
 
   const { data: payouts = [], isLoading, refetch } = useQuery({
     queryKey: ['admin_payouts'],
@@ -156,6 +159,34 @@ export default function AdminPayouts() {
     },
   });
 
+  const reconcileMutation = useMutation({
+    mutationFn: async (payload: { requestId: string; paymentId?: string; amountPaid?: string }) => {
+      const res = await fetch(`${getApiBaseUrl()}/api/admin/reconcile-collab-request`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${session?.access_token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.success) throw new Error(data.error || 'Failed to reconcile request');
+      return data;
+    },
+    onSuccess: (data) => {
+      toast.success('Request reconciled successfully');
+      setReconcileRequestId('');
+      setReconcilePaymentId('');
+      setReconcileAmountPaid('');
+      queryClient.invalidateQueries({ queryKey: ['admin_payouts'] });
+      queryClient.invalidateQueries({ queryKey: ['admin_metrics'] });
+      refetch();
+    },
+    onError: (err: any) => {
+      toast.error(err.message || 'Failed to reconcile request');
+    },
+  });
+
   const pendingPayouts = payouts.filter((p: any) => p.status === 'CONTENT_APPROVED');
   const releasedPayouts = payouts.filter((p: any) => p.status === 'PAYMENT_RELEASED');
   const refundablePayouts = payouts.filter((p: any) => p.status === 'CONTENT_MAKING' || p.status === 'DISPUTED');
@@ -237,6 +268,55 @@ export default function AdminPayouts() {
 
         <div className="grid lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 space-y-6">
+            <div className="bg-white/5 border border-white/10 rounded-xl p-4 space-y-3">
+              <h2 className="text-lg font-semibold text-white flex items-center gap-2">
+                <ShieldAlert className="w-5 h-5 text-amber-500" />
+                Reconcile Stuck Request
+              </h2>
+              <p className="text-sm text-slate-400">
+                Use this when a collab request has a payment but no linked deal yet.
+              </p>
+              <div className="grid md:grid-cols-3 gap-3">
+                <input
+                  value={reconcileRequestId}
+                  onChange={(e) => setReconcileRequestId(e.target.value)}
+                  placeholder="Request ID"
+                  className="bg-slate-900/80 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-slate-500"
+                />
+                <input
+                  value={reconcilePaymentId}
+                  onChange={(e) => setReconcilePaymentId(e.target.value)}
+                  placeholder="Payment ID (optional)"
+                  className="bg-slate-900/80 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-slate-500"
+                />
+                <input
+                  value={reconcileAmountPaid}
+                  onChange={(e) => setReconcileAmountPaid(e.target.value)}
+                  placeholder="Amount paid (optional)"
+                  className="bg-slate-900/80 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-slate-500"
+                />
+              </div>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => {
+                    if (!reconcileRequestId.trim()) {
+                      toast.error('Request ID is required');
+                      return;
+                    }
+                    reconcileMutation.mutate({
+                      requestId: reconcileRequestId.trim(),
+                      paymentId: reconcilePaymentId.trim() || undefined,
+                      amountPaid: reconcileAmountPaid.trim() || undefined,
+                    });
+                  }}
+                  disabled={reconcileMutation.isPending}
+                  className="px-4 py-2 bg-amber-600 hover:bg-amber-500 text-white rounded-lg font-medium transition-colors flex items-center gap-2 disabled:opacity-50"
+                >
+                  {reconcileMutation.isPending ? <Clock className="w-4 h-4 animate-spin" /> : <ArrowRight className="w-4 h-4" />}
+                  Reconcile Request
+                </button>
+              </div>
+            </div>
             <h2 className="text-lg font-semibold text-white flex items-center gap-2">
               <Clock className="w-5 h-5 text-amber-500" />
               Pending Releases ({pendingPayouts.length})

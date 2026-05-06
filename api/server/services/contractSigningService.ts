@@ -558,15 +558,37 @@ export async function signContractAsCreator(
       signature = created as unknown as SignatureRecord;
     }
 
-    // Update deal status to completed when both parties have signed
+    // Determine whether deal requires payment and transition appropriately
     try {
-      await supabase
-        .from('brand_deals' as any)
-        .update({
-          deal_execution_status: 'completed',
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', request.dealId);
+      const { data: freshDeal } = await supabase
+        .from('brand_deals')
+        .select('deal_type, deal_amount, collab_type, shipping_required')
+        .eq('id', request.dealId)
+        .maybeSingle();
+
+      const requiresPayment = freshDeal
+        ? (freshDeal.deal_type === 'paid' || freshDeal.collab_type === 'paid' || freshDeal.collab_type === 'both' || freshDeal.collab_type === 'hybrid' || Number(freshDeal.deal_amount || 0) > 0)
+        : false;
+
+      if (requiresPayment) {
+        await supabase
+          .from('brand_deals' as any)
+          .update({ status: 'PAYMENT_PENDING', updated_at: new Date().toISOString() })
+          .eq('id', request.dealId);
+
+        await supabase.from('deal_action_logs').insert({
+          deal_id: request.dealId,
+          user_id: request.creatorId,
+          event: 'PAYMENT_PENDING_STARTED',
+          metadata: { reason: 'Creator signed; awaiting brand payment confirmation.' },
+        });
+      } else {
+        // Non-paid deals: mark execution completed
+        await supabase
+          .from('brand_deals' as any)
+          .update({ deal_execution_status: 'completed', updated_at: new Date().toISOString() })
+          .eq('id', request.dealId);
+      }
     } catch (updateError) {
       console.error('[ContractSigningService] Error updating deal status:', updateError);
       // Non-fatal, continue

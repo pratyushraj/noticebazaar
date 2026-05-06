@@ -768,6 +768,8 @@ router.post('/:username/submit', async (req: Request, res: Response) => {
     const userAgent = req.get('user-agent') || 'unknown';
     const isDevelopment = process.env.NODE_ENV === 'development' || !process.env.NODE_ENV;
 
+    // Rate limiting: Temporarily disabled by user request
+    /*
     if (!isDevelopment) {
       const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
 
@@ -792,6 +794,8 @@ router.post('/:username/submit', async (req: Request, res: Response) => {
     } else {
       console.log('[CollabRequests] Rate limiting disabled in development mode');
     }
+    */
+    console.log('[CollabRequests] Rate limiting temporarily disabled by user request');
 
     // Resolve or create canonical brand for agency (deduped by email)
 	    const brandContactId = await resolveOrCreateBrandContact({
@@ -1229,6 +1233,64 @@ router.get('/', async (req: AuthenticatedRequest, res: Response) => {
 });
 
 /**
+ * GET /api/collab-requests/:id
+ * Get a specific collab request by ID. Auth required.
+ */
+router.get('/:id', async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const userId = req.user!.id;
+    const { id } = req.params;
+
+    if (!id) {
+      return res.status(400).json({ success: false, error: 'Request ID is required' });
+    }
+
+    const { data: request, error } = await supabase
+      .from('collab_requests')
+      .select('*')
+      .eq('id', id)
+      .maybeSingle();
+
+    if (error) {
+      console.error('[CollabRequests] Error fetching request:', error);
+      return res.status(500).json({ success: false, error: 'Failed to fetch request' });
+    }
+
+    if (!request) {
+      return res.status(404).json({ success: false, error: 'Request not found' });
+    }
+
+    // Security check: ensure the request belongs to the authenticated creator
+    if (request.creator_id !== userId && req.user?.role !== 'admin') {
+      return res.status(403).json({ success: false, error: 'Access denied' });
+    }
+
+    // Enrich with brand verification status
+    const { data: brandData } = await supabase
+      .from('brands')
+      .select('verified')
+      .ilike('name', request.brand_name)
+      .maybeSingle();
+
+    const enriched = { 
+      ...request, 
+      brand_verified: Boolean(brandData?.verified) 
+    };
+
+    res.json({
+      success: true,
+      request: enriched,
+    });
+  } catch (error: any) {
+    console.error('[CollabRequests] Error in GET /:id:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Internal server error',
+    });
+  }
+});
+
+/**
  * PATCH /api/collab-requests/:id/counter
  * Submit a counter offer for a collab request. Auth required.
  */
@@ -1644,6 +1706,32 @@ router.patch('/:id/accept', async (req: AuthenticatedRequest, res: Response) => 
       user_agent: userAgent,
       metadata: { otp_bypassed: true },
     }).then(({ error: logErr }) => { if (logErr) console.warn('[CollabRequests] Audit log insert failed:', logErr); });
+
+    // Fetch deal token for contract review link
+    let contractReadyToken = '';
+    try {
+      const { data: tokenData } = await supabase
+        .from('contract_ready_tokens')
+        .select('token')
+        .eq('deal_id', deal.id)
+        .maybeSingle();
+      if (tokenData?.token) contractReadyToken = tokenData.token;
+    } catch (tokenError) {
+      console.warn('[CollabRequests] Could not fetch contract token for email:', tokenError);
+    }
+
+    // Notify brand (non-blocking)
+    if (request.brand_email) {
+      void sendCollabRequestAcceptedEmail(request.brand_email, {
+        creatorName: creatorName,
+        brandName: request.brand_name || 'Brand',
+        dealAmount: request.exact_budget || request.barter_value || 0,
+        dealType: (request.collab_type === 'barter' ? 'barter' : 'paid') as any,
+        deliverables: Array.isArray(request.deliverables) ? request.deliverables : ['Content Creation'],
+        contractReadyToken: contractReadyToken,
+        barterValue: request.barter_value,
+      }).catch(e => console.warn('[CollabRequests] Brand notification email failed:', e));
+    }
 
     return res.json({
       success: true,

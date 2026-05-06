@@ -136,6 +136,45 @@ const safeImageSrc = (url: string | null | undefined) => {
   return optimizeImage(url, { width: 300, height: 300, fit: 'cover' });
 };
 
+const StatusBadge = ({ status, isDark }: { status: string, isDark: boolean }) => {
+    const config: Record<string, { bg: string; text: string; label: string; icon?: any }> = {
+        'new': { bg: 'bg-emerald-100 dark:bg-emerald-500/20', text: 'text-emerald-700 dark:text-emerald-400', label: 'NEW OFFER' },
+        'pending': { bg: 'bg-slate-100 dark:bg-white/10', text: 'text-slate-600 dark:text-white/60', label: 'AWAITING RESPONSE' },
+        'countered': { bg: 'bg-blue-100 dark:bg-blue-500/20', text: 'text-blue-700 dark:text-blue-400', label: 'COUNTER OFFER' },
+        'active': { bg: 'bg-emerald-50 dark:bg-emerald-500/10', text: 'text-emerald-700 dark:text-emerald-400', label: 'ACTIVE' },
+        'content_making': { bg: 'bg-sky-50 dark:bg-sky-500/10', text: 'text-sky-700 dark:text-sky-400', label: 'MAKING CONTENT' },
+        'content_delivered': { bg: 'bg-purple-50 dark:bg-purple-500/10', text: 'text-purple-700 dark:text-purple-400', label: 'REVIEW CONTENT' },
+        'revision_requested': { bg: 'bg-amber-50 dark:bg-amber-500/10', text: 'text-amber-700 dark:text-amber-400', label: 'REVISION' },
+        'payment_pending': { bg: 'bg-yellow-50 dark:bg-yellow-500/10', text: 'text-yellow-700 dark:text-yellow-400', label: 'PENDING PAYMENT' },
+        'payment_released': { bg: 'bg-green-50 dark:bg-green-500/10', text: 'text-green-700 dark:text-green-400', label: '💰 PAID' },
+        'completed': { bg: 'bg-green-100 dark:bg-green-500/20', text: 'text-green-700 dark:text-green-400', label: 'COMPLETED' },
+    };
+    const normalizeStatus = (status: string) => {
+        const s = String(status || '').toLowerCase();
+        if (s.includes('payment_released') || s.includes('paid_out')) return 'payment_released';
+        if (s.includes('complete') || s.includes('closed')) return 'completed';
+        if (s.includes('payment_pending')) return 'payment_pending';
+        if (s.includes('making')) return 'content_making';
+        if (s.includes('delivered') || s.includes('review')) return 'content_delivered';
+        if (s.includes('revision')) return 'revision_requested';
+        if (s.includes('counter')) return 'countered';
+        if (s.includes('active') || s.includes('sign') || s.includes('execut') || s.includes('ship') || s.includes('accepted')) return 'active';
+        return 'pending';
+    };
+
+    const c = config[normalizeStatus(status)] ?? config['pending'];
+    return (
+        <span className={cn(
+            "px-2.5 py-1 rounded-full text-[9px] font-black uppercase tracking-[0.12em] flex items-center gap-1.5 shadow-sm border border-current/10", 
+            c.bg, 
+            c.text
+        )}>
+            <div className="w-1 h-1 rounded-full bg-current animate-pulse" />
+            {c.label}
+        </span>
+    );
+};
+
 const uniqBy = <T,>(items: T[], key: (item: T) => string) => {
   const seen = new Set<string>();
   const out: T[] = [];
@@ -164,10 +203,58 @@ const dealFingerprint = (row: BrandDeal | null | undefined) => {
   const creator = String(row?.creator_id || row?.profiles?.id || '');
   const amount = String(row?.deal_amount || row?.exact_budget || row?.barter_value || row?.product_value || '');
   const due = String(row?.due_date || row?.deadline || '');
-  const deliverables = String(formatDeliverables(row) || row?.deliverables || row?.collab_type || '').toLowerCase();
+  const deliverables = String(parseDeliverablesArray(row).join(', ') || row?.deliverables || row?.collab_type || '').toLowerCase();
   // Important: do NOT include created_at here. Some environments duplicate the same deal with different ids/timestamps.
   // This fallback is intentionally aggressive and only used when there is no contract identifier.
   return `fallback:${creator}:${amount}:${due}:${deliverables}`;
+};
+
+const ProgressSteps = ({ currentStep, isDark, steps }: { currentStep: number, isDark: boolean, steps: string[] }) => {
+    return (
+        <div className="flex items-center justify-between w-full px-2 mb-8">
+            {steps.map((step, idx) => {
+                const isActive = idx <= currentStep;
+                const isCurrent = idx === currentStep;
+                return (
+                    <React.Fragment key={step}>
+                        <div className="flex flex-col items-center gap-2 relative">
+                            <div className={cn(
+                                "w-8 h-8 rounded-full flex items-center justify-center border-2 transition-all duration-500",
+                                isActive 
+                                    ? (isDark ? "bg-emerald-500 border-emerald-500 text-white shadow-[0_0_15px_rgba(16,185,129,0.4)]" : "bg-emerald-600 border-emerald-600 text-white")
+                                    : (isDark ? "bg-[#0B0F14] border-white/10 text-white/20" : "bg-slate-50 border-slate-200 text-slate-300")
+                            )}>
+                                {isActive && !isCurrent ? (
+                                    <Check className="w-4 h-4 stroke-[3]" />
+                                ) : (
+                                    <span className="text-[11px] font-black">{idx + 1}</span>
+                                )}
+                            </div>
+                            <span className={cn(
+                                "text-[9px] font-black uppercase tracking-wider absolute -bottom-5 whitespace-nowrap transition-opacity duration-300",
+                                isCurrent ? "opacity-100" : "opacity-40",
+                                isDark ? "text-white" : "text-slate-600"
+                            )}>
+                                {step}
+                            </span>
+                        </div>
+                        {idx < steps.length - 1 && (
+                            <div className="flex-1 h-[2px] mx-2 -mt-4 bg-white/5 relative overflow-hidden">
+                                <motion.div 
+                                    initial={{ width: 0 }}
+                                    animate={{ width: isActive ? "100%" : "0%" }}
+                                    className={cn(
+                                        "absolute inset-0",
+                                        isDark ? "bg-emerald-500" : "bg-emerald-600"
+                                    )}
+                                />
+                            </div>
+                        )}
+                    </React.Fragment>
+                );
+            })}
+        </div>
+    );
 };
 
 const uniqDeals = (rows: BrandDeal[]) => {
@@ -179,7 +266,12 @@ const startOfLocalMonth = (d: Date) => new Date(d.getFullYear(), d.getMonth(), 1
 
 const sameLocalMonth = (a: Date, b: Date) => a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth();
 
-const normalizeStatus = (status: string | null | undefined) => String(status || '').trim().toLowerCase();
+const normalizeStatus = (raw: any) =>
+  String(raw || '')
+    .trim()
+    .toUpperCase()
+    .replaceAll(' ', '_')
+    .replaceAll('-', '_');
 
 const firstNameish = (profile: Profile | null | undefined, fallbackName?: string) => {
   const nameParts = [profile?.first_name, profile?.last_name].filter(Boolean).join(' ');
@@ -234,9 +326,20 @@ function getSelectedPackageLabel(row: BrandDeal | null | undefined) {
   return '';
 }
 
-function formatDeliverables(row: BrandDeal | null | undefined) {
-  const d = (row as any)?.request_deliverables || row?.deliverables;
-  if (!d) return '';
+function parseDeliverablesArray(row: BrandDeal | null | undefined): string[] {
+  const raw = (row as any)?.request_deliverables || row?.deliverables;
+  if (!raw) return [];
+
+  let d = raw;
+  // Handle stringified JSON arrays (common from Supabase/Postgres)
+  if (typeof d === 'string' && d.trim().startsWith('[') && d.trim().endsWith(']')) {
+    try {
+      const parsed = JSON.parse(d);
+      if (Array.isArray(parsed)) d = parsed;
+    } catch (e) {
+      // Not valid JSON, continue with string splitting
+    }
+  }
 
   const uniq = (parts: string[]) => {
     const seen = new Set<string>();
@@ -244,11 +347,8 @@ function formatDeliverables(row: BrandDeal | null | undefined) {
     for (const p of parts) {
       const clean = String(p || '').trim();
       if (!clean) continue;
-      // Smarter normalization for duplicate detection (handles unboxing/review variants)
       const key = clean.toLowerCase()
         .replace(/unboxing \/ review/g, 'review / unboxing')
-        .replace(/unboxing or review/g, 'review / unboxing')
-        .replace(/product unboxing/g, 'product review')
         .replace(/\//g, ' ')
         .replace(/\s+/g, ' ')
         .trim();
@@ -258,39 +358,33 @@ function formatDeliverables(row: BrandDeal | null | undefined) {
     }
     return out;
   };
-  if (typeof d === 'string') {
-    const parts = uniq(
-      d
-        .split(/[,•\n]+/g)
-        .map((x) => x.trim())
-        .filter(Boolean)
-    );
-    // If it doesn't look like a list, keep the raw string.
-    if (parts.length <= 1) return d.trim();
-    return parts.slice(0, 3).join(' • ');
-  }
+
   if (Array.isArray(d)) {
-    const parts = uniq(
-      d
-        .map((x: any) => {
-          if (!x) return null;
-          if (typeof x === 'string') return x.trim();
-          const label = x?.type || x?.name || x?.deliverable;
-          const qty = x?.qty || x?.count || x?.quantity;
-          if (label && qty) return `${qty} ${label}`;
-          if (label) return String(label);
-          return null;
-        })
-        .filter(Boolean)
+    return uniq(
+      d.map((x: any) => {
+        if (!x) return null;
+        if (typeof x === 'string') return x.trim();
+        const label = x?.type || x?.name || x?.deliverable;
+        const qty = x?.qty || x?.count || x?.quantity;
+        if (label && qty) return `${qty} ${label}`;
+        if (label) return String(label);
+        return null;
+      }).filter(Boolean) as string[]
     );
-    return parts.slice(0, 3).join(' • ');
   }
-  try {
-    const asJson = JSON.stringify(d);
-    return asJson.length > 5 ? asJson : '';
-  } catch {
-    return '';
+
+  if (typeof d === 'string') {
+    return uniq(d.split(/[,•\n]+/g).map((x) => x.trim()).filter(Boolean));
   }
+
+  return [];
+}
+
+function formatDeliverables(row: BrandDeal | null | undefined) {
+  const parts = parseDeliverablesArray(row);
+  if (parts.length === 0) return '';
+  if (parts.length === 1) return parts[0];
+  return parts.slice(0, 3).join(' • ');
 }
 
 function formatPackageSummary(row: BrandDeal | null | undefined) {
@@ -344,15 +438,15 @@ const collectSignatureHints = (row: BrandDeal | null | undefined) => {
 
   const creatorHints = truthyKeys(/(creator.*signed|signed.*creator|creator_signature|creator_esign|creator_signed_at|creator_otp_verified)/i);
   const status = normalizeStatus(row?.status);
-  if (status === 'accepted' || status.includes('accepted_pending_otp')) {
-    creatorHints.push('status_accepted');
+  if (status === 'ACCEPTED' || status.includes('ACCEPTED_PENDING_OTP')) {
+    creatorHints.push('status_ACCEPTED');
   }
 
   const brandHints = truthyKeys(/(brand.*signed|signed.*brand|brand_signature|brand_esign|brand_signed_at|brand_otp_verified)/i);
-  const paymentStatus = String((row as any)?.payment_status || row?.raw?.payment_status || '').trim().toLowerCase();
+  const paymentStatus = String((row as any)?.payment_status || row?.raw?.payment_status || '').trim().toUpperCase();
   const paymentId = String((row as any)?.payment_id || row?.raw?.payment_id || '').trim();
   const hasCapturedPayment = 
-    ['captured', 'paid', 'authorized', 'processed', 'successful', 'sent'].includes(paymentStatus) || 
+    ['CAPTURED', 'PAID', 'AUTHORIZED', 'PROCESSED', 'SUCCESSFUL', 'SENT'].includes(paymentStatus) || 
     (paymentId.startsWith('pay_') && Number((row as any)?.amount_paid || row?.raw?.amount_paid || 0) > 0) ||
     !!((row as any)?.paid_at || row?.raw?.paid_at || (row as any)?.payment_sent_at || row?.raw?.payment_sent_at || (row as any)?.utr_number || (row as any)?.raw?.utr_number) ||
     String((row as any)?.escrow_status || row?.raw?.escrow_status || '').toLowerCase() === 'funded';
@@ -484,30 +578,30 @@ const brandDealCardUi = (row: BrandDeal | null | undefined) => {
                   : primaryActionLabel === 'Ship Product'
                     ? 'Please ship the product to the creator'
                     : 'Creator is now crafting your content')
-              : (s === 'FULLY_EXECUTED' || s === 'CONTRACT_READY')
-                ? (requiresShipping
-                    ? (requiresPayment && !hasCapturedPayment
-                        ? 'Contract signed — fund escrow before shipment'
-                        : hasDeliveredShipping
-                          ? 'Creator has received the product and can create content'
-                          : hasShipped
-                            ? 'Product shipped — waiting for creator receipt'
-                            : 'Contract signed — please ship the product')
-                    : 'Contract signed — awaiting content')
-                : s === 'AWAITING_CREATOR_SIGNATURE' || s === 'SENT'
-                  ? (creatorSigned && !brandSigned 
-                      ? "Creator has signed — Review and sign to start" 
-                      : brandSigned && !creatorSigned
-                        ? "Waiting for creator's signature"
-                        : "Agreement sent — waiting for signatures")
-                  : 'Review the agreement to get started';
+      : (s === 'FULLY_EXECUTED' || s === 'CONTRACT_READY' || s === 'SENT' || s === 'AWAITING_CREATOR_SIGNATURE' || s === 'AWAITING_BRAND_SIGNATURE')
+        ? (creatorSigned && brandSigned
+          ? (requiresShipping
+              ? (requiresPayment && !hasCapturedPayment
+                  ? 'Contract signed — fund escrow before shipment'
+                  : hasDeliveredShipping
+                    ? 'Creator has received the product and can create content'
+                    : hasShipped
+                      ? 'Product shipped — waiting for creator receipt'
+                      : 'Contract signed — please ship the product')
+              : 'Contract signed — awaiting content')
+          : (creatorSigned && !brandSigned
+              ? (requiresPayment ? "Creator has signed — Fund escrow to start" : "Creator has signed — Review and sign contract")
+              : (brandSigned && !creatorSigned
+                  ? "Waiting for creator's signature"
+                  : "Review the agreement to get started")))
+        : 'Review the agreement to get started';
 
   const step =
     s === 'COMPLETED' ? 5
       : (s === 'CONTENT_APPROVED' || s === 'PAYMENT_RELEASED') ? 5
         : (s === 'CONTENT_DELIVERED' || s === 'REVISION_DONE' || s === 'DISPUTED' || s === 'DISPUTE_ARBITRATION' || s === 'DISPUTE_PARTIAL_REFUND') ? 4
           : (s === 'CONTENT_MAKING' || s === 'REVISION_REQUESTED') ? 3
-            : (s === 'FULLY_EXECUTED' || s === 'PAYMENT_PENDING' || s === 'AWAITING_BRAND_ADDRESS') ? 2
+            : (s === 'FULLY_EXECUTED' || s === 'CONTRACT_READY' || s === 'PAYMENT_PENDING' || s === 'AWAITING_BRAND_ADDRESS') ? 2
               : 1;
 
   return { status: s, human, stageBadge, needsAction, primaryActionLabel, statusLine, step, ctaTone: primaryCta.tone, ctaDisabled: primaryCta.disabled, ctaAction: primaryCta.action };
@@ -526,6 +620,20 @@ const BrandMobileDashboard = ({
 }: BrandMobileDashboardProps) => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
+  
+  // Optimistic UI state to handle slow background refreshes
+  const [dealOverrides, setDealOverrides] = useState<Record<string, BrandDeal>>({});
+  
+  // Merge prop deals with our optimistic overrides
+  const effectiveDeals = useMemo(() => {
+    return (deals || []).map(d => {
+      if (d.id && dealOverrides[d.id]) {
+        return { ...d, ...dealOverrides[d.id] };
+      }
+      return d;
+    });
+  }, [deals, dealOverrides]);
+
   const [featuredCreators, setFeaturedCreators] = useState<any[]>([]);
   const [isLoadingFeatured, setIsLoadingFeatured] = useState(false);
   const tabParam = searchParams.get('tab');
@@ -793,7 +901,14 @@ const BrandMobileDashboard = ({
       return;
     }
 
-    if (action === 'track_progress') {
+    if (action === 'review_sign_contract') {
+      if (item) {
+        void startBrandSigningFlow(item);
+      }
+      return;
+    }
+
+    if (action === 'view_collaboration' || action === 'track_progress') {
       setSelectedDealPage(item);
       if (item && isBarterLikeCollab(item) && !isPaidLikeCollab(item)) {
         setDdShowShippingBox(true);
@@ -873,7 +988,7 @@ const BrandMobileDashboard = ({
       const updated = findDeal(overlayDeal.id);
       if (updated && updated !== overlayDeal) setOverlayDeal(updated);
     }
-  }, [deals, selectedOffer?.id, selectedDealPage?.id, overlayDeal?.id]);
+  }, [effectiveDeals, selectedOffer?.id, selectedDealPage?.id, overlayDeal?.id]);
 
   // ── Initialize hoisted deal details drafts when deal changes ──────────────
   useEffect(() => {
@@ -1208,7 +1323,7 @@ const BrandMobileDashboard = ({
       href: '/brand-dashboard?tab=collabs',
     }));
     return uniqBy([...fromReqs, ...fromDeals].filter((c) => c.id), (c) => c.id).slice(0, 12);
-  }, [requests, deals]);
+  }, [requests, effectiveDeals]);
 
   const { data: suggestedCreators = [], isLoading: isLoadingSuggestedCreators } = useSupabaseQuery<SuggestedCreator[]>(
     ['brandSuggestedCreators'],
@@ -1262,16 +1377,26 @@ const BrandMobileDashboard = ({
     };
   }, [creatorSearch]);
 
+  const linkedDealRequestIds = useMemo(() => {
+    return new Set(
+      (effectiveDeals || [])
+        .map((d: any) => String(d?.collab_request_id || d?.request_id || d?.collabRequestId || '').trim())
+        .filter(Boolean)
+    );
+  }, [effectiveDeals]);
+
 	  // Pending offers = requests that haven't been accepted/declined yet
 		  const pendingOffersList = useMemo(() => {
 		    const base = uniqById((requests || []).filter((o: any) => {
 		      const s = normalizeStatus(o?.status);
-		      return !s || s === 'pending' || s === 'countered' || s === 'sent' || s === 'offer_sent' || s === 'action_required' || s === 'action-required' || s === 'submitted';
+          const requestId = String(o?.id || '').trim();
+          if (requestId && linkedDealRequestIds.has(requestId)) return false;
+		      return !s || ['PENDING', 'COUNTERED', 'SENT', 'OFFER_SENT', 'ACTION_REQUIRED', 'SUBMITTED'].includes(s);
 		    }));
       // Sort: counters first, then expiring soonest, then newest.
       return base.sort((a: any, b: any) => {
-        const aCounter = normalizeStatus(a?.status) === 'countered' ? 1 : 0;
-        const bCounter = normalizeStatus(b?.status) === 'countered' ? 1 : 0;
+        const aCounter = normalizeStatus(a?.status) === 'COUNTERED' ? 1 : 0;
+        const bCounter = normalizeStatus(b?.status) === 'COUNTERED' ? 1 : 0;
         if (aCounter !== bCounter) return bCounter - aCounter;
         const aExp = a?.offer_expires_at || a?.expires_at || null;
         const bExp = b?.offer_expires_at || b?.expires_at || null;
@@ -1282,34 +1407,30 @@ const BrandMobileDashboard = ({
         const bCreated = b?.created_at ? new Date(b.created_at).getTime() : 0;
         return bCreated - aCreated;
 	      });
-		  }, [requests]);
+		  }, [requests, linkedDealRequestIds]);
 
       // Backward-compatible alias (older UI used `offers`).
       const offers = pendingOffersList;
 
   const activeDealsList = useMemo(() => {
     // 1. Get all creator IDs that have any deal (active or completed)
-    const allDealCreatorIds = new Set((deals || []).map((d: any) => String(d.creator_id || '')).filter(Boolean));
+    const allDealCreatorIds = new Set((effectiveDeals || []).map((d: any) => String(d.creator_id || '')).filter(Boolean));
 
     // 2. Filter active brand_deals
-    const fromDeals = uniqDeals((deals || []).filter((d: any) => {
+    const fromDeals = uniqDeals((effectiveDeals || []).filter((d: any) => {
       const s = normalizeStatus(d?.status);
       if (!s) return true;
-      if (s === 'accepted_pending_otp') return false;
+      if (s === 'ACCEPTED_PENDING_OTP') return false;
       
       // Explicitly exclude statuses that are clearly finished
-      if (s.includes('cancel')) return false;
+      if (s.includes('CANCEL')) return false;
       
       const isActuallyCompleted = 
-        s.includes('complete') || 
-        s.includes('completed') || 
-        s.includes('closed') || 
-        s.includes('paid') || 
-        s.includes('released') ||
-        s === 'content_approved' ||
-        s === 'payment_released';
+        ['COMPLETED', 'CLOSED', 'RELEASED', 'PAID', 'CONTENT_APPROVED', 'PAYMENT_RELEASED'].includes(s) || 
+        s.includes('COMPLETE') ||
+        s.includes('CANCEL');
       
-      const isApprovedBarter = (s === 'approved' || s === 'content_approved') && isBarterLikeCollab(d) && !isPaidLikeCollab(d);
+      const isApprovedBarter = (s === 'APPROVED' || s === 'CONTENT_APPROVED') && isBarterLikeCollab(d) && !isPaidLikeCollab(d);
       
       if (isActuallyCompleted || isApprovedBarter) return false;
       return true;
@@ -1319,36 +1440,37 @@ const BrandMobileDashboard = ({
     const fromAcceptedRequests = (requests || []).filter((r: any) => {
       const s = normalizeStatus(r?.status);
       const rid = String(r.creator_id || '');
-      return s === 'accepted' && !allDealCreatorIds.has(rid);
+      return s === 'ACCEPTED' && !allDealCreatorIds.has(rid);
     });
 
     return uniqDeals([...fromDeals, ...fromAcceptedRequests] as any[]);
-  }, [deals, requests]);
+  }, [effectiveDeals, requests]);
 
   const completedDealsList = useMemo(() => {
-    return uniqDeals((deals || []).filter((d: any) => {
+    return uniqDeals((effectiveDeals || []).filter((d: any) => {
       const s = normalizeStatus(d?.status);
       if (!s) return false;
       const isActuallyCompleted = 
-        s.includes('complete') || 
-        s.includes('completed') || 
-        s.includes('closed') || 
-        s.includes('paid') || 
-        s.includes('released') ||
-        s === 'content_approved' ||
-        s === 'payment_released' ||
-        s.includes('cancel');
+        ['COMPLETED', 'CLOSED', 'RELEASED', 'PAID', 'CONTENT_APPROVED', 'PAYMENT_RELEASED'].includes(s) || 
+        s.includes('COMPLETE') ||
+        s.includes('CANCEL');
       
-      const isApprovedBarter = (s === 'approved' || s === 'content_approved') && isBarterLikeCollab(d) && !isPaidLikeCollab(d);
+      const isApprovedBarter = (s === 'APPROVED' || s === 'CONTENT_APPROVED') && isBarterLikeCollab(d) && !isPaidLikeCollab(d);
       return isActuallyCompleted || isApprovedBarter;
     }) as any[]);
-  }, [deals]);
+  }, [effectiveDeals]);
 
   const visibleCollabItems = useMemo(() => {
     if (activeCollabTab === 'active') return activeDealsList;
     if (activeCollabTab === 'completed') return completedDealsList;
     // Include BOTH pending offers (requests) AND active deals that need brand attention (e.g. signature, review).
-    const needsActionDeals = activeDealsList.filter((d: any) => brandDealCardUi(d).needsAction);
+    // Exclude PAYMENT_PENDING deals from the "awaiting response" bucket so fully-signed paid deals
+    // are shown under Active (they still surface an action for the brand to fund escrow).
+    const needsActionDeals = activeDealsList.filter((d: any) => {
+      const s = normalizeStatus(d?.status);
+      if (s === 'PAYMENT_PENDING') return false;
+      return brandDealCardUi(d).needsAction;
+    });
     return uniqById([...pendingOffersList, ...needsActionDeals]);
   }, [activeCollabTab, activeDealsList, completedDealsList, pendingOffersList]);
 
@@ -1449,14 +1571,14 @@ const BrandMobileDashboard = ({
 
   useEffect(() => {
     // Show prompt if supported, not subscribed, and not dismissed
-    const hasDeals = (deals?.length || 0) > 0 || (requests?.length || 0) > 0;
+    const hasDeals = (effectiveDeals?.length || 0) > 0 || (requests?.length || 0) > 0;
     if (isPushSupported && hasVapidKey && pushPermission === 'default' && !isPushSubscribed && !isPushPromptDismissed && !pushPromptDismissedLocal && !isPushBusy && activeTab === 'dashboard' && !activeSettingsPage && hasDeals) {
         const timer = setTimeout(() => {
             setShowPushPrompt(true);
         }, 3000);
         return () => clearTimeout(timer);
     }
-  }, [isPushSupported, hasVapidKey, pushPermission, isPushSubscribed, isPushPromptDismissed, pushPromptDismissedLocal, isPushBusy, activeTab, activeSettingsPage, deals?.length, requests?.length]);
+  }, [isPushSupported, hasVapidKey, pushPermission, isPushSubscribed, isPushPromptDismissed, pushPromptDismissedLocal, isPushBusy, activeTab, activeSettingsPage, effectiveDeals?.length, requests?.length]);
 
   const handleEnablePush = async () => {
     try {
@@ -1504,7 +1626,7 @@ const BrandMobileDashboard = ({
 
     const title = offer?.profiles ? firstNameish(offer.profiles) : offer?.creator_name || offer?.creator_email || 'Creator';
     const username = String(offer?.profiles?.username || '').trim();
-    const isMarkedCompleted = normalizeStatus(offer?.status) === 'completed';
+    const isMarkedCompleted = normalizeStatus(offer?.status) === 'COMPLETED';
     const canMarkComplete = activeCollabTab === 'active' && !!offer?.id && !isMarkedCompleted && (offer?.deal_amount !== undefined || offer?.due_date !== undefined);
     const packageSummary = formatPackageSummary(offer);
     const deliverables = formatDeliverables(offer) || packageSummary;
@@ -1516,11 +1638,11 @@ const BrandMobileDashboard = ({
       : null;
     const status = String(offer?.status || '').toUpperCase() || 'PENDING';
     const contractUrl = offer?.safe_contract_url || offer?.signed_contract_url || offer?.contract_file_url || null;
-    const isRequest = ['pending', 'countered', 'declined', 'expired'].includes(normalizeStatus(offer?.status)) && offer?.deal_amount === undefined;
+    const isRequest = ['PENDING', 'COUNTERED', 'DECLINED', 'EXPIRED'].includes(normalizeStatus(offer?.status)) && offer?.deal_amount === undefined;
     const sentAt = offer?.created_at || offer?.updated_at || null;
     const expires = offerExpiryLabel(offer);
-    const requestStage = normalizeStatus(offer?.status) === 'countered' ? 'CREATOR COUNTERED' : 'AWAITING RESPONSE';
-    const isCounteredRequest = normalizeStatus(offer?.status) === 'countered';
+    const requestStage = normalizeStatus(offer?.status) === 'COUNTERED' ? 'CREATOR COUNTERED' : 'AWAITING RESPONSE';
+    const isCounteredRequest = normalizeStatus(offer?.status) === 'COUNTERED';
 
     const updateRequest = async (path: string, body?: any) => {
       const { data: { session } } = await supabase.auth.getSession();
@@ -2060,7 +2182,7 @@ const BrandMobileDashboard = ({
                 onClick={() => {
                   triggerHaptic(HapticPatterns.light);
                   setSelectedOffer(null);
-                  setActiveTab('collabs', normalizeStatus(offer?.status) === 'accepted' ? 'active' : activeCollabTab);
+                  setActiveTab('collabs', normalizeStatus(offer?.status) === 'ACCEPTED' ? 'active' : activeCollabTab);
                 }}
                 className={cn('p-4 rounded-2xl border text-left transition-all active:scale-[0.99]', isDark ? 'bg-card border-border hover:bg-secondary/50' : 'bg-background border-border hover:bg-background')}
               >
@@ -2127,6 +2249,7 @@ const BrandMobileDashboard = ({
     const creatorName = firstNameish(offer?.profiles, offer?.creator_name || offer?.creator_email);
     const creatorUsername = String(offer?.profiles?.username || '').trim();
     const packageSummary = formatPackageSummary(offer);
+    const deliverablesList = parseDeliverablesArray(offer);
     const deliverables = formatDeliverables(offer) || packageSummary;
     const amount = Number(offer?.deal_amount || offer?.exact_budget || offer?.barter_value || offer?.product_value || 0);
     const deadlineValue = offer?.due_date || offer?.deadline;
@@ -2412,15 +2535,15 @@ const BrandMobileDashboard = ({
             <div className={cn(
               'rounded-[42px] border p-8 overflow-hidden relative shadow-2xl transition-all duration-700',
               isDark 
-                ? 'bg-gradient-to-br from-emerald-500/20 via-sky-500/5 to-transparent border-white/5' 
-                : 'bg-gradient-to-br from-emerald-50 via-sky-50 to-white border-primary/20 shadow-primary/10'
+                ? 'bg-gradient-to-br from-emerald-500/20 via-sky-500/5 to-[#061318] border-white/5 shadow-black/40' 
+                : 'bg-gradient-to-br from-emerald-50 via-sky-50 to-white border-emerald-100 shadow-emerald-900/5'
             )}>
               <div className="absolute top-0 right-0 p-8 opacity-[0.03] rotate-12">
                 <Sparkles size={180} />
               </div>
               
               <div className="relative z-10">
-                <div className="flex items-center justify-between mb-5">
+                <div className="flex items-center justify-between mb-8">
                   <div className={cn('px-4 py-1.5 rounded-full border text-[10px] font-black uppercase tracking-widest shadow-sm flex items-center gap-2', dealUi.tone)}>
                     <div className="w-1.5 h-1.5 rounded-full bg-current animate-pulse" />
                     {dealUi.label}
@@ -2429,6 +2552,15 @@ const BrandMobileDashboard = ({
                     {offer?.collab_type?.toUpperCase() || 'COLLAB'}
                   </div>
                 </div>
+
+                <ProgressSteps 
+                  currentStep={dealUi.stepIndex} 
+                  isDark={isDark} 
+                  steps={requiresShipping 
+                    ? ['Agreement', 'Shipping', 'Content', 'Review', 'Paid']
+                    : ['Terms', 'Agreement', 'Content', 'Review', 'Paid']
+                  } 
+                />
 
                 <div className="text-center mb-5">
                   <p className={cn('text-[11px] font-black uppercase tracking-widest opacity-40 mb-3', textColor)}>Investment</p>
@@ -2440,20 +2572,20 @@ const BrandMobileDashboard = ({
                   </div>
                 </div>
 
-                <div className="flex items-center justify-center gap-6 py-5 border-y border-white/5 bg-white/[0.02] -mx-4 px-4 mb-5">
+                <div className="flex items-center justify-center gap-6 py-5 border-y border-white/5 bg-white/[0.02] backdrop-blur-md -mx-4 px-4 mb-5">
                   <div className="text-center">
-                    <p className={cn('text-[9px] font-black uppercase tracking-widest opacity-40 mb-1.5', textColor)}>Package</p>
-                    <p className={cn('text-[13px] font-bold', textColor)}>{packageSummary}</p>
+                    <p className={cn('text-[9px] font-black uppercase tracking-widest opacity-40 mb-1.5', textColor)}>Service</p>
+                    <p className={cn('text-[13px] font-black tracking-tight', textColor)}>{packageSummary}</p>
                   </div>
                   <div className="w-px h-8 bg-white/10" />
                   <div className="text-center">
                     <p className={cn('text-[9px] font-black uppercase tracking-widest opacity-40 mb-1.5', textColor)}>Rights</p>
-                    <p className={cn('text-[13px] font-bold', textColor)}>{rightsLabel}</p>
+                    <p className={cn('text-[13px] font-black tracking-tight', textColor)}>{rightsLabel}</p>
                   </div>
                   <div className="w-px h-8 bg-white/10" />
                   <div className="text-center">
                     <p className={cn('text-[9px] font-black uppercase tracking-widest opacity-40 mb-1.5', textColor)}>Platform</p>
-                    <p className={cn('text-[13px] font-bold', textColor)}>{platformLabel}</p>
+                    <p className={cn('text-[13px] font-black tracking-tight', textColor)}>{platformLabel}</p>
                   </div>
                 </div>
 
@@ -2490,8 +2622,63 @@ const BrandMobileDashboard = ({
                   Package
                 </div>
               </div>
-              <div className={cn('p-5 rounded-[28px] border', isDark ? 'bg-card/40 border-white/5' : 'bg-white border-slate-100 shadow-sm')}>
-                <p className={cn('text-[13px] font-bold leading-relaxed', textColor)}>{deliverables}</p>
+              <div className={cn(
+                'p-6 rounded-[32px] border backdrop-blur-xl', 
+                isDark ? 'bg-white/[0.03] border-white/5 shadow-2xl' : 'bg-white border-slate-100 shadow-xl shadow-slate-200/40'
+              )}>
+                {deliverablesList.length > 0 ? (
+                  <ul className="space-y-4">
+                    {deliverablesList.map((item, idx) => (
+                      <li key={idx} className="flex items-start gap-4">
+                        <div className={cn(
+                          "mt-1 w-5 h-5 rounded-full flex items-center justify-center shrink-0 transition-colors",
+                          isDark ? "bg-emerald-500/20 text-emerald-400" : "bg-emerald-100 text-emerald-600"
+                        )}>
+                          <Check className="w-3 h-3 stroke-[3]" />
+                        </div>
+                        <span className={cn('text-[15px] font-bold leading-snug', isDark ? 'text-white/90' : 'text-slate-700')}>{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className={cn('text-[15px] font-bold', textColor)}>{deliverables}</p>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Product Highlights */}
+          {barterProductName && (
+            <div className="mb-6">
+              <div className="flex items-center justify-between mb-4 px-1">
+                <SectionTitle>Product to showcase</SectionTitle>
+                <div className={cn('px-2.5 py-1 rounded-lg border text-[9px] font-black uppercase tracking-widest', isDark ? 'bg-rose-500/10 text-rose-400 border-rose-500/20' : 'bg-rose-50 text-rose-600 border-rose-100')}>
+                  Inventory
+                </div>
+              </div>
+              <div className={cn(
+                'rounded-[32px] border overflow-hidden',
+                isDark ? 'bg-white/[0.03] border-white/5' : 'bg-white border-slate-100 shadow-xl'
+              )}>
+                {offer?.form_data?.productPhoto && (
+                  <div className="aspect-video w-full relative overflow-hidden">
+                    <img 
+                      src={offer.form_data.productPhoto} 
+                      alt={barterProductName} 
+                      className="w-full h-full object-cover"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                  </div>
+                )}
+                <div className="p-5 flex items-center gap-4">
+                  <div className={cn('w-12 h-12 rounded-2xl flex items-center justify-center shrink-0', isDark ? 'bg-rose-500/20' : 'bg-rose-50')}>
+                    <Package className={cn('w-6 h-6', isDark ? 'text-rose-400' : 'text-rose-600')} />
+                  </div>
+                  <div className="min-w-0">
+                    <p className={cn('text-[16px] font-black tracking-tight truncate', textColor)}>{barterProductName}</p>
+                    <p className={cn('text-[12px] font-bold opacity-40', textColor)}>Barter Value: ₹{formatAmount(offer?.barter_value || offer?.product_value || 0)}</p>
+                  </div>
+                </div>
               </div>
             </div>
           )}
@@ -2659,12 +2846,16 @@ const BrandMobileDashboard = ({
                 <div className="flex items-center justify-between gap-4 mb-6">
                   <div className="min-w-0 flex-1">
                     <p className={cn('text-[17px] font-black tracking-tight leading-none', textColor)}>
-                      {requiresPayment ? (shippingDelivered ? 'Product Delivered' : 'In Transit') : (shippingDelivered ? 'Product Delivered' : 'Awaiting Shipping Details')}
+                      {shippingDelivered ? 'Product Delivered' : (trackingNumber ? 'In Transit' : 'Awaiting Shipping')}
                     </p>
                     <p className={cn('text-[11px] font-bold mt-2 opacity-50', textColor)}>
-                      {requiresPayment
-                        ? (shippingDelivered ? 'Confirming arrival of item.' : 'Keep the creator updated.')
-                        : (shippingDelivered ? 'Product has reached the creator.' : 'Add shipping details so the creator can receive the product.')}
+                      {shippingDelivered 
+                        ? 'Product has reached the creator.' 
+                        : (trackingNumber 
+                            ? 'Keep the creator updated.' 
+                            : !offer?.brand_address 
+                              ? 'Return address required for contracts & logistics.' 
+                              : 'Add tracking details to start fulfillment.')}
                     </p>
                   </div>
                   <span className={cn('px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest border shrink-0', shippingDelivered ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-warning/10 text-warning border-warning/20')}>
@@ -2686,7 +2877,7 @@ const BrandMobileDashboard = ({
                         className={cn('flex-1 h-12 rounded-2xl text-[13px] font-black uppercase tracking-widest transition-all active:scale-[0.98] flex items-center justify-center gap-2', isDark ? 'bg-white/5 border border-white/10 hover:bg-white/10' : 'bg-white border border-slate-200 shadow-sm hover:bg-slate-50')}
                       >
                         <MapPin className="w-4 h-4 opacity-40" />
-                        {offer?.brand_address ? 'Edit Address' : 'Add Address'}
+                        {offer?.brand_address ? 'Edit Address' : 'Add Return Address'}
                       </button>
                     )}
 
@@ -2922,27 +3113,43 @@ const BrandMobileDashboard = ({
         </div>
 
         {/* Floating Action Bar */}
-        <div className={cn('fixed bottom-0 inset-x-0 z-[220] px-4 pb-8 pt-4 border-t backdrop-blur-2xl', isDark ? 'bg-[#061318]/80 border-white/5' : 'bg-white/80 border-slate-100')}>
-          <div className="max-w-md mx-auto flex items-center gap-3">
-            <button type="button" onClick={() => scrollToRef(progressSectionRef)} className={cn('w-14 h-14 rounded-[22px] border flex items-center justify-center transition-all active:scale-90', borderColor, isDark ? 'bg-card' : 'bg-white shadow-sm')}>
-              <Info className={cn('w-5 h-5 opacity-60', textColor)} />
-            </button>
-            <button type="button" onClick={() => toast.info('Chat coming soon')} className={cn('w-14 h-14 rounded-[22px] border flex items-center justify-center transition-all active:scale-90', borderColor, isDark ? 'bg-card' : 'bg-white shadow-sm')}>
-              <MessageSquare className={cn('w-5 h-5 opacity-60', textColor)} />
+        <div className={cn(
+          'fixed bottom-0 inset-x-0 z-[220] px-5 py-6 border-t backdrop-blur-2xl transition-all duration-500',
+          isDark ? 'bg-[#061318]/90 border-white/5 shadow-[0_-10px_40px_rgba(0,0,0,0.5)]' : 'bg-white/90 border-slate-200 shadow-[0_-10px_40px_rgba(0,0,0,0.05)]'
+        )}>
+          <div className="max-w-md mx-auto flex items-center gap-4">
+            <button type="button" onClick={() => scrollToRef(progressSectionRef)} className={cn('w-14 h-14 rounded-[22px] border flex items-center justify-center transition-all active:scale-90', borderColor, isDark ? 'bg-white/5' : 'bg-white shadow-sm')}>
+              <Info className={cn('w-5 h-5 opacity-40', textColor)} />
             </button>
             <button
               type="button"
               onClick={onPrimaryCta}
-              disabled={primaryCta.disabled || isOpeningContract || isGeneratingContract}
+              disabled={isOpeningContract || isGeneratingContract || isReviewingContent || isReleasingPayment}
               className={cn(
-                'flex-1 h-14 rounded-[22px] text-[15px] font-black uppercase tracking-widest flex items-center justify-center gap-3 transition-all active:scale-[0.98] shadow-2xl',
-                dealPrimaryCtaButtonClass(primaryCta.tone)
+                'flex-1 h-14 rounded-[2rem] text-[14px] font-black uppercase tracking-[0.1em] flex items-center justify-center gap-3 shadow-2xl transition-all active:scale-[0.97] disabled:opacity-50 relative overflow-hidden group',
+                primaryCta.tone === 'action'
+                  ? 'bg-gradient-to-r from-emerald-600 to-emerald-400 text-white shadow-emerald-500/40'
+                  : 'bg-gradient-to-r from-indigo-600 to-sky-500 text-white shadow-sky-500/40'
               )}
             >
-              {isOpeningContract ? <Loader2 className="w-5 h-5 animate-spin" /> : <Zap className="w-5 h-5" />}
-              {primaryCta.label}
+              {/* Shine effect */}
+              <div className="absolute inset-0 w-1/2 h-full bg-white/20 skew-x-[-25deg] -translate-x-[200%] group-hover:translate-x-[300%] transition-transform duration-1000 ease-in-out" />
+              
+              <div className="relative flex items-center gap-2">
+                {isOpeningContract || isGeneratingContract || isReviewingContent || isReleasingPayment ? (
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                ) : (
+                  <>
+                    <Zap className="w-5 h-5 fill-current" />
+                    <span>{primaryCta.label}</span>
+                  </>
+                )}
+              </div>
             </button>
           </div>
+          <p className={cn('text-center mt-3 text-[9px] font-black opacity-20 uppercase tracking-widest', textColor)}>
+            Secure transaction powered by Creator Armour
+          </p>
         </div>
       </motion.div>
     );
@@ -3069,7 +3276,7 @@ const BrandMobileDashboard = ({
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
                     <p className="text-[11px] font-black uppercase tracking-widest text-foreground/50">Contract</p>
-                    <h3 className="mt-1 flex items-center gap-2 text-2xl font-semibold tracking-tight">
+                    <h3 className="mt-1 flex items-center gap-2 text-2xl font-semibold tracking-tight text-white">
                       <FileText className="w-5 h-5 text-info" />
                       Sign Agreement
                     </h3>
@@ -3119,7 +3326,7 @@ const BrandMobileDashboard = ({
                         placeholder="you@company.com"
                         inputMode="email"
                         autoComplete="email"
-                        className="w-full bg-neutral-900 border border-neutral-600 rounded-xl px-4 py-3 text-foreground focus:border-sky-400 focus:ring-2 focus:ring-sky-400/25 outline-none transition-all placeholder:text-neutral-500"
+                        className="w-full bg-neutral-900 border border-neutral-600 rounded-xl px-4 py-3 text-white focus:border-sky-400 focus:ring-2 focus:ring-sky-400/25 outline-none transition-all placeholder:text-neutral-500"
                       />
                     </div>
 
@@ -3156,7 +3363,7 @@ const BrandMobileDashboard = ({
                         onChange={(e) => setBrandSigningOtp(e.target.value.replace(/\D/g, ''))}
                         inputMode="numeric"
                         autoComplete="one-time-code"
-                        className="w-full bg-neutral-900 border border-neutral-600 rounded-xl px-4 py-3.5 text-center text-3xl tracking-[0.32em] font-mono text-foreground focus:border-sky-400 focus:ring-2 focus:ring-sky-400/25 outline-none transition-all placeholder:text-neutral-500 placeholder:tracking-normal"
+                        className="w-full bg-neutral-900 border border-neutral-600 rounded-xl px-4 py-3.5 text-center text-3xl tracking-[0.32em] font-mono text-white focus:border-sky-400 focus:ring-2 focus:ring-sky-400/25 outline-none transition-all placeholder:text-neutral-500 placeholder:tracking-normal"
                       />
                       <p className="text-xs text-neutral-400">Code expires in 10 minutes.</p>
                     </div>
@@ -3248,9 +3455,12 @@ const BrandMobileDashboard = ({
               setShowConfirmPaymentModal(false);
               setOverlayDeal(null);
             }}
-            onSuccess={() => {
+            onSuccess={(updatedDeal) => {
               setShowConfirmPaymentModal(false);
               setOverlayDeal(null);
+              if (updatedDeal && updatedDeal.id) {
+                setDealOverrides(prev => ({ ...prev, [updatedDeal.id]: updatedDeal }));
+              }
               onRefresh?.();
             }}
           />
@@ -3363,7 +3573,7 @@ const BrandMobileDashboard = ({
             <div className="px-6 pb-4 pt-safe" style={{ paddingTop: 'max(env(safe-area-inset-top), 16px)' }}>
 
               {/* Brand Getting Started Banner — shown when no deals exist */}
-              {!isLoading && deals.length === 0 && (
+              {!isLoading && effectiveDeals.length === 0 && (
                 <div className="mb-5 p-4 rounded-[2.5rem] bg-gradient-to-r from-emerald-50 to-teal-50 border border-primary/20">
                   <div className="flex items-center gap-3 mb-3">
                     <div className="w-10 h-10 rounded-xl bg-primary/15 flex items-center justify-center">
@@ -3918,7 +4128,11 @@ const BrandDashboardTab = React.memo(({
     return s === 'CONTRACT_READY' || s === 'SENT' || s === 'AWAITING_BRAND_SIGNATURE';
   }).length;
   
-  const needsActionDeals = activeDealsList.filter((d: any) => brandDealCardUi(d).needsAction).length;
+  const needsActionDeals = activeDealsList.filter((d: any) => {
+    const s = normalizeStatus(d?.status);
+    if (s === 'PAYMENT_PENDING') return false;
+    return brandDealCardUi(d).needsAction;
+  }).length;
   const needsActionTotal = pendingCounterCount + needsActionDeals;
   
   const contentPendingReview = activeDealsList.filter((d: any) => {
@@ -4288,7 +4502,11 @@ const BrandCollabsTab = React.memo(({
   openCreateOfferSheet,
   resolveDealProductImageUrl
 }: any) => {
-  const needsActionDeals = activeDealsList.filter((d: any) => brandDealCardUi(d).needsAction);
+  const needsActionDeals = activeDealsList.filter((d: any) => {
+    const s = normalizeStatus(d?.status);
+    if (s === 'PAYMENT_PENDING') return false;
+    return brandDealCardUi(d).needsAction;
+  });
   const needsActionOffers = pendingOffersList;
   const needsActionTotal = needsActionDeals.length + needsActionOffers.length;
 
@@ -4310,7 +4528,11 @@ const BrandCollabsTab = React.memo(({
 
       <div className={cn('mb-4 rounded-[22px] border p-1.5 flex gap-1.5 backdrop-blur-xl shadow-sm', isDark ? 'bg-secondary/[0.06] border-border/50' : 'bg-slate-100/80 border-slate-200/60')}>
         {[
-          { key: 'action_required', label: 'Awaiting Response', count: pendingOffersList.length + activeDealsList.filter((d: any) => brandDealCardUi(d).needsAction).length },
+          { key: 'action_required', label: 'Awaiting Response', count: pendingOffersList.length + activeDealsList.filter((d: any) => {
+              const s = normalizeStatus(d?.status);
+              if (s === 'PAYMENT_PENDING') return false;
+              return brandDealCardUi(d).needsAction;
+            }).length },
           { key: 'active', label: 'Active', count: activeDealsList.length },
           { key: 'completed', label: 'Completed', count: completedDealsList.length },
         ].map((item) => {
@@ -4386,9 +4608,9 @@ const BrandCollabsTab = React.memo(({
               if (item?.profiles?.username && creatorMeta === item.profiles.username) creatorMeta = `@${creatorMeta}`;
               const creatorAvatar = item?.profiles?.avatar_url || item?.profiles?.profile_image_url || item?.profiles?.instagram_profile_photo || item?.creator_avatar_url || item?.creator_photo_url || '';
               
-              if (isPendingItem && ['pending', 'countered', 'sent', 'offer_sent', 'submitted', 'action_required', 'action-required'].includes(normalizeStatus(item?.status))) {
+              if (isPendingItem && ['PENDING', 'COUNTERED', 'SENT', 'OFFER_SENT', 'SUBMITTED', 'ACTION_REQUIRED'].includes(normalizeStatus(item?.status))) {
                 const sentIso = item?.created_at || item?.updated_at || null;
-                const isCountered = normalizeStatus(item?.status) === 'countered';
+                const isCountered = normalizeStatus(item?.status) === 'COUNTERED';
                 const sentHours = sentIso ? hoursSince(sentIso) : null;
                 const isNoResponse = !isCountered && sentHours !== null && sentHours >= 24;
                 
@@ -4404,17 +4626,17 @@ const BrandCollabsTab = React.memo(({
                     tabIndex={0}
                     onClick={() => setSelectedOffer(item)}
                     className={cn(
-                      'w-full p-5 rounded-[2.5rem] border transition-all duration-500 backdrop-blur-2xl relative overflow-hidden group cursor-pointer',
+                      'w-full p-6 rounded-[32px] border transition-all duration-500 backdrop-blur-2xl relative overflow-hidden group cursor-pointer',
                       borderColor,
                       isDark
-                        ? 'bg-gradient-to-br from-secondary/[0.08] via-secondary/[0.04] to-transparent shadow-[0_20px_50px_rgba(0,0,0,0.3)] hover:border-primary/20'
-                        : 'bg-white shadow-[0_15px_40px_rgba(15,23,42,0.06)] hover:shadow-[0_20px_50px_rgba(15,23,42,0.1)]'
+                        ? 'bg-[#061318]/40 border-white/5 shadow-[0_20px_50px_rgba(0,0,0,0.3)] hover:border-emerald-500/20'
+                        : 'bg-white border-slate-100 shadow-sm hover:shadow-md'
                     )}
                   >
-                    <div className="flex items-start justify-between mb-4 relative z-10">
-                      <div className="flex items-center gap-3.5 min-w-0">
+                    <div className="flex items-start justify-between mb-5 relative z-10">
+                      <div className="flex items-center gap-4 min-w-0">
                         <div className="relative">
-                          <Avatar className={cn('w-12 h-12 rounded-2xl border-2 shadow-xl shrink-0 transition-transform duration-500 group-hover:scale-105', isDark ? 'border-white/10 ring-4 ring-white/5' : 'border-white ring-4 ring-slate-100')}>
+                          <Avatar className={cn('w-14 h-14 rounded-2xl border-2 shadow-xl shrink-0 transition-transform duration-500 group-hover:scale-105', isDark ? 'border-white/10 ring-4 ring-white/5' : 'border-white ring-4 ring-slate-100')}>
                             <AvatarImage 
                               src={safeImageSrc(item?.profiles?.instagram_profile_photo || creatorAvatar)} 
                               alt={creatorName} 
@@ -4424,63 +4646,69 @@ const BrandCollabsTab = React.memo(({
                               {creatorName.slice(0, 1).toUpperCase()}
                             </AvatarFallback>
                           </Avatar>
+                          <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-emerald-500 rounded-full border-2 border-[#061318] flex items-center justify-center shadow-lg">
+                            <Zap className="w-2.5 h-2.5 text-white fill-current" />
+                          </div>
                          </div>
                         <div className="min-w-0">
-                          <h4 className={cn('text-[17px] font-black tracking-tight truncate leading-tight', textColor)}>{creatorName}</h4>
+                          <h4 className={cn('text-[18px] font-black tracking-tight truncate leading-tight', textColor)}>{creatorName}</h4>
                           <p className={cn('text-[11px] font-black uppercase tracking-widest opacity-40 truncate mt-1', textColor)}>{creatorMeta}</p>
                         </div>
                       </div>
-                      <div className="text-right shrink-0 pl-3">
-                        <p className={cn('text-[22px] font-black tracking-tighter leading-none', isDark ? 'text-white' : 'text-slate-900')}>
+                      <div className="text-right shrink-0">
+                        <p className={cn('text-[24px] font-black tracking-tighter leading-none mb-1', isDark ? 'text-white' : 'text-slate-900')}>
                           {amount > 0 ? formatCompactINR(amount) : '—'}
                         </p>
+                        <p className={cn('text-[10px] font-black uppercase tracking-widest opacity-30', textColor)}>Budget</p>
                       </div>
                     </div>
 
-                    <div className="flex items-center justify-between gap-3 text-[12px] font-bold mb-4 relative z-10">
-                      <div className={cn('min-w-0 truncate px-3 py-1.5 rounded-full border bg-white/5 border-white/5', secondaryTextColor)}>
+                    <div className="flex flex-wrap gap-2 mb-5 relative z-10">
+                      <div className={cn('px-3 py-1.5 rounded-xl border text-[11px] font-bold flex items-center gap-2', isDark ? 'bg-white/5 border-white/5 text-white/60' : 'bg-slate-50 border-slate-100 text-slate-500')}>
+                        <FileText className="w-3.5 h-3.5 opacity-50" />
                         {packageSummary}
                       </div>
                       {due?.text && (
                         <div className={cn(
-                          'shrink-0 flex items-center gap-2 px-3 py-1.5 rounded-full border shadow-sm',
+                          'flex items-center gap-2 px-3 py-1.5 rounded-xl border shadow-sm text-[11px] font-bold',
                           due.tone === 'danger'
-                            ? (isDark ? 'bg-rose-500/10 text-rose-200 border-rose-500/20' : 'bg-rose-50 text-rose-700 border-rose-100')
+                            ? (isDark ? 'bg-rose-500/10 text-rose-400 border-rose-500/20' : 'bg-rose-50 text-rose-700 border-rose-100')
                             : due.tone === 'warn'
-                              ? (isDark ? 'text-warning' : 'text-warning')
+                              ? (isDark ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' : 'bg-amber-50 text-amber-600 border-amber-100')
                               : (isDark ? 'bg-white/5 text-white/40 border-white/5' : 'bg-slate-50 text-slate-400 border-slate-100')
                         )}>
-                          <Clock className="w-3.5 h-3.5" strokeWidth={3} />
-                          <span className="text-[10px] uppercase tracking-widest">{due.text}</span>
+                          <Clock className="w-3.5 h-3.5" />
+                          <span className="uppercase tracking-wider">{due.text}</span>
                         </div>
                       )}
                     </div>
 
-                    {/* Removed Brand gets line as per request */}
-
                     <div className={cn(
-                      'flex items-center justify-between p-4 rounded-2xl border relative z-10 transition-colors',
-                      isCountered || isNoResponse
-                        ? (isDark ? 'bg-warning/10 border-warning/30' : 'bg-warning/5 border-warning/20')
+                      'p-4 rounded-2xl border relative z-10 transition-all flex items-center justify-between group-hover:translate-x-1',
+                      isCountered 
+                        ? (isDark ? 'bg-indigo-500/10 border-indigo-500/20 shadow-[0_0_20px_rgba(99,102,241,0.1)]' : 'bg-indigo-50 border-indigo-100')
                         : (isDark ? 'bg-white/5 border-white/5' : 'bg-slate-50/50 border-slate-100')
                     )}>
                       <div className="flex items-center gap-3">
                         <div className={cn(
-                          'w-8 h-8 rounded-full flex items-center justify-center',
-                          isCountered || isNoResponse ? 'bg-warning/20 text-warning' : 'bg-primary/20 text-primary'
+                          'w-9 h-9 rounded-xl flex items-center justify-center transition-transform duration-500 group-hover:rotate-12',
+                          isCountered ? 'bg-indigo-500/20 text-indigo-400' : 'bg-primary/20 text-primary'
                         )}>
-                          {isCountered ? <AlertTriangle className="w-4 h-4" /> : <Zap className="w-4 h-4" />}
+                          {isCountered ? <RotateCcw className="w-4.5 h-4.5" /> : <Send className="w-4.5 h-4.5" />}
                         </div>
-                        <p className={cn(
-                          'text-[13px] font-black',
-                          isCountered || isNoResponse
-                            ? (isDark ? 'text-warning' : 'text-warning')
-                            : (isDark ? 'text-white/80' : 'text-slate-700')
-                        )}>
-                          {statusLine}
-                        </p>
+                        <div className="min-w-0">
+                          <p className={cn(
+                            'text-[13px] font-black leading-tight',
+                            isCountered ? (isDark ? 'text-indigo-400' : 'text-indigo-600') : (isDark ? 'text-white/80' : 'text-slate-700')
+                          )}>
+                            {isCountered ? 'Review Counter' : 'Offer Sent'}
+                          </p>
+                          <p className={cn('text-[11px] font-bold mt-0.5 opacity-40 truncate', textColor)}>
+                            {isCountered ? 'Creator requested changes' : 'Awaiting creator acceptance'}
+                          </p>
+                        </div>
                       </div>
-                      <ChevronRight className={cn('w-4 h-4', secondaryTextColor)} />
+                      <ChevronRight className={cn('w-4 h-4 opacity-30', textColor)} />
                     </div>
 
                     <button
@@ -4491,30 +4719,15 @@ const BrandCollabsTab = React.memo(({
                         setSelectedOffer(item);
                       }}
                       className={cn(
-                        'mt-4 h-12 w-full rounded-2xl text-[13px] font-black transition active:scale-[0.98]',
-                         isCountered ? 'bg-primary text-foreground shadow-lg shadow-primary/20' : 'bg-secondary/50 text-foreground border border-border/40'
+                        'mt-5 h-13 w-full rounded-2xl text-[13px] font-black uppercase tracking-widest transition-all active:scale-[0.98] flex items-center justify-center gap-2',
+                         isCountered 
+                           ? 'bg-gradient-to-r from-indigo-600 to-indigo-500 text-white shadow-xl shadow-indigo-500/20' 
+                           : isDark ? 'bg-white/5 border border-white/10 text-white hover:bg-white/10' : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'
                       )}
                     >
-                      {isCountered ? 'Review Counter' : 'View Offer'}
+                      {isCountered ? <Zap className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      {isCountered ? 'Handle Counter' : 'Manage Offer'}
                     </button>
-                    {(isNoResponse) && (
-                      <div className="mt-4 pt-4 border-t border-border/10 flex items-start justify-between gap-3 relative z-10">
-                        <p className={cn('text-[11px] font-bold opacity-60 leading-relaxed', secondaryTextColor)}>
-                          Tip: Follow up after 24h for faster replies.
-                        </p>
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            triggerHaptic(HapticPatterns.light);
-                            toast.message('Send reminder', { description: 'Coming soon.' });
-                          }}
-                          className={cn('text-[11px] font-black uppercase tracking-widest shrink-0 px-3 py-1.5 rounded-lg border border-info/20 hover:bg-info/10 transition-colors', isDark ? 'text-info' : 'text-info')}
-                        >
-                          Reminder
-                        </button>
-                      </div>
-                    )}
                   </motion.div>
                 );
               }
@@ -4522,124 +4735,138 @@ const BrandCollabsTab = React.memo(({
               const ui = brandDealCardUi(item);
 
               return (
-                <motion.div
-                  key={item.id}
-                  whileTap={{ scale: 0.985 }}
-                  role="button"
-                  tabIndex={0}
-                  onClick={() => handleBrandDealPrimaryAction(undefined, item, ui)}
-                  className={cn(
-                    'w-full p-5 rounded-[2.5rem] border transition-all duration-500 backdrop-blur-2xl relative overflow-hidden group cursor-pointer',
-                    borderColor,
-                    isDark
-                      ? 'bg-gradient-to-br from-secondary/[0.08] via-secondary/[0.04] to-transparent shadow-[0_20px_50px_rgba(0,0,0,0.3)]'
-                      : 'bg-gradient-to-br from-white/95 via-white/80 to-white/60 shadow-[0_20px_50px_rgba(15,23,42,0.08)]'
-                  )}
-                >
-                  <div className="flex items-start justify-between mb-4 relative z-10">
-                    <div className="flex items-center gap-3.5 min-w-0">
-                      <div className="relative">
-                        <Avatar className={cn('w-12 h-12 rounded-2xl border-2 shadow-xl shrink-0 transition-transform duration-500 group-hover:scale-105', isDark ? 'border-white/10 ring-4 ring-white/5' : 'border-white ring-4 ring-slate-100')}>
-                          <AvatarImage 
-                            src={safeImageSrc(item?.profiles?.instagram_profile_photo || item?.profiles?.avatar_url || item?.profiles?.profile_image_url || item?.creator_avatar_url || item?.creator_photo_url || '')} 
-                            alt={creatorName} 
-                            className="object-cover" 
-                          />
-                          <AvatarFallback className={cn('rounded-2xl font-black', isDark ? 'bg-secondary/20 text-foreground' : 'bg-slate-100 text-slate-400')}>
-                            {creatorName.slice(0, 1).toUpperCase()}
-                          </AvatarFallback>
-                        </Avatar>
-                      </div>
-                      <div className="min-w-0">
-                        <h4 className={cn('text-[17px] font-black tracking-tight truncate leading-tight', textColor)}>{creatorName}</h4>
-                        <p className={cn('text-[11px] font-black uppercase tracking-widest opacity-40 truncate mt-1', textColor)}>{creatorMeta}</p>
-                      </div>
-                    </div>
-                    <div className="text-right shrink-0 pl-3">
-                      <p className={cn('text-[22px] font-black tracking-tighter leading-none', isDark ? 'text-white' : 'text-slate-900')}>
-                        {amount > 0 ? formatCompactINR(amount) : (isBarterLikeCollab(item) ? 'BARTER' : '—')}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center justify-between gap-3 text-[12px] font-bold mb-4 relative z-10">
-                    <div className={cn('min-w-0 truncate px-3 py-1.5 rounded-full border bg-white/5 border-white/5', secondaryTextColor)}>
-                      {packageSummary}
-                    </div>
-                    {due?.text && (
-                      <div className={cn(
-                        'shrink-0 flex items-center gap-2 px-3 py-1.5 rounded-full border shadow-sm',
-                        due.tone === 'danger'
-                          ? (isDark ? 'bg-rose-500/10 text-rose-200 border-rose-500/20' : 'bg-rose-50 text-rose-700 border-rose-100')
-                          : due.tone === 'warn'
-                            ? (isDark ? 'text-warning' : 'text-warning')
-                            : (isDark ? 'bg-white/5 text-white/40 border-white/5' : 'bg-slate-50 text-slate-400 border-slate-100')
-                      )}>
-                        <Clock className="w-3.5 h-3.5" strokeWidth={3} />
-                        <span className="text-[10px] uppercase tracking-widest">{due.text}</span>
-                      </div>
+                  <motion.div
+                    key={item.id}
+                    whileTap={{ scale: 0.985 }}
+                    role="button"
+                    tabIndex={0}
+                    onClick={() => handleBrandDealPrimaryAction(undefined, item, ui)}
+                    className={cn(
+                      'w-full p-6 rounded-[32px] border transition-all duration-500 backdrop-blur-2xl relative overflow-hidden group cursor-pointer',
+                      borderColor,
+                      isDark
+                        ? 'bg-[#061318]/40 border-white/5 shadow-[0_20px_50px_rgba(0,0,0,0.3)] hover:border-emerald-500/20'
+                        : 'bg-white border-slate-100 shadow-sm hover:shadow-md'
                     )}
-                  </div>
-
-                  {/* Removed Brand gets line as per request */}
-
-                  <div className={cn(
-                    'flex items-center justify-between p-4 rounded-[2rem] border relative z-10 transition-colors',
-                    ui.needsAction
-                      ? (isDark ? 'bg-warning/10 border-warning/30' : 'bg-warning/5 border-warning/20')
-                      : (isDark ? 'bg-white/5 border-white/5' : 'bg-slate-50/50 border-slate-100')
-                  )}>
-                    <div className="flex items-center gap-3">
-                      <div className={cn(
-                        'w-8 h-8 rounded-full flex items-center justify-center',
-                        ui.needsAction ? 'bg-warning/20 text-warning' : 'bg-primary/20 text-primary'
-                      )}>
-                        <Zap className="w-4 h-4" />
+                  >
+                    <div className="flex items-start justify-between mb-5 relative z-10">
+                      <div className="flex items-center gap-4 min-w-0">
+                        <div className="relative">
+                          <Avatar className={cn('w-14 h-14 rounded-2xl border-2 shadow-xl shrink-0 transition-transform duration-500 group-hover:scale-105', isDark ? 'border-white/10 ring-4 ring-white/5' : 'border-white ring-4 ring-slate-100')}>
+                            <AvatarImage 
+                              src={safeImageSrc(item?.profiles?.instagram_profile_photo || item?.profiles?.avatar_url || item?.profiles?.profile_image_url || item?.creator_avatar_url || item?.creator_photo_url || '')} 
+                              alt={creatorName} 
+                              className="object-cover" 
+                            />
+                            <AvatarFallback className={cn('rounded-2xl font-black', isDark ? 'bg-secondary/20 text-foreground' : 'bg-slate-100 text-slate-400')}>
+                              {creatorName.slice(0, 1).toUpperCase()}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className={cn(
+                            'absolute -bottom-1 -right-1 w-5 h-5 rounded-full border-2 border-[#061318] flex items-center justify-center shadow-lg',
+                            ui.needsAction ? 'bg-amber-500 animate-pulse' : 'bg-emerald-500'
+                          )}>
+                            <div className="w-1.5 h-1.5 bg-white rounded-full" />
+                          </div>
+                        </div>
+                        <div className="min-w-0">
+                          <h4 className={cn('text-[18px] font-black tracking-tight truncate leading-tight', textColor)}>{creatorName}</h4>
+                          <p className={cn('text-[11px] font-black uppercase tracking-widest opacity-40 truncate mt-1', textColor)}>{creatorMeta}</p>
+                        </div>
                       </div>
-                      <p className={cn(
-                        'text-[13px] font-black',
-                        ui.needsAction
-                          ? (isDark ? 'text-warning' : 'text-warning')
-                          : (isDark ? 'text-white/80' : 'text-slate-700')
-                      )}>
-                        {ui.statusLine}
-                      </p>
+                      <div className="text-right shrink-0">
+                        <p className={cn('text-[24px] font-black tracking-tighter leading-none mb-1', isDark ? 'text-white' : 'text-slate-900')}>
+                          {amount > 0 ? formatCompactINR(amount) : (isBarterLikeCollab(item) ? 'BARTER' : '—')}
+                        </p>
+                        <p className={cn('text-[10px] font-black uppercase tracking-widest opacity-30', textColor)}>Value</p>
+                      </div>
                     </div>
-                    <ChevronRight className={cn('w-4 h-4', secondaryTextColor)} />
-                  </div>
 
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-1.5">
-                      {Array.from({ length: 5 }).map((_, i) => (
-                        <span
-                          key={i}
-                          className={cn(
-                            'h-1.5 w-6 rounded-full',
-                            i < ui.step
-                              ? (isDark ? 'bg-primary/80' : 'bg-primary')
-                              : (isDark ? 'bg-secondary/50' : 'bg-background')
-                          )}
-                        />
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="flex flex-col gap-2.5">
-
-                    <button
-                      type="button"
-                      onClick={(e) => handleBrandDealPrimaryAction(e, item, ui)}
-                      disabled={Boolean(ui?.ctaDisabled)}
-                      className={cn(
-                        'h-12 w-full rounded-2xl text-[13px] font-black transition active:scale-[0.98]',
-                        dealPrimaryCtaButtonClass(ui?.ctaTone || (ui.needsAction ? 'action' : 'view')),
-                        Boolean(ui?.ctaDisabled) && 'opacity-60 cursor-not-allowed active:scale-100'
+                    <div className="flex flex-wrap gap-2 mb-5 relative z-10">
+                      <div className={cn('px-3 py-1.5 rounded-xl border text-[11px] font-bold flex items-center gap-2', isDark ? 'bg-white/5 border-white/5 text-white/60' : 'bg-slate-50 border-slate-100 text-slate-500')}>
+                        <FileText className="w-3.5 h-3.5 opacity-50" />
+                        {packageSummary}
+                      </div>
+                      {due?.text && (
+                        <div className={cn(
+                          'flex items-center gap-2 px-3 py-1.5 rounded-xl border shadow-sm text-[11px] font-bold',
+                          due.tone === 'danger'
+                            ? (isDark ? 'bg-rose-500/10 text-rose-400 border-rose-500/20' : 'bg-rose-50 text-rose-700 border-rose-100')
+                            : due.tone === 'warn'
+                              ? (isDark ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' : 'bg-amber-50 text-amber-600 border-amber-100')
+                              : (isDark ? 'bg-white/5 text-white/40 border-white/5' : 'bg-slate-50 text-slate-400 border-slate-100')
+                        )}>
+                          <Clock className="w-3.5 h-3.5" />
+                          <span className="uppercase tracking-wider">{due.text}</span>
+                        </div>
                       )}
-                    >
-                      {ui.primaryActionLabel}
-                    </button>
-                  </div>
-                </motion.div>
+                    </div>
+
+                    <div className={cn(
+                      'p-4 rounded-2xl border relative z-10 transition-all flex items-center justify-between mb-5 group-hover:translate-x-1',
+                      ui.needsAction
+                        ? (isDark ? 'bg-emerald-500/10 border-emerald-500/20 shadow-[0_0_20px_rgba(16,185,129,0.1)]' : 'bg-emerald-50 border-emerald-100')
+                        : (isDark ? 'bg-white/5 border-white/5' : 'bg-slate-50/50 border-slate-100')
+                    )}>
+                      <div className="flex items-center gap-3">
+                        <div className={cn(
+                          'w-9 h-9 rounded-xl flex items-center justify-center transition-transform duration-500 group-hover:rotate-12',
+                          ui.needsAction ? 'bg-emerald-500/20 text-emerald-400' : 'bg-primary/20 text-primary'
+                        )}>
+                          <Zap className={cn('w-4.5 h-4.5', ui.needsAction && 'animate-pulse fill-current')} />
+                        </div>
+                        <div className="min-w-0">
+                          <p className={cn(
+                            'text-[13px] font-black leading-tight',
+                            ui.needsAction ? (isDark ? 'text-emerald-400' : 'text-emerald-600') : (isDark ? 'text-white/80' : 'text-slate-700')
+                          )}>
+                            {ui.statusLine}
+                          </p>
+                          <p className={cn('text-[11px] font-bold mt-0.5 opacity-40 truncate', textColor)}>
+                            Stage {ui.step} of 5
+                          </p>
+                        </div>
+                      </div>
+                      <ChevronRight className={cn('w-4 h-4 opacity-30', textColor)} />
+                    </div>
+
+                    <div className="flex flex-col gap-4 relative z-10">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-1.5">
+                          {Array.from({ length: 5 }).map((_, i) => (
+                            <div
+                              key={i}
+                              className={cn(
+                                'h-1.5 w-8 rounded-full transition-all duration-700',
+                                i < ui.step
+                                  ? (isDark ? 'bg-gradient-to-r from-emerald-500 to-sky-500' : 'bg-gradient-to-r from-emerald-600 to-sky-600')
+                                  : (isDark ? 'bg-white/5' : 'bg-slate-100')
+                              )}
+                            />
+                          ))}
+                        </div>
+                        <span className={cn('text-[10px] font-black uppercase tracking-widest opacity-30', textColor)}>
+                          {Math.round((ui.step / 5) * 100)}% Done
+                        </span>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={(e) => handleBrandDealPrimaryAction(e, item, ui)}
+                        disabled={Boolean(ui?.ctaDisabled)}
+                        className={cn(
+                          'h-15 w-full rounded-2xl text-[15px] font-black uppercase tracking-[0.05em] transition-all active:scale-[0.98] flex items-center justify-center gap-3',
+                          ui.needsAction 
+                            ? 'bg-gradient-to-r from-emerald-600 to-emerald-500 text-white shadow-xl shadow-emerald-500/20' 
+                            : isDark ? 'bg-white/5 border border-white/10 text-white hover:bg-white/10' : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50',
+                          Boolean(ui?.ctaDisabled) && 'opacity-60 cursor-not-allowed active:scale-100'
+                        )}
+                      >
+                        {ui.needsAction ? <Zap className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                        {ui.primaryActionLabel}
+                      </button>
+                    </div>
+                  </motion.div>
               );
             })}
           </div>
@@ -4667,8 +4894,12 @@ const BrandCreatorsTab = React.memo(({ isDark }: any) => {
 });
 
 const BrandProfileTab = React.memo(({ isDark, pendingOffersList, activeDealsList, onLogout }: any) => {
-  const pendingNeedsAction = (pendingOffersList || []).filter((r: any) => normalizeStatus(r?.status) === 'countered').length;
-  const activeNeedsAction = (activeDealsList || []).filter((d: any) => brandDealCardUi(d).needsAction).length;
+  const pendingNeedsAction = (pendingOffersList || []).filter((r: any) => normalizeStatus(r?.status) === 'COUNTERED').length;
+  const activeNeedsAction = (activeDealsList || []).filter((d: any) => {
+    const s = normalizeStatus(d?.status);
+    if (s === 'PAYMENT_PENDING') return false;
+    return brandDealCardUi(d).needsAction;
+  }).length;
   const needsActionTotal = pendingNeedsAction + activeNeedsAction;
   const contentPendingReview = (activeDealsList || []).filter((d: any) => {
     const s = effectiveDealStatus(d);

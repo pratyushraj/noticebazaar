@@ -227,8 +227,8 @@ export function BrandShippingAddressModal({ dealId, creatorName, onClose, onSucc
                 <MapPin className="h-5 w-5 text-blue-400" />
               </div>
               <div>
-                <h2 className={ds.typography.h3}>Fulfillment Address</h2>
-                <p className="text-[10px] text-white/40 uppercase tracking-[0.1em] font-black mt-0.5">Logistics & Compliance</p>
+                <h2 className={ds.typography.h3}>Brand Return Address</h2>
+                <p className="text-[10px] text-white/40 uppercase tracking-[0.1em] font-black mt-0.5">For Contracts & Returns</p>
               </div>
             </div>
             <button 
@@ -246,7 +246,7 @@ export function BrandShippingAddressModal({ dealId, creatorName, onClose, onSucc
               <p className="text-[11px] leading-relaxed text-white/50">
                 Encrypted storage. Shared only with{" "}
                 <span className="text-white/80 font-bold">{creatorName || "the creator"}</span>{" "}
-                for shipping, legal contracts, and tax compliance.
+                for return shipping, legal contracts, and tax compliance.
               </p>
             </div>
 
@@ -381,7 +381,7 @@ export function BrandShippingAddressModal({ dealId, creatorName, onClose, onSucc
                   </div>
                 ) : (
                   <span className="flex items-center gap-2">
-                    Confirm Address
+                    Save Return Address
                   </span>
                 )}
               </Button>
