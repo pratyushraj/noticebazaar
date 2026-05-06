@@ -158,9 +158,9 @@ export const BrandSettingsPanel = ({
 
   /* ── Save state ── */
   const [isSaving, setIsSaving] = useState(false);
+  const [savedAt, setSavedAt] = useState<number | null>(null);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [showChangePassword, setShowChangePassword] = useState(false);
-  const [justSaved, setJustSaved] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
   /* ── UI state ── */
