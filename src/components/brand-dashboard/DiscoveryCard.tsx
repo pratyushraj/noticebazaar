@@ -128,8 +128,10 @@ export const DiscoveryCard: React.FC<DiscoveryCardProps> = ({
             onDragEnd={handleDragEnd}
             animate={controls}
             exit={{ x: -1000, opacity: 0, transition: { duration: 0.3 } }}
+            className={cn(
                 "absolute inset-0 w-full h-full rounded-[2.5rem] overflow-hidden border shadow-2xl",
                 isDark ? "bg-[#0B1220] border-white/10" : "bg-black border-slate-800"
+            )}
         >
             {/* Visual Section (Full Background) */}
             <div className="absolute inset-0 w-full h-full overflow-hidden">
