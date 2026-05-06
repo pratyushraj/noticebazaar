@@ -181,7 +181,6 @@ export const DiscoveryCard: React.FC<DiscoveryCardProps> = ({
                         {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
                     </button>
                 )}
-            </div>
 
                 {/* Identity Block (Inside Video) */}
                 <div className="absolute bottom-5 left-5 right-5 z-20 space-y-1">
