@@ -38,7 +38,10 @@ type TestPushResult = {
 
 const isGoneSubscriptionError = (error: any): boolean => {
   const statusCode = error?.statusCode;
-  return statusCode === 404 || statusCode === 410;
+  // 400 is often returned by some push services (like Mozilla) when the VAPID key mismatches 
+  // or the subscription is otherwise permanently invalid.
+  // 401 occurs when the VAPID keys on the server don't match the one used to register.
+  return statusCode === 400 || statusCode === 401 || statusCode === 404 || statusCode === 410;
 };
 
 export const getPushRuntimeStatus = () => ({
