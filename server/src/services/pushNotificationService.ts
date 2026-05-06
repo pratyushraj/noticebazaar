@@ -434,7 +434,9 @@ export const sendTestPushToCreator = async (
       const isGone = statusCode === 404 || statusCode === 410;
       if (isGone) {
         // Background delete stale subscription
-        supabase.from('creator_push_subscriptions').delete().eq('id', sub.id).catch(() => { });
+        supabase.from('creator_push_subscriptions').delete().eq('id', sub.id).then(({ error }) => {
+          if (error) console.warn('[PushNotificationService] Failed to cleanup stale sub:', sub.id, error.message);
+        });
       }
       return { success: false, id: sub.id, deviceType, statusCode, error: errorBody, isGone };
     }
