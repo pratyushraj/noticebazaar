@@ -276,6 +276,8 @@ export type BrandDeal = Tables<'brand_deals'> & {
   campaign_description?: string | null;
   campaign_goal?: string | null;
   campaign_category?: string | null;
+  usage_rights?: boolean | null;
+  usage_duration?: string | null;
 };
 
 // NEW: Payment Reminder Type

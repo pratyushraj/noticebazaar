@@ -226,7 +226,7 @@ const CreatorDashboardContent = ({ navigate }: { navigate: any }) => {
     };
   }, [user?.id, queryClient]);
 
-  const handleAcceptRequest = async (req: any, addressData?: { address: string; pincode: string }, otpVerified?: boolean, otpVerifiedAt?: string) => {
+  const handleAcceptRequest = async (req: any, addressData?: { address: string; pincode: string; name: string; phone: string }, otpVerified?: boolean, otpVerifiedAt?: string) => {
     const { data: sessionData } = await supabase.auth.getSession();
     if (!sessionData.session) throw new Error('Not authenticated');
 
@@ -248,6 +248,8 @@ const CreatorDashboardContent = ({ navigate }: { navigate: any }) => {
       body: JSON.stringify({
         shipping_address: addressData?.address,
         pincode: addressData?.pincode,
+        delivery_name: addressData?.name || null,
+        delivery_phone: addressData?.phone || null,
         otp_verified: otpVerified,
         otp_verified_at: otpVerifiedAt,
       }),

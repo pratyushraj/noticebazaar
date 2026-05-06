@@ -104,7 +104,7 @@ interface MobileDashboardProps {
     collabRequests?: any[];
     brandDeals?: any[];
     stats?: any;
-    onAcceptRequest?: (req: any, addressData?: { address: string; pincode: string }, otpVerified?: boolean, otpVerifiedAt?: string) => Promise<any>;
+    onAcceptRequest?: (req: any, addressData?: { address: string; pincode: string; name: string; phone: string }, otpVerified?: boolean, otpVerifiedAt?: string) => Promise<any>;
     onDeclineRequest?: (id: string) => void;
     onOpenMenu?: () => void;
     isRefreshing?: boolean;
@@ -3219,7 +3219,7 @@ const MobileDashboardDemo = ({
 
     const toggleTheme = () => { triggerHaptic(); setTheme(p => p === 'dark' ? 'light' : 'dark'); };
 
-    const processAcceptance = async (req: any, addressData?: { address: string; pincode: string }) => {
+    const processAcceptance = async (req: any, addressData?: { address: string; pincode: string; name: string; phone: string }) => {
         if (!onAcceptRequest || !session?.access_token) return;
         
         setProcessingDeal(req.id);
@@ -8413,6 +8413,8 @@ const MobileDashboardDemo = ({
             {showCreatorShippingModal && pendingAcceptReq && (
                 <CreatorShippingConfirmationModal
                     brandName={pendingAcceptReq.brand_name || 'the brand'}
+                    defaultName={profile ? `${profile.first_name || ''} ${profile.last_name || ''}`.trim() : ''}
+                    defaultPhone={String((profile as any)?.phone || '')}
                     onClose={() => {
                         setShowCreatorShippingModal(false);
                         setPendingAcceptReq(null);

@@ -3,7 +3,7 @@ import { BottomSheet } from '../ui/bottom-sheet';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
-import { Loader2, Calendar, IndianRupee, Zap, Sparkles, CheckCircle2, Truck, Package, Upload, X, Save } from 'lucide-react';
+import { Loader2, Calendar, IndianRupee, Zap, Sparkles, CheckCircle2, Truck, Package, Upload, X, Save, Globe } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { getApiBaseUrl } from '@/lib/utils/api';
 import { toast } from 'sonner';
@@ -162,6 +162,8 @@ export const QuickOfferSheet: React.FC<QuickOfferSheetProps> = ({
     const [barterProductName, setBarterProductName] = useState('');
     const [barterProductImageUrl, setBarterProductImageUrl] = useState('');
     const [barterImageUploading, setBarterImageUploading] = useState(false);
+    const [usageRights, setUsageRights] = useState(false);
+    const [usageDuration, setUsageDuration] = useState('');
 
     useEffect(() => {
         if (creator && isOpen) {
@@ -179,6 +181,16 @@ export const QuickOfferSheet: React.FC<QuickOfferSheetProps> = ({
             setRequiresShipping(initialPackage?.type === 'barter');
             setBarterProductName('');
             setBarterProductImageUrl('');
+            
+            // Auto-detect usage rights from package
+            const hasUsage = initialPackage?.deliverables?.some(d => /usage|ads/i.test(d));
+            setUsageRights(hasUsage || false);
+            if (hasUsage) {
+                const durationMatch = initialPackage.deliverables.find(d => /usage|ads/i.test(d))?.match(/(\d+)\s*(day|month|year)/i);
+                setUsageDuration(durationMatch ? durationMatch[0] : '30 Days');
+            } else {
+                setUsageDuration('');
+            }
         }
     }, [creator, isOpen]);
 
@@ -238,6 +250,16 @@ export const QuickOfferSheet: React.FC<QuickOfferSheetProps> = ({
                 /product|ship|deliver|unboxing|physical/i.test(selectedPackage.description);
                 
             setRequiresShipping(needsShipping);
+
+            // Auto-detect usage rights
+            const hasUsage = selectedPackage.deliverables.some(d => /usage|ads/i.test(d));
+            setUsageRights(hasUsage);
+            if (hasUsage) {
+                const durationMatch = selectedPackage.deliverables.find(d => /usage|ads/i.test(d))?.match(/(\d+)\s*(day|month|year)/i);
+                setUsageDuration(durationMatch ? durationMatch[0] : '30 Days');
+            } else {
+                setUsageDuration('');
+            }
         }
     };
 
@@ -267,7 +289,9 @@ export const QuickOfferSheet: React.FC<QuickOfferSheetProps> = ({
                 barter_types: collabType === 'barter' ? ['product_exchange'] : [],
                 requiresShipping,
                 barterProductName,
-                barterProductImageUrl
+                barterProductImageUrl,
+                usage_rights: usageRights,
+                usage_duration: usageDuration
             };
 
             const response = await fetch(`${apiBaseUrl}/api/collab/${creatorUsername}/save-draft`, {
@@ -337,7 +361,8 @@ export const QuickOfferSheet: React.FC<QuickOfferSheetProps> = ({
                 deadline: deadline,
                 // These are required by the backend API 
                 campaign_category: 'General',
-                usage_rights: false,
+                usage_rights: usageRights,
+                usage_duration: usageDuration,
                 requires_shipping: requiresShipping,
                 barter_product_name: barterProductName || null,
                 barter_product_image_url: barterProductImageUrl || null
@@ -531,7 +556,7 @@ export const QuickOfferSheet: React.FC<QuickOfferSheetProps> = ({
                         </div>
 
                         {/* Shipping Toggle */}
-                        <div className="pt-2">
+                        <div className="pt-2 grid grid-cols-1 gap-4">
                             <button
                                 type="button"
                                 onClick={() => {
@@ -567,6 +592,70 @@ export const QuickOfferSheet: React.FC<QuickOfferSheetProps> = ({
                                     )} />
                                 </div>
                             </button>
+
+                            {/* Usage Rights Toggle */}
+                            <div className={cn(
+                                "w-full rounded-2xl transition-all border overflow-hidden",
+                                usageRights ? "bg-violet-50 border-violet-200" : "bg-white border-slate-200"
+                            )}>
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        triggerHaptic(HapticPatterns.light);
+                                        const next = !usageRights;
+                                        setUsageRights(next);
+                                        if (next && !usageDuration) setUsageDuration('30 Days');
+                                    }}
+                                    className="w-full p-4 flex items-center justify-between"
+                                >
+                                    <div className="flex items-center gap-3">
+                                        <div className={cn(
+                                            "w-10 h-10 rounded-xl flex items-center justify-center transition-colors",
+                                            usageRights ? "bg-violet-500 text-white" : "bg-slate-100 text-slate-400"
+                                        )}>
+                                            <Globe className="w-5 h-5" />
+                                        </div>
+                                        <div className="text-left">
+                                            <p className="text-[14px] font-black text-slate-900">Content Usage Rights</p>
+                                            <p className="text-[11px] font-bold text-slate-500">Rights to use content for ads/promos</p>
+                                        </div>
+                                    </div>
+                                    <div className={cn(
+                                        "w-12 h-6 rounded-full relative transition-all duration-300",
+                                        usageRights ? "bg-violet-500" : "bg-slate-200"
+                                    )}>
+                                        <div className={cn(
+                                            "absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform duration-300 shadow-sm",
+                                            usageRights ? "translate-x-6" : "translate-x-0"
+                                        )} />
+                                    </div>
+                                </button>
+
+                                {usageRights && (
+                                    <div className="px-4 pb-4 animate-in fade-in slide-in-from-top-1 duration-200">
+                                        <div className="flex flex-wrap gap-2 pt-1">
+                                            {['30 Days', '90 Days', 'Perpetual'].map((opt) => (
+                                                <button
+                                                    key={opt}
+                                                    type="button"
+                                                    onClick={() => {
+                                                        triggerHaptic(HapticPatterns.selection);
+                                                        setUsageDuration(opt);
+                                                    }}
+                                                    className={cn(
+                                                        "px-4 py-2 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all",
+                                                        usageDuration === opt 
+                                                            ? "bg-violet-500 text-white shadow-md shadow-violet-500/20" 
+                                                            : "bg-white border border-violet-100 text-violet-500 hover:bg-violet-100/50"
+                                                    )}
+                                                >
+                                                    {opt}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
                         </div>
 
                         {/* Product Image & Name Upload - Always visible to ensure every deal has a visual asset */}

@@ -1,10 +1,7 @@
 import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
-import { MapPin, X, Lock, CheckCircle2, Loader2, ArrowRight, ChevronLeft } from "lucide-react";
+import { MapPin, X, Lock, CheckCircle2, Loader2, ArrowRight, ChevronLeft, Phone, User } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { toast } from "sonner";
-import { getApiBaseUrl } from "@/lib/utils/api";
-import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -15,16 +12,20 @@ import * as ds from "@/lib/design-system";
 
 interface Props {
   brandName?: string;
+  /** Pre-fill name from creator profile */
+  defaultName?: string;
+  /** Pre-fill phone from creator profile */
+  defaultPhone?: string;
   onClose: () => void;
-  onConfirm: (addressData: { address: string; pincode: string }) => void;
+  onConfirm: (addressData: { address: string; pincode: string; name: string; phone: string }) => void;
 }
 
-export function CreatorShippingConfirmationModal({ brandName, onClose, onConfirm }: Props) {
+export function CreatorShippingConfirmationModal({ brandName, defaultName = "", defaultPhone = "", onClose, onConfirm }: Props) {
+  const [name, setName] = useState(defaultName);
+  const [phone, setPhone] = useState(defaultPhone);
   const [addressLine, setAddressLine] = useState("");
   const [city, setCity] = useState("");
-  const [state, setState] = useState("");
   const [pincode, setPincode] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLookingUpPincode, setIsLookingUpPincode] = useState(false);
   const [mounted, setMounted] = useState(false);
 
@@ -32,6 +33,10 @@ export function CreatorShippingConfirmationModal({ brandName, onClose, onConfirm
     setMounted(true);
     return () => setMounted(false);
   }, []);
+
+  // Pre-fill name/phone when defaults arrive (profile loaded asynchronously)
+  useEffect(() => { if (defaultName && !name) setName(defaultName); }, [defaultName]);
+  useEffect(() => { if (defaultPhone && !phone) setPhone(defaultPhone); }, [defaultPhone]);
 
   const handlePincodeChange = async (val: string) => {
     setPincode(val);
@@ -41,23 +46,25 @@ export function CreatorShippingConfirmationModal({ brandName, onClose, onConfirm
       const data = await fetchPincodeData(val);
       if (data?.city) {
         if (!city.trim()) setCity(data.city);
-        if (!state.trim()) setState(data.state || "");
         triggerHaptic(HapticPatterns.light);
       }
     } catch { /* silent */ }
     finally { setIsLookingUpPincode(false); }
   };
 
+  const phoneValid = /^[6-9]\d{9}$/.test(phone.replace(/\s/g, ""));
   const pincodeValid = /^\d{6}$/.test(pincode.trim());
   const addressValid = addressLine.trim().length > 5 && pincodeValid;
-  const canSubmit = addressValid && !isSubmitting;
+  const nameValid = name.trim().length >= 2;
+  const canSubmit = nameValid && phoneValid && addressValid;
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!canSubmit) return;
-
     onConfirm({
-      address: addressLine.trim(),
+      name: name.trim(),
+      phone: phone.replace(/\s/g, "").trim(),
+      address: [addressLine.trim(), city.trim()].filter(Boolean).join(", "),
       pincode: pincode.trim(),
     });
   };
@@ -67,14 +74,13 @@ export function CreatorShippingConfirmationModal({ brandName, onClose, onConfirm
     "focus:bg-white/[0.08] focus:border-blue-500/50 focus:ring-4 focus:ring-blue-500/10",
     "shadow-[inset_0_1px_2px_rgba(0,0,0,0.2)]"
   );
-
   const labelClass = ds.typography.label;
 
   const modalContent = (
     <AnimatePresence>
       <div className="fixed inset-0 z-[10000] flex items-end sm:items-center justify-center p-4">
         {/* Backdrop */}
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -106,11 +112,13 @@ export function CreatorShippingConfirmationModal({ brandName, onClose, onConfirm
               </div>
               <div>
                 <h2 className={ds.typography.h3}>Confirm Shipping</h2>
-                <p className="text-[10px] text-white/40 uppercase tracking-[0.1em] font-black mt-0.5">Where should {brandName || 'the brand'} send the product?</p>
+                <p className="text-[10px] text-white/40 uppercase tracking-[0.1em] font-black mt-0.5">
+                  Where should {brandName || 'the brand'} send the product?
+                </p>
               </div>
             </div>
-            <button 
-              onClick={onClose} 
+            <button
+              onClick={onClose}
               aria-label="Close shipping confirmation"
               className="p-2 hover:bg-white/10 rounded-full transition-colors"
             >
@@ -118,16 +126,56 @@ export function CreatorShippingConfirmationModal({ brandName, onClose, onConfirm
             </button>
           </div>
 
-          <form onSubmit={handleSubmit} className="relative p-6 space-y-5">
-             <div className="flex items-start gap-3 p-4 bg-blue-500/5 border border-blue-500/10 rounded-2xl">
+          <form onSubmit={handleSubmit} className="relative p-6 space-y-4">
+            <div className="flex items-start gap-3 p-4 bg-blue-500/5 border border-blue-500/10 rounded-2xl">
               <Lock className="h-4 w-4 mt-0.5 shrink-0 text-blue-400/60" />
               <p className="text-[11px] leading-relaxed text-white/50">
-                This address will be used to generate the shipping label. Please ensure it's accurate and you're available to receive the package.
+                This address will only be shared with <span className="text-white/70 font-bold">{brandName || 'the brand'}</span> for product delivery. Please ensure your name and phone number are accurate.
               </p>
             </div>
 
             <div className="space-y-4">
-              <div className="space-y-2">
+              {/* Name + Phone row */}
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1.5">
+                  <Label htmlFor="creator-shipping-name" className={labelClass}>
+                    <span className="flex items-center gap-1.5"><User className="h-3 w-3 opacity-50" />Full Name</span>
+                  </Label>
+                  <Input
+                    id="creator-shipping-name"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    placeholder="Rohit Sharma"
+                    className={cn(fieldClass, !nameValid && name.length > 0 && "border-rose-500/30")}
+                    required
+                    autoComplete="name"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="creator-shipping-phone" className={labelClass}>
+                    <span className="flex items-center gap-1.5"><Phone className="h-3 w-3 opacity-50" />Phone No.</span>
+                  </Label>
+                  <Input
+                    id="creator-shipping-phone"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value.replace(/\D/g, "").slice(0, 10))}
+                    inputMode="tel"
+                    placeholder="9876543210"
+                    className={cn(fieldClass, phone.length > 0 && !phoneValid && "border-rose-500/30")}
+                    required
+                    autoComplete="tel"
+                  />
+                  {phone.length === 10 && phoneValid && (
+                    <p className="text-[10px] text-emerald-400 font-bold mt-0.5">✓ Valid</p>
+                  )}
+                  {phone.length === 10 && !phoneValid && (
+                    <p className="text-[10px] text-rose-400 font-bold mt-0.5">Invalid number</p>
+                  )}
+                </div>
+              </div>
+
+              {/* Address */}
+              <div className="space-y-1.5">
                 <Label htmlFor="creator-shipping-address" className={labelClass}>Street Address</Label>
                 <Input
                   id="creator-shipping-address"
@@ -136,11 +184,13 @@ export function CreatorShippingConfirmationModal({ brandName, onClose, onConfirm
                   placeholder="Flat No, Building, Street, Area"
                   className={fieldClass}
                   required
+                  autoComplete="street-address"
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
+              {/* Pincode + City row */}
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1.5">
                   <Label htmlFor="creator-shipping-pincode" className={labelClass}>Pincode</Label>
                   <div className="relative">
                     <Input
@@ -160,7 +210,7 @@ export function CreatorShippingConfirmationModal({ brandName, onClose, onConfirm
                     )}
                   </div>
                 </div>
-                <div className="space-y-2">
+                <div className="space-y-1.5">
                   <Label htmlFor="creator-shipping-city" className={labelClass}>City (Auto-filled)</Label>
                   <Input
                     id="creator-shipping-city"
@@ -168,6 +218,7 @@ export function CreatorShippingConfirmationModal({ brandName, onClose, onConfirm
                     onChange={(e) => setCity(e.target.value)}
                     placeholder="Mumbai"
                     className={fieldClass}
+                    autoComplete="address-level2"
                   />
                 </div>
               </div>
@@ -179,10 +230,10 @@ export function CreatorShippingConfirmationModal({ brandName, onClose, onConfirm
               className={cn(
                 "w-full h-14 text-base font-black uppercase tracking-widest transition-all",
                 canSubmit ? "bg-blue-600 hover:bg-blue-500 shadow-xl" : "bg-white/5",
-                "rounded-2xl mt-4"
+                "rounded-2xl mt-2"
               )}
             >
-              Accept & Confirm Address <ArrowRight className="w-4 h-4 ml-2" />
+              Accept &amp; Confirm Address <ArrowRight className="w-4 h-4 ml-2" />
             </Button>
 
             <Button

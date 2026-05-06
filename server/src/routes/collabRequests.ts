@@ -1224,7 +1224,7 @@ router.get('/lookup-brand', async (req: Request, res: Response) => {
     // 1. Check profiles table first (Primary Account Storage)
     const { data: profileRow, error: profileErr } = await supabase
       .from('profiles')
-      .select('id, business_name, avatar_url, profile_image_url, role')
+      .select('id, business_name, avatar_url, profile_image_url, role, pincode, location')
       .ilike('email', email)
       .limit(1)
       .maybeSingle();
@@ -1245,7 +1245,9 @@ router.get('/lookup-brand', async (req: Request, res: Response) => {
           brand_name: brandProfile?.name || profileRow.business_name || null,
           logo: brandProfile?.logo_url || profileRow.avatar_url || profileRow.profile_image_url || null,
           instagram: null,
-          website: brandProfile?.website_url || null
+          website: brandProfile?.website_url || null,
+          pincode: profileRow.pincode || null,
+          location: profileRow.location || null
         }
       });
     }
@@ -1384,7 +1386,10 @@ router.get('/:username', async (req: Request, res: Response) => {
           avg_reel_views_manual,
           avg_likes_manual,
           active_brand_collabs_month,
-          campaign_slot_note
+          campaign_slot_note,
+          pincode,
+          city,
+          location
         `)
         .eq('id', profile.id)
         .maybeSingle();
@@ -2040,6 +2045,8 @@ router.post('/:username/submit', collabSubmissionLimiter, async (req: Request, r
       shipping_timeline_days,
       cancellation_policy,
       offer_expires_at,
+      brand_pincode,
+      form_data,
     } = req.body;
 
     // Validate brand email domain
@@ -2142,6 +2149,7 @@ router.post('/:username/submit', collabSubmissionLimiter, async (req: Request, r
       brand_name: brand_name.trim(),
       brand_email: brand_email.toLowerCase().trim(),
       brand_address: brand_address?.trim() || null,
+      brand_pincode: brand_pincode?.trim() || null,
       brand_gstin: brand_gstin && typeof brand_gstin === 'string' ? brand_gstin.trim().toUpperCase() : null,
       brand_phone: brand_phone?.trim() || null,
       brand_website: brand_website?.trim() || null,
@@ -2164,6 +2172,7 @@ router.post('/:username/submit', collabSubmissionLimiter, async (req: Request, r
       content_duration: typeof content_duration === 'string' ? content_duration.trim() || null : null,
       content_requirements: Array.isArray(content_requirements) ? content_requirements.map(String).filter(Boolean) : [],
       barter_types: Array.isArray(barter_types) ? barter_types.map(String).filter(Boolean) : [],
+      form_data: form_data && typeof form_data === 'object' ? form_data : {},
     };
 
     if (isPaidLikeCollab(collabTypeForDb)) {
@@ -2429,6 +2438,7 @@ router.post('/:username/submit', collabSubmissionLimiter, async (req: Request, r
       submitted_user_agent: userAgent,
       ...(brandContactId ? { brand_contact_id: brandContactId } : {}),
       ...(brandUserId ? { brand_id: brandUserId } : {}),
+      form_data: basePayload.form_data || {},
     };
 
     // Add budget/barter fields based on collab_type
@@ -2445,6 +2455,7 @@ router.post('/:username/submit', collabSubmissionLimiter, async (req: Request, r
       'shipping_required',
       'brand_contact_id',
       'brand_id',
+      'brand_pincode',
       'submitted_ip',
       'submitted_user_agent',
       'selected_package_id',
@@ -2455,6 +2466,7 @@ router.post('/:username/submit', collabSubmissionLimiter, async (req: Request, r
       'content_duration',
       'content_requirements',
       'barter_types',
+      'form_data',
     ]);
 
     const extractMissingColumn = (message: string): string | null => {
@@ -3422,7 +3434,7 @@ router.patch('/:id/accept', async (req: AuthenticatedRequest, res: Response) => 
   try {
     const userId = req.user!.id;
     const { id } = req.params;
-    const { shipping_address, otp_verified, otp_verified_at } = req.body || {};
+    const { shipping_address, pincode, delivery_name, delivery_phone, otp_verified, otp_verified_at } = req.body || {};
 
     console.log('[CollabRequests] Accept request:', { requestId: id, userId, hasBody: !!req.body });
 
@@ -3500,6 +3512,9 @@ router.patch('/:id/accept', async (req: AuthenticatedRequest, res: Response) => 
     // Create brand deal using shared service
     const deal = await createDealFromCollabRequest(request, userId, {
       shipping_address,
+      pincode,
+      delivery_name: delivery_name || null,
+      delivery_phone: delivery_phone || null,
       otp_verified,
       otp_verified_at,
     });
@@ -3522,6 +3537,20 @@ router.patch('/:id/accept', async (req: AuthenticatedRequest, res: Response) => 
 
     if (updateError) {
       console.error('[CollabRequests] Error updating request:', updateError);
+    }
+
+    // Proactive profile sync: Save address/pincode to profile for future convenience
+    if (shipping_address || pincode) {
+      void supabase
+        .from('profiles')
+        .update({
+          location: shipping_address || undefined,
+          pincode: pincode || undefined,
+        } as any)
+        .eq('id', userId)
+        .then(({ error }) => {
+          if (error) console.error('[CollabRequests] Error syncing address to profile:', error);
+        });
     }
 
     // Fetch creator profile for contract generation (needed for DEAL_LOCKED log)

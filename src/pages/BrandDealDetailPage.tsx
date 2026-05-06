@@ -488,7 +488,22 @@ const BrandDealDetailPage: React.FC = () => {
                     </div>
                     <div className="flex items-start gap-2">
                       <MapPin className="h-3.5 w-3.5 text-white/40 mt-0.5" />
-                      <p className="text-sm text-white/80 leading-relaxed">{deal.delivery_address}</p>
+                      <div className="flex-1">
+                        <p className="text-sm text-white/80 leading-relaxed">{deal.delivery_address}</p>
+                        {(() => {
+                          const addr = String(deal.delivery_address || '').trim();
+                          const pincodeMatch = addr.match(/(?:^|\D)(\d{6})(?:\D|$)/);
+                          const extractedPin = (pincodeMatch ? pincodeMatch[1] : '') || String((deal as any)?.profiles?.pincode || '').trim();
+                          if (extractedPin) {
+                            return (
+                              <p className="text-[11px] font-black mt-1.5 inline-flex items-center gap-1 px-2 py-0.5 rounded bg-blue-500/10 text-blue-300 border border-blue-500/20 uppercase tracking-tight">
+                                PIN: {extractedPin}
+                              </p>
+                            );
+                          }
+                          return null;
+                        })()}
+                      </div>
                     </div>
                     {deal.delivery_phone && (
                       <div className="flex items-center gap-2">

@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import type { MouseEvent, MutableRefObject, ReactNode } from 'react';
 import { createPortal } from 'react-dom';
-import { AlertTriangle, ArrowLeft, BarChart3, Bell, Briefcase, Calendar, Camera, Check, CheckCircle2, ChevronRight, Clock, Copy, CreditCard, ExternalLink, Eye, FileText, Globe, Handshake, History, Info, Landmark, LayoutDashboard, Loader2, Lock, Mail, MapPin, Menu, MessageSquare, Moon, MoreHorizontal, MoreVertical, Package, PenTool, Play, PlayCircle, Plus, RefreshCw, RotateCcw, Search, Send, Settings, Shield, ShieldCheck, Sparkles, Sun, Tag, Target, Truck, User, Video, Wallet, Zap } from 'lucide-react';
+import { AlertTriangle, ArrowLeft, BarChart3, Bell, Briefcase, Calendar, Camera, Check, CheckCircle2, ChevronRight, Clock, Copy, CreditCard, ExternalLink, Eye, FileText, Globe, Handshake, History, Info, Landmark, LayoutDashboard, Loader2, Lock, Mail, MapPin, Menu, MessageSquare, Moon, MoreHorizontal, MoreVertical, Package, PenTool, Phone, Play, PlayCircle, Plus, RefreshCw, RotateCcw, Search, Send, Settings, Shield, ShieldCheck, Sparkles, Sun, Tag, Target, Truck, User, Video, Wallet, Zap } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import CountUp from 'react-countup';
@@ -601,8 +601,9 @@ const brandDealCardUi = (row: BrandDeal | null | undefined) => {
       : (s === 'CONTENT_APPROVED' || s === 'PAYMENT_RELEASED') ? 5
         : (s === 'CONTENT_DELIVERED' || s === 'REVISION_DONE' || s === 'DISPUTED' || s === 'DISPUTE_ARBITRATION' || s === 'DISPUTE_PARTIAL_REFUND') ? 4
           : (s === 'CONTENT_MAKING' || s === 'REVISION_REQUESTED') ? 3
-            : (s === 'FULLY_EXECUTED' || s === 'CONTRACT_READY' || s === 'PAYMENT_PENDING' || s === 'AWAITING_BRAND_ADDRESS') ? 2
-              : 1;
+            : (s === 'FULLY_EXECUTED') ? (requiresShipping && !hasShipped && !hasDeliveredShipping ? 2 : 3)
+              : (s === 'CONTRACT_READY' || s === 'PAYMENT_PENDING' || s === 'AWAITING_BRAND_ADDRESS') ? (requiresShipping ? 1 : 2)
+                : 1;
 
   return { status: s, human, stageBadge, needsAction, primaryActionLabel, statusLine, step, ctaTone: primaryCta.tone, ctaDisabled: primaryCta.disabled, ctaAction: primaryCta.action };
 };
@@ -2262,14 +2263,39 @@ const BrandMobileDashboard = ({
     const contractUrl = offer?.safe_contract_url || offer?.signed_contract_url || offer?.contract_file_url || null;
     
     const collabType = String(offer?.collab_type || offer?.deal_type || offer?.raw?.collab_type || '').trim().toLowerCase();
-    const usageDuration = offer?.usage_duration || offer?.raw?.usage_duration || offer?.form_data?.usage_duration || '';
-    const rightsLabel = usageDuration ? `${usageDuration} Usage` : String(offer?.usage_type || '').trim() || (offer?.usage_rights === true ? 'Usage included' : 'Not specified');
-    const rightsDescription = usageDuration
+    
+    // Auto-detect usage duration from deliverables if not explicitly set
+    const deliverablesText = String(offer?.deliverables || offer?.raw?.deliverables || '').toLowerCase();
+    const hasUsageInDeliverables = deliverablesText.includes('usage') || deliverablesText.includes('ads') || deliverablesText.includes('whitelisting');
+    let detectedUsageDuration = '';
+    const isStarterCollab = packageSummary.toLowerCase().includes('starter collab');
+    
+    if (hasUsageInDeliverables) {
+      if (deliverablesText.includes('30') && (deliverablesText.includes('day') || deliverablesText.includes('days'))) detectedUsageDuration = '30 Days';
+      else if (deliverablesText.includes('90') && (deliverablesText.includes('day') || deliverablesText.includes('days'))) detectedUsageDuration = '90 Days';
+      else if (deliverablesText.includes('perpetual') || deliverablesText.includes('lifetime')) detectedUsageDuration = 'Perpetual';
+      else detectedUsageDuration = 'Included';
+    } else if (isStarterCollab) {
+      detectedUsageDuration = '7 Days';
+    }
+
+    const usageDuration = offer?.usage_duration || offer?.raw?.usage_duration || offer?.form_data?.usage_duration || detectedUsageDuration;
+    const isUsageIncluded = offer?.usage_rights === true || Boolean(detectedUsageDuration);
+    
+    const rightsLabel = usageDuration 
+      ? (usageDuration === 'Included' ? 'Usage included' : `${usageDuration} Usage`) 
+      : String(offer?.usage_type || '').trim() || (isUsageIncluded ? 'Usage included' : 'Not specified');
+      
+    const rightsDescription = usageDuration && usageDuration !== 'Included'
       ? `Usage rights are granted for ${usageDuration}. Check the signed contract for channels and exclusions.`
-      : offer?.usage_rights === true
+      : isUsageIncluded
       ? 'Usage rights are included for this deal. Check the signed contract for duration, channels, and exclusions.'
       : 'Usage rights were not specified for this deal. Check the signed contract before reusing content beyond the agreed deliverables.';
-    const platformLabel = String(offer?.platform || offer?.platforms || offer?.raw?.platform || '').trim() || 'Not specified';
+    const platformRaw = String(offer?.platform || offer?.platforms || offer?.raw?.platform || '').trim();
+    const hasIgKeywords = deliverablesText.includes('reel') || deliverablesText.includes('story') || deliverablesText.includes('instagram') || deliverablesText.includes('ig');
+    const platformLabel = (platformRaw && platformRaw.toLowerCase() !== 'other') 
+      ? platformRaw 
+      : (hasIgKeywords ? 'Instagram' : (platformRaw || 'Instagram'));
     const isPureBarter = collabType === 'barter';
     const requiresPayment = isPaidLikeCollab(offer) && !isPureBarter;
     const requiresShipping = offer?.shipping_required === true || offer?.raw?.shipping_required === true || isBarterLikeCollab(offer);
@@ -2278,6 +2304,18 @@ const BrandMobileDashboard = ({
     const trackingNumber = String(offer?.tracking_number || '').trim();
     const courierName = String(offer?.courier_name || '').trim();
     const creatorUpiId = String(offer?.profiles?.bank_upi || '').trim();
+    const creatorDeliveryName = String(offer?.delivery_name || '').trim();
+    const creatorDeliveryAddress = String(offer?.delivery_address || '').trim();
+    const creatorDeliveryPhone = String(offer?.delivery_phone || offer?.profiles?.phone || '').trim();
+    
+    // Extract pincode from address if possible (robust 6-digit extraction)
+    const pincodeMatch = creatorDeliveryAddress.match(/(?:^|\D)(\d{6})(?:\D|$)/);
+    const creatorDeliveryPincode = (pincodeMatch ? pincodeMatch[1] : '') || 
+                                   String(offer?.profiles?.pincode || 
+                                          offer?.pincode || 
+                                          offer?.raw?.pincode || 
+                                          offer?.form_data?.pincode || 
+                                          '').trim();
     
     // Campaign Objectives fallbacks
     const campaignGoal = offer?.campaign_goal || offer?.form_data?.campaign_goal || offer?.form_data?.campaignName;
@@ -2300,9 +2338,11 @@ const BrandMobileDashboard = ({
       const stepIndex = requiresShipping
         ? (() => {
             if (['COMPLETED', 'CONTENT_APPROVED', 'PAYMENT_RELEASED'].includes(normalizedDealStatus)) return 4;
-            if (['CONTENT_DELIVERED', 'REVISION_DONE', 'REVISION_REQUESTED', 'CONTENT_MAKING'].includes(normalizedDealStatus)) return 3;
-            if (shippingStatus === 'shipped' || shippingDelivered || normalizedDealStatus === 'FULLY_EXECUTED') return 2;
-            if (['SIGNED_BY_BRAND', 'SIGNED_BY_CREATOR', 'SENT'].includes(normalizedDealStatus)) return 1;
+            if (['CONTENT_DELIVERED', 'REVISION_DONE'].includes(normalizedDealStatus)) return 3;
+            if (['CONTENT_MAKING', 'REVISION_REQUESTED', 'FULLY_EXECUTED'].includes(normalizedDealStatus)) {
+              return (shippingStatus === 'shipped' || shippingDelivered) ? 2 : 1;
+            }
+            if (['SIGNED_BY_BRAND', 'SIGNED_BY_CREATOR', 'SENT', 'AWAITING_BRAND_SIGNATURE', 'CONTRACT_READY', 'PAYMENT_PENDING', 'AWAITING_BRAND_ADDRESS'].includes(normalizedDealStatus)) return 0;
             return 0;
           })()
         : Math.max(0, Math.min(4, (cardUi.step || 1) - 1));
@@ -2863,6 +2903,50 @@ const BrandMobileDashboard = ({
                   </span>
                 </div>
 
+                {/* Creator's receiving address */}
+                {requiresShipping && (
+                  <div className="mb-6 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <p className={cn('text-[11px] font-black uppercase tracking-widest opacity-40', textColor)}>Creator's Delivery Address</p>
+                    </div>
+                    {creatorDeliveryAddress ? (
+                      <div className={cn('rounded-2xl border p-4 space-y-3', isDark ? 'bg-white/5 border-white/10' : 'bg-slate-50 border-slate-100')}>
+                        <div className="flex items-center gap-3">
+                          <div className={cn('w-8 h-8 rounded-xl flex items-center justify-center shrink-0', isDark ? 'bg-white/10' : 'bg-white shadow-sm')}>
+                            <User className="w-4 h-4 opacity-40" />
+                          </div>
+                          <p className={cn('text-[14px] font-bold', textColor)}>{creatorDeliveryName || creatorName}</p>
+                        </div>
+                        <div className="flex items-start gap-3">
+                          <div className={cn('w-8 h-8 rounded-xl flex items-center justify-center shrink-0', isDark ? 'bg-white/10' : 'bg-white shadow-sm')}>
+                            <MapPin className="w-4 h-4 opacity-40" />
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <p className={cn('text-[14px] font-bold leading-relaxed', textColor)}>{creatorDeliveryAddress}</p>
+                            {creatorDeliveryPincode && (
+                              <p className={cn('text-[13px] font-black mt-2 inline-flex items-center gap-1.5 px-3 py-1 rounded-lg', isDark ? 'bg-primary/20 text-primary-foreground/90' : 'bg-primary/10 text-primary')}>
+                                <span className="opacity-60 text-[11px]">PIN:</span> {creatorDeliveryPincode}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                        {creatorDeliveryPhone && (
+                          <div className="flex items-center gap-3">
+                            <div className={cn('w-8 h-8 rounded-xl flex items-center justify-center shrink-0', isDark ? 'bg-white/10' : 'bg-white shadow-sm')}>
+                              <Phone className="w-4 h-4 opacity-40" />
+                            </div>
+                            <p className={cn('text-[14px] font-bold', textColor)}>{creatorDeliveryPhone}</p>
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <div className={cn('rounded-2xl border border-dashed p-5 text-center', isDark ? 'border-white/10 bg-white/[0.02]' : 'border-slate-200 bg-slate-50/50')}>
+                        <p className={cn('text-[13px] font-bold opacity-40 italic', textColor)}>Waiting for creator to provide delivery address.</p>
+                      </div>
+                    )}
+                  </div>
+                )}
+
                 {/* Address managed via Edit button below */}
 
                 {!shippingDelivered && (
@@ -3091,25 +3175,27 @@ const BrandMobileDashboard = ({
           )}
 
           {/* Usage Rights */}
-          <div className="mb-5">
-            <SectionTitle>Usage Rights</SectionTitle>
-            <div className={cn('p-6 rounded-[32px] border', isDark ? 'bg-card/40 border-white/5' : 'bg-white border-slate-100 shadow-sm')}>
-              <div className="flex items-center gap-4 mb-4">
-                <div className={cn('w-10 h-10 rounded-2xl flex items-center justify-center', isDark ? 'bg-sky-500/10 text-sky-400' : 'bg-sky-50 text-sky-600')}>
-                  <Globe className="w-5 h-5" />
+          {(offer?.usage_rights || usageDuration) && (
+            <div className="mb-5">
+              <SectionTitle>Usage Rights</SectionTitle>
+              <div className={cn('p-6 rounded-[32px] border', isDark ? 'bg-card/40 border-white/5' : 'bg-white border-slate-100 shadow-sm')}>
+                <div className="flex items-center gap-4 mb-4">
+                  <div className={cn('w-10 h-10 rounded-2xl flex items-center justify-center', isDark ? 'bg-sky-500/10 text-sky-400' : 'bg-sky-50 text-sky-600')}>
+                    <Globe className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <p className={cn('text-[15px] font-black', textColor)}>{rightsLabel}</p>
+                    <p className={cn('text-[12px] font-bold opacity-50', textColor)}>Usage terms from this deal.</p>
+                  </div>
                 </div>
-                <div>
-                  <p className={cn('text-[15px] font-black', textColor)}>{rightsLabel}</p>
-                  <p className={cn('text-[12px] font-bold opacity-50', textColor)}>Usage terms from this deal.</p>
+                <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/5">
+                  <p className={cn('text-[12px] leading-relaxed opacity-70', textColor)}>
+                    {rightsDescription}
+                  </p>
                 </div>
-              </div>
-              <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/5">
-                <p className={cn('text-[12px] leading-relaxed opacity-70', textColor)}>
-                  {rightsDescription}
-                </p>
               </div>
             </div>
-          </div>
+          )}
         </div>
 
         {/* Floating Action Bar */}
@@ -4782,14 +4868,14 @@ const BrandCollabsTab = React.memo(({
                       </div>
                     </div>
 
-                    <div className="flex flex-wrap gap-2 mb-5 relative z-10">
-                      <div className={cn('px-3 py-1.5 rounded-xl border text-[11px] font-bold flex items-center gap-2', isDark ? 'bg-white/5 border-white/5 text-white/60' : 'bg-slate-50 border-slate-100 text-slate-500')}>
-                        <FileText className="w-3.5 h-3.5 opacity-50" />
-                        {packageSummary}
+                    <div className="flex items-center gap-2 mb-5 relative z-10 overflow-hidden">
+                      <div className={cn('px-3 py-1.5 rounded-xl border text-[11px] font-bold flex items-center gap-2 min-w-0 flex-1', isDark ? 'bg-white/5 border-white/5 text-white/60' : 'bg-slate-50 border-slate-100 text-slate-500')}>
+                        <FileText className="w-3.5 h-3.5 opacity-50 shrink-0" />
+                        <span className="truncate">{packageSummary}</span>
                       </div>
                       {due?.text && (
                         <div className={cn(
-                          'flex items-center gap-2 px-3 py-1.5 rounded-xl border shadow-sm text-[11px] font-bold',
+                          'flex items-center gap-2 px-3 py-1.5 rounded-xl border shadow-sm text-[11px] font-bold shrink-0',
                           due.tone === 'danger'
                             ? (isDark ? 'bg-rose-500/10 text-rose-400 border-rose-500/20' : 'bg-rose-50 text-rose-700 border-rose-100')
                             : due.tone === 'warn'
@@ -4797,7 +4883,7 @@ const BrandCollabsTab = React.memo(({
                               : (isDark ? 'bg-white/5 text-white/40 border-white/5' : 'bg-slate-50 text-slate-400 border-slate-100')
                         )}>
                           <Clock className="w-3.5 h-3.5" />
-                          <span className="uppercase tracking-wider">{due.text}</span>
+                          <span className="uppercase tracking-wider whitespace-nowrap">{due.text}</span>
                         </div>
                       )}
                     </div>
@@ -4839,7 +4925,7 @@ const BrandCollabsTab = React.memo(({
                               className={cn(
                                 'h-1.5 w-8 rounded-full transition-all duration-700',
                                 i < ui.step
-                                  ? (isDark ? 'bg-gradient-to-r from-emerald-500 to-sky-500' : 'bg-gradient-to-r from-emerald-600 to-sky-600')
+                                  ? 'bg-gradient-to-r from-emerald-500 to-teal-500 shadow-[0_0_8px_rgba(16,185,129,0.2)]'
                                   : (isDark ? 'bg-white/5' : 'bg-slate-100')
                               )}
                             />
@@ -4855,9 +4941,9 @@ const BrandCollabsTab = React.memo(({
                         onClick={(e) => handleBrandDealPrimaryAction(e, item, ui)}
                         disabled={Boolean(ui?.ctaDisabled)}
                         className={cn(
-                          'h-15 w-full rounded-2xl text-[15px] font-black uppercase tracking-[0.05em] transition-all active:scale-[0.98] flex items-center justify-center gap-3',
+                          'h-14 w-full rounded-2xl text-[14px] font-black uppercase tracking-[0.1em] transition-all active:scale-[0.98] flex items-center justify-center gap-2.5',
                           ui.needsAction 
-                            ? 'bg-gradient-to-r from-emerald-600 to-emerald-500 text-white shadow-xl shadow-emerald-500/20' 
+                            ? 'bg-gradient-to-br from-emerald-500 to-teal-600 text-white shadow-[0_12px_40px_-12px_rgba(16,185,129,0.4)] border-t border-white/20' 
                             : isDark ? 'bg-white/5 border border-white/10 text-white hover:bg-white/10' : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50',
                           Boolean(ui?.ctaDisabled) && 'opacity-60 cursor-not-allowed active:scale-100'
                         )}

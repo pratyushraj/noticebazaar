@@ -70,6 +70,7 @@ import {
   Star,
   RefreshCcw,
   Image as ImageIcon,
+  Globe,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { triggerHaptic, HapticPatterns } from '@/lib/utils/haptics'
@@ -785,6 +786,7 @@ const CollabLinkLanding = () => {
   const [brandName, setBrandName] = useState('')
   const [brandEmail, setBrandEmail] = useState('')
   const [brandInstagram, setBrandInstagram] = useState('')
+  const [brandPincode, setBrandPincode] = useState('')
   const [budgetRange, setBudgetRange] = useState('')
   const [exactBudget, setExactBudget] = useState('')
   const [barterValue, setBarterValue] = useState('')
@@ -798,6 +800,8 @@ const CollabLinkLanding = () => {
     brand_name?: string
     logo?: string
     instagram?: string
+    pincode?: string
+    location?: string
   } | null>(null)
   const [useBrandProfile, setUseBrandProfile] = useState(false)
 
@@ -807,6 +811,8 @@ const CollabLinkLanding = () => {
   const [contentQuantity, setContentQuantity] = useState<number | '3+'>(1)
   const [contentDuration, setContentDuration] = useState<string>('30s')
   const [contentRequirements, setContentRequirements] = useState<string[]>([])
+  const [usageRights, setUsageRights] = useState(false)
+  const [usageDuration, setUsageDuration] = useState('')
   const [deadline, setDeadline] = useState('')
   const [hasStartedOffer, setHasStartedOffer] = useState(false)
   const [showMobileAudienceDetails, setShowMobileAudienceDetails] = useState(false)
@@ -1080,6 +1086,7 @@ const CollabLinkLanding = () => {
             setBrandLogoUrl(backendLogo)
           }
           if (!brandInstagram.trim() && json.data.instagram) setBrandInstagram(json.data.instagram)
+          if (!brandPincode.trim() && json.data.pincode) setBrandPincode(json.data.pincode)
 
           setUseBrandProfile(true)
         } else {
@@ -1546,6 +1553,8 @@ const CollabLinkLanding = () => {
     contentRequirements,
     selectedTemplateId,
     deadline,
+    usageRights,
+    usageDuration,
   })
 
   const applyDraftFormData = (data: Record<string, unknown>) => {
@@ -1591,6 +1600,8 @@ const CollabLinkLanding = () => {
       setContentRequirements(data.contentRequirements.filter((r): r is string => typeof r === 'string'))
     if (typeof data.selectedTemplateId === 'string') setSelectedTemplateId(data.selectedTemplateId)
     if (typeof data.deadline === 'string') setDeadline(data.deadline)
+    if (typeof data.usageRights === 'boolean') setUsageRights(data.usageRights)
+    if (typeof data.usageDuration === 'string') setUsageDuration(data.usageDuration)
   }
 
   // Demo data prefill function
@@ -2312,6 +2323,7 @@ const CollabLinkLanding = () => {
         brand_website: null,
         brand_instagram: brandInstagram || null,
         brand_logo_url: brandLogoUrl ? String(brandLogoUrl).trim() : null,
+        brand_pincode: brandPincode || null,
         collab_type: collabType,
         budget_range: budgetRange || null,
         exact_budget: exactBudget ? parseFloat(exactBudget) : null,
@@ -2365,14 +2377,15 @@ const CollabLinkLanding = () => {
           barterProductCategory: barterProductCategory || null,
           barterProductImageUrl: barterProductImageUrl ? String(barterProductImageUrl).trim() : null,
           deadline: deadline || null,
+          brandPincode: brandPincode || null,
         },
         deliverables,
-        usage_rights: false,
+        usage_rights: usageRights,
         deadline: deadline || null,
         offer_expires_at: null,
         authorized_signer_name: null,
         authorized_signer_role: null,
-        usage_duration: null,
+        usage_duration: usageDuration || null,
         payment_terms: null,
         approval_sla_hours: null,
         requires_shipping: paymentType === 'barter' || includesProduct,
@@ -2607,6 +2620,7 @@ const CollabLinkLanding = () => {
   const successDeadline = searchParams.get('deadline')?.trim()
   const successRequestId = searchParams.get('requestId')?.trim()
   const successBudget = searchParams.get('budget')?.trim()
+  const successPincode = searchParams.get('pincode')?.trim()
   const successDeliverables = searchParams.get('deliverables')?.trim()?.split(',').filter(Boolean) || []
 
   const displayBudget = exactBudget
@@ -3089,6 +3103,19 @@ const CollabLinkLanding = () => {
                     </p>
                     <p className="text-xs font-bold text-slate-500 mt-1 opacity-60">
                       Track in dashboard
+                    </p>
+                  </div>
+
+                  {/* Geographical Transparency Card */}
+                  <div className="rounded-3xl border border-slate-100 bg-slate-50/50 p-6 transition-all hover:bg-white hover:shadow-sm">
+                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-3">
+                      Location
+                    </p>
+                    <p className="text-lg font-black text-slate-900 leading-tight">
+                      {successPincode || (creator.pincode ? creator.pincode : (creator.city || 'India'))}
+                    </p>
+                    <p className="text-xs font-bold text-slate-500 mt-1 opacity-60">
+                      {successPincode ? 'Brand Pincode' : 'Creator Region'}
                     </p>
                   </div>
                 </div>
@@ -4021,6 +4048,70 @@ const CollabLinkLanding = () => {
                                       })}
                                     </div>
                                   </div>
+
+                                  <div className="space-y-3 pt-2">
+                                    <span className="text-[11px] font-black uppercase tracking-widest text-slate-400">Usage Rights</span>
+                                    <div className={cn(
+                                      "rounded-2xl border transition-all overflow-hidden",
+                                      usageRights ? "bg-violet-500/10 border-violet-500/30" : "bg-slate-50 border-slate-100"
+                                    )}>
+                                      <button
+                                        type="button"
+                                        onClick={() => {
+                                          triggerHaptic(HapticPatterns.light);
+                                          const next = !usageRights;
+                                          setUsageRights(next);
+                                          if (next && !usageDuration) setUsageDuration('30 Days');
+                                        }}
+                                        className="w-full p-4 flex items-center justify-between"
+                                      >
+                                        <div className="flex items-center gap-3">
+                                          <div className={cn(
+                                            "w-9 h-9 rounded-lg flex items-center justify-center transition-colors",
+                                            usageRights ? "bg-violet-500 text-white" : "bg-white border border-slate-200 text-slate-400"
+                                          )}>
+                                            <Globe className="w-4.5 h-4.5" />
+                                          </div>
+                                          <div className="text-left">
+                                            <p className="text-[13px] font-black text-slate-900">Include Usage Rights</p>
+                                            <p className="text-[10px] font-bold text-slate-500">Rights to use content for ads</p>
+                                          </div>
+                                        </div>
+                                        <div className={cn(
+                                          "w-10 h-5 rounded-full relative transition-all duration-300",
+                                          usageRights ? "bg-violet-500" : "bg-slate-200"
+                                        )}>
+                                          <div className={cn(
+                                            "absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full transition-transform duration-300 shadow-sm",
+                                            usageRights ? "translate-x-5" : "translate-x-0"
+                                          )} />
+                                        </div>
+                                      </button>
+
+                                      {usageRights && (
+                                        <div className="px-4 pb-4 flex flex-wrap gap-2 animate-in fade-in slide-in-from-top-1 duration-200">
+                                          {['30 Days', '90 Days', 'Perpetual'].map((opt) => (
+                                            <button
+                                              key={opt}
+                                              type="button"
+                                              onClick={() => {
+                                                triggerHaptic(HapticPatterns.selection);
+                                                setUsageDuration(opt);
+                                              }}
+                                              className={cn(
+                                                "px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all",
+                                                usageDuration === opt 
+                                                  ? "bg-violet-500 text-white shadow-md shadow-violet-500/20" 
+                                                  : "bg-white border border-violet-200/50 text-violet-600 hover:bg-violet-500/10"
+                                              )}
+                                            >
+                                              {opt}
+                                            </button>
+                                          ))}
+                                        </div>
+                                      )}
+                                    </div>
+                                  </div>
                                 </div>
                               </div>
                             )}
@@ -4132,6 +4223,32 @@ const CollabLinkLanding = () => {
                               placeholder="@brand_instagram (optional)"
                               className="h-12 px-4 rounded-xl border-white bg-white font-semibold text-[14px] text-slate-900 placeholder:text-slate-500 shadow-sm focus-visible:ring-2 focus-visible:ring-emerald-500/30 transition-all"
                             />
+
+                            <div className="relative group">
+                              <label htmlFor="brand-pincode-input" className="sr-only">
+                                Pincode
+                              </label>
+                              <Input
+                                id="brand-pincode-input"
+                                value={brandPincode}
+                                onChange={e => {
+                                  const val = e.target.value.replace(/\D/g, '').slice(0, 6)
+                                  setBrandPincode(val)
+                                }}
+                                onKeyDown={e => e.key === 'Enter' && e.currentTarget.blur()}
+                                enterKeyHint="done"
+                                placeholder="Brand Pincode (e.g. 110001)"
+                                className={cn(
+                                  "h-12 px-4 rounded-xl border-white bg-white font-semibold text-[14px] text-slate-900 placeholder:text-slate-500 shadow-sm focus-visible:ring-2 focus-visible:ring-emerald-500/30 transition-all",
+                                  errors.brandPincode && "border-destructive ring-1 ring-destructive"
+                                )}
+                              />
+                              {errors.brandPincode && (
+                                <p className="mt-1 text-[11px] font-bold text-destructive">
+                                  {errors.brandPincode}
+                                </p>
+                              )}
+                            </div>
 
                             {(useBrandProfile || lookupStatus === 'found') && (
                               <Button

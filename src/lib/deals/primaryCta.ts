@@ -97,6 +97,7 @@ export const getCanonicalDealStatus = (deal: any): CanonicalDealStatus => {
 
   const paymentStatus = String(deal?.payment_status || deal?.raw?.payment_status || '').trim().toLowerCase();
   const paymentId = String(deal?.payment_id || deal?.raw?.payment_id || '').trim();
+  const hasPaymentIntent = paymentId.length > 0;
   const hasCapturedPayment = 
     ['captured', 'paid', 'authorized', 'processed', 'successful', 'sent'].includes(paymentStatus) || 
     (paymentId.startsWith('pay_') && Number(deal?.amount_paid || deal?.raw?.amount_paid || 0) > 0) ||
@@ -269,9 +270,12 @@ export const getDealPrimaryCta = (params: { role: DealRole; deal: any }): DealPr
         if (hasEscrow) {
           // Escrow held, brand can release after content approved
           return { status, label: 'Release Payment', disabled: false, tone: 'action', action: 'confirm_payment' };
-        } else {
-          // Escrow request has been started but not yet captured/confirmed
+        } else if (paymentId.length > 0) {
+          // Payment order exists but capture has not completed yet
           return { status, label: 'Escrow Processing', disabled: false, tone: 'action', action: 'confirm_payment' };
+        } else {
+          // No payment intent yet; brand still needs to initialize escrow
+          return { status, label: 'Initialize Escrow', disabled: false, tone: 'action', action: 'confirm_payment' };
         }
       }
       if (requiresShipping) {
@@ -285,7 +289,9 @@ export const getDealPrimaryCta = (params: { role: DealRole; deal: any }): DealPr
       }
       // No payment or shipping required (should not happen for PAYMENT_PENDING)
       // Default fallback
-      return { status, label: 'Escrow Processing', disabled: false, tone: 'action', action: 'confirm_payment' };
+      return paymentId.length > 0
+        ? { status, label: 'Escrow Processing', disabled: false, tone: 'action', action: 'confirm_payment' }
+        : { status, label: 'Initialize Escrow', disabled: false, tone: 'action', action: 'confirm_payment' };
     }
     // ── Shipping address gate: brand must provide address ─────────────────────
     if (status === 'AWAITING_BRAND_ADDRESS') {
@@ -335,7 +341,9 @@ export const getDealPrimaryCta = (params: { role: DealRole; deal: any }): DealPr
     }
     if (status === 'FULLY_EXECUTED') {
       if (requiresPayment && !hasCapturedPayment) {
-        return { status, label: 'Escrow Processing', disabled: false, tone: 'action', action: 'confirm_payment' };
+        return paymentId.length > 0
+          ? { status, label: 'Escrow Processing', disabled: false, tone: 'action', action: 'confirm_payment' }
+          : { status, label: 'Initialize Escrow', disabled: false, tone: 'action', action: 'confirm_payment' };
       }
       if (requiresShipping && !hasReceivedShipment) {
         return { 

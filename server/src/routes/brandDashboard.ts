@@ -578,12 +578,13 @@ router.get('/deals', async (req: AuthenticatedRequest, res: Response) => {
         select: `
           id, creator_id, status, created_at, updated_at, deal_amount, deliverables, due_date, 
           contract_file_url, safe_contract_url, brand_address, brand_phone, contact_person, 
-          shipping_required, brand_id, brand_email, signed_contract_path
+          shipping_required, brand_id, brand_email, signed_contract_path,
+          delivery_address, delivery_name, delivery_phone, usage_rights, usage_duration
         `,
         canUseBrandId: true,
       },
       {
-        select: 'id, creator_id, status, created_at, updated_at, deal_amount, deliverables, due_date, brand_id, brand_email',
+        select: 'id, creator_id, status, created_at, updated_at, deal_amount, deliverables, due_date, brand_id, brand_email, delivery_address, delivery_name, delivery_phone, usage_rights, usage_duration',
         canUseBrandId: true,
       }
     ];

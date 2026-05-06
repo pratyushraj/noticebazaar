@@ -14,11 +14,14 @@ import { resolveOrCreateBrandContact } from './brandContactService.js';
  */
 export async function createDealFromCollabRequest(request: any, userId: string, extraData: {
   shipping_address?: string;
+  pincode?: string;
+  delivery_name?: string | null;
+  delivery_phone?: string | null;
   otp_verified?: boolean;
   otp_verified_at?: string | null;
   status?: string;
 } = {}) {
-  const { shipping_address, otp_verified, otp_verified_at, status: overrideStatus } = extraData;
+  const { shipping_address, pincode, delivery_name, delivery_phone, otp_verified, otp_verified_at, status: overrideStatus } = extraData;
   const now = new Date().toISOString();
 
   // Parse deliverables
@@ -102,9 +105,17 @@ export async function createDealFromCollabRequest(request: any, userId: string, 
     barter_product_image_url: normalizedProductImage,
     form_data: persistedFormData,
     collab_request_id: request.id,
-    delivery_address: shipping_address || (request as any).shipping_address,
+    delivery_address: pincode 
+      ? `${shipping_address || (request as any).shipping_address || ''} - ${pincode}`.trim().replace(/^ - /, '')
+      : (shipping_address || (request as any).shipping_address),
+    delivery_name: delivery_name || null,
+    delivery_phone: delivery_phone || null,
     creator_otp_verified: otp_verified === true,
     creator_otp_verified_at: otp_verified_at || (otp_verified === true ? now : null),
+
+    // Preserve commercial terms
+    usage_rights: request.usage_rights === true || request.usage_rights === 'true',
+    usage_duration: request.usage_duration || null,
 
     // Preserve campaign metadata
     selected_package_id: (request as any).selected_package_id || null,
@@ -141,8 +152,12 @@ export async function createDealFromCollabRequest(request: any, userId: string, 
     'content_requirements',
     'barter_types',
     'delivery_address',
+    'delivery_name',
+    'delivery_phone',
     'creator_otp_verified',
     'creator_otp_verified_at',
+    'usage_rights',
+    'usage_duration',
   ]);
 
   const extractMissingColumn = (message: string): string | null => {
