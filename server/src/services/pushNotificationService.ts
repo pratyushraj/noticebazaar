@@ -433,7 +433,7 @@ export const sendTestPushToCreator = async (
       const statusCode = error?.statusCode || error?.status;
       const errorBody = error?.body || error?.message || String(error);
       console.warn(`[PushNotificationService] ❌ Test push FAILED for ${deviceType} (id: ${sub.id}) — status: ${statusCode}, body: ${JSON.stringify(errorBody)}`);
-      const isGone = statusCode === 404 || statusCode === 410;
+      const isGone = isGoneSubscriptionError(error);
       if (isGone) {
         // Background delete stale subscription
         supabase.from('creator_push_subscriptions').delete().eq('id', sub.id).then(({ error }) => {
