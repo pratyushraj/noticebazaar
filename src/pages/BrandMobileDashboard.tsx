@@ -1454,7 +1454,6 @@ const BrandMobileDashboard = ({
       const canonicalStatus = getCanonicalDealStatus(d);
       return canonicalStatus === 'COMPLETED';
     }) as any[]);
-    }) as any[]);
   }, [effectiveDeals]);
 
   const visibleCollabItems = useMemo(() => {
