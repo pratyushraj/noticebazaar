@@ -451,7 +451,7 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
     if (isLoadingProfile && !profile) {
       const timer = setTimeout(() => {
         setIsProfileSlow(true);
-      }, 15000); // Increased from 7s to 15s
+      }, 30000); // Increased from 15s to 30s
       return () => clearTimeout(timer);
     } else {
       setIsProfileSlow(false);

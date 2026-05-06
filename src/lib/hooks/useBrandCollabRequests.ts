@@ -46,7 +46,7 @@ async function fetchBrandCollabRequests(): Promise<BrandCollabRequest[]> {
   }
 
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 15000); // 15s for Render
+  const timeoutId = setTimeout(() => controller.abort(), 30000); // 30s for Render
   
   try {
     const response = await fetch(`${getApiBaseUrl()}/api/brand-dashboard/requests`, {

@@ -58,7 +58,7 @@ const isAllowedContractUrl = (urlString: string): boolean => {
   }
 };
 
-const fetchWithTimeout = async (url: string, timeoutMs = 15000): Promise<Response> => {
+const fetchWithTimeout = async (url: string, timeoutMs = 30000): Promise<Response> => {
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
   try {

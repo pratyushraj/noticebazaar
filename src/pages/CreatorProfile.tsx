@@ -24,6 +24,7 @@ import { getApiBaseUrl } from '@/lib/utils/api';
 import { withRetry } from '@/lib/utils/retry';
 import { COPY_CONFIRM_MS } from '@/lib/constants/timing';
 import { useDealAlertNotifications } from '@/hooks/useDealAlertNotifications';
+import { ChangePasswordModal } from '@/components/profile/ChangePasswordModal';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -235,6 +236,7 @@ const ProfileSettings = () => {
   const [editMode, setEditMode] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [showLogoutDialog, setShowLogoutDialog] = useState(false);
+  const [showChangePassword, setShowChangePassword] = useState(false);
   const [showStats, setShowStats] = useState(false);
   const [showHowItWorks, setShowHowItWorks] = useState(false);
   const [showAdvancedInsights, setShowAdvancedInsights] = useState(false);
@@ -3181,10 +3183,20 @@ const ProfileSettings = () => {
                   { icon: Shield, label: 'Two-Factor Authentication', sub: 'Status: Enabled', highlight: true },
                   { icon: Download, label: 'Download Intelligence', sub: 'Export all account data' },
                 ].map((item, idx) => (
-                  <button key={idx} className={cn(
-                    "w-full flex items-center justify-between p-4 rounded-2xl border transition-all active:scale-[0.98]",
-                    isDark ? "bg-white/[0.03] border-white/5 hover:bg-white/[0.05]" : "bg-slate-50 border-slate-100 hover:bg-slate-100"
-                  )}>
+                  <button 
+                    key={idx} 
+                    onClick={() => {
+                      if (item.label === 'Change Password') {
+                        setShowChangePassword(true);
+                      } else {
+                        toast.info(`${item.label} coming soon`);
+                      }
+                    }}
+                    className={cn(
+                      "w-full flex items-center justify-between p-4 rounded-2xl border transition-all active:scale-[0.98]",
+                      isDark ? "bg-white/[0.03] border-white/5 hover:bg-white/[0.05]" : "bg-slate-50 border-slate-100 hover:bg-slate-100"
+                    )}
+                  >
                     <div className="flex items-center gap-4">
                       <div className="w-8 h-8 rounded-xl bg-slate-500/10 flex items-center justify-center">
                         <item.icon className={cn("w-4 h-4", item.highlight ? "text-blue-500" : "text-slate-500")} />
@@ -3346,6 +3358,11 @@ const ProfileSettings = () => {
       </div>
       </>
     )}
+
+      <ChangePasswordModal 
+        isOpen={showChangePassword} 
+        onClose={() => setShowChangePassword(false)} 
+      />
 
       {/* Logout Confirmation Dialog - Always rendered outside conditionals */}
       <AlertDialog open={showLogoutDialog} onOpenChange={(open) => setShowLogoutDialog(open)}>

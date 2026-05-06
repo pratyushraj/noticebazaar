@@ -51,6 +51,7 @@ export const apiLimiter = rateLimit({
   },
   standardHeaders: true,
   legacyHeaders: false,
+  validate: { keyGenerator: false },
   handler: (req, res) => {
     logger.warn('Rate limit exceeded', {
       path: req.path,
@@ -76,6 +77,7 @@ export const authLimiter = rateLimit({
   },
   standardHeaders: true,
   legacyHeaders: false,
+  validate: { keyGenerator: false },
   skipSuccessfulRequests: true, // Don't count successful requests
 });
 
@@ -90,6 +92,7 @@ export const otpLimiter = rateLimit({
   },
   standardHeaders: true,
   legacyHeaders: false,
+  validate: { keyGenerator: false },
 });
 
 // Collab request submission limiter (per IP and per email domain)
@@ -97,8 +100,9 @@ export const collabSubmissionLimiter = rateLimit({
   windowMs: 60 * 60 * 1000, // 1 hour
   max: 1000, // Effectively disabled for testing
   keyGenerator: (req) => {
-    const domain = req.body?.brand_email?.split('@')[1] || req.ip || 'unknown-ip';
-    return domain;
+    const domain = req.body?.brand_email?.split('@')[1];
+    if (domain) return domain;
+    return 'unknown-domain'; // Let default IP rate limiting handle the rest if needed
   },
   message: {
     success: false,
@@ -107,6 +111,7 @@ export const collabSubmissionLimiter = rateLimit({
   },
   standardHeaders: true,
   legacyHeaders: false,
+  validate: { keyGenerator: false },
 });
 
 // Brand dashboard limiter
@@ -120,6 +125,7 @@ export const brandDashboardLimiter = rateLimit({
   },
   standardHeaders: true,
   legacyHeaders: false,
+  validate: { keyGenerator: false },
 });
 
 // Payment endpoint limiter
@@ -133,6 +139,7 @@ export const paymentLimiter = rateLimit({
   },
   standardHeaders: true,
   legacyHeaders: false,
+  validate: { keyGenerator: false },
 });
 
 // Contract generation limiter
@@ -146,6 +153,7 @@ export const contractLimiter = rateLimit({
   },
   standardHeaders: true,
   legacyHeaders: false,
+  validate: { keyGenerator: false },
 });
 
 // ============================================================

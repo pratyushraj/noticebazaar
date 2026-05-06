@@ -57,7 +57,7 @@ async function fetchCollabRequests(): Promise<CollabRequest[]> {
   }
 
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 15000); // Increased to 15s for Render spin-up
+  const timeoutId = setTimeout(() => controller.abort(), 30000); // Increased to 30s for Render spin-up
   let response: Response;
   try {
     response = await fetch(`${getApiBaseUrl()}/api/collab-requests`, {

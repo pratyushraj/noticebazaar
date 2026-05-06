@@ -106,9 +106,9 @@ export const useDealAlertNotifications = () => {
               Authorization: `Bearer ${token}`,
             },
           },
-          5000
+          30000
         ),
-        { maxRetries: 1 } // Just one quick retry for status check
+        { maxRetries: 2 } // Increase retries and timeout for status check
       );
 
       if (!statusResponse.ok) {
@@ -134,8 +134,8 @@ export const useDealAlertNotifications = () => {
                 subscription: browserSub.toJSON(),
               }),
             },
-            15000
-          ); // 15s timeout for subscription upsert
+            30000
+          ); // 30s timeout for subscription upsert
 
           setIsSubscribed(subscribeResponse.ok);
           return;
@@ -216,16 +216,19 @@ export const useDealAlertNotifications = () => {
         return { success: false, reason: 'not_authenticated' };
       }
 
-      const response = await fetchWithTimeout(`${pushApiBase}/api/push/subscribe`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          subscription: subscription.toJSON(),
-        }),
-      }, 15000); // 15s timeout for subscription
+      const response = await withRetry(() => 
+        fetchWithTimeout(`${pushApiBase}/api/push/subscribe`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            subscription: subscription.toJSON(),
+          }),
+        }, 45000), // 45s timeout for subscription (handles Render cold starts)
+        { maxRetries: 2 }
+      );
 
       if (!response.ok) {
         let errorReason = 'subscribe_failed';
@@ -282,7 +285,7 @@ export const useDealAlertNotifications = () => {
               Authorization: `Bearer ${token}`,
             },
             body: JSON.stringify({ endpoint }),
-          }, 15000);
+          }, 30000);
         }
       } catch (error: any) {
         logger.warn('Server unsubscribe failed', { error: error?.message });

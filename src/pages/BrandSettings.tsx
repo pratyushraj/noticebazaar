@@ -10,7 +10,9 @@ import {
   Camera, Check, ChevronDown, Loader2, LogOut, Shield, ShieldCheck,
   Upload, X, AlertTriangle, Globe, Instagram, MessageCircle, Tag,
   Activity, Briefcase, ExternalLink, ArrowRight, FileText, MapPin,
+  Lock,
 } from 'lucide-react';
+import { ChangePasswordModal } from '@/components/profile/ChangePasswordModal';
 
 /* ─── Types ─────────────────────────────────────────────────────────────── */
 type BrandProfilePayload = {
@@ -156,13 +158,14 @@ export const BrandSettingsPanel = ({
 
   /* ── Save state ── */
   const [isSaving, setIsSaving] = useState(false);
-  const [savedAt, setSavedAt] = useState<number | null>(null);
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const [showChangePassword, setShowChangePassword] = useState(false);
+  const [justSaved, setJustSaved] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
 
   /* ── UI state ── */
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [dragging, setDragging] = useState(false);
-  const fileRef = useRef<HTMLInputElement>(null);
 
   /* ── Theme Detection ── */
   const [isDark, setIsDark] = useState(() => document.documentElement.classList.contains('dark'));
@@ -742,6 +745,14 @@ export const BrandSettingsPanel = ({
           <SectionHeader title="Advanced Ops" isDark={isDark} />
           <SettingsGroup isDark={isDark}>
             <SettingsRow 
+              icon={<Lock />}
+              label="Change Password"
+              subtext="Update your security credentials"
+              iconColorClass="text-emerald-500"
+              isDark={isDark}
+              onClick={() => setShowChangePassword(true)}
+            />
+            <SettingsRow 
               icon={<LogOut />}
               label="Deactivate Session"
               subtext="Log out of this brand account"
@@ -831,6 +842,11 @@ export const BrandSettingsPanel = ({
           </motion.button>
         </div>
       </div>
+
+      <ChangePasswordModal 
+        isOpen={showChangePassword} 
+        onClose={() => setShowChangePassword(false)} 
+      />
     </div>
   );
 };

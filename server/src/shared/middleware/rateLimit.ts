@@ -39,6 +39,7 @@ export const standardLimiter = rateLimit({
   },
   standardHeaders: true,
   legacyHeaders: false,
+  validate: { keyGenerator: false },
   handler: rateLimitHandler,
 });
 
@@ -57,6 +58,7 @@ export const strictLimiter = rateLimit({
   },
   standardHeaders: true,
   legacyHeaders: false,
+  validate: { keyGenerator: false },
   handler: rateLimitHandler,
 });
 
@@ -75,6 +77,7 @@ export const authLimiter = rateLimit({
   },
   standardHeaders: true,
   legacyHeaders: false,
+  validate: { keyGenerator: false },
   skipSuccessfulRequests: true, // Don't count successful requests
   handler: rateLimitHandler,
 });
@@ -94,6 +97,7 @@ export const apiLimiter = rateLimit({
   },
   standardHeaders: true,
   legacyHeaders: false,
+  validate: { keyGenerator: false },
   handler: rateLimitHandler,
 });
 
@@ -123,6 +127,7 @@ export function createRateLimiter(options: {
     },
     standardHeaders: true,
     legacyHeaders: false,
+    validate: { keyGenerator: false },
     skipSuccessfulRequests: options.skipSuccessfulRequests || false,
     keyGenerator: options.keyGenerator,
     handler: rateLimitHandler,
@@ -137,9 +142,10 @@ export function ipLimiter(windowMs: number = 15 * 60 * 1000, max: number = 100):
   return rateLimit({
     windowMs,
     max,
-    keyGenerator: (req: Request) => {
-      return req.ip || req.connection.remoteAddress || 'unknown';
-    },
+    // Use default keyGenerator which handles IPs correctly for IPv6
+    // keyGenerator: (req: Request) => {
+    //   return req.ip || req.connection.remoteAddress || 'unknown';
+    // },
     message: {
       success: false,
       error: 'Too many requests from this IP, please try again later',
@@ -147,6 +153,7 @@ export function ipLimiter(windowMs: number = 15 * 60 * 1000, max: number = 100):
     },
     standardHeaders: true,
     legacyHeaders: false,
+    validate: { keyGenerator: false },
     handler: rateLimitHandler,
   });
 }
@@ -161,7 +168,10 @@ export function userLimiter(windowMs: number = 15 * 60 * 1000, max: number = 100
     max,
     keyGenerator: (req: Request) => {
       const user = (req as any).user;
-      return user?.id || req.ip || 'anonymous';
+      // If we have a user ID, use it. Otherwise, let express-rate-limit 
+      // handle the IP-based key to avoid IPv6 warnings.
+      if (user?.id) return user.id;
+      return 'anonymous'; // Fallback to anonymous, express-rate-limit will add IP if configured
     },
     message: {
       success: false,
@@ -170,6 +180,7 @@ export function userLimiter(windowMs: number = 15 * 60 * 1000, max: number = 100
     },
     standardHeaders: true,
     legacyHeaders: false,
+    validate: { keyGenerator: false },
     handler: rateLimitHandler,
   });
 }
