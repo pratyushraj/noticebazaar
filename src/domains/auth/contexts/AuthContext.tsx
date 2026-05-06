@@ -88,6 +88,33 @@ export function AuthProvider({ children }: AuthProviderProps) {
           // Clear any cached data
           sessionStorage.removeItem('oauth_intended_route');
         }
+
+        // On sign-in, silently re-register any existing push subscription
+        // under the new user's identity — no permission prompt needed,
+        // the browser permission is already granted at the origin level.
+        if ((event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') && newSession?.access_token) {
+          try {
+            if ('serviceWorker' in navigator && 'PushManager' in window) {
+              const registration = await navigator.serviceWorker.ready;
+              const sub = await registration.pushManager.getSubscription();
+              if (sub) {
+                const host = window.location.hostname.toLowerCase();
+                const isPublicHost = host.endsWith('creatorarmour.com') || host.endsWith('vercel.app');
+                const pushApiBase = isPublicHost ? '' : 'https://creatorarmour-api.onrender.com';
+                await fetch(`${pushApiBase}/api/push/subscribe`, {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${newSession.access_token}`,
+                  },
+                  body: JSON.stringify({ subscription: sub.toJSON() }),
+                }).catch(() => {/* non-fatal */});
+              }
+            }
+          } catch {
+            // Non-fatal — push re-registration is best-effort
+          }
+        }
       }
     );
 
