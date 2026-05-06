@@ -25,7 +25,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { LogOut, Loader2 } from 'lucide-react';
+import { LogOut, Loader2, Menu, ArrowLeft, ChevronLeft } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface CreatorNavigationWrapperProps {
   children: React.ReactNode;
@@ -182,6 +183,77 @@ export const CreatorNavigationWrapper: React.FC<CreatorNavigationWrapperProps> =
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Unified Header */}
+      {!hidePageTitle && (
+        <header 
+          className={cn(
+            "sticky top-0 z-40 w-full backdrop-blur-md transition-all duration-300 border-b border-white/5",
+            compactHeader ? "py-2" : "py-4",
+            "bg-background/80"
+          )}
+          style={{ paddingTop: 'max(env(safe-area-inset-top), 12px)' }}
+        >
+          <div className="px-4 flex items-center justify-between gap-4">
+            <div className="flex items-center gap-3 overflow-hidden">
+              {showBackButton ? (
+                <motion.button
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => {
+                    triggerHaptic(HapticPatterns.light);
+                    if (backTo) navigate(backTo);
+                    else navigate(-1);
+                  }}
+                  className="w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 bg-white/5 border border-white/10 hover:bg-white/10 transition-colors"
+                >
+                  <ChevronLeft className="w-5 h-5" />
+                </motion.button>
+              ) : (
+                <motion.button
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => {
+                    triggerHaptic(HapticPatterns.light);
+                    setShowMenu(true);
+                  }}
+                  className="w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 bg-white/5 border border-white/10 hover:bg-white/10 transition-colors"
+                >
+                  <Menu className="w-5 h-5" />
+                </motion.button>
+              )}
+              
+              {!backIconOnly && (
+                <div className="flex flex-col min-w-0">
+                  <h1 className="text-lg font-black tracking-tight truncate">
+                    {pageTitle}
+                  </h1>
+                  {subtitle && (
+                    <p className="text-[10px] font-bold opacity-50 uppercase tracking-widest truncate">
+                      {subtitle}
+                    </p>
+                  )}
+                </div>
+              )}
+            </div>
+
+            <div className="flex items-center gap-2">
+              {rightActions}
+              {!showBackButton && (
+                <div className="relative">
+                  <div className="w-9 h-9 rounded-2xl bg-gradient-to-br from-primary to-blue-600 p-[1px]">
+                    <div className="w-full h-full rounded-[14px] bg-background flex items-center justify-center overflow-hidden">
+                      {profile?.avatar_url ? (
+                        <img src={profile.avatar_url} alt="Profile" className="w-full h-full object-cover" />
+                      ) : (
+                        <span className="text-xs font-black">{profile?.full_name?.charAt(0) || 'C'}</span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </header>
+      )}
 
       {/* Main Content */}
       <main

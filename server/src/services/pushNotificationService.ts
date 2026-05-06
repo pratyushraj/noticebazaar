@@ -116,7 +116,9 @@ const sendCollabPushFallbackEmail = async (
 
 const isGoneSubscriptionError = (error: any): boolean => {
   const statusCode = error?.statusCode;
-  return statusCode === 404 || statusCode === 410;
+  // 400 is often returned by some push services (like Mozilla) when the VAPID key mismatches 
+  // or the subscription is otherwise permanently invalid.
+  return statusCode === 400 || statusCode === 404 || statusCode === 410;
 };
 
 const markRequestNotified = async (requestId: string) => {

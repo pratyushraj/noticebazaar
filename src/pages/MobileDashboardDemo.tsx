@@ -1004,7 +1004,7 @@ const MobileDashboardDemo = ({
         // 3. Not already subscribed
         // 4. Hasn't dismissed the global prompt (stored in localStorage via hook)
         // 5. Not currently busy
-        if (isPushSupported && pushPermission === 'default' && !isPushSubscribed && !isPushPromptDismissed && !isPushBusy) {
+        if (isPushSupported && pushPermission !== 'denied' && !isPushSubscribed && !isPushPromptDismissed && !isPushBusy) {
             // Small delay so it doesn't hit immediately on mount
             const timer = setTimeout(() => {
                 setShowPushPrompt(true);
@@ -4072,9 +4072,32 @@ const MobileDashboardDemo = ({
                 );
             case 'collab-link':
                 return (
-                    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="pb-28 touch-pan-y">
+                    <motion.div 
+                        initial={{ opacity: 0, x: 20 }} 
+                        animate={{ opacity: 1, x: 0 }} 
+                        exit={{ opacity: 0, x: 20 }}
+                        drag="x"
+                        dragConstraints={{ left: 0, right: 0 }}
+                        dragElastic={0.2}
+                        onDragEnd={(e, { offset, velocity }) => {
+                            if (offset.x > 50 || velocity.x > 500) {
+                                triggerHaptic();
+                                setActiveSettingsPage(null);
+                            }
+                        }}
+                        className="pb-28 touch-pan-y"
+                    >
                         {/* ── HERO HEADER ── */}
                         <div className={cn("relative overflow-hidden px-5 pt-14 pb-8", isDark ? "bg-[#0B0D12]" : "bg-gradient-to-br from-emerald-600 to-teal-700")}>
+                            {/* Back Button */}
+                            <motion.button
+                                whileTap={{ scale: 0.9 }}
+                                onClick={() => { triggerHaptic(); setActiveSettingsPage(null); }}
+                                className="absolute top-6 left-5 z-20 w-10 h-10 rounded-2xl flex items-center justify-center bg-white/10 border border-white/20 text-white backdrop-blur-md transition-all active:scale-90"
+                            >
+                                <ChevronRight className="w-5 h-5 rotate-180" />
+                            </motion.button>
+
                             {/* Ambient glow */}
                             <div className="absolute inset-0 pointer-events-none">
                                 <div className="absolute top-0 left-1/2 -translate-x-1/2 w-64 h-64 rounded-full blur-3xl opacity-50 dark:opacity-20 bg-emerald-400" />
@@ -4670,7 +4693,9 @@ const MobileDashboardDemo = ({
                                             onToggle={async () => {
                                                 triggerHaptic();
                                                 if (isPushSubscribed) {
-                                                    toast.info("To disable, please use your browser settings.");
+                                                    const res = await disableNotifications();
+                                                    if (res.success) toast.success("Push notifications disabled on this device.");
+                                                    else toast.error("Failed to disable push.", { description: res.reason });
                                                 } else {
                                                     if (!isPushSupported) {
                                                         toast.error("Push notifications aren't supported on this browser.");
@@ -5398,7 +5423,9 @@ const MobileDashboardDemo = ({
                                         onToggle={async () => {
                                             triggerHaptic();
                                             if (isPushSubscribed) {
-                                                toast.info("To disable, please use your browser settings.");
+                                                const res = await disableNotifications();
+                                                if (res.success) toast.success("Push notifications disabled.");
+                                                else toast.error("Failed to disable.", { description: res.reason });
                                             } else {
                                                 if (!isPushSupported) {
                                                     toast.error("Push notifications aren't supported on this browser.");

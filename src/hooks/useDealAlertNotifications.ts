@@ -370,6 +370,15 @@ export const useDealAlertNotifications = () => {
       if (msg.includes('Load failed') || msg.includes('Failed to fetch')) {
         return { success: false, reason: 'Network error or blocked. Please refresh your browser or check your connection.' };
       }
+      
+      // If we get an error from the server, check for VAPID mismatch or stale subscription
+      if (msg.includes('400') || msg.includes('all_push_attempts_failed')) {
+        return { 
+          success: false, 
+          reason: 'Your notification link is stale. Please turn notifications OFF and then back ON to repair the connection.' 
+        };
+      }
+
       return { success: false, reason: msg };
     } finally {
       setIsBusy(false);
