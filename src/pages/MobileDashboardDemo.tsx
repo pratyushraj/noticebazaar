@@ -2035,22 +2035,14 @@ const MobileDashboardDemo = ({
     ).length;
     const completedDealsList = React.useMemo(() => {
         return (brandDeals || []).filter((d: any) => {
-            const s = normalizeDealStatus(d);
-            const isApproved = s.includes('approved') || s.includes('content_approved');
-            const requiresShipping = isBarterLikeCollab(d);
-            
-            return s.includes('completed') || s === 'paid' || s === 'payment_released' || s === 'declined' || s === 'rejected' || s === 'cancelled' || (isApproved && requiresShipping);
+            return getCanonicalDealStatus(d) === 'COMPLETED';
         }).map((deal: any) => hydrateDealWithRequestMedia(deal));
     }, [brandDeals, hydrateDealWithRequestMedia]);
 
     const activeDealsList = React.useMemo(() => {
         return (brandDeals || []).filter((d: any) => {
-            const s = normalizeDealStatus(d);
-            const isApproved = s.includes('approved') || s.includes('content_approved');
-            const requiresShipping = isBarterLikeCollab(d);
-
-            const isActuallyCompleted = s.includes('completed') || s === 'paid' || s === 'payment_released' || s === 'declined' || s === 'rejected' || s === 'cancelled' || (isApproved && requiresShipping);
-            return !isActuallyCompleted;
+            const canonicalStatus = getCanonicalDealStatus(d);
+            return canonicalStatus !== 'COMPLETED' && canonicalStatus !== 'CANCELLED';
         }).map((deal: any) => hydrateDealWithRequestMedia(deal));
     }, [brandDeals, hydrateDealWithRequestMedia]);
     const actionRequiredDealsList = React.useMemo(() => {
@@ -9271,8 +9263,8 @@ const DealsTab = React.memo(({
 
                                                      <div className="space-y-2">
                                                          <div className="flex justify-between items-end">
-                                                            <p className="text-[10px] font-black uppercase tracking-widest text-white/50">{Math.round((ux.progressStep / 7) * 100) >= 100 ? 'Collaboration Complete' : 'Production Progress'}</p>
-                                                            <p className="text-[10px] font-black text-white/80">{Math.round((ux.progressStep / 7) * 100)}%</p>
+                                                            <p className="text-[10px] font-black uppercase tracking-widest text-white/50">{Math.round((ux.progressStep / ux.totalStages) * 100) >= 100 ? 'Collaboration Complete' : 'Production Progress'}</p>
+                                                            <p className="text-[10px] font-black text-white/80">{Math.round((ux.progressStep / ux.totalStages) * 100)}%</p>
                                                          </div>
                                                          <div className="h-1.5 w-full bg-white/10 rounded-full overflow-hidden backdrop-blur-sm">
                                                              <motion.div

@@ -24,6 +24,8 @@ export const isBarterLikeCollab = (deal: any): boolean => {
   
   return (
     type.includes('barter') || 
+    type.includes('product') ||
+    type.includes('exchange') ||
     type === 'free' ||
     ['both', 'hybrid', 'paid_barter', 'gifted', 'product_only'].includes(type)
   );

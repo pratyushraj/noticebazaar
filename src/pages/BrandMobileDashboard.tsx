@@ -596,16 +596,21 @@ const brandDealCardUi = (row: BrandDeal | null | undefined) => {
                   : "Review the agreement to get started")))
         : 'Review the agreement to get started';
 
-  const step =
-    s === 'COMPLETED' ? 5
-      : (s === 'CONTENT_APPROVED' || s === 'PAYMENT_RELEASED') ? 5
-        : (s === 'CONTENT_DELIVERED' || s === 'REVISION_DONE' || s === 'DISPUTED' || s === 'DISPUTE_ARBITRATION' || s === 'DISPUTE_PARTIAL_REFUND') ? 4
-          : (s === 'CONTENT_MAKING' || s === 'REVISION_REQUESTED') ? 3
-            : (s === 'FULLY_EXECUTED') ? (requiresShipping && !hasShipped && !hasDeliveredShipping ? 2 : 3)
-              : (s === 'CONTRACT_READY' || s === 'PAYMENT_PENDING' || s === 'AWAITING_BRAND_ADDRESS') ? (requiresShipping ? 1 : 2)
-                : 1;
+  const isPureBarter = (row?.collab_type === 'barter' || row?.deal_type === 'barter') && Number(row?.deal_amount || 0) === 0;
+  const isPaidDeal = (row?.collab_type === 'paid' || row?.deal_type === 'paid' || Number(row?.deal_amount || 0) > 0);
+  const totalStages = (isPaidDeal && !isPureBarter) ? 7 : 5;
 
-  return { status: s, human, stageBadge, needsAction, primaryActionLabel, statusLine, step, ctaTone: primaryCta.tone, ctaDisabled: primaryCta.disabled, ctaAction: primaryCta.action };
+  const step =
+    s === 'COMPLETED' ? totalStages
+      : (s === 'PAYMENT_RELEASED') ? totalStages
+        : (s === 'CONTENT_APPROVED') ? (totalStages - 2)
+          : (s === 'CONTENT_DELIVERED' || s === 'REVISION_DONE' || s === 'DISPUTED' || s === 'DISPUTE_ARBITRATION' || s === 'DISPUTE_PARTIAL_REFUND') ? 4
+            : (s === 'CONTENT_MAKING' || s === 'REVISION_REQUESTED') ? 3
+              : (s === 'FULLY_EXECUTED') ? (requiresShipping && !hasShipped && !hasDeliveredShipping ? 2 : 3)
+                : (s === 'CONTRACT_READY' || s === 'PAYMENT_PENDING' || s === 'AWAITING_BRAND_ADDRESS') ? (requiresShipping ? 1 : 2)
+                  : 1;
+
+  return { status: s, human, stageBadge, needsAction, primaryActionLabel, statusLine, step, totalStages, ctaTone: primaryCta.tone, ctaDisabled: primaryCta.disabled, ctaAction: primaryCta.action };
 };
 
 const BrandMobileDashboard = ({
@@ -1426,14 +1431,9 @@ const BrandMobileDashboard = ({
       // Explicitly exclude statuses that are clearly finished
       if (s.includes('CANCEL')) return false;
       
-      const isActuallyCompleted = 
-        ['COMPLETED', 'CLOSED', 'RELEASED', 'PAID', 'CONTENT_APPROVED', 'PAYMENT_RELEASED'].includes(s) || 
-        s.includes('COMPLETE') ||
-        s.includes('CANCEL');
+      const canonicalStatus = getCanonicalDealStatus(d);
       
-      const isApprovedBarter = (s === 'APPROVED' || s === 'CONTENT_APPROVED') && isBarterLikeCollab(d) && !isPaidLikeCollab(d);
-      
-      if (isActuallyCompleted || isApprovedBarter) return false;
+      if (canonicalStatus === 'COMPLETED' || canonicalStatus === 'CANCELLED') return false;
       return true;
     }));
 
@@ -1451,13 +1451,9 @@ const BrandMobileDashboard = ({
     return uniqDeals((effectiveDeals || []).filter((d: any) => {
       const s = normalizeStatus(d?.status);
       if (!s) return false;
-      const isActuallyCompleted = 
-        ['COMPLETED', 'CLOSED', 'RELEASED', 'PAID', 'CONTENT_APPROVED', 'PAYMENT_RELEASED'].includes(s) || 
-        s.includes('COMPLETE') ||
-        s.includes('CANCEL');
-      
-      const isApprovedBarter = (s === 'APPROVED' || s === 'CONTENT_APPROVED') && isBarterLikeCollab(d) && !isPaidLikeCollab(d);
-      return isActuallyCompleted || isApprovedBarter;
+      const canonicalStatus = getCanonicalDealStatus(d);
+      return canonicalStatus === 'COMPLETED';
+    }) as any[]);
     }) as any[]);
   }, [effectiveDeals]);
 
@@ -2337,7 +2333,8 @@ const BrandMobileDashboard = ({
       const tone = primaryCta.tone === 'action' ? 'bg-warning/10 text-warning border-warning/20' : 'bg-info/10 text-info border-sky-500/20';
       const stepIndex = requiresShipping
         ? (() => {
-            if (['COMPLETED', 'CONTENT_APPROVED', 'PAYMENT_RELEASED'].includes(normalizedDealStatus)) return 4;
+            if (['COMPLETED', 'PAYMENT_RELEASED'].includes(normalizedDealStatus)) return cardUi.totalStages - 1;
+            if (['CONTENT_APPROVED'].includes(normalizedDealStatus)) return cardUi.totalStages - 2;
             if (['CONTENT_DELIVERED', 'REVISION_DONE'].includes(normalizedDealStatus)) return 3;
             if (['CONTENT_MAKING', 'REVISION_REQUESTED', 'FULLY_EXECUTED'].includes(normalizedDealStatus)) {
               return (shippingStatus === 'shipped' || shippingDelivered) ? 2 : 1;
@@ -2345,8 +2342,8 @@ const BrandMobileDashboard = ({
             if (['SIGNED_BY_BRAND', 'SIGNED_BY_CREATOR', 'SENT', 'AWAITING_BRAND_SIGNATURE', 'CONTRACT_READY', 'PAYMENT_PENDING', 'AWAITING_BRAND_ADDRESS'].includes(normalizedDealStatus)) return 0;
             return 0;
           })()
-        : Math.max(0, Math.min(4, (cardUi.step || 1) - 1));
-      return { label, tone, stepIndex };
+        : Math.max(0, Math.min(cardUi.totalStages - 1, (cardUi.step || 1) - 1));
+      return { label, tone, stepIndex, totalStages: cardUi.totalStages };
     })();
 
     const copyText = async (value: string, label: string) => {

@@ -126,7 +126,22 @@ export const getCanonicalDealStatus = (deal: any): CanonicalDealStatus => {
     lower.includes('dispute');
 
   if (lower.includes('cancel')) return 'CANCELLED';
-  if (lower === 'completed' || lower.includes('completed') || lower.includes('approved') || lower.includes('released') || lower.includes('settled') || lower.includes('paid')) return 'COMPLETED';
+  if (lower === 'completed' || lower.includes('completed') || lower.includes('settled')) return 'COMPLETED';
+  
+  // For paid deals, 'approved' is a midpoint. For barter, it's terminal.
+  if (lower.includes('approved')) {
+    if (isPaidLikeCollab(deal) && !hasCapturedPayment) {
+      // Should not really happen if funded, but if they approved without funding...
+      return 'PAYMENT_PENDING';
+    }
+    if (isPaidLikeCollab(deal) && !lower.includes('released') && !lower.includes('paid')) {
+      // Funded but not yet released to creator
+      return 'PAYMENT_PENDING'; 
+    }
+    return 'COMPLETED';
+  }
+
+  if (lower.includes('released') || lower.includes('paid')) return 'COMPLETED';
   if (lower.includes('dispute') || lower.includes('disputed')) return 'DISPUTED';
 
   // ── Shipping address gate: ensure address is provided for shipping-required deals ──

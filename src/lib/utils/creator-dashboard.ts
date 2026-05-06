@@ -70,28 +70,20 @@ export const getCreatorDealCardUX = (deal: any) => {
     const dueDate = parseDealDate(deal?.due_date || deal?.deadline || deal?.raw?.deadline || deal?.raw?.due_date);
     const daysUntilDue = getDaysUntil(dueDate);
 
+    const isPaidDeal = (deal?.collab_type === 'paid' || deal?.deal_type === 'paid' || Number(deal?.deal_amount || 0) > 0);
+    const isPureBarter = (deal?.collab_type === 'barter' || deal?.deal_type === 'barter') && Number(deal?.deal_amount || 0) === 0;
+
+    const totalStages = (isPaidDeal && !isPureBarter) ? 7 : 5;
+
     let progressStep = 1;
-    if (isCompleted) progressStep = 7;
-    else if (isPaymentReleased) progressStep = 6;
-    else if (isApproved) progressStep = 5;
+    if (isCompleted) progressStep = totalStages;
+    else if (isPaymentReleased) progressStep = totalStages - 1;
+    else if (isApproved) progressStep = totalStages - 2;
     else if (isDelivered || isRevisionRequested) progressStep = 4;
     else if (isMaking) progressStep = 3;
     else if (isFullyExecuted) progressStep = 2;
     else if (isContractPending) progressStep = 1;
     else if (isPendingOTP) progressStep = 0.5;
-
-    const contractLabel = isContractPending
-        ? (rawStatus.includes('signed_by_brand') ? 'Contract: waiting for your signature' : 'Contract: pending signature')
-        : (isFullyExecuted || isMaking || isDelivered || isApproved || isPaymentReleased || isCompleted ? 'Contract: signed' : null);
-
-    const needsSignature = isContractPending;
-    const needsCreatorAction = !isCompleted && !isApproved && !isPaymentReleased && !isAwaitingShipment && (needsSignature || isRevisionRequested || isMaking);
-
-    const urgencyLevel: 'critical' | 'warning' | 'normal' = daysUntilDue !== null && daysUntilDue <= 2
-        ? 'critical'
-        : daysUntilDue !== null && daysUntilDue <= 5
-            ? 'warning'
-            : 'normal';
 
     let stagePill = 'IN PROGRESS';
     let nextStep = 'Open deal';
@@ -99,68 +91,73 @@ export const getCreatorDealCardUX = (deal: any) => {
 
     if (isCompleted) {
         stagePill = 'COMPLETED';
-        nextStep = 'View summary';
+        nextStep = 'Collaboration success';
         cta = 'View Summary';
     } else if (isPaymentReleased) {
-        stagePill = 'PAYMENT RELEASED';
-        nextStep = 'Confirm completion and close the deal';
-        cta = 'View Deal';
-    } else if (isPendingOTP) {
-        stagePill = 'OTP REQUIRED';
-        nextStep = 'Verify OTP to start deal';
-        cta = 'Verify';
+        stagePill = 'PAID';
+        nextStep = 'Payment released to you';
+        cta = 'View Details';
     } else if (isApproved) {
         stagePill = 'APPROVED';
-        nextStep = 'Waiting for payment release';
-        cta = 'Payment Pending';
-    } else if (needsSignature) {
-        stagePill = 'SIGN CONTRACT';
-        nextStep = 'Review and sign the agreement';
-        cta = rawStatus.includes('signed_by_brand') ? 'Sign Now' : 'View Contract';
+        nextStep = (isPaidDeal && !isPureBarter) ? 'Waiting for payment release' : 'Collaboration success';
+        cta = (isPaidDeal && !isPureBarter) ? 'Payment Pending' : 'View Summary';
     } else if (isRevisionRequested) {
-        stagePill = 'REVISION REQUESTED';
-        nextStep = 'Update content and resubmit';
-        cta = 'Upload Revision';
+        stagePill = 'REVISION';
+        nextStep = 'Brand requested changes';
+        cta = 'Revise Content';
     } else if (isDelivered) {
-        stagePill = 'UNDER REVIEW';
-        nextStep = 'Wait for brand approval';
-        cta = 'Waiting for Review';
-    } else if (isAwaitingShipment) {
-        stagePill = 'AWAITING PRODUCT';
-        nextStep = 'Waiting for product shipment from brand';
-        cta = 'Waiting';
-    } else if (isFullyExecuted) {
-        stagePill = 'READY TO START';
-        nextStep = 'Start creating content';
-        cta = 'Start Production';
+        stagePill = 'REVIEW';
+        nextStep = 'Waiting for brand review';
+        cta = 'Track Progress';
     } else if (isMaking) {
-        stagePill = 'MAKE CONTENT';
-        nextStep = 'Deliver your Instagram link for review';
-        cta = 'Deliver Content';
-    } else {
-        stagePill = 'WAITING';
-        nextStep = 'Open deal';
-        cta = 'View Deal';
+        stagePill = 'CREATE';
+        nextStep = 'Time to create content';
+        cta = 'Submit Content';
+    } else if (isAwaitingShipment) {
+        stagePill = 'SHIPMENT';
+        nextStep = 'Waiting for product shipment';
+        cta = 'Track Progress';
+    } else if (isFullyExecuted) {
+        stagePill = 'SIGNED';
+        nextStep = requiresShipping ? 'Waiting for product shipment' : 'Ready to start working';
+        cta = requiresShipping ? 'Track Progress' : 'Start Working';
+    } else if (isContractPending) {
+        stagePill = 'CONTRACT';
+        nextStep = 'Review and sign contract';
+        cta = 'Sign Agreement';
+    } else if (isPendingOTP) {
+        stagePill = 'VERIFY';
+        nextStep = 'Verify OTP to continue';
+        cta = 'Verify OTP';
     }
 
+    const urgencyLevel: 'critical' | 'warning' | 'normal' = daysUntilDue !== null && daysUntilDue <= 2
+        ? 'critical'
+        : daysUntilDue !== null && daysUntilDue <= 5
+            ? 'warning'
+            : 'normal';
+
     return {
-        rawStatus,
-        dueDate,
-        daysUntilDue,
-        urgencyLevel,
         progressStep,
-        contractLabel,
-        needsCreatorAction,
-        needsSignature,
-        isRevisionRequested,
-        isRevisionDone,
-        isApproved,
-        isPaymentReleased,
-        isAwaitingShipment,
-        isMaking,
+        totalStages,
         stagePill,
         nextStep,
         cta,
+        daysUntilDue,
+        urgencyLevel,
+        isCompleted,
+        isApproved,
+        isPaymentReleased,
+        isMaking,
+        isDelivered,
+        isRevisionRequested,
+        isFullyExecuted,
+        isContractPending,
+        isAwaitingShipment,
+        isPendingOTP,
+        rawStatus,
+        requiresPayment: isPaidDeal && !isPureBarter,
+        requiresShipping
     };
 };
 
