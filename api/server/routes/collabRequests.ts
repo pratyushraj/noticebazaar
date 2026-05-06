@@ -67,6 +67,143 @@ async function sendCollabPushViaRender(params: {
 
 const router = express.Router();
 
+/**
+ * GET /lookup-brand
+ * Fetch brand logo and brand name from registered dashboard email to autofill public forms.
+ */
+router.get('/lookup-brand', async (req: Request, res: Response) => {
+  try {
+    const email = (req.query.email as string)?.trim().toLowerCase();
+    if (!email) {
+      return res.status(400).json({ success: false, error: 'Email query parameter is required' });
+    }
+
+    const firstDefined = (...values: Array<string | null | undefined>) =>
+      values.map(value => String(value || '').trim()).find(Boolean) || null;
+
+    console.log(`[lookup-brand] Looking up: ${email}`);
+    const { data: profileRow, error: profileErr } = await supabase
+      .from('profiles')
+      .select('id, business_name, avatar_url, profile_image_url, role, pincode, location, email, username')
+      .ilike('email', email)
+      .limit(1)
+      .maybeSingle();
+
+    if (profileRow && !profileErr) {
+      const { data: brandProfile } = await supabase
+        .from('brands')
+        .select('name, logo_url, avatar_url, brand_logo_url, logo, image_url, website_url')
+        .eq('external_id', profileRow.id)
+        .maybeSingle();
+
+      const resolvedLogo = firstDefined(
+        (brandProfile as any)?.logo_url,
+        (brandProfile as any)?.brand_logo_url,
+        (brandProfile as any)?.avatar_url,
+        (brandProfile as any)?.logo,
+        (brandProfile as any)?.image_url,
+        profileRow.avatar_url,
+        profileRow.profile_image_url
+      );
+
+      return res.json({
+        success: true,
+        data: {
+          brand_name: brandProfile?.name || profileRow.business_name || null,
+          logo: resolvedLogo,
+          instagram: null,
+          website: brandProfile?.website_url || null,
+          pincode: profileRow.pincode || null,
+          location: profileRow.location || null,
+          logo_source: brandProfile?.logo_url ? 'brands.logo_url'
+            : (brandProfile as any)?.brand_logo_url ? 'brands.brand_logo_url'
+            : (brandProfile as any)?.avatar_url ? 'brands.avatar_url'
+            : (brandProfile as any)?.logo ? 'brands.logo'
+            : (brandProfile as any)?.image_url ? 'brands.image_url'
+            : profileRow.avatar_url ? 'profiles.avatar_url'
+            : profileRow.profile_image_url ? 'profiles.profile_image_url'
+            : null
+        }
+      });
+    }
+
+    const { data: brandUser, error: brandUserErr } = await supabase
+      .from('brand_users')
+      .select('id, brand_name, brand_logo_url, avatar_url, logo_url, instagram_handle')
+      .ilike('email', email)
+      .limit(1)
+      .maybeSingle();
+
+    if (brandUser && !brandUserErr) {
+      const { data: brandProfile } = await supabase
+        .from('brands')
+        .select('name, logo_url, avatar_url, brand_logo_url, logo, image_url, website_url')
+        .eq('external_id', brandUser.id)
+        .maybeSingle();
+
+      const resolvedLogo = firstDefined(
+        (brandProfile as any)?.logo_url,
+        (brandProfile as any)?.brand_logo_url,
+        (brandProfile as any)?.avatar_url,
+        (brandProfile as any)?.logo,
+        (brandProfile as any)?.image_url,
+        brandUser.brand_logo_url,
+        (brandUser as any)?.avatar_url,
+        (brandUser as any)?.logo_url
+      );
+
+      return res.json({
+        success: true,
+        data: {
+          brand_name: brandProfile?.name || brandUser.brand_name || null,
+          logo: resolvedLogo,
+          instagram: brandUser.instagram_handle || null,
+          website: brandProfile?.website_url || null,
+          logo_source: brandProfile?.logo_url ? 'brands.logo_url'
+            : (brandProfile as any)?.brand_logo_url ? 'brands.brand_logo_url'
+            : (brandProfile as any)?.avatar_url ? 'brands.avatar_url'
+            : (brandProfile as any)?.logo ? 'brands.logo'
+            : (brandProfile as any)?.image_url ? 'brands.image_url'
+            : brandUser.brand_logo_url ? 'brand_users.brand_logo_url'
+            : (brandUser as any)?.avatar_url ? 'brand_users.avatar_url'
+            : (brandUser as any)?.logo_url ? 'brand_users.logo_url'
+            : null
+        }
+      });
+    }
+
+    const { data: pastRequests, error: pastReqErr } = await supabase
+      .from('collab_requests')
+      .select('brand_name, brand_logo_url, brand_instagram')
+      .eq('brand_email', email)
+      .order('created_at', { ascending: false })
+      .limit(10);
+
+    const pastRequest = pastRequests?.find((request) => request?.brand_name);
+    const resolvedPastLogo = pastRequests?.find((request) => firstDefined(request?.brand_logo_url));
+
+    if (pastRequest && !pastReqErr) {
+      return res.json({
+        success: true,
+        data: {
+          brand_name: pastRequest.brand_name || null,
+          logo: firstDefined(pastRequest.brand_logo_url) || firstDefined(resolvedPastLogo?.brand_logo_url),
+          instagram: pastRequest.brand_instagram || null
+        }
+      });
+    }
+
+    return res.json({
+      success: false,
+      error: 'Brand not registered',
+      data: null
+    });
+  } catch (error: any) {
+    console.error('[CollabRequests] Error in /lookup-brand:', error);
+    res.status(500).json({ success: false, error: 'Internal server error during brand lookup' });
+  }
+});
+
 const inferPlatformFromDeliverables = (deliverables: unknown) => {
   const text = Array.isArray(deliverables)
     ? deliverables.map((item: any) => {

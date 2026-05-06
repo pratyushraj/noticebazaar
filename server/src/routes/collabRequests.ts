@@ -1220,11 +1220,14 @@ router.get('/lookup-brand', async (req: Request, res: Response) => {
       return res.status(503).json({ success: false, error: 'Database connection not initialized' });
     }
 
+    const firstDefined = (...values: Array<string | null | undefined>) =>
+      values.map(value => String(value || '').trim()).find(Boolean) || null;
+
     console.log(`[lookup-brand] Looking up: ${email}`);
     // 1. Check profiles table first (Primary Account Storage)
     const { data: profileRow, error: profileErr } = await supabase
       .from('profiles')
-      .select('id, business_name, avatar_url, profile_image_url, role, pincode, location')
+      .select('id, business_name, avatar_url, profile_image_url, role, pincode, location, email, username')
       .ilike('email', email)
       .limit(1)
       .maybeSingle();
@@ -1234,20 +1237,38 @@ router.get('/lookup-brand', async (req: Request, res: Response) => {
       // Also check the 'brands' profile table which is where the dashboard usually saves the logo
       const { data: brandProfile } = await supabase
         .from('brands')
-        .select('name, logo_url, website_url')
+        .select('name, logo_url, avatar_url, brand_logo_url, logo, image_url, website_url')
         .eq('external_id', profileRow.id)
         .maybeSingle();
+
+      const resolvedLogo = firstDefined(
+        (brandProfile as any)?.logo_url,
+        (brandProfile as any)?.brand_logo_url,
+        (brandProfile as any)?.avatar_url,
+        (brandProfile as any)?.logo,
+        (brandProfile as any)?.image_url,
+        profileRow.avatar_url,
+        profileRow.profile_image_url
+      );
 
       console.log(`[lookup-brand] Brand record found:`, brandProfile);
       return res.json({
         success: true,
         data: {
           brand_name: brandProfile?.name || profileRow.business_name || null,
-          logo: brandProfile?.logo_url || profileRow.avatar_url || profileRow.profile_image_url || null,
+          logo: resolvedLogo,
           instagram: null,
           website: brandProfile?.website_url || null,
           pincode: profileRow.pincode || null,
-          location: profileRow.location || null
+          location: profileRow.location || null,
+          logo_source: brandProfile?.logo_url ? 'brands.logo_url'
+            : (brandProfile as any)?.brand_logo_url ? 'brands.brand_logo_url'
+            : (brandProfile as any)?.avatar_url ? 'brands.avatar_url'
+            : (brandProfile as any)?.logo ? 'brands.logo'
+            : (brandProfile as any)?.image_url ? 'brands.image_url'
+            : profileRow.avatar_url ? 'profiles.avatar_url'
+            : profileRow.profile_image_url ? 'profiles.profile_image_url'
+            : null
         }
       });
     }
@@ -1256,7 +1277,7 @@ router.get('/lookup-brand', async (req: Request, res: Response) => {
     console.log(`[lookup-brand] Profile not found, checking brand_users...`);
     const { data: brandUser, error: brandUserErr } = await supabase
       .from('brand_users')
-      .select('id, brand_name, brand_logo_url, instagram_handle')
+      .select('id, brand_name, brand_logo_url, avatar_url, logo_url, instagram_handle')
       .ilike('email', email)
       .limit(1)
       .maybeSingle();
@@ -1264,37 +1285,60 @@ router.get('/lookup-brand', async (req: Request, res: Response) => {
     if (brandUser && !brandUserErr) {
       const { data: brandProfile } = await supabase
         .from('brands')
-        .select('name, logo_url, website_url')
+        .select('name, logo_url, avatar_url, brand_logo_url, logo, image_url, website_url')
         .eq('external_id', brandUser.id)
         .maybeSingle();
+
+      const resolvedLogo = firstDefined(
+        (brandProfile as any)?.logo_url,
+        (brandProfile as any)?.brand_logo_url,
+        (brandProfile as any)?.avatar_url,
+        (brandProfile as any)?.logo,
+        (brandProfile as any)?.image_url,
+        brandUser.brand_logo_url,
+        (brandUser as any)?.avatar_url,
+        (brandUser as any)?.logo_url
+      );
 
       return res.json({
         success: true,
         data: {
           brand_name: brandProfile?.name || brandUser.brand_name || null,
-          logo: brandProfile?.logo_url || brandUser.brand_logo_url || null,
+          logo: resolvedLogo,
           instagram: brandUser.instagram_handle || null,
-          website: brandProfile?.website_url || null
+          website: brandProfile?.website_url || null,
+          logo_source: brandProfile?.logo_url ? 'brands.logo_url'
+            : (brandProfile as any)?.brand_logo_url ? 'brands.brand_logo_url'
+            : (brandProfile as any)?.avatar_url ? 'brands.avatar_url'
+            : (brandProfile as any)?.logo ? 'brands.logo'
+            : (brandProfile as any)?.image_url ? 'brands.image_url'
+            : brandUser.brand_logo_url ? 'brand_users.brand_logo_url'
+            : (brandUser as any)?.avatar_url ? 'brand_users.avatar_url'
+            : (brandUser as any)?.logo_url ? 'brand_users.logo_url'
+            : null
         }
       });
     }
 
     // 2. Check past collab_requests if no registered brand exists
     // This allows returning logos for unregistered brands that have previously submitted requests
-    const { data: pastRequest, error: pastReqErr } = await supabase
+    const { data: pastRequests, error: pastReqErr } = await supabase
       .from('collab_requests')
       .select('brand_name, brand_logo_url, brand_instagram')
       .eq('brand_email', email)
       .order('created_at', { ascending: false })
-      .limit(1)
-      .maybeSingle();
+      .limit(10);
 
-    if (pastRequest && !pastReqErr && pastRequest.brand_name) {
+    const pastRequest = pastRequests?.find((request) => request?.brand_name);
+    const resolvedPastLogo = pastRequests?.find((request) => firstDefined(request?.brand_logo_url));
+
+    if (pastRequest && !pastReqErr) {
+      const resolvedLogo = firstDefined(pastRequest.brand_logo_url);
       return res.json({
         success: true,
         data: {
           brand_name: pastRequest.brand_name || null,
-          logo: pastRequest.brand_logo_url || null,
+          logo: resolvedLogo || firstDefined(resolvedPastLogo?.brand_logo_url),
           instagram: pastRequest.brand_instagram || null
         }
       });
@@ -1993,6 +2037,51 @@ router.post(
 
     } catch (e) {
       console.error('[CollabRequests] Logo upload exception:', e);
+      return res.status(500).json({ success: false, error: 'Failed to upload logo' });
+    }
+  }
+);
+
+/**
+ * POST /api/collab/:username/upload-public-brand-logo
+ * Upload optional brand logo for public landing page (public, no auth).
+ */
+router.post(
+  '/:username/upload-public-brand-logo',
+  barterImageUpload.single('file'),
+  async (req: Request & { file?: Express.Multer.File }, res: Response) => {
+    try {
+      const file = req.file;
+      if (!file || !file.buffer) {
+        return res.status(400).json({ success: false, error: 'No image file provided' });
+      }
+
+      const allowed = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+      if (!allowed.includes(file.mimetype)) {
+        return res.status(400).json({ success: false, error: 'Only JPEG, PNG, WebP, and GIF are allowed' });
+      }
+
+      const ext = file.mimetype.split('/')[1];
+      const path = `collab-requests/logos/public/${crypto.randomUUID()}.${ext}`;
+      
+      const { error: uploadError } = await supabase.storage
+        .from('creator-assets')
+        .upload(path, file.buffer, { 
+          contentType: file.mimetype, 
+          upsert: false,
+          cacheControl: '3600'
+        });
+      
+      if (uploadError) {
+        console.error('[CollabRequests] Public logo upload error:', uploadError);
+        return res.status(500).json({ success: false, error: 'Failed to upload logo' });
+      }
+
+      const { data: urlData } = supabase.storage.from('creator-assets').getPublicUrl(path);
+      return res.status(200).json({ success: true, url: urlData.publicUrl });
+
+    } catch (e) {
+      console.error('[CollabRequests] Public logo upload exception:', e);
       return res.status(500).json({ success: false, error: 'Failed to upload logo' });
     }
   }
