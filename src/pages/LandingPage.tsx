@@ -31,14 +31,14 @@ const dashboardShowcase = [
       <div className="space-y-4">
         {/* New Offers Card Demo */}
         <div className="p-5 rounded-[28px] border bg-white border-slate-200/60 shadow-[0_15px_35px_rgba(0,0,0,0.05)] relative overflow-hidden group">
-          <div className="flex items-center justify-between gap-2 mb-4">
+          <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
             <div className="flex gap-2">
               <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-wider border bg-blue-50 text-blue-700 border-blue-100 whitespace-nowrap">
                 <Zap className="w-3 h-3 fill-current" />
                 Standard Deal
               </span>
             </div>
-            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-wider border bg-rose-50 text-rose-600 border-rose-100 whitespace-nowrap">
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-[9px] font-black uppercase tracking-wider border bg-rose-50 text-rose-600 border-rose-100 whitespace-nowrap">
               <Clock className="w-3 h-3" />
               Exp. in 2 days
             </span>
@@ -55,10 +55,10 @@ const dashboardShowcase = [
 
             <div className="min-w-0 flex-1 py-0.5 flex flex-col justify-between">
               <div className="min-w-0">
-                <h4 className="text-[18px] font-black tracking-tight leading-tight truncate text-slate-900">
+                <h4 className="text-[18px] font-black tracking-tight leading-tight text-slate-900">
                   Nykaa Beauty
                 </h4>
-                <p className="text-[12px] font-bold mt-1 text-slate-500 truncate">
+                <p className="text-[12px] font-bold mt-1 text-slate-500">
                   1 Reel + 3 Stories
                 </p>
               </div>
@@ -89,9 +89,9 @@ const dashboardShowcase = [
     ),
   },
   {
-    eyebrow: 'Revenue Management',
-    title: 'Track paid, late, or at risk',
-    description: 'The payout side should feel as visible as the storefront so creators know what to follow up on fast.',
+    eyebrow: '100% Payment Guarantee',
+    title: 'Payment secured in advance',
+    description: 'Brands deposit the money before you shoot. Your money is safe before you even turn on the camera.',
     icon: Wallet,
     accent: 'teal',
     body: (
@@ -153,8 +153,8 @@ const dashboardShowcase = [
   },
   {
     eyebrow: 'Legal Protection',
-    title: 'Lawyer support on demand',
-    description: 'In case a brand denies payment or breaches the agreement, our legal team is ready to step in.',
+    title: 'Free Contract Checks',
+    description: 'We catch the hidden clauses and protect your usage rights so you never get cheated on a contract again.',
     icon: Gavel,
     accent: 'blue',
     body: (
@@ -171,10 +171,10 @@ const dashboardShowcase = [
 
           <div className="min-w-0 flex-1 py-0.5 flex flex-col justify-center text-left">
             <div className="min-w-0">
-              <h4 className="text-[18px] font-black tracking-tight leading-tight truncate text-slate-900">
+              <h4 className="text-[18px] font-black tracking-tight leading-tight text-slate-900">
                 Pratik Singh
               </h4>
-              <p className="text-[12px] font-bold mt-1 text-slate-500 truncate">
+              <p className="text-[12px] font-bold mt-1 text-slate-500">
                 Senior Legal Counsel
               </p>
             </div>
@@ -387,9 +387,14 @@ const LandingPage = () => {
                 </span>
               </h1>
 
-              <p className="text-[20px] md:text-[24px] text-[#64748B] font-medium mb-10 max-w-lg mx-auto lg:mx-0 leading-relaxed text-pretty">
-                Send one link. Brands send offers.
+              <p className="text-[20px] md:text-[24px] text-[#64748B] font-medium mb-4 max-w-lg mx-auto lg:mx-0 leading-relaxed text-pretty">
+                Just send your Armour link on WhatsApp when a brand asks for your rates. Filter out the fake agencies.
               </p>
+
+              <div className="mb-10 inline-flex items-center gap-2 px-3 md:px-4 py-1.5 md:py-2 bg-[#16A34A]/10 text-[#15803D] rounded-full border border-[#16A34A]/20 text-center">
+                <CheckCircle2 className="w-4 h-4 md:w-5 md:h-5 shrink-0" />
+                <span className="text-[11px] md:text-[14px] font-black uppercase tracking-wider leading-tight">100% Free for Creators. 0% Commission.</span>
+              </div>
 
               <div className="mb-8 inline-flex flex-col sm:flex-row gap-3 p-2 rounded-[1.5rem] border border-[#E5E7EB] bg-white/80 backdrop-blur-sm shadow-sm">
                 <button
@@ -426,13 +431,13 @@ const LandingPage = () => {
               <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 mb-10">
                 <Link
                     to="/signup?mode=creator"
-                    className="w-full sm:w-auto bg-[#16A34A] hover:bg-[#15803D] text-white px-8 py-5 rounded-full font-black text-[18px] shadow-xl shadow-[#16A34A]/20 hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2 border border-[#16A34A]"
+                    className="w-full sm:w-auto bg-[#16A34A] hover:bg-[#15803D] text-white px-6 md:px-8 py-4 md:py-5 rounded-full font-black text-[16px] md:text-[18px] shadow-xl shadow-[#16A34A]/20 hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2 border border-[#16A34A]"
                   >
                     Create my link <ArrowRight className="w-5 h-5" />
                   </Link>
                   <Link
                     to="/#how-it-works"
-                    className="w-full sm:w-auto bg-white hover:bg-[#F8FAF9] border shadow-sm border-[#E5E7EB] text-[#64748B] px-8 py-5 rounded-full font-black text-[16px] transition-all flex items-center justify-center gap-2"
+                    className="w-full sm:w-auto bg-white hover:bg-[#F8FAF9] border shadow-sm border-[#E5E7EB] text-[#64748B] px-6 md:px-8 py-4 md:py-5 rounded-full font-black text-[15px] md:text-[16px] transition-all flex items-center justify-center gap-2"
                   >
                     See how it works
                   </Link>
@@ -561,8 +566,8 @@ const LandingPage = () => {
               {[
                 { stat: '12,400+', label: 'Creators on platform' },
                 { stat: '₹4.2Cr+', label: 'Paid out to creators' },
-                { stat: '98%', label: 'Creator satisfaction' },
-                { stat: '4.8★', label: 'Average app rating' },
+                { stat: '99%', label: 'Dispute-free deals' },
+                { stat: '4.9★', label: 'Average rating' },
               ].map((item) => (
                 <div key={item.label} className="flex flex-col items-center gap-1">
                   <p className="text-2xl md:text-3xl font-black text-white tracking-tight">{item.stat}</p>
@@ -644,6 +649,59 @@ const LandingPage = () => {
                 </div>
               );
             })}
+          </div>
+        </section>
+
+        {/* NEW: THE COMPARISON SECTION */}
+        <section className="px-4 sm:px-6 max-w-[1000px] mx-auto py-16 lg:py-20">
+          <div className="bg-[#0F172A] rounded-[40px] overflow-hidden shadow-2xl relative">
+            <div className="absolute top-0 left-0 w-full h-full bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-[0.03] pointer-events-none" />
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-white/10 relative z-10">
+              {/* OLD WAY */}
+              <div className="p-6 md:p-12 bg-white/5">
+                <h3 className="text-xl font-black text-rose-400 mb-8 uppercase tracking-widest flex items-center gap-3">
+                  <XCircle className="w-6 h-6" /> The DM Way
+                </h3>
+                <ul className="space-y-6">
+                  {[
+                    "Getting ghosted after work is done",
+                    "Brands asking for 'extra' edits for free",
+                    "No legal contract to protect you",
+                    "Waiting 90 days for your own money"
+                  ].map((item, idx) => (
+                    <li key={idx} className="flex items-start gap-3 text-slate-400 font-medium">
+                      <span className="text-rose-500 mt-1">✕</span>
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              {/* ARMOUR WAY */}
+              <div className="p-6 md:p-12 bg-[#16A34A]/5">
+                <h3 className="text-xl font-black text-[#16A34A] mb-8 uppercase tracking-widest flex items-center gap-3">
+                  <CheckCircle2 className="w-6 h-6" /> The Armour Way
+                </h3>
+                <ul className="space-y-6">
+                  {[
+                    "Payment secured before you post",
+                    "Digital contracts that are legally binding",
+                    "1-Click share your rates on WhatsApp",
+                    "Instant payouts via UPI or Bank"
+                  ].map((item, idx) => (
+                    <li key={idx} className="flex items-start gap-3 text-white font-medium">
+                      <span className="text-[#16A34A] mt-1">✓</span>
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+            
+            <div className="p-6 text-center border-t border-white/10">
+              <p className="text-slate-400 text-sm font-bold">Join the <span className="text-white">12,000+ creators</span> who stopped doing business in DMs.</p>
+            </div>
           </div>
         </section>
 
@@ -796,8 +854,9 @@ const LandingPage = () => {
             <div className="absolute -bottom-24 -left-20 w-72 h-72 bg-[#16A34A]/20 rounded-full blur-3xl pointer-events-none" />
 
             <div className="relative z-10 max-w-2xl mx-auto">
+              <p className="text-[14px] font-black uppercase tracking-[0.3em] mb-4 opacity-80">Stop getting cheated</p>
               <h2 className="text-[36px] md:text-[56px] font-black tracking-tight leading-[1.05] mb-6">
-                Start getting brand deals today
+                Start getting brand deals with 100% security
               </h2>
 
               <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
@@ -893,6 +952,9 @@ const LandingPage = () => {
 
           <div className="mt-16 flex flex-col lg:flex-row items-center justify-between gap-10">
             <div className="flex flex-col items-center lg:items-start gap-3">
+              <div className="flex items-center gap-2 px-3 py-1 bg-white/5 rounded-full border border-white/10 mb-2">
+                <span className="text-[10px] font-black text-[#16A34A] uppercase tracking-widest">Built for India 🇮🇳</span>
+              </div>
               <p className="text-[15px] font-medium text-slate-500 text-center lg:text-left">
                 © 2026 Creator Armour. All rights reserved. Built for professional creators.
               </p>
