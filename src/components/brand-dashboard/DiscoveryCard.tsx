@@ -9,6 +9,7 @@ import { cn } from '@/lib/utils';
 import { triggerHaptic } from '@/lib/utils/haptics';
 
 import { safeAvatarSrc } from '@/lib/utils/image';
+import { supabase } from '@/lib/supabase';
 
 interface CreatorProfile {
     id: string;
@@ -36,13 +37,13 @@ interface DiscoveryCardProps {
     onOpenOffer: () => void;
 }
 
-export const DiscoveryCard: React.FC<DiscoveryCardProps> = ({ 
+export const DiscoveryCard = React.forwardRef<HTMLDivElement, DiscoveryCardProps>(({ 
     creator, 
     isDark, 
     onSwipe,
     isActive,
     onOpenOffer
-}) => {
+}, ref) => {
     const [isMuted, setIsMuted] = useState(true);
     const [showDetails, setShowDetails] = useState(false);
     const videoRef = useRef<HTMLVideoElement>(null);
@@ -121,6 +122,7 @@ export const DiscoveryCard: React.FC<DiscoveryCardProps> = ({
 
     return (
         <motion.div
+            ref={ref}
             drag={isActive ? "x" : false}
             dragConstraints={{ left: 0, right: 0 }}
             dragElastic={0.7}
@@ -270,4 +272,4 @@ export const DiscoveryCard: React.FC<DiscoveryCardProps> = ({
             </div>
         </motion.div>
     );
-};
+});

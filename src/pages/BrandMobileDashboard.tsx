@@ -4956,16 +4956,16 @@ const BrandCollabsTab = React.memo(({
       </div>
     </motion.div>
   );
-});
+}));
 
-const BrandCreatorsTab = React.memo(({ isDark }: any) => {
+const BrandCreatorsTab = React.memo(React.forwardRef(({ isDark }: any, ref: any) => {
   return (
-    <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
+    <motion.div ref={ref} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
       {/* Discovery Lab (The Swiping Interface) */}
       <div className="mb-10">
         <DiscoveryStack 
           isDark={isDark}
-          triggerHaptic={(pattern) => {
+          triggerHaptic={(pattern: any) => {
             if (pattern === 'medium') triggerHaptic(HapticPatterns.medium);
             else triggerHaptic(HapticPatterns.light);
           }}
@@ -4973,9 +4973,9 @@ const BrandCreatorsTab = React.memo(({ isDark }: any) => {
       </div>
     </motion.div>
   );
-});
+}));
 
-const BrandProfileTab = React.memo(({ isDark, pendingOffersList, activeDealsList, onLogout }: any) => {
+const BrandProfileTab = React.memo(React.forwardRef(({ isDark, pendingOffersList, activeDealsList, onLogout }: any, ref: any) => {
   const pendingNeedsAction = (pendingOffersList || []).filter((r: any) => normalizeStatus(r?.status) === 'COUNTERED').length;
   const activeNeedsAction = (activeDealsList || []).filter((d: any) => {
     const s = normalizeStatus(d?.status);
@@ -4989,7 +4989,7 @@ const BrandProfileTab = React.memo(({ isDark, pendingOffersList, activeDealsList
   }).length;
 
   return (
-    <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="pb-20">
+    <motion.div ref={ref} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="pb-20">
       <BrandSettingsPanel 
         embedded 
         onLogout={() => { void onLogout?.(); }} 
@@ -5001,9 +5001,9 @@ const BrandProfileTab = React.memo(({ isDark, pendingOffersList, activeDealsList
   );
 });
 
-const BrandPaymentsTab = React.memo(({ isDark, textColor, secondaryTextColor, borderColor }: any) => {
+const BrandPaymentsTab = React.memo(React.forwardRef(({ isDark, textColor, secondaryTextColor, borderColor }: any, ref: any) => {
   return (
-    <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="pb-20">
+    <motion.div ref={ref} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="pb-20">
       <div className={cn('mb-5 p-5 rounded-[2.5rem] border overflow-hidden', borderColor, isDark ? 'bg-secondary/[0.04]' : 'bg-secondary/80 backdrop-blur-xl shadow-[0_18px_45px_rgba(15,23,42,0.08)]')}>
         <h2 className={cn('text-[16px] font-bold tracking-tight mb-1', textColor)}>Payments</h2>
         <p className={cn('text-[13px] opacity-60', secondaryTextColor)}>Track your completed deal payouts below.</p>
