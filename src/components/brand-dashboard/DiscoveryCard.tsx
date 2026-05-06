@@ -128,13 +128,11 @@ export const DiscoveryCard: React.FC<DiscoveryCardProps> = ({
             onDragEnd={handleDragEnd}
             animate={controls}
             exit={{ x: -1000, opacity: 0, transition: { duration: 0.3 } }}
-            className={cn(
-                "absolute inset-0 w-full h-full rounded-[2.5rem] overflow-hidden flex flex-col border shadow-2xl",
-                isDark ? "bg-[#0B1220] border-white/10" : "bg-white border-slate-200"
-            )}
+                "absolute inset-0 w-full h-full rounded-[2.5rem] overflow-hidden border shadow-2xl",
+                isDark ? "bg-[#0B1220] border-white/10" : "bg-black border-slate-800"
         >
-            {/* Visual Section (Top 68%) */}
-            <div className="relative h-[68%] w-full overflow-hidden">
+            {/* Visual Section (Full Background) */}
+            <div className="absolute inset-0 w-full h-full overflow-hidden">
                 {creator.discovery_video_url ? (
                     <video
                         ref={videoRef}
@@ -149,10 +147,6 @@ export const DiscoveryCard: React.FC<DiscoveryCardProps> = ({
                         fetchpriority="high"
                         onError={(e) => {
                             console.error("[DiscoveryCard] Video failed to load:", creator.discovery_video_url);
-                            const video = e.currentTarget;
-                            if (video.error) {
-                                console.error("[DiscoveryCard] Video error code:", video.error.code, "message:", video.error.message);
-                            }
                         }}
                     />
                 ) : (
@@ -164,8 +158,9 @@ export const DiscoveryCard: React.FC<DiscoveryCardProps> = ({
                     />
                 )}
 
-                {/* Overlays */}
-                <div className="absolute inset-0 bg-gradient-to-t from-[#0B1220] via-transparent to-[#0B1220]/40 z-10" />
+                {/* Overlays for Contrast */}
+                <div className="absolute top-0 inset-x-0 h-32 bg-gradient-to-b from-black/60 to-transparent z-10 pointer-events-none" />
+                <div className="absolute bottom-0 inset-x-0 h-[65%] bg-gradient-to-t from-black via-black/60 to-transparent z-10 pointer-events-none" />
                 
                 {/* Swipe Status Stamps */}
                 <motion.div style={{ opacity: likeOpacity }} className="absolute top-8 left-8 z-30 px-6 py-2 border-4 border-emerald-500 rounded-2xl rotate-[-15deg] pointer-events-none">
@@ -184,51 +179,49 @@ export const DiscoveryCard: React.FC<DiscoveryCardProps> = ({
                         {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
                     </button>
                 )}
+            </div>
 
-                {/* Identity Overlay (Bottom of Visual Area) */}
-                <div className="absolute bottom-6 left-6 z-20 space-y-1">
+            {/* Info & Stats Section (Overlay on Bottom) */}
+            <div className="absolute bottom-0 inset-x-0 p-5 flex flex-col justify-end z-20">
+                
+                {/* Identity Block */}
+                <div className="mb-4 space-y-1">
                     <div className="flex items-center gap-2">
-                        <h3 className="text-3xl font-black text-white tracking-tight leading-none uppercase italic">
+                        <h3 className="text-3xl font-black text-white tracking-tight leading-none uppercase italic drop-shadow-md">
                             {creator.first_name}
                         </h3>
                         {creator.is_verified !== false && (
-                            <ShieldCheck className="w-5 h-5 text-emerald-400 fill-emerald-400/20" />
+                            <ShieldCheck className="w-5 h-5 text-emerald-400 fill-emerald-400/20 drop-shadow-sm" />
                         )}
                     </div>
                     <div className="flex items-center gap-2">
-                        <span className="px-2 py-0.5 rounded-lg bg-emerald-500/20 border border-emerald-500/30 text-[10px] font-black text-emerald-400 uppercase tracking-widest">
+                        <span className="px-2 py-0.5 rounded-lg bg-emerald-500/20 border border-emerald-500/30 text-[10px] font-black text-emerald-400 uppercase tracking-widest backdrop-blur-sm">
                             {creator.category || "Lifestyle"}
                         </span>
-                        <span className="text-white/40 text-[11px] font-bold">@{creator.username}</span>
+                        <span className="text-white/70 text-[12px] font-bold drop-shadow-sm">@{creator.username}</span>
                     </div>
                 </div>
-            </div>
 
-            {/* Info & Stats Section (Middle) */}
-            <div className="flex-1 p-5 flex flex-col justify-between -mt-6 relative z-20">
                 {/* Glass Stats Bar */}
-                <div className={cn(
-                    "grid grid-cols-3 gap-1 rounded-[1.75rem] p-1 border",
-                    isDark ? "bg-white/5 border-white/5 shadow-inner" : "bg-slate-50 border-slate-100"
-                )}>
+                <div className="grid grid-cols-3 gap-1 rounded-[1.75rem] p-1 border bg-white/10 border-white/10 shadow-inner backdrop-blur-xl mb-3">
                     {stats.map((s, idx) => (
-                        <div key={idx} className="flex flex-col items-center justify-center py-2 gap-0.5">
-                            <div className="flex items-center gap-1 opacity-40">
+                        <div key={idx} className="flex flex-col items-center justify-center py-2 gap-0.5 text-white">
+                            <div className="flex items-center gap-1 opacity-60">
                                 {s.icon}
                                 <span className="text-[8px] font-black uppercase tracking-widest">{s.label}</span>
                             </div>
-                            <span className="text-[14px] font-black tracking-tight">{s.value}</span>
+                            <span className="text-[14px] font-black tracking-tight drop-shadow-sm">{s.value}</span>
                         </div>
                     ))}
                 </div>
 
                 {/* Trust Signal Strip */}
-                <div className="flex items-center justify-between px-2 pt-2">
-                    <div className="flex items-center gap-1.5 opacity-40">
+                <div className="flex items-center justify-between px-2 pb-3 pt-1 text-white">
+                    <div className="flex items-center gap-1.5 opacity-60 drop-shadow-sm">
                         <Shield className="w-3 h-3" />
                         <span className="text-[10px] font-bold uppercase tracking-widest">Aadhar Verified</span>
                     </div>
-                    <div className="flex items-center gap-1.5 opacity-40">
+                    <div className="flex items-center gap-1.5 opacity-60 drop-shadow-sm">
                         <Handshake className="w-3 h-3" />
                         <span className="text-[10px] font-bold uppercase tracking-widest">Instant Contract</span>
                     </div>
@@ -274,15 +267,12 @@ export const DiscoveryCard: React.FC<DiscoveryCardProps> = ({
                                 key={idx}
                                 whileTap={{ scale: 0.92 }}
                                 onClick={(e) => { e.stopPropagation(); btn.action(); }}
-                                className={cn(
-                                    "flex flex-col items-center gap-1 py-2 rounded-2xl border transition-all",
-                                    isDark ? "bg-white/5 border-white/5 hover:bg-white/10" : "bg-white border-slate-100 shadow-sm"
-                                )}
+                                className="flex flex-col items-center gap-1 py-2 rounded-2xl border transition-all bg-black/40 border-white/10 hover:bg-black/60 backdrop-blur-md"
                             >
-                                <div className={cn("w-9 h-9 rounded-xl flex items-center justify-center", isDark ? "bg-white/5 shadow-inner" : "bg-slate-50")}>
-                                    {React.cloneElement(btn.icon, { className: cn("w-4 h-4", btn.color) })}
+                                <div className="w-9 h-9 rounded-xl flex items-center justify-center bg-white/10 shadow-inner">
+                                    {React.cloneElement(btn.icon, { className: cn("w-4 h-4 drop-shadow-md", btn.color) })}
                                 </div>
-                                <span className={cn("text-[9px] font-black uppercase tracking-[0.12em]", isDark ? "text-white/40" : "text-slate-500")}>
+                                <span className="text-[9px] font-black uppercase tracking-[0.12em] text-white/60 drop-shadow-sm">
                                     {btn.label}
                                 </span>
                             </motion.button>
