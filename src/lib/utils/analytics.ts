@@ -139,12 +139,16 @@ export async function trackEvent(
   try {
     if (shouldSkipClientAnalytics()) return;
 
+    // Try Google Analytics (gtag)
+    if (typeof window !== 'undefined' && typeof (window as any).gtag === 'function') {
+      (window as any).gtag('event', event, properties);
+    }
+
     // Try Mixpanel first
     if (isMixpanelAvailable()) {
       const mixpanel = getMixpanel();
       if (mixpanel && mixpanel.track) {
         mixpanel.track(event, properties);
-        return;
       }
     }
 
