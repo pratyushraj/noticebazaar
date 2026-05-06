@@ -4175,7 +4175,7 @@ const BrandMobileDashboard = ({
 
 export default BrandMobileDashboard;
 
-const BrandDashboardTab = React.memo(({
+const BrandDashboardTab = React.memo(React.forwardRef(({
   isDark,
   textColor,
   secondaryTextColor,
@@ -4201,7 +4201,7 @@ const BrandDashboardTab = React.memo(({
   setActiveTab,
   openCreateOfferSheet,
   resolveDealProductImageUrl
-}: any) => {
+}: any, ref: any) => {
   const activeValue = (activeDealsList || []).reduce((sum: number, d: any) => sum + Number(d?.deal_amount || d?.exact_budget || 0), 0);
   const pendingCounterCount = pendingOffersList.length;
   
@@ -4232,7 +4232,7 @@ const BrandDashboardTab = React.memo(({
   }).length;
 
   return (
-    <>
+    <motion.div ref={ref} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, transition: { duration: 0.2 } }}>
       {/* Welcome Header moved into Tab */}
       <div className="relative z-10 -mt-2 mb-6">
         <div className="pt-8 pb-4">
@@ -4564,11 +4564,11 @@ const BrandDashboardTab = React.memo(({
           </button>
         </div>
       </motion.div>
-    </>
+    </motion.div>
   );
-});
+}));
 
-const BrandCollabsTab = React.memo(({
+const BrandCollabsTab = React.memo(React.forwardRef(({
   isDark,
   textColor,
   secondaryTextColor,
@@ -4583,7 +4583,7 @@ const BrandCollabsTab = React.memo(({
   handleBrandDealPrimaryAction,
   openCreateOfferSheet,
   resolveDealProductImageUrl
-}: any) => {
+}: any, ref: any) => {
   const needsActionDeals = activeDealsList.filter((d: any) => {
     const s = normalizeStatus(d?.status);
     if (s === 'PAYMENT_PENDING') return false;
@@ -4593,7 +4593,7 @@ const BrandCollabsTab = React.memo(({
   const needsActionTotal = needsActionDeals.length + needsActionOffers.length;
 
   return (
-    <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
+    <motion.div ref={ref} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
       <div className="flex items-center justify-between mb-4">
         <h2 className={cn('text-[16px] font-bold tracking-tight', textColor)}>Collaborations</h2>
         <div className="flex items-center gap-3">
@@ -4999,7 +4999,7 @@ const BrandProfileTab = React.memo(React.forwardRef(({ isDark, pendingOffersList
       />
     </motion.div>
   );
-});
+}));
 
 const BrandPaymentsTab = React.memo(React.forwardRef(({ isDark, textColor, secondaryTextColor, borderColor }: any, ref: any) => {
   return (
