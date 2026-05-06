@@ -1467,7 +1467,6 @@ const MobileDashboardDemo = ({
         setDeliverContentStatusDraft(existingStatus);
     }, [showDeliverContentModal, selectedItem]);
 
-    const [selectedType, setSelectedType] = useState<'deal' | 'offer' | null>(null);
     const [selectedPayment, setSelectedPayment] = useState<any | null>(null);
     const [itemDetailPortalRoot, setItemDetailPortalRoot] = useState<HTMLElement | null>(null);
 
