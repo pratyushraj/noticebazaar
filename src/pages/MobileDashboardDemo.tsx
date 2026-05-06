@@ -1000,11 +1000,12 @@ const MobileDashboardDemo = ({
     useEffect(() => {
         // Show prompt if:
         // 1. Notifications are supported
-        // 2. Permission is still 'default'
-        // 3. Not already subscribed
-        // 4. Hasn't dismissed the global prompt (stored in localStorage via hook)
-        // 5. Not currently busy
-        if (isPushSupported && pushPermission !== 'denied' && !isPushSubscribed && !isPushPromptDismissed && !isPushBusy) {
+        // 2. Not already subscribed ON THIS DEVICE (using the new device-aware isPushSubscribed)
+        // 3. Permission is NOT denied (can be 'default' or 'granted' but missing SW sub)
+        // 4. Hasn't dismissed the global prompt
+        const needsOnboarding = pushPermission === 'default' || (pushPermission === 'granted' && !isPushSubscribed);
+        
+        if (isPushSupported && needsOnboarding && !isPushPromptDismissed && !isPushBusy) {
             // Small delay so it doesn't hit immediately on mount
             const timer = setTimeout(() => {
                 setShowPushPrompt(true);

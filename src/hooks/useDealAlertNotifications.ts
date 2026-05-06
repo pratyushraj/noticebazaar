@@ -146,7 +146,9 @@ export const useDealAlertNotifications = () => {
         }
       }
 
-      setIsSubscribed(serverHasSubscription);
+      // The final state should reflect if THIS device is effectively subscribed.
+      // If we have a browser subscription AND the server acknowledges it, we are truly active.
+      setIsSubscribed(!!browserSub && serverHasSubscription);
     } catch (error: any) {
       // Don't spam warnings for common/transient network errors (e.g. laptop sleeping)
       if (!isNetworkError(error)) {
@@ -207,7 +209,7 @@ export const useDealAlertNotifications = () => {
 
       const subscription = await registration.pushManager.subscribe({
         userVisibleOnly: true,
-        applicationServerKey: urlBase64ToUint8Array(import.meta.env.VITE_VAPID_PUBLIC_KEY as string),
+        applicationServerKey: urlBase64ToUint8Array((import.meta.env.VITE_VAPID_PUBLIC_KEY as string).trim()),
       });
 
       const { data: sessionData } = await supabase.auth.getSession();
