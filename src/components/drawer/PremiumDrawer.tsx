@@ -370,10 +370,10 @@ export default function PremiumDrawer({
               </div>
               <button 
                 onClick={onClose}
-                className="w-10 h-10 rounded-full bg-secondary/50 flex items-center justify-center active:scale-90 transition-transform"
+                className="w-11 h-11 rounded-full bg-secondary/50 flex items-center justify-center active:scale-90 transition-transform"
               >
-                <div className="w-5 h-0.5 bg-foreground/40 rounded-full rotate-45 absolute" />
-                <div className="w-5 h-0.5 bg-foreground/40 rounded-full -rotate-45 absolute" />
+                <div className="w-6 h-0.5 bg-foreground/40 rounded-full rotate-45 absolute" />
+                <div className="w-6 h-0.5 bg-foreground/40 rounded-full -rotate-45 absolute" />
               </button>
             </div>
 

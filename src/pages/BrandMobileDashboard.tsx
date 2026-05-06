@@ -760,7 +760,7 @@ const BrandMobileDashboard = ({
           triggerHaptic(HapticPatterns.light);
           setActiveSettingsPage(null);
         }}
-        className={cn('p-2.5 -ml-2.5 rounded-2xl transition-all active:scale-90', isDark ? 'hover:bg-white/5 text-white/40' : 'hover:bg-black/5 text-black/40')}
+        className={cn('w-11 h-11 -ml-2 rounded-full flex items-center justify-center transition-all active:scale-90', isDark ? 'hover:bg-white/5 text-white/40' : 'hover:bg-black/5 text-black/40')}
       >
         <ChevronRight className="w-6 h-6 rotate-180" />
       </button>

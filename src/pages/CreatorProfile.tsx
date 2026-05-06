@@ -1576,7 +1576,7 @@ const ProfileSettings = () => {
                   navigate('/creator-dashboard');
                 }}
                 className={cn(
-                  "w-12 h-12 rounded-2xl flex items-center justify-center transition-all active:scale-95",
+                  "w-12 h-12 rounded-full flex items-center justify-center transition-all active:scale-95",
                   isDark ? "bg-white/5 hover:bg-white/10" : "bg-slate-100 hover:bg-slate-200"
                 )}
                 aria-label="Back to dashboard"

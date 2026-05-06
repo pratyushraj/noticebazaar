@@ -97,13 +97,17 @@ export const fetchInstagramPublicData = async (username: string): Promise<Instag
         timeout: 8000,
         signal: controller.signal,
         headers: {
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-          Accept: 'application/json',
-          Referer: `https://www.instagram.com/${normalized}/`,
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+          'Accept': '*/*',
+          'Accept-Language': 'en-US,en;q=0.9',
+          'Referer': `https://www.instagram.com/${normalized}/`,
+          'X-IG-App-ID': '936619743392459',
+          'X-ASBD-ID': '129477',
+          'X-IG-WWW-Claim': '0',
           'X-Requested-With': 'XMLHttpRequest',
         },
         maxRedirects: 5,
-        validateStatus: (status) => status === 200,
+        validateStatus: (status) => status >= 200 && status < 300,
       });
 
       clearTimeout(timeoutId);
@@ -155,8 +159,9 @@ export const fetchInstagramPublicData = async (username: string): Promise<Instag
       timeout: 8000,
       signal: controller.signal,
       headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-        Accept: 'text/html,application/xhtml+xml',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
+        'Accept-Language': 'en-US,en;q=0.9',
       },
       maxRedirects: 5,
     });

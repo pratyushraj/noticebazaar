@@ -106,11 +106,11 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
                 "flex items-center gap-1 text-foreground",
                 animations.cardPress,
                 "focus:outline-none focus-visible:ring-2 focus-visible:ring-white/30 focus-visible:ring-offset-2",
-                (premium || backIconOnly) && "w-9 h-9 justify-center"
+                "w-11 h-11 justify-center rounded-full"
               )}
               aria-label="Go back"
             >
-              <ArrowLeft className={premium || backIconOnly ? iconSizes.sm : iconSizes.md} />
+              <ArrowLeft className="w-6 h-6" />
               {!premium && !backIconOnly && <span className={cn(typography.body, "font-medium")}>Back</span>}
             </button>
           )}
@@ -118,14 +118,14 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
             <button type="button"
               onClick={handleMenuClick}
               className={cn(
-                premium ? "w-9 h-9 rounded-lg" : "p-2 rounded-lg",
+                "w-11 h-11 rounded-full",
                 animations.cardPress,
                 "focus:outline-none focus-visible:ring-2 focus-visible:ring-white/30",
                 "flex items-center justify-center"
               )}
               aria-label="Open menu"
             >
-              <Menu className={premium ? iconSizes.sm : iconSizes.md} />
+              <Menu className="w-6 h-6" />
             </button>
           )}
         </div>

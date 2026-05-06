@@ -3462,9 +3462,9 @@ const MobileDashboardDemo = ({
                 <motion.button
                     whileTap={{ scale: 0.9 }}
                     onClick={() => handleOpenSettings(null)}
-                    className={cn("w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 border transition-all", isDark ? "bg-card border-white/5 text-foreground" : "bg-white border-slate-200 text-black shadow-sm")}
+                    className={cn("w-11 h-11 rounded-full flex items-center justify-center shrink-0 border transition-all", isDark ? "bg-card border-white/5 text-foreground" : "bg-white border-slate-200 text-black shadow-sm")}
                 >
-                    <ChevronRight className="w-5 h-5 rotate-180" />
+                    <ChevronRight className="w-6 h-6 rotate-180" />
                 </motion.button>
                 <div className="flex flex-col min-w-0">
                     <h1 className={cn("text-[20px] font-black tracking-tight truncate", textColor)}>{title}</h1>
@@ -5625,6 +5625,7 @@ const MobileDashboardDemo = ({
                             safeParseArray={safeParseArray} CreditCard={CreditCard} AlertCircle={AlertCircle}
                             Zap={Zap} CheckCircle2={CheckCircle2} Camera={Camera}
                             handleAccept={handleAccept} onDeclineRequest={onDeclineRequest}
+                            handleOpenItem={handleOpenItem}
                         />
                     )}
 
@@ -9227,7 +9228,8 @@ const DealsTab = React.memo(({
     setSelectedType, navigate, handleCopyStorefront, dealsError, onRefresh,
     pendingOffersCount, safeJsonParse, inferCreatorRequiresPayment,
     safeParseArray, ChevronRight, Clock, CreditCard, AlertCircle, Zap,
-    CheckCircle2, Camera, handleAccept, onDeclineRequest
+    CheckCircle2, Camera, handleAccept, onDeclineRequest,
+    handleOpenItem
 }: any) => {
     return (
         <div className={cn("px-5 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-20", isDark ? "" : "bg-slate-50")} style={{ paddingTop: 'max(env(safe-area-inset-top), 8px)' }}>
