@@ -2037,7 +2037,13 @@ const ProfileSettings = () => {
                       const { error: uploadError } = await supabase.storage.from('creator-assets').upload(fileName, file, { cacheControl: '3600', upsert: true });
                       if (uploadError) throw uploadError;
                       const { data: { publicUrl } } = supabase.storage.from('creator-assets').getPublicUrl(fileName);
-                      await updateProfileMutation.mutateAsync({ id: profile.id, first_name: profile.first_name || '', last_name: profile.last_name || '', avatar_url: publicUrl });
+                      await updateProfileMutation.mutateAsync({ 
+                        id: profile.id, 
+                        first_name: profile.first_name || '', 
+                        last_name: profile.last_name || '', 
+                        avatar_url: publicUrl,
+                        instagram_profile_photo: publicUrl
+                      } as any);
                       if (refetchProfile) { await refetchProfile(); }
                       toast.success('Profile photo updated!');
                     } catch (error: any) {

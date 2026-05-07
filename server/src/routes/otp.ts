@@ -6,7 +6,7 @@ import express, { Response } from 'express';
 import crypto from 'crypto';
 import { supabase } from '../lib/supabase.js';
 import { sendOTPEmail } from '../services/otpEmailService.js';
-import { sendGenericPushNotificationToCreator } from '../services/pushNotificationService.js';
+import { sendGenericPushNotification } from '../services/pushNotificationService.js';
 import { AuthenticatedRequest, authMiddleware } from '../middleware/auth.js';
 import { generateContractFromScratch } from '../services/contractGenerator.js';
 import { signContractAsCreator } from '../services/contractSigningService.js';
@@ -884,8 +884,8 @@ router.post('/verify-creator', authMiddleware, async (req: AuthenticatedRequest,
             : `${creatorName} accepted. Review the deal and complete the next step.`;
           const url = `/brand-dashboard?tab=collabs&subtab=active&dealId=${encodeURIComponent(dealId)}`;
 
-          await sendGenericPushNotificationToCreator({
-            creatorId: targetBrandUserId,
+          await sendGenericPushNotification({
+            userId: targetBrandUserId,
             title: 'Creator accepted your offer',
             body,
             url,

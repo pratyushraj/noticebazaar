@@ -4,6 +4,7 @@
 import { supabase } from '../lib/supabase.js';
 import { Request } from 'express';
 import { qualifiesForRateLearning, updateLearnedRateForCreator } from './creatorRateService.js';
+import { notifyCreatorOfBrandAction } from './notificationService.js';
 
 export interface SignContractRequest {
   dealId: string;
@@ -338,6 +339,14 @@ export async function signContractAsBrand(
                   metadata: { reason: 'Paid deal fully executed; awaiting brand payment confirmation.' },
                 });
              }
+
+             // Notify creator that brand signed and contract is fully executed
+             notifyCreatorOfBrandAction(
+               deal.creator_id,
+               request.dealId,
+               deal.brand_name || 'Brand',
+               'contract_signed'
+             ).catch(err => console.warn('[ContractSigningService] Creator notification failed:', err));
            }
         }
 

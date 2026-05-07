@@ -200,21 +200,21 @@ export const getCreatorPushSubscriptionStatus = async (creatorId: string) => {
 };
 
 export interface GenericPushInput {
-  creatorId: string;
+  userId: string;
   title: string;
   body: string;
   url: string;
   data?: Record<string, any>;
 }
 
-export const sendGenericPushNotificationToCreator = async ({
-  creatorId,
+export const sendGenericPushNotification = async ({
+  userId,
   title,
   body,
   url,
   data,
 }: GenericPushInput): Promise<{ sent: boolean; delivered: number; attempted: number; failed: number }> => {
-  if (!creatorId || !title || !body) {
+  if (!userId || !title || !body) {
     return { sent: false, delivered: 0, attempted: 0, failed: 0 };
   }
 
@@ -225,7 +225,7 @@ export const sendGenericPushNotificationToCreator = async ({
   const { data: subs, error: subsError } = await supabase
     .from('creator_push_subscriptions')
     .select('id, endpoint, p256dh_key, auth_key')
-    .eq('creator_id', creatorId);
+    .eq('creator_id', userId);
 
   if (subsError || !Array.isArray(subs) || subs.length === 0) {
     return { sent: false, delivered: 0, attempted: 0, failed: 0 };

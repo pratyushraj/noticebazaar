@@ -371,8 +371,8 @@ export default function BrandOnboarding() {
                   </div>
                 </div>
 
-                {/* CTA */}
-                <div className="mt-8 space-y-3">
+                {/* CTA - Sticky Footer Pattern */}
+                <div className="mt-12 space-y-3 sticky bottom-0 bg-white pt-6 pb-2 -mx-2 px-2 z-20">
                   <button
                     type="button"
                     onClick={() => {
@@ -381,8 +381,9 @@ export default function BrandOnboarding() {
                         return;
                       }
                       setStep('budget');
+                      window.scrollTo(0, 0);
                     }}
-                    className="h-14 w-full rounded-2xl bg-slate-900 text-[13px] font-black uppercase tracking-[0.18em] text-white hover:bg-slate-800 transition-all flex items-center justify-center gap-2 shadow-lg"
+                    className="h-14 w-full rounded-2xl bg-slate-900 text-[13px] font-black uppercase tracking-[0.18em] text-white hover:bg-slate-800 active:scale-[0.98] transition-all flex items-center justify-center gap-2 shadow-lg"
                   >
                     Continue <ArrowRight className="w-4 h-4" />
                   </button>
@@ -449,18 +450,18 @@ export default function BrandOnboarding() {
                   ))}
                 </div>
 
-                {/* CTA */}
-                <div className="mt-8 space-y-3">
+                {/* CTA - Sticky Footer Pattern */}
+                <div className="mt-12 space-y-3 sticky bottom-0 bg-white pt-6 pb-2 -mx-2 px-2 z-20">
                   <button
                     type="button"
-                    onClick={() => setStep('address')}
-                    className="h-14 w-full rounded-2xl bg-slate-900 text-[13px] font-black uppercase tracking-[0.18em] text-white hover:bg-slate-800 transition-all flex items-center justify-center gap-2 shadow-lg"
+                    onClick={() => { setStep('address'); window.scrollTo(0, 0); }}
+                    className="h-14 w-full rounded-2xl bg-slate-900 text-[13px] font-black uppercase tracking-[0.18em] text-white hover:bg-slate-800 active:scale-[0.98] transition-all flex items-center justify-center gap-2 shadow-lg"
                   >
                     Continue <ArrowRight className="w-4 h-4" />
                   </button>
                   <button
                     type="button"
-                    onClick={() => setStep('logo')}
+                    onClick={() => { setStep('logo'); window.scrollTo(0, 0); }}
                     className="w-full text-center text-[12px] font-semibold text-slate-500 hover:text-slate-700 transition-colors py-2"
                   >
                     ← Back
@@ -558,8 +559,8 @@ export default function BrandOnboarding() {
                   </div>
                 </div>
 
-                {/* CTA */}
-                <div className="mt-8 space-y-3">
+                {/* CTA - Sticky Footer Pattern */}
+                <div className="mt-12 space-y-3 sticky bottom-0 bg-white pt-6 pb-2 -mx-2 px-2 z-20">
                   <button
                     type="button"
                     onClick={() => {
@@ -568,14 +569,15 @@ export default function BrandOnboarding() {
                         return;
                       }
                       setStep('ready');
+                      window.scrollTo(0, 0);
                     }}
-                    className="h-14 w-full rounded-2xl bg-slate-900 text-[13px] font-black uppercase tracking-[0.18em] text-white hover:bg-slate-800 transition-all flex items-center justify-center gap-2 shadow-lg"
+                    className="h-14 w-full rounded-2xl bg-slate-900 text-[13px] font-black uppercase tracking-[0.18em] text-white hover:bg-slate-800 active:scale-[0.98] transition-all flex items-center justify-center gap-2 shadow-lg"
                   >
                     Continue <ArrowRight className="w-4 h-4" />
                   </button>
                   <button
                     type="button"
-                    onClick={() => setStep('budget')}
+                    onClick={() => { setStep('budget'); window.scrollTo(0, 0); }}
                     className="w-full text-center text-[12px] font-semibold text-slate-500 hover:text-slate-700 transition-colors py-2"
                   >
                     ← Back
@@ -665,13 +667,13 @@ export default function BrandOnboarding() {
                   </div>
                 </div>
 
-                {/* CTAs */}
-                <div className="mt-8 space-y-3">
+                {/* CTAs - Sticky Footer Pattern */}
+                <div className="mt-12 space-y-3 sticky bottom-0 bg-white pt-6 pb-2 -mx-2 px-2 z-20">
                   <button
                     type="button"
                     onClick={handleComplete}
                     disabled={isSubmitting}
-                    className="h-14 w-full rounded-2xl bg-gradient-to-r from-emerald-600 to-sky-600 text-[13px] font-black uppercase tracking-[0.18em] text-white hover:from-emerald-500 hover:to-sky-500 transition-all flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/20 disabled:opacity-60"
+                    className="h-14 w-full rounded-2xl bg-gradient-to-r from-emerald-600 to-sky-600 text-[13px] font-black uppercase tracking-[0.18em] text-white hover:from-emerald-500 hover:to-sky-500 active:scale-[0.98] transition-all flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/20 disabled:opacity-60"
                   >
                     {isSubmitting ? (
                       <><Loader2 className="w-5 h-5 animate-spin" /> Setting up...</>
@@ -681,7 +683,7 @@ export default function BrandOnboarding() {
                   </button>
                   <button
                     type="button"
-                    onClick={() => setStep('address')}
+                    onClick={() => { setStep('address'); window.scrollTo(0, 0); }}
                     className="w-full text-center text-[12px] font-semibold text-slate-500 hover:text-slate-700 transition-colors py-2"
                   >
                     ← Back

@@ -406,72 +406,10 @@ export default function CreatorOnboarding() {
     return '50k+';
   };
 
-  // Auto-fetch followers when handle changes
+  // Manual entry only - no automated sync
   useEffect(() => {
-    const cleanHandle = instagramHandle.replace(/^@+/, '').trim();
-    if (!cleanHandle || cleanHandle.length < 3) return;
-    if (profile?.instagram_followers && profile.instagram_followers > 0) return;
-    if (lastFetchedHandleRef.current === cleanHandle) return;
-
-    const timer = setTimeout(async () => {
-      try {
-        setIsSyncing(true);
-        const apiBaseUrl = getApiBaseUrl();
-        const { data: sessionData } = await supabase.auth.getSession();
-        const token = sessionData.session?.access_token;
-        if (!token) return;
-
-        const response = await fetch(`${apiBaseUrl}/api/profile/instagram-sync`, {
-          method: 'POST',
-          headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            instagram_username: cleanHandle,
-          }),
-        });
-
-        const data = await response.json().catch(() => null);
-        if (response.ok && data?.success && (Number(data?.followers) > 0 || data?.profile_photo)) {
-          lastFetchedHandleRef.current = cleanHandle;
-          
-          if (data.followers) {
-            setFollowerCount(String(data.followers));
-            setFollowersAutoFilled(true);
-          }
-          
-          if (data.profile_photo) {
-            setProfilePhotoUrl(data.profile_photo);
-            console.log('[Onboarding] Profile photo auto-filled from server');
-          }
-          return;
-        }
-
-        // Attempt 2: Client-side Fallback (Server is likely IP-blocked)
-        console.log('[Onboarding] Server sync failed/limited, trying client-side rescue...');
-        const oembedUrl = `https://www.instagram.com/oembed/?url=https://www.instagram.com/${cleanHandle}/&maxwidth=640`
-        const clientRes = await fetch(oembedUrl);
-        
-        if (clientRes.ok) {
-          const clientData = await clientRes.json();
-          if (clientData.author_name) {
-             if (clientData.thumbnail_url) {
-               const proxied = `https://wsrv.nl/?url=${encodeURIComponent(clientData.thumbnail_url)}&w=200&h=200&fit=cover`
-               setProfilePhotoUrl(proxied);
-               console.log('[Onboarding] Client-side rescue successful for photo');
-             }
-          }
-        }
-      } catch (err) {
-        console.warn('Auto-fetch failed', err);
-      } finally {
-        setIsSyncing(false);
-      }
-    }, 1200); // 1.2s debounce
-
-    return () => clearTimeout(timer);
-  }, [instagramHandle, profile?.instagram_followers]);
+    // Disabled
+  }, []);
 
   useEffect(() => {
     if (sessionLoading) return;
@@ -642,11 +580,9 @@ export default function CreatorOnboarding() {
         id: profile!.id,
         payout_upi: upiId || null,
         bank_upi: upiId || null,
+        upi_id: upiId || null,
         phone: phone || null,
         location: shippingAddress ? `${shippingAddress}${pincode ? ', ' + pincode : ''}` : null,
-        shipping_address: shippingAddress || null,
-        pincode: pincode || null,
-        registered_address: useShippingAsLegal ? shippingAddress : (legalAddress || shippingAddress),
       } as any);
       return;
     }
@@ -1192,7 +1128,7 @@ export default function CreatorOnboarding() {
                   <Label className="text-[10px] font-black uppercase tracking-widest text-white/30 px-1 flex justify-between group-focus-within:text-emerald-400">
                     <span>Follower Count</span>
                     <span className="text-emerald-500/60 lowercase tracking-normal font-medium">
-                      {followersAutoFilled ? 'Verified from Instagram' : 'Auto-syncing...'}
+                      {followersAutoFilled ? 'Set from profile' : 'Manual entry'}
                     </span>
                   </Label>
                   <div className="relative">
@@ -1306,7 +1242,7 @@ export default function CreatorOnboarding() {
                 </div>
               </div>
 
-              <div className="relative mt-auto pt-10 pb-10 w-[calc(100%+3rem)] -mx-6 px-6 bg-gradient-to-t from-[#020D0A] via-[#020D0A] to-transparent z-20">
+              <div className="sticky bottom-0 mt-8 pt-10 pb-6 w-[calc(100%+3rem)] -mx-6 px-6 bg-gradient-to-t from-[#020D0A] via-[#020D0A] to-transparent z-30">
                 <Button
                   onClick={handleNext}
                   className="w-full h-[72px] rounded-[26px] bg-emerald-500 hover:bg-emerald-400 text-white font-black italic text-xl shadow-[0_20px_40px_rgba(16,185,129,0.2)] active:scale-95 transition-all flex items-center justify-center gap-3 border-none uppercase tracking-widest"
@@ -1393,7 +1329,7 @@ export default function CreatorOnboarding() {
                 </div>
               </div>
 
-              <div className="relative mt-auto pt-10 pb-10 w-[calc(100%+3rem)] -mx-6 px-6 bg-gradient-to-t from-[#020D0A] via-[#020D0A] to-transparent z-20">
+              <div className="sticky bottom-0 mt-8 pt-10 pb-6 w-[calc(100%+3rem)] -mx-6 px-6 bg-gradient-to-t from-[#020D0A] via-[#020D0A] to-transparent z-30">
                 <Button
                   onClick={handleNext}
                   className="w-full h-[72px] rounded-[26px] bg-emerald-500 hover:bg-emerald-400 text-white font-black italic text-xl shadow-[0_20px_40px_rgba(16,185,129,0.2)] active:scale-95 transition-all flex items-center justify-center gap-3 border-none uppercase tracking-widest"
@@ -1466,7 +1402,7 @@ export default function CreatorOnboarding() {
                 </div>
               </div>
 
-              <div className="relative mt-auto pt-10 pb-10 w-[calc(100%+3rem)] -mx-6 px-6 bg-gradient-to-t from-[#020D0A] via-[#020D0A] to-transparent z-20">
+              <div className="sticky bottom-0 mt-8 pt-10 pb-6 w-[calc(100%+3rem)] -mx-6 px-6 bg-gradient-to-t from-[#020D0A] via-[#020D0A] to-transparent z-30">
                 <Button
                   onClick={handleNext}
                   className="w-full h-[72px] rounded-[26px] bg-emerald-500 hover:bg-emerald-400 text-white font-black italic text-xl shadow-[0_20px_40px_rgba(16,185,129,0.2)] active:scale-95 transition-all flex items-center justify-center gap-3 border-none uppercase tracking-widest"
@@ -1665,7 +1601,7 @@ export default function CreatorOnboarding() {
                   </div>
                 </motion.div>
 
-                <div className="relative mt-auto pt-10 pb-10 w-[calc(100%+3rem)] -mx-6 px-6 bg-gradient-to-t from-[#020D0A] via-[#020D0A] to-transparent z-20">
+                <div className="sticky bottom-0 mt-8 pt-10 pb-6 w-[calc(100%+3rem)] -mx-6 px-6 bg-gradient-to-t from-[#020D0A] via-[#020D0A] to-transparent z-30">
                   <Button
                     onClick={() => { triggerHaptic?.(); setStep('payout'); }}
                     className="w-full h-[72px] rounded-[26px] bg-emerald-500 hover:bg-emerald-400 text-white font-black italic text-xl shadow-[0_20px_40px_rgba(16,185,129,0.2)] active:scale-95 transition-all"
@@ -1796,7 +1732,7 @@ export default function CreatorOnboarding() {
                 </div>
               </div>
 
-              <div className="relative mt-auto pt-10 pb-10 w-[calc(100%+3rem)] -mx-6 px-6 bg-gradient-to-t from-[#020D0A] via-[#020D0A] to-transparent z-20">
+              <div className="sticky bottom-0 mt-8 pt-10 pb-6 w-[calc(100%+3rem)] -mx-6 px-6 bg-gradient-to-t from-[#020D0A] via-[#020D0A] to-transparent z-30">
                 <Button
                   onClick={handleNext}
                   disabled={isSubmitting}

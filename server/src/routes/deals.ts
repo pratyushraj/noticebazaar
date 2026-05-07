@@ -17,7 +17,8 @@ import { authMiddleware } from '../middleware/auth.js';
 import { signContractAsCreator, getClientIp, getDeviceInfo } from '../services/contractSigningService.js';
 import { recordMarketplaceEvent } from '../shared/lib/marketplaceAnalytics.js';
 import { getCreatorNotificationContent } from '../domains/deals/creatorNotificationCopy.js';
-import { sendGenericPushNotificationToCreator } from '../services/pushNotificationService.js';
+import { sendGenericPushNotification } from '../services/pushNotificationService.js';
+import { notifyUser, notifyBrandOfCreatorAction, notifyCreatorOfBrandAction } from '../services/notificationService.js';
 import { calculatePaymentBreakdown, calculatePayoutReleaseAt } from '../lib/payment.js';
 
 const router = Router();
@@ -370,8 +371,8 @@ const notifyCreatorForDealEvent = async (
       current_state: String(deal?.status || ''),
     } as any);
 
-    const { error: notificationError } = await supabase.from('notifications').insert({
-      user_id: creatorId,
+    await notifyUser({
+      userId: creatorId,
       type: notification.type,
       category: notification.category,
       title: notification.title,
@@ -384,31 +385,9 @@ const notifyCreatorForDealEvent = async (
       },
       link: notification.link,
       priority: notification.priority,
-      icon: notification.type,
-      action_label: notification.actionLabel,
-      action_link: notification.actionLink,
-      read: false,
+      actionLabel: notification.actionLabel,
+      actionLink: notification.actionLink,
     });
-
-    if (notificationError) {
-      console.warn(`[Deals] Failed to create ${template} notification:`, notificationError.message);
-    }
-
-    const pushResult = await sendGenericPushNotificationToCreator({
-      creatorId,
-      title: notification.title,
-      body: notification.message,
-      url: notification.actionLink,
-      data: {
-        template,
-        dealId: deal.id,
-        ...metadata,
-      },
-    });
-
-    if (!pushResult.sent) {
-      console.log(`[Deals] No push subscriptions delivered for ${template} on deal ${deal.id}`);
-    }
   } catch (error: any) {
     console.warn(`[Deals] Failed to notify creator for ${template}:`, error?.message || error);
   }
@@ -2042,6 +2021,14 @@ router.post('/:id/brand-shipping-address', authMiddleware, async (req: Authentic
       if (fallback) throw fallback;
     }
 
+    // Notify creator that shipping address is added
+    notifyCreatorOfBrandAction(
+      deal.creator_id,
+      dealId,
+      deal.brand_name || 'Brand',
+      'pincode_added'
+    ).catch(err => console.warn('[Deals] creator notification failed (shipping):', err));
+
     // Invalidate creator cache so they see the address immediately
     invalidateDealsMineCache(String(deal.creator_id));
 
@@ -2521,6 +2508,14 @@ router.post('/:id/verify-payment', authMiddleware, async (req: AuthenticatedRequ
         if ('amount_paid' in (deal || {}) && capturedPayment?.amount) updateData.amount_paid = capturedPayment.amount / 100;
 
         await supabase.from('brand_deals').update(updateData).eq('id', dealId);
+        
+        // Notify creator that payment is released/verified
+        notifyCreatorOfBrandAction(
+          deal.creator_id,
+          dealId,
+          deal.brand_name || 'Brand',
+          'payment_released'
+        ).catch(err => console.warn('[Deals] creator notification failed (payment):', err));
 
         await supabase.from('deal_action_logs').insert({
           deal_id: dealId,
@@ -2942,6 +2937,20 @@ router.patch('/:id/submit-content', authMiddleware, async (req: AuthenticatedReq
 
     if (deal) {
       await sendContentDeliveredEmailToBrand(deal);
+      
+      // Notify brand that content was uploaded
+      const brandUserId = (deal as any).brand_id;
+      if (brandUserId) {
+        const { data: creator } = await supabase.from('profiles').select('first_name, last_name').eq('id', userId).maybeSingle();
+        const creatorName = creator ? `${creator.first_name || ''} ${creator.last_name || ''}`.trim() : 'Creator';
+        
+        notifyBrandOfCreatorAction(
+          brandUserId,
+          dealId,
+          creatorName,
+          isRevision ? 'content_uploaded' : 'content_uploaded' // mapped to same for now
+        ).catch(err => console.warn('[Deals] brand notification failed (content):', err));
+      }
     }
 
     return res.json({

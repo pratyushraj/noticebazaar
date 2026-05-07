@@ -1190,40 +1190,8 @@ export const useUpdateProfile = () => {
       }
       // --- END NEW LOGIC ---
 
-      // Auto-sync Instagram public stats when handle is present.
-      if (instagram_handle && typeof instagram_handle === 'string' && instagram_handle.trim()) {
-        try {
-          const apiBaseUrl = getApiBaseUrl();
-          if (/^http:\/\/localhost(?::\d+)?$/i.test(apiBaseUrl)) {
-            return;
-          }
-
-          const { data: sessionData } = await supabase.auth.getSession();
-          const token = sessionData.session?.access_token;
-          if (token) {
-            const response = await fetch(`${apiBaseUrl}/api/profile/instagram-sync`, {
-              method: 'POST',
-              headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({ instagram_username: instagram_handle }),
-            });
-
-            if (!response.ok && response.status !== 404) {
-              logger.warn('Instagram sync skipped after profile update', {
-                profileId: id,
-                status: response.status,
-              });
-            }
-          }
-        } catch (syncError: any) {
-          logger.warn('Instagram sync skipped after profile update', {
-            profileId: id,
-            error: syncError?.message || String(syncError),
-          });
-        }
-      }
+      // Instagram auto-sync removed per user request
+      // Manual updates are the only source of truth now.
     },
     {
       onSuccess: (_, variables) => {

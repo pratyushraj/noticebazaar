@@ -470,9 +470,9 @@ app.post('/api/push/notify-generic', async (req: express.Request, res: express.R
     if (!creatorId || !title || !body) {
       return res.status(400).json({ success: false, error: 'creatorId, title, and body required' });
     }
-    const { sendGenericPushNotificationToCreator } = await import('./services/pushNotificationService.js');
-    const result = await sendGenericPushNotificationToCreator({
-      creatorId,
+    const { sendGenericPushNotification } = await import('./services/pushNotificationService.js');
+    const result = await sendGenericPushNotification({
+      userId: creatorId,
       title,
       body,
       url,

@@ -65,7 +65,7 @@ import { dealPrimaryCtaButtonClass, getDealPrimaryCta, getCanonicalDealStatus } 
 import { isBarterLikeCollab, isPaidLikeCollab } from '@/lib/deals/collabType';
 import { getCreatorDealCardUX, getCreatorPaymentListUX, normalizeDealStatus, inferCreatorRequiresPayment, parseDealDate, getDaysUntil } from '@/lib/utils/creator-dashboard';
 import FiverrPackageEditor from '@/components/profile/FiverrPackageEditor';
-import { useInstagramSync } from '@/lib/hooks/useInstagramSync';
+// import { useInstagramSync } from '@/lib/hooks/useInstagramSync';
 import { optimizeImage, safeAvatarSrc, withCacheBuster } from '@/lib/utils/image';
 import { fetchPincodeData } from '@/lib/utils/pincodeLookup';
 
@@ -2483,8 +2483,8 @@ const MobileDashboardDemo = ({
         globalTriggerHaptic(pattern);
     }, []);
 
-    // Auto-sync Instagram stats if stale
-    useInstagramSync(profile);
+    // Instagram auto-sync disabled per user request
+    // useInstagramSync(profile);
 
     const [isSavingProfile, setIsSavingProfile] = useState(false);
     const [activeCitySuggestionField, setActiveCitySuggestionField] = useState<number | null>(null);

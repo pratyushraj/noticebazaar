@@ -5,12 +5,13 @@ import { toast } from 'sonner';
 import { useSession } from '@/contexts/SessionContext';
 import { getApiBaseUrl } from '@/lib/utils/api';
 import { cn } from '@/lib/utils';
+import { useDealAlertNotifications } from '@/hooks/useDealAlertNotifications';
 import { uploadFile } from '@/lib/services/fileService';
 import {
   Camera, Check, ChevronDown, Loader2, LogOut, Shield, ShieldCheck,
   Upload, X, AlertTriangle, Globe, Instagram, MessageCircle, Tag,
   Activity, Briefcase, ExternalLink, ArrowRight, FileText, MapPin,
-  Lock,
+  Lock, Bell, BellOff,
 } from 'lucide-react';
 import { ChangePasswordModal } from '@/components/profile/ChangePasswordModal';
 
@@ -166,6 +167,18 @@ export const BrandSettingsPanel = ({
   /* ── UI state ── */
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [dragging, setDragging] = useState(false);
+
+  /* ── Push Notifications Hook ── */
+  const {
+    isSupported: isPushSupported,
+    permission: pushPermission,
+    isSubscribed: isPushSubscribed,
+    isBusy: isPushBusy,
+    hasVapidKey,
+    enableNotifications,
+    disableNotifications,
+    sendTestPush
+  } = useDealAlertNotifications();
 
   /* ── Theme Detection ── */
   const [isDark, setIsDark] = useState(() => document.documentElement.classList.contains('dark'));
@@ -341,6 +354,15 @@ export const BrandSettingsPanel = ({
         headers: { Authorization: `Bearer ${session!.access_token}`, 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
+
+      // Sync to profiles.avatar_url for consistency
+      if (logoUrl) {
+        await supabase
+          .from('profiles')
+          .update({ avatar_url: logoUrl })
+          .eq('id', session!.user.id);
+      }
+
       const json = await res.json().catch(() => ({}));
       if (!res.ok || !json?.success) throw new Error(json?.error || 'Save failed');
       setSavedAt(Date.now());
@@ -738,6 +760,62 @@ export const BrandSettingsPanel = ({
               );
             })}
           </div>
+        </div>
+
+        {/* ── Notification Settings ─────────────────────────────────────── */}
+        <div className="space-y-4 px-1 pt-4">
+          <SectionHeader title="Alert Preferences" isDark={isDark} />
+          <SettingsGroup isDark={isDark}>
+            <SettingsRow 
+              icon={isPushSubscribed ? <Bell className="text-emerald-400" /> : <BellOff className="text-slate-400" />}
+              label="Push Notifications"
+              subtext={
+                !isPushSupported ? 'Not supported on this device' :
+                isPushSubscribed ? 'Alerts are active for deals and payments' : 'Receive instant alerts for new deals'
+              }
+              isDark={isDark}
+              onClick={async () => {
+                if (!isPushSupported) return;
+                if (isPushSubscribed) {
+                  await disableNotifications();
+                  toast.success('Notifications disabled');
+                } else {
+                  const res = await enableNotifications();
+                  if (res.success) toast.success('Notifications enabled ✓');
+                  else if (res.reason === 'denied') toast.error('Please enable notifications in browser settings');
+                }
+              }}
+              rightElement={
+                isPushSupported && (
+                  <div className={cn(
+                    "w-12 h-6 rounded-full relative transition-all duration-300",
+                    isPushSubscribed ? "bg-emerald-500/20 border border-emerald-500/30" : "bg-slate-500/10 border border-slate-500/10"
+                  )}>
+                    <motion.div 
+                      animate={{ x: isPushSubscribed ? 24 : 4 }}
+                      className={cn(
+                        "absolute top-1 w-4 h-4 rounded-full",
+                        isPushSubscribed ? "bg-emerald-500" : "bg-slate-400"
+                      )}
+                    />
+                  </div>
+                )
+              }
+            />
+            {isPushSubscribed && (
+              <SettingsRow 
+                icon={<Check className="text-blue-400" />}
+                label="Send Test Notification"
+                subtext="Verify push delivery on this device"
+                isDark={isDark}
+                onClick={async () => {
+                  const res = await sendTestPush();
+                  if (res.success) toast.success('Test notification sent!');
+                  else toast.error(res.reason || 'Failed to send test');
+                }}
+              />
+            )}
+          </SettingsGroup>
         </div>
 
         {/* ── Session Hierarchy ─────────────────────────────────────────── */}

@@ -32,7 +32,7 @@ import {
 } from '../lib/collabUtils.js';
 import { estimateBarterValueRange, estimateReelBudgetRange, estimateReelRate, getEffectiveReelRate } from '../services/creatorRateService.js';
 import { fetchInstagramPublicData } from '../services/instagramService.js';
-import { notifyCreatorOnCollabRequestCreated, sendGenericPushNotificationToCreator } from '../services/pushNotificationService.js';
+import { notifyCreatorOnCollabRequestCreated, sendGenericPushNotification } from '../services/pushNotificationService.js';
 import { findOrCreateBrandUser, generateBrandMagicLink } from '../services/brandAuthService.js';
 import { getCreatorNotificationContent } from '../domains/deals/creatorNotificationCopy.js';
 import { recordMarketplaceEvent } from '../shared/lib/marketplaceAnalytics.js';
@@ -40,6 +40,7 @@ import { invalidateDealsMineCache } from './deals.js';
 import { saveExternalImageToStorage } from '../services/imageStorageService.js';
 import { logFailedNotification } from '../utils/outbox.js';
 import { collabSubmissionLimiter } from '../shared/middleware/security.js';
+import { notifyBrandOfCreatorAction } from '../services/notificationService.js';
 
 const router = express.Router();
 
@@ -171,88 +172,22 @@ const notifyBrandOnCreatorAcceptance = async ({
 }) => {
   const targetBrandUserId = await resolveBrandUserIdForPush(brandId, brandEmail);
   if (!targetBrandUserId) {
-    console.log('[CollabRequests] Skipping brand push: no brand user id found', { requestId, brandEmail });
-    return;
-  }
-
-  const result = await sendGenericPushNotificationToCreator({
-    creatorId: targetBrandUserId,
-    title: 'Creator accepted your offer',
-    body: isBarter
-      ? `${creatorName} accepted. Add delivery details to keep the deal moving.`
-      : `${creatorName} accepted. Review the deal and complete the next step.`,
-    url: `/brand-dashboard?tab=collabs&subtab=active&dealId=${encodeURIComponent(dealId)}`,
-    data: {
-      type: 'brand_offer_accepted',
-      requestId,
-      dealId,
-    },
-  });
-
-  console.log('[CollabRequests] Brand acceptance push result:', {
-    requestId,
-    dealId,
-    brandUserId: targetBrandUserId,
-    ...result,
-  });
-};
-
-const createBrandAcceptanceNotification = async ({
-  brandId,
-  brandEmail,
-  creatorName,
-  dealId,
-  requestId,
-  isBarter,
-}: {
-  brandId?: string | null;
-  brandEmail?: string | null;
-  creatorName: string;
-  dealId: string;
-  requestId: string;
-  isBarter: boolean;
-}) => {
-  const targetBrandUserId = await resolveBrandUserIdForPush(brandId, brandEmail);
-  if (!targetBrandUserId) {
     console.log('[CollabRequests] Skipping brand notification: no brand user id found', { requestId, brandEmail });
     return;
   }
 
-  const title = 'Creator accepted your offer';
-  const message = isBarter
-    ? `${creatorName} accepted. Add shipping details to keep the barter collaboration moving.`
-    : `${creatorName} accepted. Review the deal and complete the next step.`;
-  const actionLink = `/brand-dashboard?tab=collabs&subtab=active&dealId=${encodeURIComponent(dealId)}`;
+  const result = await notifyBrandOfCreatorAction(
+    targetBrandUserId,
+    dealId,
+    creatorName,
+    'accepted'
+  );
 
-  const { error } = await supabase.from('notifications').insert({
-    user_id: targetBrandUserId,
-    type: 'deal',
-    category: 'collab_request',
-    title,
-    message,
-    data: {
-      type: 'brand_offer_accepted',
-      requestId,
-      dealId,
-      collab_type: isBarter ? 'barter' : 'paid',
-    },
-    link: actionLink,
-    priority: 'high',
-    icon: 'CheckCircle',
-    action_label: isBarter ? 'Add shipping details' : 'Review deal',
-    action_link: actionLink,
-    read: false,
-  });
-
-  if (error) {
-    console.warn('[CollabRequests] Failed to create brand acceptance notification:', error.message);
-    return;
-  }
-
-  console.log('[CollabRequests] Brand acceptance notification created:', {
+  console.log('[CollabRequests] Brand acceptance notification result:', {
     requestId,
     dealId,
     brandUserId: targetBrandUserId,
+    ...result,
   });
 };
 
@@ -3405,16 +3340,6 @@ router.post('/accept/confirm', async (req: AuthenticatedRequest, res: Response) 
     }).catch((pushError) => {
       console.error('[CollabRequests] Accept confirm: brand push failed (non-fatal):', pushError);
     });
-    createBrandAcceptanceNotification({
-      brandId: request.brand_id || null,
-      brandEmail: request.brand_email || null,
-      creatorName: creatorNameForBrandPush,
-      dealId: deal.id,
-      requestId: id,
-      isBarter,
-    }).catch((notificationError) => {
-      console.error('[CollabRequests] Accept confirm: brand notification failed (non-fatal):', notificationError);
-    });
 
     await recordMarketplaceEvent(supabase, {
       eventName: 'offer_accepted',
@@ -3780,16 +3705,6 @@ router.patch('/:id/accept', async (req: AuthenticatedRequest, res: Response) => 
       isBarter,
     }).catch((pushError) => {
       console.error('[CollabRequests] PATCH accept: brand push failed (non-fatal):', pushError);
-    });
-    createBrandAcceptanceNotification({
-      brandId: request.brand_id || null,
-      brandEmail: request.brand_email || null,
-      creatorName: creatorNameForBrandPush,
-      dealId: deal.id,
-      requestId: id,
-      isBarter,
-    }).catch((notificationError) => {
-      console.error('[CollabRequests] PATCH accept: brand notification failed (non-fatal):', notificationError);
     });
 
     // Barter: require delivery details before contract generation. Redirect creator to delivery-details screen.
