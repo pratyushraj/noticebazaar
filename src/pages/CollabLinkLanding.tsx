@@ -3644,7 +3644,7 @@ const CollabLinkLanding = () => {
                     
                     <div className="flex flex-wrap justify-center gap-3 px-4 max-w-sm mx-auto">
                       {/* Followers */}
-                      <div className="bg-white/60 backdrop-blur-sm px-5 py-4 rounded-[24px] border border-slate-100 shadow-sm flex-1 min-w-[100px]">
+                      <div className="bg-white/60 backdrop-blur-sm px-5 py-4 rounded-[24px] border border-slate-100 shadow-sm flex-1 min-w-[120px] max-w-[140px]">
                         <p className="text-[16px] font-black text-slate-900 leading-none mb-2">
                           {formatFollowers(primaryFollowers)}
                         </p>
@@ -3653,7 +3653,7 @@ const CollabLinkLanding = () => {
 
                       {/* Avg. Views */}
                       {(avgReelViews || (creator as any).avg_reel_views) && (
-                        <div className="bg-white/60 backdrop-blur-sm px-5 py-4 rounded-[24px] border border-slate-100 shadow-sm flex-1 min-w-[100px]">
+                        <div className="bg-white/60 backdrop-blur-sm px-5 py-4 rounded-[24px] border border-slate-100 shadow-sm flex-1 min-w-[120px] max-w-[140px]">
                           <div className="flex items-center justify-center gap-1.5 mb-2">
                             <p className="text-[16px] font-black text-slate-900 leading-none">
                               {formatFollowers(avgReelViews || (creator as any).avg_reel_views)}
@@ -3666,17 +3666,21 @@ const CollabLinkLanding = () => {
                         </div>
                       )}
 
-                      {/* Audience / Niche */}
-                      <div className="bg-white/60 backdrop-blur-sm px-5 py-4 rounded-[24px] border border-slate-100 shadow-sm flex-1 min-w-[100px]">
-                        <p className="text-[15px] font-black text-slate-900 leading-none mb-2 truncate max-w-[100px] mx-auto uppercase italic">
+                      {/* Audience / Niche / Category */}
+                      <div className="bg-white/60 backdrop-blur-sm px-5 py-4 rounded-[24px] border border-slate-100 shadow-sm flex-1 min-w-[120px] max-w-[140px]">
+                        <p className="text-[14px] font-black text-slate-900 leading-none mb-2 truncate px-1 uppercase italic">
                           {creator.audience_gender_split 
                             ? creator.audience_gender_split.split('%')[0] + '%' 
-                            : (creator.top_cities && creator.top_cities[0]) 
+                            : (creator.top_cities && creator.top_cities.length > 0) 
                               ? creator.top_cities[0]
-                              : creator.category || 'Active'}
+                              : creator.category || 'Lifestyle'}
                         </p>
                         <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">
-                          {creator.audience_gender_split ? 'Audience' : creator.top_cities ? 'Top City' : 'Status'}
+                          {creator.audience_gender_split 
+                            ? 'Audience' 
+                            : (creator.top_cities && creator.top_cities.length > 0) 
+                              ? 'Top City' 
+                              : 'Category'}
                         </p>
                       </div>
                     </div>
