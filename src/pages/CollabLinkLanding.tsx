@@ -960,9 +960,12 @@ const CollabLinkLanding = () => {
     const inferredLogo =
       (profile as any).business_logo_url || (profile as any).logo_url || profile.avatar_url || ''
 
+    const inferredInstagram = (profile.instagram_handle || '').trim()
+    
     setBrandName(prev => (prev.trim() ? prev : inferredBrandName))
     setBrandEmail(prev => (prev.trim() ? prev : inferredEmail))
     setBrandLogoUrl(prev => (prev.trim() ? prev : inferredLogo))
+    setBrandInstagram(prev => (prev.trim() ? prev : inferredInstagram))
     setUseBrandProfile(true)
   }, [profile?.id, profile?.role, user?.email])
 
