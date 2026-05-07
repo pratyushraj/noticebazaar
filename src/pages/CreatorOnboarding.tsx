@@ -208,7 +208,6 @@ export default function CreatorOnboarding() {
   const [baseCity, setBaseCity] = useState('');
   const [audienceGenderSplit, setAudienceGenderSplit] = useState('');
   const [audienceAgeRange, setAudienceAgeRange] = useState<string[]>([]);
-  const [followersAutoFilled, setFollowersAutoFilled] = useState(false);
   const [legalAddress, setLegalAddress] = useState('');
   const [useShippingAsLegal, setUseShippingAsLegal] = useState(true);
   const [activeCityField, setActiveCityField] = useState<'baseCity' | 'topCity1' | 'topCity2' | 'topCity3' | null>(null);
@@ -254,10 +253,7 @@ export default function CreatorOnboarding() {
     if (profile?.avg_rate_reel && !baseRate) {
       setBaseRate(profile.avg_rate_reel.toString());
     }
-    if (typeof profile?.instagram_followers === 'number' && profile.instagram_followers > 0 && !followerCount) {
-      setFollowerCount(String(profile.instagram_followers));
-      setFollowersAutoFilled(true);
-    }
+    // Follower count auto-fill disabled to enforce manual entry
     if (profile?.bio && !bio) {
       setBio(profile.bio);
     }
@@ -1131,7 +1127,7 @@ export default function CreatorOnboarding() {
                   <Label className="text-[10px] font-black uppercase tracking-widest text-white/30 px-1 flex justify-between group-focus-within:text-emerald-400">
                     <span>Follower Count</span>
                     <span className="text-emerald-500/60 lowercase tracking-normal font-medium">
-                      {followersAutoFilled ? 'Set from profile' : 'Manual entry'}
+                      Manual entry
                     </span>
                   </Label>
                   <div className="relative">
