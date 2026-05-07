@@ -89,20 +89,11 @@ export const fetchInstagramPublicData = async (username: string): Promise<Instag
     `https://www.instagram.com/api/v1/users/web_profile_info/?username=${encodeURIComponent(normalized)}`,
   ];
 
+  // Try JSON endpoints first
   for (const url of urls) {
     try {
-      // Validate URL before fetching
-      if (!validateInstagramUrl(url)) {
-        if (process.env.NODE_ENV !== 'production') {
-          console.log('[InstagramService] Invalid URL blocked:', url);
-        }
-        continue;
-      }
+      if (!validateInstagramUrl(url)) continue;
 
-      const parsed = new URL(url);
-      // Verify DNS resolution doesn't point to private IP (SSRF protection)
-      // This uses a simplified approach - implement proper DNS check in production
-      
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 8000);
 
@@ -150,10 +141,52 @@ export const fetchInstagramPublicData = async (username: string): Promise<Instag
         bio: typeof user.biography === 'string' ? user.biography : null,
       };
     } catch (err: any) {
-      // Try the next endpoint
       if (process.env.NODE_ENV !== 'production') {
         console.log('[InstagramService] fetch failed:', normalized, url, err?.message || err);
       }
+    }
+  }
+
+  // High-priority strategy: Embed page (very resilient)
+  try {
+    const embedUrl = `https://www.instagram.com/${normalized}/embed/`;
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 8000);
+
+    const res = await axios.get(embedUrl, {
+      timeout: 8000,
+      signal: controller.signal,
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+      },
+      maxRedirects: 3,
+    });
+
+    clearTimeout(timeoutId);
+    const html = typeof res.data === 'string' ? res.data : '';
+    
+    // Extract followers from the "Followers" text if possible, or from JS blob
+    const followersMatch = html.match(/"edge_followed_by":\{"count":(\d+)\}/) || 
+                          html.match(/"follower_count":(\d+)/);
+    const photoMatch = html.match(/"profile_pic_url":"([^"]+)"/) ||
+                      html.match(/property="og:image"\s+content="([^"]+)"/i);
+    const nameMatch = html.match(/"full_name":"([^"]+)"/);
+
+    if (photoMatch || followersMatch) {
+      const followers = followersMatch ? Number(followersMatch[1]) : null;
+      const photoRaw = photoMatch?.[1]?.replace(/\\u0026/g, '&').replace(/\\/g, '') || null;
+      
+      return {
+        profile_photo: normalizeInstagramImageUrl(photoRaw),
+        followers: Number.isFinite(followers) ? followers : null,
+        full_name: nameMatch?.[1] || null,
+        bio: null
+      };
+    }
+  } catch (err) {
+    if (process.env.NODE_ENV !== 'production') {
+      console.log('[InstagramService] Embed fallback failed:', normalized, err);
     }
   }
 
