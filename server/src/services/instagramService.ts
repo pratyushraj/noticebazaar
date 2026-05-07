@@ -155,10 +155,16 @@ export const fetchInstagramPublicData = async (username: string): Promise<Instag
 
     const res = await axios.get(embedUrl, {
       timeout: 8000,
-      signal: controller.signal,
+      signal: timeoutId ? undefined : controller.signal, // Handle if timeout already cleared
       headers: {
-        'User-Agent': 'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)',
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+        'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_4_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4.1 Mobile/15E148 Safari/604.1',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
+        'Accept-Language': 'en-US,en;q=0.9',
+        'Sec-Fetch-Dest': 'document',
+        'Sec-Fetch-Mode': 'navigate',
+        'Sec-Fetch-Site': 'none',
+        'Sec-Fetch-User': '?1',
+        'Upgrade-Insecure-Requests': '1',
       },
       maxRedirects: 3,
     });
@@ -166,21 +172,48 @@ export const fetchInstagramPublicData = async (username: string): Promise<Instag
     clearTimeout(timeoutId);
     const html = typeof res.data === 'string' ? res.data : '';
     
-    // Extract followers from the "Followers" text if possible, or from JS blob
-    const followersMatch = html.match(/"edge_followed_by":\{"count":(\d+)\}/) || 
-                          html.match(/"follower_count":(\d+)/);
-    const photoMatch = html.match(/"profile_pic_url":"([^"]+)"/) ||
-                      html.match(/property="og:image"\s+content="([^"]+)"/i);
-    const nameMatch = html.match(/"full_name":"([^"]+)"/);
+    // GLOBAL SEARCH for followers
+    const followersMatch = 
+      html.match(/"edge_followed_by":\{"count":(\d+)\}/) || 
+      html.match(/"follower_count":(\d+)/) ||
+      html.match(/([\d.,]+[KMB]?)\s+Followers/i);
 
-    if (photoMatch || followersMatch) {
-      const followers = followersMatch ? Number(followersMatch[1]) : null;
-      const photoRaw = photoMatch?.[1]?.replace(/\\u0026/g, '&').replace(/\\/g, '') || null;
+    // GLOBAL SEARCH for photo
+    const globalPhotoMatch = html.match(/https:\/\/[^"']+\.cdninstagram\.com\/[^"']+\.jpg[^"']*/g);
+    const profilePicUrls = globalPhotoMatch ? globalPhotoMatch.filter(url => url.includes('profile_pic') || url.includes('_n.jpg')) : [];
+    
+    // Pattern search for name
+    const nameMatch = 
+      html.match(/"full_name":"([^"]+)"/) ||
+      html.match(/property="og:title"\s+content="([^"]+)"/i) ||
+      html.match(/<title>([^<]+)<\/title>/i);
+
+    if (profilePicUrls.length > 0 || followersMatch) {
+      let followers = null;
+      if (followersMatch) {
+        if (followersMatch[1].includes('Followers')) {
+           // Handle the "10K Followers" text match
+           const textValue = followersMatch[1].split(' ')[0];
+           // Use the existing parser
+           followers = parseFollowersTextToNumber(textValue);
+        } else {
+           followers = Number(followersMatch[1]);
+        }
+      }
+
+      const photoUrl = profilePicUrls.length > 0 
+        ? profilePicUrls.reduce((a, b) => a.length > b.length ? a : b).replace(/\\u0026/g, '&').replace(/\\/g, '')
+        : null;
       
+      let fullName = nameMatch?.[1] || null;
+      if (fullName && /Instagram/i.test(fullName) && fullName.includes('•')) {
+        fullName = fullName.split('•')[0].trim();
+      }
+
       return {
-        profile_photo: normalizeInstagramImageUrl(photoRaw),
+        profile_photo: normalizeInstagramImageUrl(photoUrl),
         followers: Number.isFinite(followers) ? followers : null,
-        full_name: nameMatch?.[1] || null,
+        full_name: fullName,
         bio: null
       };
     }
