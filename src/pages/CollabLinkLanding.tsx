@@ -1321,6 +1321,33 @@ const CollabLinkLanding = () => {
     )
   }, [profile, user?.id, creator])
 
+  useEffect(() => {
+    // Client-side DP Rescue: If the backend was blocked by Instagram (common on Render),
+    // the browser (clean IP) tries to fetch the metadata via a proxy.
+    if (creator && creator.is_registered === false && !creator.profile_photo && creator.username) {
+      const rescueProfilePhoto = async () => {
+        try {
+          const res = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(`https://www.instagram.com/${creator.username}/`)}`)
+          const data = await res.json()
+          const html = data.contents || ''
+          
+          const photoMatch = 
+            html.match(/"profile_pic_url_hd"\s*:\s*"([^"]+)"/) || 
+            html.match(/"profile_pic_url"\s*:\s*"([^"]+)"/) ||
+            html.match(/property="og:image"\s+content="([^"]+)"/i)
+            
+          if (photoMatch && photoMatch[1]) {
+            const rawUrl = photoMatch[1].replace(/\\u0026/g, '&').replace(/&amp;/g, '&')
+            setCreator(prev => prev ? { ...prev, profile_photo: rawUrl } : null)
+          }
+        } catch (e) {
+          console.warn('[CollabLinkLanding] Client-side DP rescue skipped:', e)
+        }
+      }
+      rescueProfilePhoto()
+    }
+  }, [creator?.username, creator?.profile_photo, creator?.is_registered])
+
   const isDeadlineProvided = Boolean(deadline)
 
   const typeSectionTitle =
