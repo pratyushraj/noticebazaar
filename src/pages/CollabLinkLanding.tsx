@@ -1933,7 +1933,8 @@ const CollabLinkLanding = () => {
           trackEvent('collab_link_viewed', { username: normalizedUsername })
 
           // Direct recording to collab_link_events for the real-time dashboard
-          if (data.creator?.id) {
+          // Only record if the creator is registered (has a real UUID)
+          if (data.creator?.id && data.creator?.is_registered !== false) {
             const searchParams = new URLSearchParams(window.location.search)
             supabase
               .from('collab_link_events')
