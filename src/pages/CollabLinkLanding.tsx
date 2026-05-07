@@ -948,13 +948,28 @@ const CollabLinkLanding = () => {
 
   // If the visitor is already logged in as a brand, prefill the form from their profile.
   // We only fill blanks so we never overwrite what the user already typed.
+  const { refetchProfile } = useSession()
   useEffect(() => {
     if (!profile || profile.role !== 'brand') return
+    
+    console.log('[CollabLinkLanding] Brand Profile detected:', {
+      id: profile.id,
+      business_name: profile.business_name,
+      email: profile.email,
+      user_email: user?.email,
+      logo: (profile as any).business_logo_url || (profile as any).logo_url || profile.avatar_url
+    })
 
     const inferredBrandName =
       (profile.business_name || '').trim() ||
       [profile.first_name, profile.last_name].filter(Boolean).join(' ').trim() ||
       'Brand'
+
+    // If it's a brand but business_name is missing from profile object, try a one-time refetch
+    if (!profile.business_name && profile.role === 'brand') {
+      console.log('[CollabLinkLanding] Business name missing from profile object, triggering refetch...');
+      refetchProfile();
+    }
 
     const inferredEmail = (profile.email || user?.email || '').trim()
     const inferredLogo =

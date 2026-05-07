@@ -338,8 +338,10 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
 
         // Brand fields
         try {
-          const { data: brandData } = await supabase.from('profiles').select('business_name').eq('id', user.id).maybeSingle();
-          if (brandData) brandFields.business_name = brandData.business_name;
+          const brandData = await fetchOptionalProfileFields(['business_name', 'business_logo_url', 'logo_url']);
+          if (brandData.business_name) brandFields.business_name = brandData.business_name;
+          if (brandData.business_logo_url) (brandFields as any).business_logo_url = brandData.business_logo_url;
+          if (brandData.logo_url) (brandFields as any).logo_url = brandData.logo_url;
         } catch (e) {}
       };
 
