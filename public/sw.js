@@ -1,10 +1,10 @@
-// Service Worker v1.3.5 - Safer SPA caching
+// Service Worker v1.3.6 - Safer SPA caching
 // Precaches app shell for offline support
 
-const CACHE_NAME = 'creator-armour-v8';
-const STATIC_CACHE = 'creator-armour-static-v8';
-const IMAGE_CACHE = 'creator-armour-images-v8';
-const FONT_CACHE = 'creator-armour-fonts-v8';
+const CACHE_NAME = 'creator-armour-v9';
+const STATIC_CACHE = 'creator-armour-static-v9';
+const IMAGE_CACHE = 'creator-armour-images-v9';
+const FONT_CACHE = 'creator-armour-fonts-v9';
 
 // Files to precache for offline
 const PRECACHE_URLS = [
@@ -82,6 +82,17 @@ self.addEventListener('fetch', (event) => {
   // Caching these in the SW can pin stale chunk URLs across deploys and cause
   // "module script served as text/html" failures when index.html updates first.
   if (url.pathname.startsWith('/assets/')) {
+    return;
+  }
+
+  // Never intercept proxy / external data-fetching services.
+  // These requests are governed by the document's CSP `connect-src`.
+  // SW interception causes a separate CSP check that can block even whitelisted origins.
+  if (
+    url.hostname === 'api.allorigins.win' ||
+    url.hostname === 'allorigins.win' ||
+    url.hostname.endsWith('.allorigins.win')
+  ) {
     return;
   }
 
