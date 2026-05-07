@@ -1326,22 +1326,50 @@ const CollabLinkLanding = () => {
     // the browser (clean IP) tries to fetch the metadata via a proxy.
     if (creator && creator.is_registered === false && !creator.profile_photo && creator.username) {
       const rescueProfilePhoto = async () => {
+        const username = creator.username
+        console.log(`[DP Rescue] Starting rescue mission for @${username}...`)
+        
         try {
-          const res = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(`https://www.instagram.com/${creator.username}/`)}`)
+          // Try Picuki first as it's much more scraper-friendly than Instagram
+          const picukiUrl = `https://www.picuki.com/profile/${username}`
+          const res = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(picukiUrl)}`)
           const data = await res.json()
           const html = data.contents || ''
           
-          const photoMatch = 
-            html.match(/"profile_pic_url_hd"\s*:\s*"([^"]+)"/) || 
-            html.match(/"profile_pic_url"\s*:\s*"([^"]+)"/) ||
-            html.match(/property="og:image"\s+content="([^"]+)"/i)
+          // Look for Picuki's specific avatar class
+          const picukiPhotoMatch = html.match(/class="profile-avatar"[^>]*src="([^"]+)"/) || 
+                                  html.match(/property="og:image"\s+content="([^"]+)"/i)
+          const picukiNameMatch = html.match(/class="profile-name-bottom"[^>]*>([^<]+)</) ||
+                                 html.match(/class="profile-name-top"[^>]*>([^<]+)</)
+
+          if (picukiPhotoMatch && picukiPhotoMatch[1]) {
+            console.log(`[DP Rescue] Success! Found photo on Picuki.`)
+            const photoUrl = picukiPhotoMatch[1]
+            const fullName = picukiNameMatch?.[1]?.trim() || creator.name
             
-          if (photoMatch && photoMatch[1]) {
-            const rawUrl = photoMatch[1].replace(/\\u0026/g, '&').replace(/&amp;/g, '&')
+            setCreator(prev => prev ? { 
+              ...prev, 
+              profile_photo: photoUrl,
+              name: fullName !== username ? fullName : prev.name 
+            } : null)
+            return
+          }
+
+          // Fallback to direct Instagram if Picuki fails
+          console.log(`[DP Rescue] Picuki failed, trying direct Instagram fallback...`)
+          const igRes = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(`https://www.instagram.com/${username}/`)}`)
+          const igData = await igRes.json()
+          const igHtml = igData.contents || ''
+          
+          const igPhotoMatch = igHtml.match(/"profile_pic_url_hd"\s*:\s*"([^"]+)"/) || 
+                              igHtml.match(/"profile_pic_url"\s*:\s*"([^"]+)"/)
+          
+          if (igPhotoMatch && igPhotoMatch[1]) {
+            const rawUrl = igPhotoMatch[1].replace(/\\u0026/g, '&').replace(/&amp;/g, '&')
             setCreator(prev => prev ? { ...prev, profile_photo: rawUrl } : null)
           }
         } catch (e) {
-          console.warn('[CollabLinkLanding] Client-side DP rescue skipped:', e)
+          console.warn('[DP Rescue] Mission failed:', e)
         }
       }
       rescueProfilePhoto()
