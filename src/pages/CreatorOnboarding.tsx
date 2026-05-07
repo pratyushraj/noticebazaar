@@ -915,7 +915,7 @@ export default function CreatorOnboarding() {
     if (suggestions.length === 0) return null;
 
     return (
-      <div className="absolute left-0 right-0 top-[calc(100%+0.5rem)] z-30 rounded-2xl border border-white/10 bg-white/10 backdrop-blur-xl p-2 shadow-2xl shadow-black/40">
+      <div className="absolute left-0 right-0 top-[calc(100%+0.5rem)] z-50 rounded-2xl border border-white/10 bg-white/10 backdrop-blur-xl p-2 shadow-2xl shadow-black/40">
         <div className="max-h-56 overflow-y-auto">
           {suggestions.map((city) => (
             <button
