@@ -2515,19 +2515,83 @@ const CollabLinkLanding = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-black flex flex-col items-center justify-center p-6 text-center">
-        <Loader2 className="h-10 w-10 animate-spin text-teal-600 mb-6" />
-        {isWarmingUp && (
-          <div className="animate-in fade-in slide-in-from-bottom-2 duration-700 max-w-xs">
-            <h3 className="text-white font-bold text-lg mb-2">Waking up server...</h3>
-            <p className="text-slate-400 text-sm leading-relaxed">
-              Our secure server is spinning up to verify this creator's profile. This usually takes
-              30-40 seconds on the first load.
-            </p>
+      <div className="min-h-screen bg-black flex flex-col items-center justify-center p-6 text-center overflow-hidden">
+        {/* Background Gradients */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute -top-[25%] -left-[25%] w-[100%] h-[100%] bg-emerald-500/5 blur-[120px] rounded-full animate-pulse" />
+          <div className="absolute -bottom-[25%] -right-[25%] w-[100%] h-[100%] bg-teal-500/5 blur-[120px] rounded-full animate-pulse delay-700" />
+        </div>
+
+        <div className="relative z-10">
+          <div className="relative flex items-center justify-center mb-12">
+            {/* Animated Ripple Rings */}
+            {[0, 0.5, 1].map((delay, i) => (
+              <motion.div
+                key={i}
+                initial={{ scale: 0.8, opacity: 0 }}
+                animate={{ 
+                  scale: [0.8, 2.5], 
+                  opacity: [0, 0.3, 0] 
+                }}
+                transition={{ 
+                  duration: 3, 
+                  delay, 
+                  repeat: Infinity, 
+                  ease: "easeOut" 
+                }}
+                className="absolute w-24 h-24 rounded-full border border-emerald-500/30"
+              />
+            ))}
+            
+            {/* Central Icon Container */}
+            <motion.div
+              animate={{ 
+                scale: [1, 1.05, 1],
+              }}
+              transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+              className="relative w-20 h-20 rounded-[28px] bg-[#131920] border border-emerald-500/30 flex items-center justify-center shadow-[0_0_50px_rgba(16,185,129,0.15)] overflow-hidden"
+            >
+              {/* Inner Gradient Glow */}
+              <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/10 via-transparent to-teal-500/10" />
+              
+              {/* Spinning Ring */}
+              <motion.div
+                animate={{ rotate: 360 }}
+                transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
+                className="absolute inset-0 rounded-[28px] border-t-2 border-r-2 border-emerald-500/40 m-1"
+              />
+
+              <ShieldCheck className="w-10 h-10 text-emerald-400 relative z-10" />
+              
+              {/* Scanning Beam */}
+              <motion.div
+                animate={{ top: ["-100%", "200%"] }}
+                transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
+                className="absolute left-0 right-0 h-[40%] bg-gradient-to-b from-transparent via-emerald-400/20 to-transparent z-20 pointer-events-none"
+              />
+            </motion.div>
           </div>
-        )}
+
+          {isWarmingUp && (
+            <motion.div 
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3, duration: 0.8 }}
+              className="max-w-xs mx-auto"
+            >
+              <h3 className="text-white font-black text-2xl mb-4 tracking-tight uppercase italic italic">
+                Waking up server<span className="animate-pulse">...</span>
+              </h3>
+              <div className="h-1 w-12 bg-emerald-500 mx-auto mb-6 rounded-full" />
+              <p className="text-slate-400 text-sm font-medium leading-relaxed px-4 opacity-80">
+                Our secure server is spinning up to verify this creator's profile. This usually takes
+                30-40 seconds on the first load.
+              </p>
+            </motion.div>
+          )}
+        </div>
       </div>
-    )
+    );
   }
 
   if (error) {
