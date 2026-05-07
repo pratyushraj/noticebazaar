@@ -957,7 +957,7 @@ const CollabLinkLanding = () => {
       business_name: profile.business_name,
       email: profile.email,
       user_email: user?.email,
-      logo: (profile as any).business_logo_url || (profile as any).logo_url || profile.avatar_url
+      logo: profile.avatar_url
     })
 
     const inferredBrandName =
@@ -972,8 +972,7 @@ const CollabLinkLanding = () => {
     }
 
     const inferredEmail = (profile.email || user?.email || '').trim()
-    const inferredLogo =
-      (profile as any).business_logo_url || (profile as any).logo_url || profile.avatar_url || ''
+    const inferredLogo = profile.avatar_url || ''
 
     const inferredInstagram = (profile.instagram_handle || '').trim()
     

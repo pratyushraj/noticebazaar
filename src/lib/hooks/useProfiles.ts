@@ -91,7 +91,7 @@ export const useProfiles = (options?: UseProfilesOptions) => {
   const queryFn = useCallback(async () => {
     // Try with full select statement first, fallback to basic fields if columns don't exist
     // Removed 'pan' as it may not exist in all database schemas
-    const fullSelectStatement = 'id, first_name, last_name, avatar_url, role, updated_at, instagram_handle, youtube_channel_id, tiktok_handle, facebook_profile_url, twitter_handle, avg_rate_reel, learned_avg_rate_reel, learned_deal_count, instagram_followers, instagram_profile_photo, last_instagram_sync, discovery_video_url, payout_upi, content_niches, content_vibes, audience_gender_split, top_cities, audience_age_range, primary_audience_language, collab_region_label, business_name, business_logo_url, logo_url';
+    const fullSelectStatement = 'id, first_name, last_name, avatar_url, role, updated_at, instagram_handle, youtube_channel_id, tiktok_handle, facebook_profile_url, twitter_handle, avg_rate_reel, learned_avg_rate_reel, learned_deal_count, instagram_followers, instagram_profile_photo, last_instagram_sync, discovery_video_url, payout_upi, content_niches, content_vibes, audience_gender_split, top_cities, audience_age_range, primary_audience_language, collab_region_label, business_name';
     const basicSelectStatement = 'id, first_name, last_name, avatar_url, role, updated_at';
 
     let query = supabase
@@ -212,7 +212,7 @@ export const useProfileById = (profileId: string | undefined, options?: { enable
     }
 
     // Removed 'pan' as it may not exist in all database schemas
-    const fullSelect = 'id, first_name, last_name, avatar_url, role, instagram_handle, youtube_channel_id, tiktok_handle, facebook_profile_url, twitter_handle, avg_rate_reel, learned_avg_rate_reel, learned_deal_count, instagram_followers, discovery_video_url, payout_upi, content_niches, content_vibes, audience_gender_split, top_cities, audience_age_range, primary_audience_language, collab_region_label, business_name, business_logo_url, logo_url';
+    const fullSelect = 'id, first_name, last_name, avatar_url, role, instagram_handle, youtube_channel_id, tiktok_handle, facebook_profile_url, twitter_handle, avg_rate_reel, learned_avg_rate_reel, learned_deal_count, instagram_followers, discovery_video_url, payout_upi, content_niches, content_vibes, audience_gender_split, top_cities, audience_age_range, primary_audience_language, collab_region_label, business_name';
     const basicSelect = 'id, first_name, last_name, avatar_url, role';
 
     let { data, error } = await supabase
