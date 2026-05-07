@@ -3,6 +3,7 @@
 // Handles public collab link submissions and creator management
 
 import express, { Request, Response } from 'express';
+import axios from 'axios';
 import multer from 'multer';
 import crypto from 'crypto';
 import { supabase, supabaseInitialized } from '../lib/supabase.js';
