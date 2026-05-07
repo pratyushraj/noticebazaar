@@ -1383,20 +1383,44 @@ router.get('/ig-photo/:username', async (req: Request, res: Response) => {
     }).finally(() => clearTimeout(timeout));
 
     const html = response.data || '';
-    const photoMatch = html.match(/"profile_pic_url":"([^"]+)"/) ||
-                       html.match(/property="og:image"\s+content="([^"]+)"/i);
-    const nameMatch  = html.match(/"full_name":"([^"]+)"/);
+    
+    // Debug: Log snippet to help diagnose blocking
+    if (html.length < 500) {
+      console.warn(`[IG-Rescue] Short HTML received (${html.length} chars) for @${username}: ${html}`);
+    } else {
+      console.log(`[IG-Rescue] Received HTML (${html.length} chars) for @${username}. Snippet: ${html.substring(0, 200)}...`);
+    }
+    
+    // Multi-pattern matching for maximum resilience
+    const photoMatch = 
+      html.match(/"profile_pic_url":"([^"]+)"/) ||
+      html.match(/"profile_pic_url_hd":"([^"]+)"/) ||
+      html.match(/property="og:image"\s+content="([^"]+)"/i) ||
+      html.match(/"thumbnail_url":"([^"]+)"/);
+      
+    const nameMatch = 
+      html.match(/"full_name":"([^"]+)"/) ||
+      html.match(/property="og:title"\s+content="([^"]+)"/i);
 
     if (photoMatch?.[1]) {
-      const photoUrl = photoMatch[1].replace(/\\u0026/g, '&').replace(/\\/g, '');
+      // Clean up the URL (handle escaped slashes and unicode ampersands)
+      let photoUrl = photoMatch[1].replace(/\\u0026/g, '&').replace(/\\/g, '');
+      
+      // Extract name (clean up if it includes "Instagram")
+      let fullName = nameMatch?.[1] || null;
+      if (fullName && /Instagram/i.test(fullName) && fullName.includes('•')) {
+        fullName = fullName.split('•')[0].trim();
+      }
+
       return res.json({
         photo: photoUrl,
-        name: nameMatch?.[1] || null,
+        name: fullName,
       });
     }
 
     return res.json({ photo: null, name: null });
   } catch (err) {
+    console.error('[IG-Rescue] Error:', err);
     return res.json({ photo: null, name: null });
   }
 });
