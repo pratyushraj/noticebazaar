@@ -277,6 +277,7 @@ interface UpdateProfileVariables {
   facebook_profile_url?: string | null; // NEW
   twitter_handle?: string | null; // NEW
   pan?: string | null; // NEW: Added PAN field
+  instagram_profile_photo?: string | null; // NEW
   // Creator profile fields
   creator_category?: string | null;
   pricing_min?: number | null;
@@ -408,6 +409,7 @@ export const useUpdateProfile = () => {
       facebook_profile_url,
       twitter_handle,
       pan,
+      instagram_profile_photo,
       // Creator profile fields
       creator_category,
       pricing_min,
@@ -527,6 +529,7 @@ export const useUpdateProfile = () => {
         facebook_profile_url?: string | null;
         twitter_handle?: string | null;
         pan?: string | null;
+        instagram_profile_photo?: string | null;
         creator_category?: string | null;
         pricing_min?: number | null;
         pricing_avg?: number | null;
@@ -675,6 +678,9 @@ export const useUpdateProfile = () => {
       }
       if (pan !== undefined) {
         updateData.pan = pan;
+      }
+      if (instagram_profile_photo !== undefined) {
+        updateData.instagram_profile_photo = instagram_profile_photo;
       }
       if (creator_category !== undefined) {
         updateData.creator_category = creator_category;

@@ -301,11 +301,12 @@ export default function CreatorOnboarding() {
     if (profile?.phone_verified && !isPhoneVerified) {
       setIsPhoneVerified(true);
     }
-    if (profile?.instagram_profile_photo && !profilePhotoUrl) {
+    const existingPhoto = profile?.instagram_profile_photo || profile?.avatar_url;
+    if (existingPhoto && !profilePhotoUrl) {
       // Only auto-fill if it's not a blocked external Instagram URL
-      const isExternalIg = profile.instagram_profile_photo.includes('fbcdn.net') || profile.instagram_profile_photo.includes('instagram.com');
+      const isExternalIg = existingPhoto.includes('fbcdn.net') || existingPhoto.includes('instagram.com');
       if (!isExternalIg) {
-        setProfilePhotoUrl(profile.instagram_profile_photo);
+        setProfilePhotoUrl(existingPhoto);
       }
     }
   }, [profile, instagramHandle, selectedNiches, contentVibes, baseRate, bio, upiId, shippingAddress, topCity1, topCity2, topCity3, phone, followerCount, pincode, legalAddress, isPhoneVerified, profilePhotoUrl]);
@@ -467,6 +468,7 @@ export default function CreatorOnboarding() {
           instagram_handle: instagramHandle.replace(/^@+/, '').trim().toLowerCase(),
           username: instagramHandle.replace(/^@+/, '').trim().toLowerCase(),
           instagram_profile_photo: profilePhotoUrl || null,
+          avatar_url: profilePhotoUrl || null,
         } as any);
         
         // Transition only if successful
