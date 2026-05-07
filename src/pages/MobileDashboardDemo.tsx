@@ -1918,7 +1918,7 @@ const MobileDashboardDemo = ({
         resolveAvatarUrl(profile?.instagram_profile_photo) ||
         resolveAvatarUrl(profile?.avatar_url) ||
         avatarFallbackUrl;
-    const avatarVersionedUrl = withCacheBuster(avatarUrl, profile?.last_instagram_sync || username) || avatarUrl;
+    const avatarVersionedUrl = withCacheBuster(avatarUrl, profile?.updated_at || profile?.last_instagram_sync || username) || avatarUrl;
     const rawDisplayName = username ||
         profile?.username ||
         profile?.instagram_handle ||

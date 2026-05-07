@@ -768,6 +768,7 @@ export default function CreatorOnboarding() {
         .getPublicUrl(filePath);
 
       setProfilePhotoUrl(publicUrl);
+      await refetchProfile();
       triggerHaptic?.();
       toast.success('Photo uploaded successfully!');
     } catch (err: any) {
