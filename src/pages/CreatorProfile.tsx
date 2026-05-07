@@ -2055,12 +2055,23 @@ const ProfileSettings = () => {
                 }}
               >
                 {(profile.instagram_profile_photo || profile.avatar_url) && !profilePhotoError ? (
-                  <img
-                    src={optimizeImage((profile.instagram_profile_photo || profile.avatar_url) ?? '', { width: 400, height: 400 }) ?? ''}
-                    alt={formData.name}
-                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                    onError={() => setProfilePhotoError(true)}
-                  />
+                  (() => {
+                    const photoUrl = (profile.instagram_profile_photo || profile.avatar_url) ?? '';
+                    const isExternalIg = photoUrl.includes('fbcdn.net') || photoUrl.includes('instagram.com');
+                    
+                    if (isExternalIg) {
+                      return <span>{getInitials(formData.name)}</span>;
+                    }
+
+                    return (
+                      <img
+                        src={optimizeImage(photoUrl, { width: 400, height: 400 }) ?? ''}
+                        alt={formData.name}
+                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                        onError={() => setProfilePhotoError(true)}
+                      />
+                    );
+                  })()
                 ) : (
                   <span>{getInitials(formData.name)}</span>
                 )}

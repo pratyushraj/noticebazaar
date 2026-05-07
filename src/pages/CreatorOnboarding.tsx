@@ -208,7 +208,6 @@ export default function CreatorOnboarding() {
   const [baseCity, setBaseCity] = useState('');
   const [audienceGenderSplit, setAudienceGenderSplit] = useState('');
   const [audienceAgeRange, setAudienceAgeRange] = useState<string[]>([]);
-  const [isSyncing, setIsSyncing] = useState(false);
   const [followersAutoFilled, setFollowersAutoFilled] = useState(false);
   const [legalAddress, setLegalAddress] = useState('');
   const [useShippingAsLegal, setUseShippingAsLegal] = useState(true);
@@ -307,7 +306,11 @@ export default function CreatorOnboarding() {
       setIsPhoneVerified(true);
     }
     if (profile?.instagram_profile_photo && !profilePhotoUrl) {
-      setProfilePhotoUrl(profile.instagram_profile_photo);
+      // Only auto-fill if it's not a blocked external Instagram URL
+      const isExternalIg = profile.instagram_profile_photo.includes('fbcdn.net') || profile.instagram_profile_photo.includes('instagram.com');
+      if (!isExternalIg) {
+        setProfilePhotoUrl(profile.instagram_profile_photo);
+      }
     }
   }, [profile, instagramHandle, selectedNiches, contentVibes, baseRate, bio, upiId, shippingAddress, topCity1, topCity2, topCity3, phone, followerCount, pincode, legalAddress, isPhoneVerified, profilePhotoUrl]);
 
@@ -1147,11 +1150,7 @@ export default function CreatorOnboarding() {
                       placeholder="e.g. 15400"
                       className="h-[68px] pl-14 rounded-[24px] border-white/10 bg-white/5 text-lg font-bold text-white focus:border-emerald-500/50 focus:bg-white/10 transition-all shadow-none outline-none"
                     />
-                    {isSyncing && (
-                      <div className="absolute right-6 top-1/2 -translate-y-1/2 flex items-center gap-2">
-                        <Loader2 className="w-4 h-4 animate-spin text-emerald-400" />
-                      </div>
-                    )}
+                    {/* Removed sync loader as it is disabled */}
                   </div>
                 </div>
 
