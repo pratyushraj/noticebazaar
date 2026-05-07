@@ -197,8 +197,9 @@ export default function CreatorOnboarding() {
   const [contentVibes, setContentVibes] = useState<string[]>([]);
   const [videoFile, setVideoFile] = useState<File | null>(null);
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
-
-
+  const [profilePhotoUrl, setProfilePhotoUrl] = useState<string | null>(null);
+  const [isPhotoUploading, setIsPhotoUploading] = useState(false);
+  const photoInputRef = useRef<HTMLInputElement>(null);
 
   const [upiId, setUpiId] = useState('');
   const [shippingAddress, setShippingAddress] = useState('');
@@ -305,7 +306,10 @@ export default function CreatorOnboarding() {
     if (profile?.phone_verified && !isPhoneVerified) {
       setIsPhoneVerified(true);
     }
-  }, [profile, instagramHandle, selectedNiches, contentVibes, baseRate, bio, upiId, shippingAddress, topCity1, topCity2, topCity3, phone, followerCount, pincode, legalAddress, isPhoneVerified]);
+    if (profile?.instagram_profile_photo && !profilePhotoUrl) {
+      setProfilePhotoUrl(profile.instagram_profile_photo);
+    }
+  }, [profile, instagramHandle, selectedNiches, contentVibes, baseRate, bio, upiId, shippingAddress, topCity1, topCity2, topCity3, phone, followerCount, pincode, legalAddress, isPhoneVerified, profilePhotoUrl]);
 
   useEffect(() => {
     if (typeof window === 'undefined' || !profile?.id) return;
@@ -438,7 +442,7 @@ export default function CreatorOnboarding() {
           }
           
           if (data.profile_photo) {
-            setFormData(prev => ({ ...prev, profile_photo: data.profile_photo }));
+            setProfilePhotoUrl(data.profile_photo);
             console.log('[Onboarding] Profile photo auto-filled from server');
           }
           return;
@@ -454,7 +458,7 @@ export default function CreatorOnboarding() {
           if (clientData.author_name) {
              if (clientData.thumbnail_url) {
                const proxied = `https://wsrv.nl/?url=${encodeURIComponent(clientData.thumbnail_url)}&w=200&h=200&fit=cover`
-               setFormData(prev => ({ ...prev, profile_photo: proxied }));
+               setProfilePhotoUrl(proxied);
                console.log('[Onboarding] Client-side rescue successful for photo');
              }
           }
@@ -525,6 +529,7 @@ export default function CreatorOnboarding() {
           id: profile!.id,
           instagram_handle: instagramHandle.replace(/^@+/, '').trim().toLowerCase(),
           username: instagramHandle.replace(/^@+/, '').trim().toLowerCase(),
+          instagram_profile_photo: profilePhotoUrl || null,
         } as any);
         
         // Transition only if successful
@@ -729,6 +734,49 @@ export default function CreatorOnboarding() {
       setIsVerifyingOtp(false);
     }
   };
+  const handlePhotoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      toast.error('Please upload an image file');
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('Image too large. Please upload under 5MB');
+      return;
+    }
+
+    setIsPhotoUploading(true);
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `profile-${Date.now()}.${fileExt}`;
+      const filePath = `${profile?.id}/avatars/${fileName}`;
+
+      const { data, error } = await supabase.storage
+        .from(CREATOR_ASSETS_BUCKET)
+        .upload(filePath, file, {
+          cacheControl: '3600',
+          upsert: true
+        });
+
+      if (error) throw error;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from(CREATOR_ASSETS_BUCKET)
+        .getPublicUrl(filePath);
+
+      setProfilePhotoUrl(publicUrl);
+      triggerHaptic?.();
+      toast.success('Photo uploaded successfully!');
+    } catch (err: any) {
+      toast.error('Upload failed: ' + err.message);
+    } finally {
+      setIsPhotoUploading(false);
+    }
+  };
+
   const handleVideoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -1041,6 +1089,48 @@ export default function CreatorOnboarding() {
               </div>
 
               <div className="w-full space-y-8 text-left">
+                {/* Profile Photo Upload */}
+                <div className="flex flex-col items-center justify-center mb-8">
+                  <div className="relative group">
+                    <motion.div
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => photoInputRef.current?.click()}
+                      className={cn(
+                        "w-28 h-28 rounded-full border-2 border-dashed flex items-center justify-center overflow-hidden transition-all cursor-pointer",
+                        profilePhotoUrl 
+                          ? "border-emerald-500 shadow-[0_10px_20px_rgba(16,185,129,0.2)]" 
+                          : "border-white/20 bg-white/5 hover:bg-white/10 hover:border-emerald-500/50"
+                      )}
+                    >
+                      {isPhotoUploading ? (
+                        <Loader2 className="w-8 h-8 text-emerald-400 animate-spin" />
+                      ) : profilePhotoUrl ? (
+                        <img src={profilePhotoUrl} alt="Preview" className="w-full h-full object-cover" />
+                      ) : (
+                        <div className="flex flex-col items-center gap-1">
+                          <Upload className="w-6 h-6 text-white/30" />
+                          <span className="text-[8px] font-black uppercase text-white/30">Photo</span>
+                        </div>
+                      )}
+                    </motion.div>
+                    <div 
+                      onClick={() => photoInputRef.current?.click()}
+                      className="absolute -bottom-1 -right-1 w-8 h-8 bg-emerald-500 rounded-full flex items-center justify-center shadow-lg cursor-pointer border-2 border-[#020D0A]"
+                    >
+                      <PenTool className="w-4 h-4 text-white" />
+                    </div>
+                  </div>
+                  <input
+                    type="file"
+                    ref={photoInputRef}
+                    onChange={handlePhotoChange}
+                    accept="image/*"
+                    className="hidden"
+                  />
+                  <p className="mt-3 text-[10px] font-black uppercase tracking-widest text-white/30">Professional Photo</p>
+                </div>
+
                 {/* Instagram Field */}
                 <div className="space-y-3 group">
                   <Label className="text-[10px] font-black uppercase tracking-widest text-white/30 px-1 flex justify-between group-focus-within:text-emerald-400 transition-colors">
