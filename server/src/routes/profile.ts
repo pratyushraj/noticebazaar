@@ -47,6 +47,13 @@ router.post('/instagram-sync', async (req: AuthenticatedRequest, res: Response) 
 
     const result = await syncSingleCreatorInstagram(creatorId, instagramUsername);
 
+    console.log(`[ProfileSync] Result for @${instagramUsername}:`, {
+      success: result.success,
+      followers: result.followers,
+      hasPhoto: !!result.profile_photo,
+      reason: result.reason
+    });
+
     if (!result.success) {
       return res.status(200).json({
         success: false,

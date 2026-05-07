@@ -429,10 +429,19 @@ export default function CreatorOnboarding() {
         });
 
         const data = await response.json().catch(() => null);
-        if (response.ok && data?.success && Number(data?.followers) > 0) {
+        if (response.ok && data?.success && (Number(data?.followers) > 0 || data?.profile_photo)) {
           lastFetchedHandleRef.current = cleanHandle;
-          setFollowerCount(String(data.followers));
-          setFollowersAutoFilled(true);
+          
+          if (data.followers) {
+            setFollowerCount(String(data.followers));
+            setFollowersAutoFilled(true);
+          }
+          
+          if (data.profile_photo) {
+            // Update the local state so the preview shows immediately
+            setFormData(prev => ({ ...prev, profile_photo: data.profile_photo }));
+            console.log('[Onboarding] Profile photo auto-filled');
+          }
         }
       } catch (err) {
         console.warn('Auto-fetch failed', err);
