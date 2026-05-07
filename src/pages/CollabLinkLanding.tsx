@@ -1322,36 +1322,41 @@ const CollabLinkLanding = () => {
   }, [profile, user?.id, creator])
 
   useEffect(() => {
-    // Client-side DP Rescue: If the backend was blocked by Instagram (common on Render),
-    // the browser (clean IP) tries to fetch the metadata via a proxy.
+    // Client-side DP Rescue: Instagram blocks Render's server IPs, so we try directly
+    // from the browser (which has a clean residential IP). oEmbed is Instagram's own
+    // public API for embedding and is rarely blocked.
     if (creator && creator.is_registered === false && !creator.profile_photo && creator.username) {
       const rescueProfilePhoto = async () => {
         const username = creator.username
-        console.log(`[DP Rescue] Starting backend rescue for @${username}...`)
+        console.log(`[DP Rescue] Starting client-side rescue for @${username}...`)
+        
         try {
-          const res = await fetch(`/api/collab/ig-photo/${username}`)
-          console.log(`[DP Rescue] Response status: ${res.status}`)
+          // Strategy 1: Try Instagram's public oEmbed API directly from browser
+          const oembedUrl = `https://www.instagram.com/oembed/?url=https://www.instagram.com/${username}/&maxwidth=640&hidecaption=1`
+          const res = await fetch(oembedUrl)
           
-          if (!res.ok) {
-            console.warn(`[DP Rescue] Backend returned error status: ${res.status}`)
-            return
-          }
-          
-          const data = await res.json()
-          console.log(`[DP Rescue] Received data:`, data)
-          
-          if (data.photo) {
-            setCreator(prev => prev ? {
-              ...prev,
-              profile_photo: data.photo,
-              ...(data.name && data.name !== username ? { name: data.name } : {})
-            } : null)
-          } else {
-            console.log(`[DP Rescue] Backend could not find photo for @${username}`)
+          if (res.ok) {
+            const data = await res.json()
+            console.log(`[DP Rescue] oEmbed success for @${username}:`, data)
+            if (data.thumbnail_url) {
+              // Proxy through wsrv.nl so CSP allows it
+              const proxied = `https://wsrv.nl/?url=${encodeURIComponent(data.thumbnail_url)}&w=200&h=200&fit=cover`
+              setCreator(prev => prev ? {
+                ...prev,
+                profile_photo: proxied,
+                ...(data.author_name && data.author_name !== username ? { name: data.author_name } : {})
+              } : null)
+              return
+            }
           }
         } catch (e) {
-          console.error('[DP Rescue] Fetch error:', e)
+          console.log(`[DP Rescue] oEmbed failed for @${username}:`, e)
         }
+
+        // Strategy 2: DiceBear — deterministic avatar based on username (always works)
+        console.log(`[DP Rescue] Using DiceBear fallback for @${username}`)
+        const dicebearUrl = `https://api.dicebear.com/8.x/initials/svg?seed=${encodeURIComponent(username)}&backgroundColor=0ea5e9,6366f1,8b5cf6,ec4899,f97316&radius=12&size=200`
+        setCreator(prev => prev ? { ...prev, profile_photo: dicebearUrl } : null)
       }
       rescueProfilePhoto()
     }
