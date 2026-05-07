@@ -3638,16 +3638,45 @@ const CollabLinkLanding = () => {
                   </div>
 
                   <div className="mt-16 text-center">
-                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-300 mb-5">
-                      About Creator
+                    <p className="text-[10px] font-black uppercase tracking-[0.25em] text-slate-300 mb-6">
+                      Creator Analytics
                     </p>
-                    <div className="inline-block p-1 rounded-[24px] bg-white/30 backdrop-blur-sm border border-white">
-                      <div className="px-6 py-4 rounded-[20px] bg-white shadow-sm border border-slate-100">
-                        <p className="text-[13px] font-black text-slate-900 leading-relaxed">
-                          {formatFollowers(primaryFollowers)}{' '}
-                          <span className="text-slate-400 font-bold ml-1 uppercase tracking-tighter">
-                            Followers
-                          </span>
+                    
+                    <div className="flex flex-wrap justify-center gap-3 px-4 max-w-sm mx-auto">
+                      {/* Followers */}
+                      <div className="bg-white/60 backdrop-blur-sm px-5 py-4 rounded-[24px] border border-slate-100 shadow-sm flex-1 min-w-[100px]">
+                        <p className="text-[16px] font-black text-slate-900 leading-none mb-2">
+                          {formatFollowers(primaryFollowers)}
+                        </p>
+                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Followers</p>
+                      </div>
+
+                      {/* Avg. Views */}
+                      {(avgReelViews || (creator as any).avg_reel_views) && (
+                        <div className="bg-white/60 backdrop-blur-sm px-5 py-4 rounded-[24px] border border-slate-100 shadow-sm flex-1 min-w-[100px]">
+                          <div className="flex items-center justify-center gap-1.5 mb-2">
+                            <p className="text-[16px] font-black text-slate-900 leading-none">
+                              {formatFollowers(avgReelViews || (creator as any).avg_reel_views)}
+                            </p>
+                            {isViewsVerified && (
+                              <BadgeCheck className="w-4 h-4 text-emerald-500" />
+                            )}
+                          </div>
+                          <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest whitespace-nowrap">Avg. Views</p>
+                        </div>
+                      )}
+
+                      {/* Audience / Niche */}
+                      <div className="bg-white/60 backdrop-blur-sm px-5 py-4 rounded-[24px] border border-slate-100 shadow-sm flex-1 min-w-[100px]">
+                        <p className="text-[15px] font-black text-slate-900 leading-none mb-2 truncate max-w-[100px] mx-auto uppercase italic">
+                          {creator.audience_gender_split 
+                            ? creator.audience_gender_split.split('%')[0] + '%' 
+                            : (creator.top_cities && creator.top_cities[0]) 
+                              ? creator.top_cities[0]
+                              : creator.category || 'Active'}
+                        </p>
+                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">
+                          {creator.audience_gender_split ? 'Audience' : creator.top_cities ? 'Top City' : 'Status'}
                         </p>
                       </div>
                     </div>
