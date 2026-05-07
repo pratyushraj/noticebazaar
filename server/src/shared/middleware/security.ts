@@ -22,7 +22,7 @@ export const securityHeaders = helmet({
       scriptSrc: ["'self'", "'unsafe-inline'"],
       styleSrc: ["'self'", "'unsafe-inline'"],
       imgSrc: ["'self'", 'data:', 'https:'],
-      connectSrc: ["'self'", 'https://api.supabase.io', 'https://*.supabase.co'],
+      connectSrc: ["'self'", 'https://api.supabase.io', 'https://*.supabase.co', 'https://*.instagram.com'],
       fontSrc: ["'self'"],
       objectSrc: ["'none'"],
       frameSrc: ["'none'"],

@@ -438,9 +438,25 @@ export default function CreatorOnboarding() {
           }
           
           if (data.profile_photo) {
-            // Update the local state so the preview shows immediately
             setFormData(prev => ({ ...prev, profile_photo: data.profile_photo }));
-            console.log('[Onboarding] Profile photo auto-filled');
+            console.log('[Onboarding] Profile photo auto-filled from server');
+          }
+          return;
+        }
+
+        // Attempt 2: Client-side Fallback (Server is likely IP-blocked)
+        console.log('[Onboarding] Server sync failed/limited, trying client-side rescue...');
+        const oembedUrl = `https://www.instagram.com/oembed/?url=https://www.instagram.com/${cleanHandle}/&maxwidth=640`
+        const clientRes = await fetch(oembedUrl);
+        
+        if (clientRes.ok) {
+          const clientData = await clientRes.json();
+          if (clientData.author_name) {
+             if (clientData.thumbnail_url) {
+               const proxied = `https://wsrv.nl/?url=${encodeURIComponent(clientData.thumbnail_url)}&w=200&h=200&fit=cover`
+               setFormData(prev => ({ ...prev, profile_photo: proxied }));
+               console.log('[Onboarding] Client-side rescue successful for photo');
+             }
           }
         }
       } catch (err) {
