@@ -4684,7 +4684,7 @@ const BrandCollabsTab = React.memo(React.forwardRef(({
               const deliverablesSummary = formatDeliverables(item);
               let creatorMeta = item?.profiles?.username || item?.creator_name || item?.creator_email || 'Creator';
               if (item?.profiles?.username && creatorMeta === item.profiles.username) creatorMeta = `@${creatorMeta}`;
-              const creatorAvatar = item?.profiles?.avatar_url || item?.profiles?.profile_image_url || item?.profiles?.instagram_profile_photo || item?.creator_avatar_url || item?.creator_photo_url || '';
+              const creatorAvatar = item?.profiles?.instagram_profile_photo || item?.profiles?.avatar_url || item?.profiles?.profile_image_url || item?.creator_avatar_url || item?.creator_photo_url || '';
               
               if (isPendingItem && ['PENDING', 'COUNTERED', 'SENT', 'OFFER_SENT', 'SUBMITTED', 'ACTION_REQUIRED'].includes(normalizeStatus(item?.status))) {
                 const sentIso = item?.created_at || item?.updated_at || null;

@@ -768,6 +768,7 @@ const buildProfileFormData = (profile: any, userEmail?: string | null) => {
             : ['Aesthetic', 'Relatable'],
         bank_account_name: profile?.bank_account_name || '',
         instagram_followers: profile?.instagram_followers || profile?.followers_count || profile?.followers || '',
+        instagram_profile_photo: profile?.instagram_profile_photo || profile?.avatar_url || '',
         payout_upi: profile?.payout_upi || profile?.bank_upi || profile?.upi_id || 'creator@okaxis',
         deal_templates: Array.isArray(profile?.deal_templates) && profile.deal_templates.length > 0
             ? profile.deal_templates
@@ -3486,7 +3487,12 @@ const MobileDashboardDemo = ({
                             <div className="flex items-center gap-4">
                                 <motion.button
                                     whileTap={{ scale: 0.9 }}
-                                    onClick={() => { handleOpenSettings(null); setIsEditMode(false); }}
+                                    onClick={() => { 
+                                        triggerHaptic();
+                                        handleOpenSettings(null); 
+                                        setActiveSettingsPage(null); // Direct state reset for immediate UI response
+                                        setIsEditMode(false); 
+                                    }}
                                     className={cn("p-2 rounded-full transition-all", isDark ? "bg-slate-800" : "bg-white shadow-sm border border-slate-200")}
                                 >
                                     <ChevronRight className="w-5 h-5 rotate-180" />
