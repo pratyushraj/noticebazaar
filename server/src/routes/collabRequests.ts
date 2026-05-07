@@ -1376,37 +1376,39 @@ router.get('/ig-photo/:username', async (req: Request, res: Response) => {
       signal: controller.signal,
       timeout: 7000,
       headers: {
-        'User-Agent': 'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)',
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+        'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_4_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4.1 Mobile/15E148 Safari/604.1',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
+        'Accept-Language': 'en-US,en;q=0.9',
+        'Sec-Fetch-Dest': 'document',
+        'Sec-Fetch-Mode': 'navigate',
+        'Sec-Fetch-Site': 'none',
+        'Sec-Fetch-User': '?1',
+        'Upgrade-Insecure-Requests': '1',
       },
       maxRedirects: 3,
     }).finally(() => clearTimeout(timeout));
 
     const html = response.data || '';
     
-    // Debug: Log snippet to help diagnose blocking
-    if (html.length < 500) {
-      console.warn(`[IG-Rescue] Short HTML received (${html.length} chars) for @${username}: ${html}`);
-    } else {
-      console.log(`[IG-Rescue] Received HTML (${html.length} chars) for @${username}. Snippet: ${html.substring(0, 200)}...`);
-    }
+    // Debug: Log snippet
+    console.log(`[IG-Rescue] Processing ${html.length} chars for @${username}`);
+
+    // GLOBAL SEARCH: Look for anything that looks like a profile pic URL in the entire blob
+    // This is much more resilient to structural changes
+    const globalPhotoMatch = html.match(/https:\/\/[^"']+\.cdninstagram\.com\/[^"']+\.jpg[^"']*/g);
+    const profilePicUrls = globalPhotoMatch ? globalPhotoMatch.filter(url => url.includes('profile_pic') || url.includes('_n.jpg')) : [];
     
-    // Multi-pattern matching for maximum resilience
-    const photoMatch = 
-      html.match(/"profile_pic_url":"([^"]+)"/) ||
-      html.match(/"profile_pic_url_hd":"([^"]+)"/) ||
-      html.match(/property="og:image"\s+content="([^"]+)"/i) ||
-      html.match(/"thumbnail_url":"([^"]+)"/);
-      
+    // Pattern search for name
     const nameMatch = 
       html.match(/"full_name":"([^"]+)"/) ||
-      html.match(/property="og:title"\s+content="([^"]+)"/i);
+      html.match(/property="og:title"\s+content="([^"]+)"/i) ||
+      html.match(/<title>([^<]+)<\/title>/i);
 
-    if (photoMatch?.[1]) {
-      // Clean up the URL (handle escaped slashes and unicode ampersands)
-      let photoUrl = photoMatch[1].replace(/\\u0026/g, '&').replace(/\\/g, '');
+    if (profilePicUrls.length > 0) {
+      // Pick the best lookng URL (usually the longest/HD one)
+      const photoUrl = profilePicUrls.reduce((a, b) => a.length > b.length ? a : b)
+                         .replace(/\\u0026/g, '&').replace(/\\/g, '');
       
-      // Extract name (clean up if it includes "Instagram")
       let fullName = nameMatch?.[1] || null;
       if (fullName && /Instagram/i.test(fullName) && fullName.includes('•')) {
         fullName = fullName.split('•')[0].trim();
@@ -1419,8 +1421,8 @@ router.get('/ig-photo/:username', async (req: Request, res: Response) => {
     }
 
     return res.json({ photo: null, name: null });
-  } catch (err) {
-    console.error('[IG-Rescue] Error:', err);
+  } catch (err: any) {
+    console.error('[IG-Rescue] Error:', err?.message || err);
     return res.json({ photo: null, name: null });
   }
 });
