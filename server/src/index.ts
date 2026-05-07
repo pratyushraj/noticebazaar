@@ -166,6 +166,7 @@ app.use(helmet({
   // This server is consumed cross-origin by the Vite dev server (localhost:8080) and sometimes by other frontends.
   // Helmet defaults CORP to `same-origin`, which can cause browsers to block fetch/XHR even when CORS allows it.
   crossOriginResourcePolicy: false,
+  crossOriginEmbedderPolicy: false,
 }));
 // CORS configuration - allow all localhost and common development/production origins
 const corsOptions = {
