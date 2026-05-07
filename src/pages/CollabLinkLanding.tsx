@@ -3684,6 +3684,67 @@ const CollabLinkLanding = () => {
                         </p>
                       </div>
                     </div>
+
+                    {/* NEW: Detailed Audience Insights */}
+                    {(creator.audience_gender_split || (creator.top_cities && creator.top_cities.length > 0)) && (
+                      <div className="mt-8 px-6 text-left max-w-sm mx-auto">
+                        <div className="p-6 rounded-[32px] bg-slate-50 border border-slate-100/80">
+                          <h4 className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400 mb-6 flex items-center gap-2">
+                            <Target className="w-3.5 h-3.5 text-slate-300" />
+                            Audience Insights
+                          </h4>
+
+                          {/* Gender Split Bar */}
+                          {creator.audience_gender_split && (
+                            <div className="mb-6">
+                              <div className="flex justify-between text-[11px] font-black uppercase tracking-wider text-slate-600 mb-2">
+                                <span>Women {creator.audience_gender_split.split('%')[0]}%</span>
+                                <span>Men {100 - parseInt(creator.audience_gender_split)}%</span>
+                              </div>
+                              <div className="h-2 w-full bg-slate-200 rounded-full overflow-hidden flex">
+                                <div 
+                                  className="h-full bg-emerald-500" 
+                                  style={{ width: `${creator.audience_gender_split.split('%')[0]}%` }} 
+                                />
+                                <div className="h-full bg-emerald-300 flex-1" />
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Top Cities */}
+                          {creator.top_cities && creator.top_cities.length > 0 && (
+                            <div className="space-y-3">
+                              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Primary Cities</p>
+                              <div className="flex flex-wrap gap-2">
+                                {creator.top_cities.slice(0, 3).map(city => (
+                                  <span key={city} className="px-3 py-1.5 bg-white border border-slate-100 rounded-full text-[11px] font-bold text-slate-600 capitalize">
+                                    {city}
+                                  </span>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Age / Language */}
+                          {(creator.audience_age_range || creator.primary_audience_language) && (
+                            <div className="mt-6 pt-6 border-t border-slate-200/50 flex gap-6">
+                              {creator.audience_age_range && (
+                                <div>
+                                  <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1">Top Age</p>
+                                  <p className="text-[13px] font-black text-slate-700">{creator.audience_age_range}</p>
+                                </div>
+                              )}
+                              {creator.primary_audience_language && (
+                                <div>
+                                  <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1">Language</p>
+                                  <p className="text-[13px] font-black text-slate-700 capitalize">{creator.primary_audience_language}</p>
+                                </div>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
                   </div>
 
                   <div className="mt-20 text-center pb-12 border-t border-slate-100/50 pt-10">
