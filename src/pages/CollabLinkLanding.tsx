@@ -1327,20 +1327,30 @@ const CollabLinkLanding = () => {
     if (creator && creator.is_registered === false && !creator.profile_photo && creator.username) {
       const rescueProfilePhoto = async () => {
         const username = creator.username
+        console.log(`[DP Rescue] Starting backend rescue for @${username}...`)
         try {
-          // Call our own backend — server-to-server, no CORS/CSP issues
           const res = await fetch(`/api/collab/ig-photo/${username}`)
-          if (!res.ok) return
+          console.log(`[DP Rescue] Response status: ${res.status}`)
+          
+          if (!res.ok) {
+            console.warn(`[DP Rescue] Backend returned error status: ${res.status}`)
+            return
+          }
+          
           const data = await res.json()
+          console.log(`[DP Rescue] Received data:`, data)
+          
           if (data.photo) {
             setCreator(prev => prev ? {
               ...prev,
               profile_photo: data.photo,
               ...(data.name && data.name !== username ? { name: data.name } : {})
             } : null)
+          } else {
+            console.log(`[DP Rescue] Backend could not find photo for @${username}`)
           }
         } catch (e) {
-          console.warn('[DP Rescue] Failed:', e)
+          console.error('[DP Rescue] Fetch error:', e)
         }
       }
       rescueProfilePhoto()
