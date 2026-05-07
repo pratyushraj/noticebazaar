@@ -1357,6 +1357,50 @@ router.get('/lookup-brand', async (req: Request, res: Response) => {
 
 /**
  * GET /api/collab/:username
+/**
+ * Fetch Instagram profile photo server-side (no CORS/CSP issues for the client)
+ * Used by shadow profile pages to show DP for non-registered creators
+ */
+router.get('/ig-photo/:username', async (req: Request, res: Response) => {
+  try {
+    const username = normalizeHandle(req.params.username);
+    if (!username) return res.status(400).json({ photo: null });
+
+    // Try the embed page which is public and rarely blocked
+    const embedUrl = `https://www.instagram.com/${username}/embed/`;
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 7000);
+
+    const response = await axios.get(embedUrl, {
+      signal: controller.signal,
+      timeout: 7000,
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+      },
+      maxRedirects: 3,
+    }).finally(() => clearTimeout(timeout));
+
+    const html = response.data || '';
+    const photoMatch = html.match(/"profile_pic_url":"([^"]+)"/) ||
+                       html.match(/property="og:image"\s+content="([^"]+)"/i);
+    const nameMatch  = html.match(/"full_name":"([^"]+)"/);
+
+    if (photoMatch?.[1]) {
+      const photoUrl = photoMatch[1].replace(/\\u0026/g, '&').replace(/\\/g, '');
+      return res.json({
+        photo: photoUrl,
+        name: nameMatch?.[1] || null,
+      });
+    }
+
+    return res.json({ photo: null, name: null });
+  } catch (err) {
+    return res.json({ photo: null, name: null });
+  }
+});
+
+/**
  * Get creator profile info for collab link landing page
  */
 router.get('/:username', async (req: Request, res: Response) => {

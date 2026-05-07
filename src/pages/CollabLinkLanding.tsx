@@ -1328,26 +1328,15 @@ const CollabLinkLanding = () => {
       const rescueProfilePhoto = async () => {
         const username = creator.username
         try {
-          // Instagram's /embed/ endpoint is public and rarely blocked
-          const embedUrl = `https://www.instagram.com/${username}/embed/`
-          const res = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(embedUrl)}`)
+          // Call our own backend — server-to-server, no CORS/CSP issues
+          const res = await fetch(`/api/collab/ig-photo/${username}`)
+          if (!res.ok) return
           const data = await res.json()
-          const html = data.contents || ''
-
-          // The embed page contains profile_pic_url in its JSON payload
-          const photoMatch =
-            html.match(/"profile_pic_url":"([^"]+)"/) ||
-            html.match(/property="og:image"\s+content="([^"]+)"/i)
-          const nameMatch = html.match(/"full_name":"([^"]+)"/) ||
-            html.match(/"username":"([^"]+)"/)
-
-          if (photoMatch?.[1]) {
-            const rawUrl = photoMatch[1].replace(/\\u0026/g, '&').replace(/\\/g, '').replace(/&amp;/g, '&')
-            const fullName = nameMatch?.[1]?.trim()
+          if (data.photo) {
             setCreator(prev => prev ? {
               ...prev,
-              profile_photo: rawUrl,
-              ...(fullName && fullName !== username ? { name: fullName } : {})
+              profile_photo: data.photo,
+              ...(data.name && data.name !== username ? { name: data.name } : {})
             } : null)
           }
         } catch (e) {
