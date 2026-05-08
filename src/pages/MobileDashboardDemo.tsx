@@ -29,6 +29,48 @@ import { toast } from 'sonner';
 import { getApiBaseUrl } from '@/lib/utils/api';
 import { useSession } from '@/contexts/SessionContext';
 import { useDealAlertNotifications } from '@/hooks/useDealAlertNotifications';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import ProgressUpdateSheet from '@/components/deals/ProgressUpdateSheet';
+import { triggerHaptic as globalTriggerHaptic, HapticPatterns } from '@/lib/utils/haptics';
+import PremiumDrawer from '@/components/drawer/PremiumDrawer';
+import { supabase } from '@/integrations/supabase/client';
+import { DealStage, getDealStageFromStatus, STAGE_TO_PROGRESS, STAGE_TO_STATUS, useUpdateDealProgress } from '@/lib/hooks/useBrandDeals';
+import { dealPrimaryCtaButtonClass, getDealPrimaryCta, getCanonicalDealStatus } from '@/lib/deals/primaryCta';
+import { isBarterLikeCollab, isPaidLikeCollab } from '@/lib/deals/collabType';
+import { getCreatorDealCardUX, getCreatorPaymentListUX, normalizeDealStatus, inferCreatorRequiresPayment, parseDealDate, getDaysUntil } from '@/lib/utils/creator-dashboard';
+import FiverrPackageEditor from '@/components/profile/FiverrPackageEditor';
+// import { useInstagramSync } from '@/lib/hooks/useInstagramSync';
+import { optimizeImage, safeAvatarSrc, withCacheBuster } from '@/lib/utils/image';
+import { fetchPincodeData } from '@/lib/utils/pincodeLookup';
+import DealSearchFilter from '@/components/dashboard/DealSearchFilter';
+import { generateAIBios } from '@/utils/aiBioGenerator';
+import { UpiIdInput } from '@/components/ui/UpiIdInput';
+import { validateUpiId } from '@/lib/utils/upiValidation';
+import { CITY_OPTIONS } from '@/constants/cities';
+import EnhancedEmptyStates from '@/components/dashboard/EnhancedEmptyStates';
+import ActivityFeed from '@/components/dashboard/ActivityFeed';
+
+import AchievementBadges from '@/components/dashboard/AchievementBadges';
+import PaymentTimeline from '@/components/dashboard/PaymentTimeline';
+import EnhancedInsights from '@/components/dashboard/EnhancedInsights';
+import DealTimelineView from '@/components/dashboard/DealTimelineView';
+import DealComparison from '@/components/dashboard/DealComparison';
+import SmartNotificationsCenter from '@/components/dashboard/SmartNotificationsCenter';
+import DashboardMetricsCards from '@/components/dashboard/DashboardMetricsCards';
+import { usePwaInstall } from '@/hooks/usePwaInstall';
+import { useSessionTimeout } from '@/hooks/useSessionTimeout';
+import { useHealthCheck } from '@/hooks/useHealthCheck';
+import { VerificationBadge } from '@/components/ui/VerificationBadge';
+import { NotificationPermission } from '@/components/ui/NotificationPermission';
+import { ShimmerSkeleton } from '@/components/ui/ShimmerSkeleton';
+import confetti from 'canvas-confetti';
+import { uploadFile } from '@/lib/services/fileService';
+import type { PortfolioItem } from '@/types';
+import { DiscoveryVideoUpload } from '@/components/dashboard/DiscoveryVideoUpload';
+import { CreatorDiscoveryStack } from '@/components/creator-dashboard/CreatorDiscoveryStack';
+import { DisputeEscalationModal } from '@/components/deals/DisputeEscalationModal';
+import PushNotificationPrompt from '@/components/dashboard/PushNotificationPrompt';
+import { CreatorShippingConfirmationModal } from '@/components/deals/CreatorShippingConfirmationModal';
 
 const renderClickableLinks = (text: string, isDark: boolean) => {
     if (!text) return text;
@@ -55,49 +97,6 @@ const renderClickableLinks = (text: string, isDark: boolean) => {
         return part;
     });
 };
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
-import ProgressUpdateSheet from '@/components/deals/ProgressUpdateSheet';
-import { triggerHaptic as globalTriggerHaptic, HapticPatterns } from '@/lib/utils/haptics';
-import PremiumDrawer from '@/components/drawer/PremiumDrawer';
-import { supabase } from '@/integrations/supabase/client';
-import { DealStage, getDealStageFromStatus, STAGE_TO_PROGRESS, STAGE_TO_STATUS, useUpdateDealProgress } from '@/lib/hooks/useBrandDeals';
-import { dealPrimaryCtaButtonClass, getDealPrimaryCta, getCanonicalDealStatus } from '@/lib/deals/primaryCta';
-import { isBarterLikeCollab, isPaidLikeCollab } from '@/lib/deals/collabType';
-import { getCreatorDealCardUX, getCreatorPaymentListUX, normalizeDealStatus, inferCreatorRequiresPayment, parseDealDate, getDaysUntil } from '@/lib/utils/creator-dashboard';
-import FiverrPackageEditor from '@/components/profile/FiverrPackageEditor';
-// import { useInstagramSync } from '@/lib/hooks/useInstagramSync';
-import { optimizeImage, safeAvatarSrc, withCacheBuster } from '@/lib/utils/image';
-import { fetchPincodeData } from '@/lib/utils/pincodeLookup';
-
-import DealSearchFilter from '@/components/dashboard/DealSearchFilter';
-import { generateAIBios } from '@/utils/aiBioGenerator';
-import { UpiIdInput } from '@/components/ui/UpiIdInput';
-import { validateUpiId } from '@/lib/utils/upiValidation';
-import { CITY_OPTIONS } from '@/constants/cities';
-import EnhancedEmptyStates from '@/components/dashboard/EnhancedEmptyStates';
-
-import ActivityFeed from '@/components/dashboard/ActivityFeed';
-import AchievementBadges from '@/components/dashboard/AchievementBadges';
-import PaymentTimeline from '@/components/dashboard/PaymentTimeline';
-import EnhancedInsights from '@/components/dashboard/EnhancedInsights';
-import DealTimelineView from '@/components/dashboard/DealTimelineView';
-import DealComparison from '@/components/dashboard/DealComparison';
-import SmartNotificationsCenter from '@/components/dashboard/SmartNotificationsCenter';
-import DashboardMetricsCards from '@/components/dashboard/DashboardMetricsCards';
-import { usePwaInstall } from '@/hooks/usePwaInstall';
-import { useSessionTimeout } from '@/hooks/useSessionTimeout';
-import { useHealthCheck } from '@/hooks/useHealthCheck';
-import { VerificationBadge } from '@/components/ui/VerificationBadge';
-import { NotificationPermission } from '@/components/ui/NotificationPermission';
-import { ShimmerSkeleton } from '@/components/ui/ShimmerSkeleton';
-import confetti from 'canvas-confetti';
-import { uploadFile } from '@/lib/services/fileService';
-import type { PortfolioItem } from '@/types';
-import { DiscoveryVideoUpload } from '@/components/dashboard/DiscoveryVideoUpload';
-import { CreatorDiscoveryStack } from '@/components/creator-dashboard/CreatorDiscoveryStack';
-import { DisputeEscalationModal } from '@/components/deals/DisputeEscalationModal';
-import PushNotificationPrompt from '@/components/dashboard/PushNotificationPrompt';
-import { CreatorShippingConfirmationModal } from '@/components/deals/CreatorShippingConfirmationModal';
 
 interface MobileDashboardProps {
     profile?: any;
@@ -9717,6 +9716,6 @@ className={cn(
             </AnimatePresence>
         </div>
     );
-});
+};
 
 export default MobileDashboardDemo;

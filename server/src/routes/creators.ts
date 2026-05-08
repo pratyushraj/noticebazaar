@@ -257,7 +257,9 @@ router.get('/', async (req: Request, res: Response) => {
         .select(selectClause)
         .eq('role', 'creator')
         .not('username', 'is', null)
+        .neq('username', 'democreator')
         .not('discovery_video_url', 'is', null)
+        .neq('discovery_video_url', '')
         .order('created_at', { ascending: false });
 
       const usernameTerm = normalizeHandle(username);
