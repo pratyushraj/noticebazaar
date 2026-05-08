@@ -7,7 +7,6 @@ INSERT INTO public.profiles (
     instagram_handle,
     first_name, 
     role, 
-    email,
     bio, 
     location, 
     followers_count, 
@@ -21,7 +20,7 @@ INSERT INTO public.profiles (
     onboarding_complete,
     open_to_collabs,
     content_niches,
-    category
+    creator_category
 )
 VALUES (
     gen_random_uuid(), 
@@ -29,8 +28,7 @@ VALUES (
     'cutiebug2021',
     'Charandeep Kaur', 
     'creator', 
-    'charandeepckt0@gmail.com',
-    'Why is my skin looking this good lately 👀✨It’s this Red Wine Gel Mask from Wildglow doing all t', 
+    'Professional Fashion, Lifestyle & Beauty creator. Focused on high-quality aesthetic content and authentic brand storytelling.', 
     'India', 
     111000, 
     4.5, 
@@ -46,7 +44,6 @@ VALUES (
     'Fashion'
 )
 ON CONFLICT (instagram_handle) DO UPDATE SET
-    email = EXCLUDED.email,
     bio = EXCLUDED.bio,
     discovery_video_url = EXCLUDED.discovery_video_url,
     reel_price = EXCLUDED.reel_price,

@@ -8,6 +8,7 @@ import { ArrowRight, ShieldCheck, CheckCircle2, Instagram, Linkedin, Twitter, Me
 import { triggerHaptic, HapticPatterns } from '@/lib/utils/haptics';
 import { cn } from '@/lib/utils';
 import { optimizeImage } from '@/lib/utils/image';
+import { FeaturedCreators } from '@/components/discovery/FeaturedCreators';
 
 const ThreeDIllustration = lazy(() =>
   import('@/components/ui/ThreeDIllustration').then(m => ({ default: m.default }))
@@ -652,6 +653,9 @@ const LandingPage = () => {
             </div>
           </div>
         </section>
+        
+        {/* Featured Discovery Section */}
+        <FeaturedCreators />
 
         <section className="px-4 sm:px-6 max-w-[1200px] mx-auto py-16 lg:py-20">
           <div className="text-center mb-10 md:mb-14">
@@ -948,6 +952,42 @@ const LandingPage = () => {
                 </Link>
               </div>
             </div>
+          </div>
+        </section>
+
+        <section className="px-4 sm:px-6 max-w-[1200px] mx-auto py-20 lg:py-28 border-t border-[#E5E7EB]">
+          <div className="flex flex-col md:flex-row items-end justify-between gap-8 mb-12">
+            <div className="max-w-2xl">
+              <h2 className="text-3xl md:text-4xl font-black tracking-tight text-[#0F172A] mb-4">
+                Find creators across every niche
+              </h2>
+              <p className="text-lg text-[#64748B] font-medium leading-relaxed">
+                Browse our verified directory of 5,000+ Indian creators. Filter by category, platform, and audience metrics to find your perfect fit.
+              </p>
+            </div>
+            <Link 
+              to="/discover" 
+              className="group inline-flex items-center gap-2 h-14 px-8 rounded-2xl bg-[#0F172A] text-white font-black text-[15px] transition-all hover:scale-[1.02] active:scale-[0.98]"
+            >
+              Explore Full Directory
+              <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
+            </Link>
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+            {[
+              'Fashion', 'Lifestyle', 'Tech', 'Beauty', 'Food', 
+              'Travel', 'Gaming', 'Fitness', 'Entertainment', 'Education'
+            ].map((cat) => (
+              <Link 
+                key={cat}
+                to={`/discover/${cat}`}
+                className="group p-6 rounded-3xl border border-[#E5E7EB] bg-white hover:border-[#0F172A] hover:bg-[#F8FAF9] transition-all duration-300"
+              >
+                <h3 className="text-lg font-black text-[#0F172A] group-hover:text-[#16A34A] transition-colors">{cat}</h3>
+                <p className="mt-1 text-[13px] font-bold text-[#64748B]">Find influencers</p>
+              </Link>
+            ))}
           </div>
         </section>
 

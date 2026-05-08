@@ -111,15 +111,27 @@ const DiscoverCreators = () => {
     };
 
     const pageTitle = category && category !== 'all'
-        ? `Discover ${category} Creators | Creator Armour`
-        : 'Discover Verified Creators | Creator Armour Directory';
+        ? `Find Top ${category} Influencers in India | Verified Directory`
+        : 'Find Influencers in India | 5,000+ Verified Creators | Creator Armour';
 
     const metaDescription = category && category !== 'all'
-        ? `Discover verified ${category} creators and book collaborations through structured offers, package previews, and secure workflows.`
-        : 'Discover verified creators across categories and collaborate through package-based offers on Creator Armour.';
+        ? `Browse and book top ${category} influencers in India. Secure brand deals with verified creators through structured offers and automated contracts.`
+        : 'The largest verified influencer directory in India. Find creators, compare rates, and send secure brand deals directly. 5,000+ creators across 20+ niches.';
 
     const baseUrl = 'https://creatorarmour.com';
     const canonicalUrl = `${baseUrl}/discover${category && category !== 'all' ? `/${category}` : ''}`;
+
+    const itemListSchema = {
+        "@context": "https://schema.org",
+        "@type": "ItemList",
+        "itemListElement": filteredCreators.slice(0, 10).map((creator, index) => ({
+            "@type": "ListItem",
+            "position": index + 1,
+            "url": `${baseUrl}/${creator.username}`,
+            "name": creator.name
+        }))
+    };
+
 
     return (
         <div className="min-h-screen bg-[#0B0F14] text-foreground selection:bg-info/30 font-sans overflow-x-hidden">
@@ -127,10 +139,11 @@ const DiscoverCreators = () => {
                 title={pageTitle}
                 description={metaDescription}
                 keywords={[
-                    'creator discovery', 'influencer marketing platform', 'find creators India',
-                    category || 'influencers', 'secure brand deals', 'creator armour'
+                    'find influencers india', 'influencer marketing platform', 'verified creator directory',
+                    'hire influencers', 'brand collaborations', category || 'influencers', 'creator armour'
                 ]}
                 canonicalUrl={canonicalUrl}
+                jsonLd={itemListSchema}
             />
             <BreadcrumbSchema items={[
                 { name: 'Home', url: baseUrl },

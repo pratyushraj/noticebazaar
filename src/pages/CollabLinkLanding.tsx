@@ -1406,8 +1406,8 @@ const CollabLinkLanding = () => {
     ctaStepStatus === 'create'
       ? 'Choose a Service'
       : ctaStepStatus === 'next'
-        ? 'Continue to Offer'
-        : 'Send Offer'
+        ? 'Send Collab Offer'
+        : 'Send Collab Offer'
   const ctaIcon =
     ctaStepStatus === 'send' ? <Send className="h-4 w-4" /> : <Rocket className="h-4 w-4" />
   const ctaHelper =
@@ -3689,13 +3689,13 @@ const CollabLinkLanding = () => {
 
                     {/* Views & Status Overlays */}
                     <div className="absolute top-6 left-6 right-6 flex justify-between items-start z-10">
-                      <div className="bg-black/40 backdrop-blur-2xl text-white text-[10px] font-black uppercase tracking-[0.25em] px-5 py-2.5 rounded-full border border-white/20 flex items-center gap-2.5 shadow-2xl">
-                        <div className="w-2 h-2 rounded-full bg-blue-400 shadow-[0_0_8px_rgba(96,165,250,0.8)]" />
+                      <div className="bg-black/40 backdrop-blur-2xl text-white text-[10px] font-black uppercase tracking-wider px-3.5 py-2 rounded-full border border-white/20 flex items-center gap-2 shadow-2xl whitespace-nowrap">
+                        <div className="w-1.5 h-1.5 rounded-full bg-blue-400 shadow-[0_0_8px_rgba(96,165,250,0.8)]" />
                         Sample Style
                       </div>
                       
-                      <div className="bg-white/10 backdrop-blur-2xl text-white text-[10px] font-black uppercase tracking-[0.2em] px-4 py-2.5 rounded-full border border-white/20 flex items-center gap-2 shadow-2xl">
-                        <Eye className="w-3.5 h-3.5" />
+                      <div className="bg-white/10 backdrop-blur-2xl text-white text-[10px] font-black uppercase tracking-wider px-3 py-2 rounded-full border border-white/20 flex items-center gap-1.5 shadow-2xl whitespace-nowrap">
+                        <Eye className="w-3 h-3" />
                         {username === 'photowalamusafir' ? '26.0M' : (creator.avg_reel_views_manual ? 
                           (creator.avg_reel_views_manual >= 1000000 
                             ? `${(creator.avg_reel_views_manual / 1000000).toFixed(1)}M` 
@@ -5507,7 +5507,7 @@ const CollabLinkLanding = () => {
                                 ) : (
                                   <>
                                     <Send className="h-5 w-5" />
-                                    {isStep2Ready ? 'Send Offer Now' : 'Complete details to send'}
+                                    {isStep2Ready ? 'Send Collab Offer Now' : 'Complete details to send'}
                                   </>
                                 )}
                               </span>
@@ -5595,7 +5595,7 @@ const CollabLinkLanding = () => {
                                 ) : (
                                   <>
                                     <Send className="h-4 w-4" />
-                                    {isStep2Ready ? 'Send Offer' : 'Add product image'}
+                                    {isStep2Ready ? 'Send Collab Offer' : 'Add product image'}
                                     <ArrowRight className="h-4 w-4 ml-1" />
                                   </>
                                 )}
@@ -5753,27 +5753,19 @@ const CollabLinkLanding = () => {
                     </span>
                   ) : !showCustomFlow ? (
                     selectedTemplate ? (
-                      <span className="w-full flex flex-col items-center justify-center leading-tight">
-                        <span className="text-[12px] font-black">
-                          Chosen service —{' '}
-                          {selectedTemplate.type === 'barter'
-                            ? 'Free products as payment'
-                            : `₹${selectedTemplate.budget.toLocaleString('en-IN')}`}
-                        </span>
-                        <span className="mt-1 text-[12px] font-black uppercase tracking-widest flex items-center gap-2">
-                          Continue to Offer
-                          <ArrowRight className="h-4 w-4" />
-                        </span>
+                      <span className="flex items-center justify-center gap-2 text-[13px] uppercase tracking-widest font-black">
+                        Send Collab Offer
+                        <ArrowRight className="h-4 w-4" />
                       </span>
                     ) : (
                       <span className="flex items-center justify-center gap-2 text-[13px] uppercase tracking-widest">
-                        Send Offer
+                        Send Collab Offer
                         <ArrowRight className="h-4 w-4" />
                       </span>
                     )
                   ) : currentStep === 2 && hasStartedOffer ? (
                     <span className="flex items-center justify-center gap-2 text-[13px] uppercase tracking-widest">
-                      Send Offer
+                      Send Collab Offer
                       <ArrowRight className="h-4 w-4" />
                     </span>
                   ) : (

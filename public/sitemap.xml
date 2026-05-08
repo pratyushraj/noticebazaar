@@ -56,9 +56,69 @@
   </url>
   <url>
     <loc>https://creatorarmour.com/discover</loc>
-    <lastmod>2026-05-07</lastmod>
+    <lastmod>2026-05-08</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://creatorarmour.com/discover/Fashion</loc>
+    <lastmod>2026-05-08</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://creatorarmour.com/discover/Lifestyle</loc>
+    <lastmod>2026-05-08</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://creatorarmour.com/discover/Tech</loc>
+    <lastmod>2026-05-08</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://creatorarmour.com/discover/Beauty</loc>
+    <lastmod>2026-05-08</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://creatorarmour.com/discover/Food</loc>
+    <lastmod>2026-05-08</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://creatorarmour.com/discover/Travel</loc>
+    <lastmod>2026-05-08</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://creatorarmour.com/discover/Gaming</loc>
+    <lastmod>2026-05-08</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://creatorarmour.com/discover/Fitness</loc>
+    <lastmod>2026-05-08</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://creatorarmour.com/discover/Entertainment</loc>
+    <lastmod>2026-05-08</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://creatorarmour.com/discover/Education</loc>
+    <lastmod>2026-05-08</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
   </url>
   <url>
     <loc>https://creatorarmour.com/blog</loc>

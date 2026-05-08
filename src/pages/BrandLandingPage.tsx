@@ -5,6 +5,7 @@ import { ArrowRight, BadgeCheck, BriefcaseBusiness, Clock, Crown, FileText, Hand
 import { triggerHaptic, HapticPatterns } from '@/lib/utils/haptics';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
+import { FeaturedCreators } from '@/components/discovery/FeaturedCreators';
 
 const ThreeDIllustration = lazy(() =>
   import('@/components/ui/ThreeDIllustration').then(m => ({ default: m.default }))
@@ -344,6 +345,11 @@ const BrandLandingPage = () => {
               </div>
             </div>
           </section>
+          
+          {/* Featured Discovery Section */}
+          <div className="bg-white py-12 rounded-[4rem] mx-4 sm:mx-8 lg:mx-12 overflow-hidden shadow-2xl border border-white/5">
+            <FeaturedCreators />
+          </div>
 
           {/* Performance Section */}
           <section id="performance" className="py-24">
