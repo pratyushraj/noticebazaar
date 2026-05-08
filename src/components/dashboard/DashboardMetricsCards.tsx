@@ -29,10 +29,10 @@ const DashboardMetricsCards: React.FC<DashboardMetricsCardsProps> = ({
   isDark = true,
   textColor = '',
   trends = {
-    revenue: '+12%',
-    active: '+2',
+    revenue: '+0%',
+    active: '+0',
     outstanding: '−₹0',
-    duration: '−1d'
+    duration: '−0d'
   }
 }) => {
   const metrics = [

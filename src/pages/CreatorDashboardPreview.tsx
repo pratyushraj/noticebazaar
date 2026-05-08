@@ -144,7 +144,7 @@ const CreatorDashboardPreview = () => {
     const currentYear = now.getFullYear();
     
     const baseDeal = {
-      creator_id: 'demo-creator',
+      creator_id: 'creator-vibe',
       organization_id: 'demo-org',
       brand_email: null,
       contact_person: null,

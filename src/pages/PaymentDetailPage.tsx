@@ -801,6 +801,7 @@ const PaymentDetailPage = () => {
                       value={pendingUpi}
                       onChange={(e) => setPendingUpi(e.target.value)}
                       placeholder="name@oksbi"
+                      autoComplete="off"
                       className="border-white/15 bg-white/5 text-white placeholder:text-white/30"
                     />
                     <button

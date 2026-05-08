@@ -393,7 +393,7 @@ app.post('/api/demo-email/barter-accepted', async (req: express.Request, res: ex
   }
   try {
     const result = await sendCollabRequestAcceptedEmail(to, {
-      creatorName: 'Demo Creator',
+      creatorName: 'Verified Creator',
       brandName: 'Demo Brand',
       dealType: 'barter',
       deliverables: ['1 Instagram Reel', '1 Story', 'Usage Rights: 90 days'],
@@ -425,7 +425,7 @@ app.post('/api/demo-email/creator-barter', async (req: express.Request, res: exp
     const barterProductImageUrl = 'data:image/svg+xml,' + encodeURIComponent(barterProductSvg);
 
     const result = await sendCollabRequestCreatorNotificationEmail(to, {
-      creatorName: 'Demo Creator',
+      creatorName: 'Verified Creator',
       brandName: 'Demo Brand',
       collabType: 'barter',
       deliverables: ['1 Instagram Reel', '1 Story', 'Usage Rights: 90 days'],
@@ -455,7 +455,7 @@ app.post('/api/demo-email/paid-accepted', async (req: express.Request, res: expr
   }
   try {
     const result = await sendCollabRequestAcceptedEmail(to, {
-      creatorName: 'Demo Creator',
+      creatorName: 'Verified Creator',
       brandName: 'Demo Brand',
       dealType: 'paid',
       dealAmount: 15000,

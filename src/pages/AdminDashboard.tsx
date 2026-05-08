@@ -10,8 +10,12 @@ import {
   Filter, 
   ShieldCheck,
   RefreshCcw,
-  Clock
+  Clock,
+  Rocket,
+  LogOut
 } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { Link } from 'react-router-dom';
 import { getApiBaseUrl } from '@/lib/utils/api';
 import { useSession } from '@/contexts/SessionContext';
 import { toast } from 'sonner';
@@ -31,6 +35,7 @@ import {
 import { AdminFinanceView } from '@/components/admin/AdminFinanceView';
 import { AdminDealsTable } from '@/components/admin/AdminDealsTable';
 import { AdminUserDirectory } from '@/components/admin/AdminUserDirectory';
+import { EliteSetupModal } from '@/components/admin/EliteSetupModal';
 
 // --- Types ---
 type AdminTab = 'overview' | 'deals' | 'finance' | 'users' | 'activity';
@@ -38,16 +43,16 @@ type AdminTab = 'overview' | 'deals' | 'finance' | 'users' | 'activity';
 // --- Sub-Components ---
 
 const StatCard = ({ title, value, trend, trendValue, icon: Icon, color }: any) => (
-  <div className="bg-slate-900/40 backdrop-blur-xl border border-white/5 rounded-[2rem] p-6 relative overflow-hidden group">
-    <div className={cn("absolute top-0 right-0 w-32 h-32 opacity-10 rounded-full -mr-10 -mt-10 blur-3xl", color)} />
-    <div className="flex items-start justify-between mb-4">
-      <div className={cn("p-3 rounded-2xl", color.replace('bg-', 'bg-opacity-20 bg-'))}>
-        <Icon className={cn("w-6 h-6", color.replace('bg-', 'text-'))} />
+  <div className="bg-slate-900/40 backdrop-blur-xl border border-white/5 rounded-[1.5rem] md:rounded-[2rem] p-4 md:p-6 relative overflow-hidden group">
+    <div className={cn("absolute top-0 right-0 w-24 md:w-32 h-24 md:h-32 opacity-10 rounded-full -mr-8 -mt-8 md:-mr-10 md:-mt-10 blur-3xl", color)} />
+    <div className="flex items-start justify-between mb-2 md:mb-4">
+      <div className={cn("p-2 md:p-3 rounded-xl md:rounded-2xl", color.replace('bg-', 'bg-opacity-20 bg-'))}>
+        <Icon className={cn("w-4 h-4 md:w-6 md:h-6", color.replace('bg-', 'text-'))} />
       </div>
     </div>
     <div>
-      <p className="text-sm font-medium text-slate-400 mb-1">{title}</p>
-      <h3 className="text-3xl font-black text-white tracking-tight">{value}</h3>
+      <p className="text-[10px] md:text-sm font-medium text-slate-400 mb-0.5 md:mb-1">{title}</p>
+      <h3 className="text-xl md:text-3xl font-black text-white tracking-tight">{value}</h3>
     </div>
   </div>
 );
@@ -180,45 +185,64 @@ export default function AdminDashboard() {
     },
   });
 
+  const updateProfileMutation = useMutation({
+    mutationFn: async ({ userId, data }: { userId: string, data: any }) => {
+      const res = await fetch(`${getApiBaseUrl()}/api/admin/users/${userId}/profile`, {
+        method: 'PATCH',
+        headers: { 
+          Authorization: `Bearer ${session?.access_token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data),
+      });
+      if (!res.ok) throw new Error('Failed to update profile');
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin_users'] });
+      queryClient.invalidateQueries({ queryKey: ['admin_logs'] });
+    },
+  });
+
   // --- Render Sections ---
 
   const renderOverview = () => (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+      <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-5 gap-3 md:gap-6">
         <StatCard 
-          title="Gross Transaction Value" 
+          title="Gross GTV" 
           value={`₹${(metrics?.growth?.totalGTV || 0).toLocaleString()}`} 
           icon={IndianRupee} 
           color="bg-emerald-500" 
         />
         <StatCard 
-          title="Active Escrow" 
+          title="Escrow" 
           value={`₹${(metrics?.escrow?.totalVolumeLocked || 0).toLocaleString()}`} 
           icon={ShieldCheck} 
           color="bg-blue-500" 
         />
         <StatCard 
-          title="Total Signups" 
+          title="Signups" 
           value={metrics?.onboarding?.totalSignups || 0} 
           icon={Users} 
           color="bg-purple-500" 
         />
         <StatCard 
-          title="Active Deals" 
+          title="Deals" 
           value={metrics?.growth?.activeDealsCount || 0} 
           icon={Handshake} 
           color="bg-amber-500" 
         />
         <StatCard 
-          title="Approval Velocity" 
+          title="Velocity" 
           value={`${Math.round(metrics?.escrow?.averageApprovalVelocityHours || 0)}h`} 
           icon={Clock} 
           color="bg-sky-500" 
         />
       </div>
 
-      <div className="grid lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-2 bg-slate-900/40 backdrop-blur-xl border border-white/5 rounded-[2.5rem] p-8 space-y-10">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
+        <div className="lg:col-span-2 bg-slate-900/40 backdrop-blur-xl border border-white/5 rounded-[2rem] md:rounded-[2.5rem] p-4 md:p-8 space-y-6 md:space-y-10">
           <div>
             <div className="flex items-center justify-between mb-8">
               <div>
@@ -376,50 +400,76 @@ export default function AdminDashboard() {
     <div className="min-h-screen bg-[#020D0A] text-slate-200 pb-20">
       {/* Header */}
       <header className="sticky top-0 z-40 bg-[#020D0A]/80 backdrop-blur-2xl border-b border-white/5">
-        <div className="max-w-[1600px] mx-auto px-6 h-20 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-emerald-400 to-blue-500 flex items-center justify-center">
-              <ShieldCheck className="w-6 h-6 text-white" />
+        <div className="max-w-[1600px] mx-auto px-4 md:px-6 h-16 md:h-20 flex items-center justify-between">
+          <div className="flex items-center gap-2 md:gap-3">
+            <div className="w-8 h-8 md:w-10 md:h-10 rounded-xl md:rounded-2xl bg-gradient-to-br from-emerald-400 to-blue-500 flex items-center justify-center shrink-0">
+              <ShieldCheck className="w-5 h-5 md:w-6 md:h-6 text-white" />
             </div>
-            <div>
-              <h1 className="text-lg font-black text-white tracking-tight uppercase">Admin Command Center</h1>
-              <p className="text-[10px] text-slate-500 font-black tracking-widest uppercase flex items-center gap-1.5">
+            <div className="min-w-0">
+              <h1 className="text-sm md:text-lg font-black text-white tracking-tight uppercase truncate">Command Center</h1>
+              <p className="hidden md:flex text-[10px] text-slate-500 font-black tracking-widest uppercase items-center gap-1.5">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                 Live Network Status: Operational
               </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-4">
-             <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10">
-               <div className="w-6 h-6 rounded-full bg-slate-800 flex items-center justify-center text-[10px] font-black">
+          <div className="flex items-center gap-2 md:gap-4">
+            <Link 
+              to="/admin/onboard"
+              className="flex md:hidden items-center justify-center w-10 h-10 rounded-xl bg-emerald-500 text-white shadow-lg active:scale-95"
+            >
+              <Rocket className="w-5 h-5" />
+            </Link>
+
+            <Link 
+              to="/admin/onboard"
+              className="hidden md:flex items-center gap-2 px-6 py-2.5 rounded-2xl bg-emerald-500 hover:bg-emerald-400 text-white text-xs font-black uppercase tracking-widest transition-all shadow-[0_10px_20px_rgba(16,185,129,0.2)] active:scale-95"
+            >
+              <Rocket className="w-4 h-4" />
+              Quick-Launch Elite
+            </Link>
+
+             <div className="flex items-center gap-2 px-3 py-1.5 md:px-4 md:py-2 rounded-full bg-white/5 border border-white/10">
+               <div className="w-5 h-5 md:w-6 md:h-6 rounded-full bg-slate-800 flex items-center justify-center text-[8px] md:text-[10px] font-black">
                  {session?.user?.email?.charAt(0).toUpperCase()}
                </div>
-               <span className="text-xs font-bold text-slate-300">Admin Session</span>
+               <span className="text-[10px] md:text-xs font-bold text-slate-300 whitespace-nowrap">Admin</span>
              </div>
+
+             <button 
+               onClick={async () => {
+                 await supabase.auth.signOut();
+                 toast.success('Logged out successfully');
+               }}
+               className="p-2 md:p-3 rounded-xl md:rounded-2xl bg-red-500/10 border border-red-500/20 text-red-500 hover:bg-red-500 hover:text-white transition-all active:scale-95 group"
+               title="Logout"
+             >
+               <LogOut className="w-4 h-4 md:w-5 md:h-5 group-hover:rotate-12 transition-transform" />
+             </button>
           </div>
         </div>
       </header>
 
-      <main className="max-w-[1600px] mx-auto px-6 pt-10">
+      <main className="max-w-[1600px] mx-auto px-4 md:px-6 pt-6 md:pt-10">
         {/* Navigation Tabs */}
-        <div className="flex items-center gap-2 p-1.5 rounded-[1.5rem] bg-white/5 border border-white/10 w-fit mb-10 overflow-x-auto max-w-full no-scrollbar">
+        <div className="flex items-center gap-1.5 p-1 rounded-2xl md:rounded-[1.5rem] bg-white/5 border border-white/10 w-full md:w-fit mb-6 md:mb-10 overflow-x-auto no-scrollbar">
           {(['overview', 'deals', 'finance', 'users', 'activity'] as AdminTab[]).map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
               className={cn(
-                "px-6 py-2.5 rounded-2xl text-xs font-black uppercase tracking-widest transition-all duration-300 flex items-center gap-2",
+                "px-4 md:px-6 py-2 md:py-2.5 rounded-xl md:rounded-2xl text-[10px] md:text-xs font-black uppercase tracking-widest transition-all duration-300 flex items-center gap-2 whitespace-nowrap",
                 activeTab === tab 
-                  ? "bg-emerald-500 text-white shadow-[0_8px_20px_rgba(16,185,129,0.3)] scale-105" 
+                  ? "bg-emerald-500 text-white shadow-lg scale-105" 
                   : "text-slate-500 hover:text-slate-300 hover:bg-white/5"
               )}
             >
-              {tab === 'overview' && <LayoutDashboard className="w-3.5 h-3.5" />}
-              {tab === 'deals' && <Handshake className="w-3.5 h-3.5" />}
-              {tab === 'finance' && <IndianRupee className="w-3.5 h-3.5" />}
-              {tab === 'users' && <Users className="w-3.5 h-3.5" />}
-              {tab === 'activity' && <History className="w-3.5 h-3.5" />}
+              {tab === 'overview' && <LayoutDashboard className="w-3 md:w-3.5 h-3 md:h-3.5" />}
+              {tab === 'deals' && <Handshake className="w-3 md:w-3.5 h-3 md:h-3.5" />}
+              {tab === 'finance' && <IndianRupee className="w-3 md:w-3.5 h-3 md:h-3.5" />}
+              {tab === 'users' && <Users className="w-3 md:w-3.5 h-3 md:h-3.5" />}
+              {tab === 'activity' && <History className="w-3 md:w-3.5 h-3 md:h-3.5" />}
               {tab === 'finance' ? 'Finance' : tab}
             </button>
           ))}
@@ -466,6 +516,7 @@ export default function AdminDashboard() {
                  users={users} 
                  onVerify={(id) => verifyKycMutation.mutate(id)}
                  onSuspend={(id) => suspendUserMutation.mutate(id)}
+                 onUpdateProfile={(userId, data) => updateProfileMutation.mutateAsync({ userId, data })}
                />
              </div>
            )}

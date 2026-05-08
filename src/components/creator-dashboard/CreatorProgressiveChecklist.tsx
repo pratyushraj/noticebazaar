@@ -304,7 +304,7 @@ export function CreatorProgressiveChecklist({
           <div className="grid gap-4">
             <div className="space-y-2">
               <Label htmlFor="upi-id">UPI ID</Label>
-              <Input id="upi-id" value={formState.upiId} onChange={(e) => setField('upiId', e.target.value)} placeholder="yourname@oksbi" />
+              <Input id="upi-id" value={formState.upiId} onChange={(e) => setField('upiId', e.target.value)} placeholder="yourname@oksbi" autoComplete="off" />
             </div>
             <label className="flex items-center gap-3 text-sm text-muted-foreground">
               <input type="checkbox" checked={formState.takesAdvance} onChange={(e) => setField('takesAdvance', e.target.checked)} />

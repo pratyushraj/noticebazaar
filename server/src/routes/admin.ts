@@ -498,4 +498,92 @@ router.post('/users/:id/suspend', authMiddleware, adminOnly, async (req: Authent
   }
 });
 
+/**
+ * PATCH /api/admin/users/:id/profile
+ * Manually update a creator's profile (Elite Setup)
+ */
+router.patch('/users/:id/profile', authMiddleware, adminOnly, async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const userId = req.params.id;
+    const updateData = req.body;
+    const now = new Date().toISOString();
+
+    const { error } = await supabase
+      .from('profiles')
+      .update({
+        ...updateData,
+        updated_at: now
+      })
+      .eq('id', userId);
+
+    if (error) throw error;
+
+    // Log the action
+    await supabase.from('deal_action_logs').insert({
+      event: 'ADMIN_ELITE_PROFILE_SETUP',
+      user_id: req.user?.id,
+      deal_id: '00000000-0000-0000-0000-000000000000',
+      metadata: { 
+        target_user_id: userId,
+        updates: updateData 
+      }
+    });
+
+    return res.json({ success: true, message: 'Elite profile configured successfully' });
+  } catch (error: any) {
+    console.error('[AdminProfileUpdate] Error:', error);
+    return res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+/**
+ * POST /api/admin/users
+ * Create a brand new user account directly (Admin Only)
+ */
+router.post('/users', authMiddleware, adminOnly, async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const { email, username, password, full_name } = req.body;
+
+    if (!email || !username || !password) {
+      return res.status(400).json({ success: false, error: 'Email, username, and password are required' });
+    }
+
+    // 1. Create user in Auth
+    const { data: authUser, error: authError } = await supabase.auth.admin.createUser({
+      email,
+      password,
+      email_confirm: true,
+      user_metadata: { role: 'creator', full_name }
+    });
+
+    if (authError) throw authError;
+
+    // 2. Profile is usually created by a trigger, but we update it with the name and role
+    const [firstName, ...lastNameParts] = (full_name || '').split(' ');
+    const lastName = lastNameParts.join(' ');
+
+    const { error: profileError } = await supabase
+      .from('profiles')
+      .update({ 
+        username,
+        first_name: firstName || username,
+        last_name: lastName || null,
+        role: 'creator',
+        onboarding_complete: false // Initial state
+      })
+      .eq('id', authUser.user.id);
+
+    if (profileError) throw profileError;
+
+    return res.json({ 
+      success: true, 
+      message: 'User created successfully',
+      user: { id: authUser.user.id, email, username }
+    });
+  } catch (error: any) {
+    console.error('[AdminUserCreate] Error:', error);
+    return res.status(500).json({ success: false, error: error.message });
+  }
+});
+
 export default router;

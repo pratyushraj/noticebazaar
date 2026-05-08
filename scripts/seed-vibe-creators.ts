@@ -93,7 +93,7 @@ async function seed() {
   
   for (const creatorData of creators) {
     const { id, username, ...profileData } = creatorData;
-    const email = `${username}@demo.creatorarmour.com`;
+    const email = `${username}@vibe.creatorarmour.com`;
     
     console.log(`\n🔍 Processing ${username} (${email})...`);
     

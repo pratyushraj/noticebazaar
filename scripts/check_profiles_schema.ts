@@ -27,12 +27,12 @@ async function checkSchema() {
     if (rowError) {
         console.error('Select * error:', rowError);
     } else if (row) {
-        console.log('Columns in profiles:', Object.keys(row));
+        console.log('Columns in profiles:', JSON.stringify(Object.keys(row), null, 2));
     } else {
         console.log('No rows in profiles to check columns');
     }
   } else {
-    console.log('Columns in profiles:', data);
+    console.log('Columns in profiles:', JSON.stringify(data, null, 2));
   }
 }
 

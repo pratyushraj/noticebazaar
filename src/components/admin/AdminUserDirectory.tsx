@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { 
   Users, 
   ShieldCheck, 
@@ -12,6 +12,9 @@ import {
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
+import { VerifiedSetupModal } from './EliteSetupModal';
+import { Sparkles } from 'lucide-react';
+import { AnimatePresence } from 'framer-motion';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -25,9 +28,12 @@ interface AdminUserDirectoryProps {
   users: any[];
   onVerify?: (id: string) => void;
   onSuspend?: (id: string) => void;
+  onUpdateProfile?: (userId: string, data: any) => Promise<void>;
 }
 
-export const AdminUserDirectory: React.FC<AdminUserDirectoryProps> = ({ users, onVerify, onSuspend }) => {
+export const AdminUserDirectory: React.FC<AdminUserDirectoryProps> = ({ users, onVerify, onSuspend, onUpdateProfile }) => {
+  const [selectedUser, setSelectedUser] = useState<any>(null);
+  const [isVerifiedModalOpen, setIsVerifiedModalOpen] = useState(false);
   return (
     <div className="bg-slate-900/40 backdrop-blur-xl border border-white/5 rounded-[2.5rem] overflow-hidden">
       <div className="overflow-x-auto">
@@ -107,10 +113,19 @@ export const AdminUserDirectory: React.FC<AdminUserDirectoryProps> = ({ users, o
                         <DropdownMenuLabel>User Management</DropdownMenuLabel>
                         <DropdownMenuSeparator className="bg-white/5" />
                         <DropdownMenuItem className="focus:bg-white/5 cursor-pointer">
-                          <ChevronRight className="w-4 h-4 mr-2" /> View Profile
-                        </DropdownMenuItem>
-                        <DropdownMenuItem className="focus:bg-white/5 cursor-pointer">
                           <Users className="w-4 h-4 mr-2" /> View Deals
+                        </DropdownMenuItem>
+                        
+                        <DropdownMenuSeparator className="bg-white/5" />
+
+                        <DropdownMenuItem 
+                          onClick={() => {
+                            setSelectedUser(u);
+                            setIsVerifiedModalOpen(true);
+                          }}
+                          className="text-emerald-400 focus:bg-emerald-500/10 cursor-pointer"
+                        >
+                          <Sparkles className="w-4 h-4 mr-2" /> Verified Setup
                         </DropdownMenuItem>
                         
                         <DropdownMenuSeparator className="bg-white/5" />
@@ -139,6 +154,22 @@ export const AdminUserDirectory: React.FC<AdminUserDirectoryProps> = ({ users, o
           </tbody>
         </table>
       </div>
+
+      <AnimatePresence>
+        {isVerifiedModalOpen && selectedUser && (
+          <VerifiedSetupModal 
+            user={selectedUser}
+            isOpen={isVerifiedModalOpen}
+            onClose={() => {
+              setSelectedUser(null);
+              setIsVerifiedModalOpen(false);
+            }}
+            onSave={async (data) => {
+              await onUpdateProfile?.(selectedUser.id, data);
+            }}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 };

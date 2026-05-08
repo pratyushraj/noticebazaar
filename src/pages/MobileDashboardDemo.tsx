@@ -769,7 +769,7 @@ const buildProfileFormData = (profile: any, userEmail?: string | null) => {
         bank_account_name: profile?.bank_account_name || '',
         instagram_followers: profile?.instagram_followers || profile?.followers_count || profile?.followers || '',
         instagram_profile_photo: profile?.instagram_profile_photo || profile?.avatar_url || '',
-        payout_upi: profile?.payout_upi || profile?.bank_upi || profile?.upi_id || 'creator@okaxis',
+        payout_upi: profile?.payout_upi || profile?.bank_upi || profile?.upi_id || '',
         deal_templates: Array.isArray(profile?.deal_templates) && profile.deal_templates.length > 0
             ? profile.deal_templates
             : (() => {
@@ -9149,7 +9149,7 @@ const AnalyticsTab = React.memo(({
                             const s = (d.status || '').toLowerCase();
                             return s.includes('payment_pending') || s.includes('payment_awaiting');
                         }).reduce((sum: number, deal: any) => sum + (deal.deal_amount || 0), 0) || 0}
-                        avgDealDuration={brandDeals?.length > 0 ? Math.round(brandDeals.reduce((sum: number, d: any) => sum + (d.duration || 14), 0) / brandDeals.length) : 14}
+                        avgDealDuration={brandDeals?.length > 0 ? Math.round(brandDeals.reduce((sum: number, d: any) => sum + (d.duration || 14), 0) / brandDeals.length) : 0}
                         isDark={isDark}
                     />
                 )}

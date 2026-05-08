@@ -1437,9 +1437,17 @@ router.get('/:username', async (req: Request, res: Response) => {
           avg_likes_manual,
           active_brand_collabs_month,
           campaign_slot_note,
-          pincode,
-          city,
-          location
+          engagement_rate,
+          reliability_score,
+          response_hours,
+          is_verified,
+          is_elite_verified,
+          whatsapp_number,
+          conversion_rate,
+          on_time_delivery_rate,
+          reel_price,
+          story_price,
+          barter_min_value
         `)
         .eq('id', profile.id)
         .maybeSingle();
@@ -1656,7 +1664,7 @@ router.get('/:username', async (req: Request, res: Response) => {
           ? await fetchInstagramPublicData(instagramSourceHandle)
           : await getCachedInstagramPublicData(instagramSourceHandle);
 
-        if (typeof instagramData?.followers === 'number') {
+        if (typeof instagramData?.followers === 'number' && !resolvedInstagramFollowers) {
           resolvedInstagramFollowers = instagramData.followers;
         }
         if (!resolvedProfilePhoto && instagramData?.profile_photo) {
@@ -1836,6 +1844,10 @@ router.get('/:username', async (req: Request, res: Response) => {
         username: profile.username,
         category: profile.creator_category,
         platforms,
+        avg_rate_reel: (profile as any).avg_rate_reel ?? null,
+        story_price: (profile as any).story_price ?? null,
+        post_price: (profile as any).post_price ?? null,
+        starting_price: (profile as any).starting_price ?? null,
         suggested_reel_rate: suggestedReelRate,
         suggested_paid_range_min: suggestedPaidRange.min,
         suggested_paid_range_max: suggestedPaidRange.max,

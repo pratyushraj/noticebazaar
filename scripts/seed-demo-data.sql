@@ -6,10 +6,10 @@
 -- ============================================================================
 
 -- Creator 1: pratyushraj@outlook.com (existing)
--- Creator 2: demo.creator@creatorarmour.com
+-- Creator 2: test.creator@creatorarmour.com
 INSERT INTO auth.users (id, email, encrypted_password, email_confirmed_at, created_at, updated_at)
 VALUES 
-  ('00000000-0000-0000-0000-000000000001', 'demo.creator@creatorarmour.com', crypt('demo123', gen_salt('bf')), NOW(), NOW(), NOW())
+  ('00000000-0000-0000-0000-000000000001', 'test.creator@creatorarmour.com', crypt('demo123', gen_salt('bf')), NOW(), NOW(), NOW())
 ON CONFLICT (id) DO NOTHING;
 
 -- Advisor 1: Prateek Sharma (Legal)

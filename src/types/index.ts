@@ -163,6 +163,8 @@ export type Profile = Tables<'profiles'> & {
   storefront_completion?: number | null;
   manual_badge?: string | null;
   is_verified?: boolean | null;
+  is_elite_verified?: boolean | null;
+  whatsapp_number?: string | null;
   auto_pricing_enabled?: boolean | null;
   full_name?: string | null;
   pincode?: string | null;

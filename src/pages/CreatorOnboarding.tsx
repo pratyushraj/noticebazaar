@@ -216,6 +216,9 @@ export default function CreatorOnboarding() {
   const [isVerifyingOtp, setIsVerifyingOtp] = useState(false);
   const [otpSent, setOtpSent] = useState(false);
   const [isPhoneVerified, setIsPhoneVerified] = useState(false);
+  const [avgReelViews, setAvgReelViews] = useState<string>('');
+  const [brandsCount, setBrandsCount] = useState<string>('');
+  const [dealPreference, setDealPreference] = useState<'paid_only' | 'barter_only' | 'open_to_both'>('open_to_both');
 
 
   const videoInputRef = useRef<HTMLInputElement>(null);
@@ -495,6 +498,11 @@ export default function CreatorOnboarding() {
         follower_count_range: getFollowerRangeId(Number(followerCount)),
         collab_region_label: baseCity || null,
         top_cities: [topCity1, topCity2, topCity3].map(c => c.trim()).filter(Boolean),
+        performance_proof: {
+          median_reel_views: Number(avgReelViews) || null,
+          avg_likes: profile?.performance_proof?.avg_likes || null,
+          captured_at: new Date().toISOString(),
+        }
       } as any);
       return;
     }
@@ -554,6 +562,8 @@ export default function CreatorOnboarding() {
           reel_price: Number(baseRate),
           bio: creatorTitle || null,
           discovery_video_url: videoUrl,
+          collab_brands_count_override: Number(brandsCount) || null,
+          collab_deal_preference: dealPreference,
           collab_past_work_items: videoUrl ? [{
             id: crypto.randomUUID(),
             sourceUrl: videoUrl,
@@ -1152,6 +1162,30 @@ export default function CreatorOnboarding() {
                   </div>
                 </div>
 
+                {/* Average Views */}
+                <div className="space-y-3 group">
+                  <Label className="text-[10px] font-black uppercase tracking-widest text-white/30 px-1 flex justify-between group-focus-within:text-emerald-400">
+                    <span>Avg Views / Reel</span>
+                    <span className="text-emerald-500/60 lowercase tracking-normal font-medium">
+                      Estimated reach
+                    </span>
+                  </Label>
+                  <div className="relative">
+                    <div className="absolute left-6 top-1/2 -translate-y-1/2 text-white/20 group-focus-within:text-emerald-400 transition-colors">
+                      <Play className="w-6 h-6" />
+                    </div>
+                    <Input
+                      type="number"
+                      value={avgReelViews}
+                      onChange={e => setAvgReelViews(e.target.value)}
+                      onKeyDown={(e) => e.key === 'Enter' && e.currentTarget.blur()}
+                      enterKeyHint="done"
+                      placeholder="e.g. 25000"
+                      className="h-[68px] pl-14 rounded-[24px] border-white/10 bg-white/5 text-lg font-bold text-white focus:border-emerald-500/50 focus:bg-white/10 transition-all shadow-none outline-none"
+                    />
+                  </div>
+                </div>
+
                 {/* Base Location */}
                 <div className="space-y-3 group">
                   <Label className="text-[10px] font-black uppercase tracking-widest text-white/30 px-1 flex justify-between group-focus-within:text-emerald-400">
@@ -1512,6 +1546,51 @@ export default function CreatorOnboarding() {
                         )}
                       >
                         ₹{Number(val).toLocaleString()}
+                      </motion.button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Brands Count */}
+                <div className="space-y-4 group">
+                  <Label className="text-[10px] font-black uppercase tracking-widest text-white/30 px-1 block text-left group-focus-within:text-emerald-400 transition-colors">Total Brands Worked With</Label>
+                  <div className="relative">
+                    <div className="absolute left-6 top-1/2 -translate-y-1/2 text-white/20 group-focus-within:text-emerald-400 transition-colors">
+                      <Sparkles className="w-6 h-6" />
+                    </div>
+                    <Input
+                      type="number"
+                      value={brandsCount}
+                      onChange={e => setBrandsCount(e.target.value)}
+                      onKeyDown={(e) => e.key === 'Enter' && e.currentTarget.blur()}
+                      enterKeyHint="done"
+                      placeholder="e.g. 12"
+                      className="h-[68px] pl-14 rounded-[24px] border-white/10 bg-white/5 text-lg font-bold text-white focus:border-emerald-500/50 focus:bg-white/10 transition-all shadow-none outline-none"
+                    />
+                  </div>
+                </div>
+
+                {/* Deal Preference */}
+                <div className="space-y-4 text-left">
+                  <Label className="text-[10px] font-black uppercase tracking-widest text-white/30 px-1">Deal Preference</Label>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    {[
+                      { id: 'paid_only', label: 'Paid Only' },
+                      { id: 'barter_only', label: 'Barter Only' },
+                      { id: 'open_to_both', label: 'Open to Both' }
+                    ].map((pref) => (
+                      <motion.button
+                        key={pref.id}
+                        whileTap={{ scale: 0.95 }}
+                        onClick={() => { triggerHaptic?.(); setDealPreference(pref.id as any); }}
+                        className={cn(
+                          "h-14 rounded-[20px] border text-[10px] font-black uppercase tracking-widest transition-all",
+                          dealPreference === pref.id 
+                            ? "bg-emerald-500 border-emerald-400 text-white shadow-lg shadow-emerald-500/20" 
+                            : "bg-white/5 border-white/10 text-white/30 hover:bg-white/10"
+                        )}
+                      >
+                        {pref.label}
                       </motion.button>
                     ))}
                   </div>

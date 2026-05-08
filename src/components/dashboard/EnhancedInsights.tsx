@@ -30,28 +30,28 @@ const EnhancedInsights: React.FC<EnhancedInsightsProps> = ({
   const defaultInsights: DealInsight[] = [
     {
       label: 'Avg Deal Value',
-      value: '₹35K',
-      trend: 15,
+      value: '₹0',
+      trend: 0,
       icon: <TrendingUp className="w-5 h-5" />,
       color: 'from-emerald-500 to-teal-600',
     },
     {
       label: 'Deal Duration',
-      value: '18 days',
-      trend: -8,
+      value: '0 days',
+      trend: 0,
       icon: <BarChartIcon className="w-5 h-5" />,
       color: 'from-blue-500 to-cyan-600',
     },
     {
       label: 'Success Rate',
-      value: '92%',
-      trend: 5,
+      value: '0%',
+      trend: 0,
       icon: <Check className="w-5 h-5" />,
       color: 'from-purple-500 to-pink-600',
     },
     {
       label: 'Popular Platform',
-      value: 'Instagram',
+      value: 'None',
       trend: 0,
       icon: <PieChart className="w-5 h-5" />,
       color: 'from-violet-500 to-indigo-600',
@@ -302,35 +302,17 @@ const EnhancedInsights: React.FC<EnhancedInsightsProps> = ({
           </h4>
 
           <div className="space-y-2">
-            <div className={cn(
-              'flex items-start gap-2 text-xs p-2 rounded-lg',
-              isDark ? 'bg-card' : 'bg-card'
-            )}>
-              <span className="flex-shrink-0 mt-0.5">💡</span>
-              <p className={isDark ? 'text-warning/90' : 'text-amber-700 font-medium'}>
-                Your Instagram content gets 40% more engagement. Focus on that platform.
-              </p>
-            </div>
-
-            <div className={cn(
-              'flex items-start gap-2 text-xs p-2 rounded-lg',
-              isDark ? 'bg-card' : 'bg-card'
-            )}>
-              <span className="flex-shrink-0 mt-0.5">🎯</span>
-              <p className={isDark ? 'text-warning/90' : 'text-amber-700 font-medium'}>
-                Try increasing your rates by 10-15% based on recent deal values.
-              </p>
-            </div>
-
-            <div className={cn(
-              'flex items-start gap-2 text-xs p-2 rounded-lg',
-              isDark ? 'bg-card' : 'bg-card'
-            )}>
-              <span className="flex-shrink-0 mt-0.5">⚡</span>
-              <p className={isDark ? 'text-warning/90' : 'text-amber-700 font-medium'}>
-                Quick delivery (3-5 days) increases acceptances by 25%. Stay fast!
-              </p>
-            </div>
+            {recommendations.map((rec, idx) => (
+              <div key={idx} className={cn(
+                'flex items-start gap-2 text-xs p-2 rounded-lg',
+                isDark ? 'bg-card' : 'bg-card'
+              )}>
+                <span className="flex-shrink-0 mt-0.5">{rec.icon}</span>
+                <p className={isDark ? 'text-warning/90' : 'text-amber-700 font-medium'}>
+                  {rec.text}
+                </p>
+              </div>
+            ))}
           </div>
         </motion.div>
       </CardContent>

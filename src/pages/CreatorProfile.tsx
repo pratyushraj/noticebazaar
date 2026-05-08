@@ -217,7 +217,7 @@ const buildNoteValue = (preset: string, custom: string) => {
 };
 
 const ProfileSettings = () => {
-  const isDark = true; // Elite interface uses dark mode for premium aesthetic
+  const isDark = true; // Professional interface uses dark mode for aesthetic
   const navigate = useNavigate();
   const location = useLocation();
   const { profile, user, loading: sessionLoading, refetchProfile } = useSession();
@@ -1815,6 +1815,7 @@ const ProfileSettings = () => {
                 value={formData.upiId || ''}
                 onChange={(e) => setFormData(prev => ({ ...prev, upiId: e.target.value }))}
                 placeholder="yourname@upi"
+                autoComplete="off"
                 className={cn(
                   "w-full bg-transparent border-b-2 py-4 text-xl font-black tracking-tighter transition-all outline-none focus:placeholder-transparent",
                   isDark ? "border-white/10 focus:border-emerald-500 text-white" : "border-slate-200 focus:border-emerald-500 text-slate-900"
@@ -2015,7 +2016,7 @@ const ProfileSettings = () => {
           <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/5 blur-[100px] -translate-y-1/2 translate-x-1/2" />
           
           <div className="flex flex-col sm:flex-row items-center sm:items-start gap-8 relative z-10">
-            {/* Avatar - Elite Treatment */}
+            {/* Avatar Section */}
             <div className="relative group shrink-0">
               <div
                 className={cn(
@@ -2162,7 +2163,7 @@ const ProfileSettings = () => {
         {/* Identity Section */}
         {activeSection === 'profile' && (
           <div className="space-y-6">
-            {/* Elite Fundamental Dossier - Cinematic Glass */}
+            {/* Profile Details - Cinematic Glass */}
             <motion.div 
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
@@ -2334,7 +2335,7 @@ const ProfileSettings = () => {
               </div>
             </motion.div>
 
-            {/* Achievement Gallery - Elite Grid */}
+            {/* Achievement Gallery */}
             <motion.div 
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
@@ -2445,7 +2446,7 @@ const ProfileSettings = () => {
         {/* Collab Link Builder Section */}
         {activeSection === 'collab' && (
           <div className="space-y-6">
-            {/* Global Presence Module - Elite Gateway */}
+            {/* Global Presence Module */}
             <motion.div 
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
@@ -3025,7 +3026,7 @@ const ProfileSettings = () => {
               </div>
             </motion.div>
 
-            {/* Elite Command Center - Save & Logout */}
+            {/* Action Center - Save & Logout */}
             <motion.div 
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
@@ -3270,7 +3271,7 @@ const ProfileSettings = () => {
 
               <div className="space-y-3">
                 {[
-                  { icon: MessageCircle, label: 'Contact Support', sub: 'Chat with the Elite team', primary: true },
+                  { icon: MessageCircle, label: 'Contact Support', sub: 'Chat with our support team', primary: true },
                   { icon: HelpCircle, label: 'Intelligence Center', sub: 'FAQs and Protocol Guides' },
                 ].map((item, idx) => (
                   <button key={idx} className={cn(
@@ -3356,7 +3357,7 @@ const ProfileSettings = () => {
 
         {/* Final Footer Intelligence */}
         <div className="text-center pt-8 pb-4">
-          <div className={cn("text-[10px] font-black tracking-[0.3em] uppercase mb-1", isDark ? "text-white/20" : "text-slate-900/20")}>Creator Armour Elite</div>
+          <div className={cn("text-[10px] font-black tracking-[0.3em] uppercase mb-1", isDark ? "text-white/20" : "text-slate-900/20")}>Creator Armour</div>
           <div className="text-[8px] font-bold opacity-20 uppercase tracking-widest">Version 2.0.4 • Alpha Flux</div>
         </div>
 

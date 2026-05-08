@@ -69,8 +69,8 @@ async function wipeAndSeed() {
     email_confirm: true,
     user_metadata: {
       role: 'creator',
-      full_name: 'Demo Creator',
-      instagram_handle: 'demo.creator'
+      full_name: 'Verified Creator',
+      instagram_handle: 'armour_creator'
     }
   });
 
@@ -81,10 +81,10 @@ async function wipeAndSeed() {
     // Update profile
     await supabase.from('profiles').update({
       role: 'creator',
-      username: 'democreator',
-      instagram_handle: 'demo.creator',
+      username: 'armour_creator',
+      instagram_handle: 'armour_creator',
       onboarding_complete: true,
-      business_name: 'Demo Creator',
+      business_name: 'Verified Creator',
       bio: 'Fashion & Lifestyle Creator | Content Strategist',
       creator_category: 'Fashion',
       instagram_followers: 25000,
