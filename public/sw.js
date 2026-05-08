@@ -103,7 +103,7 @@ self.addEventListener('fetch', (event) => {
         cache.match(request).then((cached) => {
           if (cached) return cached;
           return fetch(request).then((response) => {
-            if (response.ok) cache.put(request, response.clone());
+            if (response.ok && response.status !== 206) cache.put(request, response.clone());
             return response;
           }).catch(() => cached || new Response(null, { status: 404 }));
         })
@@ -119,7 +119,7 @@ self.addEventListener('fetch', (event) => {
         cache.match(request).then((cached) => {
           if (cached) return cached;
           return fetch(request).then((response) => {
-            if (response.ok) cache.put(request, response.clone());
+            if (response.ok && response.status !== 206) cache.put(request, response.clone());
             return response;
           }).catch(() => cached || new Response(null, { status: 404 }));
         })
@@ -133,7 +133,7 @@ self.addEventListener('fetch', (event) => {
     event.respondWith(
       fetch(request)
         .then((response) => {
-          if (response.ok) {
+          if (response.ok && response.status !== 206) {
             const responseClone = response.clone();
             caches.open(STATIC_CACHE).then((cache) => {
               cache.put('/index.html', responseClone);
@@ -159,7 +159,7 @@ self.addEventListener('fetch', (event) => {
       cache.match(request).then((cached) => {
         const fetchPromise = fetch(request)
           .then((response) => {
-            if (response.ok && request.method === 'GET') {
+            if (response.ok && response.status !== 206 && request.method === 'GET') {
               cache.put(request, response.clone());
             }
             return response;
