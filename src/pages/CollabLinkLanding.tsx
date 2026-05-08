@@ -2782,9 +2782,11 @@ const CollabLinkLanding = () => {
   // Use clean URL for SEO (no hash)
   const canonicalUrl = `https://creatorarmour.com/${encodeURIComponent(normalizedHandle)}`
   const pageImage =
-    creator.profile_photo && /^https?:\/\//i.test(creator.profile_photo)
-      ? creator.profile_photo
-      : 'https://creatorarmour.com/og-preview.png'
+    username && ['shagufikhan_'].includes(username.toLowerCase())
+      ? `https://creatorarmour.com/og/${username.toLowerCase()}.png`
+      : creator.profile_photo && /^https?:\/\//i.test(creator.profile_photo)
+        ? creator.profile_photo
+        : 'https://creatorarmour.com/og-preview.png'
   const imageAlt = `Collaborate with ${creatorName}${creatorHandle ? ` (${creatorHandle})` : ''}`
   const seoKeywords = Array.from(
     new Set(
