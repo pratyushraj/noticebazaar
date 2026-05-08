@@ -351,7 +351,7 @@ router.get('/deals', authMiddleware, adminOnly, async (req: AuthenticatedRequest
       .from('brand_deals')
       .select(`
         *,
-        creator:profiles!creator_id (id, username, first_name, last_name, profile_photo)
+        creator:profiles!creator_id (id, username, first_name, last_name, instagram_profile_photo, avatar_url)
       `)
       .order('created_at', { ascending: false })
       .range(Number(offset), Number(offset) + Number(limit) - 1);
@@ -413,8 +413,7 @@ router.get('/logs', authMiddleware, adminOnly, async (req: AuthenticatedRequest,
     let query = supabase
       .from('deal_action_logs')
       .select(`
-        *,
-        user:profiles!user_id (id, username, first_name, last_name)
+        *
       `)
       .order('created_at', { ascending: false })
       .limit(Number(limit));
