@@ -1185,7 +1185,7 @@ const CollabLinkLanding = () => {
     if (creator) {
       if (creator.deal_templates && creator.deal_templates.length > 0) {
         const fallbackRate = (creator as any).avg_rate_reel || creator.suggested_reel_rate || 5000
-        const validatedTemplates = creator.deal_templates.slice(0, 4).map((t, i) => {
+        let validatedTemplates = creator.deal_templates.slice(0, 4).map((t, i) => {
           // If it's a barter deal or has a price, keep it
           if (t.budget > 0 || t.type === 'barter') return t
 
@@ -1198,6 +1198,26 @@ const CollabLinkLanding = () => {
           ]
           return { ...t, budget: fallbackBudgets[i] ?? 0 }
         })
+
+        // Auto-inject barter template if missing but value is set
+        const hasBarter = validatedTemplates.some(t => t.type === 'barter' || t.id.includes('barter'))
+        if (!hasBarter && creator.barter_min_value) {
+          const barterVal = creator.barter_min_value
+          validatedTemplates.push({
+            id: 'product_review_auto',
+            label: '🎁 Product Exchange',
+            icon: '🎁',
+            budget: 0,
+            type: 'barter',
+            category: creator.category || 'Lifestyle',
+            description: `Product unboxing or review. Min product value: ₹${barterVal.toLocaleString()}.`,
+            deliverables: ['Product Review / Unboxing Reel', '1 Story mention'],
+            quantities: { 'Unboxing Video': 1, Story: 1 },
+            deadlineDays: 14,
+            notes: `Product value must exceed ₹${barterVal.toLocaleString()}.`,
+          })
+        }
+
         setLocalDealTemplates(validatedTemplates)
       } else {
         // Generate Default Templates based on specific rates if available
