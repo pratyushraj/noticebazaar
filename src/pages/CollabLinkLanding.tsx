@@ -3991,8 +3991,8 @@ const CollabLinkLanding = () => {
                           icon: <TrendingUp className="w-4 h-4" /> 
                         },
                         { 
-                          label: creator.past_brand_count 
-                            ? `Worked with ${creator.past_brand_count}+ brands`
+                          label: (creator.collab_brands_count_override || creator.past_brand_count)
+                            ? `Worked with ${(creator.collab_brands_count_override || creator.past_brand_count)}+ brands`
                             : creator.past_brands?.length 
                               ? `Worked with ${creator.past_brands.length}+ brands`
                               : 'Professional Brand Experience', 
@@ -4024,18 +4024,19 @@ const CollabLinkLanding = () => {
                             ? creator.past_brands.map(name => ({ name: String(name).trim(), color: 'text-slate-900' }))
                             : username?.toLowerCase().trim() === 'salma_stylebudget'
                               ? [
-                                  { name: 'KBEAUTY', color: 'text-pink-500', font: 'font-serif' },
-                                  { name: 'MARS', color: 'text-slate-900', tracking: 'tracking-[0.3em]' },
-                                  { name: 'SWISS BEAUTY', color: 'text-rose-600', italic: true },
-                                  { name: 'WOMANCART', color: 'text-indigo-900' },
-                                  { name: 'MAMAEARTH', color: 'text-emerald-600' }
+                                  { name: 'KBEAUTY', color: 'text-pink-500' },
+                                  { name: 'MARS', color: 'text-slate-900' },
+                                  { name: 'SWISS BEAUTY', color: 'text-rose-600' },
+                                  { name: 'MAMAEARTH', color: 'text-emerald-600' },
+                                  { name: 'PONDS', color: 'text-blue-500' },
+                                  { name: 'TIRA BEAUTY', color: 'text-slate-700' }
                                 ]
                               : [
-                                  { name: 'kbeauty', color: 'text-pink-500', font: 'font-serif' },
-                                  { name: 'MARS', color: 'text-slate-900', tracking: 'tracking-[0.3em]' },
-                                  { name: 'SWISS beauty', color: 'text-rose-600', italic: true },
-                                  { name: 'womancart', color: 'text-indigo-900' },
-                                  { name: 'mamaearth', color: 'text-emerald-600' }
+                                  { name: 'kbeauty', color: 'text-pink-500' },
+                                  { name: 'MARS', color: 'text-slate-900' },
+                                  { name: 'SWISS beauty', color: 'text-rose-600' },
+                                  { name: 'mamaearth', color: 'text-emerald-600' },
+                                  { name: 'ponds', color: 'text-blue-500' }
                                 ]
                         ).map(brand => (
                           <motion.div 

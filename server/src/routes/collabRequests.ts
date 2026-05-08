@@ -1452,7 +1452,9 @@ router.get('/:username', async (req: Request, res: Response) => {
           reel_price,
           story_price,
           barter_min_value,
-          discovery_video_url
+          discovery_video_url,
+          collab_brands_count_override,
+          past_brand_count
         `)
         .eq('id', profile.id)
         .maybeSingle();
