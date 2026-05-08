@@ -221,7 +221,9 @@ router.get('/', async (req: Request, res: Response) => {
       youtube_subs,
       tiktok_followers,
       twitter_followers,
-      facebook_followers
+      facebook_followers,
+      discovery_video_url,
+      barter_min_value
     `;
     const performanceSelect = `
       followers_count,
@@ -400,6 +402,8 @@ router.get('/', async (req: Request, res: Response) => {
         on_time_delivery_rate: numberOrNull(profile.on_time_delivery_rate),
         location: profile.location || null,
         media_kit_url: profile.media_kit_url || null,
+        discovery_video_url: profile.discovery_video_url || null,
+        barter_min_value: profile.barter_min_value || null,
         badges: deriveBadges(profile, stats),
         last_instagram_sync: (profile as any).last_instagram_sync || null,
         pricing: {
@@ -465,7 +469,9 @@ router.get('/suggested', async (req: Request, res: Response) => {
       avg_likes_manual,
       open_to_collabs,
       collab_brands_count_override,
-      collab_response_hours_override
+      collab_response_hours_override,
+      discovery_video_url,
+      barter_min_value
     `;
     const performanceSelect = `
       followers_count,
@@ -651,6 +657,8 @@ router.get('/suggested', async (req: Request, res: Response) => {
         on_time_delivery_rate: numberOrNull(profile.on_time_delivery_rate),
         location: profile.location || null,
         media_kit_url: profile.media_kit_url || null,
+        discovery_video_url: profile.discovery_video_url || null,
+        barter_min_value: profile.barter_min_value || null,
         badges: deriveBadges(profile, stats),
         pricing: {
           min: stats.starting_price || (profile.pricing_min ?? null),

@@ -37,7 +37,7 @@ export const optimizeImage = (src?: string | null, options: { width?: number; he
   }
   
   // Also handle relative paths or already proxied paths
-  if (raw.startsWith('http')) return raw;
+  if (raw.startsWith('http') || raw.startsWith('/')) return raw;
   
   return undefined;
 };

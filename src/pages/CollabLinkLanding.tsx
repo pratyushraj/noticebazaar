@@ -1359,7 +1359,7 @@ const CollabLinkLanding = () => {
     // Client-side DP Rescue: Instagram blocks Render's server IPs, so we try directly
     // from the browser (which has a clean residential IP). oEmbed is Instagram's own
     // public API for embedding and is rarely blocked.
-    if (creator && creator.is_registered === false && !creator.profile_photo && creator.username) {
+    if (creator && !creator.profile_photo && creator.username) {
       const rescueProfilePhoto = async () => {
         const username = creator.username
         console.log(`[DP Rescue] Starting client-side rescue for @${username}...`)
@@ -1945,7 +1945,7 @@ const CollabLinkLanding = () => {
               if (handle) {
                 const { data: rowByUsername, error: errByUsername } = await (supabase as any)
                   .from('profiles')
-                  .select('portfolio_links, media_kit_url, discovery_video_url, portfolio_videos, avg_reel_views_manual, engagement_rate, response_hours, reliability_score, past_brands, is_verified, is_elite_verified, onboarding_complete, collab_brands_count_override, collab_response_hours_override, reel_price, story_price, barter_min_value, audience_gender_split, audience_age_range, top_cities, content_niches, primary_audience_language, posting_frequency, deal_templates, past_brand_count')
+                  .select('portfolio_links, media_kit_url, discovery_video_url, portfolio_videos, avg_reel_views_manual, engagement_rate, response_hours, reliability_score, past_brands, is_verified, is_elite_verified, onboarding_complete, collab_brands_count_override, collab_response_hours_override, reel_price, story_price, barter_min_value, audience_gender_split, audience_age_range, top_cities, content_niches, primary_audience_language, posting_frequency, deal_templates, past_brand_count, followers_count, instagram_profile_photo, avatar_url')
                   .eq('username', handle)
                   .maybeSingle()
                 if (!errByUsername && rowByUsername) {
@@ -1965,7 +1965,7 @@ const CollabLinkLanding = () => {
               if (!portfolioRow && isUuid) {
                 const { data: rowById, error: errById } = await (supabase as any)
                   .from('profiles')
-                  .select('portfolio_links, media_kit_url, discovery_video_url, portfolio_videos, avg_reel_views_manual, engagement_rate, response_hours, reliability_score, past_brands, is_verified, is_elite_verified, onboarding_complete, collab_brands_count_override, collab_response_hours_override, reel_price, story_price, barter_min_value, audience_gender_split, audience_age_range, top_cities, content_niches, primary_audience_language, posting_frequency, deal_templates, past_brand_count')
+                  .select('portfolio_links, media_kit_url, discovery_video_url, portfolio_videos, avg_reel_views_manual, engagement_rate, response_hours, reliability_score, past_brands, is_verified, is_elite_verified, onboarding_complete, collab_brands_count_override, collab_response_hours_override, reel_price, story_price, barter_min_value, audience_gender_split, audience_age_range, top_cities, content_niches, primary_audience_language, posting_frequency, deal_templates, past_brand_count, followers_count, instagram_profile_photo, avatar_url')
                   .eq('id', data.creator.id)
                   .maybeSingle()
                 if (!errById && rowById) {
@@ -2013,6 +2013,8 @@ const CollabLinkLanding = () => {
                   posting_frequency: portfolioRow.posting_frequency || prev.posting_frequency,
                   deal_templates: portfolioRow.deal_templates || prev.deal_templates,
                   past_brand_count: portfolioRow.past_brand_count !== undefined ? portfolioRow.past_brand_count : prev.past_brand_count,
+                  followers: portfolioRow.followers_count !== undefined ? portfolioRow.followers_count : prev.followers,
+                  profile_photo: portfolioRow.instagram_profile_photo || portfolioRow.avatar_url || prev.profile_photo,
                 }))
               } else {
                 console.warn('[CollabLinkLanding] No portfolio row found for creator')
@@ -3586,7 +3588,7 @@ const CollabLinkLanding = () => {
                       </div>
                       <div className="flex flex-col">
                         <span className="text-sm font-black text-slate-900 leading-none mb-1">
-                          {(creator.collab_brands_count_override || pastBrandCount || 0) >= 50 ? `${(creator.collab_brands_count_override || pastBrandCount || 0)}+` : (creator.collab_brands_count_override || pastBrandCount || 0)}
+                          {`${(creator.collab_brands_count_override || pastBrandCount || 0)}+`}
                         </span>
                         <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest leading-none">Brand Deals</span>
                       </div>
@@ -3708,16 +3710,7 @@ const CollabLinkLanding = () => {
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent pointer-events-none" />
                   </div>
                   
-                  {creator.discovery_video_url && (
-                    <div className="mt-6 p-8 rounded-[40px] bg-white border border-slate-100 shadow-xl shadow-slate-200/40 relative overflow-hidden group">
-                      <div className="absolute top-0 left-0 w-1 h-full bg-blue-500 opacity-20" />
-                      <Quote className="absolute -top-2 -right-2 w-20 h-20 text-slate-50 rotate-12 transition-transform duration-700 group-hover:rotate-0" />
-                      <p className="relative z-10 text-center text-[15px] font-bold text-slate-700 leading-relaxed italic px-4">
-                        "I focus on creating high-retention, high-engagement reels that feel authentic
-                        to my audience while driving real brand outcomes."
-                      </p>
-                    </div>
-                  )}
+
 
                   {/* 4. FEATURED CONTENT GRID */}
                   <div className="mt-16">

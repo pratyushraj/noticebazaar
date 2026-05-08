@@ -1415,6 +1415,11 @@ const MobileDashboardDemo = ({
     const [dealFilters, setDealFilters] = useState({ status: 'all', sortBy: 'newest' });
     const [isLoadingDealsLocal, setIsLoadingDeals] = useState(false);
     const [isEditMode, setIsEditMode] = useState(false);
+    const [securityPasswords, setSecurityPasswords] = useState({
+        new: '',
+        confirm: ''
+    });
+    const [isUpdatingPassword, setIsUpdatingPassword] = useState(false);
     const isLoadingDeals = isLoadingDealsOverride || isLoadingDealsLocal;
     const hasDataLoadError = Boolean(offersError || dealsError);
     const contractSectionRef = useRef<HTMLDivElement | null>(null);
@@ -2768,7 +2773,39 @@ const MobileDashboardDemo = ({
         } finally {
             setIsSavingProfile(false);
         }
+    const handlePasswordChange = async () => {
+        if (!securityPasswords.new || !securityPasswords.confirm) {
+            toast.error("Please fill in both fields");
+            return;
+        }
+        if (securityPasswords.new !== securityPasswords.confirm) {
+            toast.error("Passwords do not match");
+            return;
+        }
+        if (securityPasswords.new.length < 6) {
+            toast.error("Password must be at least 6 characters");
+            return;
+        }
+
+        setIsUpdatingPassword(true);
+        triggerHaptic(HapticPatterns.light);
+        try {
+            const { error } = await supabase.auth.updateUser({
+                password: securityPasswords.new
+            });
+            if (error) throw error;
+            toast.success("Password updated successfully!");
+            setSecurityPasswords({ new: '', confirm: '' });
+            handleOpenSettings(null);
+            triggerHaptic(HapticPatterns.success);
+        } catch (err: any) {
+            toast.error(err.message || "Failed to update password");
+            triggerHaptic(HapticPatterns.error);
+        } finally {
+            setIsUpdatingPassword(false);
+        }
     };
+
 
     const handleCopyStorefront = async () => {
         try {
@@ -5260,6 +5297,92 @@ const MobileDashboardDemo = ({
                         </div>
                     </motion.div>
                 );
+            case 'security':
+                return (
+                    <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} className="pb-20 touch-pan-y">
+                        <PageHeader
+                            title="Security"
+                            subtitle="Manage your password & access"
+                        />
+                        <div className="px-5 space-y-8">
+                            <div className={cn(
+                                "p-6 rounded-[2.5rem] border relative overflow-hidden",
+                                isDark ? "bg-[#0B1324] border-white/5 shadow-2xl" : "bg-white border-slate-200 shadow-xl shadow-slate-100/50"
+                            )}>
+                                <div className="flex items-center gap-4 mb-8">
+                                    <div className={cn("w-12 h-12 rounded-2xl flex items-center justify-center", isDark ? "bg-primary/20 text-primary" : "bg-primary text-white")}>
+                                        <LockIcon className="w-6 h-6" />
+                                    </div>
+                                    <div>
+                                        <h3 className={cn("text-lg font-black tracking-tight", textColor)}>Update Password</h3>
+                                        <p className={cn("text-xs font-medium opacity-60", textColor)}>Secure your creator profile</p>
+                                    </div>
+                                </div>
+
+                                <div className="space-y-5">
+                                    <div className="space-y-2">
+                                        <label className={cn("text-[10px] font-black uppercase tracking-widest ml-1 opacity-70", textColor)}>New Password</label>
+                                        <input
+                                            type="password"
+                                            className={cn(
+                                                "w-full p-4 rounded-2xl border transition-all outline-none",
+                                                isDark ? "bg-white/5 border-white/5 focus:border-primary/50 text-white" : "bg-slate-50 border-slate-100 focus:border-primary/50 text-slate-900"
+                                            )}
+                                            placeholder="Min. 6 characters"
+                                            value={securityPasswords.new}
+                                            onChange={(e) => setSecurityPasswords(prev => ({ ...prev, new: e.target.value }))}
+                                        />
+                                    </div>
+
+                                    <div className="space-y-2">
+                                        <label className={cn("text-[10px] font-black uppercase tracking-widest ml-1 opacity-70", textColor)}>Confirm New Password</label>
+                                        <input
+                                            type="password"
+                                            className={cn(
+                                                "w-full p-4 rounded-2xl border transition-all outline-none",
+                                                isDark ? "bg-white/5 border-white/5 focus:border-primary/50 text-white" : "bg-slate-50 border-slate-100 focus:border-primary/50 text-slate-900"
+                                            )}
+                                            placeholder="Repeat new password"
+                                            value={securityPasswords.confirm}
+                                            onChange={(e) => setSecurityPasswords(prev => ({ ...prev, confirm: e.target.value }))}
+                                        />
+                                    </div>
+
+                                    <button
+                                        onClick={handlePasswordChange}
+                                        disabled={isUpdatingPassword}
+                                        className={cn(
+                                            "w-full py-4 rounded-2xl font-black text-[13px] uppercase tracking-widest transition-all active:scale-95 shadow-xl mt-4",
+                                            isUpdatingPassword ? "opacity-70 cursor-not-allowed" : "bg-primary text-white shadow-primary/25"
+                                        )}
+                                    >
+                                        {isUpdatingPassword ? (
+                                            <div className="flex items-center justify-center gap-2">
+                                                <Loader2 className="w-4 h-4 animate-spin" />
+                                                <span>Updating...</span>
+                                            </div>
+                                        ) : (
+                                            "Update Password"
+                                        )}
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div className={cn(
+                                "p-6 rounded-[2rem] border",
+                                isDark ? "bg-[#0B1324] border-white/5" : "bg-white border-slate-200"
+                            )}>
+                                <div className="flex items-center gap-3 mb-2">
+                                    <ShieldCheck className="w-4 h-4 text-primary" />
+                                    <h4 className={cn("text-sm font-black", textColor)}>Account Protection</h4>
+                                </div>
+                                <p className={cn("text-xs font-medium opacity-60 leading-relaxed", textColor)}>
+                                    We recommend using a strong, unique password. If you notice any suspicious activity, change your password immediately.
+                                </p>
+                            </div>
+                        </div>
+                    </motion.div>
+                );
             case 'logout':
                 triggerHaptic();
                 if (signOutMutation.mutate) {
@@ -5651,7 +5774,7 @@ const MobileDashboardDemo = ({
                                         avatarFallbackUrl={avatarFallbackUrl}
                                         avatarCacheKey={profile?.last_instagram_sync || username}
                                         isPushSubscribed={isPushSubscribed}
-                                        setActiveSettingsPage={setActiveSettingsPage}
+                                        setActiveSettingsPage={handleOpenSettings}
                                         setActiveTab={setActiveTab}
                                         triggerHaptic={triggerHaptic}
                                     />

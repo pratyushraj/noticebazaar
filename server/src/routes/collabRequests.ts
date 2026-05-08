@@ -365,9 +365,10 @@ const startRegisteredCreatorBackgroundSync = (profile: any) => {
   
   // Check if current photo is external (Instagram CDN)
   const isExternalPhoto = existingPhoto && (
-    existingPhoto.includes('cdninstagram.com') || 
-    existingPhoto.includes('fbcdn.net') || 
-    !existingPhoto.includes('supabase.co')
+    (existingPhoto.includes('cdninstagram.com') || 
+     existingPhoto.includes('fbcdn.net') || 
+     !existingPhoto.includes('supabase.co')) &&
+    !existingPhoto.startsWith('/')
   );
 
   const isStale = !lastSync || (Date.now() - lastSync) > sevenDaysMs;
@@ -386,7 +387,10 @@ const startRegisteredCreatorBackgroundSync = (profile: any) => {
       if (typeof instaData.followers === 'number') updatePayload.instagram_followers = instaData.followers;
       
       // Permanently save the profile photo if it's from Instagram
-      if (instaData.profile_photo) {
+      const existingPhoto = profile.instagram_profile_photo;
+      const isLocalPhoto = existingPhoto && existingPhoto.startsWith('/');
+      
+      if (instaData.profile_photo && !isLocalPhoto) {
         const isNewExternal = instaData.profile_photo.includes('cdninstagram.com') || 
                              instaData.profile_photo.includes('fbcdn.net') ||
                              !instaData.profile_photo.includes('supabase.co');
@@ -1447,7 +1451,8 @@ router.get('/:username', async (req: Request, res: Response) => {
           on_time_delivery_rate,
           reel_price,
           story_price,
-          barter_min_value
+          barter_min_value,
+          discovery_video_url
         `)
         .eq('id', profile.id)
         .maybeSingle();

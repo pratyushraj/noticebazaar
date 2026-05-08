@@ -51,7 +51,7 @@ export const DiscoveryCard = React.forwardRef<HTMLDivElement, DiscoveryCardProps
     // Helper to ensure we have a full URL for Supabase assets
     const safeMediaUrl = (url?: string) => {
         if (!url) return '';
-        if (url.startsWith('http') || url.startsWith('blob:') || url.startsWith('data:')) return url;
+        if (url.startsWith('/') || url.startsWith('http') || url.startsWith('blob:') || url.startsWith('data:')) return url;
         // If it's a relative path, assume it's in the standard creator assets bucket
         const { data } = supabase.storage.from('creator-assets').getPublicUrl(url);
         return data.publicUrl;
@@ -203,6 +203,11 @@ export const DiscoveryCard = React.forwardRef<HTMLDivElement, DiscoveryCardProps
                         </span>
                         <span className="text-white/70 text-[12px] font-bold drop-shadow-sm">@{creator.username}</span>
                     </div>
+                    {creator.bio && (
+                        <p className="text-white/90 text-sm font-medium line-clamp-2 mt-2 drop-shadow-sm max-w-[90%]">
+                            {creator.bio}
+                        </p>
+                    )}
                 </div>
 
                 {/* Trust Signal Strip */}

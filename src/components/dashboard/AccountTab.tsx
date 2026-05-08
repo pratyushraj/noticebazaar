@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import {
     ShieldCheck, ChevronRight, Link2, Landmark, 
     Bell, User, Sun, Moon, LogOut, CheckCircle2,
-    ExternalLink, Trash2, MessageSquare
+    ExternalLink, Trash2, MessageSquare, Lock
 } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { withCacheBuster } from '@/lib/utils/image';
@@ -300,6 +300,25 @@ export const AccountTab = React.memo(({
                         </div>
                     </button>
                     
+                    <button 
+                        onClick={() => { triggerHaptic(); setActiveSettingsPage('security'); }}
+                        className="w-full p-5 flex items-center justify-between active:bg-white/5 transition-all"
+                    >
+                        <div className="flex items-center gap-4">
+                            <div className={cn(
+                                "w-10 h-10 rounded-2xl flex items-center justify-center",
+                                isDark ? "bg-white/5 text-slate-300" : "bg-slate-50 text-slate-600"
+                            )}>
+                                <Lock className="w-5 h-5" />
+                            </div>
+                            <div className="text-left">
+                                <p className={cn("text-[15px] font-bold", isDark ? "text-white" : "text-slate-900")}>Security</p>
+                                <p className={cn("text-xs font-medium", isDark ? "text-slate-400" : "text-slate-400")}>Password & Auth</p>
+                            </div>
+                        </div>
+                        <ChevronRight className={cn("w-5 h-5", isDark ? "text-white/20" : "text-slate-300")} />
+                    </button>
+
                     <button 
                         onClick={() => { triggerHaptic(); setActiveSettingsPage('personal'); }}
                         className="w-full p-5 flex items-center justify-between active:bg-white/5 transition-all"
