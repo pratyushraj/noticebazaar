@@ -2772,6 +2772,8 @@ const MobileDashboardDemo = ({
         } finally {
             setIsSavingProfile(false);
         }
+    };
+
     const handlePasswordChange = async () => {
         if (!securityPasswords.new || !securityPasswords.confirm) {
             toast.error("Please fill in both fields");
@@ -9710,12 +9712,14 @@ className={cn(
                                     );
                                 })}
                              </div>
-                        ) : <div className="p-10 text-center opacity-70 dark:opacity-40">No pending offers</div>}
+                        ) : (
+                            <div className="p-10 text-center opacity-70 dark:opacity-40">No pending offers</div>
+                        )}
                     </motion.div>
                 )}
             </AnimatePresence>
         </div>
     );
-};
+});
 
 export default MobileDashboardDemo;
