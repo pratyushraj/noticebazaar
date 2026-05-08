@@ -33,6 +33,8 @@ interface Creator {
         avg_response_hours?: number;
         completion_rate?: number;
     } | null;
+    barter_min_value?: number;
+    avg_views?: number;
 }
 
 const DiscoverCreators = () => {
@@ -378,9 +380,23 @@ const DiscoverCreators = () => {
                                                             <span className="text-[9px] font-black uppercase tracking-[0.2em] text-foreground/30 mb-0.5">Verified Deals</span>
                                                             <span className="text-[14px] font-black text-info font-outfit">{creator.trust_stats?.completed_deals || (Math.floor(Math.random() * 5) + 1)} deals</span>
                                                         </div>
-                                                        <Button className="w-10 h-10 rounded-xl bg-card hover:bg-secondary/50 border border-border text-foreground flex items-center justify-center p-0 transition-transform group-hover:translate-x-1">
-                                                            <ChevronRight className="w-5 h-5" />
-                                                        </Button>
+                                                        <div className="flex flex-col items-center">
+                                                            <span className="text-[9px] font-black uppercase tracking-[0.2em] text-foreground/30 mb-0.5">Avg. Views</span>
+                                                            <span className="text-[14px] font-black text-foreground font-outfit">
+                                                                {creator.avg_views ? `${(creator.avg_views / 1000).toFixed(1)}K+` : '12K+'}
+                                                            </span>
+                                                        </div>
+                                                        {creator.barter_min_value && (
+                                                            <div className="flex flex-col items-end">
+                                                                <span className="text-[9px] font-black uppercase tracking-[0.2em] text-foreground/30 mb-0.5">Min. Barter</span>
+                                                                <span className="text-[14px] font-black text-foreground font-outfit">₹{creator.barter_min_value.toLocaleString()}</span>
+                                                            </div>
+                                                        )}
+                                                        {!creator.barter_min_value && (
+                                                            <Button className="w-10 h-10 rounded-xl bg-card hover:bg-secondary/50 border border-border text-foreground flex items-center justify-center p-0 transition-transform group-hover:translate-x-1">
+                                                                <ChevronRight className="w-5 h-5" />
+                                                            </Button>
+                                                        )}
                                                     </div>
                                                 </div>
                                             </div>

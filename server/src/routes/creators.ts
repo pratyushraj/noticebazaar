@@ -88,9 +88,9 @@ const deriveAvailabilityStatus = (profile: any) => {
 const isCreatorDiscoverable = (profile: any, stats: any) => {
   const checks = [
     Boolean(String(profile?.username || profile?.instagram_handle || '').trim()),
-    Boolean(String(profile?.creator_category || '').trim()),
+    Boolean(String(profile?.category || profile?.creator_category || '').trim()),
     Number(stats?.starting_price || 0) > 0,
-    Number(profile?.instagram_followers ?? profile?.followers_count ?? 0) > 0 || Number(stats?.avg_views || 0) > 0,
+    Number(profile?.followers ?? profile?.instagram_followers ?? profile?.followers_count ?? 0) > 0 || Number(stats?.avg_views || 0) > 0,
     Boolean(String(profile?.media_kit_url || '').trim()) || Number(stats?.completed_deals || 0) > 0,
   ];
 
@@ -257,6 +257,7 @@ router.get('/', async (req: Request, res: Response) => {
         .select(selectClause)
         .eq('role', 'creator')
         .not('username', 'is', null)
+        .not('discovery_video_url', 'is', null)
         .order('created_at', { ascending: false });
 
       const usernameTerm = normalizeHandle(username);

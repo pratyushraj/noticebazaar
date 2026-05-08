@@ -654,6 +654,7 @@ const LandingPage = () => {
           </div>
         </section>
         
+        
         {/* Featured Discovery Section */}
         <FeaturedCreators />
 

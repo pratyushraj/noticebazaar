@@ -208,6 +208,7 @@ interface Creator {
   reliability_score?: number | null
   is_verified?: boolean | null
   is_elite_verified?: boolean | null
+  barter_min_value?: number | null
 }
 
 interface DealTemplate {
@@ -1202,7 +1203,7 @@ const CollabLinkLanding = () => {
         // Generate Default Templates based on specific rates if available
         const reelPrice = (creator as any).reel_price || (creator as any).avg_rate_reel || creator.suggested_reel_rate || 5000
         const storyPrice = (creator as any).story_price || Math.round(reelPrice * 0.3)
-        const barterMinValue = (creator as any).barter_min_value || Math.round(reelPrice * 1.5)
+        const barterMinValue = creator.barter_min_value || Math.round(reelPrice * 1.5)
 
         const defaultTemplates: DealTemplate[] = [
           {
