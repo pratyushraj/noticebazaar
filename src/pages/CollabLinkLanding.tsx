@@ -2015,7 +2015,7 @@ const CollabLinkLanding = () => {
                   deal_templates: portfolioRow.deal_templates || prev.deal_templates,
                   past_brand_count: portfolioRow.past_brand_count !== undefined ? portfolioRow.past_brand_count : prev.past_brand_count,
                   followers: portfolioRow.followers_count !== undefined ? portfolioRow.followers_count : prev.followers,
-                  profile_photo: portfolioRow.instagram_profile_photo || portfolioRow.avatar_url || prev.profile_photo,
+                  profile_photo: portfolioRow.avatar_url || portfolioRow.instagram_profile_photo || prev.profile_photo,
                 }))
               } else {
                 console.warn('[CollabLinkLanding] No portfolio row found for creator')
