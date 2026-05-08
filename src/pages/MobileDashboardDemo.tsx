@@ -830,7 +830,6 @@ const buildProfileFormData = (profile: any, userEmail?: string | null) => {
         // NEW: Discovery Media
         discovery_video_url: profile?.discovery_video_url || null,
         portfolio_videos: Array.isArray(profile?.portfolio_videos) ? profile.portfolio_videos : [],
-        instagram_profile_photo: profile?.instagram_profile_photo || profile?.avatar_url || null,
     };
 };
 
