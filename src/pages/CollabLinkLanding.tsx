@@ -3485,17 +3485,7 @@ const CollabLinkLanding = () => {
                       </Avatar>
                     </div>
 
-                    {/* Floating Verified Badge - High Contrast Premium */}
-                    <motion.div
-                      initial={{ scale: 0, rotate: -20 }}
-                      animate={{ scale: 1, rotate: 0 }}
-                      transition={{ delay: 0.5, type: 'spring' }}
-                      className="absolute -bottom-1 -right-1 w-9 h-9 rounded-2xl bg-white shadow-2xl flex items-center justify-center border border-slate-100 z-20"
-                    >
-                      <div className="w-7 h-7 rounded-full bg-blue-500 flex items-center justify-center shadow-lg shadow-blue-500/30">
-                        <BadgeCheck className="w-4 h-4 text-white fill-white" />
-                      </div>
-                    </motion.div>
+
                   </motion.div>
                   
                   {/* Online Indicator Pulse - Enhanced with Label */}
