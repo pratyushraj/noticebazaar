@@ -2781,8 +2781,9 @@ const CollabLinkLanding = () => {
 
   // Use clean URL for SEO (no hash)
   const canonicalUrl = `https://creatorarmour.com/${encodeURIComponent(normalizedHandle)}`
+  const CUSTOM_OG_USERNAMES = ['shagufikhan_', 'salmastyle', 'photowalamusafir', 'democreator']
   const pageImage =
-    username && ['shagufikhan_'].includes(username.toLowerCase())
+    username && CUSTOM_OG_USERNAMES.includes(username.toLowerCase())
       ? `https://creatorarmour.com/og/${username.toLowerCase()}.png`
       : creator.profile_photo && /^https?:\/\//i.test(creator.profile_photo)
         ? creator.profile_photo
