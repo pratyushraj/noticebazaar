@@ -1945,7 +1945,7 @@ const CollabLinkLanding = () => {
               if (handle) {
                 const { data: rowByUsername, error: errByUsername } = await (supabase as any)
                   .from('profiles')
-                  .select('portfolio_links, media_kit_url, discovery_video_url, portfolio_videos, avg_reel_views_manual, engagement_rate, response_hours, reliability_score, past_brands, is_verified, is_elite_verified, onboarding_complete, collab_brands_count_override, collab_response_hours_override, reel_price, story_price, barter_min_value')
+                  .select('portfolio_links, media_kit_url, discovery_video_url, portfolio_videos, avg_reel_views_manual, engagement_rate, response_hours, reliability_score, past_brands, is_verified, is_elite_verified, onboarding_complete, collab_brands_count_override, collab_response_hours_override, reel_price, story_price, barter_min_value, audience_gender_split, audience_age_range, top_cities, content_niches, primary_audience_language, posting_frequency, deal_templates, past_brand_count')
                   .eq('username', handle)
                   .maybeSingle()
                 if (!errByUsername && rowByUsername) {
@@ -1965,7 +1965,7 @@ const CollabLinkLanding = () => {
               if (!portfolioRow && isUuid) {
                 const { data: rowById, error: errById } = await (supabase as any)
                   .from('profiles')
-                  .select('portfolio_links, media_kit_url, discovery_video_url, portfolio_videos, avg_reel_views_manual, engagement_rate, response_hours, reliability_score, past_brands, is_verified, is_elite_verified, onboarding_complete, collab_brands_count_override, collab_response_hours_override, reel_price, story_price, barter_min_value')
+                  .select('portfolio_links, media_kit_url, discovery_video_url, portfolio_videos, avg_reel_views_manual, engagement_rate, response_hours, reliability_score, past_brands, is_verified, is_elite_verified, onboarding_complete, collab_brands_count_override, collab_response_hours_override, reel_price, story_price, barter_min_value, audience_gender_split, audience_age_range, top_cities, content_niches, primary_audience_language, posting_frequency, deal_templates, past_brand_count')
                   .eq('id', data.creator.id)
                   .maybeSingle()
                 if (!errById && rowById) {
@@ -2005,6 +2005,14 @@ const CollabLinkLanding = () => {
                   reel_price: portfolioRow.reel_price !== undefined ? portfolioRow.reel_price : prev.reel_price,
                   story_price: portfolioRow.story_price !== undefined ? portfolioRow.story_price : prev.story_price,
                   barter_min_value: portfolioRow.barter_min_value !== undefined ? portfolioRow.barter_min_value : prev.barter_min_value,
+                  audience_gender_split: portfolioRow.audience_gender_split || prev.audience_gender_split,
+                  audience_age_range: portfolioRow.audience_age_range || prev.audience_age_range,
+                  top_cities: portfolioRow.top_cities || prev.top_cities,
+                  content_niches: portfolioRow.content_niches || prev.content_niches,
+                  primary_audience_language: portfolioRow.primary_audience_language || prev.primary_audience_language,
+                  posting_frequency: portfolioRow.posting_frequency || prev.posting_frequency,
+                  deal_templates: portfolioRow.deal_templates || prev.deal_templates,
+                  past_brand_count: portfolioRow.past_brand_count !== undefined ? portfolioRow.past_brand_count : prev.past_brand_count,
                 }))
               } else {
                 console.warn('[CollabLinkLanding] No portfolio row found for creator')
@@ -2307,6 +2315,10 @@ const CollabLinkLanding = () => {
       newErrors.brandEmail = 'Enter your email'
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(brandEmail)) {
       newErrors.brandEmail = 'Enter a valid email'
+    }
+
+    if (!brandInstagram.trim()) {
+      newErrors.brandInstagram = 'Enter your brand Instagram handle'
     }
 
     if (!campaignGoal) {
@@ -3495,9 +3507,18 @@ const CollabLinkLanding = () => {
                   </div>
                 </div>
 
-                <h1 className="text-5xl font-black text-slate-900 mb-2 tracking-tight text-center premium-text-gradient">
+                <h1 className="text-5xl font-black text-slate-900 mb-1 tracking-tight text-center premium-text-gradient">
                   {displayCreatorName}
                 </h1>
+                <div className="flex flex-col items-center mb-4">
+                  {username === 'photowalamusafir' ? (
+                    <p className="text-[13px] font-black text-slate-500 uppercase tracking-[0.15em] mb-1">Visual Storytelling Creator</p>
+                  ) : (creator.category || (creator as any).content_niches?.[0]) && (
+                    <p className="text-[13px] font-black text-slate-500 uppercase tracking-[0.15em] mb-1">
+                      {creator.category || (creator as any).content_niches?.[0]} Creator
+                    </p>
+                  )}
+                </div>
                 <div className="flex flex-col items-center gap-2 mb-6">
                   <div className="flex items-center gap-2">
                     <h2 className="text-[13px] font-black text-slate-400 uppercase tracking-[0.25em]">
@@ -3535,12 +3556,12 @@ const CollabLinkLanding = () => {
 
                 {/* Social Proof Stat Pills */}
                 {/* Social Proof Stat Pills */}
-                <div className="flex justify-center flex-wrap gap-3 mt-6">
+                <div className="flex items-center justify-start sm:justify-center gap-2 mt-6 overflow-x-auto no-scrollbar pb-2 px-4 -mx-4">
                   <motion.div 
                     initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ delay: 0.4 }}
-                    className="px-5 py-3 rounded-3xl bg-slate-900 shadow-2xl shadow-slate-900/20 flex items-center gap-3 border border-white/10"
+                    className="px-3.5 py-2.5 rounded-3xl bg-slate-900 shadow-2xl shadow-slate-900/20 flex items-center gap-2 border border-white/10 shrink-0"
                   >
                     <div className="w-8 h-8 rounded-xl bg-white/10 flex items-center justify-center">
                       <Eye className="w-4 h-4 text-emerald-400" />
@@ -3558,14 +3579,14 @@ const CollabLinkLanding = () => {
                       initial={{ opacity: 0, scale: 0.9 }}
                       animate={{ opacity: 1, scale: 1 }}
                       transition={{ delay: 0.5 }}
-                      className="px-5 py-3 rounded-3xl bg-white border border-slate-100 shadow-lg shadow-slate-200/50 flex items-center gap-3"
+                      className="px-3.5 py-2.5 rounded-3xl bg-white border border-slate-100 shadow-lg shadow-slate-200/50 flex items-center gap-2 shrink-0"
                     >
                       <div className="w-8 h-8 rounded-xl bg-slate-50 flex items-center justify-center">
                         <Briefcase className="w-4 h-4 text-slate-600" />
                       </div>
                       <div className="flex flex-col">
                         <span className="text-sm font-black text-slate-900 leading-none mb-1">
-                          {creator.collab_brands_count_override || pastBrandCount || 0}
+                          {(creator.collab_brands_count_override || pastBrandCount || 0) >= 50 ? `${(creator.collab_brands_count_override || pastBrandCount || 0)}+` : (creator.collab_brands_count_override || pastBrandCount || 0)}
                         </span>
                         <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest leading-none">Brand Deals</span>
                       </div>
@@ -3576,7 +3597,7 @@ const CollabLinkLanding = () => {
                     initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ delay: 0.6 }}
-                    className="px-5 py-3 rounded-3xl bg-white border border-slate-100 shadow-lg shadow-slate-200/50 flex items-center gap-3"
+                    className="px-3.5 py-2.5 rounded-3xl bg-white border border-slate-100 shadow-lg shadow-slate-200/50 flex items-center gap-2 shrink-0"
                   >
                     <div className="w-8 h-8 rounded-xl bg-amber-50 flex items-center justify-center">
                       <Clock className="w-4 h-4 text-amber-500" />
@@ -4876,17 +4897,13 @@ const CollabLinkLanding = () => {
                                   onChange={e => setBrandInstagram(e.target.value)}
                                   onKeyDown={e => e.key === 'Enter' && e.currentTarget.blur()}
                                   enterKeyHint="done"
-                                  placeholder="@brand_instagram (optional)"
+                                  placeholder="@brand_instagram"
                                   className="h-12 px-4 rounded-xl border-white bg-white font-semibold text-[14px] text-slate-900 placeholder:text-slate-500 shadow-sm focus-visible:ring-2 focus-visible:ring-emerald-500/30 transition-all"
                                 />
                               </>
                             )}
 
-                            {!useBrandProfile && (
-                              <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-[11px] font-medium text-slate-500">
-                                Brand pincode is no longer required here. We’ll auto-detect it from your brand profile when available.
-                              </div>
-                            )}
+
 
                             {(useBrandProfile || lookupStatus === 'found') && (
                               <Button

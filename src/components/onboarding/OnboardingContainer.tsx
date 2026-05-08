@@ -28,12 +28,10 @@ export const OnboardingContainer: React.FC<OnboardingContainerProps> = ({
 }) => {
   // Lock body scroll on mount, unlock on unmount
   useEffect(() => {
-    if (allowScroll) return;
-
     const originalOverflow = window.getComputedStyle(document.body).overflow;
     const originalPosition = window.getComputedStyle(document.body).position;
 
-    // Prevent body scroll
+    // Prevent body scroll - container handles its own scroll
     document.body.style.overflow = 'hidden';
     document.body.style.position = 'fixed';
     document.body.style.width = '100%';
@@ -51,14 +49,12 @@ export const OnboardingContainer: React.FC<OnboardingContainerProps> = ({
       document.documentElement.style.overscrollBehavior = '';
       document.body.style.overscrollBehavior = '';
     };
-  }, [allowScroll]);
+  }, []);
 
   return (
     <div
       className={cn(
-        allowScroll
-          ? "relative w-full min-h-[100dvh]"
-          : "fixed inset-0 w-full h-[100dvh] min-h-[100dvh] max-h-[100dvh]",
+        "fixed inset-0 w-full h-[100dvh] min-h-[100dvh] max-h-[100dvh]",
 
         // Background
         theme === 'dark'

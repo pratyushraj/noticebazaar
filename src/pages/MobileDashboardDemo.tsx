@@ -5984,20 +5984,33 @@ const MobileDashboardDemo = ({
                                             >
                                                 <ChevronLeft className="w-5 h-5" />
                                             </button>
-                                            <div className="flex flex-col min-w-0">
-                                                <span className={cn("text-[16px] font-black tracking-tighter whitespace-nowrap", textColor)}>
-                                                    {selectedItem.company_name || selectedItem.brand_name || selectedItem.brand?.name || selectedItem.raw?.brand_name || 'Brand Partner'}
-                                                </span>
-                                                <div className="flex items-center gap-2">
-                                                    <div className={cn(
-                                                        "w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]",
-                                                        getCanonicalDealStatus(selectedItem) !== 'COMPLETED' && "animate-pulse"
-                                                    )} />
-                                                    <p className={cn("text-[11px] font-black uppercase tracking-[0.15em] opacity-70 dark:opacity-40", textColor)}>
-                                                        {getCanonicalDealStatus(selectedItem) === 'COMPLETED' ? 'Completed' : 'Collaboration'}
-                                                    </p>
+                                                <div className="flex flex-col min-w-0">
+                                                    <span className={cn("text-[16px] font-black tracking-tighter whitespace-nowrap", textColor)}>
+                                                        {selectedItem.company_name || selectedItem.brand_name || selectedItem.brand?.name || selectedItem.raw?.brand_name || 'Brand Partner'}
+                                                    </span>
+                                                    <div className="flex items-center gap-3">
+                                                        {(selectedItem.brand_instagram || selectedItem.raw?.brand_instagram) && (
+                                                            <a 
+                                                                href={`https://instagram.com/${String(selectedItem.brand_instagram || selectedItem.raw?.brand_instagram).replace(/^@/, '')}`}
+                                                                target="_blank"
+                                                                rel="noopener noreferrer"
+                                                                className={cn("text-[10px] font-black uppercase tracking-widest opacity-60 hover:opacity-100 transition-opacity flex items-center gap-1.5", textColor)}
+                                                                onClick={(e) => e.stopPropagation()}
+                                                            >
+                                                                <Instagram className="w-2.5 h-2.5" /> @{String(selectedItem.brand_instagram || selectedItem.raw?.brand_instagram).replace(/^@/, '')}
+                                                            </a>
+                                                        )}
+                                                        <div className="flex items-center gap-2">
+                                                            <div className={cn(
+                                                                "w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]",
+                                                                getCanonicalDealStatus(selectedItem) !== 'COMPLETED' && "animate-pulse"
+                                                            )} />
+                                                            <p className={cn("text-[11px] font-black uppercase tracking-[0.15em] opacity-70 dark:opacity-40", textColor)}>
+                                                                {getCanonicalDealStatus(selectedItem) === 'COMPLETED' ? 'Completed' : 'Collaboration'}
+                                                            </p>
+                                                        </div>
+                                                    </div>
                                                 </div>
-                                            </div>
                                         </div>
                                         <button type="button"
                                             onClick={() => { triggerHaptic(); setShowItemMenu(true); }}
@@ -6188,19 +6201,29 @@ const MobileDashboardDemo = ({
                                                                             </button>
                                                                             {showBrief && (
                                                                                 <div className="px-6 pb-6">
+                                                                                    {/* Campaign Category Badge */}
+                                                                                    {(selectedItem.campaign_category || selectedItem.raw?.campaign_category) && (
+                                                                                        <div className={cn("inline-flex items-center gap-2 px-4 py-2 rounded-2xl border mb-6", isDark ? "bg-white/5 border-white/10" : "bg-slate-50 border-slate-100")}>
+                                                                                            <Tag className="w-3.5 h-3.5 opacity-50" />
+                                                                                            <span className="text-[10px] font-black uppercase tracking-widest opacity-50">Category:</span>
+                                                                                            <span className={cn("text-[13px] font-black", textColor)}>{selectedItem.campaign_category || selectedItem.raw?.campaign_category}</span>
+                                                                                        </div>
+                                                                                    )}
+
+                                                                                    {/* Show campaign description / other requirements */}
                                                                                     {!isStringList && (
                                                                                         <p className={cn("text-[15px] font-medium leading-relaxed opacity-70 mb-6 whitespace-pre-wrap px-1", textColor)}>
                                                                                             {renderClickableLinks(cleanDesc, isDark)}
                                                                                         </p>
                                                                                     )}
 
-                                                                                    {extractedOtherNeeds && (
+                                                                                    {((extractedOtherNeeds) || (isStringList && cleanDesc && cleanDesc !== "Professional collaboration focused on high-quality content and audience engagement.")) && (
                                                                                         <div className={cn("mb-6 p-5 rounded-3xl border", isDark ? "bg-amber-500/5 border-amber-500/10" : "bg-amber-50 border-amber-100")}>
                                                                                             <p className={cn("text-[10px] font-black uppercase tracking-widest mb-2 flex items-center gap-2", isDark ? "text-amber-400" : "text-amber-700")}>
                                                                                                 <Plus className="w-3 h-3" /> Other Requirements
                                                                                             </p>
                                                                                             <p className={cn("text-[14px] font-semibold leading-relaxed", textColor)}>
-                                                                                                {renderClickableLinks(extractedOtherNeeds, isDark)}
+                                                                                                {renderClickableLinks(extractedOtherNeeds || cleanDesc, isDark)}
                                                                                             </p>
                                                                                         </div>
                                                                                     )}
@@ -6251,45 +6274,43 @@ const MobileDashboardDemo = ({
                                                                                             )}
                                                                                         </div>
 
-                                                                                        {!isStringList && (
-                                                                                            <>
-                                                                                                {requirementsList.length > 0 && (
-                                                                                                    <>
-                                                                                                       <p className={cn("text-[11px] font-black uppercase tracking-[0.3em] opacity-70 dark:opacity-40 mb-5 px-1", textColor)}>2. REQUIREMENTS</p>
-                                                                                                       <div className="space-y-5 mb-10">
-                                                                                                           {requirementsList.map((req, i) => (
-                                                                                                               <div key={i} className="flex items-center gap-4">
-                                                                                                                   <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0">
-                                                                                                                       <Check className="w-3.5 h-3.5 text-emerald-500" strokeWidth={4} />
-                                                                                                                   </div>
-                                                                                                                   <p className={cn("text-[15px] font-bold tracking-tight opacity-80", textColor)}>{req}</p>
+                                                                                        <div className="space-y-4">
+                                                                                            {requirementsList.length > 0 && (
+                                                                                                <>
+                                                                                                   <p className={cn("text-[11px] font-black uppercase tracking-[0.3em] opacity-70 dark:opacity-40 mb-5 px-1", textColor)}>2. REQUIREMENTS</p>
+                                                                                                   <div className="space-y-5 mb-10">
+                                                                                                       {requirementsList.map((req, i) => (
+                                                                                                           <div key={i} className="flex items-center gap-4">
+                                                                                                               <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0">
+                                                                                                                   <Check className="w-3.5 h-3.5 text-emerald-500" strokeWidth={4} />
                                                                                                                </div>
-                                                                                                           ))}
-                                                                                                       </div>
-                                                                                                    </>
-                                                                                                )}
+                                                                                                               <p className={cn("text-[15px] font-bold tracking-tight opacity-80", textColor)}>{req}</p>
+                                                                                                           </div>
+                                                                                                       ))}
+                                                                                                   </div>
+                                                                                                </>
+                                                                                            )}
 
-                                                                                                <p className={cn("text-[11px] font-black uppercase tracking-[0.3em] opacity-70 dark:opacity-40 mb-5 px-1", textColor)}>3. USAGE RIGHTS</p>
-                                                                                                <div className="space-y-5">
-                                                                                                    {usageDuration && (
-                                                                                                        <div className="flex items-center gap-4">
-                                                                                                            <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0">
-                                                                                                                <Check className="w-3.5 h-3.5 text-emerald-500" strokeWidth={4} />
-                                                                                                            </div>
-                                                                                                            <p className={cn("text-[15px] font-bold tracking-tight", textColor)}>{usageDuration} Usage</p>
-                                                                                                        </div>
-                                                                                                    )}
+                                                                                            <p className={cn("text-[11px] font-black uppercase tracking-[0.3em] opacity-70 dark:opacity-40 mb-5 px-1", textColor)}>3. USAGE RIGHTS</p>
+                                                                                            <div className="space-y-5">
+                                                                                                {usageDuration && (
                                                                                                     <div className="flex items-center gap-4">
                                                                                                         <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0">
                                                                                                             <Check className="w-3.5 h-3.5 text-emerald-500" strokeWidth={4} />
                                                                                                         </div>
-                                                                                                        <p className={cn("text-[15px] font-bold tracking-tight", textColor)}>
-                                                                                                            {isExchange ? "No paid whitelist rights" : "Whitelisting rights included"}
-                                                                                                        </p>
+                                                                                                        <p className={cn("text-[15px] font-bold tracking-tight", textColor)}>{usageDuration} Usage</p>
                                                                                                     </div>
+                                                                                                )}
+                                                                                                <div className="flex items-center gap-4">
+                                                                                                    <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0">
+                                                                                                        <Check className="w-3.5 h-3.5 text-emerald-500" strokeWidth={4} />
+                                                                                                    </div>
+                                                                                                    <p className={cn("text-[15px] font-bold tracking-tight", textColor)}>
+                                                                                                        {isExchange ? "No paid whitelist rights" : "Whitelisting rights included"}
+                                                                                                    </p>
                                                                                                 </div>
-                                                                                            </>
-                                                                                        )}
+                                                                                            </div>
+                                                                                        </div>
                                                                                 </div>
                                                                                     </div>
                                                                             )}
@@ -6844,19 +6865,20 @@ const MobileDashboardDemo = ({
                                                             </button>
                                                             {showBrief && (
                                                             <div className="px-6 pb-10">
+                                                                {/* Show campaign description / other requirements */}
                                                                 {!isStringList && (
                                                                     <p className={cn("text-[15px] font-medium leading-relaxed opacity-70 mb-10 whitespace-pre-wrap px-1", textColor)}>
                                                                         {renderClickableLinks(cleanDesc, isDark)}
                                                                     </p>
                                                                 )}
 
-                                                                {extractedOtherNeeds && (
+                                                                {((extractedOtherNeeds) || (isStringList && cleanDesc && cleanDesc !== "Professional collaboration focused on high-quality content and audience engagement.")) && (
                                                                     <div className={cn("mb-10 p-6 rounded-[32px] border", isDark ? "bg-amber-500/5 border-amber-500/10" : "bg-amber-50 border-amber-100")}>
                                                                         <p className={cn("text-[10px] font-black uppercase tracking-widest mb-3 flex items-center gap-2", isDark ? "text-amber-400" : "text-amber-700")}>
                                                                             <Plus className="w-3.5 h-3.5" /> Other Requirements
                                                                         </p>
                                                                         <p className={cn("text-[15px] font-semibold leading-relaxed", textColor)}>
-                                                                            {renderClickableLinks(extractedOtherNeeds, isDark)}
+                                                                            {renderClickableLinks(extractedOtherNeeds || cleanDesc, isDark)}
                                                                         </p>
                                                                     </div>
                                                                 )}
@@ -9342,23 +9364,32 @@ const DealsTab = React.memo(({
                                                              </div>
                                                              <p className="text-[10px] font-black uppercase tracking-widest text-white">{deal.brand_name || 'Brand Partner'}</p>
                                                          </div>
-<h2 className="text-2xl font-black italic uppercase text-white leading-tight drop-shadow-xl mb-1 group-hover:translate-x-1 transition-transform duration-500">
+                                                          <h2 className="text-2xl font-black italic uppercase text-white leading-tight drop-shadow-xl mb-1 group-hover:translate-x-1 transition-transform duration-500">
                                                              {isPureBarter ? 'Product Collab' : renderBudgetValue(deal)}
                                                           </h2>
                                                           <div className="flex items-center gap-3">
-                                                             {isPureBarter && (
-                                                                 <p className="text-[11px] font-bold text-white/70">
-                                                                     Est. Value {renderBudgetValue(deal)}
-                                                                 </p>
-                                                             )}
-                                                            {(() => {
-                                                                const pkgLabel = resolveItemPackageLabel(deal);
-                                                                if (!pkgLabel) return null;
-                                                                return (
-                                                                    <span className="px-2 py-0.5 rounded-md bg-white/10 text-white/90 text-[9px] font-black uppercase tracking-wider border border-white/5">{pkgLabel}</span>
-                                                                );
-                                                            })()}
-                                                         </div>
+                                                              {isPureBarter && (
+                                                                  <p className="text-[11px] font-bold text-white/70">
+                                                                      Est. Value {renderBudgetValue(deal)}
+                                                                  </p>
+                                                              )}
+                                                             {(() => {
+                                                                 const pkgLabel = resolveItemPackageLabel(deal);
+                                                                 const rawDeadline = deal?.deadline || deal?.due_date || deal?.raw?.deadline || deal?.raw?.due_date;
+                                                                 const deadlineLabel = rawDeadline
+                                                                     ? new Date(rawDeadline).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })
+                                                                     : '';
+                                                                 const categoryLabel = deal?.campaign_category || deal?.raw?.campaign_category;
+                                                                 
+                                                                 return (
+                                                                     <div className="flex flex-wrap gap-1.5">
+                                                                         {pkgLabel && <span className="px-2 py-0.5 rounded-md bg-white/10 text-white/90 text-[9px] font-black uppercase tracking-wider border border-white/5">{pkgLabel}</span>}
+                                                                         {categoryLabel && <span className="px-2 py-0.5 rounded-md bg-white/10 text-white/90 text-[9px] font-black uppercase tracking-wider border border-white/5">{categoryLabel}</span>}
+                                                                         {deadlineLabel && <span className="px-2 py-0.5 rounded-md bg-amber-500/40 text-white text-[9px] font-black uppercase tracking-wider border border-amber-400/30">Due {deadlineLabel}</span>}
+                                                                     </div>
+                                                                 );
+                                                             })()}
+                                                          </div>
                                                      </div>
 
                                                      <div className="space-y-2">
@@ -9510,8 +9541,9 @@ const DealsTab = React.memo(({
 	                                                        {(packageLabel || contentQuantity || contentDuration || offerPlatform || deadlineLabel || usageLabel || paymentTermsLabel || requirementsList.length > 0 || addonsList.length > 0) && (
 	                                                            <div className="mt-3 flex flex-wrap gap-1.5">
 	                                                                {packageLabel && <span className="px-2.5 py-1 rounded-lg bg-black/30 backdrop-blur-md text-white text-[10px] font-black border border-white/10 shadow-sm">{packageLabel}</span>}
-	                                                                {contentQuantity && <span className="px-2.5 py-1 rounded-lg bg-black/30 backdrop-blur-md text-white/90 text-[10px] font-black border border-white/10 shadow-sm">Qty {contentQuantity}</span>}
-	                                                                {contentDuration && <span className="px-2.5 py-1 rounded-lg bg-black/30 backdrop-blur-md text-white/90 text-[10px] font-black border border-white/10 shadow-sm">{contentDuration}</span>}
+                                                                    {(req.campaign_category || req.raw?.campaign_category) && <span className="px-2.5 py-1 rounded-lg bg-black/30 backdrop-blur-md text-white/90 text-[10px] font-black border border-white/10 shadow-sm">{req.campaign_category || req.raw?.campaign_category}</span>}
+ 	                                                                {contentQuantity && String(contentQuantity) !== '1' && <span className="px-2.5 py-1 rounded-lg bg-black/30 backdrop-blur-md text-white/90 text-[10px] font-black border border-white/10 shadow-sm">Qty {contentQuantity}</span>}
+ 	                                                                {contentDuration && <span className="px-2.5 py-1 rounded-lg bg-black/30 backdrop-blur-md text-white/90 text-[10px] font-black border border-white/10 shadow-sm">{contentDuration}</span>}
                                                                     {offerPlatform && <span className="px-2.5 py-1 rounded-lg bg-black/30 backdrop-blur-md text-white/90 text-[10px] font-black border border-white/10 shadow-sm">{offerPlatform}</span>}
                                                                     {deadlineLabel && <span className="px-2.5 py-1 rounded-lg bg-amber-500/30 backdrop-blur-md text-white text-[10px] font-black border border-amber-400/30 shadow-sm">Due {deadlineLabel}</span>}
                                                                     {paymentTermsLabel && <span className="px-2.5 py-1 rounded-lg bg-blue-500/30 backdrop-blur-md text-white text-[10px] font-black border border-blue-400/30 shadow-sm">{paymentTermsLabel}</span>}
