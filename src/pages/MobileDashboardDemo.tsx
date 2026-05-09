@@ -3623,11 +3623,15 @@ const MobileDashboardDemo = ({
                                             "w-full h-full rounded-[2.1rem] overflow-hidden border flex items-center justify-center relative",
                                             isDark ? "bg-white/5 border-white/10" : "bg-slate-50 border-slate-200"
                                         )}>
-                                            {profileFormData.instagram_profile_photo ? (
+                                            {(profileFormData.instagram_profile_photo || profileFormData.avatar_url) ? (
                                                 <img
-                                                    src={profileFormData.instagram_profile_photo}
+                                                    src={resolveAvatarUrl(profileFormData.instagram_profile_photo || profileFormData.avatar_url)}
                                                     alt="Profile"
                                                     className="w-full h-full object-cover"
+                                                    onError={(e) => {
+                                                        (e.currentTarget as HTMLImageElement).onerror = null;
+                                                        (e.currentTarget as HTMLImageElement).src = avatarFallbackUrl;
+                                                    }}
                                                 />
                                             ) : (
                                                 <User className={cn("w-10 h-10", isDark ? "text-white/20" : "text-slate-500")} />
@@ -4043,6 +4047,30 @@ const MobileDashboardDemo = ({
                                             />
                                         </div>
                                     </div>
+                                </div>
+                            </div>
+
+                            {/* ── SECURITY ── */}
+                            <div>
+                                <p className={cn("text-[11px] font-black uppercase tracking-[0.2em] px-2 mb-4 opacity-70 dark:opacity-40", textColor)}>5. Account Security</p>
+                                <div className={cn(
+                                    "rounded-[2.25rem] border overflow-hidden p-2 space-y-1.5 transition-all duration-500",
+                                    isDark ? "bg-[#0B1324] border-white/5 shadow-2xl shadow-black/20" : "bg-white border-slate-200/60 shadow-xl shadow-slate-100/50"
+                                )}>
+                                    <button 
+                                        type="button"
+                                        onClick={() => handleOpenSettings('security')}
+                                        className={cn("w-full flex items-center gap-4 px-4 py-4 rounded-[1.75rem] transition-all", isDark ? "hover:bg-white/5" : "hover:bg-slate-50")}
+                                    >
+                                        <div className={cn("w-10 h-10 rounded-2xl flex items-center justify-center shrink-0", isDark ? "bg-red-500/15" : "bg-red-50")}>
+                                            <LockIcon className="w-5 h-5 text-red-500" />
+                                        </div>
+                                        <div className="flex-1 text-left">
+                                            <p className={cn("text-[10px] font-black uppercase tracking-widest mb-1 opacity-80 dark:opacity-50", textColor)}>Password</p>
+                                            <p className={cn("font-black text-[15px]", textColor)}>Change Password</p>
+                                        </div>
+                                        <ChevronRight className="w-5 h-5 opacity-30" />
+                                    </button>
                                 </div>
                             </div>
 
