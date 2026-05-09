@@ -47,7 +47,7 @@ const DEFAULT_SEO = {
     'influencer platform',
     'brand creator collaboration'
   ],
-  image: '/og-image.jpg',
+  image: '/og-preview.png',
   url: 'https://creatorarmour.com',
   type: 'website' as const,
 };
@@ -155,7 +155,7 @@ function generateStructuredData(props: SEOProps & { title: string; description: 
     name: 'Creator Armour',
     description: DEFAULT_SEO.description,
     url: DEFAULT_SEO.url,
-    logo: `${DEFAULT_SEO.url}/logo.png`,
+    logo: `${DEFAULT_SEO.url}/og-preview.png`,
     sameAs: [
       'https://twitter.com/creatorarmour',
       'https://www.instagram.com/creatorarmour',
@@ -239,7 +239,7 @@ function generateStructuredData(props: SEOProps & { title: string; description: 
         name: 'Creator Armour',
         logo: {
           '@type': 'ImageObject',
-          url: `${DEFAULT_SEO.url}/logo.png`
+          url: `${DEFAULT_SEO.url}/og-preview.png`
         }
       },
       ...(section && { articleSection: section }),
