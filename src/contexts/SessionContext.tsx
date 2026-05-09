@@ -981,7 +981,7 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
             pathname.startsWith('/deal/brand-response/') ||
             pathname.startsWith('/creator-contracts/');
 
-          if (recoveryFlow || pathname === '/reset-password') {
+          if (recoveryFlow || pathname === '/reset-password' || pathname === '/welcome') {
             debugLog('[SessionContext] Recovery flow or reset-password path detected; letting specialized logic handle it');
             // Do not redirect here; initializeSession or ResetPassword will handle it
             setIsAuthInitializing(false);
