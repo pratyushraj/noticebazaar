@@ -971,8 +971,10 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
             pathname.startsWith('/deal/brand-response/') ||
             pathname.startsWith('/creator-contracts/');
 
-          if (recoveryFlow) {
-            debugLog('[SessionContext] Recovery flow detected; forcing reset-password route');
+          if (recoveryFlow || pathname === '/reset-password') {
+            debugLog('[SessionContext] Recovery flow or reset-password path detected; skipping dashboard redirect');
+            setIsAuthInitializing(false);
+            return;
           } else if (isUsernameRoute || isPublicRoute || isPublicPathname || (!isOAuthCallback && pathname !== '/' && pathname !== '/login')) {
             debugLog('[SessionContext] Skipping redirect (already on valid path or not an auth flow):', pathname);
             setIsAuthInitializing(false);
