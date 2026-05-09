@@ -695,6 +695,7 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
                 if (recoveryFlow) {
                   debugLog('[SessionContext] Recovery flow detected in initializeSession; forcing reset-password');
                   redirectPath = '/reset-password';
+                  sessionStorage.setItem('is_recovery_flow', 'true');
                 } else if (intendedRoute && intendedRoute !== 'login' && intendedRoute !== 'signup') {
                   redirectPath = `/${intendedRoute}`;
                 } else if (sessionData.session.user?.id) {
@@ -705,7 +706,10 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
                     const p = (profileData as any);
 
                     if (isPratyush) redirectPath = '/creator-dashboard';
-                    else if (recoveryFlow) redirectPath = '/reset-password';
+                    else if (recoveryFlow) {
+                      redirectPath = '/reset-password';
+                      sessionStorage.setItem('is_recovery_flow', 'true');
+                    }
                     else redirectPath = getFallbackRedirectPath(p?.role, p?.onboarding_complete);
                   } catch (error) {
                     debugWarn('[SessionContext] Error fetching profile in initializeSession, using metadata fallback:', error);
@@ -931,7 +935,12 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
           // Set auth initializing state for OAuth callbacks too
           setIsAuthInitializing(true);
           const pathname = window.location.pathname || '';
-          const recoveryFlow = isRecoveryAuthFlow(window.location.hash || '', event);
+          const recoveryFlow = isRecoveryAuthFlow(window.location.hash || '', event) || 
+                              sessionStorage.getItem('is_recovery_flow') === 'true';
+          
+          if (recoveryFlow) {
+            sessionStorage.removeItem('is_recovery_flow');
+          }
 
           // Get intended route from sessionStorage if not already extracted from hash
           if (!intendedRoute) {
