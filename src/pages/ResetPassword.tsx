@@ -73,11 +73,11 @@ const ResetPassword = () => {
         return;
       }
 
-      toast.success("Your password has been updated. Please sign in again.");
+      toast.success("Your password has been updated. Welcome to Creator Armour!");
 
-      // End the recovery session and send user back to login with fresh credentials
+      // End the recovery session and send user to the welcome page with install instructions
       await supabase.auth.signOut();
-      navigate("/login", { replace: true });
+      navigate("/welcome", { replace: true });
     } catch (err: any) {
       console.error("[ResetPassword] Exception while updating password:", err);
       toast.error("An unexpected error occurred. Please try again.");

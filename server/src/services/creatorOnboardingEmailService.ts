@@ -12,6 +12,61 @@ interface CreatorOnboardingData {
 }
 
 /**
+ * EMAIL: Direct Invitation (New Creator)
+ * Goal: Invite a creator whose profile is ready, giving them a password set link.
+ */
+export async function sendCreatorOnboardingInvite(data: CreatorOnboardingData & { inviteLink: string }) {
+    const emailContent = `
+    <tr>
+      <td style="background-color: #5b21b6; padding: 48px 30px; text-align: center;">
+        <div style="width: 70px; height: 70px; margin: 0 auto 16px auto; border-radius: 18px; background-color: rgba(255, 255, 255, 0.16); display: inline-block; line-height: 70px;">
+          <span style="font-size: 30px; color: #ffffff;">✨</span>
+        </div>
+        <h1 style="margin: 0 0 8px 0; font-size: 24px; font-weight: 700; color: #ffffff !important; line-height: 1.3;">
+          Your Profile is Ready
+        </h1>
+        <p style="margin: 0; font-size: 14px; color: #ffffff !important; opacity: 0.95;">
+          Access your secure collaboration dashboard.
+        </p>
+      </td>
+    </tr>
+    <tr>
+      <td style="padding: 32px 32px 10px 32px;">
+        <p style="margin: 0 0 16px 0; font-size: 16px; font-weight: 600; color: #111827;">Hello ${data.creatorName || 'there'},</p>
+        <p style="margin: 0 0 20px 0; font-size: 14px; color: #4b5563; line-height: 1.7;">
+          Your Creator Armour profile and collaboration link are now live. To access your dashboard and start receiving protected brand offers, please set your account password using the secure link below.
+        </p>
+      </td>
+    </tr>
+    ${getPrimaryCTA('Set Your Password', data.inviteLink)}
+    <tr>
+      <td style="padding: 24px 32px;">
+        <p style="margin: 0 0 12px 0; font-size: 14px; font-weight: 700; color: #1e293b;">Next Steps:</p>
+        <ul style="margin: 0; padding-left: 20px; font-size: 14px; color: #4b5563; line-height: 1.6;">
+          <li style="margin-bottom: 8px;"><strong>Set your password</strong> using the button above.</li>
+          <li style="margin-bottom: 8px;"><strong>Install the Web App</strong> (instructions will be shown after you set your password) for instant deal alerts.</li>
+          <li><strong>Share your link</strong> in your Instagram bio to start receiving offers.</li>
+        </ul>
+      </td>
+    </tr>
+    <tr>
+      <td style="padding: 10px 32px 32px 32px; text-align: center;">
+        <div style="background-color: #f8fafc; border-radius: 12px; padding: 16px; border: 1px dashed #e2e8f0;">
+          <p style="margin: 0 0 4px 0; font-size: 11px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px;">Your Live Collab Link</p>
+          <p style="margin: 0; font-size: 15px; font-weight: 700; color: #4f46e5;">creatorarmour.com/${data.username || 'username'}</p>
+        </div>
+      </td>
+    </tr>
+  `;
+
+    return sendResendEmail({
+        to: data.creatorEmail,
+        subject: 'Your Creator Armour Profile is Ready 🛡️',
+        html: getEmailLayout({ content: emailContent, backgroundStyle: 'purple' })
+    });
+}
+
+/**
  * EMAIL 1: Welcome + First Action (Immediate)
  * Goal: Get the creator to complete setup immediately.
  */
