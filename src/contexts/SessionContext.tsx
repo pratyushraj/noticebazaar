@@ -693,6 +693,7 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
                 let redirectPath = recoveryFlow ? '/reset-password' : getFallbackRedirectPath(getMetadataRole(sessionData.session.user), getMetadataRole(sessionData.session.user) === 'brand' ? false : null);
 
                 if (recoveryFlow) {
+                  debugLog('[SessionContext] Recovery flow detected in initializeSession; forcing reset-password');
                   redirectPath = '/reset-password';
                 } else if (intendedRoute && intendedRoute !== 'login' && intendedRoute !== 'signup') {
                   redirectPath = `/${intendedRoute}`;
@@ -1019,7 +1020,9 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
             }
           }
 
-          if (session?.user?.id && !recoveryFlow) {
+          if (recoveryFlow) {
+            targetPath = '/reset-password';
+          } else if (session?.user?.id) {
             try {
               debugLog('[SessionContext] Fetching profile for redirect (profiles.role source of truth):', session.user.id);
               const profileData = await fetchRedirectProfile(session.user.id);
