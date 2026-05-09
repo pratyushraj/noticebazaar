@@ -689,9 +689,12 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
                 // Use path-based route (BrowserRouter).
                 // Production safety: `profiles.role` is the only source of truth for redirects.
                 // Do not redirect based solely on user_metadata; wait for profile.
-                let redirectPath = getFallbackRedirectPath(getMetadataRole(sessionData.session.user), getMetadataRole(sessionData.session.user) === 'brand' ? false : null);
+                const recoveryFlow = isRecoveryAuthFlow(tokenHash, 'INITIAL_SESSION');
+                let redirectPath = recoveryFlow ? '/reset-password' : getFallbackRedirectPath(getMetadataRole(sessionData.session.user), getMetadataRole(sessionData.session.user) === 'brand' ? false : null);
 
-                if (intendedRoute && intendedRoute !== 'login' && intendedRoute !== 'signup') {
+                if (recoveryFlow) {
+                  redirectPath = '/reset-password';
+                } else if (intendedRoute && intendedRoute !== 'login' && intendedRoute !== 'signup') {
                   redirectPath = `/${intendedRoute}`;
                 } else if (sessionData.session.user?.id) {
                   try {
@@ -701,6 +704,7 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
                     const p = (profileData as any);
 
                     if (isPratyush) redirectPath = '/creator-dashboard';
+                    else if (recoveryFlow) redirectPath = '/reset-password';
                     else redirectPath = getFallbackRedirectPath(p?.role, p?.onboarding_complete);
                   } catch (error) {
                     debugWarn('[SessionContext] Error fetching profile in initializeSession, using metadata fallback:', error);
@@ -780,7 +784,8 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
             try {
               const profileData = await fetchRedirectProfile(currentSession.user.id);
               const p = (profileData as any);
-              const defaultPath = getFallbackRedirectPath(
+              const recoveryFlow = isRecoveryAuthFlow(window.location.hash || '', 'INITIAL_SESSION');
+              const defaultPath = recoveryFlow ? '/reset-password' : getFallbackRedirectPath(
                 p?.role || getMetadataRole(currentSession.user),
                 p?.onboarding_complete ?? (getMetadataRole(currentSession.user) === 'brand' ? false : null),
               );
