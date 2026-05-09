@@ -87,112 +87,106 @@ const ResetPassword = () => {
   };
 
   return (
-    <div className="nb-screen-height flex flex-col items-center justify-center bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 p-4">
+    <div className="nb-screen-height flex flex-col items-center justify-center bg-[#0F0F1A] relative overflow-hidden font-sans p-4">
+      {/* Background Orbs */}
+      <div className="absolute top-[-10%] right-[-10%] w-[500px] h-[500px] bg-purple-600/20 rounded-full blur-[120px]" />
+      <div className="absolute bottom-[-10%] left-[-10%] w-[500px] h-[500px] bg-indigo-600/20 rounded-full blur-[120px]" />
+      
+      {/* Subtle Grid Pattern */}
+      <div className="absolute inset-0 opacity-[0.03] pointer-events-none" 
+           style={{ backgroundImage: 'radial-gradient(circle, white 1px, transparent 1px)', backgroundSize: '30px 30px' }} />
+
       <div
-        className="w-full max-w-md p-8 rounded-3xl shadow-2xl border border-purple-400/20"
+        className="w-full max-w-md p-8 sm:p-10 rounded-[2.5rem] shadow-2xl border border-white/10 relative z-10"
         style={{
-          backdropFilter: "blur(20px)",
-          backgroundColor: "rgba(139, 92, 246, 0.15)",
+          backdropFilter: "blur(40px)",
+          backgroundColor: "rgba(255, 255, 255, 0.03)",
         }}
       >
-        {/* Branding */}
-        <div className="flex items-center gap-3 mb-8">
-          <div className="w-10 h-10 bg-secondary rounded-lg flex items-center justify-center">
-            <Scale className="h-6 w-6 text-foreground" />
-          </div>
-          <h1 className="text-2xl font-bold text-foreground">Creator Armour</h1>
-        </div>
-
         {loading ? (
           <div className="flex flex-col items-center justify-center py-12">
             <div className="w-12 h-12 border-4 border-purple-400/20 border-t-purple-500 rounded-full animate-spin mb-4" />
-            <p className="text-foreground/60 text-sm font-medium animate-pulse">
+            <p className="text-white/60 text-sm font-medium animate-pulse">
               Verifying security tokens...
             </p>
           </div>
         ) : !isLinkValid ? (
-          <>
-            <h2 className="text-3xl font-bold text-foreground mb-3">
-              Link expired or invalid
+          <div className="flex flex-col items-center text-center">
+            <div className="w-16 h-16 bg-red-500/10 rounded-2xl flex items-center justify-center mb-6 border border-red-500/20">
+              <ShieldCheck className="w-8 h-8 text-red-500" />
+            </div>
+            <h2 className="text-3xl font-bold text-white mb-3 tracking-tight">
+              Link Expired
             </h2>
-            <p className="text-foreground/80 text-sm mb-6">
-              This password reset link is no longer valid. Please request a new
-              reset email from the sign-in page.
+            <p className="text-white/50 text-sm mb-8 leading-relaxed">
+              This security token is no longer valid. For your protection, please request a new reset link.
             </p>
             <Button
-              variant="outline"
-              className="w-full border-border text-foreground hover:bg-secondary/50"
+              className="w-full bg-white/5 hover:bg-white/10 border border-white/10 text-white rounded-2xl h-14"
               onClick={() => navigate("/login", { replace: true })}
             >
               <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Sign In
+              BACK TO SIGN IN
             </Button>
-          </>
+          </div>
         ) : (
           <>
-            <div className="mb-8">
-              <h2 className="text-3xl font-bold text-foreground mb-2">
+            {/* Branding */}
+            <div className="flex flex-col items-center mb-10">
+              <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-2xl flex items-center justify-center mb-4 shadow-xl shadow-purple-500/20 border border-white/10">
+                <Scale className="w-8 h-8 text-white" />
+              </div>
+              <h1 className="text-3xl font-bold text-white tracking-tight text-center">
                 Set a New Password
-              </h2>
-              <p className="text-foreground/80 text-sm">
-                Enter a new password for your Creator Armour account.
+              </h1>
+              <p className="text-white/50 mt-2 text-center text-sm font-medium uppercase tracking-widest">
+                Securing Your Armoury
               </p>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <Label
-                  htmlFor="new-password"
-                  className="text-foreground text-sm mb-2 block"
-                >
-                  New password
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div className="space-y-2">
+                <Label className="text-xs font-bold text-white/40 tracking-widest uppercase ml-1">
+                  New Password
                 </Label>
-                <div className="relative">
+                <div className="relative group">
                   <Input
-                    id="new-password"
                     type={showNewPassword ? "text" : "password"}
-                    placeholder="Enter a new password"
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
-                    className="bg-secondary/50 border-border text-foreground placeholder:text-secondary/60 text-base h-12 rounded-xl pr-12"
-                    autoComplete="new-password"
+                    placeholder="••••••••"
                     required
+                    className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-white placeholder:text-white/20 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 transition-all duration-300 h-14 text-lg"
                   />
                   <button
                     type="button"
                     onClick={() => setShowNewPassword(!showNewPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 flex items-center justify-center rounded-xl text-muted-foreground/60 hover:text-primary hover:bg-primary/10 transition-all active:scale-90"
-                    aria-label={showNewPassword ? "Hide password" : "Show password"}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-white/30 hover:text-white transition-colors"
                   >
-                    {showNewPassword ? <EyeOff className="h-[18px] w-[18px]" /> : <Eye className="h-[18px] w-[18px]" />}
+                    {showNewPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                   </button>
                 </div>
               </div>
-              <div>
-                <Label
-                  htmlFor="confirm-password"
-                  className="text-foreground text-sm mb-2 block"
-                >
-                  Confirm new password
+
+              <div className="space-y-2">
+                <Label className="text-xs font-bold text-white/40 tracking-widest uppercase ml-1">
+                  Confirm Password
                 </Label>
-                <div className="relative">
+                <div className="relative group">
                   <Input
-                    id="confirm-password"
                     type={showConfirmPassword ? "text" : "password"}
-                    placeholder="Re-enter your new password"
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
-                    className="bg-secondary/50 border-border text-foreground placeholder:text-secondary/60 text-base h-12 rounded-xl pr-12"
-                    autoComplete="new-password"
+                    placeholder="••••••••"
                     required
+                    className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-white placeholder:text-white/20 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 transition-all duration-300 h-14 text-lg"
                   />
                   <button
                     type="button"
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 flex items-center justify-center rounded-xl text-muted-foreground/60 hover:text-primary hover:bg-primary/10 transition-all active:scale-90"
-                    aria-label={showConfirmPassword ? "Hide password" : "Show password"}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-white/30 hover:text-white transition-colors"
                   >
-                    {showConfirmPassword ? <EyeOff className="h-[18px] w-[18px]" /> : <Eye className="h-[18px] w-[18px]" />}
+                    {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                   </button>
                 </div>
               </div>
@@ -200,11 +194,22 @@ const ResetPassword = () => {
               <Button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-foreground font-semibold h-12 rounded-xl shadow-lg mt-2"
+                className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold py-4 rounded-2xl shadow-lg shadow-purple-500/20 transform active:scale-[0.98] transition-all duration-200 flex items-center justify-center gap-2 mt-8 h-14 text-base tracking-widest"
               >
-                {isSubmitting ? "Updating password..." : "Update Password"}
+                {isSubmitting ? (
+                  <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                ) : (
+                  <>
+                    <ShieldCheck size={20} />
+                    UPDATE PASSWORD
+                  </>
+                )}
               </Button>
             </form>
+
+            <p className="mt-8 text-center text-white/20 text-[10px] font-bold tracking-[0.2em] uppercase">
+              End-To-End Encrypted Session
+            </p>
           </>
         )}
       </div>
