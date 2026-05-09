@@ -22,10 +22,25 @@ const ResetPassword = () => {
   const [isLinkValid, setIsLinkValid] = useState(true);
 
   // If the recovery link is invalid or expired, there will be no session
+  // We add a small delay to allow Supabase to process hash tokens if they are present
   useEffect(() => {
-    if (!loading && !session) {
-      setIsLinkValid(false);
-    }
+    const checkValidity = async () => {
+      // Check if there's a recovery token in the hash
+      const hasHashToken = window.location.hash.includes('access_token') || 
+                          window.location.hash.includes('type=recovery');
+      
+      if (loading) return;
+
+      // If we have a hash token but no session yet, wait a bit longer for SessionContext to catch up
+      if (hasHashToken && !session) {
+        await new Promise(resolve => setTimeout(resolve, 1500));
+        // If still no session after wait, then it's likely invalid
+      } else if (!session) {
+        setIsLinkValid(false);
+      }
+    };
+
+    checkValidity();
   }, [loading, session]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -88,7 +103,14 @@ const ResetPassword = () => {
           <h1 className="text-2xl font-bold text-foreground">Creator Armour</h1>
         </div>
 
-        {!isLinkValid ? (
+        {loading ? (
+          <div className="flex flex-col items-center justify-center py-12">
+            <div className="w-12 h-12 border-4 border-purple-400/20 border-t-purple-500 rounded-full animate-spin mb-4" />
+            <p className="text-foreground/60 text-sm font-medium animate-pulse">
+              Verifying security tokens...
+            </p>
+          </div>
+        ) : !isLinkValid ? (
           <>
             <h2 className="text-3xl font-bold text-foreground mb-3">
               Link expired or invalid

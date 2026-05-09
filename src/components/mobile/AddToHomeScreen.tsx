@@ -49,7 +49,7 @@ const AddToHomeScreen: React.FC = () => {
     const isEligibleRoute = eligiblePrefixes.some(prefix => location.pathname.startsWith(prefix))
       || (location.pathname.length > 1 && !location.pathname.includes('.') && !location.pathname.includes('/')); // Handle /username landing pages
 
-    const canShowIOSGuide = isIOS && isSafari;
+    const canShowIOSGuide = isIOS;
     const canShowAndroidPrompt = androidDevice;
     setIsIOSDevice(canShowIOSGuide);
     setIsAndroid(androidDevice);
@@ -209,11 +209,16 @@ const AddToHomeScreen: React.FC = () => {
                           <div className="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity" />
                           <div className="flex items-center gap-3 mb-2.5">
                             <div className="w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center border border-primary/20 shadow-inner">
-                              <Share className="w-4 h-4 text-primary" />
+                              <div className="relative">
+                                <Share className="w-4 h-4 text-primary" />
+                                <div className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-background rounded-full flex items-center justify-center border border-primary/20">
+                                  <MoreVertical className="w-1.5 h-1.5 text-primary" />
+                                </div>
+                              </div>
                             </div>
                             <span className="text-[10px] font-black uppercase text-muted-foreground tracking-[0.2em]">Step 01</span>
                           </div>
-                          <p className="text-[11px] font-bold text-foreground leading-snug">Tap 'Share' in Safari browser</p>
+                          <p className="text-[11px] font-bold text-foreground leading-snug">Tap 'Share' or Menu (•••)</p>
                         </div>
                         <div className="bg-secondary/20 rounded-[22px] p-4 border border-border relative overflow-hidden group">
                           <div className="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -224,6 +229,7 @@ const AddToHomeScreen: React.FC = () => {
                             <span className="text-[10px] font-black uppercase text-muted-foreground tracking-[0.2em]">Step 02</span>
                           </div>
                           <p className="text-[11px] font-bold text-foreground leading-snug">Select 'Add to Home Screen'</p>
+                          <p className="text-[8px] text-muted-foreground mt-1 font-medium">May be inside 'More' or '•••'</p>
                         </div>
                       </>
                     ) : (
