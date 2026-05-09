@@ -102,15 +102,16 @@ export default function WelcomeOnboarding() {
         >
           {/* Success Header */}
           <div className="rounded-t-[36px] border-b border-slate-100 bg-gradient-to-b from-emerald-50/80 to-white px-6 py-8 text-center sm:px-10">
-            <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-[2rem] bg-emerald-100 text-emerald-600 ring-4 ring-emerald-50">
-              <CheckCircle2 className="h-10 w-10" />
+            <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-[2rem] bg-gradient-to-br from-emerald-500 to-teal-500 text-white shadow-xl shadow-emerald-500/30 ring-4 ring-emerald-50">
+              <ShieldCheck className="h-10 w-10" />
             </div>
             <div className="flex items-center justify-center gap-2 mb-3">
-              <Sparkles className="h-4 w-4 text-emerald-600" />
-              <p className="text-[11px] font-black uppercase tracking-[0.28em] text-emerald-600">Access Secured</p>
+              <div className="w-8 h-[1px] bg-emerald-500/30" />
+              <p className="text-[11px] font-black uppercase tracking-[0.4em] text-emerald-600">Access Secured</p>
+              <div className="w-8 h-[1px] bg-emerald-500/30" />
             </div>
-            <h1 className="text-[2.5rem] font-black tracking-tight text-slate-950 leading-[0.95] sm:text-5xl">
-              Password Set!
+            <h1 className="text-[2.5rem] font-black tracking-tight text-slate-950 leading-[0.95] sm:text-5xl uppercase italic">
+              Welcome to the Armoury
             </h1>
             <p className="mt-4 mx-auto max-w-md text-[15px] leading-7 text-slate-600 sm:text-base">
               Your account is ready. To receive instant deal alerts, install the Creator Armour app on your phone.
