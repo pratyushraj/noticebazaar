@@ -982,7 +982,13 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
             pathname.startsWith('/creator-contracts/');
 
           if (recoveryFlow || pathname === '/reset-password') {
-            debugLog('[SessionContext] Recovery flow or reset-password path detected; skipping dashboard redirect');
+            debugLog('[SessionContext] Recovery flow or reset-password path detected; letting specialized logic handle it');
+            // Do not redirect here; initializeSession or ResetPassword will handle it
+            setIsAuthInitializing(false);
+            return;
+          } else if (isOAuthCallback) {
+            debugLog('[SessionContext] OAuth/Hash tokens detected; skipping global redirect to let manual exchange handle it');
+            // This prevents SIGNED_IN from jumping to dashboard before initializeSession can redirect to the intended route
             setIsAuthInitializing(false);
             return;
           } else if (isUsernameRoute || isPublicRoute || isPublicPathname || (!isOAuthCallback && pathname !== '/' && pathname !== '/login')) {
