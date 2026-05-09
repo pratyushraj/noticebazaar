@@ -545,6 +545,13 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
         // We need to extract the route, let Supabase process tokens, then clean hash IMMEDIATELY
         // to prevent React Router from routing to /access_token=...
         let hash = window.location.hash;
+        
+        // Early recovery flow detection - set flag before any potential hash cleaning
+        if (hash.includes('type=recovery') || hash.includes('PASSWORD_RECOVERY')) {
+          debugLog('[SessionContext] Early recovery flow detection in initializeSession; setting session flag');
+          sessionStorage.setItem('is_recovery_flow', 'true');
+        }
+
         hasAccessToken = false;
         let intendedRoute: string | null = null;
 
