@@ -14,7 +14,8 @@ import {
   MoreVertical,
   Plus,
   Download,
-  Laptop
+  Laptop,
+  ShieldCheck
 } from "lucide-react";
 import confetti from "canvas-confetti";
 import { Button } from "@/components/ui/button";
