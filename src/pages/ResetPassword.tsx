@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Scale, ArrowLeft, Eye, EyeOff } from "lucide-react";
+import { Scale, ArrowLeft, Eye, EyeOff, ShieldCheck } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useSession } from "@/contexts/SessionContext";
 import { Input } from "@/components/ui/input";

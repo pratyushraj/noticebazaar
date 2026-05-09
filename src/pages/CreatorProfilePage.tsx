@@ -40,6 +40,7 @@ interface Creator {
   name: string;
   category: string | null;
   bio: string | null;
+  profile_photo: string | null;
   platforms: Array<{ name: string; handle: string; followers?: number }>;
 }
 
@@ -121,8 +122,8 @@ const CreatorProfilePage = () => {
   const metaDescription = `Brands can collaborate securely with ${creatorName}${creator.category ? `, ${creator.category} creator` : ''} ${followerText ? followerText : ''} on ${platformNames || 'social media'}. View profile, platforms, and collaboration details.`;
 
   const canonicalUrl = `https://creatorarmour.com/creator/${creator.username}`;
-  const pageImage = creator.platforms.length > 0
-    ? `https://creatorarmour.com/og-creator-${creator.username}.png`
+  const pageImage = creator.profile_photo && /^https?:\/\//i.test(creator.profile_photo)
+    ? creator.profile_photo
     : 'https://creatorarmour.com/og-preview.png';
 
   const breadcrumbItems = [

@@ -38,6 +38,7 @@ const BlogPost = () => {
         title={`${post.title} | Creator Armour Blog`}
         description={post.metaDescription}
         keywords={post.keywords}
+        image={post.image}
         canonicalUrl={`https://creatorarmour.com/blog/${post.slug}`}
       />
       <BreadcrumbSchema
