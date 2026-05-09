@@ -705,11 +705,11 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
                     const isPratyush = userEmail === 'pratyushraj@outlook.com';
                     const p = (profileData as any);
 
-                    if (isPratyush) redirectPath = '/creator-dashboard';
-                    else if (recoveryFlow) {
+                    if (recoveryFlow) {
                       redirectPath = '/reset-password';
                       sessionStorage.setItem('is_recovery_flow', 'true');
                     }
+                    else if (isPratyush) redirectPath = '/creator-dashboard';
                     else redirectPath = getFallbackRedirectPath(p?.role, p?.onboarding_complete);
                   } catch (error) {
                     debugWarn('[SessionContext] Error fetching profile in initializeSession, using metadata fallback:', error);
