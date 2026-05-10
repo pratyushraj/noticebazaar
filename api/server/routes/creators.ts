@@ -15,12 +15,7 @@ router.get('/', async (req: Request, res: Response) => {
   try {
     const { category, limit = '50', offset = '0', q } = req.query;
 
-    // DEBUG: try raw SQL first
-    const { data: rawData, error: rawError } = await (supabase.supabaseFileUrl.includes('supabase') 
-      ? { data: null, error: null } 
-      : { data: null, error: null });
-    
-    // Force console.log that Render will definitely capture
+    // Force console.log that Render will capture
     console.log('[CREATORS_ROUTE] Starting request, q=', q, 'category=', category);
     
     // Count ALL profiles
@@ -39,6 +34,7 @@ router.get('/', async (req: Request, res: Response) => {
         first_name,
         last_name,
         business_name,
+        avatar_url,
         creator_category,
         bio,
         instagram_handle,
@@ -50,7 +46,10 @@ router.get('/', async (req: Request, res: Response) => {
         youtube_subs,
         tiktok_followers,
         twitter_followers,
-        facebook_followers
+        facebook_followers,
+        avg_reel_views_manual,
+        barter_min_value,
+        is_verified
       `)
       .eq('role', 'creator')
       .not('username', 'is', null)
@@ -129,6 +128,10 @@ router.get('/', async (req: Request, res: Response) => {
         name: creatorName,
         category: profile.creator_category,
         bio: profile.bio,
+        avatar_url: profile.avatar_url,
+        avg_views: profile.avg_reel_views_manual,
+        barter_min_value: profile.barter_min_value,
+        is_verified: profile.is_verified,
         platforms,
       };
     });

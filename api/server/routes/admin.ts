@@ -3,7 +3,7 @@
 
 import { Router, Response } from 'express';
 import { supabase } from '../index';
-import { AuthenticatedRequest } from '../middleware/auth';
+import { AuthenticatedRequest, authMiddleware } from '../middleware/auth';
 import { createDealFromCollabRequest } from '../services/dealCreationService';
 
 const router = Router();
