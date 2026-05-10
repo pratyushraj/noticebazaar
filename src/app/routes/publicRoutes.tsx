@@ -58,6 +58,7 @@ export const PublicRoutes = () => (
     <Route path="/collaboration-agreement-generator" element={<LazyRoute><CollaborationAgreementGenerator /></LazyRoute>} />
     <Route path="/brand-directory" element={<LazyRoute><BrandDirectory /></LazyRoute>} />
     <Route path="/discover" element={<LazyRoute><DiscoverCreators /></LazyRoute>} />
+    <Route path="/discover/:category" element={<LazyRoute><DiscoverCreators /></LazyRoute>} />
     <Route path="/rate-calculator" element={<LazyRoute><RateCalculator /></LazyRoute>} />
     <Route path="/creator/:username" element={<LegacyCreatorProfileRedirect />} />
     <Route path="/settings" element={<Navigate to="/creator-profile" replace />} />
