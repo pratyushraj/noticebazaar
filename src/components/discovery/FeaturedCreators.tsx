@@ -181,12 +181,19 @@ export const FeaturedCreators = () => {
 
                   {/* Creator Quick Badge */}
                   <div className="absolute bottom-8 left-8 flex items-center gap-4">
-                    <div className="w-14 h-14 rounded-2xl border-2 border-white overflow-hidden shadow-lg">
-                      <img src={currentCreator.avatar_url} className="w-full h-full object-cover" alt="" />
+                    <div className="w-14 h-14 rounded-2xl border-2 border-white overflow-hidden shadow-lg bg-slate-200">
+                      <img 
+                        src={currentCreator.avatar_url || `https://ui-avatars.com/api/?name=${currentCreator.first_name}+${currentCreator.last_name || ''}&background=random`} 
+                        className="w-full h-full object-cover" 
+                        alt={currentCreator.username}
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${currentCreator.first_name}+${currentCreator.last_name || ''}&background=random`;
+                        }}
+                      />
                     </div>
                     <div>
                       <h4 className="text-white font-black text-lg leading-none mb-1 flex items-center gap-1.5">
-                        {currentCreator.first_name} {currentCreator.last_name}
+                        {currentCreator.first_name} {currentCreator.last_name || ''}
                         <CheckCircle2 className="w-4 h-4 text-emerald-400 fill-white" />
                       </h4>
                       <p className="text-white/80 text-xs font-bold uppercase tracking-widest">@{currentCreator.username}</p>
