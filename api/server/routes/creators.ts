@@ -55,6 +55,7 @@ router.get('/', async (req: Request, res: Response) => {
       `)
       .eq('role', 'creator')
       .not('username', 'is', null)
+      .not('discovery_video_url', 'is', null)
       .order('created_at', { ascending: false })
       .range(parseInt(offset as string, 10), parseInt(offset as string, 10) + parseInt(limit as string, 10) - 1);
 
@@ -120,9 +121,17 @@ router.get('/', async (req: Request, res: Response) => {
         });
       }
 
-      const creatorName = profile.business_name || 
-        `${profile.first_name || ''} ${profile.last_name || ''}`.trim() || 
-        'Creator';
+      // Clean name logic
+      let creatorName = '';
+      const fullName = `${profile.first_name || ''} ${profile.last_name || ''}`.trim();
+      const bName = profile.business_name || '';
+      
+      // If business name has HTML entities or looks like an IG bio string (with pipes), prefer full name
+      if (bName.includes('&#') || bName.includes('|') || !bName) {
+        creatorName = fullName || profile.username || 'Creator';
+      } else {
+        creatorName = bName;
+      }
 
       return {
         id: profile.id,
