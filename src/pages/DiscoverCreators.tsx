@@ -149,6 +149,7 @@ const DiscoverCreators = () => {
                     'find influencers india', 'influencer marketing platform', 'verified creator directory',
                     'hire influencers', 'brand collaborations', category || 'influencers', 'creator armour'
                 ]}
+                image="/discover-og.png"
                 canonicalUrl={canonicalUrl}
                 jsonLd={itemListSchema}
             />
