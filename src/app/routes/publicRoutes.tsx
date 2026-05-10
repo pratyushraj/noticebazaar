@@ -30,10 +30,12 @@ const RateCalculator = lazy(() => import("@/pages/RateCalculator"));
 const CollabLinkLanding = lazy(() => import("@/pages/CollabLinkLanding"));
 
 const WelcomeOnboarding = lazy(() => import("@/pages/WelcomeOnboarding"));
+const InstaMockup = lazy(() => import("@/pages/InstaMockup"));
 
 export const PublicRoutes = () => (
   <>
     <Route path="/" element={<LazyRoute><LandingPage /></LazyRoute>} />
+    <Route path="/insta-mockup" element={<LazyRoute><InstaMockup /></LazyRoute>} />
     <Route path="/welcome" element={<LazyRoute><WelcomeOnboarding /></LazyRoute>} />
     <Route path="/blog" element={<LazyRoute><BlogListing /></LazyRoute>} />
     <Route path="/blog/:slug" element={<LazyRoute><BlogPost /></LazyRoute>} />

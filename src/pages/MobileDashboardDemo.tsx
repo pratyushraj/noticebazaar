@@ -126,6 +126,8 @@ interface MobileDashboardProps {
     isLoadingCollab?: boolean;
     /** Real profile views count from database */
     profileViewsToday?: number;
+    isInline?: boolean;
+    hideNavbar?: boolean;
 }
 
 // Minimal Status Badge for Deal Cards
@@ -874,7 +876,9 @@ const MobileDashboardDemo = ({
     isLoadingDealsOverride = false,
     isLoadingCollab = false,
     isLoadingProfile = false,
-    profileViewsToday = 0
+    profileViewsToday = 0,
+    isInline = false,
+    hideNavbar = false
 }: MobileDashboardProps) => {
     const navigate = useNavigate();
     const queryClient = useQueryClient();
@@ -1923,11 +1927,11 @@ const MobileDashboardDemo = ({
         resolveAvatarUrl(profile?.avatar_url) ||
         avatarFallbackUrl;
     const avatarVersionedUrl = withCacheBuster(avatarUrl, profile?.updated_at || profile?.last_instagram_sync || username) || avatarUrl;
-    const rawDisplayName = username ||
+    const rawDisplayName = profile?.full_name ||
+        (profile?.first_name ? `${profile.first_name}${profile.last_name ? ' ' + profile.last_name : ''}` : null) ||
+        username ||
         profile?.username ||
         profile?.instagram_handle ||
-        profile?.full_name ||
-        (profile?.first_name ? `${profile.first_name}${profile.last_name ? ' ' + profile.last_name : ''}` : null) ||
         'Creator';
 
     const decodedName = typeof rawDisplayName === 'string'
@@ -2385,6 +2389,7 @@ const MobileDashboardDemo = ({
     }, [totalEarnings, inEscrowAmount]);
 
     useEffect(() => {
+        if (isInline) return;
         const titles: Record<string, string> = {
             dashboard: 'Dashboard | Creator Armour',
             analytics: 'Analytics | Creator Armour',
@@ -2393,7 +2398,7 @@ const MobileDashboardDemo = ({
             profile: 'Profile | Creator Armour',
         };
         document.title = titles[activeTab] || 'Creator Armour';
-    }, [activeTab]);
+    }, [activeTab, isInline]);
 
     const [pullDistance, setPullDistance] = useState(0);
     const [startY, setStartY] = useState(0);
@@ -5471,18 +5476,21 @@ const MobileDashboardDemo = ({
 
     return (
         <div
-            className={cn('fixed inset-0 z-[1000] flex justify-center overflow-hidden font-sans selection:bg-primary/25')}
+            className={cn(
+                isInline ? 'absolute inset-0' : 'fixed inset-0',
+                'z-[1000] flex justify-center overflow-hidden font-sans selection:bg-primary/25'
+            )}
             style={{ backgroundColor: bgColor }}
         >
             {isDark ? (
-                <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
+                <div className={cn(isInline ? "absolute" : "fixed", "inset-0 overflow-hidden pointer-events-none z-0")}>
                     <div className="absolute inset-0 bg-gradient-to-b from-emerald-400/20 via-sky-400/15 to-transparent" />
                     <div className="absolute top-[-12%] left-[-14%] w-[45%] h-[45%] bg-emerald-500/25 rounded-full blur-[120px]" />
                     <div className="absolute top-[8%] right-[-18%] w-[48%] h-[48%] bg-sky-500/20 rounded-full blur-[140px]" />
                     <div className="absolute bottom-[-14%] left-[20%] w-[52%] h-[52%] bg-emerald-500/15 rounded-full blur-[150px]" />
                 </div>
             ) : (
-                <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
+                <div className={cn(isInline ? "absolute" : "fixed", "inset-0 overflow-hidden pointer-events-none z-0")}>
                     <div className="absolute inset-0 bg-background" />
                 </div>
             )}
@@ -5550,7 +5558,7 @@ const MobileDashboardDemo = ({
                     <div style={{ height: isRefreshingProp ? '60px' : '0' }} className="transition-all duration-300" />
 
                     {/* PWA Install Banner - Fixed Contrast & Theme (P0) */}
-                    {canInstall && (
+                    {canInstall && !hideNavbar && (
                         <div className={cn(
                             "mx-5 mb-5 p-3.5 rounded-[2.5rem] border flex items-center justify-between transition-all duration-300",
                             isDark
@@ -5587,15 +5595,16 @@ const MobileDashboardDemo = ({
 
 
                     {/* Command Header - Now Sticky and Common across all tabs */}
-                    <div
-                        className={cn(
-                            "sticky top-0 z-50 px-5 pb-2 transition-all duration-300 mb-0 border-b",
-                            isDark ? "bg-[#03110C]/90 backdrop-blur-xl border-white/5" : "bg-white/90 backdrop-blur-xl border-slate-200"
-                        )}
-                        style={{
-                            paddingTop: 'max(env(safe-area-inset-top), 24px)'
-                        }}
-                    >
+                    {!hideNavbar && (
+                        <div
+                            className={cn(
+                                "sticky top-0 z-[100] px-5 pb-2 transition-all duration-300 mb-0 border-b",
+                                isDark ? "bg-[#03110C]/90 backdrop-blur-xl border-white/5" : "bg-white/90 backdrop-blur-xl border-slate-200"
+                            )}
+                            style={{
+                                paddingTop: 'max(env(safe-area-inset-top), 24px)'
+                            }}
+                        >
                         <div className="flex items-center justify-between mb-1">
                             {/* Left: Sidebar Menu */}
                             <button type="button" onClick={() => handleAction('menu')} aria-label="Open menu" className={cn("w-10 h-10 -ml-1 rounded-xl flex items-center justify-center transition-all active:scale-95", isDark ? 'bg-white/5 text-foreground/70' : 'bg-secondary/50 text-muted-foreground')}>
@@ -5606,7 +5615,7 @@ const MobileDashboardDemo = ({
                             <div className="flex flex-col items-center gap-0">
                                 <div className="flex items-center gap-1.5 font-black text-[15px] tracking-tight">
                                     <ShieldCheck className={cn("w-4 h-4", isDark ? "text-primary" : "text-primary")} strokeWidth={2.5} />
-                                    <span className={cn(isDark ? "text-white" : "text-slate-900")}>Creator Armour</span>
+                                    <span className={cn(isDark ? "text-white" : "text-slate-900")}>{displayName || "Creator Armour"}</span>
                                 </div>
                             </div>
 
@@ -5699,6 +5708,7 @@ const MobileDashboardDemo = ({
                             </div>
                         </div>
                     </div>
+                    )}
 
                     {activeTab === 'dashboard' && (
                         <DashboardTab
@@ -5843,28 +5853,30 @@ const MobileDashboardDemo = ({
                 </div>
 
                 {/* ─── NAVIGATION BAR (Redesigned) ─── */}
-                <BottomNavigationBar
-                    activeTab={activeTab}
-                    effectiveTab={effectiveTab}
-                    isDark={isDark}
-                    secondaryTextColor={secondaryTextColor}
-                    pendingOffersCount={pendingOffersCount}
-                    triggerHaptic={triggerHaptic}
-                    setActiveTab={setActiveTab}
-                    scrollRef={scrollRef}
-                    scrollPositionsRef={scrollPositionsRef}
-                    isOverlayOpen={
-                        Boolean(selectedItem) ||
-                        showActionSheet ||
-                        showItemMenu ||
-                        showDeliverContentModal ||
-                        showReportIssueModal ||
-                        showCreatorSigningModal ||
-                        showPushInstallGuide ||
-                        showShareSheet ||
-                        showProgressSheet
-                    }
-                />
+                {!hideNavbar && (
+                    <BottomNavigationBar
+                        activeTab={activeTab}
+                        effectiveTab={effectiveTab}
+                        isDark={isDark}
+                        secondaryTextColor={secondaryTextColor}
+                        pendingOffersCount={pendingOffersCount}
+                        triggerHaptic={triggerHaptic}
+                        setActiveTab={setActiveTab}
+                        scrollRef={scrollRef}
+                        scrollPositionsRef={scrollPositionsRef}
+                        isOverlayOpen={
+                            Boolean(selectedItem) ||
+                            showActionSheet ||
+                            showItemMenu ||
+                            showDeliverContentModal ||
+                            showReportIssueModal ||
+                            showCreatorSigningModal ||
+                            showPushInstallGuide ||
+                            showShareSheet ||
+                            showProgressSheet
+                        }
+                    />
+                )}
 
                 {/* ─── ACTION SHEET ─── */}
                 <AnimatePresence>
@@ -9128,8 +9140,8 @@ const DashboardTab = React.memo(({
                                     </div>
     
                                     {/* Timeline UI */}
-                                    <div className="relative flex justify-between items-start mb-6">
-                                        <div className="absolute top-[13px] left-0 right-0 h-[2px] bg-slate-100 z-0 mx-6">
+                                    <div className="relative flex justify-between items-start mb-6 px-2">
+                                        <div className="absolute top-[13px] left-0 right-0 h-[2px] bg-slate-100 z-0 mx-4">
                                             <motion.div
                                                 initial={{ width: 0 }}
                                                 animate={{ width: `${Math.min(100, ((progress.step - 1) / 3) * 100)}%` }}
