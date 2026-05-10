@@ -35,8 +35,9 @@ interface Creator {
         avg_response_hours?: number;
         completion_rate?: number;
     } | null;
-    barter_min_value?: number;
     avg_views?: number;
+    starting_price?: number;
+    discovery_video_url?: string | null;
     is_verified?: boolean;
     location?: string;
 }
@@ -300,15 +301,27 @@ const DiscoverCreators = () => {
                                 className="group"
                             >
                                 <div className="relative aspect-[4/5] rounded-[48px] overflow-hidden bg-slate-100 shadow-xl border-8 border-white group-hover:shadow-2xl group-hover:-translate-y-2 transition-all duration-500">
-                                    {/* Creator Image */}
-                                    <img 
-                                        src={creator.avatar_url || `https://ui-avatars.com/api/?name=${creator.name}&background=random`} 
-                                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" 
-                                        alt={creator.name}
-                                        onError={(e) => {
-                                            (e.target as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${creator.name}&background=random`;
-                                        }}
-                                    />
+                                    {/* Creator Image or Video */}
+                                    {creator.discovery_video_url ? (
+                                        <video 
+                                            src={creator.discovery_video_url}
+                                            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                                            autoPlay
+                                            muted
+                                            loop
+                                            playsInline
+                                            poster={creator.avatar_url || ""}
+                                        />
+                                    ) : (
+                                        <img 
+                                            src={creator.avatar_url || `https://ui-avatars.com/api/?name=${creator.name}&background=random`} 
+                                            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
+                                            alt={creator.name}
+                                            onError={(e) => {
+                                                (e.target as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${creator.name}&background=random`;
+                                            }}
+                                        />
+                                    )}
                                     
                                     {/* Overlay */}
                                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-90 group-hover:opacity-100 transition-opacity" />
@@ -333,9 +346,21 @@ const DiscoverCreators = () => {
                                                 <p className="text-[9px] font-black uppercase tracking-widest opacity-60">Avg. Views</p>
                                             </div>
                                             <p className="text-base font-black">
-                                                {creator.avg_views ? `${(creator.avg_views / 1000).toFixed(1)}K+` : '12.4K+'}
+                                                {creator.avg_views ? (creator.avg_views >= 1000000 ? `${(creator.avg_views / 1000000).toFixed(1)}M` : `${(creator.avg_views / 1000).toFixed(0)}K+`) : '12K+'}
                                             </p>
                                         </div>
+
+                                        {(creator.starting_price || creator.barter_min_value) && (
+                                            <div className="bg-slate-900/40 backdrop-blur-xl border border-white/10 p-4 rounded-[24px] shadow-xl text-white transform group-hover:translate-x-2 transition-transform duration-500 delay-150">
+                                                <div className="flex items-center gap-2 mb-1">
+                                                    <Zap className="w-3.5 h-3.5 text-yellow-400" />
+                                                    <p className="text-[9px] font-black uppercase tracking-widest opacity-60">Starts At</p>
+                                                </div>
+                                                <p className="text-base font-black text-emerald-400">
+                                                    ₹{((creator.starting_price || creator.barter_min_value || 0)).toLocaleString()}
+                                                </p>
+                                            </div>
+                                        )}
                                     </div>
 
                                     {/* Bottom Info */}

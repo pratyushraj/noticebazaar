@@ -49,6 +49,8 @@ router.get('/', async (req: Request, res: Response) => {
         facebook_followers,
         avg_reel_views_manual,
         barter_min_value,
+        starting_price,
+        discovery_video_url,
         is_verified
       `)
       .eq('role', 'creator')
@@ -131,6 +133,8 @@ router.get('/', async (req: Request, res: Response) => {
         avatar_url: profile.avatar_url,
         avg_views: profile.avg_reel_views_manual,
         barter_min_value: profile.barter_min_value,
+        starting_price: profile.starting_price,
+        discovery_video_url: profile.discovery_video_url,
         is_verified: profile.is_verified,
         platforms,
       };
