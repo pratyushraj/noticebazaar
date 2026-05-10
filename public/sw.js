@@ -78,6 +78,11 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
+  // Never intercept Facebook/Instagram CDN requests to avoid CSP connect-src issues
+  if (url.hostname.includes('fbcdn.net') || url.hostname.includes('cdninstagram.com')) {
+    return;
+  }
+
   // Let the browser handle hashed build assets directly.
   // Caching these in the SW can pin stale chunk URLs across deploys and cause
   // "module script served as text/html" failures when index.html updates first.
