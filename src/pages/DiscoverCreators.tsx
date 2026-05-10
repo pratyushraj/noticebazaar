@@ -339,24 +339,24 @@ const DiscoverCreators = () => {
                                     </div>
 
                                     {/* Floating Stats */}
-                                    <div className="absolute top-8 right-8 flex flex-col gap-3">
-                                        <div className="bg-white/10 backdrop-blur-xl border border-white/20 p-4 rounded-[24px] shadow-xl text-white transform group-hover:translate-x-2 transition-transform duration-500 delay-75">
-                                            <div className="flex items-center gap-2 mb-1">
-                                                <Eye className="w-3.5 h-3.5 text-emerald-400" />
-                                                <p className="text-[9px] font-black uppercase tracking-widest opacity-60">Avg. Views</p>
+                                    <div className="absolute top-8 right-8 flex flex-col gap-2">
+                                        <div className="bg-white/10 backdrop-blur-xl border border-white/20 p-3 rounded-[20px] shadow-xl text-white transform group-hover:translate-x-2 transition-transform duration-500 delay-75">
+                                            <div className="flex items-center gap-2 mb-0.5">
+                                                <Eye className="w-3 h-3 text-emerald-400" />
+                                                <p className="text-[8px] font-black uppercase tracking-widest opacity-60">Avg. Views</p>
                                             </div>
-                                            <p className="text-base font-black">
+                                            <p className="text-sm font-black">
                                                 {creator.avg_views ? (creator.avg_views >= 1000000 ? `${(creator.avg_views / 1000000).toFixed(1)}M` : `${(creator.avg_views / 1000).toFixed(0)}K+`) : '12K+'}
                                             </p>
                                         </div>
 
                                         {(creator.starting_price || creator.barter_min_value) && (
-                                            <div className="bg-slate-900/40 backdrop-blur-xl border border-white/10 p-4 rounded-[24px] shadow-xl text-white transform group-hover:translate-x-2 transition-transform duration-500 delay-150">
-                                                <div className="flex items-center gap-2 mb-1">
-                                                    <Zap className="w-3.5 h-3.5 text-yellow-400" />
-                                                    <p className="text-[9px] font-black uppercase tracking-widest opacity-60">Starts At</p>
+                                            <div className="bg-slate-900/40 backdrop-blur-xl border border-white/10 p-3 rounded-[20px] shadow-xl text-white transform group-hover:translate-x-2 transition-transform duration-500 delay-150">
+                                                <div className="flex items-center gap-2 mb-0.5">
+                                                    <Zap className="w-3 h-3 text-yellow-400" />
+                                                    <p className="text-[8px] font-black uppercase tracking-widest opacity-60">Starts At</p>
                                                 </div>
-                                                <p className="text-base font-black text-emerald-400">
+                                                <p className="text-sm font-black text-emerald-400">
                                                     ₹{((creator.starting_price || creator.barter_min_value || 0)).toLocaleString()}
                                                 </p>
                                             </div>
