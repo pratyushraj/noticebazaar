@@ -2912,7 +2912,7 @@ const CollabLinkLanding = () => {
           ? 'Save failed'
           : ''
   const avgReelViews =
-    creator.avg_reel_views_manual ?? creator.avg_views ?? creator.avg_reel_views ?? creator.performance_proof?.median_reel_views ?? null
+    creator.avg_reel_views_manual ?? creator.avg_reel_views ?? creator.performance_proof?.median_reel_views ?? null
   const avgLikes = creator.avg_likes ?? creator.performance_proof?.avg_likes ?? null
 
   const isViewsVerified = Boolean(
@@ -3729,12 +3729,12 @@ const CollabLinkLanding = () => {
                       
                       <div className="bg-white/10 backdrop-blur-2xl text-white text-[10px] font-black uppercase tracking-wider px-3 py-2 rounded-full border border-white/20 flex items-center gap-1.5 shadow-2xl whitespace-nowrap">
                         <Eye className="w-3 h-3" />
-                        {username?.toLowerCase() === 'photowalamusafir' ? '26.0M' : (username?.toLowerCase() === 'snehal_sachdeva' ? '350K' : ((creator.avg_reel_views_manual || creator.avg_reel_views || creator.performance_proof?.median_reel_views) ? 
-                          (Math.max(creator.avg_reel_views_manual || 0, creator.avg_reel_views || 0, creator.performance_proof?.median_reel_views || 0) >= 1000000 
-                            ? `${(Math.max(creator.avg_reel_views_manual || 0, creator.avg_reel_views || 0, creator.performance_proof?.median_reel_views || 0) / 1000000).toFixed(1)}M` 
-                            : Math.max(creator.avg_reel_views_manual || 0, creator.avg_reel_views || 0, creator.performance_proof?.median_reel_views || 0) >= 1000 
-                              ? `${(Math.max(creator.avg_reel_views_manual || 0, creator.avg_reel_views || 0, creator.performance_proof?.median_reel_views || 0) / 1000).toFixed(1)}K` 
-                              : Math.max(creator.avg_reel_views_manual || 0, creator.avg_reel_views || 0, creator.performance_proof?.median_reel_views || 0))
+                        {username?.toLowerCase() === 'photowalamusafir' ? '26.0M' : (username?.toLowerCase() === 'snehal_sachdeva' ? '350K' : (avgReelViews ? 
+                          (avgReelViews >= 1000000 
+                            ? `${(avgReelViews / 1000000).toFixed(1)}M` 
+                            : avgReelViews >= 1000 
+                              ? `${(avgReelViews / 1000).toFixed(1)}K` 
+                              : avgReelViews)
                           : '12K'))} Views
                       </div>
                     </div>

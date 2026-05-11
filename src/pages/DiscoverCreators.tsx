@@ -36,6 +36,7 @@ interface Creator {
         completion_rate?: number;
     } | null;
     avg_views?: number;
+    avg_reel_views_manual?: number;
     starting_price?: number;
     discovery_video_url?: string | null;
     is_verified?: boolean;
@@ -344,10 +345,10 @@ const DiscoverCreators = () => {
                                         <div className="bg-white/10 backdrop-blur-xl border border-white/20 p-3 rounded-[20px] shadow-xl text-white transform group-hover:translate-x-2 transition-transform duration-500 delay-75">
                                             <div className="flex items-center gap-2 mb-0.5">
                                                 <Eye className="w-3 h-3 text-emerald-400" />
-                                                <p className="text-[8px] font-black uppercase tracking-widest opacity-60">Avg. Views</p>
+                                                <p className="text-[8px] font-black uppercase tracking-widest opacity-60">Reel Views</p>
                                             </div>
                                             <p className="text-sm font-black">
-                                                {creator.avg_views ? (creator.avg_views >= 1000000 ? `${(creator.avg_views / 1000000).toFixed(1)}M` : `${(creator.avg_views / 1000).toFixed(0)}K+`) : '12K+'}
+                                                {creator.avg_reel_views_manual ? (creator.avg_reel_views_manual >= 1000000 ? `${(creator.avg_reel_views_manual / 1000000).toFixed(1)}M` : `${(creator.avg_reel_views_manual / 1000).toFixed(0)}K+`) : (creator.avg_views ? (creator.avg_views >= 1000000 ? `${(creator.avg_views / 1000000).toFixed(1)}M` : `${(creator.avg_views / 1000).toFixed(0)}K+`) : '12K+')}
                                             </p>
                                         </div>
 

@@ -48,10 +48,12 @@ router.get('/', async (req: Request, res: Response) => {
         twitter_followers,
         facebook_followers,
         avg_reel_views_manual,
+        avg_views,
         barter_min_value,
         starting_price,
         discovery_video_url,
-        is_verified
+        is_verified,
+        location
       `)
       .eq('role', 'creator')
       .not('username', 'is', null)
@@ -140,11 +142,13 @@ router.get('/', async (req: Request, res: Response) => {
         category: profile.creator_category,
         bio: profile.bio,
         avatar_url: profile.avatar_url,
-        avg_views: profile.avg_reel_views_manual,
+        avg_views: profile.avg_views,
+        avg_reel_views_manual: profile.avg_reel_views_manual,
         barter_min_value: profile.barter_min_value,
         starting_price: profile.starting_price,
         discovery_video_url: profile.discovery_video_url,
         is_verified: profile.is_verified,
+        location: profile.location,
         platforms,
       };
     });
