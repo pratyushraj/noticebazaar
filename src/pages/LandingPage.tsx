@@ -1153,6 +1153,33 @@ const LandingPage = () => {
             </div>
           </div>
 
+          {/* SEO DIRECTORY SECTION */}
+          <div className="mt-20 pt-12 border-t border-white/5">
+            <p className="text-[13px] font-black uppercase tracking-[0.25em] text-white/30 mb-8 text-center lg:text-left">Influencer Marketing Directory</p>
+            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-x-8 gap-y-4">
+              <Link to="/discover?city=Mumbai" className="text-sm font-medium text-slate-500 hover:text-white transition-colors">Creators in Mumbai</Link>
+              <Link to="/discover?city=Delhi" className="text-sm font-medium text-slate-500 hover:text-white transition-colors">Creators in Delhi</Link>
+              <Link to="/discover?city=Bangalore" className="text-sm font-medium text-slate-500 hover:text-white transition-colors">Creators in Bangalore</Link>
+              <Link to="/discover?city=Hyderabad" className="text-sm font-medium text-slate-500 hover:text-white transition-colors">Creators in Hyderabad</Link>
+              <Link to="/discover?city=Pune" className="text-sm font-medium text-slate-500 hover:text-white transition-colors">Creators in Pune</Link>
+              <Link to="/discover?city=Chennai" className="text-sm font-medium text-slate-500 hover:text-white transition-colors">Creators in Chennai</Link>
+              
+              <Link to="/discover?category=Fashion" className="text-sm font-medium text-slate-500 hover:text-white transition-colors">Fashion Influencers</Link>
+              <Link to="/discover?category=Beauty" className="text-sm font-medium text-slate-500 hover:text-white transition-colors">Beauty Influencers</Link>
+              <Link to="/discover?category=Lifestyle" className="text-sm font-medium text-slate-500 hover:text-white transition-colors">Lifestyle Influencers</Link>
+              <Link to="/discover?category=Tech" className="text-sm font-medium text-slate-500 hover:text-white transition-colors">Tech Influencers</Link>
+              <Link to="/discover?category=Fitness" className="text-sm font-medium text-slate-500 hover:text-white transition-colors">Fitness Influencers</Link>
+              <Link to="/discover?category=Food" className="text-sm font-medium text-slate-500 hover:text-white transition-colors">Food Influencers</Link>
+              
+              <Link to="/blog/ugc-creators-india-ultimate-guide-2026" className="text-sm font-medium text-slate-500 hover:text-white transition-colors">Hire UGC Creators</Link>
+              <Link to="/rate-calculator" className="text-sm font-medium text-slate-500 hover:text-white transition-colors">Influencer Rate Card</Link>
+              <Link to="/free-influencer-contract" className="text-sm font-medium text-slate-500 hover:text-white transition-colors">Contract Templates</Link>
+              <Link to="/discover" className="text-sm font-medium text-slate-500 hover:text-white transition-colors">Influencer Discovery</Link>
+              <Link to="/blog/influencer-rate-card-india-2026" className="text-sm font-medium text-slate-500 hover:text-white transition-colors">Indian Creator Rates</Link>
+              <Link to="/brand-directory" className="text-sm font-medium text-slate-500 hover:text-white transition-colors">Brand Directory</Link>
+            </div>
+          </div>
+
           <div className="mt-16 flex flex-col lg:flex-row items-center justify-between gap-10">
             <div className="flex flex-col items-center lg:items-start gap-3">
               <div className="flex items-center gap-2 px-3 py-1 bg-white/5 rounded-full border border-white/10 mb-2">
