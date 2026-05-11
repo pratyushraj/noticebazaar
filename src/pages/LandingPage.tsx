@@ -15,12 +15,12 @@ const ThreeDIllustration = lazy(() =>
   import('@/components/ui/ThreeDIllustration').then(m => ({ default: m.default }))
 );
 
-const AANYA_IMG = optimizeImage("https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=500&h=500&q=80", { width: 128, quality: 80 }) ?? "";
-const PRIYA_IMG = optimizeImage("https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=500&h=500&q=80", { width: 128, quality: 80 }) ?? "";
-const ARJUN_IMG = optimizeImage("https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&w=500&h=500&q=80", { width: 128, quality: 80 }) ?? "";
-const NEHA_IMG = optimizeImage("https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=500&h=500&q=80", { width: 128, quality: 80 }) ?? "";
-const RITIKA_IMG = optimizeImage("https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=500&h=500&q=80", { width: 128, quality: 80 }) ?? "";
-const ROHAN_IMG = optimizeImage("https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=500&h=500&q=80", { width: 128, quality: 80 }) ?? "";
+const AANYA_IMG = "https://ooaxtwmqrvfzdqzoijcj.supabase.co/storage/v1/object/public/creator-assets/amnatureboy/avatar_1778442032436.jpg"; // Sarfaraz
+const PRIYA_IMG = "https://ooaxtwmqrvfzdqzoijcj.supabase.co/storage/v1/object/public/creator-assets/8174aa75-a594-4a6f-b29e-c6d3e3bd9ad6/profile-1778409108437.jpg"; // Snehal Sachdeva
+const ARJUN_IMG = "https://ooaxtwmqrvfzdqzoijcj.supabase.co/storage/v1/object/public/creator-assets/0b298d98-5165-4028-9648-c7371717e885/profile-1778408361391.jpg"; // Dilip Paliwal
+const NEHA_IMG = "https://ooaxtwmqrvfzdqzoijcj.supabase.co/storage/v1/object/public/creator-assets/f5dae986-c446-4697-b293-d8d1910f1215/profile-1778242003572.jpg"; // Shagufi Khan
+const RITIKA_IMG = "https://ooaxtwmqrvfzdqzoijcj.supabase.co/storage/v1/object/public/creator-assets/48d49200-930c-42c2-bf96-b150986be654/profile-1778405330198.jpg"; // Dipali Tripathi
+const ROHAN_IMG = "https://ooaxtwmqrvfzdqzoijcj.supabase.co/storage/v1/object/public/creator-assets/ca50d386-bb6d-444d-a4ec-5322a05dca1d/dp_real.jpg"; // POP
 
 const dashboardShowcase = [
   {
@@ -465,13 +465,13 @@ const LandingPage = () => {
             <div className="flex-1 w-full max-w-[420px] lg:max-w-none relative">
               {/* Floating Creator Profile Badge */}
               <div className="hidden md:flex absolute -left-16 md:-left-24 top-20 bg-white p-4 rounded-3xl shadow-2xl border border-[#E5E7EB] z-20 items-center gap-4 animate-in fade-in slide-in-from-bottom-4 duration-1000 delay-300 hover:scale-105 transition-transform">
-                <img src={AANYA_IMG} alt="Ananya Kapoor" className="w-16 h-16 rounded-full object-cover shadow-sm border-2 border-white" />
+                <img src={AANYA_IMG} alt="Sarfaraz" className="w-16 h-16 rounded-full object-cover shadow-sm border-2 border-white" />
                 <div>
                   <div className="flex items-center gap-1.5 mb-1">
-                    <h3 className="text-base font-black text-[#0F172A]">Ananya Kapoor</h3>
+                    <h3 className="text-base font-black text-[#0F172A]">Sarfaraz</h3>
                     <CheckCircle2 className="w-4 h-4 text-[#16A34A] fill-[#DCFCE7]" />
                   </div>
-                  <p className="text-[12px] font-bold text-[#64748B] leading-tight">Lifestyle Creator • 42K followers</p>
+                  <p className="text-[12px] font-bold text-[#64748B] leading-tight">Travel & Photography • 11K followers</p>
                 </div>
               </div>
 
@@ -516,9 +516,9 @@ const LandingPage = () => {
                   <div className="absolute top-0 left-0 right-0 h-44 bg-gradient-to-b from-[#DCFCE7] to-white" />
 
                   <div className="relative z-10 flex flex-col items-center mb-6">
-                    <img src={AANYA_IMG} className="w-24 h-24 rounded-full object-cover border-4 border-white shadow-md mb-4" alt="Creator Ananya Kapoor Profile Photo" />
-                    <h2 className="text-2xl font-black text-[#0F172A] flex items-center gap-1">Ananya Kapoor <CheckCircle2 className="w-6 h-6 text-[#16A34A] fill-[#DCFCE7]" /></h2>
-                    <p className="text-[13px] font-bold text-[#64748B] mb-4">@aanyakapoor</p>
+                    <img src={AANYA_IMG} className="w-24 h-24 rounded-full object-cover border-4 border-white shadow-md mb-4" alt="Creator Sarfaraz Profile Photo" />
+                    <h2 className="text-2xl font-black text-[#0F172A] flex items-center gap-1">Sarfaraz <CheckCircle2 className="w-6 h-6 text-[#16A34A] fill-[#DCFCE7]" /></h2>
+                    <p className="text-[13px] font-bold text-[#64748B] mb-4">@amnatureboy</p>
 
                     <div className="bg-[#F8FAF9] border border-[#E5E7EB] rounded-2xl p-4 w-full shadow-sm text-center">
                       <p className="text-[11px] font-bold text-[#64748B] uppercase tracking-widest mb-1">Typical Collab Rate</p>
@@ -802,10 +802,10 @@ const LandingPage = () => {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5">
             {[
-              { name: 'Priya Sharma', category: 'Fashion Creator', loc: 'Delhi', followers: '36K', price: '₹3K', earned: '₹24,500 this week', img: PRIYA_IMG, type: 'creator' },
-              { name: 'Arjun Patel', category: 'Tech Reviewer', loc: 'Mumbai', followers: '51K', price: '₹4K', earned: '₹12,000 per reel', img: ARJUN_IMG, type: 'creator' },
-              { name: 'Neha Verma', category: 'Beauty Creator', loc: 'Bangalore', followers: '28K', price: '₹2K', earned: '₹18,500 last month', img: NEHA_IMG, type: 'creator' },
-              { name: 'Ritika Shah', category: 'Brand: SkinCare Co.', loc: 'Mumbai', followers: '—', price: '₹8K avg', earned: '24 creators, 0 disputes', img: RITIKA_IMG, type: 'brand' },
+              { name: 'Snehal Sachdeva', category: 'Fashion & Lifestyle', loc: 'Delhi', followers: '10.8K', price: '₹3K', earned: '₹24,500 this week', img: PRIYA_IMG, type: 'creator' },
+              { name: 'Dilip Paliwal', category: 'Photography', loc: 'Udaipur', followers: '27.5K', price: '₹4K', earned: '₹12,000 per reel', img: ARJUN_IMG, type: 'creator' },
+              { name: 'Shagufi Khan', category: 'Fashion', loc: 'Delhi', followers: '139K', price: '₹5K', earned: '₹18,500 last month', img: NEHA_IMG, type: 'creator' },
+              { name: 'Dipali Tripathi', category: 'Lifestyle', loc: 'Lalganj', followers: '26K', price: '₹2.5K', earned: '24 creators, 0 disputes', img: RITIKA_IMG, type: 'creator' },
             ].map((c, i) => (
               <div key={i} className="bg-white border border-[#E5E7EB] p-6 md:p-8 rounded-[20px] md:rounded-[24px] shadow-[0_8px_24px_rgba(0,0,0,0.06)] hover:shadow-[0_12px_32px_rgba(0,0,0,0.1)] hover:-translate-y-1 transition-all duration-300">
                 <div className="flex items-center gap-4 mb-4">
@@ -844,7 +844,7 @@ const LandingPage = () => {
                   Stop losing deals in the noise. Let brands send structured offers directly to your Creator Armour page, with payment and contract tracking built in.
                 </p>
                 <div className="bg-[#F8FAF9] border border-[#E5E7EB] p-4 rounded-xl inline-block mt-4 backdrop-blur-sm">
-                  <p className="font-mono text-[#16A34A] font-bold text-lg md:text-xl">creatorarmour.com/priyasharma</p>
+                  <p className="font-mono text-[#16A34A] font-bold text-lg md:text-xl">creatorarmour.com/amnatureboy</p>
                 </div>
               </div>
 
@@ -855,9 +855,9 @@ const LandingPage = () => {
                     <div className="absolute top-0 left-0 right-0 h-24 bg-gradient-to-b from-[#DCFCE7] to-transparent" />
 
                     <div className="relative z-10 text-center mb-6">
-                      <img src={PRIYA_IMG} className="w-20 h-20 rounded-full mx-auto object-cover border-[3px] border-white shadow-sm mb-3" alt="Priya Sharma" loading="lazy" />
-                      <h3 className="font-black text-lg text-[#0F172A] flex items-center justify-center gap-1">Priya Sharma <CheckCircle2 className="w-4 h-4 text-[#16A34A] fill-[#DCFCE7]" /></h3>
-                      <p className="text-[12px] font-bold text-[#64748B] mb-3">36K Followers</p>
+                      <img src={AANYA_IMG} className="w-20 h-20 rounded-full mx-auto object-cover border-[3px] border-white shadow-sm mb-3" alt="Sarfaraz" loading="lazy" />
+                      <h3 className="font-black text-lg text-[#0F172A] flex items-center justify-center gap-1">Sarfaraz <CheckCircle2 className="w-4 h-4 text-[#16A34A] fill-[#DCFCE7]" /></h3>
+                      <p className="text-[12px] font-bold text-[#64748B] mb-3">11K Followers</p>
 
                       <div className="bg-white border border-[#E5E7EB] rounded-xl p-3 inline-block shadow-sm">
                         <p className="text-[10px] font-bold text-[#64748B] uppercase tracking-wider mb-0.5">Typical Collab Rate</p>
@@ -903,11 +903,11 @@ const LandingPage = () => {
             <div className="bg-white rounded-[3rem] border border-slate-200 p-8 shadow-2xl shadow-slate-200/40 relative overflow-hidden group hover:-translate-y-2 transition-all duration-500">
                <div className="flex items-center gap-4 mb-8 text-left">
                   <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-white shadow-lg">
-                    <img src={ROHAN_IMG} className="w-full h-full object-cover" alt="Rohan Mehta" />
+                    <img src={ROHAN_IMG} className="w-full h-full object-cover" alt="POP" />
                   </div>
                   <div>
-                    <h3 className="text-xl font-black text-slate-900">Rohan Mehta</h3>
-                    <p className="text-sm font-bold text-slate-500">Travel Creator • 120K followers</p>
+                    <h3 className="text-xl font-black text-slate-900">POP</h3>
+                    <p className="text-sm font-bold text-slate-500">UGC Creator • 2.7K followers</p>
                   </div>
                </div>
                
@@ -916,10 +916,10 @@ const LandingPage = () => {
                    <div className="absolute -top-3 right-6 px-3 py-1 bg-emerald-500 text-white text-[10px] font-black uppercase tracking-widest rounded-full shadow-lg">
                      Most chosen
                    </div>
-                   <h4 className="text-lg font-black text-slate-900 mb-1">Ultimate Travel Vlog Bundle</h4>
-                   <p className="text-sm font-medium text-slate-500 mb-4">1 YouTube Vlog + 3 Instagram Reels + 5 High-res Photos</p>
+                   <h4 className="text-lg font-black text-slate-900 mb-1">High-Impact UGC Bundle</h4>
+                   <p className="text-sm font-medium text-slate-500 mb-4">3 Reels (Hook Optimized) + Raw Footage + White-listing Rights</p>
                    <div className="flex items-center justify-between">
-                     <p className="text-2xl font-black text-slate-900">₹25,000</p>
+                     <p className="text-2xl font-black text-slate-900">₹8,500</p>
                      <button className="px-6 py-2.5 rounded-full bg-slate-900 text-white font-black text-[12px] uppercase tracking-widest hover:bg-emerald-600 transition-colors">
                        Book Now
                      </button>
@@ -1106,9 +1106,9 @@ const LandingPage = () => {
               </div>
                             <div className="flex items-center gap-4 pt-6">
                 <div className="flex -space-x-3">
-                  <img src={PRIYA_IMG} className="w-10 h-10 rounded-full border-2 border-[#05070A] object-cover" alt="Priya Sharma Profile Photo" />
-                  <img src={ARJUN_IMG} className="w-10 h-10 rounded-full border-2 border-[#05070A] object-cover" alt="Arjun Patel Profile Photo" />
-                  <img src={NEHA_IMG} className="w-10 h-10 rounded-full border-2 border-[#05070A] object-cover" alt="Neha Verma Profile Photo" />
+                  <img src={PRIYA_IMG} className="w-10 h-10 rounded-full border-2 border-[#05070A] object-cover" alt="Snehal Sachdeva Profile Photo" />
+                  <img src={ARJUN_IMG} className="w-10 h-10 rounded-full border-2 border-[#05070A] object-cover" alt="Dilip Paliwal Profile Photo" />
+                  <img src={NEHA_IMG} className="w-10 h-10 rounded-full border-2 border-[#05070A] object-cover" alt="Shagufi Khan Profile Photo" />
                 </div>
                 <p className="text-[15px] font-bold text-slate-300">Join <span className="text-white">500+</span> top creators</p>
               </div>

@@ -1984,7 +1984,7 @@ const CollabLinkLanding = () => {
               if (handle) {
                 const { data: rowByUsername, error: errByUsername } = await (supabase as any)
                   .from('profiles')
-                  .select('portfolio_links, media_kit_url, discovery_video_url, portfolio_videos, avg_reel_views_manual, avg_views, engagement_rate, response_hours, reliability_score, past_brands, is_verified, is_elite_verified, onboarding_complete, collab_brands_count_override, collab_response_hours_override, reel_price, story_price, barter_min_value, audience_gender_split, audience_age_range, top_cities, content_niches, primary_audience_language, posting_frequency, deal_templates, past_brand_count, followers_count, instagram_profile_photo, avatar_url')
+                  .select('portfolio_links, media_kit_url, discovery_video_url, portfolio_videos, avg_reel_views_manual, avg_views, engagement_rate, response_hours, reliability_score, past_brands, is_verified, is_elite_verified, onboarding_complete, collab_brands_count_override, collab_response_hours_override, reel_price, story_price, barter_min_value, audience_gender_split, audience_age_range, top_cities, content_niches, primary_audience_language, posting_frequency, deal_templates, past_brand_count, followers_count, instagram_profile_photo, avatar_url, discovery_card_image, collab_past_work_items')
                   .eq('username', handle)
                   .maybeSingle()
                 if (!errByUsername && rowByUsername) {
@@ -2004,7 +2004,7 @@ const CollabLinkLanding = () => {
               if (!portfolioRow && isUuid) {
                 const { data: rowById, error: errById } = await (supabase as any)
                   .from('profiles')
-                  .select('portfolio_links, media_kit_url, discovery_video_url, portfolio_videos, avg_reel_views_manual, avg_views, engagement_rate, response_hours, reliability_score, past_brands, is_verified, is_elite_verified, onboarding_complete, collab_brands_count_override, collab_response_hours_override, reel_price, story_price, barter_min_value, audience_gender_split, audience_age_range, top_cities, content_niches, primary_audience_language, posting_frequency, deal_templates, past_brand_count, followers_count, instagram_profile_photo, avatar_url')
+                  .select('portfolio_links, media_kit_url, discovery_video_url, portfolio_videos, avg_reel_views_manual, avg_views, engagement_rate, response_hours, reliability_score, past_brands, is_verified, is_elite_verified, onboarding_complete, collab_brands_count_override, collab_response_hours_override, reel_price, story_price, barter_min_value, audience_gender_split, audience_age_range, top_cities, content_niches, primary_audience_language, posting_frequency, deal_templates, past_brand_count, followers_count, instagram_profile_photo, avatar_url, discovery_card_image, collab_past_work_items')
                   .eq('id', data.creator.id)
                   .maybeSingle()
                 if (!errById && rowById) {
@@ -2055,6 +2055,8 @@ const CollabLinkLanding = () => {
                   past_brand_count: portfolioRow.past_brand_count !== undefined ? portfolioRow.past_brand_count : prev.past_brand_count,
                   followers: portfolioRow.followers_count !== undefined ? portfolioRow.followers_count : prev.followers,
                   profile_photo: portfolioRow.avatar_url || portfolioRow.instagram_profile_photo || prev.profile_photo,
+                  discovery_card_image: portfolioRow.discovery_card_image || prev.discovery_card_image || null,
+                  portfolio_items: normalizePortfolioItems(portfolioRow.collab_past_work_items, portfolioRow.portfolio_links),
                 }))
               } else {
                 console.warn('[CollabLinkLanding] No portfolio row found for creator')
@@ -2800,9 +2802,11 @@ const CollabLinkLanding = () => {
 
   // Use clean URL for SEO (no hash)
   const canonicalUrl = `https://creatorarmour.com/${encodeURIComponent(normalizedHandle)}`
-  const pageImage = creator.profile_photo && /^https?:\/\//i.test(creator.profile_photo)
-    ? creator.profile_photo
-    : 'https://creatorarmour.com/og-preview.png'
+  const pageImage = (creator.discovery_card_image && /^https?:\/\//i.test(creator.discovery_card_image))
+    ? creator.discovery_card_image
+    : (creator.profile_photo && /^https?:\/\//i.test(creator.profile_photo))
+      ? creator.profile_photo
+      : 'https://creatorarmour.com/og-preview.png'
   const imageAlt = `Collaborate with ${creatorName}${creatorHandle ? ` (${creatorHandle})` : ''}`
   const seoKeywords = Array.from(
     new Set(
