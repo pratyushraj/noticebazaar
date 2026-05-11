@@ -333,11 +333,6 @@ const DiscoverCreators = () => {
                                         <span className="text-[10px] font-black uppercase tracking-widest text-emerald-400 bg-emerald-900/40 backdrop-blur-md px-3 py-1 rounded-md border border-emerald-400/20">
                                             {creator.category || 'Lifestyle'}
                                         </span>
-                                        {creator.location && (
-                                            <span className="text-[10px] font-black uppercase tracking-widest text-blue-400 bg-blue-900/40 backdrop-blur-md px-3 py-1 rounded-md border border-blue-400/20 flex items-center gap-1">
-                                                <MapPin className="w-3 h-3" /> {creator.location}
-                                            </span>
-                                        )}
                                     </div>
 
                                     {/* Floating Stats */}
@@ -375,7 +370,14 @@ const DiscoverCreators = () => {
                                                 <CheckCircle2 className="w-5 h-5 text-emerald-400 fill-white" />
                                             )}
                                         </div>
-                                        <p className="text-white/60 text-xs font-bold uppercase tracking-[0.2em] mb-6">@{creator.username}</p>
+                                        <div className="flex items-center justify-between mb-6">
+                                            <p className="text-white/60 text-xs font-bold uppercase tracking-[0.2em]">@{creator.username}</p>
+                                            {creator.location && (
+                                                <span className="text-[10px] font-black uppercase tracking-widest text-blue-400 flex items-center gap-1 bg-blue-900/40 backdrop-blur-md px-2 py-0.5 rounded border border-blue-400/20">
+                                                    <MapPin className="w-3 h-3" /> {creator.location}
+                                                </span>
+                                            )}
+                                        </div>
                                         
                                         <div className="grid grid-cols-2 gap-3">
                                             <Link 

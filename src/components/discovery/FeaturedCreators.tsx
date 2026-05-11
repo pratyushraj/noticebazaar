@@ -63,6 +63,7 @@ export const FeaturedCreators = () => {
           .not('discovery_video_url', 'is', null)
           .neq('discovery_video_url', '')
           .neq('username', 'democreator')
+          .order('created_at', { ascending: true })
           .limit(5);
 
         if (error) throw error;

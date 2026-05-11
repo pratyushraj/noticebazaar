@@ -3745,68 +3745,6 @@ const CollabLinkLanding = () => {
                   
 
 
-                  {/* 4. FEATURED CONTENT GRID */}
-                  <div className="mt-16">
-                    <div className="mb-8 flex items-end justify-between px-2">
-                      <div>
-                        <h3 className="text-xl font-black text-slate-900 tracking-tight leading-none uppercase italic">
-                          Content Preview
-                        </h3>
-                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mt-2.5">
-                          Instant quality check
-                        </p>
-                      </div>
-                      <div className="flex gap-1.5 pb-0.5">
-                        {[1, 2, 3].map(i => (
-                          <div key={i} className="w-1 h-1 rounded-full bg-slate-300" />
-                        ))}
-                      </div>
-                    </div>
-                    <div className="grid grid-cols-3 gap-3">
-                      {(creator.portfolio_items || creator.collab_past_work_items || [1, 2, 3]).slice(0, 3).map((item, idx) => {
-                        const isMock = typeof item === 'number'
-                        const thumbUrl = isMock 
-                          ? `https://images.unsplash.com/photo-${item === 1 ? '1511367461989-f85a21fda167' : item === 2 ? '1520333789090-1afc82db536a' : '1492562080023-ab3db95bfbce'}?w=400&q=80`
-                          : (item as any).thumbnail_url || (item as any).url
-                        const viewsStr = isMock 
-                          ? `${Math.floor(Math.random() * 50) + 10}K`
-                          : (item as any).views_count ? formatFollowers((item as any).views_count) : 'Verified'
-
-                        return (
-                          <motion.div
-                            key={isMock ? item : (item as any).id || idx}
-                            whileHover={{ y: -6, scale: 1.02 }}
-                            className="aspect-[4/5] rounded-[32px] bg-slate-100 relative overflow-hidden group cursor-pointer shadow-xl border-4 border-white"
-                          >
-                            <img 
-                              src={thumbUrl} 
-                              className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-115"
-                              alt="Portfolio item"
-                            />
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-60 group-hover:opacity-80 transition-opacity" />
-                            
-                            {/* Small Reel Icon Overlay */}
-                            <div className="absolute top-3 right-3 w-7 h-7 rounded-full bg-white/20 backdrop-blur-md border border-white/30 flex items-center justify-center">
-                              <Clapperboard className="w-3.5 h-3.5 text-white" />
-                            </div>
-
-                            <div className="absolute inset-0 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-500 scale-90 group-hover:scale-100">
-                              <div className="w-12 h-12 rounded-full bg-white/30 backdrop-blur-xl flex items-center justify-center border border-white/40 shadow-2xl">
-                                <Play className="w-5 h-5 text-white fill-white ml-0.5" />
-                              </div>
-                            </div>
-                            
-                            <div className="absolute bottom-4 left-0 right-0 px-3">
-                              <div className="bg-black/40 backdrop-blur-xl px-2.5 py-1.5 rounded-2xl flex items-center gap-1.5 w-fit mx-auto border border-white/20 shadow-lg">
-                                <Eye className="w-3 h-3 text-white" />
-                                <span className="text-[10px] font-black text-white uppercase tracking-wider">{viewsStr}</span>
-                              </div>
-                            </div>
-                          </motion.div>
-                        )
-                      })}
-                    </div>
-                  </div>
                 </motion.div>
               )}
 
