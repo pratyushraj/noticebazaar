@@ -275,14 +275,14 @@ router.get('/', async (req: Request, res: Response) => {
         );
       }
 
+      if (category && category !== 'all') {
+        query = query.eq('creator_category', category as string);
+      }
+
       query = query.range(
         parseInt(offset as string, 10),
         parseInt(offset as string, 10) + parseInt(limit as string, 10) - 1
       );
-
-      if (category && category !== 'all') {
-        query = query.eq('creator_category', category as string);
-      }
 
       return query;
     };

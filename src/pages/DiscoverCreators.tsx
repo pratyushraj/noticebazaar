@@ -61,7 +61,7 @@ const DiscoverCreators = () => {
         setLoading(true);
         try {
             const url = category && category !== 'all'
-                ? `${getApiBaseUrl()}/api/creators?category=${category}&limit=100`
+                ? `${getApiBaseUrl()}/api/creators?category=${encodeURIComponent(category)}&limit=100`
                 : `${getApiBaseUrl()}/api/creators?limit=100`;
 
             const response = await withRetry(() => fetch(url));
