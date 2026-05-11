@@ -64,7 +64,17 @@ async function main() {
     changefreq: 'monthly' as const,
   }));
 
-  const allPages = [...staticPages, ...blogPages];
+  const calculatorNiches = ['finance', 'beauty', 'tech', 'education', 'entertainment'];
+  const calculatorPlatforms = ['instagram', 'youtube', 'tiktok', 'facebook', 'twitter'];
+  const calculatorPages = calculatorPlatforms.flatMap(platform => 
+    calculatorNiches.map(niche => ({
+      loc: `/calculator/${platform}/${niche}`,
+      priority: '0.6',
+      changefreq: 'monthly' as const,
+    }))
+  );
+
+  const allPages = [...staticPages, ...blogPages, ...calculatorPages];
   const xml = generateXml(allPages);
 
   const outPath = path.resolve(process.cwd(), 'public', 'sitemap.xml');

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { AlertTriangle, Scale, RefreshCcw, X, Ban, ChevronRight } from "lucide-react";
 import { toast } from "sonner";
 import { getApiBaseUrl } from "@/lib/utils/api";

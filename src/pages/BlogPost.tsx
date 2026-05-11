@@ -214,10 +214,26 @@ const BlogPost = () => {
                 Contract Templates
                 <ExternalLink className="w-4 h-4 text-slate-600 group-hover:text-emerald-500" />
               </Link>
-              <Link to="/free-legal-check" className="flex items-center justify-between p-4 bg-white/5 rounded-2xl border border-white/10 hover:border-white/20 transition-all group font-bold text-[13px] text-slate-300 hover:text-white">
-                Legal Health Check
+              <Link to="/brand-directory" className="flex items-center justify-between p-4 bg-white/5 rounded-2xl border border-white/10 hover:border-white/20 transition-all group font-bold text-[13px] text-slate-300 hover:text-white">
+                Brand Deals Directory
                 <ExternalLink className="w-4 h-4 text-slate-600 group-hover:text-emerald-500" />
               </Link>
+            </div>
+          </div>
+
+          {/* Popular Categories */}
+          <div className="space-y-6">
+            <h3 className="text-[11px] font-black uppercase tracking-[0.25em] text-white/30 px-2">Top Creator Niches</h3>
+            <div className="flex flex-wrap gap-2 px-2">
+              {['Tech', 'Finance', 'Travel', 'Lifestyle', 'Fashion', 'Fitness'].map((niche) => (
+                <Link 
+                  key={niche} 
+                  to={`/discover/${niche.toLowerCase()}`}
+                  className="px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-[11px] font-black uppercase tracking-wider text-slate-400 hover:text-white hover:border-emerald-500/50 transition-all"
+                >
+                  {niche}
+                </Link>
+              ))}
             </div>
           </div>
         </aside>

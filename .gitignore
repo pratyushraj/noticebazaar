@@ -77,3 +77,11 @@ RENDER_ENV_VARIABLES.txt
 # Nested repos / local clones
 server/nanobot/
 .env*.local
+
+# Temporary scripts and assets
+scratch/
+*.mp4
+*.jpg
+*.png
+!public/assets/**/*
+!src/assets/**/*

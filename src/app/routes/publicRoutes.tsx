@@ -27,6 +27,7 @@ const CollaborationAgreementGenerator = lazy(() => import("@/pages/Collaboration
 const BrandDirectory = lazy(() => import("@/pages/BrandDirectory"));
 const DiscoverCreators = lazy(() => import("@/pages/DiscoverCreators"));
 const RateCalculator = lazy(() => import("@/pages/RateCalculator"));
+const RateCalculatorDynamic = lazy(() => import("@/pages/RateCalculatorDynamic"));
 const CollabLinkLanding = lazy(() => import("@/pages/CollabLinkLanding"));
 
 const WelcomeOnboarding = lazy(() => import("@/pages/WelcomeOnboarding"));
@@ -60,6 +61,7 @@ export const PublicRoutes = () => (
     <Route path="/discover" element={<LazyRoute><DiscoverCreators /></LazyRoute>} />
     <Route path="/discover/:category" element={<LazyRoute><DiscoverCreators /></LazyRoute>} />
     <Route path="/rate-calculator" element={<LazyRoute><RateCalculator /></LazyRoute>} />
+    <Route path="/calculator/:platform/:niche" element={<LazyRoute><RateCalculatorDynamic /></LazyRoute>} />
     <Route path="/creator/:username" element={<LegacyCreatorProfileRedirect />} />
     <Route path="/settings" element={<Navigate to="/creator-profile" replace />} />
     <Route path="/brand-opportunities" element={<Navigate to="/creator-dashboard" replace />} />

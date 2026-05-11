@@ -80,13 +80,19 @@ const categoryMultipliers: Record<Category, number> = {
   entertainment: 1.0,
 };
 
-const RateCalculator = () => {
+const RateCalculator = ({ 
+  initialPlatform = 'instagram', 
+  initialCategory = 'entertainment' 
+}: { 
+  initialPlatform?: string, 
+  initialCategory?: string 
+}) => {
   const navigate = useNavigate();
   const [followers, setFollowers] = useState(100000);
   const [engagementRate, setEngagementRate] = useState(5);
-  const [platform, setPlatform] = useState('instagram');
+  const [platform, setPlatform] = useState(initialPlatform);
   const [contentType, setContentType] = useState('post');
-  const [category, setCategory] = useState<Category>('entertainment');
+  const [category, setCategory] = useState<Category>(initialCategory as Category);
   const [currency, setCurrency] = useState<Currency>('INR');
   const [rounding, setRounding] = useState<RoundingPreference>('clean');
   const [exclusivity, setExclusivity] = useState(false);

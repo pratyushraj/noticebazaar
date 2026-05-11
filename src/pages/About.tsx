@@ -1,6 +1,5 @@
-
-
 import { SEOHead } from '@/components/seo/SEOHead';
+import { FAQSection } from '@/components/seo/FAQSection';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Shield, AlertCircle, FileText } from 'lucide-react';
@@ -146,6 +145,34 @@ const About = () => {
               </div>
             </div>
           </section>
+
+          {/* FAQ Section */}
+          <FAQSection 
+            title="Questions About Our Mission"
+            description="Everything you need to know about how we protect creators in India."
+            items={[
+              {
+                question: "How does Creator Armour protect me from payment delays?",
+                answer: "We provide legally-vetted contracts that include 18% per annum late payment interest (as per Indian law) and clear payment timelines. Brands are less likely to delay when there's a formal audit trail and explicit legal consequences."
+              },
+              {
+                question: "Is Creator Armour a talent agency?",
+                answer: "No, we are an Operating System for creators. Unlike agencies that take a percentage of your deal, we provide the tools (contracts, payments, audit trails) for you to manage your own business independently and safely."
+              },
+              {
+                question: "Do I need a GST registration to use Creator Armour?",
+                answer: "No, you don't need GST registration to start. However, as you grow, we provide guidance and CA support to help you manage your taxes and compliance as per Indian regulations."
+              },
+              {
+                question: "What is an 'Audit Trail' in influencer marketing?",
+                answer: "An audit trail is a permanent, timestamped record of all communications, contract versions, and payment milestones. If a brand disputes a deliverable or a payment, you have objective proof to back your claim."
+              },
+              {
+                question: "Can I use the platform for barter deals?",
+                answer: "Yes! Creator Armour supports both paid and barter collaborations. You can even set a 'Minimum Barter Value' to ensure you only receive high-quality product exchange offers."
+              }
+            ]}
+          />
 
           {/* Closing */}
           <section className="bg-gradient-to-r from-purple-600/30 to-pink-600/30 backdrop-blur-md p-8 rounded-xl border border-purple-400/30 space-y-4">

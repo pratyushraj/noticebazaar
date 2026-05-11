@@ -528,28 +528,44 @@ const getEngagementRange = (followers?: number | null, avgReelViews?: number | n
   return 'High Viewer Interaction'
 }
 
-const formatAudienceGender = (value?: string | null) => {
+const formatAudienceGender = (value?: any | null) => {
   if (!value) return null
-  const normalized = value.trim()
-  if (!normalized) return null
+  
+  let data = value
+  if (typeof value === 'string') {
+    try {
+      data = JSON.parse(value)
+    } catch (e) {
+      // Not JSON, handle as original logic
+      const normalized = value.trim()
+      if (!normalized) return null
+      const womenMatch = normalized.match(/(\d+)\s*%?\s*women?/i)
+      const menMatch = normalized.match(/(\d+)\s*%?\s*men?/i)
+      const women = womenMatch ? Number(womenMatch[1]) : null
+      const men = menMatch ? Number(menMatch[1]) : null
 
-  const womenMatch = normalized.match(/(\d+)\s*%?\s*women?/i)
-  const menMatch = normalized.match(/(\d+)\s*%?\s*men?/i)
-  const women = womenMatch ? Number(womenMatch[1]) : null
-  const men = menMatch ? Number(menMatch[1]) : null
+      if (women !== null && men !== null) {
+        return [`${women}% Women`, `${men}% Men`]
+      }
+      if (women !== null) {
+        const inferredMen = Math.max(0, 100 - women)
+        return [`${women}% Women`, `${inferredMen}% Men`]
+      }
+      if (men !== null) {
+        const inferredWomen = Math.max(0, 100 - men)
+        return [`${inferredWomen}% Women`, `${men}% Men`]
+      }
+      return [normalized]
+    }
+  }
 
-  if (women !== null && men !== null) {
-    return [`${women}% Women`, `${men}% Men`]
+  if (typeof data === 'object' && data !== null) {
+    const w = data.female ?? data.FEMALE ?? data.women ?? data.WOMEN ?? 0
+    const m = data.male ?? data.MALE ?? data.men ?? data.MEN ?? 0
+    return [`${w}% Women`, `${m}% Men`]
   }
-  if (women !== null) {
-    const inferredMen = Math.max(0, 100 - women)
-    return [`${women}% Women`, `${inferredMen}% Men`]
-  }
-  if (men !== null) {
-    const inferredWomen = Math.max(0, 100 - men)
-    return [`${inferredWomen}% Women`, `${men}% Men`]
-  }
-  return [normalized]
+
+  return [String(value)]
 }
 
 const toTitleCase = (value: string) => {
@@ -4166,23 +4182,71 @@ const CollabLinkLanding = () => {
                               <span className="text-[11px] font-black text-blue-600 bg-blue-50 px-3 py-1 rounded-full border border-blue-100/50 uppercase tracking-widest">High Value</span>
                             </div>
                             <div className="h-4 w-full bg-slate-100 rounded-full overflow-hidden flex shadow-inner p-0.5">
-                              <motion.div 
-                                initial={{ width: 0 }}
-                                animate={{ width: creator.audience_gender_split ? `${creator.audience_gender_split.split('%')[0]}%` : '0%' }}
-                                transition={{ duration: 1.5, ease: "easeOut" }}
-                                className="h-full bg-gradient-to-r from-emerald-400 to-teal-500 rounded-full shadow-lg" 
-                              />
-                              <div className="h-full bg-slate-200 flex-1 rounded-r-full" />
+                              {(() => {
+                                const parseGender = (val: any) => {
+                                  if (!val) return { women: 0, men: 0 };
+                                  let data = val;
+                                  if (typeof val === 'string') {
+                                    try { data = JSON.parse(val); } catch (e) {
+                                      const wMatch = val.match(/(\d+)/);
+                                      const w = wMatch ? parseInt(wMatch[1]) : 0;
+                                      return { women: w, men: 100 - w };
+                                    }
+                                  }
+                                  if (typeof data === 'object' && data !== null) {
+                                    const w = data.female ?? data.FEMALE ?? data.women ?? data.WOMEN ?? 0;
+                                    const m = data.male ?? data.MALE ?? data.men ?? data.MEN ?? 0;
+                                    return { women: parseFloat(w), men: parseFloat(m) };
+                                  }
+                                  return { women: 0, men: 0 };
+                                };
+                                const { women, men } = parseGender(creator.audience_gender_split);
+                                return (
+                                  <>
+                                    <motion.div 
+                                      initial={{ width: 0 }}
+                                      animate={{ width: `${women}%` }}
+                                      transition={{ duration: 1.5, ease: "easeOut" }}
+                                      className="h-full bg-gradient-to-r from-emerald-400 to-teal-500 rounded-full shadow-lg" 
+                                    />
+                                    <div className="h-full bg-slate-200 flex-1 rounded-r-full" />
+                                  </>
+                                );
+                              })()}
                             </div>
                             <div className="flex justify-between text-[11px] font-black uppercase tracking-[0.15em] text-slate-500">
-                              <div className="flex items-center gap-2">
-                                <div className="w-2 h-2 rounded-full bg-emerald-500" />
-                                <span>Women {creator.audience_gender_split ? creator.audience_gender_split.split('%')[0] : '0'}%</span>
-                              </div>
-                              <div className="flex items-center gap-2">
-                                <span>Men {creator.audience_gender_split ? 100 - parseInt(creator.audience_gender_split) : '0'}%</span>
-                                <div className="w-2 h-2 rounded-full bg-slate-200" />
-                              </div>
+                              {(() => {
+                                const parseGender = (val: any) => {
+                                  if (!val) return { women: 0, men: 0 };
+                                  let data = val;
+                                  if (typeof val === 'string') {
+                                    try { data = JSON.parse(val); } catch (e) {
+                                      const wMatch = val.match(/(\d+)/);
+                                      const w = wMatch ? parseInt(wMatch[1]) : 0;
+                                      return { women: w, men: 100 - w };
+                                    }
+                                  }
+                                  if (typeof data === 'object' && data !== null) {
+                                    const w = data.female ?? data.FEMALE ?? data.women ?? data.WOMEN ?? 0;
+                                    const m = data.male ?? data.MALE ?? data.men ?? data.MEN ?? 0;
+                                    return { women: parseFloat(w), men: parseFloat(m) };
+                                  }
+                                  return { women: 0, men: 0 };
+                                };
+                                const { women, men } = parseGender(creator.audience_gender_split);
+                                return (
+                                  <>
+                                    <div className="flex items-center gap-2">
+                                      <div className="w-2 h-2 rounded-full bg-emerald-500" />
+                                      <span>Women {women}%</span>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                      <span>Men {men}%</span>
+                                      <div className="w-2 h-2 rounded-full bg-slate-200" />
+                                    </div>
+                                  </>
+                                );
+                              })()}
                             </div>
                           </div>
 

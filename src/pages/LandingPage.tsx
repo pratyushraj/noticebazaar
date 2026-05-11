@@ -4,6 +4,7 @@ import React, { Suspense, lazy, useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useSession } from '@/contexts/SessionContext';
 import { SEOHead } from '@/components/seo/SEOHead';
+import { FAQSection } from '@/components/seo/FAQSection';
 import { ArrowRight, ShieldCheck, CheckCircle2, Instagram, Linkedin, Twitter, Menu, X, BriefcaseBusiness, Zap, Clock, XCircle, Wallet, Landmark, ChevronRight, FileText, Gavel, AlertTriangle } from 'lucide-react';
 import { triggerHaptic, HapticPatterns } from '@/lib/utils/haptics';
 import { cn } from '@/lib/utils';
@@ -991,6 +992,84 @@ const LandingPage = () => {
             ))}
           </div>
         </section>
+
+        {/* Resources & SEO Internal Linking Section */}
+        <section className="px-4 sm:px-6 max-w-[1200px] mx-auto py-20 border-t border-[#E5E7EB]">
+          <div className="flex flex-col md:flex-row items-end justify-between gap-6 mb-12">
+            <div className="max-w-2xl">
+              <h2 className="text-3xl md:text-[40px] font-black tracking-tight text-[#0F172A] mb-4">
+                Resources for your growth
+              </h2>
+              <p className="text-lg text-[#64748B] font-medium">
+                Free tools and guides to help you run your creator business like a pro.
+              </p>
+            </div>
+            <Link to="/blog" className="group flex items-center gap-2 text-[#16A34A] font-black uppercase tracking-widest text-sm hover:translate-x-1 transition-transform">
+              View all resources <ArrowRight className="w-4 h-4" />
+            </Link>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <Link to="/rate-calculator" className="group p-8 rounded-[32px] bg-white border border-[#E5E7EB] hover:border-[#16A34A] transition-all shadow-sm">
+              <div className="w-14 h-14 rounded-2xl bg-[#DCFCE7] text-[#16A34A] flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                <Zap className="w-7 h-7" />
+              </div>
+              <h3 className="text-xl font-black text-[#0F172A] mb-3">Rate Calculator</h3>
+              <p className="text-sm text-[#64748B] font-medium leading-relaxed">
+                Find out exactly how much you should charge for Reels, Stories, and YouTube integrations based on your engagement.
+              </p>
+            </Link>
+
+            <Link to="/free-influencer-contract" className="group p-8 rounded-[32px] bg-white border border-[#E5E7EB] hover:border-[#16A34A] transition-all shadow-sm">
+              <div className="w-14 h-14 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                <FileText className="w-7 h-7" />
+              </div>
+              <h3 className="text-xl font-black text-[#0F172A] mb-3">Contract Templates</h3>
+              <p className="text-sm text-[#64748B] font-medium leading-relaxed">
+                Download legally-vetted collaboration agreements that protect your rights and ensure on-time payments.
+              </p>
+            </Link>
+
+            <Link to="/free-legal-check" className="group p-8 rounded-[32px] bg-white border border-[#E5E7EB] hover:border-[#16A34A] transition-all shadow-sm">
+              <div className="w-14 h-14 rounded-2xl bg-purple-50 text-purple-600 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                <ShieldCheck className="w-7 h-7" />
+              </div>
+              <h3 className="text-xl font-black text-[#0F172A] mb-3">Legal Health Check</h3>
+              <p className="text-sm text-[#64748B] font-medium leading-relaxed">
+                A 2-minute diagnostic tool to see if your business setup is legally protected against non-payments and disputes.
+              </p>
+            </Link>
+          </div>
+        </section>
+
+        {/* Global FAQ Section */}
+        <FAQSection 
+          title="Common Questions"
+          description="Everything you need to know about the Creator Armour ecosystem."
+          containerClassName="bg-[#F8FAF9] border-y border-[#E5E7EB]"
+          items={[
+            {
+              question: "How is Creator Armour different from an influencer agency?",
+              answer: "Agencies take a commission (usually 20-30%) and control your brand relationships. Creator Armour is a tool you own. We provide the infrastructure (links, contracts, payments) for a flat subscription or free, letting you keep 100% of your deal value."
+            },
+            {
+              question: "Does the brand need an account to pay me?",
+              answer: "No. Brands can use your collaboration link to send offers and make payments without creating a full account. They receive a professional dashboard to track the deal, which makes them trust you more."
+            },
+            {
+              question: "Is my data and income private?",
+              answer: "Absolutely. Your earnings, contracts, and brand communications are encrypted and only visible to you. We never share your private deal data with third parties."
+            },
+            {
+              question: "How do the 'Verified' badges work?",
+              answer: "Our team manually verifies creators based on their engagement integrity, past brand deal completion, and audience quality. A verified badge significantly increases your chance of closing high-value deals."
+            },
+            {
+              question: "Can I use Creator Armour if I'm outside India?",
+              answer: "While we are optimized for the Indian market (UPI, Indian Contract Law, GST support), creators globally can use our link and contract tools. International payments are currently supported via specialized partner integrations."
+            }
+          ]}
+        />
 
       </main>
 
