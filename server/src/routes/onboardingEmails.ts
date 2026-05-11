@@ -2,6 +2,7 @@ import { Router, Response } from 'express';
 import { supabase } from '../lib/supabase.js';
 import type { AuthenticatedRequest } from '../middleware/auth.js';
 import { sendWelcomeActivationEmail } from '../services/creatorOnboardingEmailService.js';
+import { sendAdminAlert } from '../services/adminNotificationService.js';
 
 const router = Router();
 
@@ -69,6 +70,38 @@ router.post('/welcome', async (req: AuthenticatedRequest, res: Response) => {
     return res.json({ success: true, alreadySent: false, emailId: emailResult.emailId || null });
   } catch (error: any) {
     console.error('[OnboardingEmails] Error sending welcome email:', error);
+    return res.status(500).json({ success: false, error: error?.message || 'Internal server error' });
+  }
+});
+
+/**
+ * POST /api/onboarding-emails/complete
+ * Notifies internal team that a creator has completed onboarding.
+ */
+router.post('/complete', async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    if (!req.user?.id) {
+      return res.status(401).json({ success: false, error: 'Authentication required' });
+    }
+
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('first_name, last_name, username, creator_category, instagram_followers')
+      .eq('id', req.user.id)
+      .single();
+
+    if (profile) {
+      await sendAdminAlert('onboarding', {
+        name: `${profile.first_name || ''} ${profile.last_name || ''}`.trim() || 'Creator',
+        handle: profile.username || 'unknown',
+        category: profile.creator_category || 'N/A',
+        followers: profile.instagram_followers || 'N/A'
+      });
+    }
+
+    return res.json({ success: true });
+  } catch (error: any) {
+    console.error('[OnboardingEmails] Error notifying admin of completion:', error);
     return res.status(500).json({ success: false, error: error?.message || 'Internal server error' });
   }
 });

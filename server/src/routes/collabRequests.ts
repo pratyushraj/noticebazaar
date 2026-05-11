@@ -41,6 +41,7 @@ import { saveExternalImageToStorage } from '../services/imageStorageService.js';
 import { logFailedNotification } from '../utils/outbox.js';
 import { collabSubmissionLimiter } from '../shared/middleware/security.js';
 import { notifyBrandOfCreatorAction } from '../services/notificationService.js';
+import { sendAdminAlert } from '../services/adminNotificationService.js';
 
 const router = express.Router();
 
@@ -459,6 +460,20 @@ const insertUnclaimedCollabRequest = async (payload: Record<string, unknown>) =>
         .single();
 
       if (!error && data) {
+        // Internal Admin Alert
+        try {
+          sendAdminAlert('offer', {
+            brandName: candidatePayload.brand_name,
+            creatorName: candidatePayload.target_handle || 'Unknown',
+            creatorHandle: candidatePayload.target_handle || 'Unknown',
+            collabType: candidatePayload.collab_type || 'paid',
+            value: candidatePayload.exact_budget || candidatePayload.barter_value || 'N/A',
+            description: candidatePayload.campaign_description || 'No description'
+          });
+        } catch (alertErr) {
+          console.warn('[CollabRequests] Admin alert failed (non-fatal):', alertErr);
+        }
+
         return { record: data, table };
       }
 

@@ -836,6 +836,22 @@ export default function CreatorOnboarding() {
       }
 
       await refetchProfile?.();
+
+      // Notify admin of completion
+      try {
+        const apiBaseUrl = getApiBaseUrl();
+        const { data: sessionData } = await supabase.auth.getSession();
+        await fetch(`${apiBaseUrl}/api/onboarding-emails/complete`, {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${sessionData.session?.access_token}`,
+            'Content-Type': 'application/json',
+          }
+        });
+      } catch (err) {
+        console.warn('Admin notification failed (non-fatal):', err);
+      }
+
       toast.success('Onboarding complete!');
       navigate('/creator-link-ready', { replace: true });
     } catch (error: any) {
