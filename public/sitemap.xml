@@ -313,6 +313,12 @@
     <priority>0.6</priority>
   </url>
   <url>
+    <loc>https://creatorarmour.com/discover/lifestyle</loc>
+    <lastmod>2026-05-12</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://creatorarmour.com/discover/travel</loc>
     <lastmod>2026-05-12</lastmod>
     <changefreq>weekly</changefreq>
@@ -332,12 +338,6 @@
   </url>
   <url>
     <loc>https://creatorarmour.com/discover/drone</loc>
-    <lastmod>2026-05-12</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://creatorarmour.com/discover/lifestyle</loc>
     <lastmod>2026-05-12</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -367,7 +367,7 @@
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://creatorarmour.com/rounak_agarwal</loc>
+    <loc>https://creatorarmour.com/_rounak_agarwal_17</loc>
     <lastmod>2026-05-12</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>

@@ -3757,20 +3757,29 @@ const CollabLinkLanding = () => {
 
                   <div className="relative group rounded-[48px] overflow-hidden border-[6px] border-white shadow-[0_48px_96px_-24px_rgba(0,0,0,0.15)] bg-slate-100 aspect-[9/16] max-h-[550px] mx-auto transition-all duration-700 hover:scale-[1.01] hover:shadow-[0_64px_128px_-32px_rgba(0,0,0,0.2)]">
                     {creator.discovery_video_url ? (
-                      <video
-                        key={creator.discovery_video_url}
-                        src={creator.discovery_video_url}
-                        className="w-full h-full object-cover"
-                        controls
-                        playsInline
-                        autoPlay
-                        muted
-                        loop
-                        preload="auto"
-                        onLoadedData={(e) => {
-                          e.currentTarget.play().catch(err => console.log("Autoplay blocked:", err));
-                        }}
-                      />
+                      getInstagramEmbedUrl(creator.discovery_video_url) ? (
+                        <iframe
+                          src={getInstagramEmbedUrl(creator.discovery_video_url)}
+                          className="w-full h-full border-0"
+                          allowFullScreen
+                          allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
+                        />
+                      ) : (
+                        <video
+                          key={creator.discovery_video_url}
+                          src={creator.discovery_video_url}
+                          className="w-full h-full object-cover"
+                          controls
+                          playsInline
+                          autoPlay
+                          muted
+                          loop
+                          preload="auto"
+                          onLoadedData={(e) => {
+                            e.currentTarget.play().catch(err => console.log("Autoplay blocked:", err));
+                          }}
+                        />
+                      )
                     ) : (
                       <div className="w-full h-full flex flex-col items-center justify-center p-8 bg-slate-50">
                         <div className="w-20 h-20 rounded-full bg-slate-100 flex items-center justify-center mb-4">

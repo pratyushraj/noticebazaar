@@ -399,7 +399,7 @@ const LandingPage = () => {
               </h1>
 
               <p className="text-[20px] md:text-[24px] text-[#64748B] font-medium mb-4 max-w-lg mx-auto lg:mx-0 leading-relaxed text-pretty">
-                Indian creators use Armour to share one link, receive structured offers, protect payments, and keep contracts clear.
+                Share one link. Get paid before you post. Keep every contract clean.
               </p>
 
               <div className="mb-10 inline-flex items-center gap-2 px-3 md:px-4 py-1.5 md:py-2 bg-[#16A34A]/10 text-[#15803D] rounded-full border border-[#16A34A]/20 text-center">
@@ -619,10 +619,10 @@ const LandingPage = () => {
           <div className="max-w-[1200px] mx-auto px-6">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8 text-center">
               {[
-                { stat: '12,400+', label: 'Creators on platform' },
-                { stat: '₹4.2Cr+', label: 'Paid out to creators' },
-                { stat: '99%', label: 'Dispute-free deals' },
-                { stat: '4.9★', label: 'Average rating' },
+                { stat: '100+', label: 'Verified creators' },
+                { stat: '0%', label: 'Commission on creator plan' },
+                { stat: '100%', label: 'Payment-protected deals' },
+                { stat: '24h', label: 'Avg. brand response time' },
               ].map((item) => (
                 <div key={item.label} className="flex flex-col items-center gap-1">
                   <p className="text-2xl md:text-3xl font-black text-white tracking-tight">{item.stat}</p>
@@ -633,31 +633,16 @@ const LandingPage = () => {
           </div>
         </section>
 
-        {/* Brand Logos Section - moved above "More than a collab page" */}
-        <section className="border-y border-[#E5E7EB] bg-[#F8FAF9] py-10 md:py-12">
+        {/* Brand Categories Strip */}
+        <section className="border-y border-[#E5E7EB] bg-[#F8FAF9] py-8 md:py-10">
           <div className="max-w-[1200px] mx-auto px-6 text-center">
-            <p className="text-[13px] font-bold text-[#64748B] uppercase tracking-widest mb-8">Brands creators already trust on Armour</p>
-            <div className="flex justify-center items-center gap-10 sm:gap-14 md:gap-20 opacity-50 hover:opacity-80 transition-all duration-500 overflow-hidden flex-wrap">
-              {/* NYKAA */}
-              <svg className="h-6 md:h-8 shrink-0" viewBox="0 0 120 28" fill="none">
-                <text x="0" y="22" fontFamily="system-ui, sans-serif" fontSize="22" fontWeight="800" fill="#fc2779" letterSpacing="-0.5">NYKAA</text>
-              </svg>
-              {/* boAt */}
-              <svg className="h-6 md:h-8 shrink-0" viewBox="0 0 70 28" fill="none">
-                <text x="0" y="22" fontFamily="Impact, sans-serif" fontSize="24" fontWeight="400" fill="#1a1a1a" letterSpacing="1">boAt</text>
-              </svg>
-              {/* mamaearth */}
-              <svg className="h-6 md:h-8 shrink-0" viewBox="0 0 140 28" fill="none">
-                <text x="0" y="21" fontFamily="Georgia, serif" fontSize="18" fontWeight="400" fill="#2d6a4f" letterSpacing="0.5">mamaearth</text>
-              </svg>
-              {/* Myntra */}
-              <svg className="h-6 md:h-8 shrink-0" viewBox="0 0 90 28" fill="none">
-                <text x="0" y="22" fontFamily="Georgia, serif" fontSize="22" fontWeight="700" fill="#ff3f6c" letterSpacing="-0.5">Myntra</text>
-              </svg>
-              {/* SUGAR */}
-              <svg className="h-6 md:h-8 shrink-0" viewBox="0 0 90 28" fill="none">
-                <text x="0" y="22" fontFamily="system-ui, sans-serif" fontSize="22" fontWeight="800" fill="#e91e8c" letterSpacing="4">SUGAR</text>
-              </svg>
+            <p className="text-[13px] font-bold text-[#64748B] uppercase tracking-widest mb-6">Creators across every category</p>
+            <div className="flex justify-center items-center gap-3 sm:gap-4 flex-wrap">
+              {['Fashion', 'Lifestyle', 'Food', 'Travel', 'Tech', 'Beauty', 'Gaming', 'Fitness'].map((cat) => (
+                <span key={cat} className="px-4 py-2 rounded-full border border-[#E5E7EB] bg-white text-[13px] font-bold text-[#64748B] shadow-sm hover:border-[#16A34A] hover:text-[#16A34A] transition-colors cursor-default">
+                  {cat}
+                </span>
+              ))}
             </div>
           </div>
         </section>
@@ -716,29 +701,35 @@ const LandingPage = () => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-5">
             {[
               {
-                quote: 'Brands stopped ghosting me after I moved them to a proper collab link.',
-                name: 'Priya Sharma',
-                meta: 'Fashion creator, Delhi',
+                quote: 'Having a collab link made brands take me seriously. No more chasing payments on WhatsApp.',
+                name: 'Rounak Agarwal',
+                meta: 'Lifestyle & Travel · Patna · 88K followers',
+                img: ARJUN_IMG,
               },
               {
-                quote: 'I use Armour for rates, contracts, and payout tracking. It feels like a real business now.',
-                name: 'Arjun Patel',
-                meta: 'Tech reviewer, Mumbai',
+                quote: 'I set my rates, shared the link, and got my first structured offer within a week. The contracts are the best part.',
+                name: 'Snehal Sachdeva',
+                meta: 'Fashion & Lifestyle · Mumbai',
+                img: PRIYA_IMG,
               },
               {
-                quote: 'The payment flow is cleaner than DMs. I can show clients a link and close faster.',
-                name: 'Neha Verma',
-                meta: 'Beauty creator, Bangalore',
+                quote: 'Finally a platform that actually pays out fast. UPI in under 24 hours after deal closes.',
+                name: 'Shagufi Khan',
+                meta: 'Beauty & Lifestyle Creator',
+                img: NEHA_IMG,
               },
             ].map((item) => (
               <div key={item.name} className="rounded-[24px] border border-[#E5E7EB] bg-white p-6 shadow-[0_8px_24px_rgba(0,0,0,0.05)]">
                 <p className="text-[15px] md:text-[16px] font-medium leading-7 text-[#0F172A]">"{item.quote}"</p>
                 <div className="mt-5 flex items-center justify-between gap-4">
-                  <div>
-                    <p className="font-black text-[#0F172A]">{item.name}</p>
-                    <p className="text-[13px] font-medium text-[#64748B]">{item.meta}</p>
+                  <div className="flex items-center gap-3">
+                    <img src={item.img} alt={item.name} className="w-10 h-10 rounded-full object-cover border-2 border-[#E5E7EB]" />
+                    <div>
+                      <p className="font-black text-[#0F172A]">{item.name}</p>
+                      <p className="text-[12px] font-medium text-[#64748B]">{item.meta}</p>
+                    </div>
                   </div>
-                  <span className="text-[11px] font-black uppercase tracking-[0.18em] text-[#16A34A]">Verified creator</span>
+                  <span className="text-[11px] font-black uppercase tracking-[0.18em] text-[#16A34A] shrink-0">Verified</span>
                 </div>
               </div>
             ))}
@@ -793,7 +784,7 @@ const LandingPage = () => {
             </div>
             
             <div className="p-6 text-center border-t border-white/10">
-              <p className="text-slate-400 text-sm font-bold">Join the <span className="text-white">12,000+ creators</span> who stopped doing business in DMs.</p>
+              <p className="text-slate-400 text-sm font-bold">Join the growing community of creators who stopped doing business in DMs.</p>
             </div>
           </div>
         </section>
