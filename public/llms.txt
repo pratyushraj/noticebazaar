@@ -7,20 +7,22 @@ Creator Armour is a high-performance platform designed to replace messy Instagra
 ## Core Services
 
 - **Creator Collab Link**: A professional storefront for creators to list services and receive offers.
+- **Barter & Gifting Campaigns**: Tools for D2C brands to run zero-cash product exchange collaborations with verified influencers.
 - **Structured Offers**: Standardized deal formats that eliminate ambiguity in deliverables and timelines.
-- **Contract Management**: Automated generation and tracking of collaboration agreements.
+- **Contract Management**: Automated generation and tracking of collaboration agreements (both paid and barter).
 - **Revenue Tracking**: Dashboards for monitoring paid, pending, and overdue brand payments.
 - **Legal Support**: On-demand legal aid for payment recovery and contract disputes.
 
 ## Key Resources
 
 - [Home](https://creatorarmour.com/)
+- [Barter Collab Influencers](https://creatorarmour.com/barter-collab)
 - [Blog / Creator Guides](https://creatorarmour.com/blog)
 - [Influencer Rate Calculator](https://creatorarmour.com/rate-calculator)
 - [Free Contract Templates](https://creatorarmour.com/free-influencer-contract)
 - [Legal Health Check](https://creatorarmour.com/free-legal-check)
 - [Brand Directory](https://creatorarmour.com/brand-directory)
-- [Discover Creators](https://creatorarmour.com/discover)
+- [Discover Creators & UGC](https://creatorarmour.com/discover)
 
 ## Technical Integration
 
@@ -30,7 +32,7 @@ Creator Armour is a high-performance platform designed to replace messy Instagra
 
 ## Business Context
 
-Creator Armour targets the Indian creator economy, focusing on the "middle-class" of creators who need professional tools but aren't yet represented by agencies. It operates as a business-in-a-box for independent influencers.
+Creator Armour targets the Indian creator economy, focusing on the "middle-class" of creators (including Nano/Micro influencers and UGC creators) who need professional tools but aren't yet represented by agencies. It operates as a business-in-a-box for independent influencers, while providing D2C brands a streamlined way to execute both paid and barter campaigns.
 
 ## Social Profiles
 
