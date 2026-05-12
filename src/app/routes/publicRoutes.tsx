@@ -32,6 +32,7 @@ const CollabLinkLanding = lazy(() => import("@/pages/CollabLinkLanding"));
 
 const WelcomeOnboarding = lazy(() => import("@/pages/WelcomeOnboarding"));
 const InstaMockup = lazy(() => import("@/pages/InstaMockup"));
+const BarterCollabPage = lazy(() => import("@/pages/BarterCollabPage"));
 
 export const PublicRoutes = () => (
   <>
@@ -65,6 +66,11 @@ export const PublicRoutes = () => (
     <Route path="/creator/:username" element={<LegacyCreatorProfileRedirect />} />
     <Route path="/settings" element={<Navigate to="/creator-profile" replace />} />
     <Route path="/brand-opportunities" element={<Navigate to="/creator-dashboard" replace />} />
+    {/* Barter SEO Pages */}
+    <Route path="/barter-collab" element={<LazyRoute><BarterCollabPage /></LazyRoute>} />
+    <Route path="/barter" element={<Navigate to="/barter-collab" replace />} />
+    <Route path="/product-exchange" element={<Navigate to="/barter-collab" replace />} />
+    <Route path="/influencer-gifting" element={<Navigate to="/barter-collab" replace />} />
     <Route path="/:username" element={<ReservedUsernameGuard><LazyRoute><CollabLinkLanding /></LazyRoute></ReservedUsernameGuard>} />
     <Route path="/:username/success" element={<ReservedUsernameGuard><LazyRoute><CollabLinkLanding /></LazyRoute></ReservedUsernameGuard>} />
     <Route path="/collab/:username" element={<LegacyCollabRedirect />} />

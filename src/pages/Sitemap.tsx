@@ -14,6 +14,16 @@ const routes = [
     { path: '/terms-of-service', label: 'Terms of Service' },
     { path: '/refund-policy', label: 'Refund Policy' },
   ]},
+  { category: 'Creator Economy SEO', links: [
+    { path: '/barter-collab', label: 'Barter Collab Influencers India' },
+    { path: '/discover', label: 'Discover Creators' },
+    { path: '/blog', label: 'Blog' },
+    { path: '/blog/barter-influencer-deal-india-guide-2025', label: 'Blog: Barter Influencer Deals India' },
+    { path: '/rate-calculator', label: 'Influencer Rate Calculator' },
+    { path: '/free-influencer-contract', label: 'Free Influencer Contract' },
+    { path: '/collaboration-agreement-generator', label: 'Collab Agreement Generator' },
+    { path: '/brands', label: 'For Brands' },
+  ]},
   { category: 'Client Portal (Protected)', links: [
     { path: '/client-dashboard', label: 'Dashboard' },
     { path: '/client-profile', label: 'My Profile' },
