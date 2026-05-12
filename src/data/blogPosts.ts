@@ -667,6 +667,94 @@ export const blogPosts: BlogPost[] = [
       type: 'Organization',
     },
   },
+  {
+    slug: 'what-is-creator-armour-complete-guide',
+    title: 'What is CreatorArmour? Protect Your Brand Deals & Payments',
+    metaDescription: 'Learn what CreatorArmour is and how it protects Indian creators. From contract analysis to payment tracking, discover how to secure your brand collaborations.',
+    category: 'Business',
+    date: '2026-05-12',
+    readTime: '6 min read',
+    image: 'https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=800&h=400&fit=crop',
+    summary: 'Everything you need to know about CreatorArmour: the first professional infrastructure built to protect Indian creators from bad contracts and unpaid deals.',
+    keywords: ['what is creator armour', 'creator legal protection', 'brand deal management', 'influencer payment tracking', 'India', 'creator economy'],
+    content: {
+      introduction: 'The creator economy in India is booming, but the "business" side of it is often a mess. DMs get lost, contracts are filled with red flags, and payments are delayed for months. CreatorArmour was built to fix this. It’s not just a tool; it’s your professional infrastructure for securing brand deals and ensuring you actually get paid for your work.',
+      sections: [
+        {
+          heading: 'Why CreatorArmour Exists',
+          content: 'Most creators manage their business through WhatsApp and Instagram DMs. This informal workflow works for a while, but as you scale, it becomes a liability. Brands might "forget" to pay, change terms mid-way, or trap you in contracts with unlimited usage rights. CreatorArmour provides the "Armour" you need: legal protection, structured workflows, and financial tracking designed specifically for the Indian market.',
+        },
+        {
+          heading: 'Core Features: How We Protect You',
+          content: 'We’ve built three main pillars to help you run your creator business like a professional agency.',
+          subsections: [
+            {
+              heading: '1. Free AI Contract Analyzer',
+              content: 'Never sign a brand contract without knowing what’s hidden in the fine print. Our AI-powered analyzer scans your agreements for red flags like "perpetual usage rights," "unlimited revisions," or "vague payment timelines." It translates legal jargon into plain English so you can negotiate with confidence.',
+            },
+            {
+              heading: '2. Professional Collab Links',
+              content: 'Stop saying "DM for Collabs." A CreatorArmour Collab Link is your digital business card. It allows brands to see your rates, past work, and audience metrics in one place. More importantly, it forces brands to submit structured offers—including budget, deliverables, and timelines—before you even start talking.',
+            },
+            {
+              heading: '3. Automated Payment Tracking & Alerts',
+              content: 'Chasing payments is the worst part of being a creator. CreatorArmour tracks your invoices and upcoming payment deadlines. If a brand is late, we alert you immediately. We even provide professional reminder templates and legal notice support to ensure you don’t get ghosted.',
+            },
+          ],
+        },
+        {
+          heading: 'How to Get Started (In 3 Steps)',
+          content: 'Joining CreatorArmour is free and takes less than 2 minutes.',
+          subsections: [
+            {
+              heading: 'Step 1: Create Your Profile',
+              content: 'Sign up and connect your social accounts to verify your metrics. This builds instant trust with brands.',
+            },
+            {
+              heading: 'Step 2: Set Up Your Collab Link',
+              content: 'Add your starting rates and packages. Put this link in your Instagram bio so brands can send you real offers instead of vague "Hi, collab?" messages.',
+            },
+            {
+              heading: 'Step 3: Analyze Your Next Contract',
+              content: 'The next time a brand sends you a PDF, upload it to CreatorArmour. We’ll tell you if it’s safe to sign or if you need to push back on certain clauses.',
+            },
+          ],
+        },
+        {
+          heading: 'Is CreatorArmour Only for Big Influencers?',
+          content: 'Absolutely not. In fact, micro-creators (1k–50k followers) need protection more than anyone else. Large creators often have managers or lawyers; micro-creators are usually on their own. CreatorArmour levels the playing field, giving you the same professional tools and protection as the top 1% of creators.',
+        },
+      ],
+      conclusion: 'Your creativity is your passion, but your brand deals are your business. Don’t leave your business to chance or "trust." Join thousands of Indian creators who are using CreatorArmour to professionalize their workflow and secure their financial future.',
+    },
+    faqs: [
+      {
+        question: 'Is CreatorArmour free for creators?',
+        answer: 'Yes, the core features like the Collab Link and basic Contract Analysis are free. We want to ensure every creator in India has access to basic professional protection.',
+      },
+      {
+        question: 'Does CreatorArmour take a cut of my brand deals?',
+        answer: 'No. We are not an agency. You keep 100% of the money you earn from brands. We simply provide the tools to help you manage and protect those deals.',
+      },
+      {
+        question: 'How does the contract analyzer work?',
+        answer: 'You upload your contract (PDF or Word), and our AI scans it against thousands of industry-standard clauses. It highlights risky sections and provides suggestions on what to change.',
+      },
+      {
+        question: 'Is my data safe with CreatorArmour?',
+        answer: 'Data security is our top priority. Your contracts, earnings data, and contact details are encrypted and never shared with third parties without your explicit permission.',
+      },
+    ],
+    internalLinks: {
+      contractTool: true,
+      homepage: true,
+      collabLink: true,
+    },
+    author: {
+      name: 'Creator Armour',
+      type: 'Organization',
+    },
+  },
 ];
 
 // Helper function to get blog post by slug

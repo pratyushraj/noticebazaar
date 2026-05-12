@@ -342,7 +342,7 @@ const isGeneratedCreatorHandle = (value?: string | null) =>
 
 const getPreferredPublicHandle = (...candidates: Array<string | null | undefined>) => {
   for (const candidate of candidates) {
-    const normalized = (candidate || '').replace(/^@/, '').trim()
+    const normalized = String(candidate || '').replace(/^@/, '').trim()
     if (!normalized) continue
     if (isGeneratedCreatorHandle(normalized)) continue
     return normalized
@@ -579,9 +579,9 @@ const toTitleCase = (value: string) => {
     .join(' ')
 }
 
-const formatAudienceLanguage = (value?: string | null) => {
+const formatAudienceLanguage = (value?: any | null) => {
   if (!value) return null
-  const normalized = value.trim()
+  const normalized = String(value || '').trim()
   if (!normalized) return null
   return normalized
     .split(/[,/]+/)
@@ -590,9 +590,14 @@ const formatAudienceLanguage = (value?: string | null) => {
     .join(' / ')
 }
 
-const formatAudienceCities = (cities?: string[] | null) => {
+const formatAudienceCities = (cities?: any[] | null) => {
   if (!Array.isArray(cities)) return []
-  return cities.map(city => toTitleCase((city || '').trim())).filter(Boolean)
+  return cities
+    .map(item => {
+      const cityName = typeof item === 'string' ? item : (item?.city || item?.label || item?.name || '')
+      return toTitleCase(String(cityName || '').trim())
+    })
+    .filter(Boolean)
 }
 
 const buildLocalPreviewCreator = (handle: string): Creator => ({
@@ -993,7 +998,7 @@ const CollabLinkLanding = () => {
     })
 
     const inferredBrandName =
-      (profile.business_name || '').trim() ||
+      String(profile.business_name || '').trim() ||
       [profile.first_name, profile.last_name].filter(Boolean).join(' ').trim() ||
       'Brand'
 
@@ -1003,10 +1008,10 @@ const CollabLinkLanding = () => {
       refetchProfile();
     }
 
-    const inferredEmail = (profile.email || user?.email || '').trim()
+    const inferredEmail = String(profile.email || user?.email || '').trim()
     const inferredLogo = profile.avatar_url || ''
 
-    const inferredInstagram = (profile.instagram_handle || '').trim()
+    const inferredInstagram = String(profile.instagram_handle || '').trim()
     
     setBrandName(prev => (prev.trim() ? prev : inferredBrandName))
     setBrandEmail(prev => (prev.trim() ? prev : inferredEmail))
@@ -1487,7 +1492,7 @@ const CollabLinkLanding = () => {
     const previewAvgLikes = creator.avg_likes ?? creator.performance_proof?.avg_likes ?? null
     const previewAudienceCities = creator.top_cities || []
     const previewAudienceRegionLabel =
-      creator.collab_region_label?.trim() ||
+      String(creator.collab_region_label || '').trim() ||
       getAudienceRegionLabel(formatAudienceCities(previewAudienceCities))
     const previewTrustStats = creator.trust_stats
 
@@ -2021,7 +2026,7 @@ const CollabLinkLanding = () => {
 
               if (portfolioRow) {
                 const links = Array.isArray(portfolioRow.portfolio_links)
-                  ? portfolioRow.portfolio_links.filter((l: string) => l && l.trim())
+                  ? portfolioRow.portfolio_links.filter((l: any) => l && String(l || '').trim())
                   : []
                 console.log('[CollabLinkLanding] Portfolio loaded:', {
                   links,
@@ -2783,7 +2788,7 @@ const CollabLinkLanding = () => {
 
   const creatorBio = isScrapedInstagramBio(creator.bio) ? null : creator.bio
   const collabIntroLine =
-    creator.collab_intro_line?.trim() ||
+    String(creator.collab_intro_line || '').trim() ||
     creatorBio ||
     null
 
@@ -3579,9 +3584,16 @@ const CollabLinkLanding = () => {
                 </div>
                 <div className="flex flex-col items-center gap-2 mb-6">
                   <div className="flex items-center gap-2">
-                    <h2 className="text-[13px] font-black text-slate-400 uppercase tracking-[0.25em]">
-                      @{normalizedHandle}
-                    </h2>
+                    <a
+                      href={`https://www.instagram.com/${normalizedHandle.replace(/^@/, '')}/`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="hover:opacity-70 transition-opacity"
+                    >
+                      <h2 className="text-[13px] font-black text-slate-400 uppercase tracking-[0.25em]">
+                        @{normalizedHandle}
+                      </h2>
+                    </a>
                     {(creator.is_verified || creator.is_elite_verified) && (
                       <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-blue-50 border border-blue-100 shadow-sm">
                         <ShieldCheck className="w-3 h-3 text-blue-500" />
@@ -4250,9 +4262,9 @@ const CollabLinkLanding = () => {
                           <div className="pt-6 border-t border-slate-50">
                             <p className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4">Top Reach Cities</p>
                             <div className="flex flex-wrap gap-2.5">
-                              {(creator.top_cities?.length ? creator.top_cities.slice(0, 3) : []).map(city => (
-                                <span key={city} className="px-5 py-2.5 bg-slate-50/50 border border-slate-100 rounded-2xl text-[12px] font-black text-slate-800 shadow-sm">
-                                  {city}
+                              {formatAudienceCities(creator.top_cities).slice(0, 3).map(cityName => (
+                                <span key={cityName} className="px-5 py-2.5 bg-slate-50/50 border border-slate-100 rounded-2xl text-[12px] font-black text-slate-800 shadow-sm">
+                                  {cityName}
                                 </span>
                               ))}
                             </div>

@@ -204,7 +204,7 @@ const COLLAB_CTA_BEHAVIOR_OPTIONS = [
 ];
 
 const splitPresetAndCustom = (value: string | null | undefined, presets: string[]) => {
-  const normalized = (value || '').trim();
+  const normalized = String(value || '').trim();
   if (!normalized) return { preset: '', custom: '' };
   if (presets.includes(normalized)) return { preset: normalized, custom: '' };
   return { preset: '', custom: normalized };
@@ -497,7 +497,7 @@ const ProfileSettings = () => {
             collabResponseBehaviorCustom: ctaBehavior.custom,
           };
         })(),
-        name: `${profile.first_name || ''} ${profile.last_name || ''}`.trim() || 'Creator',
+        name: String(`${profile.first_name || ''} ${profile.last_name || ''}`).trim() || 'Creator',
         displayName: profile.instagram_handle?.replace('@', '') || user.email?.split('@')[0] || 'creator',
         email: user.email || '',
         phone: phoneValue,

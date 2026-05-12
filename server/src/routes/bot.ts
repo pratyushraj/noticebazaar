@@ -5,7 +5,7 @@ import { supabase } from '../lib/supabase.js';
 import type { AuthenticatedRequest } from '../middleware/auth.js';
 
 const router = Router();
-const BOT_API_KEY = process.env.OPENCLAW_API_KEY || process.env.BOT_API_KEY || '';
+const BOT_API_KEY = process.env.BOT_API_KEY || '';
 
 const botAuthMiddleware = (req: Request, res: Response, next: any) => {
   if (!BOT_API_KEY) {

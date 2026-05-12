@@ -7,6 +7,7 @@ import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FeaturedCreators } from '@/components/discovery/FeaturedCreators';
 import { toast } from 'sonner';
+import { getApiBaseUrl } from '@/lib/utils/api';
 
 const BRAND_CONTACT_EMAIL = 'hello@creatorarmour.com';
 
@@ -68,6 +69,7 @@ const BrandLandingPage = () => {
     timeline: '',
     notes: '',
   });
+  const [isSubmittingBrief, setIsSubmittingBrief] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => setHasScrolled(window.scrollY > 20);
@@ -93,14 +95,7 @@ const BrandLandingPage = () => {
     setBriefForm(prev => ({ ...prev, [field]: value }));
   };
 
-  const handleBriefSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-
-    if (!briefForm.brandName.trim() || !briefForm.workEmail.trim()) {
-      toast.error('Add your brand name and work email.');
-      return;
-    }
-
+  const openBriefEmailFallback = () => {
     const subject = `Brand campaign brief from ${briefForm.brandName.trim()}`;
     const body = [
       `Brand: ${briefForm.brandName}`,
@@ -115,7 +110,51 @@ const BrandLandingPage = () => {
     ].join('\n');
 
     window.location.href = `mailto:${BRAND_CONTACT_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-    toast.success('Opening your email app with the campaign brief.');
+  };
+
+  const handleBriefSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    if (!briefForm.brandName.trim() || !briefForm.workEmail.trim()) {
+      toast.error('Add your brand name and work email.');
+      return;
+    }
+
+    setIsSubmittingBrief(true);
+
+    try {
+      const response = await fetch(`${getApiBaseUrl()}/api/brand-inquiries`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...briefForm,
+          source: 'brands_landing',
+        }),
+      });
+
+      const data = await response.json().catch(() => ({}));
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.error || 'Could not submit brief.');
+      }
+
+      toast.success('Brief received. We will follow up with creator options.');
+      setBriefForm({
+        brandName: '',
+        workEmail: '',
+        website: '',
+        category: '',
+        budget: '',
+        timeline: '',
+        notes: '',
+      });
+    } catch (error) {
+      console.error('[BrandLandingPage] Brand inquiry submit failed:', error);
+      toast.error('Could not submit automatically. Opening email instead.');
+      openBriefEmailFallback();
+    } finally {
+      setIsSubmittingBrief(false);
+    }
   };
 
   const scrollToBrief = () => {
@@ -299,12 +338,12 @@ const BrandLandingPage = () => {
                         <input value={briefForm.timeline} onChange={(event) => updateBriefField('timeline', event.target.value)} className="h-14 rounded-2xl border border-white/10 bg-white/[0.04] px-4 text-sm font-bold text-white placeholder:text-white/25 outline-none focus:border-emerald-400/60" placeholder="Timeline" />
                       </div>
                       <textarea value={briefForm.notes} onChange={(event) => updateBriefField('notes', event.target.value)} className="min-h-28 w-full resize-none rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-4 text-sm font-bold text-white placeholder:text-white/25 outline-none focus:border-emerald-400/60" placeholder="What kind of creators do you need?" />
-                      <button type="submit" className="inline-flex h-14 w-full items-center justify-center gap-3 rounded-2xl bg-white text-slate-950 font-black transition-transform hover:scale-[1.01] active:scale-[0.98]">
-                        Share Campaign Brief
+                      <button type="submit" disabled={isSubmittingBrief} className="inline-flex h-14 w-full items-center justify-center gap-3 rounded-2xl bg-white text-slate-950 font-black transition-transform hover:scale-[1.01] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60">
+                        {isSubmittingBrief ? 'Sending Brief...' : 'Share Campaign Brief'}
                         <Send className="h-4 w-4" />
                       </button>
                       <p className="text-center text-xs font-bold leading-relaxed text-white/35">
-                        Opens your email app to send the brief to {BRAND_CONTACT_EMAIL}.
+                        Sends the brief to Creator Armour and notifies our team at creatorarmour07@gmail.com.
                       </p>
                     </form>
                   </div>
@@ -316,6 +355,60 @@ const BrandLandingPage = () => {
           {/* Featured Discovery Section */}
           <section id="creators" className="bg-white py-12 rounded-[4rem] mx-4 sm:mx-8 lg:mx-12 overflow-hidden shadow-2xl border border-white/5 scroll-mt-28">
             <FeaturedCreators />
+          </section>
+
+          {/* Search Intent Section */}
+          <section className="py-24">
+            <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+              <div className="grid gap-12 lg:grid-cols-[0.85fr_1.15fr] lg:items-start">
+                <motion.div
+                  initial={{ opacity: 0, y: 24 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  className="space-y-5"
+                >
+                  <p className="text-[12px] font-black uppercase tracking-[0.3em] text-emerald-400">For brand teams</p>
+                  <h2 className="text-4xl md:text-5xl font-black tracking-tight leading-[1.05]">
+                    Hire UGC creators in India without losing the deal in DMs.
+                  </h2>
+                  <p className="text-lg text-white/50 font-medium leading-relaxed">
+                    Creator Armour is built for brands that need verified Indian influencers, UGC video creators, and structured collaboration workflows without chasing screenshots, rate cards, and payment details across Instagram or WhatsApp.
+                  </p>
+                </motion.div>
+
+                <div className="grid gap-5 sm:grid-cols-2">
+                  {[
+                    {
+                      title: 'Hire UGC creators India',
+                      body: 'Find creators for skincare, fashion, food, travel, tech, and lifestyle campaigns. Compare creator rates, content formats, delivery timelines, and proof before sending a brief.',
+                    },
+                    {
+                      title: 'Verified Indian influencers',
+                      body: 'Shortlist creators with practical audience signals, profile completeness, availability, and platform proof so brand teams can pick partners with more confidence.',
+                    },
+                    {
+                      title: 'Brand collaboration platform India',
+                      body: 'Move from discovery to structured offers, creator approvals, contracts, and payment tracking in a single workflow designed for Indian creator-brand deals.',
+                    },
+                    {
+                      title: 'UGC campaign brief matching',
+                      body: 'Share your budget, timeline, target category, and creator requirements. Creator Armour helps turn the brief into creator options and cleaner deal execution.',
+                    },
+                  ].map((item) => (
+                    <motion.article
+                      key={item.title}
+                      initial={{ opacity: 0, y: 24 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      viewport={{ once: true }}
+                      className="rounded-[2rem] border border-white/5 bg-white/[0.03] p-7"
+                    >
+                      <h3 className="text-xl font-black tracking-tight text-white">{item.title}</h3>
+                      <p className="mt-4 text-sm font-medium leading-6 text-white/45">{item.body}</p>
+                    </motion.article>
+                  ))}
+                </div>
+              </div>
+            </div>
           </section>
 
           {/* Workflow Section */}

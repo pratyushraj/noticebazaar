@@ -300,7 +300,10 @@ const resolveCreatorByPublicHandle = async (handle: string, selectColumns: strin
   }
 
   const canonicalHandle = normalizeHandle((usernameMatch as any).instagram_handle);
-  if (canonicalHandle && canonicalHandle !== normalizedHandle) {
+  // Only consider it a stale link if the current handle is a generated one (creator-xxxxxx)
+  // and it doesn't match the canonical Instagram handle.
+  // If the user has a custom vanity username, we should allow it.
+  if (canonicalHandle && canonicalHandle !== normalizedHandle && isGeneratedCreatorHandle(normalizedHandle)) {
     return {
       creator: null,
       error: null,

@@ -40,7 +40,7 @@ export interface UpiValidationResult {
  * Returns a result object — never throws.
  */
 export function validateUpiId(raw: string): UpiValidationResult {
-  const trimmed = (raw || '').trim();
+  const trimmed = String(raw || '').trim();
   const lower = trimmed.toLowerCase();
 
   const blank: UpiValidationResult = {

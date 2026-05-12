@@ -179,6 +179,7 @@ const DiscoverCreators = () => {
                 image="https://creatorarmour.com/discover-og.png"
                 canonicalUrl={canonicalUrl}
                 jsonLd={itemListSchema}
+                robots={!loading && filteredCreators.length === 0 ? "noindex, follow" : undefined}
             />
             <BreadcrumbSchema items={[
                 { name: 'Home', url: baseUrl },

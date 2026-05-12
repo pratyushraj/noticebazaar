@@ -68,6 +68,7 @@ import cronDealRemindersRouter from './routes/cronDealReminders.js';
 import cronOnboardingEmailsRouter from './routes/cronOnboardingEmails.js';
 import onboardingEmailsRouter from './routes/onboardingEmails.js';
 import brandDashboardRouter from './routes/brandDashboard.js';
+import brandInquiriesRouter from './routes/brandInquiries.js';
 import ogRouter from './routes/ogRoutes.js';
 import { sendCollabRequestAcceptedEmail, sendCollabRequestCreatorNotificationEmail } from './services/collabRequestEmailService.js';
 import { createContractReadyToken } from './services/contractReadyTokenService.js';
@@ -406,6 +407,7 @@ app.use('/api/gst', gstRouter); // Public GST lookup route
 app.use('/api/collab', collabRequestsRouter); // Public collab link routes (/:username and /:username/submit)
 app.use('/api/collab-analytics', collabAnalyticsRouter); // Public analytics tracking + authenticated analytics endpoints
 app.use('/api/creators', creatorsRouter); // Public creator directory routes
+app.use('/api/brand-inquiries', brandInquiriesRouter); // Public inbound brand lead capture
 app.use('/api/shipping', shippingRouter); // Public shipping update (brand, no auth)
 app.use('/api/cron', cronDealRemindersRouter); // Cron: deal reminders (protected by CRON_SECRET in route)
 app.use('/api/cron', cronOnboardingEmailsRouter); // Cron: creator onboarding sequence (protected by CRON_SECRET)

@@ -157,6 +157,12 @@
     <priority>0.7</priority>
   </url>
   <url>
+    <loc>https://creatorarmour.com/blog/what-is-creator-armour-complete-guide</loc>
+    <lastmod>2026-05-12</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
     <loc>https://creatorarmour.com/calculator/instagram/finance</loc>
     <lastmod>2026-05-12</lastmod>
     <changefreq>monthly</changefreq>
@@ -307,37 +313,25 @@
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://creatorarmour.com/discover/beauty</loc>
+    <loc>https://creatorarmour.com/discover/travel</loc>
     <lastmod>2026-05-12</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://creatorarmour.com/discover/fashion</loc>
+    <loc>https://creatorarmour.com/discover/adventure</loc>
     <lastmod>2026-05-12</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://creatorarmour.com/discover/fitness</loc>
+    <loc>https://creatorarmour.com/discover/photography</loc>
     <lastmod>2026-05-12</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://creatorarmour.com/discover/food</loc>
-    <lastmod>2026-05-12</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://creatorarmour.com/discover/finance</loc>
-    <lastmod>2026-05-12</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://creatorarmour.com/discover/gaming</loc>
+    <loc>https://creatorarmour.com/discover/drone</loc>
     <lastmod>2026-05-12</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -349,128 +343,32 @@
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://creatorarmour.com/discover/parenting</loc>
+    <loc>https://creatorarmour.com/discover/food</loc>
     <lastmod>2026-05-12</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://creatorarmour.com/discover/skincare</loc>
+    <loc>https://creatorarmour.com/discover/patna-updates</loc>
     <lastmod>2026-05-12</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://creatorarmour.com/discover/tech</loc>
+    <loc>https://creatorarmour.com/discover/memes</loc>
     <lastmod>2026-05-12</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://creatorarmour.com/discover/travel</loc>
-    <lastmod>2026-05-12</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://creatorarmour.com/discover/ugc</loc>
-    <lastmod>2026-05-12</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://creatorarmour.com/shavy.0404</loc>
-    <lastmod>2026-05-11</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://creatorarmour.com/blogsbysnehaaa</loc>
-    <lastmod>2026-05-11</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://creatorarmour.com/snehal_sachdeva</loc>
-    <lastmod>2026-05-10</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://creatorarmour.com/aasthakumari7662</loc>
-    <lastmod>2026-05-11</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://creatorarmour.com/cutiebug2021</loc>
-    <lastmod>2026-05-08</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://creatorarmour.com/kyra.gupta20</loc>
-    <lastmod>2026-05-12</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://creatorarmour.com/thegleamngown</loc>
-    <lastmod>2026-05-11</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://creatorarmour.com/mobileclicksbydilip</loc>
-    <lastmod>2026-05-10</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://creatorarmour.com/democreator</loc>
-    <lastmod>2026-05-10</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://creatorarmour.com/photophile_ayans</loc>
-    <lastmod>2026-05-10</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://creatorarmour.com/photowalamusafir</loc>
-    <lastmod>2026-05-08</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://creatorarmour.com/salma_stylebudget</loc>
-    <lastmod>2026-05-08</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
   </url>
   <url>
     <loc>https://creatorarmour.com/prateek_matoria</loc>
-    <lastmod>2026-05-11</lastmod>
+    <lastmod>2026-05-12</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://creatorarmour.com/ugc_pop._</loc>
-    <lastmod>2026-05-11</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://creatorarmour.com/shagufikhan_</loc>
-    <lastmod>2026-05-08</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://creatorarmour.com/salmastyle</loc>
-    <lastmod>2026-05-08</lastmod>
+    <loc>https://creatorarmour.com/rounak_agarwal</loc>
+    <lastmod>2026-05-12</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>

@@ -157,7 +157,7 @@ const CollabRequestBriefPage = () => {
   const [loading, setLoading] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
 
-  const effectiveRequestId = useMemo(() => (requestId || '').trim() || null, [requestId]);
+  const effectiveRequestId = useMemo(() => String(requestId || '').trim() || null, [requestId]);
   const [isAccepting, setIsAccepting] = useState(false);
   const [isDeclining, setIsDeclining] = useState(false);
   const [showRequirementDialog, setShowRequirementDialog] = useState(false);
