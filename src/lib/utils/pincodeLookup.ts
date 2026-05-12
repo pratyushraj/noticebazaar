@@ -173,35 +173,44 @@ export function parseLocationString(location: string): {
     // Third-to-last is usually city
     // Everything before that is address line
 
-    if (parts.length >= 3) {
+    if (parts.length >= 2) {
       // Check if last part is pincode
       const lastPart = parts[parts.length - 1];
       const isPincode = /^\d{6}$/.test(lastPart);
 
-      // Check if second-to-last is state
+      // Check for state in any of the parts (searching from end)
       let stateIndex = -1;
       for (let i = parts.length - 1; i >= 0; i--) {
+        const part = parts[i].toLowerCase();
         for (const stateName of states) {
-          if (parts[i] === stateName) {
+          if (part === stateName.toLowerCase() || part.includes(stateName.toLowerCase())) {
             stateIndex = i;
-            state = stateName; // Use the matched state
+            state = stateName;
             break;
           }
         }
         if (stateIndex !== -1) break;
       }
 
-      // City is usually the part before state
-      if (stateIndex > 0) {
-        city = parts[stateIndex - 1];
-        // Address line is everything before city
-        addressLine = parts.slice(0, stateIndex - 1).join(', ');
-      } else if (parts.length >= 2) {
-        // If no state found, assume second-to-last is city (if last is pincode)
-        if (isPincode && parts.length >= 3) {
+      if (stateIndex !== -1) {
+        // If we found a state, the part before it is likely the city
+        if (stateIndex > 0) {
+          city = parts[stateIndex - 1];
+          addressLine = parts.slice(0, stateIndex - 1).join(', ');
+        } else {
+          // State is the first part? Unusual but possible
+          addressLine = '';
+        }
+      } else if (isPincode) {
+        // No state found, but we have a pincode. Assume part before pincode is city.
+        if (parts.length >= 2) {
           city = parts[parts.length - 2];
           addressLine = parts.slice(0, parts.length - 2).join(', ');
         }
+      } else {
+        // No state or pincode found. Use the last two parts as city and address.
+        city = parts[parts.length - 1];
+        addressLine = parts.slice(0, parts.length - 1).join(', ');
       }
     }
   }
@@ -255,7 +264,18 @@ export function parseLocationString(location: string): {
     });
   }
 
-  return { addressLine, city, state, pincode };
+  // Final defensive check: City should not be a full address
+  if (city && (city.includes(',') || city.length > 35)) {
+    const cityParts = city.split(',').map(p => p.trim()).filter(p => p);
+    city = cityParts[cityParts.length - 1];
+  }
+
+  return { 
+    addressLine: addressLine || '', 
+    city: city || '', 
+    state: state || '', 
+    pincode: pincode || '' 
+  };
 }
 
 /**

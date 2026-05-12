@@ -8,6 +8,7 @@ import { toast } from 'sonner';
 import { SEOHead } from '@/components/seo/SEOHead';
 import { BreadcrumbSchema } from '@/components/seo/SchemaMarkup';
 import { getApiBaseUrl } from '@/lib/utils/api';
+import { decodeHtmlEntities } from '@/lib/utils/dom';
 
 // Person Schema Component (defined before use)
 const PersonSchema = ({ schema }: { schema: any }) => {
@@ -111,7 +112,7 @@ const CreatorProfilePage = () => {
   }
 
   // Generate SEO meta tags
-  const creatorName = creator.name || 'Creator';
+  const creatorName = decodeHtmlEntities(creator.name) || 'Creator';
   const platformNames = creator.platforms.map(p => p.name).join(', ');
   const followerCount = creator.platforms.reduce((sum, p) => sum + (p.followers || 0), 0);
   const followerText = followerCount > 0
@@ -211,20 +212,23 @@ const CreatorProfilePage = () => {
           <Card className="bg-secondary/50 backdrop-blur-md border-border mb-8">
             <CardContent className="p-8">
               <div className="flex flex-col md:flex-row items-start md:items-center gap-6">
-                <div className="flex-1">
-                  <div className="flex items-center gap-3 mb-2">
-                    <h1 className="text-4xl font-bold text-foreground">{creator.name}</h1>
-                    <Badge className="bg-gradient-to-r from-purple-600 to-pink-600 text-foreground border-0">
-                      <CheckCircle2 className="h-3 w-3 mr-1" />
-                      Verified
-                    </Badge>
+                <div className="flex-1 text-center sm:text-left">
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-3 mb-2">
+                    <h1 className="text-4xl font-bold text-foreground">
+                      {decodeHtmlEntities(creator.name)}
+                    </h1>
+                    <div className="flex items-center gap-2 justify-center sm:justify-start">
+                      {creator.category && (
+                        <Badge className="bg-purple-500/10 text-purple-400 border-purple-500/20 px-3 py-1 rounded-full text-sm font-medium">
+                          {creator.category}
+                        </Badge>
+                      )}
+                      <CheckCircle2 className="h-6 w-6 text-purple-400 fill-purple-400/10" />
+                    </div>
                   </div>
-                  {creator.category && (
-                    <Badge variant="outline" className="text-secondary border-purple-400/50 mb-3">
-                      {creator.category}
-                    </Badge>
-                  )}
-                  <p className="text-secondary mb-4">@{creator.username}</p>
+                  <p className="text-foreground/60 text-lg mb-6">
+                    @{decodeHtmlEntities(creator.username)}
+                  </p>
                   {creator.bio && (
                     <p className="text-secondary leading-relaxed mb-4">{creator.bio}</p>
                   )}

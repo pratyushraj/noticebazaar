@@ -1,19 +1,44 @@
+import { createClient } from '@supabase/supabase-js';
+import * as dotenv from 'dotenv';
 
-import { createClient } from '@supabase/supabase-js'
+dotenv.config();
 
-const supabase = createClient(
-  'https://nndkdfndscjuhmclgixj.supabase.co',
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5uZGtkZm5kc2NqdWhtY2xnaXhqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTM2NDUzODMsImV4cCI6MjAyOTIyMTM4M30.xxx-secret-anon-key'
-)
+const SUPABASE_URL = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
+const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-async function check() {
-  const { data, error } = await supabase
-    .from('profiles')
-    .select('id, username, instagram_handle, role')
-    .or('username.eq.notice104,instagram_handle.eq.notice104')
-  
-  console.log('Result:', data)
-  if (error) console.error('Error:', error)
+if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
+  console.error('Missing Supabase environment variables');
+  process.exit(1);
 }
 
-check()
+const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+
+async function main() {
+  const handle = 'thegleamngown';
+  const { data: profile, error } = await supabase
+    .from('profiles')
+    .select('*')
+    .or(`instagram_handle.eq.${handle},full_name.eq.${handle}`)
+    .single();
+
+  if (error) {
+    console.error('Error fetching profile:', error);
+    
+    // Try searching by handle if single failed
+    const { data: profiles, error: searchError } = await supabase
+      .from('profiles')
+      .select('*')
+      .ilike('instagram_handle', `%${handle}%`);
+      
+    if (profiles && profiles.length > 0) {
+      console.log('Found similar profiles:');
+      profiles.forEach(p => console.log(`- ${p.full_name} (@${p.instagram_handle}) ID: ${p.id}`));
+    }
+  } else {
+    console.log('Found profile:', profile.full_name, '(@' + profile.instagram_handle + ')');
+    console.log('ID:', profile.id);
+    console.log('Current discovery_video_url:', profile.discovery_video_url);
+  }
+}
+
+main();

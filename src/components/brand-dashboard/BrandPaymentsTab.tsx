@@ -19,7 +19,6 @@ const resolveCreatorName = (deal: any): string => {
   if (p?.username) return `@${p.username}`;
   // Fallback fields sometimes present on the deal itself
   if (deal?.creator_name) return deal.creator_name;
-  if (deal?.creator_email) return deal.creator_email;
   return 'Creator';
 };
 

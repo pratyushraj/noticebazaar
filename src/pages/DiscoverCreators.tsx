@@ -21,6 +21,8 @@ import { triggerHaptic, HapticPatterns } from '@/lib/utils/haptics';
 import { toast } from 'sonner';
 import { safeAvatarSrc } from '@/lib/utils/image';
 import { cn } from '@/lib/utils';
+import { parseLocationString } from '@/lib/utils/pincodeLookup';
+import { decodeHtmlEntities } from '@/lib/utils/dom';
 
 interface Creator {
     id: string;
@@ -41,6 +43,7 @@ interface Creator {
     discovery_video_url?: string | null;
     is_verified?: boolean;
     location?: string;
+    barter_min_value?: number;
 }
 
 const DiscoverCreators = () => {
@@ -97,7 +100,9 @@ const DiscoverCreators = () => {
             creator.name.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) ||
             creator.username.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) ||
             creator.category?.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) ||
-            creator.bio?.toLowerCase().includes(debouncedSearchTerm.toLowerCase())
+            creator.bio?.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) ||
+            (creator as any).collab_intro_line?.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) ||
+            (creator as any).ugc_capabilities?.some((cap: string) => cap.toLowerCase().includes(debouncedSearchTerm.toLowerCase()))
         );
     }, [creators, debouncedSearchTerm]);
 
@@ -118,20 +123,37 @@ const DiscoverCreators = () => {
         return count.toString();
     };
 
-    const pageTitle = category && category !== 'all'
-        ? `Find Top ${category} Influencers in India | Verified Directory`
-        : 'Find Influencers in India | 5,000+ Verified Creators | Creator Armour';
+    const categoryLabel = category && category !== 'all'
+        ? decodeURIComponent(category).replace(/-/g, ' ')
+        : '';
+    const displayCategory = categoryLabel
+        ? categoryLabel.replace(/\b\w/g, (char) => char.toUpperCase())
+        : '';
+    const categoryKeyword = categoryLabel || 'UGC video';
 
-    const metaDescription = category && category !== 'all'
-        ? `Browse and book top ${category} influencers in India. Secure brand deals with verified creators through structured offers and automated contracts.`
-        : 'The largest verified influencer directory in India. Find creators, compare rates, and send secure brand deals directly. 5,000+ creators across 20+ niches.';
+    const pageTitle = displayCategory
+        ? `Find ${displayCategory} Influencers in India | Creator Armour`
+        : 'Find UGC Video Creators in India | 5,000+ Verified Creators | Creator Armour';
+
+    const metaDescription = displayCategory
+        ? `Browse verified ${categoryKeyword} influencers and UGC creators in India. Compare rates, audience signals, and send structured brand collaboration offers.`
+        : 'The largest verified UGC and video creator directory in India. Find creators, compare rates, and hire UGC specialists directly. 5,000+ creators across 20+ niches.';
 
     const baseUrl = 'https://creatorarmour.com';
-    const canonicalUrl = `${baseUrl}/discover${category && category !== 'all' ? `/${category}` : ''}`;
+    const canonicalUrl = `${baseUrl}/discover${category && category !== 'all' ? `/${encodeURIComponent(category)}` : ''}`;
+    const h1Text = displayCategory
+        ? `Find ${displayCategory} influencers in India`
+        : 'Find UGC video creators in India';
+    const introText = displayCategory
+        ? `Discover verified ${categoryKeyword} creators for brand campaigns, compare practical rates, and send protected collaboration offers.`
+        : 'Find, verify, and connect with 5,000+ creators across 20+ categories. Compare rates, audience signals, and creator fit before sending a brand offer.';
 
     const itemListSchema = {
         "@context": "https://schema.org",
         "@type": "ItemList",
+        "name": displayCategory
+            ? `${displayCategory} Influencers in India`
+            : 'Verified UGC and Influencer Directory India',
         "itemListElement": filteredCreators.slice(0, 10).map((creator, index) => ({
             "@type": "ListItem",
             "position": index + 1,
@@ -147,8 +169,12 @@ const DiscoverCreators = () => {
                 title={pageTitle}
                 description={metaDescription}
                 keywords={[
-                    'find influencers india', 'influencer marketing platform', 'verified creator directory',
-                    'hire influencers', 'brand collaborations', category || 'influencers', 'creator armour'
+                    'find influencers india', 'micro influencers india', 'nano influencers marketing', 
+                    'influencer marketing platform', 'verified creator directory', 'UGC video creators',
+                    'influencers in Mumbai Delhi Bangalore', 'Hindi Tamil Telugu influencers',
+                    'hire influencers', 'brand collaborations', 'influencer rates india',
+                    categoryKeyword, `${categoryKeyword} influencers india`, `${categoryKeyword} UGC creators`,
+                    'creator armour'
                 ]}
                 image="https://creatorarmour.com/discover-og.png"
                 canonicalUrl={canonicalUrl}
@@ -199,13 +225,11 @@ const DiscoverCreators = () => {
                             <Star className="w-3.5 h-3.5 fill-current" />
                             <span className="text-[10px] font-black uppercase tracking-widest">Global Discovery Engine</span>
                         </div>
-                        <h2 className="text-4xl md:text-6xl font-black tracking-tighter text-slate-900 leading-none mb-6">
-                            Discover your next <br />
-                            <span className="text-emerald-600">viral partner</span>
-                        </h2>
+                        <h1 className="text-4xl md:text-6xl font-black tracking-tighter text-slate-900 leading-none mb-6 capitalize">
+                            {h1Text}
+                        </h1>
                         <p className="text-lg text-slate-500 font-medium leading-relaxed mb-10">
-                            Find, verify, and connect with 5,000+ creators across 20+ categories.
-                            Our operating system ensures secure deals and automated contracts.
+                            {introText}
                         </p>
                     </motion.div>
 
@@ -364,17 +388,23 @@ const DiscoverCreators = () => {
                                     <div className="absolute bottom-10 inset-x-10">
                                         <div className="flex items-center gap-2 mb-2">
                                             <h3 className="text-2xl font-black text-white tracking-tight">
-                                                {creator.name}
+                                                {decodeHtmlEntities(creator.name && creator.name !== 'Creator' && !creator.name.includes('@') 
+                                                    ? creator.name 
+                                                    : (creator.username && !creator.username.includes('@') ? creator.username : 'Verified Creator'))}
                                             </h3>
                                             {creator.is_verified && (
                                                 <CheckCircle2 className="w-5 h-5 text-emerald-400 fill-white" />
                                             )}
                                         </div>
                                         <div className="flex items-center justify-between mb-6">
-                                            <p className="text-white/60 text-xs font-bold uppercase tracking-[0.2em]">@{creator.username}</p>
+                                            <p className="text-white/60 text-xs font-bold uppercase tracking-[0.2em]">
+                                                @{decodeHtmlEntities(creator.username && !creator.username.includes('@') 
+                                                    ? creator.username 
+                                                    : (creator.name && !creator.name.includes('@') ? creator.name.toLowerCase().replace(/\s+/g, '') : 'creator'))}
+                                            </p>
                                             {creator.location && (
                                                 <span className="text-[10px] font-black uppercase tracking-widest text-blue-400 flex items-center gap-1 bg-blue-900/40 backdrop-blur-md px-2 py-0.5 rounded border border-blue-400/20">
-                                                    <MapPin className="w-3 h-3" /> {creator.location}
+                                                    <MapPin className="w-3 h-3" /> {parseLocationString(creator.location).city || parseLocationString(creator.location).state || 'India'}
                                                 </span>
                                             )}
                                         </div>

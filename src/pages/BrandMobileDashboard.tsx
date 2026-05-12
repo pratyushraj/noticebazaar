@@ -1619,7 +1619,7 @@ const BrandMobileDashboard = ({
     const counterDeadline = odsCounterDeadline;
     const setCounterDeadline = setOdsCounterDeadline;
 
-    const title = offer?.profiles ? firstNameish(offer.profiles) : offer?.creator_name || offer?.creator_email || 'Creator';
+    const title = offer?.profiles ? firstNameish(offer.profiles) : offer?.creator_name || 'Creator';
     const username = String(offer?.profiles?.username || '').trim();
     const isMarkedCompleted = normalizeStatus(offer?.status) === 'COMPLETED';
     const canMarkComplete = activeCollabTab === 'active' && !!offer?.id && !isMarkedCompleted && (offer?.deal_amount !== undefined || offer?.due_date !== undefined);
@@ -2241,7 +2241,7 @@ const BrandMobileDashboard = ({
     const disputeNotesDraft = ddDisputeNotesDraft;
     const setDisputeNotesDraft = setDdDisputeNotesDraft;
 
-    const creatorName = firstNameish(offer?.profiles, offer?.creator_name || offer?.creator_email);
+    const creatorName = firstNameish(offer?.profiles, offer?.creator_name);
     const creatorUsername = String(offer?.profiles?.username || '').trim();
     const packageSummary = formatPackageSummary(offer);
     const deliverablesList = parseDeliverablesArray(offer);
@@ -4679,10 +4679,10 @@ const BrandCollabsTab = React.memo(React.forwardRef(({
               const isCompletedItem = activeCollabTab === 'completed';
               const due = isPendingItem ? offerExpiryLabel(item) : (isCompletedItem ? null : deadlineLabel(item));
               const amount = Number(item?.deal_amount || item?.exact_budget || item?.barter_value || item?.product_value || 0);
-              const creatorName = firstNameish(item?.profiles, item?.creator_name || item?.creator_email);
+              const creatorName = firstNameish(item?.profiles, item?.creator_name);
               const packageSummary = formatPackageSummary(item);
               const deliverablesSummary = formatDeliverables(item);
-              let creatorMeta = item?.profiles?.username || item?.creator_name || item?.creator_email || 'Creator';
+              let creatorMeta = item?.profiles?.username || item?.creator_name || 'Creator';
               if (item?.profiles?.username && creatorMeta === item.profiles.username) creatorMeta = `@${creatorMeta}`;
               const creatorAvatar = item?.profiles?.instagram_profile_photo || item?.profiles?.avatar_url || item?.profiles?.profile_image_url || item?.creator_avatar_url || item?.creator_photo_url || '';
               

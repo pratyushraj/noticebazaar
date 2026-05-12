@@ -7,6 +7,8 @@ import { Loader2, Sparkles, X, Heart, Info, Briefcase, IndianRupee, MapPin, Glob
 import confetti from 'canvas-confetti';
 import { toast } from 'sonner';
 import { getApiBaseUrl } from '@/lib/utils/api';
+import { parseLocationString } from '@/lib/utils/pincodeLookup';
+
 
 interface CreatorDiscoveryStackProps {
     isDark: boolean;
@@ -281,7 +283,9 @@ export const CreatorDiscoveryStack: React.FC<CreatorDiscoveryStackProps> = ({ is
                                 <div className={cn("p-4 rounded-3xl border", isDark ? "bg-white/5 border-white/10" : "bg-black/5 border-black/5")}>
                                     <Globe className="w-4 h-4 mb-2 opacity-40" />
                                     <p className="text-[9px] font-black uppercase tracking-widest opacity-40">Location</p>
-                                    <p className="font-bold text-sm">{currentBrand.location || 'Pan India'}</p>
+                                    <p className="font-bold text-sm">
+                                        {currentBrand.location ? (parseLocationString(currentBrand.location).city || parseLocationString(currentBrand.location).state || 'Pan India') : 'Pan India'}
+                                    </p>
                                 </div>
                             </div>
                         </div>

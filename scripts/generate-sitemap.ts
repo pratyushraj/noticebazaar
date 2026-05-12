@@ -5,8 +5,28 @@
  */
 import fs from 'fs';
 import path from 'path';
+import { config } from 'dotenv';
+import { createClient } from '@supabase/supabase-js';
 
 const BASE_URL = 'https://creatorarmour.com';
+
+config({ path: path.resolve(process.cwd(), '.env.local') });
+config({ path: path.resolve(process.cwd(), '.env') });
+
+const DISCOVER_CATEGORIES = [
+  'beauty',
+  'fashion',
+  'fitness',
+  'food',
+  'finance',
+  'gaming',
+  'lifestyle',
+  'parenting',
+  'skincare',
+  'tech',
+  'travel',
+  'ugc',
+];
 
 // Static public pages
 const staticPages = [
@@ -36,6 +56,95 @@ async function getBlogSlugs(): Promise<string[]> {
     return posts.map((p: any) => p.slug).filter(Boolean);
   } catch {
     console.warn('Could not load blog posts for sitemap');
+    return [];
+  }
+}
+
+function toSlug(value: string): string {
+  return value
+    .trim()
+    .toLowerCase()
+    .replace(/&/g, ' and ')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+}
+
+function isIndexableUsername(username: unknown): username is string {
+  if (typeof username !== 'string') return false;
+  const trimmed = username.trim().toLowerCase();
+  if (!trimmed) return false;
+  if (trimmed.length > 75) return false;
+  return ![
+    'admin',
+    'api',
+    'blog',
+    'brand',
+    'brands',
+    'careers',
+    'calculator',
+    'collab',
+    'contract-analyzer',
+    'creator',
+    'creator-dashboard',
+    'creator-onboarding',
+    'creator-profile',
+    'discover',
+    'forgot-password',
+    'free-influencer-contract',
+    'free-legal-check',
+    'login',
+    'privacy-policy',
+    'rate-calculator',
+    'refund-policy',
+    'reset-password',
+    'settings',
+    'signup',
+    'sitemap',
+    'terms-of-service',
+  ].includes(trimmed);
+}
+
+async function getPublicCreatorPages(): Promise<Array<{ loc: string; priority: string; changefreq: string; lastmod?: string }>> {
+  const supabaseUrl = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL;
+  const supabaseKey =
+    process.env.VITE_SUPABASE_SERVICE_ROLE_KEY ||
+    process.env.SUPABASE_SERVICE_ROLE_KEY ||
+    process.env.VITE_SUPABASE_ANON_KEY ||
+    process.env.SUPABASE_ANON_KEY;
+
+  if (!supabaseUrl || !supabaseKey) {
+    console.warn('Supabase credentials not found; skipping creator profile sitemap URLs');
+    return [];
+  }
+
+  try {
+    const supabase = createClient(supabaseUrl, supabaseKey, {
+      auth: { persistSession: false, autoRefreshToken: false },
+    });
+
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('username, updated_at, onboarding_complete, role')
+      .eq('role' as any, 'creator')
+      .eq('onboarding_complete' as any, true)
+      .not('username' as any, 'is', null)
+      .limit(1000);
+
+    if (error) {
+      console.warn(`Could not load creator profiles for sitemap: ${error.message}`);
+      return [];
+    }
+
+    return (data || [])
+      .filter((profile: any) => isIndexableUsername(profile.username))
+      .map((profile: any) => ({
+        loc: `/${encodeURIComponent(String(profile.username).trim().toLowerCase())}`,
+        priority: '0.7',
+        changefreq: 'weekly',
+        lastmod: profile.updated_at ? new Date(profile.updated_at).toISOString().split('T')[0] : undefined,
+      }));
+  } catch (error) {
+    console.warn('Could not load creator profiles for sitemap:', error);
     return [];
   }
 }
@@ -74,7 +183,15 @@ async function main() {
     }))
   );
 
-  const allPages = [...staticPages, ...blogPages, ...calculatorPages];
+  const discoverCategoryPages = DISCOVER_CATEGORIES.map(category => ({
+    loc: `/discover/${toSlug(category)}`,
+    priority: '0.8',
+    changefreq: 'weekly' as const,
+  }));
+
+  const creatorPages = await getPublicCreatorPages();
+
+  const allPages = [...staticPages, ...blogPages, ...calculatorPages, ...discoverCategoryPages, ...creatorPages];
   const xml = generateXml(allPages);
 
   const outPath = path.resolve(process.cwd(), 'public', 'sitemap.xml');

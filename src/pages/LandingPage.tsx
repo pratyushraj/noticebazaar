@@ -227,14 +227,21 @@ const LandingPage = () => {
   }, []);
 
   const canonicalUrl = 'https://creatorarmour.com/';
-  const seoTitle = 'Creator Armour - Close Brand Deals Without Instagram DMs';
-  const seoDescription = 'Creator Armour gives you a professional collaboration page where brands send structured offers, contracts are generated automatically, and deals are tracked in your dashboard.';
+  const seoTitle = 'Creator Armour - Close UGC Video & Brand Deals Without Instagram DMs';
+  const seoDescription = 'Creator Armour gives you a professional collaboration page for UGC video and brand deals. Receive structured offers, generate contracts automatically, and track payments in your dashboard.';
   const seoKeywords = [
     'creator collab link',
+    'UGC video creators',
+    'micro influencer marketing India',
+    'hire UGC creators India',
+    'influencer marketing ROI',
     'brand deal management',
+    'performance influencer marketing',
     'influencer collaboration platform',
+    'UGC marketing marketplace',
     'creator marketplace india',
     'instagram creator brand deals',
+    'UGC content platform',
     'creator portfolio for brands',
     'structured brand offers for creators',
   ];

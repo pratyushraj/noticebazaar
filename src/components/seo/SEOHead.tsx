@@ -15,6 +15,11 @@ interface SEOHeadProps {
   imageAlt?: string;
   locale?: string;
   jsonLd?: Record<string, unknown>; // JSON-LD structured data
+  video?: string; // Video URL
+  videoType?: string; // Video MIME type (e.g. video/mp4)
+  videoWidth?: string;
+  videoHeight?: string;
+  videoThumbnail?: string;
 }
 
 /**
@@ -35,6 +40,11 @@ export const SEOHead: React.FC<SEOHeadProps> = ({
   imageAlt,
   locale = 'en_IN',
   jsonLd,
+  video,
+  videoType = 'video/mp4',
+  videoWidth = '720',
+  videoHeight = '1280',
+  videoThumbnail,
 }) => {
   const location = useLocation();
   const baseUrl = 'https://creatorarmour.com';
@@ -110,9 +120,26 @@ export const SEOHead: React.FC<SEOHeadProps> = ({
         updateMetaTag('article:author', author);
       }
     }
-
-    // Twitter Card tags
-    updateMetaTag('twitter:card', 'summary_large_image');
+    
+    // Video meta tags
+    if (video) {
+      updateMetaTag('og:video', video);
+      updateMetaTag('og:video:secure_url', video);
+      updateMetaTag('og:video:type', videoType);
+      if (videoWidth) updateMetaTag('og:video:width', videoWidth);
+      if (videoHeight) updateMetaTag('og:video:height', videoHeight);
+      
+      // Twitter Video Tags
+      updateMetaTag('twitter:card', 'player');
+      updateMetaTag('twitter:player', video);
+      updateMetaTag('twitter:player:width', videoWidth);
+      updateMetaTag('twitter:player:height', videoHeight);
+      updateMetaTag('twitter:player:stream', video);
+      updateMetaTag('twitter:player:stream:content_type', videoType);
+    } else {
+      // Default Twitter Card
+      updateMetaTag('twitter:card', 'summary_large_image');
+    }
     updateMetaTag('twitter:title', title);
     updateMetaTag('twitter:description', description);
     updateMetaTag('twitter:image', image);

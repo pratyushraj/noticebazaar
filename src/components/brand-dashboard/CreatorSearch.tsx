@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Search, Instagram, Youtube, X, Loader2, User } from 'lucide-react';
 import { useCreators, type CreatorProfile } from '@/lib/hooks/useCreators';
+import { decodeHtmlEntities } from '@/lib/utils/dom';
 
 interface CreatorSearchProps {
   onSelect: (creator: CreatorProfile) => void;
@@ -77,10 +78,10 @@ const CreatorSearch: React.FC<CreatorSearchProps> = ({ onSelect, selectedCreator
           <User className="w-4 h-4 text-secondary flex-shrink-0" />
           <div className="flex-1 min-w-0">
             <p className="text-[13px] text-secondary font-medium truncate">
-              {selectedCreator.name}
+              {decodeHtmlEntities(selectedCreator.name)}
             </p>
             <p className="text-[11px] text-secondary/70 truncate">
-              @{selectedCreator.username}
+              @{decodeHtmlEntities(selectedCreator.username)}
             </p>
           </div>
           <button
@@ -121,9 +122,9 @@ const CreatorSearch: React.FC<CreatorSearchProps> = ({ onSelect, selectedCreator
                     </div>
                     {/* Info */}
                     <div className="flex-1 min-w-0">
-                      <p className="text-[14px] text-foreground font-medium truncate">{creator.name}</p>
+                      <p className="text-[14px] text-foreground font-medium truncate">{decodeHtmlEntities(creator.name)}</p>
                       <p className="text-[12px] text-foreground/40 truncate">
-                        @{creator.username}
+                        @{decodeHtmlEntities(creator.username)}
                         {creator.category && ` · ${creator.category}`}
                       </p>
                     </div>

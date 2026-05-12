@@ -267,11 +267,11 @@ router.get('/', async (req: Request, res: Response) => {
         query = query.or(`username.ilike.${usernameTerm},instagram_handle.ilike.${usernameTerm}`);
       }
 
-      const qTerm = normalizeHandle(q);
+      const qTerm = String(q || '').trim();
       if (qTerm) {
         const like = `%${qTerm}%`;
         query = query.or(
-          `username.ilike.${like},instagram_handle.ilike.${like},business_name.ilike.${like},first_name.ilike.${like},last_name.ilike.${like}`
+          `username.ilike.${like},instagram_handle.ilike.${like},business_name.ilike.${like},first_name.ilike.${like},last_name.ilike.${like},bio.ilike.${like},collab_intro_line.ilike.${like}`
         );
       }
 
@@ -406,6 +406,8 @@ router.get('/', async (req: Request, res: Response) => {
         location: profile.location || null,
         media_kit_url: profile.media_kit_url || null,
         discovery_video_url: profile.discovery_video_url || null,
+        collab_intro_line: profile.collab_intro_line || profile.intro_line || null,
+        ugc_capabilities: profile.ugc_capabilities || [],
         barter_min_value: profile.barter_min_value || null,
         badges: deriveBadges(profile, stats),
         last_instagram_sync: (profile as any).last_instagram_sync || null,
@@ -661,6 +663,8 @@ router.get('/suggested', async (req: Request, res: Response) => {
         location: profile.location || null,
         media_kit_url: profile.media_kit_url || null,
         discovery_video_url: profile.discovery_video_url || null,
+        collab_intro_line: profile.collab_intro_line || profile.intro_line || null,
+        ugc_capabilities: profile.ugc_capabilities || [],
         barter_min_value: profile.barter_min_value || null,
         badges: deriveBadges(profile, stats),
         pricing: {

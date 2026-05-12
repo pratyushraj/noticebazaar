@@ -183,3 +183,62 @@ export const BreadcrumbSchema: React.FC<BreadcrumbSchemaProps> = ({ items }) => 
 
   return null;
 };
+
+interface VideoObjectSchemaProps {
+  name: string;
+  description: string;
+  thumbnailUrl: string;
+  uploadDate: string; // ISO format
+  contentUrl: string;
+  duration?: string; // ISO 8601 duration format (e.g., PT1M33S)
+  embedUrl?: string;
+}
+
+/**
+ * VideoObject Schema Markup (Schema.org)
+ */
+export const VideoObjectSchema: React.FC<VideoObjectSchemaProps> = ({
+  name,
+  description,
+  thumbnailUrl,
+  uploadDate,
+  contentUrl,
+  duration,
+  embedUrl,
+}) => {
+  useEffect(() => {
+    const schema = {
+      '@context': 'https://schema.org',
+      '@type': 'VideoObject',
+      name,
+      description,
+      thumbnailUrl,
+      uploadDate,
+      contentUrl,
+      embedUrl,
+      duration,
+    };
+
+    // Remove existing video schema if any
+    const existingScript = document.querySelector('script[data-schema="video"]');
+    if (existingScript) {
+      existingScript.remove();
+    }
+
+    // Add new schema script
+    const script = document.createElement('script');
+    script.type = 'application/ld+json';
+    script.setAttribute('data-schema', 'video');
+    script.textContent = JSON.stringify(schema);
+    document.head.appendChild(script);
+
+    return () => {
+      const scriptToRemove = document.querySelector('script[data-schema="video"]');
+      if (scriptToRemove) {
+        scriptToRemove.remove();
+      }
+    };
+  }, [name, description, thumbnailUrl, uploadDate, contentUrl, duration, embedUrl]);
+
+  return null;
+};

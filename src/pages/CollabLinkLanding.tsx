@@ -80,7 +80,7 @@ import { toast } from 'sonner'
 import { triggerHaptic, HapticPatterns } from '@/lib/utils/haptics'
 import { trackEvent } from '@/lib/utils/analytics'
 import { SEOHead } from '@/components/seo/SEOHead'
-import { BreadcrumbSchema } from '@/components/seo/SchemaMarkup'
+import { BreadcrumbSchema, VideoObjectSchema } from '@/components/seo/SchemaMarkup'
 import { getApiBaseUrl } from '@/lib/utils/api'
 import { getCollabReadiness } from '@/lib/collab/readiness'
 import { useSession } from '@/contexts/SessionContext'
@@ -91,6 +91,8 @@ import { supabase } from '@/integrations/supabase/client'
 import { normalizeLogoUrl } from '@/lib/deals/format'
 import { isBarterLikeCollab } from '@/lib/deals/collabType'
 import { optimizeImage, safeAvatarSrc } from '@/lib/utils/image'
+import { parseLocationString } from '@/lib/utils/pincodeLookup'
+import { decodeHtmlEntities } from '@/lib/utils/dom'
 import type { PortfolioItem } from '@/types'
 
 // Generic JSON-LD injector for page-specific schema markup
@@ -2725,15 +2727,15 @@ const CollabLinkLanding = () => {
   }
 
   // Generate SEO meta tags
-  const creatorName = toTitleCaseName(creator.name || 'Creator')
+  const creatorName = toTitleCaseName(decodeHtmlEntities(creator.name || creator.username || 'Creator'))
   const displayCreatorName = creatorName || 'Creator'
   const normalizedHandle = getPreferredPublicHandle(
     creator.platforms?.find(p => p.name.toLowerCase() === 'instagram')?.handle,
     creator.username,
     username
   )
-  const creatorHandle = normalizedHandle ? `@${normalizedHandle}` : ''
-  const metaTitle = `${creatorName}${creatorHandle ? ` (${creatorHandle})` : ''} Collab Link | Creator Armour`
+  const creatorHandle = normalizedHandle ? `@${decodeHtmlEntities(normalizedHandle)}` : ''
+  // const metaTitle = ... (Overridden later for SEO)
   // const platformNames = platforms.map(p => p.name).join(', ');
   const followerCount = creator.platforms.reduce((sum, p) => sum + (p.followers || 0), 0)
   const trustStats = creator.trust_stats
@@ -2779,6 +2781,12 @@ const CollabLinkLanding = () => {
     avgCampaignReach: creatorAnalytics.avgCampaignReach ?? demoAnalytics.avgCampaignReach,
   }
 
+  const creatorBio = isScrapedInstagramBio(creator.bio) ? null : creator.bio
+  const collabIntroLine =
+    creator.collab_intro_line?.trim() ||
+    creatorBio ||
+    null
+
   const estimatedAnalyticsTooltip =
     'Estimated metric — real data will appear as the creator completes campaigns on Creator Armour.'
 
@@ -2794,11 +2802,11 @@ const CollabLinkLanding = () => {
     followerCount > 0
       ? `${followerCount >= 1000 ? `${(followerCount / 1000).toFixed(1)}K` : followerCount} followers`
       : ''
-  const metaDescription =
-    `Book ${creatorName}${creatorHandle ? ` (${creatorHandle})` : ''}${creator.category ? `, ${creator.category} creator` : ''}${followerText ? ` • ${followerText}` : ''}. Share paid, barter, or hybrid briefs with contract-first protection via Creator Armour.`.substring(
-      0,
-      158
-    )
+
+  const metaTitle = `Collaborate with ${creatorName} (@${normalizedHandle}) | UGC & Performance Marketing`
+  const metaDescription = collabIntroLine 
+    ? `${collabIntroLine} | Hire ${creatorName} for high-performance UGC video content and brand collaborations on Creator Armour.`
+    : `Partner with ${creatorName} (@${normalizedHandle}) for performance-driven ${creator.category || ''} content. View rates, audience demographics, and previous brand collaborations.`
 
   // Use clean URL for SEO (no hash)
   const canonicalUrl = `https://creatorarmour.com/${encodeURIComponent(normalizedHandle)}`
@@ -2815,6 +2823,14 @@ const CollabLinkLanding = () => {
         creatorHandle,
         `${creatorName} brand collaboration`,
         creator.category ? `${creator.category} creator` : 'content creator',
+        'UGC Video Creators',
+        'Influencer Marketing ROI',
+        'Performance Marketing India',
+        'Hire UGC creators',
+        'Professional Video Content',
+        ...(creator.ugc_capabilities || []),
+        ...(creator.content_niches || []),
+        creator.location ? `creators in ${parseLocationString(creator.location).city || parseLocationString(creator.location).state || 'India'}` : null,
         `${creatorName} collab link`,
         'influencer marketing India',
         'creator collaboration',
@@ -2940,11 +2956,6 @@ const CollabLinkLanding = () => {
     creator.collab_region_label?.trim() || getAudienceRegionLabel(audienceCities)
   const audienceRelevanceNote =
     creator.collab_audience_relevance_note?.trim() || null
-  const creatorBio = isScrapedInstagramBio(creator.bio) ? null : creator.bio
-  const collabIntroLine =
-    creator.collab_intro_line?.trim() ||
-    creatorBio ||
-    null
   const audienceFitLine =
     creator.collab_audience_fit_note?.trim() || null
   const sameDayResponseLine =
@@ -3321,7 +3332,7 @@ const CollabLinkLanding = () => {
                       Location
                     </p>
                     <p className="text-lg font-black text-slate-900 leading-tight">
-                      {successPincode || (creator.pincode ? creator.pincode : (creator.city || 'India'))}
+                      {successPincode || (creator.city || (creator.location ? parseLocationString(creator.location).city : 'India'))}
                     </p>
                     <p className="text-xs font-bold text-slate-500 mt-1 opacity-60">
                       {successPincode ? 'Brand Pincode' : 'Creator Region'}
@@ -3415,7 +3426,19 @@ const CollabLinkLanding = () => {
         imageAlt={imageAlt}
         type="website"
         canonicalUrl={canonicalUrl}
+        video={creator.discovery_video_url || undefined}
+        videoThumbnail={pageImage}
       />
+
+      {creator.discovery_video_url && (
+        <VideoObjectSchema
+          name={`${creatorName} UGC & Performance Portfolio`}
+          description={metaDescription}
+          thumbnailUrl={pageImage}
+          uploadDate={new Date().toISOString()} // Approximate if not available
+          contentUrl={creator.discovery_video_url}
+        />
+      )}
 
       <BreadcrumbSchema
         items={[
@@ -3666,6 +3689,36 @@ const CollabLinkLanding = () => {
                     </p>
                   </div>
                 </motion.div>
+
+                {/* BIO / INTRO LINE - High Intent SEO Text */}
+                {collabIntroLine && (
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 1.2 }}
+                    className="mt-10 px-6 py-8 rounded-[40px] bg-white border border-slate-100 shadow-[0_32px_64px_-16px_rgba(0,0,0,0.04)] relative overflow-hidden group max-w-[550px] mx-auto"
+                  >
+                    <div className="absolute top-0 right-0 p-6 opacity-10 group-hover:opacity-20 transition-opacity">
+                      <Sparkles className="w-12 h-12 text-slate-400" />
+                    </div>
+                    <p className="text-2xl font-black text-slate-900 leading-tight mb-4 tracking-tight italic">
+                      "{collabIntroLine}"
+                    </p>
+                    
+                    {creator.ugc_capabilities && creator.ugc_capabilities.length > 0 && (
+                      <div className="flex flex-wrap gap-2 mt-6">
+                        {creator.ugc_capabilities.map((cap: string) => (
+                          <span 
+                            key={cap}
+                            className="px-3 py-1.5 rounded-xl bg-slate-50 border border-slate-100 text-[10px] font-black text-slate-600 uppercase tracking-widest"
+                          >
+                            {cap}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </motion.div>
+                )}
               </div>
 
               {/* NEW: Discovery Reel / Featured Video Section */}
@@ -3702,7 +3755,9 @@ const CollabLinkLanding = () => {
                         muted
                         loop
                         preload="auto"
-                        poster={creator.profile_photo || undefined}
+                        onLoadedData={(e) => {
+                          e.currentTarget.play().catch(err => console.log("Autoplay blocked:", err));
+                        }}
                       />
                     ) : (
                       <div className="w-full h-full flex flex-col items-center justify-center p-8 bg-slate-50">

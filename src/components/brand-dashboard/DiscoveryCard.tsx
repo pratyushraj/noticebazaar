@@ -9,6 +9,7 @@ import { cn } from '@/lib/utils';
 import { triggerHaptic } from '@/lib/utils/haptics';
 
 import { safeAvatarSrc } from '@/lib/utils/image';
+import { decodeHtmlEntities } from '@/lib/utils/dom';
 import { supabase } from '@/integrations/supabase/client';
 
 interface CreatorProfile {
@@ -191,7 +192,9 @@ export const DiscoveryCard = React.forwardRef<HTMLDivElement, DiscoveryCardProps
                 <div className="mb-4 space-y-1">
                     <div className="flex items-center gap-2">
                         <h3 className="text-3xl font-black text-white tracking-tight leading-none uppercase italic drop-shadow-md">
-                            {creator.first_name}
+                            {decodeHtmlEntities(creator.first_name && creator.first_name !== 'Creator' && !creator.first_name.includes('@') 
+                                ? creator.first_name 
+                                : (creator.username && !creator.username.includes('@') ? creator.username : 'Verified Creator'))}
                         </h3>
                         {creator.is_verified !== false && (
                             <ShieldCheck className="w-5 h-5 text-emerald-400 fill-emerald-400/20 drop-shadow-sm" />
@@ -201,7 +204,11 @@ export const DiscoveryCard = React.forwardRef<HTMLDivElement, DiscoveryCardProps
                         <span className="px-2 py-0.5 rounded-lg bg-emerald-500/20 border border-emerald-500/30 text-[10px] font-black text-emerald-400 uppercase tracking-widest backdrop-blur-sm">
                             {creator.category || "Lifestyle"}
                         </span>
-                        <span className="text-white/70 text-[12px] font-bold drop-shadow-sm">@{creator.username}</span>
+                        <span className="text-white/70 text-[12px] font-bold drop-shadow-sm">
+                            @{decodeHtmlEntities(creator.username && !creator.username.includes('@') 
+                                ? creator.username 
+                                : (creator.first_name && !creator.first_name.includes('@') ? creator.first_name.toLowerCase().replace(/\s+/g, '') : 'creator'))}
+                        </span>
                     </div>
                     {creator.bio && (
                         <p className="text-white/90 text-sm font-medium line-clamp-2 mt-2 drop-shadow-sm max-w-[90%]">

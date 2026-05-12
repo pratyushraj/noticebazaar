@@ -6,10 +6,14 @@ import {
   ChevronLeft, ChevronRight, Play, Pause, Volume2, VolumeX,
   Star, CheckCircle2
 } from 'lucide-react';
+import { safeAvatarSrc } from '@/lib/utils/image';
+import { decodeHtmlEntities } from '@/lib/utils/dom';
 import { cn } from '@/lib/utils';
 import { triggerHaptic, HapticPatterns } from '@/lib/utils/haptics';
 import { supabase } from '@/integrations/supabase/client';
 import { Link } from 'react-router-dom';
+import { parseLocationString } from '@/lib/utils/pincodeLookup';
+
 
 interface Creator {
   id: string;
@@ -246,14 +250,18 @@ export const FeaturedCreators = () => {
                     {currentCreator.creator_category || 'Lifestyle'}
                   </span>
                   <span className="text-[11px] font-black uppercase tracking-widest text-blue-600 bg-blue-50 px-3 py-1 rounded-md">
-                    {currentCreator.location}
+                    {parseLocationString(currentCreator.location).city || parseLocationString(currentCreator.location).state || 'India'}
                   </span>
                 </div>
 
-
+                <h3 className="text-4xl font-black text-slate-900 mb-4 tracking-tight">
+                  {decodeHtmlEntities(currentCreator.first_name && currentCreator.first_name !== 'Creator' && !currentCreator.first_name.includes('@') 
+                    ? currentCreator.first_name 
+                    : (currentCreator.username && !currentCreator.username.includes('@') ? currentCreator.username : 'Verified Creator'))}
+                </h3>
 
                 <p className="text-lg text-slate-500 font-medium mb-10 leading-relaxed">
-                  Join the top brands collaborating with {currentCreator.first_name}. 
+                  Join the top brands collaborating with {decodeHtmlEntities(currentCreator.first_name && currentCreator.first_name !== 'Creator' && !currentCreator.first_name.includes('@') ? currentCreator.first_name : 'elite creators')}. 
                   Get structured offers, verified delivery, and payment protection.
                 </p>
 

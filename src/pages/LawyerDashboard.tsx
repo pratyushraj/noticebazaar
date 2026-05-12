@@ -127,15 +127,8 @@ const QUICK_REPLIES = [
 const getConversationDisplayMeta = (conv: Conversation): { title: string; subtitle: string; meta?: string } => {
   // ========== TITLE LOGIC (Priority Order) ==========
   
-  // 1️⃣ Creator email (preferred - most reliable)
+  // 1️⃣ Creator name (preferred)
   const creator = conv.participants.find(p => p.role === 'creator');
-  if (creator?.email) {
-    const title = creator.email;
-    const { subtitle, meta } = getConversationSubtitle(conv);
-    return { title, subtitle, meta };
-  }
-  
-  // 2️⃣ Creator name (fallback if email not available)
   if (creator?.profiles) {
     const { first_name, last_name } = creator.profiles;
     const fullName = [first_name, last_name].filter(Boolean).join(' ').trim();
@@ -145,6 +138,13 @@ const getConversationDisplayMeta = (conv: Conversation): { title: string; subtit
       const { subtitle, meta } = getConversationSubtitle(conv);
       return { title, subtitle, meta };
     }
+  }
+
+  // 2️⃣ Creator ID/Username fallback (not email)
+  if (creator?.user_id) {
+    const title = `Creator: ${creator.user_id.substring(0, 8)}...`;
+    const { subtitle, meta } = getConversationSubtitle(conv);
+    return { title, subtitle, meta };
   }
   
   // 3️⃣ User ID (fallback if no email or name)

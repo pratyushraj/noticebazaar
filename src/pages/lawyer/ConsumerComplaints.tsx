@@ -256,10 +256,10 @@ export default function ConsumerComplaints() {
   };
 
   const getCreatorDisplayName = (complaint: Complaint) => {
-    if (complaint.creator?.email) return complaint.creator.email;
     if (complaint.creator?.first_name || complaint.creator?.last_name) {
       return [complaint.creator.first_name, complaint.creator.last_name].filter(Boolean).join(' ');
     }
+    if (complaint.creator?.email) return complaint.creator.email.split('@')[0] + '...';
     return 'Unknown User';
   };
 

@@ -52,13 +52,14 @@ import { CREATOR_ASSETS_BUCKET } from '@/lib/constants/storage';
 import { getApiBaseUrl } from '@/lib/utils/api';
 import { triggerHaptic } from '@/lib/utils/haptics';
 
-type OnboardingStep = 'identity' | 'reach' | 'audience' | 'style' | 'collab' | 'videoSuccess' | 'payout' | 'verification' | 'notifications' | 'finalizing';
+type OnboardingStep = 'identity' | 'reach' | 'audience' | 'style' | 'ugc' | 'collab' | 'videoSuccess' | 'payout' | 'verification' | 'notifications' | 'finalizing';
 
 const NICHES = [
   { id: 'beauty', label: 'Beauty', icon: '💄' },
   { id: 'fashion', label: 'Fashion', icon: '👗' },
   { id: 'lifestyle', label: 'Lifestyle', icon: '🏠' },
   { id: 'tech', label: 'Tech & Gadgets', icon: '💻' },
+  { id: 'ugc', label: 'UGC Specifications', icon: '📸' },
   { id: 'fitness', label: 'Fitness', icon: '💪' },
   { id: 'food', label: 'Food', icon: '🍳' },
   { id: 'travel', label: 'Travel', icon: '✈️' },
@@ -137,7 +138,7 @@ const CITY_ALIASES: Record<string, string> = {
   allahabad: 'Prayagraj',
 };
 
-const STEP_ORDER: OnboardingStep[] = ['identity', 'reach', 'audience', 'style', 'collab', 'payout', 'verification', 'notifications'];
+const STEP_ORDER: OnboardingStep[] = ['identity', 'reach', 'audience', 'style', 'ugc', 'collab', 'payout', 'verification', 'notifications'];
 const getOnboardingDraftKey = (userId: string) => `creator-onboarding-draft-v1-${userId}`;
 
 const normalizeCityValue = (value: string) => {
@@ -184,6 +185,8 @@ export default function CreatorOnboarding() {
   const [uploadProgress, setUploadProgress] = useState(0);
 
   // Form State
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
   const [instagramHandle, setInstagramHandle] = useState('');
   const [selectedNiches, setSelectedNiches] = useState<string[]>([]);
   const [followerCount, setFollowerCount] = useState<string>('');
@@ -219,6 +222,9 @@ export default function CreatorOnboarding() {
   const [avgReelViews, setAvgReelViews] = useState<string>('');
   const [brandsCount, setBrandsCount] = useState<string>('');
   const [dealPreference, setDealPreference] = useState<'paid_only' | 'barter_only' | 'open_to_both'>('open_to_both');
+  const [deliverySpeed, setDeliverySpeed] = useState('3');
+  const [hasHomeStudio, setHasHomeStudio] = useState(false);
+  const [ugcCapabilities, setUgcCapabilities] = useState<string[]>([]);
 
 
   const videoInputRef = useRef<HTMLInputElement>(null);
@@ -231,12 +237,13 @@ export default function CreatorOnboarding() {
       reach: 1,
       audience: 2,
       style: 3,
-      collab: 4,
-      videoSuccess: 4,
-      payout: 5,
-      verification: 6,
-      notifications: 7,
-      finalizing: 7,
+      ugc: 4,
+      collab: 5,
+      videoSuccess: 5,
+      payout: 6,
+      verification: 7,
+      notifications: 8,
+      finalizing: 8,
     };
 
     return progressIndexByStep[step] ?? 0;
@@ -435,8 +442,12 @@ export default function CreatorOnboarding() {
       setStep('collab');
       return;
     }
-    if (step === 'profile') {
-      setStep('videoSuccess');
+    if (step === 'collab') {
+      setStep('ugc');
+      return;
+    }
+    if (step === 'ugc') {
+      setStep('style');
       return;
     }
     if (step === 'verification') {
@@ -459,6 +470,10 @@ export default function CreatorOnboarding() {
     
     // Identity Check
     if (step === 'identity') {
+      if (!firstName || !lastName) {
+        toast.error('Please enter your full name');
+        return;
+      }
       if (instagramHandle.length < 3) {
         toast.error('Please enter your Instagram username');
         return;
@@ -468,6 +483,8 @@ export default function CreatorOnboarding() {
       try {
         await updateProfileMutation.mutateAsync({
           id: profile!.id,
+          first_name: firstName.trim(),
+          last_name: lastName.trim(),
           instagram_handle: instagramHandle.replace(/^@+/, '').trim().toLowerCase(),
           username: instagramHandle.replace(/^@+/, '').trim().toLowerCase(),
           instagram_profile_photo: profilePhotoUrl || null,
@@ -535,6 +552,17 @@ export default function CreatorOnboarding() {
         id: profile!.id,
         content_niches: selectedNiches,
         content_vibes: contentVibes,
+      } as any);
+      return;
+    }
+
+    if (step === 'ugc') {
+      setStep('collab');
+      updateProfileMutation.mutate({
+        id: profile!.id,
+        delivery_speed_days: Number(deliverySpeed),
+        has_home_studio: hasHomeStudio,
+        ugc_capabilities: ugcCapabilities,
       } as any);
       return;
     }
@@ -1095,6 +1123,28 @@ export default function CreatorOnboarding() {
                   <p className="mt-3 text-[10px] font-black uppercase tracking-widest text-white/30">Professional Photo</p>
                 </div>
 
+                {/* Name Fields */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-3 group">
+                    <Label className="text-[10px] font-black uppercase tracking-widest text-white/30 px-1 group-focus-within:text-emerald-400">First Name</Label>
+                    <Input
+                      value={firstName}
+                      onChange={e => setFirstName(e.target.value)}
+                      placeholder="e.g. Vidushi"
+                      className="h-[68px] px-6 rounded-[24px] border-white/10 bg-white/5 font-bold text-white focus:border-emerald-500/50 focus:bg-white/10 transition-all shadow-none outline-none"
+                    />
+                  </div>
+                  <div className="space-y-3 group">
+                    <Label className="text-[10px] font-black uppercase tracking-widest text-white/30 px-1 group-focus-within:text-emerald-400">Last Name</Label>
+                    <Input
+                      value={lastName}
+                      onChange={e => setLastName(e.target.value)}
+                      placeholder="e.g. Singh"
+                      className="h-[68px] px-6 rounded-[24px] border-white/10 bg-white/5 font-bold text-white focus:border-emerald-500/50 focus:bg-white/10 transition-all shadow-none outline-none"
+                    />
+                  </div>
+                </div>
+
                 {/* Instagram Field */}
                 <div className="space-y-3 group">
                   <Label className="text-[10px] font-black uppercase tracking-widest text-white/30 px-1 flex justify-between group-focus-within:text-emerald-400 transition-colors">
@@ -1382,6 +1432,109 @@ export default function CreatorOnboarding() {
                   className="w-full h-[72px] rounded-[26px] bg-emerald-500 hover:bg-emerald-400 text-white font-black italic text-xl shadow-[0_20px_40px_rgba(16,185,129,0.2)] active:scale-95 transition-all flex items-center justify-center gap-3 border-none uppercase tracking-widest"
                 >
                   Save & Continue <ArrowRight className="w-6 h-6" />
+                </Button>
+              </div>
+            </OnboardingSlide>
+          )}
+
+          {step === 'ugc' && (
+            <OnboardingSlide key="ugc" slideKey="ugc">
+              <div className="text-center mb-10">
+                <motion.div 
+                  initial={{ scale: 0.8, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  className="w-16 h-16 bg-emerald-500/10 rounded-2xl flex items-center justify-center mb-6 mx-auto border border-emerald-500/20"
+                >
+                  <Sparkles className="w-8 h-8 text-emerald-400" />
+                </motion.div>
+                <h1 className="text-3xl font-black tracking-tight text-white mb-2 uppercase italic">UGC Specs</h1>
+                <p className="text-white/30 font-black text-[10px] uppercase tracking-[0.3em]">Delivery & Equipment</p>
+              </div>
+
+              <div className="w-full space-y-10 text-left">
+                <div className="space-y-4">
+                  <Label className="text-[10px] font-black uppercase tracking-widest text-white/30 px-1 block text-left">How fast can you deliver content?</Label>
+                  <div className="grid grid-cols-3 gap-3">
+                    {[
+                      { id: '2', label: '2 Days' },
+                      { id: '3', label: '3 Days' },
+                      { id: '5', label: '5 Days' }
+                    ].map((speed) => (
+                      <motion.button
+                        key={speed.id}
+                        whileTap={{ scale: 0.95 }}
+                        onClick={() => { triggerHaptic?.(); setDeliverySpeed(speed.id); }}
+                        className={cn(
+                          "h-14 rounded-[20px] border text-[10px] font-black uppercase tracking-widest transition-all",
+                          deliverySpeed === speed.id 
+                            ? "bg-emerald-500 border-emerald-400 text-white shadow-lg shadow-emerald-500/20" 
+                            : "bg-white/5 border-white/10 text-white/30 hover:bg-white/10"
+                        )}
+                      >
+                        {speed.label}
+                      </motion.button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  <Label className="text-[10px] font-black uppercase tracking-widest text-white/30 px-1 block text-left">UGC Capabilities</Label>
+                  <div className="grid grid-cols-2 gap-2.5">
+                    {['Unboxing', 'Voiceover', 'Testimonials', 'Aesthetic Demo', 'App Walkthrough', 'POV Style'].map(cap => (
+                      <motion.button
+                        key={cap}
+                        whileTap={{ scale: 0.95 }}
+                        onClick={() => {
+                          triggerHaptic?.();
+                          setUgcCapabilities(prev => prev.includes(cap) ? prev.filter(c => c !== cap) : [...prev, cap]);
+                        }}
+                        className={cn(
+                          "h-14 rounded-[20px] border transition-all text-[9px] font-black uppercase tracking-widest flex items-center justify-center px-4",
+                          ugcCapabilities.includes(cap)
+                            ? "bg-emerald-500 border-emerald-400 text-white shadow-lg shadow-emerald-500/20"
+                            : "bg-white/5 border-white/10 text-white/30 hover:bg-white/10"
+                        )}
+                      >
+                        {cap}
+                      </motion.button>
+                    ))}
+                  </div>
+                </div>
+
+                <div 
+                  onClick={() => { triggerHaptic?.(); setHasHomeStudio(!hasHomeStudio); }}
+                  className={cn(
+                    "p-6 rounded-[28px] border transition-all cursor-pointer flex items-center justify-between group",
+                    hasHomeStudio ? "bg-emerald-500/10 border-emerald-500/50" : "bg-white/5 border-white/10 hover:border-white/20"
+                  )}
+                >
+                  <div className="flex items-center gap-4">
+                    <div className={cn(
+                      "w-12 h-12 rounded-2xl flex items-center justify-center transition-colors",
+                      hasHomeStudio ? "bg-emerald-500 text-white" : "bg-white/5 text-white/20"
+                    )}>
+                      <LayoutDashboard className="w-6 h-6" />
+                    </div>
+                    <div className="text-left">
+                      <p className="text-[11px] font-black uppercase tracking-widest text-white">Home Studio Available</p>
+                      <p className="text-[9px] font-medium text-white/40 mt-0.5">Professional lighting & background</p>
+                    </div>
+                  </div>
+                  <div className={cn(
+                    "w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-all",
+                    hasHomeStudio ? "bg-emerald-500 border-emerald-400" : "bg-white/5 border-white/10"
+                  )}>
+                    {hasHomeStudio && <Check className="w-4 h-4 text-white" />}
+                  </div>
+                </div>
+              </div>
+
+              <div className="sticky bottom-0 mt-8 pt-10 pb-6 w-[calc(100%+3rem)] -mx-6 px-6 bg-gradient-to-t from-[#020D0A] via-[#020D0A] to-transparent z-30">
+                <Button
+                  onClick={handleNext}
+                  className="w-full h-[72px] rounded-[26px] bg-emerald-500 hover:bg-emerald-400 text-white font-black italic text-xl shadow-[0_20px_40px_rgba(16,185,129,0.2)] active:scale-95 transition-all flex items-center justify-center gap-3 border-none uppercase tracking-widest"
+                >
+                  Continue <ArrowRight className="w-6 h-6" />
                 </Button>
               </div>
             </OnboardingSlide>
