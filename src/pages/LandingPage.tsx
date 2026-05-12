@@ -410,6 +410,8 @@ const LandingPage = () => {
               <div className="mb-8 inline-flex flex-col sm:flex-row gap-3 p-2 rounded-[1.5rem] border border-[#E5E7EB] bg-white/80 backdrop-blur-sm shadow-sm">
                 <button
                   type="button"
+                  aria-label="Switch to creator mode"
+                  aria-pressed={landingAudience === 'creator'}
                   onClick={() => {
                     triggerHaptic(HapticPatterns.light);
                     setLandingAudience('creator');
@@ -422,6 +424,8 @@ const LandingPage = () => {
                 </button>
                 <button
                   type="button"
+                  aria-label="Switch to brand mode"
+                  aria-pressed={landingAudience === 'brand'}
                   onClick={() => {
                     triggerHaptic(HapticPatterns.light);
                     setLandingAudience('brand');
@@ -537,7 +541,7 @@ const LandingPage = () => {
                                 <div className="space-y-4 relative z-10">
                       <div className="border border-[#E5E7EB] rounded-2xl p-5 bg-white shadow-sm hover:border-[#16A34A] transition-colors">
                         <div className="flex justify-between items-start mb-2">
-                          <h5 className="font-black text-[15px] text-[#0F172A]">🚀 Starter Collab</h5>
+                          <h4 className="font-black text-[15px] text-[#0F172A]">🚀 Starter Collab</h4>
                           <div className="w-8 h-8 rounded-full bg-[#F8FAF9] flex items-center justify-center">
                             <span className="text-xl">🎬</span>
                           </div>
@@ -552,7 +556,7 @@ const LandingPage = () => {
                       <div className="border-2 border-[#16A34A] bg-white rounded-2xl p-5 relative shadow-lg shadow-[#16A34A]/10">
                         <div className="absolute -top-3 left-4 bg-[#16A34A] text-white text-[11px] uppercase font-black px-3 py-1 rounded-full tracking-wide">Most chosen</div>
                         <div className="flex justify-between items-start mb-2 mt-1">
-                          <h5 className="font-black text-[15px] text-[#0F172A]">⭐ Growth Campaign</h5>
+                          <h4 className="font-black text-[15px] text-[#0F172A]">⭐ Growth Campaign</h4>
                           <div className="w-8 h-8 rounded-full bg-[#16A34A] flex items-center justify-center">
                             <span className="text-xl">🔥</span>
                           </div>
@@ -566,7 +570,7 @@ const LandingPage = () => {
 
                       <div className="border border-[#E5E7EB] rounded-2xl p-5 bg-white shadow-sm hover:border-[#16A34A] transition-colors">
                         <div className="flex justify-between items-start mb-2">
-                          <h5 className="font-black text-[15px] text-[#0F172A]">🎁 Product Exchange</h5>
+                          <h4 className="font-black text-[15px] text-[#0F172A]">🎁 Product Exchange</h4>
                           <div className="w-8 h-8 rounded-full bg-[#F8FAF9] flex items-center justify-center">
                             <span className="text-xl">📦</span>
                           </div>
