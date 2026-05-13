@@ -88,7 +88,42 @@ const DiscoverCreators = () => {
             const data = await response.json();
 
             if (data.success) {
-                setCreators(data.creators || []);
+                const fetchedCreators = data.creators || [];
+                
+                // Supplemental fetch for video/image assets that might be missing from API
+                const creatorIds = fetchedCreators.map((c: any) => c.id).filter(Boolean);
+                if (creatorIds.length > 0) {
+                    try {
+                        const { data: assets, error: assetErr } = await (supabase as any)
+                            .from('profiles')
+                            .select('id, discovery_video_url, discovery_card_image, avatar_url')
+                            .in('id', creatorIds);
+                        
+                        if (assets && !assetErr) {
+                            const assetMap = new Map(assets.map((a: any) => [a.id, a]));
+                            const enriched = fetchedCreators.map((c: any) => {
+                                const asset = assetMap.get(c.id);
+                                if (asset) {
+                                    return {
+                                        ...c,
+                                        discovery_video_url: asset.discovery_video_url || c.discovery_video_url,
+                                        discovery_card_image: asset.discovery_card_image || c.discovery_card_image,
+                                        avatar_url: asset.avatar_url || c.avatar_url
+                                    };
+                                }
+                                return c;
+                            });
+                            setCreators(enriched);
+                        } else {
+                            setCreators(fetchedCreators);
+                        }
+                    } catch (suppErr) {
+                        console.error('[DiscoverCreators] Supplemental asset fetch failed:', suppErr);
+                        setCreators(fetchedCreators);
+                    }
+                } else {
+                    setCreators(fetchedCreators);
+                }
             }
         } catch (error) {
             console.error('[DiscoverCreators] Error fetching creators:', error);
