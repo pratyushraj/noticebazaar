@@ -1210,9 +1210,17 @@ const CollabLinkLanding = () => {
     if (creator) {
       if (creator.deal_templates && creator.deal_templates.length > 0) {
         const fallbackRate = (creator as any).avg_rate_reel || creator.suggested_reel_rate || 5000
-        let validatedTemplates = creator.deal_templates.slice(0, 4).map((t, i) => {
+        let validatedTemplates = creator.deal_templates.slice(0, 4).map((rawT, i) => {
+          const t = rawT as any;
+          // Map properties safely from possible external formats (name -> label, price -> budget)
+          const normalizedTemplate = {
+            ...t,
+            label: t.label || t.name || `Package ${i + 1}`,
+            budget: typeof t.budget === 'number' ? t.budget : (typeof t.price === 'number' ? t.price : 0)
+          }
+
           // If it's a barter deal or has a price, keep it
-          if (t.budget > 0 || t.type === 'barter') return t
+          if (normalizedTemplate.budget > 0 || normalizedTemplate.type === 'barter') return normalizedTemplate
 
           // Otherwise use sensible defaults based on reel rate
           const fallbackBudgets = [
@@ -1221,7 +1229,7 @@ const CollabLinkLanding = () => {
             Math.round(fallbackRate * 4),
             0, // Barter
           ]
-          return { ...t, budget: fallbackBudgets[i] ?? 0 }
+          return { ...normalizedTemplate, budget: fallbackBudgets[i] ?? 0 }
         })
 
         // Auto-inject barter template if missing but value is set
