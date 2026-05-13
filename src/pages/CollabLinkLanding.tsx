@@ -655,7 +655,7 @@ const buildLocalPreviewCreator = (handle: string): Creator => ({
 
 const getAudienceRegionLabel = (cities: string[]) => {
   if (!cities.length) return null
-  const normalized = cities.map(city => city.toLowerCase())
+  const normalized = cities.map(city => String(city || '').toLowerCase())
   const hasNcr = normalized.some(city =>
     ['delhi', 'new delhi', 'noida', 'gurgaon', 'gurugram', 'ghaziabad', 'faridabad'].some(key =>
       city.includes(key)
@@ -682,7 +682,7 @@ const getAudienceRegionLabel = (cities: string[]) => {
 
 const isScrapedInstagramBio = (bio?: string | null) => {
   if (!bio) return false
-  const normalized = bio.toLowerCase()
+  const normalized = String(bio || '').toLowerCase()
   return (
     (normalized.includes('followers') &&
       normalized.includes('following') &&
@@ -1092,7 +1092,7 @@ const CollabLinkLanding = () => {
 
   // --- NEW: SMART EMAIL LOOKUP ---
   useEffect(() => {
-    const email = brandEmail.trim().toLowerCase()
+    const email = String(brandEmail || '').trim().toLowerCase()
     if (!email || !email.includes('@') || email.length < 5) {
       setLookupStatus('idle')
       return
@@ -1334,7 +1334,7 @@ const CollabLinkLanding = () => {
 
     const nextPlatforms = Array.isArray(creator.platforms)
       ? creator.platforms.map(platform =>
-          platform.name.toLowerCase() === 'instagram'
+          String(platform?.name || '').toLowerCase() === 'instagram'
             ? {
                 ...platform,
                 handle: latestHandle || platform.handle,
@@ -1345,7 +1345,7 @@ const CollabLinkLanding = () => {
       : []
 
     const hasInstagramPlatform = nextPlatforms.some(
-      platform => platform.name.toLowerCase() === 'instagram'
+      platform => String(platform?.name || '').toLowerCase() === 'instagram'
     )
     if (!hasInstagramPlatform && latestHandle) {
       nextPlatforms.unshift({
@@ -1361,12 +1361,12 @@ const CollabLinkLanding = () => {
     const nextProfilePhoto = latestProfilePhoto
 
     const instagramHandle =
-      nextPlatforms.find(platform => platform.name.toLowerCase() === 'instagram')?.handle || ''
+      nextPlatforms.find(platform => String(platform?.name || '').toLowerCase() === 'instagram')?.handle || ''
     const isSameName = nextName === sanitizeDisplayName(creator.name)
     const isSameUsername = nextUsername === sanitizeDisplayName(creator.username)
     const isSameInstagramHandle =
       instagramHandle ===
-      (creator.platforms.find(platform => platform.name.toLowerCase() === 'instagram')?.handle ||
+      (creator.platforms.find(platform => String(platform?.name || '').toLowerCase() === 'instagram')?.handle ||
         '')
     const isSameFollowers = nextFollowers === creator.followers
     const isSamePhoto = nextProfilePhoto === creator.profile_photo
@@ -1498,7 +1498,7 @@ const CollabLinkLanding = () => {
 
     const readiness = getCollabReadiness({
       instagramHandle: getPreferredPublicHandle(
-        creator.platforms.find(p => p.name.toLowerCase() === 'instagram')?.handle,
+        creator.platforms.find(p => String(p?.name || '').toLowerCase() === 'instagram')?.handle,
         creator.username
       ),
       instagramLinked: Boolean(creator.last_instagram_sync),
@@ -2583,7 +2583,7 @@ const CollabLinkLanding = () => {
   }
 
   const getPlatformIcon = (platformName: string) => {
-    switch (platformName.toLowerCase()) {
+    switch (String(platformName || '').toLowerCase()) {
       case 'instagram':
         return <Instagram className="h-4 w-4" />
       case 'youtube':
@@ -2735,7 +2735,7 @@ const CollabLinkLanding = () => {
   const creatorName = toTitleCaseName(decodeHtmlEntities(creator.name || creator.username || 'Creator'))
   const displayCreatorName = creatorName || 'Creator'
   const normalizedHandle = getPreferredPublicHandle(
-    creator.platforms?.find(p => p.name.toLowerCase() === 'instagram')?.handle,
+    creator.platforms?.find(p => String(p?.name || '').toLowerCase() === 'instagram')?.handle,
     creator.username,
     username
   )
@@ -3001,7 +3001,7 @@ const CollabLinkLanding = () => {
 
   const collabReadiness = getCollabReadiness({
     instagramHandle: getPreferredPublicHandle(
-      creator.platforms.find(p => p.name.toLowerCase() === 'instagram')?.handle,
+      creator.platforms.find(p => String(p?.name || '').toLowerCase() === 'instagram')?.handle,
       creator.username
     ),
     instagramLinked: Boolean(creator.last_instagram_sync),
@@ -3135,7 +3135,7 @@ const CollabLinkLanding = () => {
     const sameAs = creator.platforms
       .map(p => {
         const handle = (p.handle || '').replace(/^@/, '')
-        switch (p.name.toLowerCase()) {
+        switch (String(p?.name || '').toLowerCase()) {
           case 'instagram':
             return handle ? `https://instagram.com/${handle}` : null
           case 'youtube':
@@ -3850,11 +3850,11 @@ const CollabLinkLanding = () => {
                       
                       // Outcome-focused descriptions based on template names
                       let outcomeDescription = template.description;
-                      if (template.label.toLowerCase().includes('starter')) {
+                      if (String(template?.label || '').toLowerCase().includes('starter')) {
                         outcomeDescription = "Perfect for first-time brand awareness & organic reach."
-                      } else if (template.label.toLowerCase().includes('growth') || template.label.toLowerCase().includes('ads')) {
+                      } else if (String(template?.label || '').toLowerCase().includes('growth') || String(template?.label || '').toLowerCase().includes('ads')) {
                         outcomeDescription = "Best for brands wanting ads usage + conversions."
-                      } else if (template.label.toLowerCase().includes('product') || template.label.toLowerCase().includes('exchange')) {
+                      } else if (String(template?.label || '').toLowerCase().includes('product') || String(template?.label || '').toLowerCase().includes('exchange')) {
                         // Preserve the original description if it contains the barter value
                         outcomeDescription = template.description || "Ideal for skincare, fashion & product launches."
                       }
@@ -3881,12 +3881,12 @@ const CollabLinkLanding = () => {
                                 <Star className="w-3 h-3 fill-white" />
                                 Most Booked
                               </div>
-                            ) : template.label.toLowerCase().includes('starter') ? (
+                            ) : String(template?.label || '').toLowerCase().includes('starter') ? (
                               <div className="bg-white border border-blue-100 text-blue-600 text-[9px] font-black uppercase tracking-[0.2em] px-4 py-1.5 rounded-full shadow-sm flex items-center gap-1.5">
                                 <Zap className="w-3 h-3 fill-blue-500" />
                                 High Conversion
                               </div>
-                            ) : template.label.toLowerCase().includes('growth') || template.label.toLowerCase().includes('ads') ? (
+                            ) : String(template?.label || '').toLowerCase().includes('growth') || String(template?.label || '').toLowerCase().includes('ads') ? (
                               <div className="bg-white border border-purple-100 text-purple-600 text-[9px] font-black uppercase tracking-[0.2em] px-4 py-1.5 rounded-full shadow-sm flex items-center gap-1.5">
                                 <TrendingUp className="w-3 h-3" />
                                 Best ROI
