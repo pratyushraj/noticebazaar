@@ -2066,15 +2066,31 @@ const CollabLinkLanding = () => {
                 const links = Array.isArray(portfolioRow.portfolio_links)
                   ? portfolioRow.portfolio_links.filter((l: any) => l && String(l || '').trim())
                   : []
+                
+                // --- SELF-HEALING FALLBACKS ---
+                let fallbackVideo = portfolioRow.discovery_video_url;
+                let fallbackPoster = portfolioRow.discovery_card_image;
+
+                // If primary discovery video is missing, try to find the first video in past work
+                if (!fallbackVideo && Array.isArray(portfolioRow.collab_past_work_items)) {
+                  const firstVideo = portfolioRow.collab_past_work_items.find((item: any) => item.mediaType === 'video' && item.sourceUrl);
+                  if (firstVideo) {
+                    fallbackVideo = firstVideo.sourceUrl;
+                    console.log('[CollabLinkLanding] Self-healed discovery_video_url from past work:', fallbackVideo);
+                  }
+                }
+
                 console.log('[CollabLinkLanding] Portfolio loaded:', {
                   links,
                   media_kit_url: portfolioRow.media_kit_url,
+                  video: fallbackVideo
                 })
+
                 setCreator((prev: any) => ({
                   ...prev,
                   portfolio_links: links.length > 0 ? links : prev.portfolio_links || [],
                   media_kit_url: portfolioRow.media_kit_url || prev.media_kit_url || null,
-                  discovery_video_url: portfolioRow.discovery_video_url || prev.discovery_video_url || null,
+                  discovery_video_url: fallbackVideo || prev.discovery_video_url || null,
                   portfolio_videos: portfolioRow.portfolio_videos || prev.portfolio_videos || [],
                   avg_reel_views_manual: portfolioRow.avg_reel_views_manual !== undefined ? portfolioRow.avg_reel_views_manual : prev.avg_reel_views_manual,
                   avg_views: portfolioRow.avg_views !== undefined ? portfolioRow.avg_views : prev.avg_views,
@@ -2100,7 +2116,7 @@ const CollabLinkLanding = () => {
                   past_brand_count: portfolioRow.past_brand_count !== undefined ? portfolioRow.past_brand_count : prev.past_brand_count,
                   followers: portfolioRow.followers_count !== undefined ? portfolioRow.followers_count : prev.followers,
                   profile_photo: portfolioRow.avatar_url || portfolioRow.instagram_profile_photo || prev.profile_photo,
-                  discovery_card_image: portfolioRow.discovery_card_image || prev.discovery_card_image || null,
+                  discovery_card_image: fallbackPoster || prev.discovery_card_image || null,
                   portfolio_items: normalizePortfolioItems(portfolioRow.collab_past_work_items, portfolioRow.portfolio_links),
                 }))
               } else {
