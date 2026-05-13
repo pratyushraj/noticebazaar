@@ -3813,6 +3813,7 @@ const CollabLinkLanding = () => {
                           muted
                           loop
                           preload="auto"
+                          poster={creator.discovery_card_image || creator.avatar_url || ""}
                           onLoadedData={(e) => {
                             e.currentTarget.play().catch(err => console.log("Autoplay blocked:", err));
                           }}
