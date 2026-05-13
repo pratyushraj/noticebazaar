@@ -10,6 +10,7 @@ import { triggerHaptic, HapticPatterns } from '@/lib/utils/haptics';
 import { cn } from '@/lib/utils';
 import { optimizeImage } from '@/lib/utils/image';
 import { FeaturedCreators } from '@/components/discovery/FeaturedCreators';
+import { ShortlistModal, ShortlistForm } from '@/components/leads/ShortlistForm';
 
 const ThreeDIllustration = lazy(() =>
   import('@/components/ui/ThreeDIllustration').then(m => ({ default: m.default }))
@@ -217,6 +218,7 @@ const LandingPage = () => {
   const [hasScrolled, setHasScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [landingAudience, setLandingAudienceState] = useState<'creator' | 'brand'>('creator');
+  const [shortlistModalOpen, setShortlistModalOpen] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -457,12 +459,14 @@ const LandingPage = () => {
               </div>
 
               <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 mb-10">
-                <Link
-                    to="/signup?mode=brand"
+                <button
+                    type="button"
+                    id="hero-shortlist-cta"
+                    onClick={() => { triggerHaptic(HapticPatterns.success); setShortlistModalOpen(true); }}
                     className="w-full sm:w-auto bg-[#16A34A] hover:bg-[#15803D] text-white px-6 md:px-8 py-4 md:py-5 rounded-full font-black text-[16px] md:text-[18px] shadow-xl shadow-[#16A34A]/20 hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2 border border-[#16A34A]"
                   >
                     Get a free creator shortlist <ArrowRight className="w-5 h-5" />
-                  </Link>
+                  </button>
                   <Link
                     to="/#how-it-works"
                     className="w-full sm:w-auto bg-white hover:bg-[#F8FAF9] border shadow-sm border-[#E5E7EB] text-[#64748B] px-6 md:px-8 py-4 md:py-5 rounded-full font-black text-[15px] md:text-[16px] transition-all flex items-center justify-center gap-2"
@@ -951,9 +955,14 @@ const LandingPage = () => {
               </p>
 
               <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                <Link to="/signup?mode=brand" className="w-full sm:w-auto bg-white text-[#15803D] hover:bg-[#DCFCE7] px-10 py-5 rounded-full font-black text-[18px] shadow-xl transition-all flex items-center justify-center gap-2">
+                <button
+                  id="footer-shortlist-cta"
+                  type="button"
+                  onClick={() => setShortlistModalOpen(true)}
+                  className="w-full sm:w-auto bg-white text-[#15803D] hover:bg-[#DCFCE7] px-10 py-5 rounded-full font-black text-[18px] shadow-xl transition-all flex items-center justify-center gap-2"
+                >
                   Get my free shortlist <ArrowRight className="w-5 h-5" />
-                </Link>
+                </button>
               </div>
             </div>
           </div>
@@ -1044,6 +1053,26 @@ const LandingPage = () => {
           </div>
         </section>
 
+        {/* INLINE LEAD FORM SECTION */}
+        <section id="get-shortlist" className="px-4 sm:px-6 max-w-[900px] mx-auto py-16 lg:py-20 scroll-mt-24">
+          <div className="bg-white rounded-[32px] border border-[#E5E7EB] shadow-[0_12px_40px_rgba(0,0,0,0.07)] overflow-hidden">
+            <div className="bg-gradient-to-r from-[#ECFDF5] to-[#F0FDF4] border-b border-[#D1FAE5] px-8 py-8 text-center">
+              <span className="inline-flex items-center gap-2 px-3 py-1 bg-[#16A34A]/10 text-[#15803D] rounded-full text-[11px] font-black uppercase tracking-widest mb-3">
+                <CheckCircle2 className="w-3.5 h-3.5" /> Free · No commitment
+              </span>
+              <h2 className="text-2xl md:text-[34px] font-black tracking-tight text-[#0F172A] leading-tight">
+                Get your curated creator shortlist
+              </h2>
+              <p className="mt-2 text-[#64748B] font-medium text-[15px] max-w-lg mx-auto">
+                Fill this in and we'll handpick 3–5 creators for your campaign — within 48 hours.
+              </p>
+            </div>
+            <div className="px-6 md:px-10 py-8">
+              <ShortlistForm />
+            </div>
+          </div>
+        </section>
+
         {/* Global FAQ Section */}
         <FAQSection 
           title="Common Questions"
@@ -1074,6 +1103,9 @@ const LandingPage = () => {
         />
 
       </main>
+
+      {/* Shortlist Modal */}
+      <ShortlistModal open={shortlistModalOpen} onClose={() => setShortlistModalOpen(false)} />
 
       {/* FOOTER */}
       <footer className="bg-[#05070A] pt-24 pb-12 px-6 relative overflow-hidden border-t border-white/5">
