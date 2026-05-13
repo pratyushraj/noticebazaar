@@ -71,7 +71,7 @@ export async function sendCreatorOnboardingInvite(data: CreatorOnboardingData & 
  * Goal: Get the creator to complete setup immediately.
  */
 export async function sendWelcomeActivationEmail(data: CreatorOnboardingData) {
-    const setupUrl = `${process.env.FRONTEND_URL || 'https://creatorarmour.com'}/onboarding`;
+    const setupUrl = `${process.env.FRONTEND_URL || 'https://creatorarmour.com'}/creator-onboarding`;
 
     const emailContent = `
     <tr>

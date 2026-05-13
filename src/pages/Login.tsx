@@ -41,6 +41,8 @@ const Login = () => {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [showResend, setShowResend] = useState(false);
+  const [isResending, setIsResending] = useState(false);
 
   // Safety redirect: If session exists, we should move to dashboard
   useEffect(() => {
@@ -126,6 +128,12 @@ const Login = () => {
       });
       if (error || !data.session || !data.user) {
         const message = error?.message || 'Invalid email/username or password';
+        
+        // Show resend option if email not confirmed
+        if (message.toLowerCase().includes('confirmed') || message.toLowerCase().includes('verify') || message.toLowerCase().includes('activation')) {
+          setShowResend(true);
+        }
+        
         toast.error(message);
         return;
       }
@@ -158,6 +166,34 @@ const Login = () => {
       }
     } catch (err: unknown) {
       toast.error(getErrorMessage(err));
+    }
+  };
+
+  const handleResendActivation = async () => {
+    if (!identifier.trim()) {
+      toast.error('Please enter your email or username first');
+      return;
+    }
+    
+    setIsResending(true);
+    try {
+      const response = await fetch(`${getApiBaseUrl()}/api/auth/resend-activation`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ identifier: identifier.trim() }),
+      });
+      
+      const json = await response.json();
+      if (!response.ok) {
+        throw new Error(json.error || 'Failed to resend activation');
+      }
+      
+      toast.success(json.message || 'Activation email sent! Check your inbox.');
+      setShowResend(false);
+    } catch (err: unknown) {
+      toast.error(getErrorMessage(err));
+    } finally {
+      setIsResending(false);
     }
   };
 
@@ -285,17 +321,43 @@ const Login = () => {
                       {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                     </button>
                   </div>
-                  <div className="flex justify-end pt-1">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        safeHaptic();
-                        handleForgotPassword();
-                      }}
-                      className="text-[11px] font-black uppercase tracking-widest text-white/20 hover:text-emerald-400 transition-colors"
-                    >
-                      Forgot password?
-                    </button>
+                  <div className="flex flex-col gap-2 pt-1">
+                    <div className="flex justify-end">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          safeHaptic();
+                          handleForgotPassword();
+                        }}
+                        className="text-[11px] font-black uppercase tracking-widest text-white/20 hover:text-emerald-400 transition-colors"
+                      >
+                        Forgot password?
+                      </button>
+                    </div>
+                    
+                    <AnimatePresence>
+                      {showResend && (
+                        <motion.div
+                          initial={{ opacity: 0, height: 0 }}
+                          animate={{ opacity: 1, height: 'auto' }}
+                          exit={{ opacity: 0, height: 0 }}
+                          className="flex justify-end overflow-hidden"
+                        >
+                          <button
+                            type="button"
+                            onClick={() => {
+                              safeHaptic();
+                              handleResendActivation();
+                            }}
+                            disabled={isResending}
+                            className="text-[11px] font-black uppercase tracking-widest text-emerald-500/60 hover:text-emerald-400 transition-colors flex items-center gap-2"
+                          >
+                            {isResending && <Loader2 className="w-3 h-3 animate-spin" />}
+                            Resend activation email?
+                          </button>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
                   </div>
                 </div>
 

@@ -23,15 +23,17 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Loader2 } from 'lucide-react';
 
 interface AdminUserDirectoryProps {
   users: any[];
   onVerify?: (id: string) => void;
   onSuspend?: (id: string) => void;
+  onForceOnboard?: (id: string) => void;
   onUpdateProfile?: (userId: string, data: any) => Promise<void>;
 }
 
-export const AdminUserDirectory: React.FC<AdminUserDirectoryProps> = ({ users, onVerify, onSuspend, onUpdateProfile }) => {
+export const AdminUserDirectory: React.FC<AdminUserDirectoryProps> = ({ users, onVerify, onSuspend, onForceOnboard, onUpdateProfile }) => {
   const [selectedUser, setSelectedUser] = useState<any>(null);
   const [isVerifiedModalOpen, setIsVerifiedModalOpen] = useState(false);
   return (
@@ -87,7 +89,16 @@ export const AdminUserDirectory: React.FC<AdminUserDirectoryProps> = ({ users, o
                       </span>
                     ) : (
                       <span className="flex items-center gap-1.5 text-[10px] text-amber-400 font-black uppercase tracking-tight">
-                        <Clock className="w-3 h-3" /> Incomplete
+                        <Clock className="w-3 h-3" /> Onboarding Pending
+                      </span>
+                    )}
+                    {u.profile_otp_verified ? (
+                      <span className="flex items-center gap-1.5 text-[10px] text-blue-400 font-black uppercase tracking-tight">
+                        <CheckCircle2 className="w-3 h-3" /> Email Verified
+                      </span>
+                    ) : (
+                      <span className="flex items-center gap-1.5 text-[10px] text-red-400 font-black uppercase tracking-tight">
+                        <Clock className="w-3 h-3" /> Email Unverified
                       </span>
                     )}
                     {u.upi_verified_at ? (
@@ -136,6 +147,15 @@ export const AdminUserDirectory: React.FC<AdminUserDirectoryProps> = ({ users, o
                             className="text-emerald-400 focus:bg-emerald-500/10 cursor-pointer"
                           >
                             <UserCheck className="w-4 h-4 mr-2" /> Force Verify KYC
+                          </DropdownMenuItem>
+                        )}
+
+                        {(!u.onboarding_complete || !u.profile_otp_verified) && (
+                          <DropdownMenuItem 
+                            onClick={() => onForceOnboard?.(u.id)}
+                            className="text-amber-400 focus:bg-amber-500/10 cursor-pointer"
+                          >
+                            <Rocket className="w-4 h-4 mr-2" /> Force Activate Onboarding
                           </DropdownMenuItem>
                         )}
                         

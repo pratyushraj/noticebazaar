@@ -185,6 +185,22 @@ export default function AdminDashboard() {
     },
   });
 
+  const forceOnboardMutation = useMutation({
+    mutationFn: async (userId: string) => {
+      const res = await fetch(`${getApiBaseUrl()}/api/admin/users/${userId}/force-onboard`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${session?.access_token}` },
+      });
+      if (!res.ok) throw new Error('Failed to force onboard');
+      return res.json();
+    },
+    onSuccess: () => {
+      toast.success('User onboarding forced as complete');
+      queryClient.invalidateQueries({ queryKey: ['admin_users'] });
+      queryClient.invalidateQueries({ queryKey: ['admin_logs'] });
+    },
+  });
+
   const updateProfileMutation = useMutation({
     mutationFn: async ({ userId, data }: { userId: string, data: any }) => {
       const res = await fetch(`${getApiBaseUrl()}/api/admin/users/${userId}/profile`, {
@@ -516,6 +532,7 @@ export default function AdminDashboard() {
                  users={users} 
                  onVerify={(id) => verifyKycMutation.mutate(id)}
                  onSuspend={(id) => suspendUserMutation.mutate(id)}
+                 onForceOnboard={(id) => forceOnboardMutation.mutate(id)}
                  onUpdateProfile={(userId, data) => updateProfileMutation.mutateAsync({ userId, data })}
                />
              </div>

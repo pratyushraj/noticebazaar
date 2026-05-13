@@ -585,4 +585,39 @@ router.post('/users', authMiddleware, adminOnly, async (req: AuthenticatedReques
   }
 });
 
+/**
+ * POST /api/admin/users/:id/force-onboard
+ * Manually force a creator's onboarding and OTP status to verified.
+ */
+router.post('/users/:id/force-onboard', authMiddleware, adminOnly, async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const userId = req.params.id;
+    const now = new Date().toISOString();
+
+    const { error } = await supabase
+      .from('profiles')
+      .update({
+        profile_otp_verified: true,
+        onboarding_complete: true,
+        updated_at: now
+      })
+      .eq('id', userId);
+
+    if (error) throw error;
+
+    // Log the action
+    await supabase.from('deal_action_logs').insert({
+      event: 'ADMIN_FORCE_ONBOARD',
+      user_id: req.user?.id,
+      deal_id: '00000000-0000-0000-0000-000000000000',
+      metadata: { target_user_id: userId }
+    });
+
+    return res.json({ success: true, message: 'User onboarding forced as complete' });
+  } catch (error: any) {
+    console.error('[AdminForceOnboard] Error:', error);
+    return res.status(500).json({ success: false, error: error.message });
+  }
+});
+
 export default router;

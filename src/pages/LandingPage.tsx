@@ -227,23 +227,23 @@ const LandingPage = () => {
   }, []);
 
   const canonicalUrl = 'https://creatorarmour.com/';
-  const seoTitle = 'Creator Armour - Close UGC Video & Brand Deals Without Instagram DMs';
-  const seoDescription = 'Creator Armour gives you a professional collaboration page for UGC video and brand deals. Receive structured offers, generate contracts automatically, and track payments in your dashboard.';
+  const seoTitle = 'Creator Armour - Get Vetted Creators For Your Brand. No DM Hunting.';
+  const seoDescription = 'Creator Armour curates verified Indian creators for D2C brands. We filter the noise, shortlist the right talent, and manage the collab end-to-end — so your team focuses on results, not inboxes.';
   const seoKeywords = [
-    'creator collab link',
-    'UGC video creators',
+    'hire influencers India',
+    'UGC video creators India',
     'micro influencer marketing India',
-    'hire UGC creators India',
-    'influencer marketing ROI',
-    'brand deal management',
+    'find Instagram creators for brand',
+    'influencer marketing ROI India',
+    'brand creator matching India',
     'performance influencer marketing',
-    'influencer collaboration platform',
-    'UGC marketing marketplace',
-    'creator marketplace india',
+    'curated influencer platform India',
+    'UGC marketing marketplace India',
+    'D2C influencer agency India',
     'instagram creator brand deals',
-    'UGC content platform',
-    'creator portfolio for brands',
-    'structured brand offers for creators',
+    'UGC content for brands',
+    'vetted creators for D2C brands',
+    'influencer shortlist service India',
   ];
 
   useEffect(() => {
@@ -392,19 +392,19 @@ const LandingPage = () => {
           <div className="flex flex-col lg:flex-row items-center gap-10 lg:gap-24 w-full">
             <div className="flex-1 text-center lg:text-left pt-2 lg:pt-10">
               <h1 className="text-[48px] md:text-[72px] lg:text-[84px] font-black tracking-tight leading-[1.05] mb-6 text-[#0F172A] drop-shadow-sm text-balance">
-                Get paid brand deals <br />
+                Stop sifting through <br />
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#16A34A] to-[#15803D] inline-block mt-2">
-                  without chasing brands
+                  creator DMs.
                 </span>
               </h1>
 
               <p className="text-[20px] md:text-[24px] text-[#64748B] font-medium mb-4 max-w-lg mx-auto lg:mx-0 leading-relaxed text-pretty">
-                Share one link. Get paid before you post. Keep every contract clean.
+                We find, vet, and shortlist the right creators for your brand — for free.
               </p>
 
               <div className="mb-10 inline-flex items-center gap-2 px-3 md:px-4 py-1.5 md:py-2 bg-[#16A34A]/10 text-[#15803D] rounded-full border border-[#16A34A]/20 text-center">
                 <CheckCircle2 className="w-4 h-4 md:w-5 md:h-5 shrink-0" />
-                <span className="text-[11px] md:text-[14px] font-black uppercase tracking-wider leading-tight">Built for Indian creators. Free to start. Payment protected.</span>
+                <span className="text-[11px] md:text-[14px] font-black uppercase tracking-wider leading-tight">Curated for D2C brands in India. Verified creators. Zero agency markup.</span>
               </div>
 
               <div className="mb-8 inline-flex flex-col sm:flex-row gap-3 p-2 rounded-[1.5rem] border border-[#E5E7EB] bg-white/80 backdrop-blur-sm shadow-sm">
@@ -440,12 +440,12 @@ const LandingPage = () => {
 
               <div className="mb-8 grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-2xl mx-auto lg:mx-0">
                 <div className="rounded-2xl border border-[#16A34A]/20 bg-[#ECFDF5] px-4 py-3 text-left shadow-sm">
-                  <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[#16A34A] mb-1">Creator first</p>
-                  <p className="text-sm font-black text-[#0F172A]">Build a link that brings brand deals to you.</p>
+                  <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[#16A34A] mb-1">Hand-picked talent</p>
+                  <p className="text-sm font-black text-[#0F172A]">We shortlist creators who match your brand, budget, and audience.</p>
                 </div>
                 <div className="rounded-2xl border border-[#E5E7EB] bg-white px-4 py-3 text-left shadow-sm">
-                  <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[#64748B] mb-1">Brand ready</p>
-                  <p className="text-sm font-black text-[#0F172A]">If you switch roles, the same system works for brands.</p>
+                  <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[#64748B] mb-1">Managed end-to-end</p>
+                  <p className="text-sm font-black text-[#0F172A]">Briefing, contracts, delivery tracking — we handle it all for you.</p>
                 </div>
               </div>
 
@@ -458,10 +458,10 @@ const LandingPage = () => {
 
               <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 mb-10">
                 <Link
-                    to="/signup?mode=creator"
+                    to="/signup?mode=brand"
                     className="w-full sm:w-auto bg-[#16A34A] hover:bg-[#15803D] text-white px-6 md:px-8 py-4 md:py-5 rounded-full font-black text-[16px] md:text-[18px] shadow-xl shadow-[#16A34A]/20 hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2 border border-[#16A34A]"
                   >
-                    Create my creator link <ArrowRight className="w-5 h-5" />
+                    Get a free creator shortlist <ArrowRight className="w-5 h-5" />
                   </Link>
                   <Link
                     to="/#how-it-works"
@@ -593,20 +593,20 @@ const LandingPage = () => {
           <div className="rounded-[28px] border border-[#E5E7EB] bg-white shadow-[0_10px_30px_rgba(15,23,42,0.06)] p-5 md:p-6">
             <div className="grid grid-cols-1 md:grid-cols-[1.1fr_0.9fr] gap-5 md:gap-6 items-center">
               <div>
-                <p className="text-[11px] font-black uppercase tracking-[0.28em] text-[#16A34A] mb-2">Why creators switch</p>
+                <p className="text-[11px] font-black uppercase tracking-[0.28em] text-[#16A34A] mb-2">Why brands choose us</p>
                 <h2 className="text-2xl md:text-[34px] font-black tracking-tight text-[#0F172A] leading-tight">
-                  One link. Better rates. Fewer payment headaches.
+                  Curated creators. No spam. Just results.
                 </h2>
                 <p className="mt-3 text-[#64748B] text-[15px] md:text-[17px] font-medium max-w-2xl">
-                  Indian influencers use Armour when they want brand deals to look professional, get paid on time, and stop negotiating over WhatsApp screenshots.
+                  D2C brands use Creator Armour when they want the right fit, not the noisiest inbox. We pre-screen talent by niche, engagement, and past brand track record.
                 </p>
               </div>
 
               <div className="grid grid-cols-3 gap-3">
                 {[
-                  { stat: '24h', label: 'Average response window' },
-                  { stat: 'UPI', label: 'Payout-friendly' },
-                  { stat: '0%', label: 'Commission on creator plan' },
+                  { stat: '48h', label: 'Avg. shortlist turnaround' },
+                  { stat: '0%', label: 'Agency markup' },
+                  { stat: '100+', label: 'Verified creators ready' },
                 ].map((item) => (
                   <div key={item.label} className="rounded-2xl border border-[#E5E7EB] bg-[#F8FAF9] px-4 py-4 text-center">
                     <p className="text-lg md:text-2xl font-black text-[#0F172A]">{item.stat}</p>
@@ -623,10 +623,10 @@ const LandingPage = () => {
           <div className="max-w-[1200px] mx-auto px-6">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8 text-center">
               {[
-                { stat: '100+', label: 'Verified creators' },
-                { stat: '0%', label: 'Commission on creator plan' },
-                { stat: '100%', label: 'Payment-protected deals' },
-                { stat: '24h', label: 'Avg. brand response time' },
+                { stat: '100+', label: 'Vetted creators live' },
+                { stat: '0%', label: 'Agency commission' },
+                { stat: '48h', label: 'Shortlist turnaround' },
+                { stat: '8–12%', label: 'Avg. creator engagement rate' },
               ].map((item) => (
                 <div key={item.label} className="flex flex-col items-center gap-1">
                   <p className="text-2xl md:text-3xl font-black text-white tracking-tight">{item.stat}</p>
@@ -749,14 +749,14 @@ const LandingPage = () => {
               {/* OLD WAY */}
               <div className="p-6 md:p-12 bg-white/5">
                 <h3 className="text-xl font-black text-rose-400 mb-8 uppercase tracking-widest flex items-center gap-3">
-                  <XCircle className="w-6 h-6" /> The DM Way
+                  <XCircle className="w-6 h-6" /> The DM way
                 </h3>
                 <ul className="space-y-6">
                   {[
-                    "Getting ghosted after work is done",
-                    "Brands asking for 'extra' edits for free",
-                    "No legal contract to protect you",
-                    "Waiting 90 days for your own money"
+                    "Hundreds of creator DMs, 90% irrelevant",
+                    "No way to verify engagement or past work",
+                    "Ghosted after sending product samples",
+                    "No contract, no leverage, no accountability"
                   ].map((item, idx) => (
                     <li key={idx} className="flex items-start gap-3 text-slate-400 font-medium">
                       <span className="text-rose-500 mt-1">✕</span>
@@ -769,14 +769,14 @@ const LandingPage = () => {
               {/* ARMOUR WAY */}
               <div className="p-6 md:p-12 bg-[#16A34A]/5">
                 <h3 className="text-xl font-black text-[#16A34A] mb-8 uppercase tracking-widest flex items-center gap-3">
-                  <CheckCircle2 className="w-6 h-6" /> The Armour Way
+                  <CheckCircle2 className="w-6 h-6" /> The Armour way
                 </h3>
                 <ul className="space-y-6">
                   {[
-                    "Payment secured before you post",
-                    "Digital contracts that are legally binding",
-                    "1-Click share your rates on WhatsApp",
-                    "Instant payouts via UPI or Bank"
+                    "We send you 3–5 pre-vetted creator profiles",
+                    "Verified engagement, niche fit, and past brands",
+                    "Contracts and deliverables managed for you",
+                    "Pay only when you're happy with the shortlist"
                   ].map((item, idx) => (
                     <li key={idx} className="flex items-start gap-3 text-white font-medium">
                       <span className="text-[#16A34A] mt-1">✓</span>
@@ -788,7 +788,7 @@ const LandingPage = () => {
             </div>
             
             <div className="p-6 text-center border-t border-white/10">
-              <p className="text-slate-400 text-sm font-bold">Join the growing community of creators who stopped doing business in DMs.</p>
+              <p className="text-slate-400 text-sm font-bold">Brands using Creator Armour close campaigns 3× faster with zero DM overhead.</p>
             </div>
           </div>
         </section>
@@ -942,17 +942,17 @@ const LandingPage = () => {
             <div className="absolute -bottom-24 -left-20 w-72 h-72 bg-[#16A34A]/20 rounded-full blur-3xl pointer-events-none" />
 
             <div className="relative z-10 max-w-2xl mx-auto">
-              <p className="text-[14px] font-black uppercase tracking-[0.3em] mb-4 opacity-80">Stop getting cheated</p>
+              <p className="text-[14px] font-black uppercase tracking-[0.3em] mb-4 opacity-80">Done with the noise?</p>
               <h2 className="text-[36px] md:text-[56px] font-black tracking-tight leading-[1.05] mb-6">
-                Start getting brand deals with payment protection
+                Get your free creator shortlist today
               </h2>
               <p className="text-white/80 text-lg md:text-xl font-medium leading-relaxed max-w-2xl mx-auto">
-                Create your link, publish your rates, and let brands come to you with structured offers instead of random DMs.
+                Tell us your brand, category, and budget. We'll send you a curated list of creators ready to work — within 48 hours.
               </p>
 
               <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                <Link to="/signup?mode=creator" className="w-full sm:w-auto bg-white text-[#15803D] hover:bg-[#DCFCE7] px-10 py-5 rounded-full font-black text-[18px] shadow-xl transition-all flex items-center justify-center gap-2">
-                  Create my creator link <ArrowRight className="w-5 h-5" />
+                <Link to="/signup?mode=brand" className="w-full sm:w-auto bg-white text-[#15803D] hover:bg-[#DCFCE7] px-10 py-5 rounded-full font-black text-[18px] shadow-xl transition-all flex items-center justify-center gap-2">
+                  Get my free shortlist <ArrowRight className="w-5 h-5" />
                 </Link>
               </div>
             </div>

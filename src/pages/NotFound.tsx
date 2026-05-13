@@ -55,7 +55,7 @@ const NotFound = () => {
 
   const popularPages = [
     { label: 'Home', path: '/', icon: Home },
-    { label: 'Browse Creators', path: '/discover-creators', icon: Users },
+    { label: 'Browse Creators', path: '/discover', icon: Users },
     { label: 'Rate Calculator', path: '/rate-calculator', icon: Calculator },
     { label: 'Contract Analyzer', path: '/contract-analyzer', icon: Search },
   ];

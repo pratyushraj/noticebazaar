@@ -2,6 +2,7 @@ import { Router, Response } from 'express';
 import { createClient } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabase.js';
 import type { Database } from '../types/supabase.js';
+import { sendWelcomeActivationEmail } from '../services/creatorOnboardingEmailService.js';
 
 const router = Router();
 
@@ -120,6 +121,82 @@ router.post('/login', async (req, res: Response) => {
   } catch (error: any) {
     console.error('[Auth] POST /login failed:', error);
     return res.status(500).json({ success: false, error: error?.message || 'Failed to sign in' });
+  }
+});
+
+router.post('/resend-activation', async (req, res: Response) => {
+  try {
+    const identifier = String(req.body?.identifier || req.body?.email || '').trim();
+    if (!identifier) {
+      return res.status(400).json({ success: false, error: 'Email or username is required' });
+    }
+
+    let targetEmail = '';
+    let creatorName = 'Creator';
+    let username = 'creator';
+
+    // 1. Resolve to email and profile data
+    if (isEmailLike(identifier)) {
+      targetEmail = identifier;
+      const { data: usersData, error: listError } = await supabase.auth.admin.listUsers();
+      if (listError) throw listError;
+      
+      const user = usersData.users.find(u => u.email?.toLowerCase() === identifier.toLowerCase());
+      if (user) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('first_name, last_name, username')
+          .eq('id', user.id)
+          .maybeSingle();
+        
+        if (profile) {
+          creatorName = `${profile.first_name || ''} ${profile.last_name || ''}`.trim() || 'Creator';
+          username = profile.username || 'creator';
+        }
+      } else {
+        return res.status(404).json({ success: false, error: 'Account not found' });
+      }
+    } else {
+      const normalizedHandle = identifier.replace(/^@+/, '').trim().toLowerCase();
+      const { data: profileMatch, error: profileError } = await supabase
+        .from('profiles')
+        .select('id, first_name, last_name, username')
+        .or(`username.eq.${normalizedHandle},instagram_handle.eq.${normalizedHandle}`)
+        .maybeSingle();
+      
+      if (profileError || !profileMatch) {
+        return res.status(404).json({ success: false, error: 'Account not found' });
+      }
+
+      creatorName = `${profileMatch.first_name || ''} ${profileMatch.last_name || ''}`.trim() || 'Creator';
+      username = profileMatch.username || 'creator';
+      
+      const { data: authUserData, error: authUserError } = await supabase.auth.admin.getUserById(profileMatch.id);
+      if (authUserError || !authUserData?.user?.email) {
+        return res.status(404).json({ success: false, error: 'Email address not found for this account' });
+      }
+      targetEmail = authUserData.user.email;
+    }
+
+    if (!targetEmail) {
+      return res.status(404).json({ success: false, error: 'Email address not found for this account' });
+    }
+
+    // 2. Trigger the professional welcome email
+    const emailResult = await sendWelcomeActivationEmail({
+      creatorName,
+      username,
+      creatorEmail: targetEmail
+    });
+
+    if (emailResult?.success) {
+      return res.json({ success: true, message: 'Activation instructions sent to ' + targetEmail });
+    } else {
+      return res.status(502).json({ success: false, error: emailResult?.error || 'Failed to send activation email' });
+    }
+  } catch (error: any) {
+    console.error('[Auth] Resend activation failed:', error);
+    return res.status(500).json({ success: false, error: error?.message || 'Internal server error' });
   }
 });
 
