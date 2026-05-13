@@ -1213,9 +1213,27 @@ const CollabLinkLanding = () => {
         let validatedTemplates = creator.deal_templates.slice(0, 4).map((rawT, i) => {
           const t = rawT as any;
           // Map properties safely from possible external formats (name -> label, price -> budget)
+          let label = t.label || t.name || `Package ${i + 1}`;
+          let icon = t.icon || '';
+          
+          // Auto-assign emojis if missing
+          if (!icon) {
+            const lowerLabel = label.toLowerCase();
+            if (lowerLabel.includes('starter')) icon = '🚀';
+            else if (lowerLabel.includes('growth') || lowerLabel.includes('ads')) icon = '⭐';
+            else if (lowerLabel.includes('barter') || lowerLabel.includes('product') || lowerLabel.includes('sample')) icon = '🎁';
+            else icon = '✨';
+          }
+
+          // Prepend icon to label if not present
+          if (icon && !label.includes(icon)) {
+            label = `${icon} ${label}`;
+          }
+
           const normalizedTemplate = {
             ...t,
-            label: t.label || t.name || `Package ${i + 1}`,
+            label,
+            icon,
             budget: typeof t.budget === 'number' ? t.budget : (typeof t.price === 'number' ? t.price : 0)
           }
 
@@ -1231,6 +1249,18 @@ const CollabLinkLanding = () => {
           ]
           return { ...normalizedTemplate, budget: fallbackBudgets[i] ?? 0 }
         })
+
+        // Ensure at least one template is popular (has the green highlight)
+        if (!validatedTemplates.some(t => t.isPopular)) {
+          const growthIndex = validatedTemplates.findIndex(t => String(t.label || '').toLowerCase().includes('growth'))
+          if (growthIndex !== -1) {
+            validatedTemplates[growthIndex].isPopular = true;
+          } else if (validatedTemplates.length > 1) {
+            validatedTemplates[1].isPopular = true;
+          } else if (validatedTemplates.length > 0) {
+            validatedTemplates[0].isPopular = true;
+          }
+        }
 
         // Auto-inject barter template if missing but value is set
         const hasBarter = validatedTemplates.some(t => t.type === 'barter' || t.id.includes('barter'))
