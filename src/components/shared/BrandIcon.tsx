@@ -44,11 +44,12 @@ const getLetterColor = (char: string): string => {
 };
 
 const Fallback: React.FC<{ category?: string; name?: string }> = ({ category, name }) => {
-  const catLower = category?.toLowerCase() || '';
+  const catLower = typeof category === 'string' ? category.toLowerCase() : '';
 
-  if (name) {
-    const char = name.trim().charAt(0).toUpperCase();
-    const nameLower = name.toLowerCase();
+  if (name && typeof name === 'string') {
+    const trimmed = name.trim();
+    const char = trimmed.charAt(0).toUpperCase();
+    const nameLower = trimmed.toLowerCase();
 
     // Specific brand colors
     let color = 'bg-background';

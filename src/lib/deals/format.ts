@@ -224,7 +224,7 @@ const KNOWN_BRAND_LOGOS: Record<string, string> = {
 export const normalizeLogoUrl = (value?: string, brandName?: string): string => {
   const raw = String(value || '').trim();
   if (!raw || raw === 'null' || raw === 'undefined') {
-    if (brandName) {
+    if (brandName && typeof brandName === 'string') {
       const bn = brandName.toLowerCase().trim();
       // 1. Check known mappings
       for (const [key, url] of Object.entries(KNOWN_BRAND_LOGOS)) {

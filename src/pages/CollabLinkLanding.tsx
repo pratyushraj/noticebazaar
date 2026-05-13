@@ -260,7 +260,7 @@ const toTitleCaseName = (value: string) =>
   sanitizeDisplayName(value)
     .split(/\s+/)
     .filter(Boolean)
-    .map(part => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
+    .map(part => (part || '').charAt(0).toUpperCase() + (part || '').slice(1).toLowerCase())
     .join(' ')
 
 interface FormErrors {
@@ -570,8 +570,8 @@ const formatAudienceGender = (value?: any | null) => {
   return [String(value)]
 }
 
-const toTitleCase = (value: string) => {
-  return value
+const toTitleCase = (value: string | null | undefined) => {
+  return String(value || '')
     .toLowerCase()
     .split(/[\s-]+/)
     .filter(Boolean)
@@ -796,7 +796,7 @@ const CollabLinkLanding = () => {
 
   // Check if username is reserved (redirect to 404 if so)
   useEffect(() => {
-    if (username && RESERVED_USERNAMES.includes(username.toLowerCase())) {
+    if (username && RESERVED_USERNAMES.includes(String(username).toLowerCase())) {
       navigate('/404', { replace: true })
     }
   }, [username, navigate])
@@ -2248,7 +2248,7 @@ const CollabLinkLanding = () => {
     try {
       const apiBaseUrl = getApiBaseUrl()
       const res = await fetch(
-        `${apiBaseUrl}/api/collab/${encodeURIComponent(username.toLowerCase().trim())}/save-draft`,
+        `${apiBaseUrl}/api/collab/${encodeURIComponent(String(username || '').toLowerCase().trim())}/save-draft`,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -2698,7 +2698,7 @@ const CollabLinkLanding = () => {
               <h1 className="text-3xl font-black text-white mb-3">{errorTitle}</h1>
             </div>
             <p className="text-slate-300 mb-6 leading-relaxed text-sm">
-              {error.toLowerCase().includes('timeout')
+              {error?.toLowerCase().includes('timeout')
                 ? "The profile server is taking unusually long to wake up. This is common on the first load—clicking 'Try Again' usually works immediately."
                 : error}
             </p>
@@ -3126,7 +3126,7 @@ const CollabLinkLanding = () => {
   const showPastWorkSection = creator.collab_show_past_work !== false
   const creatorCollabSchema = (() => {
     const creatorId =
-      creator.id || normalizedHandle || creatorName.toLowerCase().replace(/\s+/g, '-')
+      creator.id || normalizedHandle || creatorName?.toLowerCase().replace(/\s+/g, '-')
     const profilePageId = `${canonicalUrl}#profile-page`
     const personId = `${canonicalUrl}#creator`
     const serviceId = `${canonicalUrl}#collab-service`
@@ -4748,7 +4748,7 @@ const CollabLinkLanding = () => {
                                     </div>
                                   </div>
 
-                                  {deliverables.some(d => d.toLowerCase().includes('reel') || d.toLowerCase().includes('video')) && (
+                                  {deliverables.some(d => String(d || '').toLowerCase().includes('reel') || String(d || '').toLowerCase().includes('video')) && (
                                     <div className="space-y-3">
                                       <span className="text-[11px] font-black uppercase tracking-widest text-slate-400">Duration</span>
                                       <div className="flex gap-2">

@@ -96,14 +96,19 @@ const DiscoverCreators = () => {
     };
 
     const filteredCreators = useMemo(() => {
-        return creators.filter(creator =>
-            creator.name.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) ||
-            creator.username.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) ||
-            creator.category?.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) ||
-            creator.bio?.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) ||
-            (creator as any).collab_intro_line?.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) ||
-            (creator as any).ugc_capabilities?.some((cap: string) => cap.toLowerCase().includes(debouncedSearchTerm.toLowerCase()))
-        );
+        return creators.filter(creator => {
+            const search = String(debouncedSearchTerm || '').toLowerCase();
+            return (
+                String(creator.name || '').toLowerCase().includes(search) ||
+                String(creator.username || '').toLowerCase().includes(search) ||
+                (creator.category || '').toLowerCase().includes(search) ||
+                (creator.bio || '').toLowerCase().includes(search) ||
+                (String((creator as any).collab_intro_line || '').toLowerCase().includes(search)) ||
+                ((creator as any).ugc_capabilities || []).some((cap: string) => 
+                    String(cap || '').toLowerCase().includes(search)
+                )
+            );
+        });
     }, [creators, debouncedSearchTerm]);
 
     const getPlatformIcon = (platformName: string) => {
