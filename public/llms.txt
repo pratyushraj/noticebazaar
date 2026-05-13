@@ -23,6 +23,7 @@ Creator Armour is a high-performance platform designed to replace messy Instagra
 - [Legal Health Check](https://creatorarmour.com/free-legal-check)
 - [Brand Directory](https://creatorarmour.com/brand-directory)
 - [Discover Creators & UGC](https://creatorarmour.com/discover)
+- [Full Creators List (Markdown)](https://creatorarmour.com/creators-list)
 
 ## Technical Integration
 

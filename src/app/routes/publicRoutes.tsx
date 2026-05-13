@@ -29,6 +29,7 @@ const DiscoverCreators = lazy(() => import("@/pages/DiscoverCreators"));
 const RateCalculator = lazy(() => import("@/pages/RateCalculator"));
 const RateCalculatorDynamic = lazy(() => import("@/pages/RateCalculatorDynamic"));
 const CollabLinkLanding = lazy(() => import("@/pages/CollabLinkLanding"));
+const LlmCreatorDirectory = lazy(() => import("@/pages/LlmCreatorDirectory"));
 
 const WelcomeOnboarding = lazy(() => import("@/pages/WelcomeOnboarding"));
 const InstaMockup = lazy(() => import("@/pages/InstaMockup"));
@@ -61,6 +62,7 @@ export const PublicRoutes = () => (
     <Route path="/brand-directory" element={<LazyRoute><BrandDirectory /></LazyRoute>} />
     <Route path="/discover" element={<LazyRoute><DiscoverCreators /></LazyRoute>} />
     <Route path="/discover/:category" element={<LazyRoute><DiscoverCreators /></LazyRoute>} />
+    <Route path="/creators-list" element={<LazyRoute><LlmCreatorDirectory /></LazyRoute>} />
     <Route path="/rate-calculator" element={<LazyRoute><RateCalculator /></LazyRoute>} />
     <Route path="/calculator/:platform/:niche" element={<LazyRoute><RateCalculatorDynamic /></LazyRoute>} />
     <Route path="/creator/:username" element={<LegacyCreatorProfileRedirect />} />
