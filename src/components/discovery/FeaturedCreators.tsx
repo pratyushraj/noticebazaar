@@ -272,7 +272,11 @@ export const FeaturedCreators = () => {
                   </div>
                   <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100">
                     <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-1">Min. Barter</p>
-                    <p className="text-lg font-black text-slate-900">₹{currentCreator.barter_min_value?.toLocaleString() || '1,500'}</p>
+                    <p className="text-lg font-black text-slate-900">
+                      {currentCreator.barter_min_value 
+                        ? `₹${currentCreator.barter_min_value.toLocaleString()}` 
+                        : (currentCreator.starting_price ? 'N/A' : '₹1,500')}
+                    </p>
                   </div>
                   <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100">
                     <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-1">Followers</p>
