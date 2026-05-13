@@ -46,6 +46,23 @@ interface Creator {
     barter_min_value?: number;
 }
 
+const getInstagramEmbedUrl = (href: string) => {
+    try {
+        const url = new URL(href);
+        if (!url.hostname.includes('instagram.com')) return '';
+        const cleanedPath = url.pathname.replace(/\/+$/, '');
+        if (/\/(reel|reels|p)\//i.test(cleanedPath)) {
+            return `https://www.instagram.com${cleanedPath}/embed`;
+        }
+    } catch {
+        return '';
+    }
+    return '';
+};
+
+const isNativeVideo = (value: string) =>
+    /\.(mp4|mov|webm|m4v)(\?|#|$)/i.test(String(value || '').trim());
+
 const DiscoverCreators = () => {
     const { category } = useParams<{ category: string }>();
     const [creators, setCreators] = useState<Creator[]>([]);
@@ -334,7 +351,7 @@ const DiscoverCreators = () => {
                             >
                                 <div className="relative aspect-[4/5] rounded-[48px] overflow-hidden bg-slate-100 shadow-xl border-8 border-white group-hover:shadow-2xl group-hover:-translate-y-2 transition-all duration-500">
                                     {/* Creator Image or Video */}
-                                    {creator.discovery_video_url ? (
+                                    {creator.discovery_video_url && isNativeVideo(creator.discovery_video_url) ? (
                                         <video 
                                             src={creator.discovery_video_url}
                                             className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
@@ -343,6 +360,13 @@ const DiscoverCreators = () => {
                                             loop
                                             playsInline
                                             poster={creator.avatar_url || ""}
+                                        />
+                                    ) : creator.discovery_video_url && getInstagramEmbedUrl(creator.discovery_video_url) ? (
+                                        <iframe
+                                            src={getInstagramEmbedUrl(creator.discovery_video_url)}
+                                            className="w-full h-full border-none pointer-events-none transition-transform duration-700 group-hover:scale-105"
+                                            allowTransparency
+                                            scrolling="no"
                                         />
                                     ) : (
                                         <img 
