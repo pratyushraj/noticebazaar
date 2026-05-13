@@ -351,27 +351,36 @@ const DiscoverCreators = () => {
                             >
                                 <div className="relative aspect-[4/5] rounded-[48px] overflow-hidden bg-slate-100 shadow-xl border-8 border-white group-hover:shadow-2xl group-hover:-translate-y-2 transition-all duration-500">
                                     {/* Creator Image or Video */}
+                                    <div className="absolute inset-0 bg-slate-200 animate-pulse" />
                                     {creator.discovery_video_url && isNativeVideo(creator.discovery_video_url) ? (
                                         <video 
                                             src={creator.discovery_video_url}
-                                            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                                            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 relative z-10"
                                             autoPlay
                                             muted
                                             loop
                                             playsInline
-                                            poster={creator.avatar_url || ""}
+                                            poster={creator.discovery_card_image || creator.avatar_url || ""}
                                         />
                                     ) : creator.discovery_video_url && getInstagramEmbedUrl(creator.discovery_video_url) ? (
-                                        <iframe
-                                            src={getInstagramEmbedUrl(creator.discovery_video_url)}
-                                            className="w-full h-full border-none pointer-events-none transition-transform duration-700 group-hover:scale-105"
-                                            allowTransparency
-                                            scrolling="no"
-                                        />
+                                        <div className="w-full h-full relative z-10 bg-slate-900">
+                                            {/* Show poster while iframe loads */}
+                                            <img 
+                                                src={creator.discovery_card_image || creator.avatar_url || ""} 
+                                                className="absolute inset-0 w-full h-full object-cover opacity-50 blur-sm"
+                                                alt=""
+                                            />
+                                            <iframe
+                                                src={getInstagramEmbedUrl(creator.discovery_video_url)}
+                                                className="w-full h-full border-none pointer-events-none relative z-20 transition-transform duration-700 group-hover:scale-105"
+                                                allowTransparency
+                                                scrolling="no"
+                                            />
+                                        </div>
                                     ) : (
                                         <img 
-                                            src={creator.avatar_url || `https://ui-avatars.com/api/?name=${creator.name}&background=random`} 
-                                            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
+                                            src={creator.discovery_card_image || creator.avatar_url || `https://ui-avatars.com/api/?name=${creator.name}&background=random`} 
+                                            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 relative z-10" 
                                             alt={creator.name}
                                             onError={(e) => {
                                                 (e.target as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${creator.name}&background=random`;
