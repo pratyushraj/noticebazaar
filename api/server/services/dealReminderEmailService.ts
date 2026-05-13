@@ -25,6 +25,7 @@ async function sendEmail(
       body: JSON.stringify({
         from: 'CreatorArmour <noreply@creatorarmour.com>',
         to,
+        reply_to: 'creatorarmour07@gmail.com',
         subject,
         html,
       }),

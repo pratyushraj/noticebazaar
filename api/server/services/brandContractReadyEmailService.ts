@@ -159,6 +159,7 @@ export async function sendBrandContractReadyEmail(
     const requestBody = {
       from: 'CreatorArmour <noreply@creatorarmour.com>',
       to: brandEmail,
+      reply_to: 'creatorarmour07@gmail.com',
       subject: emailSubject,
       html: emailHtml,
     };

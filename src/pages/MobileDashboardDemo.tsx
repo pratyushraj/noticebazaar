@@ -2721,6 +2721,9 @@ const MobileDashboardDemo = ({
             if (Array.isArray(profileFormData.content_vibes) && profileFormData.content_vibes.length > 0) {
                 optionalProfilePatches.push({ content_vibes: profileFormData.content_vibes });
             }
+            if (Array.isArray(profileFormData.past_brands)) {
+                optionalProfilePatches.push({ past_brands: profileFormData.past_brands });
+            }
 
             for (const patch of optionalProfilePatches) {
                 await updateProfilePatch(patch, { ignoreMissingColumn: true });
@@ -4732,6 +4735,86 @@ const MobileDashboardDemo = ({
                                     </div>
                                 </div>
                                 <div className={cn("rounded-[28px] border p-5 space-y-7", isDark ? "bg-[#12151C] border-white/[0.07] shadow-2xl shadow-black/20" : "bg-white border-slate-200 shadow-sm")}>
+
+                                    {/* Past Brand Deals */}
+                                    <div className="space-y-3 px-1">
+                                        <div className="flex items-end justify-between gap-2">
+                                            <div>
+                                                <p className={cn("text-[10px] font-black uppercase tracking-wider opacity-80 dark:opacity-50", textColor)}>Past Brand Deals</p>
+                                                <p className="text-[9px] text-primary/60 font-black uppercase tracking-tighter">Type & press Enter to add</p>
+                                            </div>
+                                            {(profileFormData.past_brands || []).length > 0 && (
+                                                <span className="text-[10px] font-black uppercase tracking-[0.22em] text-emerald-400 shrink-0">
+                                                    {(profileFormData.past_brands || []).length} brands
+                                                </span>
+                                            )}
+                                        </div>
+
+                                        {/* Tag chips */}
+                                        {(profileFormData.past_brands || []).length > 0 && (
+                                            <div className="flex flex-wrap gap-2">
+                                                {(profileFormData.past_brands || []).map((brand: string, idx: number) => (
+                                                    <button
+                                                        key={idx}
+                                                        type="button"
+                                                        onClick={() => {
+                                                            triggerHaptic();
+                                                            setProfileFormData((p: any) => ({
+                                                                ...p,
+                                                                past_brands: (p.past_brands || []).filter((_: string, i: number) => i !== idx)
+                                                            }));
+                                                        }}
+                                                        className={cn(
+                                                            "flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[11px] font-black border transition-all active:scale-95",
+                                                            isDark
+                                                                ? "bg-primary/15 border-primary/30 text-primary"
+                                                                : "bg-emerald-50 border-emerald-400 text-emerald-700"
+                                                        )}
+                                                    >
+                                                        {brand}
+                                                        <span className="opacity-60 text-[10px] leading-none">✕</span>
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        )}
+
+                                        {/* Brand input */}
+                                        <input
+                                            type="text"
+                                            placeholder="e.g. Zomato, Mamaearth..."
+                                            className={cn(
+                                                "w-full px-4 py-3.5 rounded-2xl border text-[13px] font-semibold outline-none transition-all",
+                                                isDark
+                                                    ? "bg-[#0B0F14] border-border text-foreground focus:border-primary/50 placeholder:text-white/20"
+                                                    : "bg-[#F9FAFB] border-[#E5E7EB] text-black focus:border-emerald-400 focus:bg-white placeholder:text-slate-400"
+                                            )}
+                                            onKeyDown={(e) => {
+                                                if (e.key === 'Enter' || e.key === ',' || e.key === ' ') {
+                                                    e.preventDefault();
+                                                    const val = (e.target as HTMLInputElement).value.replace(/[,]/g, '').trim();
+                                                    if (!val) return;
+                                                    triggerHaptic();
+                                                    setProfileFormData((p: any) => {
+                                                        const existing: string[] = p.past_brands || [];
+                                                        if (existing.map((b: string) => b.toLowerCase()).includes(val.toLowerCase())) return p;
+                                                        return { ...p, past_brands: [...existing, val] };
+                                                    });
+                                                    (e.target as HTMLInputElement).value = '';
+                                                }
+                                            }}
+                                            onBlur={(e) => {
+                                                const val = e.target.value.replace(/[,]/g, '').trim();
+                                                if (!val) return;
+                                                triggerHaptic();
+                                                setProfileFormData((p: any) => {
+                                                    const existing: string[] = p.past_brands || [];
+                                                    if (existing.map((b: string) => b.toLowerCase()).includes(val.toLowerCase())) return p;
+                                                    return { ...p, past_brands: [...existing, val] };
+                                                });
+                                                e.target.value = '';
+                                            }}
+                                        />
+                                    </div>
 
                                     {/* Media Kit (Option 3) */}
                                     <div className="space-y-3 px-1">

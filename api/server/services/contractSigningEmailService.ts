@@ -174,6 +174,7 @@ export async function sendBrandSigningConfirmationEmail(
       body: JSON.stringify({
         from: 'CreatorArmour <noreply@creatorarmour.com>',
         to: [brandEmail],
+        reply_to: 'creatorarmour07@gmail.com',
         subject: emailSubject,
         html: emailHtml,
       }),
@@ -324,6 +325,7 @@ export async function sendCreatorSigningNotificationEmail(
       body: JSON.stringify({
         from: 'CreatorArmour <noreply@creatorarmour.com>',
         to: [creatorEmail],
+        reply_to: 'creatorarmour07@gmail.com',
         subject: emailSubject,
         html: emailHtml,
       }),
@@ -474,6 +476,7 @@ export async function sendCreatorSigningConfirmationEmail(
       body: JSON.stringify({
         from: 'CreatorArmour <noreply@creatorarmour.com>',
         to: [creatorEmail],
+        reply_to: 'creatorarmour07@gmail.com',
         subject: emailSubject,
         html: emailHtml,
       }),

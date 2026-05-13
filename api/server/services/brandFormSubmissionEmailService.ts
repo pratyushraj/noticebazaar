@@ -165,6 +165,7 @@ export async function sendBrandFormSubmissionEmail(
     const requestBody = {
       from: 'CreatorArmour <noreply@creatorarmour.com>',
       to: creatorEmail,
+      reply_to: 'creatorarmour07@gmail.com',
       subject: emailSubject,
       html: emailHtml,
     };

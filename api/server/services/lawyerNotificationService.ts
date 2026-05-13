@@ -94,6 +94,7 @@ export async function sendLawyerComplaintNotification(
     const requestBody = {
       from: 'CreatorArmour <noreply@creatorarmour.com>',
       to: email,
+      reply_to: 'creatorarmour07@gmail.com',
       subject: emailSubject,
       html: emailHtml,
     };

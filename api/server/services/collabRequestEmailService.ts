@@ -111,6 +111,7 @@ async function sendEmail(
     const requestBody = {
       from: 'CreatorArmour <noreply@creatorarmour.com>',
       to,
+      reply_to: 'creatorarmour07@gmail.com',
       subject,
       html,
     };

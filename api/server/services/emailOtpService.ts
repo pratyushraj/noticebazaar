@@ -95,6 +95,7 @@ export async function sendEmailOTP(
     const requestBody = {
       from: fromEmail.includes('<') ? fromEmail : `CreatorArmour <${fromEmail}>`,
       to: email,
+      reply_to: 'creatorarmour07@gmail.com',
       subject: emailSubject,
       html: emailHtml,
     };

@@ -170,6 +170,7 @@ async function sendBrandSignedEmail(
     body: JSON.stringify({
       from: 'CreatorArmour <noreply@creatorarmour.com>',
       to: email,
+      reply_to: 'creatorarmour07@gmail.com',
       subject: 'Agreement Signed Successfully — CreatorArmour',
       html: emailHtml,
     }),
@@ -267,6 +268,7 @@ async function sendCreatorSignedEmail(
     body: JSON.stringify({
       from: 'CreatorArmour <noreply@creatorarmour.com>',
       to: email,
+      reply_to: 'creatorarmour07@gmail.com',
       subject: 'Agreement Signed Successfully — CreatorArmour',
       html: emailHtml,
     }),

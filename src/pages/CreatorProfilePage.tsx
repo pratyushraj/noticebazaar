@@ -85,7 +85,7 @@ const CreatorProfilePage = () => {
   };
 
   const getPlatformIcon = (platformName: string) => {
-    switch (platformName.toLowerCase()) {
+    switch (platformName?.toLowerCase()) {
       case 'instagram':
         return <Instagram className="h-5 w-5" />;
       case 'youtube':
@@ -144,7 +144,7 @@ const CreatorProfilePage = () => {
     jobTitle: creator.category ? `${creator.category} Creator` : 'Content Creator',
     knowsAbout: creator.category || 'Content Creation',
     sameAs: creator.platforms.map(p => {
-      switch (p.name.toLowerCase()) {
+      switch (p?.name?.toLowerCase()) {
         case 'instagram':
           return `https://instagram.com/${p.handle.replace('@', '')}`;
         case 'youtube':
@@ -254,7 +254,7 @@ const CreatorProfilePage = () => {
                 </h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {creator.platforms.map((platform, idx) => {
-                    const isInstagram = platform.name.toLowerCase() === 'instagram';
+                    const isInstagram = platform?.name?.toLowerCase() === 'instagram';
                     return (
                       <div
                         key={idx}
@@ -335,7 +335,7 @@ const CreatorProfilePage = () => {
             </h2>
             <p className="text-secondary leading-relaxed mb-4">
               {(() => {
-                const instagramPlatform = creator.platforms.find(p => p.name.toLowerCase() === 'instagram');
+                const instagramPlatform = creator.platforms.find(p => p?.name?.toLowerCase() === 'instagram');
                 const instagramHandle = instagramPlatform?.handle?.replace('@', '');
                 if (instagramHandle) {
                   return `Instagram creator ${instagramHandle} (${creator.name}) is a verified ${creator.category || 'content'} creator based in India, working with brands to create authentic content and meaningful collaborations. Brands can collaborate securely with ${creator.name} through Creator Armour's platform, which ensures proper contracts, payment protection, and professional workflow management.`;
