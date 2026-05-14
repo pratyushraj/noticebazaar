@@ -67,7 +67,7 @@ export const FeaturedCreators = () => {
           .not('discovery_video_url', 'is', null)
           .neq('discovery_video_url', '')
           .neq('username', 'democreator')
-          .order('created_at', { ascending: true })
+          .order('created_at', { ascending: false })
           .limit(5);
 
         if (error) throw error;
@@ -89,10 +89,14 @@ export const FeaturedCreators = () => {
     setCurrentIndex((prev) => (prev + 1) % creators.length);
   };
 
-  const prevCreator = () => {
-    triggerHaptic(HapticPatterns.light);
-    setCurrentIndex((prev) => (prev - 1 + creators.length) % creators.length);
-  };
+  useEffect(() => {
+    if (videoRef.current) {
+      videoRef.current.muted = isMuted;
+      videoRef.current.play().catch(err => {
+        console.log("Autoplay failed:", err);
+      });
+    }
+  }, [currentIndex, isMuted, creators]);
 
   if (loading || creators.length === 0) return null;
 
@@ -149,13 +153,22 @@ export const FeaturedCreators = () => {
                   {isPortfolioVideoUrl(currentCreator.discovery_video_url) ? (
                     <video
                       ref={videoRef}
-                      src={currentCreator.discovery_video_url}
                       className="w-full h-full object-cover"
                       autoPlay
-                      muted={isMuted}
+                      muted
                       loop
                       playsInline
-                    />
+                      webkit-playsinline="true"
+                      preload="auto"
+                      crossOrigin="anonymous"
+                      key={currentCreator.discovery_video_url}
+                      onLoadedData={(e) => {
+                        e.currentTarget.muted = true;
+                        e.currentTarget.play().catch(err => console.log("Autoplay blocked:", err));
+                      }}
+                    >
+                      <source src={currentCreator.discovery_video_url} type="video/mp4" />
+                    </video>
                   ) : getInstagramEmbedUrl(currentCreator.discovery_video_url) ? (
                     <iframe
                       src={getInstagramEmbedUrl(currentCreator.discovery_video_url)}

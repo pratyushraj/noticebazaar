@@ -72,6 +72,7 @@ import {
   Image as ImageIcon,
   Globe,
   Play,
+  Pause,
   Eye,
   Quote,
   MessageSquare,
@@ -708,6 +709,19 @@ const CollabLinkLanding = () => {
   const [searchParams, setSearchParams] = useSearchParams()
   const [editMode, setEditMode] = useState(() => searchParams.get('edit') === 'true')
   const [aboutCreatorOpen, setAboutCreatorOpen] = useState(false)
+  const videoRef = useRef<HTMLVideoElement>(null)
+  const [isVideoPlaying, setIsVideoPlaying] = useState(true)
+
+  const togglePlayback = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!videoRef.current) return;
+    if (videoRef.current.paused) {
+      videoRef.current.play().then(() => setIsVideoPlaying(true)).catch(() => {});
+    } else {
+      videoRef.current.pause();
+      setIsVideoPlaying(false);
+    }
+  };
 
   useEffect(() => {
     if (editMode && searchParams.get('edit') !== 'true') {
@@ -2873,7 +2887,7 @@ const CollabLinkLanding = () => {
     ? creator.discovery_card_image
     : (creator.profile_photo && /^https?:\/\//i.test(creator.profile_photo))
       ? creator.profile_photo
-      : 'https://creatorarmour.com/og-preview.png'
+      : 'https://creatorarmour.com/og-collab.png'
   const imageAlt = `Collaborate with ${creatorName}${creatorHandle ? ` (${creatorHandle})` : ''}`
   const seoKeywords = Array.from(
     new Set(
@@ -3820,18 +3834,26 @@ const CollabLinkLanding = () => {
                         />
                       ) : (
                         <video
+                          ref={videoRef}
                           key={creator.discovery_video_url}
                           src={creator.discovery_video_url}
                           className="w-full h-full object-cover"
-                          controls
                           playsInline
+                          webkitPlaysInline={true}
                           autoPlay
                           muted
                           loop
                           preload="auto"
                           poster={creator.discovery_card_image || creator.avatar_url || ""}
+                          onPlay={() => setIsVideoPlaying(true)}
+                          onPause={() => setIsVideoPlaying(false)}
+                          onClick={togglePlayback}
                           onLoadedData={(e) => {
-                            e.currentTarget.play().catch(err => console.log("Autoplay blocked:", err));
+                            e.currentTarget.muted = true;
+                            e.currentTarget.play().catch(err => {
+                              console.log("Autoplay blocked:", err);
+                              setIsVideoPlaying(false);
+                            });
                           }}
                         />
                       )
@@ -3845,9 +3867,19 @@ const CollabLinkLanding = () => {
                     )}
                     
                     {/* Centered Luxury Play Button - visible when not playing or on hover */}
-                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-0 group-hover:opacity-100 transition-all duration-500 scale-90 group-hover:scale-100">
-                      <div className="w-24 h-24 rounded-full bg-white/20 backdrop-blur-xl border border-white/40 flex items-center justify-center shadow-2xl">
-                        <Play className="w-8 h-8 text-white fill-white ml-1" />
+                    <div 
+                      className={cn(
+                        "absolute inset-0 flex items-center justify-center cursor-pointer z-20 transition-all duration-500",
+                        isVideoPlaying ? "opacity-0 group-hover:opacity-100" : "opacity-100"
+                      )}
+                      onClick={togglePlayback}
+                    >
+                      <div className="w-24 h-24 rounded-full bg-white/20 backdrop-blur-xl border border-white/40 flex items-center justify-center shadow-2xl transition-transform duration-300 hover:scale-110 active:scale-95">
+                        {isVideoPlaying ? (
+                          <Pause className="w-8 h-8 text-white fill-white" />
+                        ) : (
+                          <Play className="w-8 h-8 text-white fill-white ml-1" />
+                        )}
                       </div>
                     </div>
 

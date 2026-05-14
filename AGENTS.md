@@ -207,6 +207,15 @@ Think of it like a human reviewing their journal and updating their mental model
 
 The goal: Be helpful without being annoying. Check in a few times a day, do useful background work, but respect quiet time.
 
+## Creator Onboarding
+
+When onboarding new creators or updating existing ones, you **MUST** use the **Meta Creator Marketplace** link (if available) as the primary source of truth for:
+- **Average Views / Reach**: Use the last 30/90 days data.
+- **Engagement / Interaction Rate**: Use the official Meta Interaction Rate.
+- **Audience Demographics**: Use the exact Gender and Age breakdown (don't guess).
+- **Top Cities**: List the top 5 cities precisely.
+- **Past Brands**: Cross-reference Marketplace "Previous partnership" section with Instagram Highlights.
+
 ## Make It Yours
 
 This is a starting point. Add your own conventions, style, and rules as you figure out what works.

@@ -389,14 +389,22 @@ const DiscoverCreators = () => {
                                     <div className="absolute inset-0 bg-slate-200 animate-pulse" />
                                     {creator.discovery_video_url && isNativeVideo(creator.discovery_video_url) ? (
                                         <video 
-                                            src={creator.discovery_video_url}
                                             className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 relative z-10"
                                             autoPlay
                                             muted
                                             loop
                                             playsInline
+                                            preload="auto"
                                             poster={creator.discovery_card_image || creator.avatar_url || ""}
-                                        />
+                                            onError={(e) => {
+                                                console.error("Video failed to load for creator:", creator.username);
+                                                // If video fails, hide it so the fallback image behind it (if any) or background shows
+                                                (e.target as HTMLVideoElement).style.display = 'none';
+                                                // Or we could force it to show the poster
+                                            }}
+                                        >
+                                            <source src={creator.discovery_video_url} type="video/mp4" />
+                                        </video>
                                     ) : creator.discovery_video_url && getInstagramEmbedUrl(creator.discovery_video_url) ? (
                                         <div className="w-full h-full relative z-10 bg-slate-900">
                                             {/* Show poster while iframe loads */}
