@@ -33,11 +33,14 @@ export const ShortlistForm: React.FC<ShortlistFormProps> = ({ onSuccess, compact
     }
     setLoading(true);
     const { error: dbError } = await supabase.from('brand_leads').insert([form]);
-    setLoading(false);
     if (dbError) {
+      setLoading(false);
       setError('Something went wrong. Please try again or WhatsApp us directly.');
       return;
     }
+    // Fire email notification (non-blocking — don't fail UX if email errors)
+    supabase.functions.invoke('notify-brand-lead', { body: form }).catch(() => {});
+    setLoading(false);
     setDone(true);
     onSuccess?.();
   };
