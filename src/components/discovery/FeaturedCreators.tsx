@@ -89,6 +89,11 @@ export const FeaturedCreators = () => {
     setCurrentIndex((prev) => (prev + 1) % creators.length);
   };
 
+  const prevCreator = () => {
+    triggerHaptic(HapticPatterns.light);
+    setCurrentIndex((prev) => (prev - 1 + creators.length) % creators.length);
+  };
+
   useEffect(() => {
     if (videoRef.current) {
       videoRef.current.muted = isMuted;
