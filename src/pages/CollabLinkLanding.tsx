@@ -723,6 +723,27 @@ const CollabLinkLanding = () => {
     }
   };
 
+  // IntersectionObserver: triggers play() on iOS Safari when video enters viewport
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            video.muted = true;
+            video.play().then(() => setIsVideoPlaying(true)).catch(() => setIsVideoPlaying(false));
+          } else {
+            video.pause();
+          }
+        });
+      },
+      { threshold: 0.4 }
+    );
+    observer.observe(video);
+    return () => observer.disconnect();
+  }, [videoRef.current]);
+
   useEffect(() => {
     if (editMode && searchParams.get('edit') !== 'true') {
       setSearchParams(
@@ -3870,7 +3891,7 @@ const CollabLinkLanding = () => {
                     <div 
                       className={cn(
                         "absolute inset-0 flex items-center justify-center cursor-pointer z-20 transition-all duration-500",
-                        isVideoPlaying ? "opacity-0 group-hover:opacity-100" : "opacity-100"
+                        isVideoPlaying ? "opacity-0 group-hover:opacity-100" : "opacity-100 bg-black/20"
                       )}
                       onClick={togglePlayback}
                     >
