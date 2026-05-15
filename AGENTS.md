@@ -209,12 +209,32 @@ The goal: Be helpful without being annoying. Check in a few times a day, do usef
 
 ## Creator Onboarding
 
-When onboarding new creators or updating existing ones, you **MUST** use the **Meta Creator Marketplace** link (if available) as the primary source of truth for:
+When onboarding new creators or updating existing ones, you **MUST** use the **Meta Creator Marketplace** link (if available) as the primary source of truth.
+
+**STRICT RULE: NEVER Google influencers.**
+- **No Metrics from Google**: Do not use Google search to find views, engagement, or demographics. Google data is often outdated or scraped from unreliable sources.
+- **No Links from Google**: NEVER search Google for an Instagram link or handle. If you cannot find it in the workspace or provided data, STOP and ASK the user.
+- **Data Source Priority**: Marketplace Data > Instagram Profile (Native) > User Input. Google is NOT a valid source.
+
+### Marketplace Data Requirements:
 - **Average Views / Reach**: Use the last 30/90 days data.
 - **Engagement / Interaction Rate**: Use the official Meta Interaction Rate.
 - **Audience Demographics**: Use the exact Gender and Age breakdown (don't guess).
 - **Top Cities**: List the top 5 cities precisely.
 - **Past Brands**: Cross-reference Marketplace "Previous partnership" section with Instagram Highlights.
+
+
+## Video Asset Standards
+
+To ensure high-performance, consistent playback across all devices (especially iOS/Safari), all creator video assets (Discovery Reels, Portfolio Videos) MUST follow these technical requirements:
+
+1.  **Format**: MPEG-4 (.mp4) container.
+2.  **Codec**: H.264 (AVC) with **Main** or **Baseline** profile. DO NOT use VP9 or H.265/HEVC as they have inconsistent support for inline/autoplay on iOS.
+3.  **Optimization**: Enable **Fast Start** (MOOV atom at the beginning of the file). This is critical for mobile streaming.
+4.  **Scaling**: Maximum resolution should be **1080x1920** (Vertical). 720p is often sufficient for mobile discovery.
+5.  **FFmpeg Command**: Use the following for standardizing raw downloads:
+    `ffmpeg -i input.mp4 -vcodec libx264 -profile:v main -level 3.1 -pix_fmt yuv420p -movflags +faststart -threads 0 -preset fast output.mp4`
+6.  **Supabase Storage**: Always upload to the `creator-assets` bucket with `contentType: 'video/mp4'`.
 
 ## Make It Yours
 

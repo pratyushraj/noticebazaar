@@ -710,7 +710,7 @@ const CollabLinkLanding = () => {
   const [editMode, setEditMode] = useState(() => searchParams.get('edit') === 'true')
   const [aboutCreatorOpen, setAboutCreatorOpen] = useState(false)
   const videoRef = useRef<HTMLVideoElement>(null)
-  const [isVideoPlaying, setIsVideoPlaying] = useState(true)
+  const [isVideoPlaying, setIsVideoPlaying] = useState(false)
 
   const togglePlayback = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -2846,7 +2846,7 @@ const CollabLinkLanding = () => {
     : []
   // const completedDeals = creator.past_brand_count || 0;(trustedBrands > 0 ? trustedBrands : pastBrands.length);
   const pastBrandCount =
-    creator.past_brand_count ?? (trustedBrands > 0 ? trustedBrands : pastBrands.length)
+    (creator.past_brand_count || (trustedBrands > 0 ? trustedBrands : pastBrands.length)) || 0
 
   // Creator analytics (demo-to-real bridge)
   // Null means we don't yet have real analytics values for this creator.
@@ -2898,9 +2898,10 @@ const CollabLinkLanding = () => {
       : ''
 
   const metaTitle = `Collaborate with ${creatorName} (@${normalizedHandle}) | UGC & Performance Marketing`
+  const isBarterOpen = creator.collab_deal_preference !== 'paid_only' && creator.open_to_collabs !== false
   const metaDescription = collabIntroLine 
-    ? `${collabIntroLine} | Hire ${creatorName} for high-performance UGC video content and brand collaborations on Creator Armour.`
-    : `Partner with ${creatorName} (@${normalizedHandle}) for performance-driven ${creator.category || ''} content. View rates, audience demographics, and previous brand collaborations.`
+    ? `${collabIntroLine} | Hire ${creatorName} for ${isBarterOpen ? 'paid & barter ' : ''}UGC video content and brand collaborations on Creator Armour.`
+    : `Partner with ${creatorName} (@${normalizedHandle}) for performance-driven ${creator.category || ''} content. ${isBarterOpen ? 'Open to barter and paid collaborations.' : ''} View rates, audience demographics, and previous brand collaborations.`
 
   // Use clean URL for SEO (no hash)
   const canonicalUrl = `https://creatorarmour.com/${encodeURIComponent(normalizedHandle)}`
@@ -2929,6 +2930,10 @@ const CollabLinkLanding = () => {
         'influencer marketing India',
         'creator collaboration',
         'paid barter hybrid collaboration',
+        'Barter collaborations India',
+        'Product exchange with influencers',
+        'Free product for review',
+        'UGC barter deals',
         ...pastBrands.slice(0, 4),
       ].filter(Boolean)
     )
@@ -3022,7 +3027,7 @@ const CollabLinkLanding = () => {
           ? 'Save failed'
           : ''
   const avgReelViews =
-    creator.avg_reel_views_manual ?? creator.avg_reel_views ?? creator.performance_proof?.median_reel_views ?? null
+    creator.avg_reel_views_manual ?? creator.avg_reel_views ?? creator.avg_views ?? creator.performance_proof?.median_reel_views ?? null
   const avgLikes = creator.avg_likes ?? creator.performance_proof?.avg_likes ?? null
 
   const isViewsVerified = Boolean(
@@ -3857,26 +3862,34 @@ const CollabLinkLanding = () => {
                         <video
                           ref={videoRef}
                           key={creator.discovery_video_url}
-                          src={creator.discovery_video_url}
                           className="w-full h-full object-cover"
                           playsInline
-                          webkitPlaysInline={true}
                           autoPlay
                           muted
                           loop
-                          preload="auto"
+                          preload="metadata"
                           poster={creator.discovery_card_image || creator.avatar_url || ""}
                           onPlay={() => setIsVideoPlaying(true)}
                           onPause={() => setIsVideoPlaying(false)}
                           onClick={togglePlayback}
                           onLoadedData={(e) => {
+                            // On mobile, sometimes we need to explicitly mute via JS property
                             e.currentTarget.muted = true;
-                            e.currentTarget.play().catch(err => {
-                              console.log("Autoplay blocked:", err);
-                              setIsVideoPlaying(false);
-                            });
+                            // Attempt autoplay
+                            const playPromise = e.currentTarget.play();
+                            if (playPromise !== undefined) {
+                              playPromise
+                                .then(() => setIsVideoPlaying(true))
+                                .catch(err => {
+                                  console.log("Autoplay blocked or failed:", err);
+                                  setIsVideoPlaying(false);
+                                });
+                            }
                           }}
-                        />
+                        >
+                          <source src={creator.discovery_video_url} type="video/mp4" />
+                          Your browser does not support the video tag.
+                        </video>
                       )
                     ) : (
                       <div className="w-full h-full flex flex-col items-center justify-center p-8 bg-slate-50">
@@ -4132,11 +4145,9 @@ const CollabLinkLanding = () => {
                           icon: <TrendingUp className="w-4 h-4" /> 
                         },
                         { 
-                          label: (creator.collab_brands_count_override || creator.past_brand_count)
-                            ? `Worked with ${(creator.collab_brands_count_override || creator.past_brand_count)}+ brands`
-                            : creator.past_brands?.length 
-                              ? `Worked with ${creator.past_brands.length}+ brands`
-                              : 'Professional Brand Experience', 
+                          label: (creator.collab_brands_count_override || pastBrandCount)
+                            ? `Worked with ${(creator.collab_brands_count_override || pastBrandCount)}+ brands`
+                            : 'Professional Brand Experience', 
                           icon: <Briefcase className="w-4 h-4" /> 
                         },
                       ].map((benefit, i) => (
@@ -4153,52 +4164,40 @@ const CollabLinkLanding = () => {
                   </div>
 
                   {/* Brand Experience Section */}
-                  {/* NEW: Recent Collaborations (Worked With) Section */}
-                  <div className="mt-24 px-4 max-w-sm mx-auto">
-                    <div className="flex flex-col items-center mb-12">
-                      <h3 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.4em] mb-8">
-                        Worked With Leading Brands
-                      </h3>
-                      <div className="flex flex-wrap justify-center items-center gap-4">
-                        {(
-                          creator.past_brands && creator.past_brands.length > 0
-                            ? creator.past_brands.map(name => ({ name: String(name).trim(), color: 'text-slate-900' }))
-                            : username?.toLowerCase().trim() === 'salma_stylebudget'
-                              ? [
-                                  { name: 'KBEAUTY', color: 'text-pink-500' },
-                                  { name: 'MARS', color: 'text-slate-900' },
-                                  { name: 'SWISS BEAUTY', color: 'text-rose-600' },
-                                  { name: 'MAMAEARTH', color: 'text-emerald-600' },
-                                  { name: 'PONDS', color: 'text-blue-500' },
-                                  { name: 'TIRA BEAUTY', color: 'text-slate-700' }
-                                ]
-                              : [
-                                  { name: 'kbeauty', color: 'text-pink-500' },
-                                  { name: 'MARS', color: 'text-slate-900' },
-                                  { name: 'SWISS beauty', color: 'text-rose-600' },
-                                  { name: 'mamaearth', color: 'text-emerald-600' },
-                                  { name: 'ponds', color: 'text-blue-500' }
-                                ]
-                        ).map(brand => (
-                          <motion.div 
-                            key={brand.name} 
-                            whileHover={{ y: -2 }}
-                            className="px-6 py-3 rounded-2xl bg-white border border-slate-100 shadow-sm flex items-center justify-center transition-all hover:shadow-md"
-                          >
-                            <span className={cn(
-                              "text-sm font-black uppercase", 
-                              brand.color,
-                              brand.italic && "italic",
-                              (brand as any).font || "font-sans",
-                              (brand as any).tracking || "tracking-tighter"
-                            )}>
-                              {brand.name}
-                            </span>
-                          </motion.div>
-                        ))}
+                  {/* Recent Collaborations (Worked With) Section */}
+                  {(creator.past_brands && creator.past_brands.length > 0) && (
+                    <div className="mt-24 px-4 max-w-sm mx-auto">
+                      <div className="flex flex-col items-center mb-12">
+                        <h3 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.4em] mb-8">
+                          Worked With Leading Brands
+                        </h3>
+                        <div className="flex flex-wrap justify-center items-center gap-4">
+                          {(
+                            creator.past_brands && creator.past_brands.length > 0
+                              ? creator.past_brands.map(name => ({ name: String(name).trim(), color: 'text-slate-900' }))
+                              : []
+
+                          ).map(brand => (
+                            <motion.div 
+                              key={brand.name} 
+                              whileHover={{ y: -2 }}
+                              className="px-6 py-3 rounded-2xl bg-white border border-slate-100 shadow-sm flex items-center justify-center transition-all hover:shadow-md"
+                            >
+                              <span className={cn(
+                                "text-sm font-black uppercase", 
+                                brand.color,
+                                (brand as any).italic && "italic",
+                                (brand as any).font || "font-sans",
+                                (brand as any).tracking || "tracking-tighter"
+                              )}>
+                                {brand.name}
+                              </span>
+                            </motion.div>
+                          ))}
+                        </div>
                       </div>
                     </div>
-                  </div>
+                  )}
 
                   {/* Enhanced Analytics Section */}
                   <div className="mt-20 flex flex-col gap-4 px-4 max-w-sm mx-auto">

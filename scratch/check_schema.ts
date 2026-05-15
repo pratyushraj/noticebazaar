@@ -1,22 +1,22 @@
-
 import { createClient } from '@supabase/supabase-js';
-import * as dotenv from 'dotenv';
+import dotenv from 'dotenv';
+import path from 'path';
 
-dotenv.config();
+dotenv.config({ path: path.resolve('server/.env') });
 
-const SUPABASE_URL = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
-const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+const supabaseUrl = process.env.SUPABASE_URL;
+const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-const supabase = createClient(SUPABASE_URL!, SUPABASE_SERVICE_ROLE_KEY!);
+const supabase = createClient(supabaseUrl, supabaseKey);
 
 async function checkSchema() {
   const { data, error } = await supabase
-    .from('creators')
+    .from('profiles')
     .select('*')
     .limit(1);
 
   if (error) {
-    console.error('Error checking schema:', error);
+    console.error('Error fetching:', error);
   } else {
     console.log('Columns:', Object.keys(data[0]));
   }

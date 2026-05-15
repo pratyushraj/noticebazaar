@@ -34,10 +34,12 @@ const LlmCreatorDirectory = lazy(() => import("@/pages/LlmCreatorDirectory"));
 const WelcomeOnboarding = lazy(() => import("@/pages/WelcomeOnboarding"));
 const InstaMockup = lazy(() => import("@/pages/InstaMockup"));
 const BarterCollabPage = lazy(() => import("@/pages/BarterCollabPage"));
+const KiroFoodsPitch = lazy(() => import("@/pages/pitch/KiroFoodsPitch"));
 
 export const PublicRoutes = () => (
   <>
     <Route path="/" element={<LazyRoute><LandingPage /></LazyRoute>} />
+    <Route path="/pitch/kiro-foods" element={<LazyRoute><KiroFoodsPitch /></LazyRoute>} />
     <Route path="/insta-mockup" element={<LazyRoute><InstaMockup /></LazyRoute>} />
     <Route path="/welcome" element={<LazyRoute><WelcomeOnboarding /></LazyRoute>} />
     <Route path="/blog" element={<LazyRoute><BlogListing /></LazyRoute>} />

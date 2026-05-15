@@ -1786,10 +1786,10 @@ router.get('/:username', async (req: Request, res: Response) => {
           .map((d: any) => (typeof d?.brand_name === 'string' ? d.brand_name.trim().toLowerCase() : ''))
           .filter(Boolean)
       ).size;
-      const baseBrandCountRaw = Number((profile as any).collab_brands_count_override);
+      const baseBrandCountRaw = Number((profile as any).collab_brands_count_override ?? (profile as any).past_brand_count ?? 0);
       const baseBrandCount = Number.isFinite(baseBrandCountRaw) && baseBrandCountRaw >= 0
         ? Math.floor(baseBrandCountRaw)
-        : null;
+        : 0;
       const totalBrandCount = baseBrandCount !== null
         ? baseBrandCount + uniqueBrands
         : uniqueBrands;
