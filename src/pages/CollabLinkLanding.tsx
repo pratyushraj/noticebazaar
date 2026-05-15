@@ -3867,7 +3867,7 @@ const CollabLinkLanding = () => {
                           autoPlay
                           muted
                           loop
-                          preload="metadata"
+                          preload="auto"
                           poster={creator.discovery_card_image || creator.avatar_url || ""}
                           onPlay={() => setIsVideoPlaying(true)}
                           onPause={() => setIsVideoPlaying(false)}

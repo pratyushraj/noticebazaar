@@ -142,6 +142,7 @@ const KiroFoodsPitch = () => {
                       muted
                       loop
                       playsInline
+                      preload="auto"
                       onMouseOver={e => (e.target as HTMLVideoElement).play()}
                       onMouseOut={e => {
                         const v = e.target as HTMLVideoElement;
