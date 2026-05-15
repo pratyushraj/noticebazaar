@@ -138,6 +138,7 @@ const KiroFoodsPitch = () => {
                     <video 
                       src={creator.discovery_video_url} 
                       className="w-full h-full object-cover"
+                      autoPlay
                       muted
                       loop
                       playsInline
