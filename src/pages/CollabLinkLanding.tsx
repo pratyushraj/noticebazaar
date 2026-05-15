@@ -3862,6 +3862,7 @@ const CollabLinkLanding = () => {
                         <video
                           ref={videoRef}
                           key={creator.discovery_video_url}
+                          src={creator.discovery_video_url}
                           className="w-full h-full object-cover"
                           playsInline
                           autoPlay
@@ -3886,10 +3887,7 @@ const CollabLinkLanding = () => {
                                 });
                             }
                           }}
-                        >
-                          <source src={creator.discovery_video_url} type="video/mp4" />
-                          Your browser does not support the video tag.
-                        </video>
+                        />
                       )
                     ) : (
                       <div className="w-full h-full flex flex-col items-center justify-center p-8 bg-slate-50">
