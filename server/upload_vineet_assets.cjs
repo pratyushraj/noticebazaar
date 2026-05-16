@@ -36,8 +36,25 @@ async function uploadAssets() {
     console.log('✅ Discovery reel uploaded.');
   }
 
-  // 2. Note: For avatar, I will use a placeholder or skip if not available locally.
-  // Usually, I would download the avatar too, but I'll skip it for now or use the marketplace one if possible.
+  // 2. Upload Avatar
+  const avatarPath = path.join(tempDir, 'real_dp_vineet_v2.jpg');
+  if (fs.existsSync(avatarPath)) {
+    const avatarFile = fs.readFileSync(avatarPath);
+    const { error: avatarError } = await supabase.storage
+      .from('creator-assets')
+      .upload(`${username}/avatar.jpg`, avatarFile, {
+        contentType: 'image/jpeg',
+        upsert: true
+      });
+
+    if (avatarError) {
+      console.error('Error uploading avatar:', avatarError);
+    } else {
+      console.log('✅ Real Instagram DP uploaded.');
+    }
+  } else {
+    console.error('Avatar file not found at path:', avatarPath);
+  }
 }
 
 uploadAssets();
