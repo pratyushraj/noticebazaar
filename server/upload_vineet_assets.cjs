@@ -37,7 +37,7 @@ async function uploadAssets() {
   }
 
   // 2. Upload Avatar
-  const avatarPath = path.join(tempDir, 'real_dp_vineet_v4.jpg');
+  const avatarPath = '/Users/pratyushraj/.gemini/antigravity/brain/0115895e-d49c-45f2-930e-440cf60527fc/media__1778925266572.jpg';
   if (fs.existsSync(avatarPath)) {
     const avatarFile = fs.readFileSync(avatarPath);
     const { error: avatarError } = await supabase.storage
@@ -50,7 +50,7 @@ async function uploadAssets() {
     if (avatarError) {
       console.error('Error uploading avatar:', avatarError);
     } else {
-      console.log('✅ High-precision Instagram DP uploaded.');
+      console.log('✅ Official Anime DP uploaded.');
     }
   } else {
     console.error('Avatar file not found at path:', avatarPath);
