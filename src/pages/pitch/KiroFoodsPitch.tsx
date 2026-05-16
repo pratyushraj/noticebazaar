@@ -28,7 +28,8 @@ const KiroFoodsPitch = () => {
   const [loading, setLoading] = useState(true);
 
   const formatFollowers = (n?: number | null) => {
-    if (n === null || n === undefined || Number.isNaN(n) || n === 0) return 'Verified';
+    if (n === null || n === undefined || Number.isNaN(n)) return 'Verified';
+    if (n === 0) return '---';
     if (n >= 1000000) return `${(n / 1000000).toFixed(1)}M`;
     if (n >= 1000) return `${(n / 1000).toFixed(1)}K`;
     return `${n}`;
