@@ -40,13 +40,13 @@ const KiroFoodsPitch = () => {
         const { data, error } = await supabase
           .from('profiles')
           .select('id, username, first_name, last_name, business_name, avatar_url, followers_count, engagement_rate, avg_views, is_elite_verified, creator_category, location, discovery_video_url, bio')
-          .in('username', ['shavy.0404', 'blogsbysnehaaa', 'rohit_cheeku_bhandari']);
+          .in('username', ['shavy.0404', 'blogsbysnehaaa', 'rohit_cheeku_bhandari', 'cookku_with_chikku', 'chroniclesofffoods']);
           
         if (error) throw error;
 
         // Order them exactly as requested if possible, or leave as returned
         const orderedData = [];
-        const order = ['rohit_cheeku_bhandari', 'blogsbysnehaaa', 'shavy.0404'];
+        const order = ['rohit_cheeku_bhandari', 'blogsbysnehaaa', 'shavy.0404', 'cookku_with_chikku', 'chroniclesofffoods'];
         
         if (data) {
           order.forEach(username => {

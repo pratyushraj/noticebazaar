@@ -1,32 +1,23 @@
 
 import { createClient } from '@supabase/supabase-js';
-import dotenv from 'dotenv';
-import path from 'path';
 
-dotenv.config({ path: path.resolve(process.cwd(), '.env') });
-
-const supabaseUrl = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL;
-const supabaseKey = process.env.VITE_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY;
-
-if (!supabaseUrl || !supabaseKey) {
-  console.error('Supabase URL or Key missing');
-  process.exit(1);
-}
+const supabaseUrl = 'https://ooaxtwmqrvfzdqzoijcj.supabase.co';
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9vYXh0d21xcnZmemRxem9pamNqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk1MDEyNTYsImV4cCI6MjA3NTA3NzI1Nn0.xIIz_9W9PAnxTKDdJZ3_wQ6OO7NQJbiy4P_PP0CSVBQ';
 
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 async function checkCreators() {
   const { data, error } = await supabase
     .from('profiles')
-    .select('username, first_name, last_name, business_name, avatar_url, instagram_profile_photo')
-    .in('username', ['virat.kohli', 'beyonce']);
+    .select('username, discovery_video_url')
+    .in('username', ['shavy.0404', 'blogsbysnehaaa', 'rohit_cheeku_bhandari']);
 
   if (error) {
-    console.error('Error fetching profiles:', error);
+    console.error('Error:', error);
     return;
   }
 
-  console.log('Profiles found:', JSON.stringify(data, null, 2));
+  console.log('Creators Data:', JSON.stringify(data, null, 2));
 }
 
 checkCreators();

@@ -1261,7 +1261,7 @@ const CollabLinkLanding = () => {
           }
 
           // Prepend icon to label if not present
-          if (icon && !label.includes(icon)) {
+          if (icon && label && !String(label).includes(icon)) {
             label = `${icon} ${label}`;
           }
 
@@ -1298,7 +1298,7 @@ const CollabLinkLanding = () => {
         }
 
         // Auto-inject barter template if missing but value is set
-        const hasBarter = validatedTemplates.some(t => t.type === 'barter' || t.id.includes('barter'))
+        const hasBarter = validatedTemplates.some(t => t.type === 'barter' || (t.id && String(t.id).includes('barter')))
         if (!hasBarter && creator.barter_min_value) {
           const barterVal = creator.barter_min_value
           validatedTemplates.push({
