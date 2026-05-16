@@ -187,7 +187,7 @@ const KiroFoodsPitch = () => {
                   {/* Name & Title inside image */}
                   <div className="absolute bottom-0 left-0 p-5 w-full">
                     <h2 className="text-2xl font-bold text-white mb-1 flex items-center gap-2">
-                      {creator.first_name} {creator.last_name}
+                      {creator.first_name ? `${creator.first_name} ${creator.last_name || ''}` : (creator.business_name || creator.username)}
                       <BadgeCheck className="w-5 h-5 text-blue-400" />
                     </h2>
                     <p className="text-white/80 text-sm font-medium line-clamp-1">{creator.creator_category || 'Content Creator'}</p>
