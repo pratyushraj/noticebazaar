@@ -94,17 +94,17 @@ const KiroFoodsPitch = () => {
           <motion.h1 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-5xl font-black text-slate-900 tracking-tight mb-6"
+            className="text-4xl md:text-5xl font-black text-slate-900 mb-6 tracking-tight"
           >
-            Shortlisted Creators for Kiro Foods Campaign ✨
+            Curated Creators for Kiro Foods Campaign ✨
           </motion.h1>
           <motion.p 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="text-xl text-slate-600 max-w-2xl leading-relaxed"
+            className="text-xl text-slate-600 max-w-3xl mx-auto leading-relaxed"
           >
-            Handpicked creators aligned for healthy food, wellness & lifestyle storytelling campaigns with openness toward barter + affiliate collaborations.
+            Handpicked creators across food, wellness, fitness & lifestyle niches shortlisted based on audience fit, storytelling quality, engagement, and campaign alignment for potential Kiro Foods collaborations ✨
           </motion.p>
         </div>
 
