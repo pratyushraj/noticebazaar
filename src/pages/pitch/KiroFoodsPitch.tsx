@@ -40,13 +40,13 @@ const KiroFoodsPitch = () => {
         const { data, error } = await supabase
           .from('profiles')
           .select('id, username, first_name, last_name, business_name, avatar_url, followers_count, engagement_rate, avg_views, is_elite_verified, creator_category, location, discovery_video_url, bio')
-          .in('username', ['shavy.0404', 'blogsbysnehaaa', 'rohit_cheeku_bhandari', 'cookku_with_chikku', 'chroniclesofffoods', '_cookingwithvineet']);
+          .in('username', ['rohit_cheeku_bhandari', 'shavy.0404', 'blogsbysnehaaa', 'cookku_with_chikku', '_cookingwithvineet', 'chroniclesofffoods', 'prachisculinarycanvas', 'thegurgaonfoodie', 'we_are_chefing', 'rounak_agarwal', 'krishnavi_healthy_bites', 'shinyyy.05', 'jaya_the_explorer', 'simranshah01', 'littleexplorermommy', 'd_dollypatel', 'myspace_vlogs']);
           
         if (error) throw error;
 
         // Order them exactly as requested if possible, or leave as returned
         const orderedData = [];
-        const order = ['rohit_cheeku_bhandari', 'blogsbysnehaaa', 'shavy.0404', 'cookku_with_chikku', 'chroniclesofffoods', '_cookingwithvineet'];
+        const order = ['rohit_cheeku_bhandari', 'shavy.0404', 'blogsbysnehaaa', 'cookku_with_chikku', '_cookingwithvineet', 'chroniclesofffoods', 'prachisculinarycanvas', 'thegurgaonfoodie', 'we_are_chefing', 'rounak_agarwal', 'krishnavi_healthy_bites', 'shinyyy.05', 'jaya_the_explorer', 'simranshah01', 'littleexplorermommy', 'd_dollypatel', 'myspace_vlogs'];
         
         if (data) {
           order.forEach(username => {
