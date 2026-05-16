@@ -342,13 +342,13 @@ const KiroFoodsPitch = () => {
             <p className="text-rose-100/70 max-w-xl mx-auto mb-8 relative z-10">
               Kiro Foods can focus on growth while we handle the entire collaboration lifecycle with precision.
             </p>
-            <a 
-              href="https://wa.me/919999999999" 
+            <Link 
+              to="/signup?mode=brand" 
               className="inline-flex items-center gap-2 bg-white text-slate-900 font-bold py-4 px-8 rounded-2xl hover:bg-rose-50 transition-colors relative z-10"
             >
               Get Started with Kiro Foods Shortlist
               <ArrowRight className="w-5 h-5" />
-            </a>
+            </Link>
           </motion.div>
         </div>
       </section>
