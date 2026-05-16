@@ -343,12 +343,6 @@
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://creatorarmour.com/discover/fashion</loc>
-    <lastmod>2026-05-15</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
     <loc>https://creatorarmour.com/discover/pet-care</loc>
     <lastmod>2026-05-15</lastmod>
     <changefreq>weekly</changefreq>
@@ -362,6 +356,12 @@
   </url>
   <url>
     <loc>https://creatorarmour.com/discover/motherhood-and-baby</loc>
+    <lastmod>2026-05-15</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://creatorarmour.com/discover/fashion</loc>
     <lastmod>2026-05-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -667,12 +667,6 @@
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://creatorarmour.com/shavy.0404</loc>
-    <lastmod>2026-05-11</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
     <loc>https://creatorarmour.com/meowmate12</loc>
     <lastmod>2026-05-14</lastmod>
     <changefreq>weekly</changefreq>
@@ -687,6 +681,12 @@
   <url>
     <loc>https://creatorarmour.com/themishramini</loc>
     <lastmod>2026-05-14</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://creatorarmour.com/shavy.0404</loc>
+    <lastmod>2026-05-11</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>

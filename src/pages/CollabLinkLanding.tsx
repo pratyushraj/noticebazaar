@@ -3887,6 +3887,18 @@ const CollabLinkLanding = () => {
                                 });
                             }
                           }}
+                          onError={(e) => {
+                            console.error('[CollabLinkLanding] Video playback failed:', e);
+                            const target = e.target as HTMLVideoElement;
+                            target.style.display = 'none';
+                            const parent = target.parentElement;
+                            if (parent) {
+                              const img = document.createElement('img');
+                              img.src = creator.discovery_card_image || creator.avatar_url || 'https://via.placeholder.com/400x500';
+                              img.className = 'w-full h-full object-cover animate-in fade-in duration-500';
+                              parent.appendChild(img);
+                            }
+                          }}
                         />
                       )
                     ) : (
@@ -4475,14 +4487,19 @@ const CollabLinkLanding = () => {
                             <p className="text-[15px] font-black text-slate-900 truncate">
                               {selectedTemplate.label}
                             </p>
-                            <p className="text-[12px] font-semibold text-slate-600 mt-0.5">
-                              {selectedTemplate.type === 'barter'
-                                ? 'Free products as payment'
-                                : `₹${selectedTemplate.budget.toLocaleString('en-IN')}`}{' '}
-                              • {selectedTemplate.deliverables.length} deliverable
-                              {selectedTemplate.deliverables.length === 1 ? '' : 's'} •{' '}
-                              {selectedTemplate.deadlineDays || 7} days to make content
-                            </p>
+                             <p className="text-[12px] font-semibold text-slate-600 mt-0.5 flex items-center gap-1">
+                               {selectedTemplate.type === 'barter'
+                                 ? 'Free products as payment'
+                                 : (
+                                   <span className="flex items-center">
+                                     <IndianRupee className="w-3 h-3 mr-0.5 inline-block" />
+                                     {selectedTemplate.budget.toLocaleString('en-IN')}
+                                   </span>
+                                 )}{' '}
+                               • {selectedTemplate.deliverables.length} deliverable
+                               {selectedTemplate.deliverables.length === 1 ? '' : 's'} •{' '}
+                               {selectedTemplate.deadlineDays || 7} days to make content
+                             </p>
                           </div>
                           <div className="shrink-0 flex flex-col items-end gap-2">
                             <div className="bg-[#0FA47F] text-white rounded-full p-1 shadow-sm">
@@ -5405,7 +5422,10 @@ const CollabLinkLanding = () => {
                                     <Check className="w-5 h-5" />
                                   </div>
                                   <div>
-                                    <p className="text-[16px] font-black text-slate-900">₹{Number(exactBudget).toLocaleString('en-IN')}</p>
+                                    <p className="text-[16px] font-black text-slate-900 flex items-center">
+                                      <IndianRupee className="w-4 h-4 mr-0.5" />
+                                      {Number(exactBudget).toLocaleString('en-IN')}
+                                    </p>
                                     <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">Fixed Price Package</p>
                                   </div>
                                 </div>
@@ -5457,7 +5477,10 @@ const CollabLinkLanding = () => {
                                     <Check className="w-5 h-5" />
                                   </div>
                                   <div>
-                                    <p className="text-[16px] font-black text-slate-900">₹{Number(exactBudget).toLocaleString('en-IN')}</p>
+                                    <p className="text-[16px] font-black text-slate-900 flex items-center">
+                                      <IndianRupee className="w-4 h-4 mr-0.5" />
+                                      {Number(exactBudget).toLocaleString('en-IN')}
+                                    </p>
                                     <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">Fixed Price Package</p>
                                   </div>
                                 </div>

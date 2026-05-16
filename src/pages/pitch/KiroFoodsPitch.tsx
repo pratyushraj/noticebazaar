@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { motion } from 'framer-motion';
-import { ArrowRight, BadgeCheck, Instagram, Play, Star, TrendingUp, Users } from 'lucide-react';
+import { ArrowRight, BadgeCheck, CheckCircle, IndianRupee, Clock, Gavel, Instagram, LayoutDashboard, MessageCircle, Package, Play, Search, ShieldCheck, Sparkles, Star, TrendingUp, Users } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { SEOHead } from '@/components/SEOHead';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -71,6 +71,7 @@ const KiroFoodsPitch = () => {
       <SEOHead 
         title="CreatorArmour x Kiro Foods" 
         description="Curated creator profiles specifically shortlisted for Kiro Foods."
+        image="/assets/kiro-foods-og.png"
         noindex={true}
       />
       
@@ -95,7 +96,7 @@ const KiroFoodsPitch = () => {
             animate={{ opacity: 1, y: 0 }}
             className="text-5xl font-black text-slate-900 tracking-tight mb-6"
           >
-            Curated Creator Roster
+            Shortlisted Creators for Kiro Foods Campaign ✨
           </motion.h1>
           <motion.p 
             initial={{ opacity: 0, y: 20 }}
@@ -103,7 +104,7 @@ const KiroFoodsPitch = () => {
             transition={{ delay: 0.1 }}
             className="text-xl text-slate-600 max-w-2xl leading-relaxed"
           >
-            We've hand-picked these three exceptional creators whose audience demographics and content style perfectly align with the Kiro Foods brand ethos.
+            Handpicked creators aligned for healthy food, wellness & lifestyle storytelling campaigns with openness toward barter + affiliate collaborations.
           </motion.p>
         </div>
 
@@ -143,11 +144,25 @@ const KiroFoodsPitch = () => {
                       loop
                       playsInline
                       preload="auto"
+                      poster={creator.avatar_url}
                       onMouseOver={e => (e.target as HTMLVideoElement).play()}
                       onMouseOut={e => {
                         const v = e.target as HTMLVideoElement;
                         v.pause();
                         v.currentTime = 0;
+                      }}
+                      onError={(e) => {
+                        console.error('Video playback failed:', e);
+                        // Fallback to avatar if video fails
+                        const target = e.target as HTMLVideoElement;
+                        target.style.display = 'none';
+                        const parent = target.parentElement;
+                        if (parent) {
+                          const img = document.createElement('img');
+                          img.src = creator.avatar_url || 'https://via.placeholder.com/400x500';
+                          img.className = 'w-full h-full object-cover';
+                          parent.appendChild(img);
+                        }
                       }}
                     />
                   ) : (
@@ -226,6 +241,122 @@ const KiroFoodsPitch = () => {
           </div>
         )}
       </main>
+      
+      {/* Why Brands Love Section */}
+      <section className="bg-white py-24 border-t border-slate-200">
+        <div className="max-w-6xl mx-auto px-6">
+          <div className="text-center mb-16">
+            <motion.h2 
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="text-4xl font-black text-slate-900 tracking-tight mb-4"
+            >
+              Why brands love collaborating through Creator Armour 🚀
+            </motion.h2>
+            <motion.p 
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.1 }}
+              className="text-lg text-slate-500 max-w-2xl mx-auto"
+            >
+              We handle the heavy lifting so you can focus on scaling your brand.
+            </motion.p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {[
+              {
+                icon: LayoutDashboard,
+                title: "Dedicated Dashboard",
+                desc: "Manage all your creator collaborations in one unified place."
+              },
+              {
+                icon: Package,
+                title: "Shipment Tracking",
+                desc: "Easily track shipments, creator status, and campaign progress."
+              },
+              {
+                icon: ShieldCheck,
+                title: "End-to-End Management",
+                desc: "We handle the entire collab workflow from start to finish."
+              },
+              {
+                icon: Gavel,
+                title: "Legal Support",
+                desc: "Free legal consultation for all creator-brand matters ⚖️"
+              },
+              {
+                icon: Search,
+                title: "Rapid Discovery",
+                desc: "Find the right creators without manually scrolling Instagram."
+              },
+              {
+                icon: CheckCircle,
+                title: "Pre-Vetted Talent",
+                desc: "Every creator is matched based on engagement and niche."
+              },
+              {
+                icon: IndianRupee,
+                title: "Flexible Campaigns",
+                desc: "Full support for barter, affiliate, and paid collaborations."
+              },
+              {
+                icon: MessageCircle,
+                title: "Seamless Coordination",
+                desc: "Smooth communication channels for effortless collaboration."
+              },
+              {
+                icon: Clock,
+                title: "Saves Massive Time",
+                desc: "Focus on growth while we handle the operational headaches ✨"
+              }
+            ].map((benefit, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.05 }}
+                className="p-8 rounded-3xl bg-slate-50 border border-slate-100 hover:border-rose-200 hover:bg-rose-50/30 transition-all duration-300"
+              >
+                <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center shadow-sm mb-6">
+                  <benefit.icon className="w-6 h-6 text-rose-500" />
+                </div>
+                <h3 className="text-xl font-bold text-slate-900 mb-2">{benefit.title}</h3>
+                <p className="text-slate-600 leading-relaxed text-sm">{benefit.desc}</p>
+              </motion.div>
+            ))}
+          </div>
+
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.95 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true }}
+            className="mt-20 p-12 rounded-[40px] bg-slate-900 text-center relative overflow-hidden"
+          >
+            <div className="absolute inset-0 opacity-20 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-rose-500 via-transparent to-transparent" />
+            <Sparkles className="w-10 h-10 text-rose-400 mx-auto mb-6" />
+            <h2 className="text-3xl font-black text-white mb-4 relative z-10">Ready to start the flow?</h2>
+            <p className="text-rose-100/70 max-w-xl mx-auto mb-8 relative z-10">
+              Kiro Foods can focus on growth while we handle the entire collaboration lifecycle with precision.
+            </p>
+            <a 
+              href="https://wa.me/919999999999" 
+              className="inline-flex items-center gap-2 bg-white text-slate-900 font-bold py-4 px-8 rounded-2xl hover:bg-rose-50 transition-colors relative z-10"
+            >
+              Get Started with Kiro Foods Shortlist
+              <ArrowRight className="w-5 h-5" />
+            </a>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="py-12 text-center text-slate-400 text-sm border-t border-slate-100">
+        <p>© 2026 CreatorArmour. All rights reserved.</p>
+      </footer>
     </div>
   );
 };
