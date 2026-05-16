@@ -2897,11 +2897,21 @@ const CollabLinkLanding = () => {
       ? `${followerCount >= 1000 ? `${(followerCount / 1000).toFixed(1)}K` : followerCount} followers`
       : ''
 
-  const metaTitle = `Collaborate with ${creatorName} (@${normalizedHandle}) | UGC & Performance Marketing`
+  const metaTitle = creator.is_elite_verified 
+    ? `${creatorName} | Elite Verified Performance Creator | ${followerText} | Creator Armour`
+    : `Collaborate with ${creatorName} (@${normalizedHandle}) | UGC & Performance Marketing`
   const isBarterOpen = creator.collab_deal_preference !== 'paid_only' && creator.open_to_collabs !== false
-  const metaDescription = collabIntroLine 
-    ? `${collabIntroLine} | Hire ${creatorName} for ${isBarterOpen ? 'paid & barter ' : ''}UGC video content and brand collaborations on Creator Armour.`
-    : `Partner with ${creatorName} (@${normalizedHandle}) for performance-driven ${creator.category || ''} content. ${isBarterOpen ? 'Open to barter and paid collaborations.' : ''} View rates, audience demographics, and previous brand collaborations.`
+  
+  // SEO Optimized Description
+  const metricsHighlight = creator.avg_views 
+    ? `Averaging ${creator.avg_views >= 1000 ? `${(creator.avg_views / 1000).toFixed(1)}K` : creator.avg_views} views with ${creator.engagement_rate || '5%+' } engagement.` 
+    : 'High-performance UGC and video content creator.'
+    
+  const metaDescription = creator.is_elite_verified
+    ? `Partner with Elite Verified creator ${creatorName} (@${normalizedHandle}). ${metricsHighlight} Leading ${creator.category || 'D2C'} brand collaborator for ${isBarterOpen ? 'paid and barter ' : ''}UGC campaigns. View verified audience demographics and ROI metrics.`
+    : collabIntroLine 
+      ? `${collabIntroLine} | Hire ${creatorName} for ${isBarterOpen ? 'paid & barter ' : ''}UGC video content and brand collaborations on Creator Armour.`
+      : `Partner with ${creatorName} (@${normalizedHandle}) for performance-driven ${creator.category || ''} content. ${isBarterOpen ? 'Open to barter and paid collaborations.' : ''} View rates, audience demographics, and previous brand collaborations.`
 
   // Use clean URL for SEO (no hash)
   const canonicalUrl = `https://creatorarmour.com/${encodeURIComponent(normalizedHandle)}`
@@ -2920,7 +2930,10 @@ const CollabLinkLanding = () => {
         creator.category ? `${creator.category} creator` : 'content creator',
         'UGC Video Creators',
         'Influencer Marketing ROI',
+        'D2C Brand Growth India',
+        'Elite Verified Creators',
         'Performance Marketing India',
+        'High ROI UGC Content',
         'Hire UGC creators',
         'Professional Video Content',
         ...(creator.ugc_capabilities || []),
@@ -2928,6 +2941,7 @@ const CollabLinkLanding = () => {
         creator.location ? `creators in ${parseLocationString(creator.location).city || parseLocationString(creator.location).state || 'India'}` : null,
         `${creatorName} collab link`,
         'influencer marketing India',
+        'D2C marketing operating system',
         'creator collaboration',
         'paid barter hybrid collaboration',
         'Barter collaborations India',
