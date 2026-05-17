@@ -427,6 +427,12 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://creatorarmour.com/discover/pet-and-lifestyle</loc>
+    <lastmod>2026-05-17</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://creatorarmour.com/discover/pet-care</loc>
     <lastmod>2026-05-17</lastmod>
     <changefreq>weekly</changefreq>
@@ -805,13 +811,13 @@
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://creatorarmour.com/storiesbyseema</loc>
-    <lastmod>2026-05-16</lastmod>
+    <loc>https://creatorarmour.com/homechef_duggu</loc>
+    <lastmod>2026-05-17</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://creatorarmour.com/homechef_duggu</loc>
+    <loc>https://creatorarmour.com/storiesbyseema</loc>
     <lastmod>2026-05-17</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
@@ -825,6 +831,12 @@
   <url>
     <loc>https://creatorarmour.com/rohit_cheeku_bhandari</loc>
     <lastmod>2026-05-15</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://creatorarmour.com/simba_bhimavaram_bullodu</loc>
+    <lastmod>2026-05-17</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
@@ -871,13 +883,13 @@
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://creatorarmour.com/myspace_vlogs</loc>
+    <loc>https://creatorarmour.com/littleexplorermommy</loc>
     <lastmod>2026-05-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://creatorarmour.com/littleexplorermommy</loc>
+    <loc>https://creatorarmour.com/myspace_vlogs</loc>
     <lastmod>2026-05-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
