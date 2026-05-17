@@ -45,25 +45,7 @@ const NaturallyYoursPitch = () => {
   useEffect(() => {
     const fetchCreators = async () => {
       try {
-        const { data, error } = await supabase
-          .from('profiles')
-          .select('id, username, first_name, last_name, business_name, avatar_url, followers_count, engagement_rate, avg_views, is_elite_verified, creator_category, location, discovery_video_url, bio')
-          .in('username', [
-            'prachisculinarycanvas', 
-            'krishnavi_healthy_bites', 
-            'littleexplorermommy', 
-            'cookku_with_chikku', 
-            '_cookingwithvineet', 
-            'monika.urs', 
-            'homechef_duggu', 
-            'temptingtreat'
-          ]);
-          
-        if (error) throw error;
-
-        // Order the creators logically to match target preferences
-        const orderedData = [];
-        const order = [
+        const targetUsernames = [
           'prachisculinarycanvas', 
           'krishnavi_healthy_bites', 
           'littleexplorermommy', 
@@ -71,11 +53,31 @@ const NaturallyYoursPitch = () => {
           '_cookingwithvineet', 
           'monika.urs', 
           'homechef_duggu', 
-          'temptingtreat'
+          'temptingtreat',
+          '_small_home_kitchen',
+          'blogsbysnehaaa',
+          'chroniclesofffoods',
+          'myspace_vlogs',
+          'we_are_chefing',
+          'shinyyy.05',
+          'thegurgaonfoodie',
+          'jaya_the_explorer',
+          'aasthakumari7662',
+          'd_dollypatel',
+          'rounak_agarwal'
         ];
-        
+
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('id, username, first_name, last_name, business_name, avatar_url, followers_count, engagement_rate, avg_views, is_elite_verified, creator_category, location, discovery_video_url, bio')
+          .in('username', targetUsernames);
+          
+        if (error) throw error;
+
+        // Order the creators logically to match target preferences
+        const orderedData = [];
         if (data) {
-          order.forEach(username => {
+          targetUsernames.forEach(username => {
             const found = data.find(c => c.username === username);
             if (found) orderedData.push(found);
           });
@@ -127,6 +129,16 @@ const NaturallyYoursPitch = () => {
       icon: Users,
     },
   ];
+
+  // Helper to toggle play on mobile tap
+  const handleVideoTap = (e: React.MouseEvent<HTMLVideoElement>) => {
+    const video = e.currentTarget;
+    if (video.paused) {
+      video.play().catch(err => console.log("Play interrupted:", err));
+    } else {
+      video.pause();
+    }
+  };
 
   return (
     <div className="min-h-screen bg-[#FCFBF7] text-slate-800 selection:bg-emerald-200 selection:text-emerald-950 font-sans">
@@ -208,7 +220,7 @@ const NaturallyYoursPitch = () => {
                 {creators.length} ACTIVE
               </span>
             </h2>
-            <p className="text-sm text-emerald-800/60 mt-1">Hover over any card to view their high-fidelity recipe or unboxing video.</p>
+            <p className="text-sm text-emerald-800/60 mt-1">Tap/Hover on any creator profile card to preview their high-fidelity recipe video reels.</p>
           </div>
         </div>
 
@@ -238,20 +250,40 @@ const NaturallyYoursPitch = () => {
                     <video
                       src={creator.discovery_video_url}
                       className="w-full h-full object-cover"
-                      loop
+                      autoPlay
                       muted
+                      loop
                       playsInline
-                      onMouseEnter={(e) => e.currentTarget.play()}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.pause();
-                        e.currentTarget.currentTime = 0;
+                      preload="auto"
+                      poster={creator.avatar_url}
+                      onClick={handleVideoTap}
+                      onMouseOver={e => {
+                        const video = e.target as HTMLVideoElement;
+                        video.play().catch(() => {});
+                      }}
+                      onMouseOut={e => {
+                        const video = e.target as HTMLVideoElement;
+                        video.pause();
+                        video.currentTime = 0;
+                      }}
+                      onError={(e) => {
+                        console.error('Video playback failed:', e);
+                        const target = e.target as HTMLVideoElement;
+                        target.style.display = 'none';
+                        const parent = target.parentElement;
+                        if (parent) {
+                          const img = document.createElement('img');
+                          img.src = creator.avatar_url || 'https://via.placeholder.com/400x500';
+                          img.className = 'w-full h-full object-cover';
+                          parent.appendChild(img);
+                        }
                       }}
                     />
                   ) : (
                     <img
                       src={creator.avatar_url}
                       alt={creator.username}
-                      className="w-full h-full object-cover opacity-60 filter blur-xs"
+                      className="w-full h-full object-cover opacity-80"
                     />
                   )}
                   
@@ -264,7 +296,7 @@ const NaturallyYoursPitch = () => {
                   )}
 
                   {/* Play Hover Overlay */}
-                  <div className="absolute inset-0 bg-slate-900/20 group-hover:bg-slate-900/0 transition-colors flex items-center justify-center pointer-events-none">
+                  <div className="absolute inset-0 bg-slate-900/10 group-hover:bg-slate-900/0 transition-colors flex items-center justify-center pointer-events-none">
                     <div className="w-12 h-12 bg-white/95 rounded-full flex items-center justify-center shadow-lg transform scale-90 opacity-0 group-hover:scale-100 group-hover:opacity-100 transition-all duration-300">
                       <Play className="w-5 h-5 text-emerald-800 fill-emerald-800 ml-0.5" />
                     </div>
@@ -397,7 +429,7 @@ const NaturallyYoursPitch = () => {
             <Sparkles className="w-10 h-10 text-amber-400 mx-auto mb-6" />
             <h2 className="text-3xl font-black text-white mb-4 relative z-10">Start your Naturally Yours pilot campaign</h2>
             <p className="text-amber-100/70 max-w-xl mx-auto mb-8 relative z-10">
-              Get 8 verified healthy-recipe and organic cooking creators for your next whole-wheat and moringa noodles campaign.
+              Get all 19 verified healthy-recipe and organic cooking creators for your next whole-wheat and moringa noodles campaign.
             </p>
             <Link 
               to="/signup?mode=brand" 
