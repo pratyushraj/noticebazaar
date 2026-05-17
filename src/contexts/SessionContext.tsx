@@ -590,7 +590,10 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
             'free-legal-check', 'thank-you', 'dashboard-white-preview', 'dashboard-preview',
             'creators', 'consumer-complaints', 'plan', 'p', 'creator-sign',
             'contract-ready', 'ship', 'deal-details', 'deal', 'feedback',
-            'brand-reply', 'brand/response', 'deal/brand-response'];
+            'brand-reply', 'brand/response', 'deal/brand-response',
+            'deck', 'pitch-deck', 'investors', 'welcome', 'insta-mockup', 'brands', 'brand',
+            'calculator', 'creators-list', 'barter-collab', 'barter', 'product-exchange',
+            'influencer-gifting', 'pitch'];
 
           // Pathname-based check: /collab/:username or legacy /:username (no hash) are public
           const pathname = window.location.pathname || '';
@@ -966,7 +969,10 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
             'free-legal-check', 'thank-you', 'dashboard-white-preview', 'dashboard-preview',
             'creators', 'consumer-complaints', 'plan', 'p', 'creator-sign',
             'contract-ready', 'ship', 'deal-details', 'deal', 'feedback',
-            'brand-reply', 'brand/response', 'deal/brand-response'];
+            'brand-reply', 'brand/response', 'deal/brand-response',
+            'deck', 'pitch-deck', 'investors', 'welcome', 'insta-mockup', 'brands', 'brand',
+            'calculator', 'creators-list', 'barter-collab', 'barter', 'product-exchange',
+            'influencer-gifting', 'pitch'];
 
           // Check if current route is a username route (collab link)
           const isUsernameRoute = intendedRoute && !publicRoutes.includes(intendedRoute) &&
