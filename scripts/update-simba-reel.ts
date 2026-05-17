@@ -19,10 +19,10 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
 
 async function main() {
   const username = 'simba_bhimavaram_bullodu';
-  const originalVideoPath = '/Users/pratyushraj/Downloads/simba_reel_insta.mp4';
-  const optimizedVideoPath = join(process.cwd(), 'simba_reel_insta_optimized.mp4');
+  const originalVideoPath = '/Users/pratyushraj/Downloads/Video-613.mp4';
+  const optimizedVideoPath = join(process.cwd(), 'simba_reel_insta_optimized_613.mp4');
 
-  console.log(`🚀 Starting update of Simba & Sara's reel...`);
+  console.log(`🚀 Starting update of Simba & Sara's reel using Video-613.mp4...`);
 
   try {
     if (!existsSync(originalVideoPath)) {
@@ -30,7 +30,7 @@ async function main() {
     }
 
     // 1. Transcode using FFmpeg
-    console.log(`🎬 Transcoding Instagram reel via FFmpeg...`);
+    console.log(`🎬 Transcoding Video-613.mp4 via FFmpeg...`);
     const ffmpegCmd = `ffmpeg -y -i "${originalVideoPath}" -vf "scale=480:854" -c:v libx264 -preset fast -crf 28 -maxrate 600k -bufsize 1200k -pix_fmt yuv420p -movflags +faststart -c:a aac -b:a 64k "${optimizedVideoPath}"`;
     execSync(ffmpegCmd, { stdio: 'ignore' });
     console.log(`✅ Transcoding complete. Optimized file generated.`);
@@ -65,7 +65,7 @@ async function main() {
     if (updateError) throw updateError;
     console.log('✅ Profile updated in database with the new discovery_video_url.');
 
-    console.log('\n✨ Integration Complete! Simba & Sara is now live with their actual Instagram reel.');
+    console.log('\n✨ Integration Complete! Simba & Sara is now live with Video-613.mp4.');
 
   } catch (error: any) {
     console.error('❌ Integration failed:', error.message);
