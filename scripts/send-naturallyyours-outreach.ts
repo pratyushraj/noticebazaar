@@ -27,9 +27,9 @@ async function sendOutreach() {
     <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size: 16px; color: #374151; line-height: 1.6; max-width: 600px; margin: 0 auto; padding: 20px;">
       <p>Hi ${recipientName},</p>
       
-      <p>Thanks for connecting over Instagram 😊</p>
+      <p>Thanks for connecting 😊</p>
       
-      <p>To better showcase what Creator Armour can do for your upcoming campaigns, we created a custom creator collaboration portal specifically for Naturally Yours:</p>
+      <p>To better showcase what Creator Armour is building, we created a custom creator collaboration page tailored specifically for Naturally Yours:</p>
       
       <p style="margin: 24px 0;">
         <a href="https://www.creatorarmour.com/naturallyyours" style="display: inline-block; background-color: #047857; color: white; font-weight: bold; text-decoration: none; padding: 12px 24px; border-radius: 8px;">
@@ -37,22 +37,29 @@ async function sendOutreach() {
         </a>
       </p>
       
-      <p>We’ve shortlisted curated organic cooking, diet-conscious recipe, and clean family-lifestyle creators who are perfectly aligned to showcase Naturally Yours' Moringa Noodles, Millets Pasta, and whole-wheat items. The page includes creator previews, sample content references, and collaboration flow examples tailored for your brand.</p>
-      
-      <p>Noodles and pasta are lightweight, dry, and unbreakable, making creator logistics extremely fast and cost-effective. Beyond discovery, Creator Armour simplifies the operations of influencer campaigns by automating:</p>
-      
+      <p>We’ve shortlisted creators aligned with the wellness, Ayurveda, self-care, and natural lifestyle space — including profiles suitable for:</p>
       <ul style="padding-left: 20px; color: #4b5563; margin: 16px 0;">
-        <li style="margin-bottom: 8px;">Automated product shipment & delivery tracking</li>
-        <li style="margin-bottom: 8px;">Agreement terms & WhatsApp status syncs</li>
-        <li style="margin-bottom: 8px;">Draft reviews & automated tag compliance checks</li>
-        <li style="margin-bottom: 8px;">Secured escrow payments (held safely and released only after verified live post compliance)</li>
+        <li style="margin-bottom: 8px;">UGC-style product storytelling</li>
+        <li style="margin-bottom: 8px;">morning/evening wellness routines</li>
+        <li style="margin-bottom: 8px;">ingredient-focused reels</li>
+        <li style="margin-bottom: 8px;">organic skincare & lifestyle content</li>
+        <li style="margin-bottom: 8px;">barter and performance-based collaborations</li>
       </ul>
       
-      <p>The goal is to eliminate the manual spreadsheet and DM chasing that usually slows campaign progress.</p>
+      <p>The goal behind Creator Armour is to help D2C brands simplify creator operations without managing scattered DMs, spreadsheets, and constant manual follow-ups.</p>
       
-      <p>Would love to explore running a small pilot campaign with a few of our shortlisted healthy-eating creators.</p>
+      <p>Beyond creator discovery, we’re also building lightweight infrastructure around:</p>
+      <ul style="padding-left: 20px; color: #4b5563; margin: 16px 0;">
+        <li style="margin-bottom: 8px;">creator onboarding</li>
+        <li style="margin-bottom: 8px;">campaign coordination</li>
+        <li style="margin-bottom: 8px;">shipment tracking support</li>
+        <li style="margin-bottom: 8px;">centralized collaboration management</li>
+        <li style="margin-bottom: 8px;">content follow-ups and approvals</li>
+      </ul>
       
-      <p>Happy to connect for a quick discussion anytime next week 😊</p>
+      <p>Would love to explore running a small pilot collaboration with a few curated creators for Naturally Yours and understand your current creator marketing goals.</p>
+      
+      <p>Happy to connect anytime next week 😊</p>
       
       <p style="margin-top: 30px; border-top: 1px solid #e5e7eb; padding-top: 20px; color: #1f2937;">
         Regards,<br>
