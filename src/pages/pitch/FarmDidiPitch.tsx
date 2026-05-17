@@ -41,13 +41,13 @@ const FarmDidiPitch = () => {
         const { data, error } = await supabase
           .from('profiles')
           .select('id, username, first_name, last_name, business_name, avatar_url, followers_count, engagement_rate, avg_views, is_elite_verified, creator_category, location, discovery_video_url, bio')
-          .in('username', ['homechef_duggu', 'blogsbysnehaaa', 'monika.urs', 'storiesbyseema', 'we_are_chefing', 'prachisculinarycanvas', 'cookku_with_chikku', '_cookingwithvineet', 'temptingtreat', '_small_home_kitchen']);
+          .in('username', ['homechef_duggu', 'blogsbysnehaaa', 'monika.urs', 'storiesbyseema', 'we_are_chefing', 'prachisculinarycanvas', 'cookku_with_chikku', '_cookingwithvineet', 'temptingtreat', '_small_home_kitchen', 'littleexplorermommy', 'myspace_vlogs', 'chroniclesofffoods']);
           
         if (error) throw error;
 
         // Order the creators logically
         const orderedData = [];
-        const order = ['homechef_duggu', 'blogsbysnehaaa', 'monika.urs', 'storiesbyseema', 'we_are_chefing', 'prachisculinarycanvas', 'cookku_with_chikku', '_cookingwithvineet', 'temptingtreat', '_small_home_kitchen'];
+        const order = ['homechef_duggu', 'blogsbysnehaaa', 'monika.urs', 'storiesbyseema', 'we_are_chefing', 'prachisculinarycanvas', 'cookku_with_chikku', '_cookingwithvineet', 'temptingtreat', '_small_home_kitchen', 'littleexplorermommy', 'myspace_vlogs', 'chroniclesofffoods'];
         
         if (data) {
           order.forEach(username => {
@@ -347,7 +347,7 @@ const FarmDidiPitch = () => {
             <Sparkles className="w-10 h-10 text-amber-400 mx-auto mb-6" />
             <h2 className="text-3xl font-black text-white mb-4 relative z-10">Start your FarmDidi pilot campaign</h2>
             <p className="text-amber-100/70 max-w-xl mx-auto mb-8 relative z-10">
-              Get 10 verified comfort-cooking and traditional food creators for your next pickle and chutney campaign.
+              Get 13 verified comfort-cooking and traditional food creators for your next pickle and chutney campaign.
             </p>
             <Link 
               to="/signup?mode=brand" 
