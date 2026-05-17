@@ -6,6 +6,7 @@ import LegacyCreatorProfileRedirect from "@/components/collab/LegacyCreatorProfi
 import { LazyRoute } from "./routeElements";
 import ReservedUsernameGuard from "@/components/collab/ReservedUsernameGuard";
 import KiroFoodsPitch from "@/pages/pitch/KiroFoodsPitch";
+import FarmDidiPitch from "@/pages/pitch/FarmDidiPitch";
 
 const NotFound = lazy(() => import("@/pages/NotFound"));
 const Login = lazy(() => import("@/pages/Login"));
@@ -45,6 +46,8 @@ export const PublicRoutes = () => (
   <>
     <Route path="/" element={<LazyRoute><LandingPage /></LazyRoute>} />
     <Route path="/pitch/kiro-foods" element={<KiroFoodsPitch />} />
+    <Route path="/farmdidi" element={<FarmDidiPitch />} />
+    <Route path="/pitch/farmdidi" element={<Navigate to="/farmdidi" replace />} />
     <Route path="/insta-mockup" element={<LazyRoute><InstaMockup /></LazyRoute>} />
     <Route path="/welcome" element={<LazyRoute><WelcomeOnboarding /></LazyRoute>} />
     <Route path="/blog" element={<LazyRoute><BlogListing /></LazyRoute>} />
