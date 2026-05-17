@@ -34,6 +34,7 @@ const LlmCreatorDirectory = lazy(() => import("@/pages/LlmCreatorDirectory"));
 const ROICalculator = lazy(() => import("@/pages/ROICalculator"));
 const InvestorPitchPage = lazy(() => import("@/pages/InvestorPitchPage"));
 const InvestorPitchDeck = lazy(() => import("@/pages/InvestorPitchDeck"));
+const BrandPitchDeck = lazy(() => import("@/pages/BrandPitchDeck"));
 
 const WelcomeOnboarding = lazy(() => import("@/pages/WelcomeOnboarding"));
 const InstaMockup = lazy(() => import("@/pages/InstaMockup"));
@@ -73,7 +74,8 @@ export const PublicRoutes = () => (
     <Route path="/calculator" element={<LazyRoute><ROICalculator /></LazyRoute>} />
     <Route path="/investors" element={<LazyRoute><InvestorPitchPage /></LazyRoute>} />
     <Route path="/deck" element={<LazyRoute><InvestorPitchDeck /></LazyRoute>} />
-    <Route path="/pitch-deck" element={<Navigate to="/deck" replace />} />
+    <Route path="/brand-deck" element={<LazyRoute><BrandPitchDeck /></LazyRoute>} />
+    <Route path="/pitch-deck" element={<Navigate to="/brand-deck" replace />} />
     <Route path="/calculator/:platform/:niche" element={<LazyRoute><RateCalculatorDynamic /></LazyRoute>} />
     <Route path="/creator/:username" element={<LegacyCreatorProfileRedirect />} />
     <Route path="/settings" element={<Navigate to="/creator-profile" replace />} />
