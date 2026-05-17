@@ -60,11 +60,7 @@ const NaturallyYoursPitch = () => {
           'myspace_vlogs',
           'we_are_chefing',
           'shinyyy.05',
-          'thegurgaonfoodie',
-          'jaya_the_explorer',
-          'aasthakumari7662',
-          'd_dollypatel',
-          'rounak_agarwal'
+          'thegurgaonfoodie'
         ];
 
         const { data, error } = await supabase
@@ -429,7 +425,7 @@ const NaturallyYoursPitch = () => {
             <Sparkles className="w-10 h-10 text-amber-400 mx-auto mb-6" />
             <h2 className="text-3xl font-black text-white mb-4 relative z-10">Start your Naturally Yours pilot campaign</h2>
             <p className="text-amber-100/70 max-w-xl mx-auto mb-8 relative z-10">
-              Get all 19 verified healthy-recipe and organic cooking creators for your next whole-wheat and moringa noodles campaign.
+              Get all 15 verified healthy-recipe and organic cooking creators for your next whole-wheat and moringa noodles campaign.
             </p>
             <Link 
               to="/signup?mode=brand" 
