@@ -41,13 +41,13 @@ const FarmDidiPitch = () => {
         const { data, error } = await supabase
           .from('profiles')
           .select('id, username, first_name, last_name, business_name, avatar_url, followers_count, engagement_rate, avg_views, is_elite_verified, creator_category, location, discovery_video_url, bio')
-          .in('username', ['homechef_duggu', 'blogsbysnehaaa', 'monika_urs', 'storiesbyseema', 'we_are_chefing', 'prachisculinarycanvas', 'cookku_with_chikku']);
+          .in('username', ['homechef_duggu', 'blogsbysnehaaa', 'monika.urs', 'storiesbyseema', 'we_are_chefing', 'prachisculinarycanvas', 'cookku_with_chikku', '_cookingwithvineet', 'temptingtreat', '_small_home_kitchen']);
           
         if (error) throw error;
 
         // Order the creators logically
         const orderedData = [];
-        const order = ['homechef_duggu', 'blogsbysnehaaa', 'monika_urs', 'storiesbyseema', 'we_are_chefing', 'prachisculinarycanvas', 'cookku_with_chikku'];
+        const order = ['homechef_duggu', 'blogsbysnehaaa', 'monika.urs', 'storiesbyseema', 'we_are_chefing', 'prachisculinarycanvas', 'cookku_with_chikku', '_cookingwithvineet', 'temptingtreat', '_small_home_kitchen'];
         
         if (data) {
           order.forEach(username => {
