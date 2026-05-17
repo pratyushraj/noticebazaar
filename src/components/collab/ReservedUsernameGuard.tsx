@@ -67,6 +67,7 @@ export const RESERVED_ROUTES = new Set<string>([
   "pitch",
   "brand-deck",
   "farmdidi",
+  "naturallyyours",
 ]);
 
 export default function ReservedUsernameGuard({ children }: { children: ReactNode }) {
