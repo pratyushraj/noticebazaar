@@ -160,27 +160,27 @@ async function main() {
       // Elite Deal Pricing Templates
       deal_templates: [
         {
-          id: 'starter_reel_story',
-          label: '🚀 Reel + Story Collab',
-          description: 'Excellent for organic product placement, wellness stories, and community action.',
-          budget: 8000,
+          id: 'starter_reel',
           type: 'paid',
+          label: '🚀 Starter Collab',
+          budget: 3000,
+          description: 'High-end aesthetic product portrait showcase on grid.',
+          deliverables: [
+            '1 High-quality Dedicated Feed Post',
+            '1 Active Story shoutout with link sticker'
+          ]
+        },
+        {
+          id: 'growth_package',
+          type: 'paid',
+          label: '⭐ Growth Campaign',
+          budget: 8000,
+          isPopular: true,
+          description: 'Excellent for organic product placement, wellness stories, and community action.',
           deliverables: [
             '1 Dedicated Premium Reel (15-30s)',
             '1 Active Story shoutout with link sticker',
             '1 Revision included'
-          ],
-          isPopular: true
-        },
-        {
-          id: 'static_post',
-          label: '📸 Dedicated Static Post',
-          description: 'High-end aesthetic product portrait showcase on grid.',
-          budget: 3000,
-          type: 'paid',
-          deliverables: [
-            '1 High-quality Dedicated Feed Post',
-            '1 Active Story shoutout with link sticker'
           ]
         }
       ],
