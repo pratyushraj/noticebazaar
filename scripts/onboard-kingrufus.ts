@@ -94,10 +94,7 @@ async function main() {
     console.log('📝 Registering creator profile parameters...');
     const avatarUrl = 'https://images.unsplash.com/photo-1552053831-71594a27632d?auto=format&fit=crop&q=80&w=250&h=250'; // Golden Retriever portrait
 
-    const pastBrands = [
-      "Heads Up For Tails", "Supertails", "Wiggles", "Captain Zack", "SOLARA Home",
-      "DogMeal India", "Absolut Pet", "Woof Treats", "Tell Tails", "Blep World"
-    ];
+    const pastBrands: string[] = [];
 
     const profileUpdate = {
       id: actualUserId,
