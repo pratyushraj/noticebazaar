@@ -114,7 +114,7 @@ async function main() {
       avg_reel_views_manual: 85000,
       reel_price: 8000,
       story_price: 2000,
-      starting_price: 3000,
+      starting_price: 8000,
       open_to_collabs: true,
       collaboration_preference: 'paid',
       is_verified: true,
@@ -160,23 +160,26 @@ async function main() {
           id: 'starter_reel',
           type: 'paid',
           label: '🚀 Starter Collab',
-          budget: 3000,
-          description: 'High-end aesthetic product portrait showcase on grid.',
+          budget: 8000,
+          isPopular: true,
+          description: 'Perfect for first-time brand awareness & organic reach.',
           deliverables: [
-            '1 High-quality Dedicated Feed Post',
-            '1 Active Story shoutout with link sticker'
+            '1 Dedicated Premium Reel (15-30s)',
+            '1 Active Story shoutout with link sticker',
+            '1 Revision included'
           ]
         },
         {
           id: 'growth_package',
           type: 'paid',
           label: '⭐ Growth Campaign',
-          budget: 8000,
-          isPopular: true,
-          description: 'Excellent for organic product placement, wellness stories, and community action.',
+          budget: 16000,
+          description: 'Best for brands wanting ads usage + conversions.',
           deliverables: [
-            '1 Dedicated Premium Reel (15-30s)',
-            '1 Active Story shoutout with link sticker',
+            '1 Premium Lifestyle Reel (30-60s)',
+            '3 Story integrations with link sticker',
+            '30-day organic usage rights (for ads)',
+            'Raw footage delivery included',
             '1 Revision included'
           ]
         }
