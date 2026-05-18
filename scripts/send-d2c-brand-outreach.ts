@@ -125,7 +125,7 @@ async function run() {
   const targetName = args[1] || 'Test D2C Brand';
   const targetCategory = args[2] || 'Food & Snacks';
 
-  if (targetEmail) {
+  if (targetEmail && targetEmail !== '--bulk') {
     // --- SINGLE TEST PREVIEW MODE ---
     console.log(`\n🚀 PREVIEWING & SENDING OUTBOUND EMAIL to ${targetName} (${targetEmail})...`);
     
@@ -150,32 +150,109 @@ async function run() {
       if (error) throw error;
       console.log(`✅ Success! Resend Email ID: ${data?.id}`);
       console.log(`\n📄 Generated Email Subject: "${subject}"`);
-      console.log(`📄 Check your recipient mailbox for the premium layout!`);
 
     } catch (err: any) {
       console.error(`❌ Failed to send preview email:`, err.message);
+    }
+  } else if (targetEmail === '--bulk') {
+    // --- SAFE BULK CAMPAIGN RUN MODE WITH DUPLICATE PROTECTION ---
+    console.log(`\n🚀 INITIATING AUTOMATED BULK OUTREACH CAMPAIGN WITH DUPLICATE PROTECTION...`);
+    
+    try {
+      // 1. Query all brand leads
+      const { data: leads, error: leadsError } = await supabase
+        .from('brand_leads')
+        .select('*');
+
+      if (leadsError) throw leadsError;
+
+      if (!leads || leads.length === 0) {
+        console.log('⚠️ No brand leads found in the database. Please run populate-50plus-brands.ts first.');
+        return;
+      }
+
+      // 2. Strict Filter: Skip already contacted brands
+      const uncontactedLeads = leads.filter(l => {
+        const isContacted = l.status === 'contacted' || (l.outreach_count && l.outreach_count > 0) || l.last_contacted_at !== null;
+        return !isContacted;
+      });
+
+      const contactedCount = leads.length - uncontactedLeads.length;
+
+      console.log(`\n🐾 Duplicate Protection Audit:`);
+      console.log(`- Total Seeded Leads in DB: ${leads.length}`);
+      console.log(`- Already Contacted Brands (SKIPPED): ${contactedCount}`);
+      console.log(`- Uncontacted Brands Remaining (TO SEND): ${uncontactedLeads.length}`);
+      
+      if (uncontactedLeads.length === 0) {
+        console.log('\n✅ All seeded brands have already been contacted. Skipping batch run to prevent duplicates!');
+        return;
+      }
+
+      console.log(`\n📧 Commencing delivery to ${uncontactedLeads.length} uncontacted brands...`);
+      let sentCount = 0;
+
+      for (const lead of uncontactedLeads) {
+        console.log(`➡️ Sending category-specific pitch to ${lead.brand_name} (${lead.email})...`);
+        
+        try {
+          const brandPayload: BrandOutreachProps = {
+            brandName: lead.brand_name,
+            category: lead.category || 'Lifestyle',
+            website: lead.website || ''
+          };
+
+          // Update database BEFORE sending to lock state & absolutely prevent parallel race duplicate sends
+          const { error: updateError } = await supabase
+            .from('brand_leads')
+            .update({
+              status: 'contacted',
+              outreach_count: (lead.outreach_count || 0) + 1,
+              last_contacted_at: new Date().toISOString(),
+              updated_at: new Date().toISOString()
+            })
+            .eq('id', lead.id);
+
+          if (updateError) throw updateError;
+
+          // Dispatch Outreach Email via Resend
+          const subject = `Zero-Ops Creator Campaigns & Custom Portal for ${lead.brand_name} 🚀📦`;
+          const htmlBody = getD2CEmailTemplate(brandPayload);
+
+          const { data, error: sendError } = await resend.emails.send({
+            from: 'Pratyush from Creator Armour <outreach@creatorarmour.com>',
+            to: lead.email,
+            reply_to: 'creatorarmour07@gmail.com',
+            subject: subject,
+            html: htmlBody
+          });
+
+          if (sendError) throw sendError;
+
+          console.log(`   ✅ Sent! Resend ID: ${data?.id}`);
+          sentCount++;
+
+          // Natural rate limit delay (1.5 seconds)
+          await new Promise(r => setTimeout(r, 1500));
+
+        } catch (err: any) {
+          console.error(`   ❌ Failed to process ${lead.brand_name}:`, err.message);
+        }
+      }
+
+      console.log(`\n🎉 Bulk Campaign Complete! Successfully sent ${sentCount} outbound pitches with absolute duplicate protection.`);
+
+    } catch (err: any) {
+      console.error('❌ Bulk campaign failed:', err.message);
     }
   } else {
     // --- DATABASE BATCH GENERATION REPORT ---
     console.log(`\n🐾 Outbound Outreach Script initialized.`);
     console.log(`- Loaded Resend credentials successfully.`);
-    console.log(`- To send a live test outreach email, run:`);
+    console.log(`- To run a bulk campaign with strict duplicate protection, run:`);
+    console.log(`  npx tsx scripts/send-d2c-brand-outreach.ts --bulk`);
+    console.log(`- To send a single test email, run:`);
     console.log(`  npx tsx scripts/send-d2c-brand-outreach.ts [your-email] "[Brand Name]" "[Category]"`);
-    console.log(`  Example: npx tsx scripts/send-d2c-brand-outreach.ts creatorarmour07@gmail.com "Beyond Snack" "Food & Snacks"\n`);
-    
-    try {
-      // Pull first 3 brands as sample data
-      const { data: sampleLeads } = await supabase
-        .from('brand_leads')
-        .select('brand_name, category, email, website')
-        .limit(3);
-
-      console.log(`📋 SAMPLE TARGET DATABASE MATCHES (First 3 out of 52 seeded):`);
-      console.table(sampleLeads);
-
-    } catch (err: any) {
-      console.error(`❌ Error pulling sample leads:`, err.message);
-    }
   }
 }
 
