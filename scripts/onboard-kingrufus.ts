@@ -117,11 +117,11 @@ async function main() {
       role: 'creator',
       onboarding_complete: true,
       creator_category: 'Pet Care & Lifestyle',
-      instagram_followers: 125000,
-      followers_count: 125000,
-      engagement_rate: 4.8,
-      avg_views: 85000,
-      avg_reel_views_manual: 85000,
+      instagram_followers: 45700,
+      followers_count: 45700,
+      engagement_rate: 6.4,
+      avg_views: 48000,
+      avg_reel_views_manual: 48000,
       reel_price: 8000,
       story_price: 2000,
       starting_price: 8000,
@@ -139,28 +139,28 @@ async function main() {
       updated_at: new Date().toISOString(),
 
       // Audience Demographics Snapshot
-      audience_gender_split: { women: 54.5, men: 45.5 },
-      top_cities: ['Delhi', 'Gurgaon', 'Noida', 'Mumbai'],
-      audience_age_range: '18-34 (72%)',
+      audience_gender_split: { women: 72.4, men: 27.6 },
+      top_cities: ['Delhi', 'Mumbai', 'Bangalore', 'Pune'],
+      audience_age_range: '18-34 (85.6%)',
       primary_audience_language: 'Hindi / English',
       
       // System Trust Signals
-      deal_score: 98,
+      deal_score: 99,
       collab_show_trust_signals: true,
       collab_show_audience_snapshot: true,
       collab_show_past_work: true,
 
       // Intel
       deal_intelligence: {
-        hookRate: 64.2,
-        interactionRate: 4.8,
-        accountsReached30d: '3.4M',
-        accountsEngaged30d: '298.5K',
-        viralPotential: 'Premium Active Engagement',
-        demographicsRelevance: '98.5% India Concentrated'
+        hookRate: 64.5,
+        interactionRate: 6.4,
+        accountsReached30d: '610.4K',
+        accountsEngaged30d: '55.9K',
+        viralPotential: 'Top 10% Partner Activity',
+        demographicsRelevance: '79.8% India Concentrated'
       },
-      collab_audience_fit_note: 'Highly premium, active pet parent community centered in Delhi NCR. Exceptional organic relevance for D2C dog wellness brands.',
-      collab_engagement_confidence_note: 'Extremely loyal audience interaction (4.8%) with high-energy reels retention.',
+      collab_audience_fit_note: 'Extremely high female active pet-parent demographic (72.4%) concentrated in tier-1 Indian metros. Perfect fit for premium nutrition and lifestyle care.',
+      collab_engagement_confidence_note: 'Phenomenal 6.4% interaction rate with 64.5% hook retention score—significantly above creator category averages.',
       collab_delivery_reliability_note: 'Professional response behaviors and seamless physical product integration.',
       collab_cta_trust_note: 'High-conversion recommendation rating for wholesome premium dog lifestyle and nutrition.',
 
@@ -230,7 +230,7 @@ async function main() {
         creator_id: actualUserId,
         platform: 'instagram',
         username: username,
-        followers: 125000,
+        followers: 45700,
         linked_at: new Date().toISOString()
       }, { onConflict: 'username,platform' });
 
