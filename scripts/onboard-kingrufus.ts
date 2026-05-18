@@ -94,7 +94,17 @@ async function main() {
     console.log('📝 Registering creator profile parameters...');
     const avatarUrl = 'https://images.unsplash.com/photo-1552053831-71594a27632d?auto=format&fit=crop&q=80&w=250&h=250'; // Golden Retriever portrait
 
-    const pastBrands: string[] = [];
+    const pastBrands = [
+      'Fur Ball Story',
+      'Vetic',
+      'Bakson Veterinary',
+      'Paws for Greens',
+      'Boggos Pet Food',
+      'Heads Up For Tails',
+      'Petz Essentials',
+      'Pupchew Co',
+      'Tell Tails'
+    ];
 
     const profileUpdate = {
       id: actualUserId,
@@ -185,7 +195,8 @@ async function main() {
         }
       ],
       past_brands: pastBrands,
-      past_brand_count: pastBrands.length
+      past_brand_count: 25,
+      collab_brands_count_override: 25
     };
 
     const { error: profileError } = await supabase
