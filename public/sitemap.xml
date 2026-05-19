@@ -757,12 +757,6 @@
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://creatorarmour.com/maxx_thegolden_retriever</loc>
-    <lastmod>2026-05-18</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
     <loc>https://creatorarmour.com/helloiamsparkle</loc>
     <lastmod>2026-05-14</lastmod>
     <changefreq>weekly</changefreq>
@@ -793,14 +787,14 @@
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://creatorarmour.com/postothezippypuppy</loc>
-    <lastmod>2026-05-18</lastmod>
+    <loc>https://creatorarmour.com/themishramini</loc>
+    <lastmod>2026-05-14</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://creatorarmour.com/themishramini</loc>
-    <lastmod>2026-05-14</lastmod>
+    <loc>https://creatorarmour.com/postothezippypuppy</loc>
+    <lastmod>2026-05-19</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
@@ -811,14 +805,14 @@
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://creatorarmour.com/goldenasginger</loc>
+    <loc>https://creatorarmour.com/goofy.timtim</loc>
     <lastmod>2026-05-18</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://creatorarmour.com/goofy.timtim</loc>
-    <lastmod>2026-05-18</lastmod>
+    <loc>https://creatorarmour.com/goldenasginger</loc>
+    <lastmod>2026-05-19</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
@@ -867,6 +861,12 @@
   <url>
     <loc>https://creatorarmour.com/rounak_agarwal</loc>
     <lastmod>2026-05-12</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://creatorarmour.com/maxx_thegolden_retriever</loc>
+    <lastmod>2026-05-19</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>

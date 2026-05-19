@@ -3651,38 +3651,6 @@ const BrandMobileDashboard = ({
             >
             <div className="px-6 pb-4 pt-safe" style={{ paddingTop: 'max(env(safe-area-inset-top), 16px)' }}>
 
-              {/* Brand Getting Started Banner — shown when no deals exist */}
-              {!isLoading && effectiveDeals.length === 0 && (
-                <div className="mb-5 p-4 rounded-[2.5rem] bg-gradient-to-r from-emerald-50 to-teal-50 border border-primary/20">
-                  <div className="flex items-center gap-3 mb-3">
-                    <div className="w-10 h-10 rounded-xl bg-primary/15 flex items-center justify-center">
-                      <Sparkles className="w-5 h-5 text-foreground" />
-                    </div>
-                    <div>
-                      <p className="text-[14px] font-bold text-muted-foreground">Get started with your first deal</p>
-                      <p className="text-[12px] text-muted-foreground">Pick a creator and send a protected offer</p>
-                    </div>
-                  </div>
-                  <div className="flex flex-col gap-2">
-                    {[
-                      { n: 1, label: 'Find a creator in your niche', action: () => navigate('/discover-creators') },
-                      { n: 2, label: 'Send a protected offer', action: () => navigate('/brand-dashboard?tab=creators') },
-                      { n: 3, label: 'Track deals and get paid', action: () => navigate('/brand-dashboard?tab=collabs') },
-                    ].map(step => (
-                      <button
-                        key={step.n}
-                        onClick={step.action}
-                        className="flex items-center gap-3 p-3 rounded-xl bg-card border border-primary/20 hover:border-primary/30 active:scale-[0.98] transition-all text-left"
-                      >
-                        <span className="w-6 h-6 rounded-full bg-primary/20 text-primary text-[11px] font-black flex items-center justify-center">{step.n}</span>
-                        <span className="text-[13px] font-semibold text-muted-foreground">{step.label}</span>
-                        <ChevronRight className="w-4 h-4 text-muted-foreground ml-auto" />
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-
               <div className="flex items-center justify-between mb-4">
                 <button type="button"
                   onClick={() => {
