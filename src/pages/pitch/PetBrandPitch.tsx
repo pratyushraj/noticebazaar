@@ -46,13 +46,18 @@ const PetBrandPitch = () => {
     const fetchCreators = async () => {
       try {
         const targetUsernames = [
+          'goofy.timtim',
+          'goldenasginger',
+          'postothezippypuppy',
+          'kingrufus_malhotra',
           'simba_bhimavaram_bullodu',
-          'helloiamsparkle',
           'meowmate12',
           'thepawsomelifeofoso',
+          'maxx_thegolden_retriever',
           'oreo_thegoldyboy_',
-          'mylos_kazoku',
-          '_its_bruno_the_beagle_'
+          '_its_bruno_the_beagle_',
+          'helloiamsparkle',
+          'mylos_kazoku'
         ];
 
         const { data, error } = await supabase
