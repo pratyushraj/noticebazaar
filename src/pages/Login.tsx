@@ -212,6 +212,16 @@ const Login = () => {
       <style>{`
         html, body { background-color: #020D0A !important; }
         .light { --background: 222 15% 4% !important; }
+        /* Autofill Styling */
+        input:-webkit-autofill,
+        input:-webkit-autofill:hover, 
+        input:-webkit-autofill:focus, 
+        input:-webkit-autofill:active {
+          -webkit-box-shadow: 0 0 0 1000px #04120f inset !important;
+          -webkit-text-fill-color: #ffffff !important;
+          caret-color: #ffffff !important;
+          transition: background-color 5000s ease-in-out 0s;
+        }
       `}</style>
 
       {/* Premium Background Accents - Simplified for mobile stability */}
@@ -270,7 +280,7 @@ const Login = () => {
                     Email or Username
                   </Label>
                   <div className="relative">
-                    <div className="absolute left-4 top-1/2 -translate-y-1/2 text-white/20 group-focus-within:text-emerald-400 transition-colors">
+                    <div className="absolute left-4 top-1/2 -translate-y-1/2 text-white/50 group-focus-within:text-emerald-400 transition-colors z-10">
                       <Mail className="w-5 h-5" />
                     </div>
                     <Input
@@ -295,7 +305,7 @@ const Login = () => {
                     </Label>
                   </div>
                   <div className="relative">
-                    <div className="absolute left-4 top-1/2 -translate-y-1/2 text-white/20 group-focus-within:text-emerald-400 transition-colors">
+                    <div className="absolute left-4 top-1/2 -translate-y-1/2 text-white/50 group-focus-within:text-emerald-400 transition-colors z-10">
                       <Lock className="w-5 h-5" />
                     </div>
                     <Input
@@ -316,7 +326,7 @@ const Login = () => {
                         safeHaptic();
                         setShowPassword(!showPassword);
                       }}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center rounded-xl text-white/20 hover:text-white transition-all active:scale-90"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center rounded-xl text-white/50 hover:text-white transition-all active:scale-90 z-10"
                     >
                       {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                     </button>
