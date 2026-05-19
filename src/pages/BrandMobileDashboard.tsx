@@ -3767,9 +3767,19 @@ const BrandMobileDashboard = ({
                       triggerHaptic(HapticPatterns.light);
                       setActiveTab('profile');
                     }}
-                    className={cn('w-10 h-10 rounded-2xl border overflow-hidden transition-all active:scale-95', borderColor, isDark ? 'bg-card' : 'bg-secondary/80 shadow-sm')}
+                    className={cn(
+                      'w-10 h-10 rounded-2xl border overflow-hidden transition-all active:scale-95 flex items-center justify-center font-bold text-xs', 
+                      borderColor, 
+                      isDark ? 'bg-card' : 'bg-secondary/80 shadow-sm'
+                    )}
                   >
-                    <img alt={brandName} src={brandLogo} loading="eager" fetchpriority="high" className="w-full h-full object-cover" />
+                    {brandLogo ? (
+                      <img alt={brandName} src={brandLogo} loading="eager" fetchpriority="high" className="w-full h-full object-cover" />
+                    ) : (
+                      <span className={isDark ? 'text-white/70' : 'text-slate-700'}>
+                        {(brandName || profile?.first_name || 'B').charAt(0).toUpperCase()}
+                      </span>
+                    )}
                   </button>
                 </div>
               </div>
