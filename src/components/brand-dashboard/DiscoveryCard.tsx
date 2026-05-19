@@ -3,7 +3,8 @@ import { motion, useMotionValue, useTransform, useAnimation, AnimatePresence } f
 import { 
     Volume2, VolumeX,
     ShieldCheck, Plus, X, Info, ChevronUp,
-    Zap, Heart, Eye, TrendingUp, Handshake, Shield
+    Zap, Heart, Eye, TrendingUp, Handshake, Shield,
+    Users, Gift
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { triggerHaptic } from '@/lib/utils/haptics';
@@ -28,6 +29,8 @@ interface CreatorProfile {
     is_verified?: boolean;
     starting_price?: number;
     avg_views?: number; // DB column
+    barter_min_value?: number;
+    collaboration_preference?: string;
 }
 
 interface DiscoveryCardProps {
@@ -114,12 +117,19 @@ export const DiscoveryCard = React.forwardRef<HTMLDivElement, DiscoveryCardProps
         return num.toString();
     };
 
+    const formatBarterValue = (val?: number) => {
+        if (!val) return '';
+        if (val >= 1000) return `₹${(val / 1000).toFixed(val % 1000 === 0 ? 0 : 1)}K`;
+        return `₹${val}`;
+    };
+
     const startsAtPrice = creator.starting_price || (creator as any).avg_rate_reel || (creator as any).suggested_reel_rate || 0;
-    const stats = [
-        { label: 'Avg Views', value: formatCount(creator.avg_views || (creator as any).avg_reel_views_manual || 0), icon: <Eye className="w-3 h-3" /> },
-        { label: 'Engage', value: (creator.engagement_rate ? creator.engagement_rate : (3.8 + (creator.username.length % 5) * 0.4)).toFixed(1) + '%', icon: <TrendingUp className="w-3 h-3" /> },
-        { label: 'Starts at', value: startsAtPrice > 0 ? `₹${startsAtPrice.toLocaleString()}` : 'Barter', icon: <Zap className="w-3 h-3 text-emerald-400" /> },
-    ];
+    const followersVal = creator.followers_count || creator.followers || (creator as any).instagram_followers || 0;
+    const avgViewsVal = creator.avg_views || (creator as any).avg_reel_views_manual || 0;
+    const barterAccepted = !!creator.barter_min_value || 
+        ['both', 'hybrid', 'open_to_both', 'barter'].includes(String(creator.collaboration_preference || '').toLowerCase()) ||
+        (creator.starting_price != null && creator.starting_price <= 3000);
+    const minBarterVal = creator.barter_min_value;
 
     return (
         <motion.div
@@ -215,6 +225,33 @@ export const DiscoveryCard = React.forwardRef<HTMLDivElement, DiscoveryCardProps
                             {creator.bio}
                         </p>
                     )}
+                </div>
+
+                {/* Stats Row */}
+                <div className="grid grid-cols-3 gap-2 py-3 border-y border-white/10 my-3.5 backdrop-blur-md bg-black/20 rounded-2xl px-3 text-white">
+                    <div className="flex flex-col items-center justify-center text-center">
+                        <div className="flex items-center gap-1 opacity-60">
+                            <Users className="w-3.5 h-3.5" />
+                            <span className="text-[9px] font-bold uppercase tracking-wider">Followers</span>
+                        </div>
+                        <span className="text-sm font-black mt-0.5">{formatCount(followersVal)}</span>
+                    </div>
+                    <div className="flex flex-col items-center justify-center text-center border-l border-white/10">
+                        <div className="flex items-center gap-1 opacity-60">
+                            <Eye className="w-3.5 h-3.5" />
+                            <span className="text-[9px] font-bold uppercase tracking-wider">Avg Views</span>
+                        </div>
+                        <span className="text-sm font-black mt-0.5">{formatCount(avgViewsVal)}</span>
+                    </div>
+                    <div className="flex flex-col items-center justify-center text-center border-l border-white/10">
+                        <div className="flex items-center gap-1 opacity-60">
+                            <Gift className="w-3.5 h-3.5" />
+                            <span className="text-[9px] font-bold uppercase tracking-wider">Barter</span>
+                        </div>
+                        <span className="text-sm font-black mt-0.5">
+                            {barterAccepted ? (minBarterVal ? `Yes (${formatBarterValue(minBarterVal)})` : 'Yes') : 'No'}
+                        </span>
+                    </div>
                 </div>
 
                 {/* Main CTA Section (Bottom Focused) */}
