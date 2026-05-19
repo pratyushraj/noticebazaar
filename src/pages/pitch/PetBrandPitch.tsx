@@ -87,41 +87,6 @@ const PetBrandPitch = () => {
     fetchCreators();
   }, []);
 
-  const flowSteps = [
-    {
-      title: "1. Premium Sample Box Dispatch",
-      desc: "Pet food, grooming kits, and toys can be fragile or heavy. Track shipments automatically with integrated labels and automated dispatch.",
-      icon: Package,
-    },
-    {
-      title: "2. Automated WhatsApp Sync",
-      desc: "No chasing pet moms on Instagram DMs. Creators get automatic brief briefs, onboarding setup links, and reminders via WhatsApp.",
-      icon: MessageCircle,
-    },
-    {
-      title: "3. Direct Escrow Payouts",
-      desc: "Safety first. Creator funds are held in secure escrow and released automatically only after compliant video content is live with your brand tags.",
-      icon: ShieldCheck,
-    },
-  ];
-
-  const brandBenefits = [
-    {
-      title: "Heart-Warming UGC Demos",
-      desc: "Get premium, funny, and beautiful reels showing dog & cat reactions, organic chew tests, and grooming tutorials.",
-      icon: Sparkles,
-    },
-    {
-      title: "Zero-Effort Campaign Ops",
-      desc: "Our automated dashboard coordinates creator shipping, delivery tracking, and video approvals.",
-      icon: LayoutDashboard,
-    },
-    {
-      title: "100% Verified Performance",
-      desc: "Access authentic metrics directly from Meta APIs—no screenshots or outdated media kits.",
-      icon: Users,
-    },
-  ];
 
   const handleVideoTap = (e: React.MouseEvent<HTMLVideoElement>) => {
     const video = e.currentTarget;
@@ -336,44 +301,91 @@ const PetBrandPitch = () => {
         )}
       </section>
 
-      {/* Operational Moat Section */}
-      <section className="bg-[#1E3F20] text-white py-24 px-6 relative overflow-hidden">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_bottom_left,_var(--tw-gradient-stops))] from-amber-400/10 via-transparent to-transparent opacity-60 pointer-events-none" />
-        <div className="max-w-7xl mx-auto relative z-10">
-          <div className="text-center max-w-3xl mx-auto mb-20">
-            <span className="bg-amber-400/25 border border-amber-400/30 px-4 py-1 rounded-full text-amber-300 text-xs font-bold tracking-widest uppercase mb-4 inline-block">
-              Scale Your Campaigns Cleanly
-            </span>
-            <h2 className="text-3xl sm:text-5xl font-black tracking-tight leading-tight">
-              Brands Chill. We Handle Operations. 🛡️
-            </h2>
-            <p className="text-emerald-100/70 text-base sm:text-lg mt-4 leading-relaxed">
-              Skip back-and-forth negotiations, spreadsheets, and delayed delivery. Creator Armour provides automated, secure infrastructure for reliable scale.
-            </p>
+      {/* Why Brands Love Section */}
+      <section className="bg-white py-24 border-t border-slate-200">
+        <div className="max-w-6xl mx-auto px-6">
+          <div className="text-center mb-16">
+            <motion.h2 
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="text-4xl font-black text-slate-900 tracking-tight mb-4"
+            >
+              Why brands love collaborating through Creator Armour 🚀
+            </motion.h2>
+            <motion.p 
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.1 }}
+              className="text-lg text-slate-500 max-w-2xl mx-auto"
+            >
+              We handle the heavy lifting so you can focus on scaling your brand.
+            </motion.p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
-            {flowSteps.map((step, i) => (
-              <div key={i} className="bg-white/5 border border-white/10 rounded-[32px] p-8 hover:bg-white/10 hover:border-white/20 transition-all duration-300 group">
-                <div className="w-12 h-12 rounded-2xl bg-amber-400 text-amber-950 flex items-center justify-center font-bold mb-6 shadow-lg shadow-amber-400/10 group-hover:scale-110 transition-transform">
-                  <step.icon className="w-6 h-6" />
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {[
+              {
+                icon: LayoutDashboard,
+                title: "Dedicated Dashboard",
+                desc: "Manage all your creator collaborations in one unified place."
+              },
+              {
+                icon: Package,
+                title: "Shipment Tracking",
+                desc: "Easily track shipments, creator status, and campaign progress."
+              },
+              {
+                icon: ShieldCheck,
+                title: "End-to-End Management",
+                desc: "We handle the entire collab workflow from start to finish."
+              },
+              {
+                icon: Gavel,
+                title: "Legal Support",
+                desc: "Free legal consultation for all creator-brand matters ⚖️"
+              },
+              {
+                icon: Search,
+                title: "Rapid Discovery",
+                desc: "Find the right creators without manually scrolling Instagram."
+              },
+              {
+                icon: CheckCircle,
+                title: "Pre-Vetted Talent",
+                desc: "Every creator is matched based on engagement and niche."
+              },
+              {
+                icon: IndianRupee,
+                title: "Flexible Campaigns",
+                desc: "Full support for barter, affiliate, and paid collaborations."
+              },
+              {
+                icon: MessageCircle,
+                title: "Seamless Coordination",
+                desc: "Smooth communication channels for effortless collaboration."
+              },
+              {
+                icon: Clock,
+                title: "Saves Massive Time",
+                desc: "Focus on growth while we handle the operational headaches ✨"
+              }
+            ].map((benefit, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.05 }}
+                className="p-8 rounded-3xl bg-slate-50 border border-slate-100 hover:border-emerald-200 hover:bg-emerald-50/20 transition-all duration-300"
+              >
+                <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center shadow-sm mb-6">
+                  <benefit.icon className="w-6 h-6 text-emerald-800" />
                 </div>
-                <h3 className="text-xl font-bold mb-3">{step.title}</h3>
-                <p className="text-emerald-100/60 text-sm leading-relaxed">{step.desc}</p>
-              </div>
-            ))}
-          </div>
-
-          {/* Benefits Grid */}
-          <div className="border-t border-white/10 pt-16 grid grid-cols-1 sm:grid-cols-3 gap-12 text-center sm:text-left">
-            {brandBenefits.map((b, i) => (
-              <div key={i} className="space-y-3">
-                <h4 className="text-amber-400 font-black text-lg flex items-center justify-center sm:justify-start gap-2">
-                  <CheckCircle className="w-5 h-5 text-emerald-400" />
-                  {b.title}
-                </h4>
-                <p className="text-emerald-100/60 text-sm leading-relaxed">{b.desc}</p>
-              </div>
+                <h3 className="text-xl font-bold text-slate-900 mb-2">{benefit.title}</h3>
+                <p className="text-slate-600 leading-relaxed text-sm">{benefit.desc}</p>
+              </motion.div>
             ))}
           </div>
         </div>
