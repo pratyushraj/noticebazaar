@@ -318,6 +318,17 @@ const PetBrandPitch = () => {
                       <Instagram className="w-5 h-5" />
                     </a>
                   </div>
+
+                  <div className="mt-4">
+                    <Link
+                      to={`/${creator.username}`}
+                      target="_blank"
+                      className="flex items-center justify-between w-full bg-emerald-800 hover:bg-emerald-900 text-white text-sm font-black py-3 px-5 rounded-2xl transition-all duration-200 group/btn shadow-sm hover:shadow-md hover:shadow-emerald-800/10"
+                    >
+                      <span>View Portfolio</span>
+                      <ArrowRight className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform" />
+                    </Link>
+                  </div>
                 </div>
               </motion.div>
             ))}
