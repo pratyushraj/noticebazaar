@@ -217,20 +217,8 @@ export const DiscoveryCard = React.forwardRef<HTMLDivElement, DiscoveryCardProps
                     )}
                 </div>
 
-                {/* Trust Signal Strip */}
-                <div className="flex items-center justify-between px-2 pb-3 pt-1 text-white">
-                    <div className="flex items-center gap-1.5 opacity-60 drop-shadow-sm">
-                        <Shield className="w-3 h-3" />
-                        <span className="text-[10px] font-bold uppercase tracking-widest">Aadhar Verified</span>
-                    </div>
-                    <div className="flex items-center gap-1.5 opacity-60 drop-shadow-sm">
-                        <Handshake className="w-3 h-3" />
-                        <span className="text-[10px] font-bold uppercase tracking-widest">Instant Contract</span>
-                    </div>
-                </div>
-
                 {/* Main CTA Section (Bottom Focused) */}
-                <div className="space-y-3 pt-1">
+                <div className="pt-1">
                     {/* Primary Button */}
                     <motion.button 
                         whileTap={{ scale: 0.96 }}
@@ -257,30 +245,8 @@ export const DiscoveryCard = React.forwardRef<HTMLDivElement, DiscoveryCardProps
                             className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent skew-x-12"
                         />
                     </motion.button>
-
-                    {/* Secondary Actions Row */}
-                    <div className="grid grid-cols-3 gap-3">
-                        {[
-                            { label: 'Skip', icon: <X className="w-5 h-5" />, action: () => onSwipe('left'), color: 'text-rose-500' },
-                            { label: 'Shortlist', icon: <Plus className="w-5 h-5" />, action: () => {}, color: 'text-blue-500' },
-                            { label: 'Interested', icon: <Heart className="w-5 h-5" />, action: () => onSwipe('right'), color: 'text-emerald-500' },
-                        ].map((btn, idx) => (
-                            <motion.button
-                                key={idx}
-                                whileTap={{ scale: 0.92 }}
-                                onClick={(e) => { e.stopPropagation(); btn.action(); }}
-                                className="flex flex-col items-center gap-1 py-2 rounded-2xl border transition-all bg-black/40 border-white/10 hover:bg-black/60 backdrop-blur-md"
-                            >
-                                <div className="w-9 h-9 rounded-xl flex items-center justify-center bg-white/10 shadow-inner">
-                                    {React.cloneElement(btn.icon, { className: cn("w-4 h-4 drop-shadow-md", btn.color) })}
-                                </div>
-                                <span className="text-[9px] font-black uppercase tracking-[0.12em] text-white/60 drop-shadow-sm">
-                                    {btn.label}
-                                </span>
-                            </motion.button>
-                        ))}
-                    </div>
                 </div>
+
             </div>
         </motion.div>
     );
