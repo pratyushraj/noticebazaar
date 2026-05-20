@@ -393,20 +393,20 @@ const LandingPage = () => {
 
           <div className="flex flex-col lg:flex-row items-center gap-10 lg:gap-24 w-full">
             <div className="flex-1 text-center lg:text-left pt-2 lg:pt-10">
-              <h1 className="text-[48px] md:text-[72px] lg:text-[84px] font-black tracking-tight leading-[1.05] mb-6 text-[#0F172A] drop-shadow-sm text-balance">
-                Stop sifting through <br />
+              <h1 className="text-[48px] md:text-[72px] lg:text-[88px] font-black tracking-tighter leading-[0.95] mb-6 text-[#0F172A] drop-shadow-sm text-balance italic uppercase">
+                Brands chill. <br />
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#16A34A] to-[#15803D] inline-block mt-2">
-                  creator DMs.
+                  We handle operations.
                 </span>
               </h1>
 
-              <p className="text-[20px] md:text-[24px] text-[#64748B] font-medium mb-4 max-w-lg mx-auto lg:mx-0 leading-relaxed text-pretty">
-                We find, vet, and shortlist the right creators for your brand — for free.
+              <p className="text-[20px] md:text-[24px] text-[#64748B] font-medium mb-8 max-w-lg mx-auto lg:mx-0 leading-relaxed text-pretty">
+                The infrastructure layer for high-volume creator campaigns. Verified talent. Zero spreadsheet chaos.
               </p>
 
-              <div className="mb-10 inline-flex items-center gap-2 px-3 md:px-4 py-1.5 md:py-2 bg-[#16A34A]/10 text-[#15803D] rounded-full border border-[#16A34A]/20 text-center">
-                <CheckCircle2 className="w-4 h-4 md:w-5 md:h-5 shrink-0" />
-                <span className="text-[11px] md:text-[14px] font-black uppercase tracking-wider leading-tight">Curated for D2C brands in India. Verified creators. Zero agency markup.</span>
+              <div className="mb-10 inline-flex items-center gap-2 px-3 md:px-5 py-2 md:py-3 bg-[#16A34A]/5 text-[#15803D] rounded-2xl border border-[#16A34A]/10 text-center shadow-sm">
+                <ShieldCheck className="w-5 h-5 md:w-6 md:h-6 shrink-0" />
+                <span className="text-[11px] md:text-[14px] font-black uppercase tracking-widest leading-tight">Elite Verified Creators • API-Audited Reach • Campaign OS</span>
               </div>
 
               <div className="mb-8 inline-flex flex-col sm:flex-row gap-3 p-2 rounded-[1.5rem] border border-[#E5E7EB] bg-white/80 backdrop-blur-sm shadow-sm">
@@ -432,11 +432,11 @@ const LandingPage = () => {
                     triggerHaptic(HapticPatterns.light);
                     setLandingAudience('brand');
                   }}
-                  className={`min-w-[180px] px-5 py-3 rounded-[1.1rem] text-left transition-all shadow-[0_10px_24px_rgba(15,23,42,0.18)] ${landingAudience === 'brand' ? 'bg-[#0F172A] text-white ring-2 ring-[#0F172A]/15' : 'bg-[#F8FAF9] text-[#0F172A] border border-[#E5E7EB] hover:bg-white'}`}
+                  className={`min-w-[180px] px-5 py-4 rounded-[1.1rem] text-left transition-all shadow-[0_15px_30px_rgba(15,23,42,0.12)] ${landingAudience === 'brand' ? 'bg-[#0F172A] text-white ring-2 ring-[#0F172A]/15' : 'bg-[#F8FAF9] text-[#0F172A] border border-[#E5E7EB] hover:bg-white'}`}
                 >
-                  <span className={`block text-[10px] font-black uppercase tracking-[0.18em] ${landingAudience === 'brand' ? 'text-emerald-300' : 'text-[#64748B]'}`}>For brands</span>
-                  <span className="block mt-1 text-sm font-black">Send structured offers</span>
-                  <span className={`block mt-1 text-[12px] font-medium ${landingAudience === 'brand' ? 'text-white/70' : 'text-[#64748B]'}`}>Use a clean workflow for approvals and escrow.</span>
+                  <span className={`block text-[10px] font-black uppercase tracking-[0.2em] ${landingAudience === 'brand' ? 'text-emerald-400' : 'text-[#64748B]'}`}>For D2C brands</span>
+                  <span className="block mt-1 text-base font-black">Automate Campaigns</span>
+                  <span className={`block mt-1 text-[11px] font-medium leading-relaxed ${landingAudience === 'brand' ? 'text-white/60' : 'text-[#64748B]'}`}>Manage 100+ creators with one dashboard.</span>
                 </button>
               </div>
 
@@ -597,9 +597,9 @@ const LandingPage = () => {
           <div className="rounded-[28px] border border-[#E5E7EB] bg-white shadow-[0_10px_30px_rgba(15,23,42,0.06)] p-5 md:p-6">
             <div className="grid grid-cols-1 md:grid-cols-[1.1fr_0.9fr] gap-5 md:gap-6 items-center">
               <div>
-                <p className="text-[11px] font-black uppercase tracking-[0.28em] text-[#16A34A] mb-2">Why brands choose us</p>
-                <h2 className="text-2xl md:text-[34px] font-black tracking-tight text-[#0F172A] leading-tight">
-                  Curated creators. No spam. Just results.
+                <p className="text-[11px] font-black uppercase tracking-[0.28em] text-[#16A34A] mb-2">The Operational Wedge</p>
+                <h2 className="text-3xl md:text-[42px] font-black tracking-tighter text-[#0F172A] leading-[0.95] italic uppercase">
+                  Scaling to 1,000 creators? <br/> <span className="text-emerald-600">Excel won't cut it.</span>
                 </h2>
                 <p className="mt-3 text-[#64748B] text-[15px] md:text-[17px] font-medium max-w-2xl">
                   D2C brands use Creator Armour when they want the right fit, not the noisiest inbox. We pre-screen talent by niche, engagement, and past brand track record.

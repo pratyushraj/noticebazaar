@@ -162,6 +162,9 @@ const InvestorPitchDeck = () => {
         title="Interactive Pitch Deck | Creator Armour"
         description="View the interactive seed-stage investor presentation of Creator Armour, a live MVP for creator and brand campaign operations."
         keywords={['creator armour pitch deck', 'creator ops deck', 'seed startup deck India', 'SaaS pitch deck']}
+        image="https://www.creatorarmour.com/deck-og.png"
+        imageAlt="Creator Armour investor pitch deck cover"
+        canonicalUrl="https://www.creatorarmour.com/deck"
       />
 
       {/* Background Decorative Gradients */}
@@ -229,7 +232,7 @@ const InvestorPitchDeck = () => {
             { id: 8, label: '09. Go-To-Market', desc: 'Consumable Wedge' },
             { id: 9, label: '10. Founder Story', desc: 'Operator Competence' },
             { id: 10, label: '11. Category Vision', desc: 'Creator-Led Future' },
-            { id: 11, label: '12. Pre-Seed Ask', desc: '₹75L Allocation' }
+            { id: 11, label: '12. Pre-Seed Ask', desc: '$100K Allocation' }
           ].map((thumb) => (
             <button
               key={thumb.id}
@@ -1128,7 +1131,7 @@ const InvestorPitchDeck = () => {
                       The Ask
                     </div>
                     <h2 className="text-3xl md:text-4xl font-black uppercase italic tracking-tighter text-white leading-none">
-                      Raising ₹75L <span className="text-emerald-500">Pre-Seed.</span>
+                      Raising $100K <span className="text-emerald-500">Pre-Seed.</span>
                     </h2>
                     <p className="text-xs text-slate-400 font-medium leading-relaxed">
                       We are raising pre-seed capital to accelerate distribution and workflow automation around a functional MVP, not to build from scratch.

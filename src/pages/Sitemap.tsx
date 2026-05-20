@@ -18,6 +18,7 @@ const routes = [
     { path: '/barter-collab', label: 'Barter Collab Influencers India' },
     { path: '/discover', label: 'Discover Creators' },
     { path: '/blog', label: 'Blog' },
+    { path: '/blog/how-to-find-the-right-ugc-creator-for-your-brand-in-india', label: 'Blog: Find the Right UGC Creator' },
     { path: '/blog/barter-influencer-deal-india-guide-2025', label: 'Blog: Barter Influencer Deals India' },
     { path: '/rate-calculator', label: 'Influencer Rate Calculator' },
     { path: '/free-influencer-contract', label: 'Free Influencer Contract' },
