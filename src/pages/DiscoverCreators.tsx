@@ -63,6 +63,9 @@ const getInstagramEmbedUrl = (href: string) => {
 const isNativeVideo = (value: string) =>
     /\.(mp4|mov|webm|m4v)(\?|#|$)/i.test(String(value || '').trim());
 
+const hasDiscoveryVideo = (creator: any) =>
+    Boolean(String(creator?.discovery_video_url || '').trim()) && isNativeVideo(String(creator?.discovery_video_url || '').trim());
+
 const DiscoverCreators = () => {
     const { category } = useParams<{ category: string }>();
     const [creators, setCreators] = useState<Creator[]>([]);
@@ -88,7 +91,7 @@ const DiscoverCreators = () => {
             const data = await response.json();
 
             if (data.success) {
-                const fetchedCreators = data.creators || [];
+            const fetchedCreators = (data.creators || []).filter(hasDiscoveryVideo);
                 
                 // Supplemental fetch for video/image assets that might be missing from API
                 const creatorIds = fetchedCreators.map((c: any) => c.id).filter(Boolean);
@@ -113,7 +116,7 @@ const DiscoverCreators = () => {
                                 }
                                 return c;
                             });
-                            setCreators(enriched);
+                            setCreators(enriched.filter(hasDiscoveryVideo));
                         } else {
                             setCreators(fetchedCreators);
                         }

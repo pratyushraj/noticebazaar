@@ -233,6 +233,8 @@ export const DiscoveryStack: React.FC<DiscoveryStackProps> = ({
                 .select('*')
                 .eq('role', 'creator')
                 .eq('open_to_collabs', true)
+                .not('discovery_video_url', 'is', null)
+                .neq('discovery_video_url', '')
                 .neq('id', user.id);
 
             if (swipedCreatorIds.length > 0) {
@@ -256,6 +258,8 @@ export const DiscoveryStack: React.FC<DiscoveryStackProps> = ({
                     .select('*')
                     .eq('role', 'creator')
                     .eq('open_to_collabs', true)
+                    .not('discovery_video_url', 'is', null)
+                    .neq('discovery_video_url', '')
                     .neq('id', user.id)
                     .limit(10);
                 

@@ -66,6 +66,7 @@ export const FeaturedCreators = () => {
           .select('id, username, first_name, last_name, avatar_url, bio, location, creator_category, followers_count, discovery_video_url, is_verified, starting_price, avg_reel_views_manual, barter_min_value')
           .not('discovery_video_url', 'is', null)
           .neq('discovery_video_url', '')
+          .ilike('discovery_video_url', '%.mp4%')
           .neq('username', 'democreator')
           .order('created_at', { ascending: false })
           .limit(5);

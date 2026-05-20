@@ -8,6 +8,7 @@ const ALLOWED_IMAGE_DOMAINS = [
   'www.instagram.com',
   'i.instagram.com',
   'graph.instagram.com',
+  'fbcdn.net',
   'scontent.cdninstagram.com',
   'platform-lookaside.fbsbx.com'
 ];
@@ -73,7 +74,14 @@ export async function saveExternalImageToStorage(url: string, path: string): Pro
 
         // Validate content-type
         const contentType = response.headers['content-type']?.toLowerCase() || '';
-        if (!contentType.startsWith('image/')) {
+        const normalizedContentType = contentType.split(';')[0].trim();
+        const allowedOutputTypes = new Set(['image/jpeg', 'image/png']);
+        if (!allowedOutputTypes.has(normalizedContentType)) {
+          console.warn(`[ImageStorageService] Only JPEG/PNG are allowed, got: ${contentType}`);
+          return null;
+        }
+
+        if (!normalizedContentType.startsWith('image/')) {
           console.warn(`[ImageStorageService] Non-image content blocked: ${contentType}`);
           return null;
         }
@@ -97,11 +105,10 @@ export async function saveExternalImageToStorage(url: string, path: string): Pro
         }
 
         // Upload to Supabase with restricted content type
-        const safeContentType = contentType.split(';')[0].trim();
         const { data, error } = await supabase.storage
             .from('creator-assets')
             .upload(path, buffer, {
-                contentType: safeContentType,
+                contentType: normalizedContentType,
                 cacheControl: '3600',
                 upsert: true
             });
@@ -117,8 +124,9 @@ export async function saveExternalImageToStorage(url: string, path: string): Pro
             .getPublicUrl(path);
 
         return publicUrl;
-    } catch (err: any) {
-        console.error('[ImageStorageService] Failed to save external image:', err?.message || err);
+    } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : String(err);
+        console.error('[ImageStorageService] Failed to save external image:', message);
         return null;
     }
 }
