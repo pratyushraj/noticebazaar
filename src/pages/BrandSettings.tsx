@@ -708,23 +708,26 @@ export const BrandSettingsPanel = ({
           <SettingsGroup isDark={isDark}>
             <div className="p-6 space-y-4">
               <label className={labelSub}>Who are you looking for?</label>
-              <div className="relative">
+              <div className={cn(
+                'flex flex-col rounded-[2.5rem] border transition-all duration-300 overflow-hidden',
+                isDark
+                  ? 'border-white/5 bg-white/[0.02] focus-within:border-emerald-500/30 focus-within:ring-[12px] focus-within:ring-emerald-500/5 focus-within:bg-white/[0.05]'
+                  : 'border-slate-100 bg-slate-50/50 focus-within:border-emerald-500/30 focus-within:ring-[12px] focus-within:ring-emerald-500/5 focus-within:bg-white shadow-sm',
+                errors.description ? 'border-rose-500/40' : 'focus-within:border-emerald-500/30'
+              )}>
                 <textarea
                   value={description}
                   onChange={e => { setDescription(e.target.value); setErrors(p => ({ ...p, description: '' })); }}
                   placeholder="We are a D2C fashion brand looking for Instagram reels that showcase aesthetic utility..."
                   rows={6}
                   className={cn(
-                    'w-full px-6 pt-6 pb-16 rounded-[2.5rem] border text-[15px] font-bold outline-none resize-none transition-all leading-relaxed duration-300',
-                    isDark
-                      ? 'border-white/5 bg-white/[0.02] text-white placeholder:text-white/10 focus:border-emerald-500/30 focus:ring-[12px] focus:ring-emerald-500/5 focus:bg-white/[0.05]'
-                      : 'border-slate-100 bg-slate-50/50 text-slate-900 placeholder:text-slate-300 focus:border-emerald-500/30 focus:ring-[12px] focus:ring-emerald-500/5 focus:bg-white shadow-sm',
-                    errors.description && 'border-rose-500/40'
+                    'w-full px-6 pt-6 pb-2 bg-transparent text-[15px] font-bold outline-none resize-none leading-relaxed',
+                    isDark ? 'text-white placeholder:text-white/10' : 'text-slate-900 placeholder:text-slate-300'
                   )}
                 />
                 
                 {/* Character Progress Bar */}
-                <div className="absolute bottom-6 left-6 right-6">
+                <div className="px-6 pb-6 pt-2 mt-auto">
                    <div className="w-full h-1 bg-white/5 rounded-full overflow-hidden">
                       <motion.div 
                         initial={{ width: 0 }}
