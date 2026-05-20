@@ -36,7 +36,7 @@ const INDUSTRIES = [
   'Automotive', 'Gaming', 'Entertainment & Media', 'D2C / E-commerce', 'Pet Care', 'Other',
 ];
 
-const DESC_MAX = 180;
+const DESC_MAX = 500;
 
 /* ─── Helpers ────────────────────────────────────────────────────────────── */
 function websiteValid(url: string) {
