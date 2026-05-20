@@ -784,10 +784,10 @@ router.post('/barter/delivery-details', authMiddleware, async (req: Authenticate
     if (deal.brand_id) {
       const { data: brandData } = await supabase
         .from('brands')
-        .select('company_address')
+        .select('address')
         .eq('external_id', deal.brand_id)
         .maybeSingle();
-      companyAddressFromTable = brandData?.company_address || null;
+      companyAddressFromTable = brandData?.address || null;
     }
     const finalBrandAddress = brandAddress || companyAddressFromTable || undefined;
 
@@ -1012,10 +1012,10 @@ router.patch('/:dealId/delivery-details', async (req: AuthenticatedRequest, res:
         if (deal.brand_id) {
           const { data: brandData } = await supabase
             .from('brands')
-            .select('company_address')
+            .select('address')
             .eq('external_id', deal.brand_id)
             .maybeSingle();
-          companyAddressFromTable = brandData?.company_address || null;
+          companyAddressFromTable = brandData?.address || null;
         }
         const finalBrandAddress = (deal as any).brand_address || companyAddressFromTable || undefined;
 
@@ -1484,10 +1484,10 @@ router.post('/:dealId/regenerate-contract', async (req: AuthenticatedRequest, re
     if (deal.brand_id) {
       const { data: brandData } = await supabase
         .from('brands')
-        .select('company_address')
+        .select('address')
         .eq('external_id', deal.brand_id)
         .maybeSingle();
-      companyAddressFromTable = brandData?.company_address || null;
+      companyAddressFromTable = brandData?.address || null;
     }
     const finalBrandAddress = (deal as any).brand_address || companyAddressFromTable || undefined;
 

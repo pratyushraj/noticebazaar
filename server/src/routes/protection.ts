@@ -926,10 +926,10 @@ router.post('/generate-contract-from-scratch', async (req: AuthenticatedRequest,
     if (deal.brand_id) {
       const { data: brandData } = await supabase
         .from('brands')
-        .select('company_address')
+        .select('address')
         .eq('external_id', deal.brand_id)
         .maybeSingle();
-      companyAddressFromTable = brandData?.company_address || null;
+      companyAddressFromTable = brandData?.address || null;
     }
     const finalBrandAddress = (deal as any).brand_address || companyAddressFromTable || undefined;
 
@@ -1442,10 +1442,10 @@ router.post('/generate-contract-docx', async (req: AuthenticatedRequest, res: Re
     if (deal.brand_id) {
       const { data: brandData } = await supabase
         .from('brands')
-        .select('company_address')
+        .select('address')
         .eq('external_id', deal.brand_id)
         .maybeSingle();
-      companyAddressFromTable = brandData?.company_address || null;
+      companyAddressFromTable = brandData?.address || null;
     }
     const finalBrandAddress = (deal as any).brand_address || companyAddressFromTable || undefined;
 

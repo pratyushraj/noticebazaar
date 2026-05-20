@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import CreatorSearch from '@/components/brand-dashboard/CreatorSearch';
 import type { CreatorProfile } from '@/lib/hooks/useCreators';
 import { useCreators } from '@/lib/hooks/useCreators';
-import BrandBottomNav from '@/components/brand-dashboard/BrandBottomNav';
+
 import { Send, Search, Instagram, Youtube, Twitter, Loader2, User, ArrowLeft, X } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -214,7 +214,7 @@ const BrandDiscoverPage: React.FC = () => {
         )}
       </div>
 
-      <BrandBottomNav />
+
     </div>
   );
 };

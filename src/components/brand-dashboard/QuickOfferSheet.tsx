@@ -110,9 +110,9 @@ const getCreatorPackages = (creator: any) => {
                 ? template.deliverables
                 : [String((template as any)?.label || template?.name || `Package ${index + 1}`)],
             description: template?.description || '',
-            type: template?.type === 'barter' ? 'barter' : 'paid',
+            type: (template as any)?.type === 'barter' ? 'barter' : 'paid',
         }))
-        .filter((template) => template.rate > 0 || template.type === 'barter');
+        .filter((template: any) => template.rate > 0 || template.type === 'barter');
 
     let finalPackages = [...validTemplates];
     
@@ -164,6 +164,7 @@ export const QuickOfferSheet: React.FC<QuickOfferSheetProps> = ({
     const [barterImageUploading, setBarterImageUploading] = useState(false);
     const [usageRights, setUsageRights] = useState(false);
     const [usageDuration, setUsageDuration] = useState('');
+    const [campaignPipeline, setCampaignPipeline] = useState('Summer Launch 🌴');
 
     useEffect(() => {
         if (creator && isOpen) {
@@ -171,22 +172,29 @@ export const QuickOfferSheet: React.FC<QuickOfferSheetProps> = ({
             setSelectedPackageKey(initialPackage?.key || '');
             setBudget(initialPackage?.rate ? String(initialPackage.rate) : '');
             setDeliverables(initialPackage?.deliverables || []);
-            setCollabType(initialPackage?.type === 'barter' ? 'barter' : 'paid');
+            const isBarter = initialPackage?.type === 'barter';
+            setCollabType(isBarter ? 'barter' : 'paid');
             // Default deadline to 14 days out
             const date = new Date();
             date.setDate(date.getDate() + 14);
             setDeadline(date.toISOString().split('T')[0]);
             setIsSuccess(false);
             setDescription('');
-            setRequiresShipping(initialPackage?.type === 'barter');
-            setBarterProductName('');
-            setBarterProductImageUrl('');
+            setRequiresShipping(isBarter);
+            setCampaignPipeline('Summer Launch 🌴');
+            if (isBarter) {
+                setBarterProductName('Aura Glow Cosmetics Set');
+                setBarterProductImageUrl('https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?q=80&w=600&auto=format&fit=crop');
+            } else {
+                setBarterProductName('');
+                setBarterProductImageUrl('');
+            }
             
             // Auto-detect usage rights from package
-            const hasUsage = initialPackage?.deliverables?.some(d => /usage|ads/i.test(d));
+            const hasUsage = initialPackage?.deliverables?.some((d: string) => /usage|ads/i.test(d));
             setUsageRights(hasUsage || false);
             if (hasUsage) {
-                const durationMatch = initialPackage.deliverables.find(d => /usage|ads/i.test(d))?.match(/(\d+)\s*(day|month|year)/i);
+                const durationMatch = initialPackage.deliverables.find((d: string) => /usage|ads/i.test(d))?.match(/(\d+)\s*(day|month|year)/i);
                 setUsageDuration(durationMatch ? durationMatch[0] : '30 Days');
             } else {
                 setUsageDuration('');
@@ -241,21 +249,31 @@ export const QuickOfferSheet: React.FC<QuickOfferSheetProps> = ({
         if (selectedPackage) {
             setBudget(String(selectedPackage.rate || ''));
             setDeliverables(selectedPackage.deliverables || []);
-            setCollabType(selectedPackage.type === 'barter' ? 'barter' : 'paid');
+            const isBarter = selectedPackage.type === 'barter';
+            setCollabType(isBarter ? 'barter' : 'paid');
             
             // Auto-detect shipping requirement based on package label/description
             const needsShipping = 
-                selectedPackage.type === 'barter' || 
+                isBarter || 
                 /product|ship|deliver|unboxing|physical/i.test(selectedPackage.label) ||
                 /product|ship|deliver|unboxing|physical/i.test(selectedPackage.description);
                 
             setRequiresShipping(needsShipping);
+            
+            if (isBarter || needsShipping) {
+                if (!barterProductName) {
+                    setBarterProductName('Aura Glow Cosmetics Set');
+                }
+                if (!barterProductImageUrl) {
+                    setBarterProductImageUrl('https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?q=80&w=600&auto=format&fit=crop');
+                }
+            }
 
             // Auto-detect usage rights
-            const hasUsage = selectedPackage.deliverables.some(d => /usage|ads/i.test(d));
+            const hasUsage = selectedPackage.deliverables.some((d: string) => /usage|ads/i.test(d));
             setUsageRights(hasUsage);
             if (hasUsage) {
-                const durationMatch = selectedPackage.deliverables.find(d => /usage|ads/i.test(d))?.match(/(\d+)\s*(day|month|year)/i);
+                const durationMatch = selectedPackage.deliverables.find((d: string) => /usage|ads/i.test(d))?.match(/(\d+)\s*(day|month|year)/i);
                 setUsageDuration(durationMatch ? durationMatch[0] : '30 Days');
             } else {
                 setUsageDuration('');
@@ -269,7 +287,7 @@ export const QuickOfferSheet: React.FC<QuickOfferSheetProps> = ({
 
         try {
             const apiBaseUrl = getApiBaseUrl();
-            const brandEmail = profile?.email || session?.user?.email || '';
+            const brandEmail = (profile as any)?.email || session?.user?.email || '';
             const selectedPackage = creatorPackages.find(p => p.key === selectedPackageKey);
             const packageName = selectedPackage?.label || 'Custom';
             
@@ -291,7 +309,8 @@ export const QuickOfferSheet: React.FC<QuickOfferSheetProps> = ({
                 barterProductName,
                 barterProductImageUrl,
                 usage_rights: usageRights,
-                usage_duration: usageDuration
+                usage_duration: usageDuration,
+                campaign_category: campaignPipeline
             };
 
             const response = await fetch(`${apiBaseUrl}/api/collab/${creatorUsername}/save-draft`, {
@@ -335,7 +354,7 @@ export const QuickOfferSheet: React.FC<QuickOfferSheetProps> = ({
 
         try {
             const apiBaseUrl = getApiBaseUrl();
-            const brandEmail = profile?.email || session?.user?.email || '';
+            const brandEmail = (profile as any)?.email || session?.user?.email || '';
             const selectedPackage = creatorPackages.find(p => p.key === selectedPackageKey);
             const packageName = selectedPackage?.label || 'Custom';
             const descriptionValue = `${description || `Marketing collaboration for ${brandName}`} ||Package: ${packageName}`;
@@ -360,7 +379,7 @@ export const QuickOfferSheet: React.FC<QuickOfferSheetProps> = ({
                 barter_types: collabType === 'barter' ? ['product_exchange'] : [],
                 deadline: deadline,
                 // These are required by the backend API 
-                campaign_category: 'General',
+                campaign_category: campaignPipeline,
                 usage_rights: usageRights,
                 usage_duration: usageDuration,
                 requires_shipping: requiresShipping,
@@ -542,6 +561,32 @@ export const QuickOfferSheet: React.FC<QuickOfferSheetProps> = ({
                             </div>
                         </div>
 
+                        {/* Campaign CRM Pipeline Dropdown */}
+                        <div className="space-y-3">
+                            <Label className="text-sm font-black uppercase tracking-widest opacity-60 text-slate-500 flex items-center gap-1.5">
+                                <Sparkles className="w-3.5 h-3.5 text-emerald-500" />
+                                Campaign Pipeline (CRM Group)
+                            </Label>
+                            <div className="relative">
+                                <select
+                                    value={campaignPipeline}
+                                    onChange={(e) => {
+                                        triggerHaptic(HapticPatterns.selection);
+                                        setCampaignPipeline(e.target.value);
+                                    }}
+                                    className="w-full h-14 rounded-2xl border border-slate-200 bg-white px-4 font-bold text-sm text-slate-900 shadow-sm focus:border-emerald-500/50 appearance-none focus:outline-none cursor-pointer"
+                                >
+                                    <option value="Summer Launch 🌴">Summer Launch 🌴</option>
+                                    <option value="Rakhi Campaign 🎁">Rakhi Campaign 🎁</option>
+                                    <option value="UGC Test Group 📈">UGC Test Group 📈</option>
+                                    <option value="Diwali Push 🪔">Diwali Push 🪔</option>
+                                </select>
+                                <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400 font-bold">
+                                    ▼
+                                </div>
+                            </div>
+                        </div>
+
                         {/* Any other requirements */}
                         <div className="space-y-3">
                             <Label className="text-sm font-black uppercase tracking-widest opacity-60 text-slate-500">Any other requirements</Label>
@@ -561,7 +606,16 @@ export const QuickOfferSheet: React.FC<QuickOfferSheetProps> = ({
                                 type="button"
                                 onClick={() => {
                                     triggerHaptic(HapticPatterns.light);
-                                    setRequiresShipping(!requiresShipping);
+                                    const nextRequiresShipping = !requiresShipping;
+                                    setRequiresShipping(nextRequiresShipping);
+                                    if (nextRequiresShipping) {
+                                        if (!barterProductName) {
+                                            setBarterProductName('Aura Glow Cosmetics Set');
+                                        }
+                                        if (!barterProductImageUrl) {
+                                            setBarterProductImageUrl('https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?q=80&w=600&auto=format&fit=crop');
+                                        }
+                                    }
                                 }}
                                 className={cn(
                                     "w-full rounded-2xl p-4 flex items-center justify-between transition-all border",
@@ -746,8 +800,12 @@ export const QuickOfferSheet: React.FC<QuickOfferSheetProps> = ({
                                     </>
                                 ) : (
                                     <>
-                                        <Zap className="h-5 w-5 fill-current" />
+                                        <Zap className="h-5 w-5 fill-current animate-pulse text-yellow-300" />
                                         SEND SECURE OFFER
+                                        <span className="relative flex h-3 w-3 ml-1">
+                                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-300 opacity-75"></span>
+                                            <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-400"></span>
+                                        </span>
                                     </>
                                 )}
                             </Button>

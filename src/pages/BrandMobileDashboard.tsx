@@ -3928,7 +3928,7 @@ const BrandMobileDashboard = ({
               "p-2 rounded-xl transition-all duration-300",
               activeTab === 'creators' ? (isDark ? 'bg-blue-500/10' : 'bg-blue-50') : 'bg-transparent'
             )}>
-              <User className={cn('w-[24px] h-[24px] transition-colors duration-300', activeTab === 'creators' ? (isDark ? 'text-blue-400' : 'text-blue-600') : secondaryTextColor)} />
+              <Search className={cn('w-[24px] h-[24px] transition-colors duration-300', activeTab === 'creators' ? (isDark ? 'text-blue-400' : 'text-blue-600') : secondaryTextColor)} />
             </div>
             <span className={cn('text-[9px] font-black uppercase tracking-widest transition-colors duration-300', activeTab === 'creators' ? (isDark ? 'text-blue-400' : 'text-blue-600') : secondaryTextColor)}>Find</span>
           </motion.button>

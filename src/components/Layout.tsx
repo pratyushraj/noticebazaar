@@ -4,6 +4,7 @@ import { ReactNode } from 'react';
 import { useLocation } from 'react-router-dom';
 import Navbar from '@/components/navbar/Navbar';
 import CreatorBottomNav from '@/components/creator-dashboard/CreatorBottomNav';
+import BrandBottomNav from '@/components/brand-dashboard/BrandBottomNav';
 import { useSession } from '@/contexts/SessionContext';
 import { useSidebar } from '@/contexts/SidebarContext';
 import { cn } from '@/lib/utils';
@@ -33,6 +34,11 @@ const Layout = ({ children }: LayoutProps) => {
     !routes.isDemoOverride(path) &&
     !!session &&
     !isNonCreatorRole &&
+    !isKeyboardVisible;
+
+  const shouldShowBrandBottomNav =
+    (path.startsWith('/brand-discover') || path.startsWith('/brand-deal/')) &&
+    !!session &&
     !isKeyboardVisible;
 
   const isFullScreen = routes.isFullScreen(path);
@@ -66,6 +72,7 @@ const Layout = ({ children }: LayoutProps) => {
         </div>
 
         {shouldShowBottomNav && <CreatorBottomNav />}
+        {shouldShowBrandBottomNav && <BrandBottomNav />}
       </div>
     </div>
   );

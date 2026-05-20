@@ -7,6 +7,7 @@ import { getApiBaseUrl } from '@/lib/utils/api';
 import { cn } from '@/lib/utils';
 import { useDealAlertNotifications } from '@/hooks/useDealAlertNotifications';
 import { uploadFile } from '@/lib/services/fileService';
+import { supabase } from '@/integrations/supabase/client';
 import {
   Camera, Check, ChevronDown, Loader2, LogOut, Shield, ShieldCheck,
   Upload, X, AlertTriangle, Globe, Instagram, MessageCircle, Tag,
@@ -32,7 +33,7 @@ const INDUSTRIES = [
   'Beauty & Skincare', 'Fashion & Apparel', 'Food & Beverage', 'Health & Wellness',
   'Technology', 'Travel & Hospitality', 'Home & Lifestyle', 'Sports & Fitness',
   'Jewellery & Accessories', 'Education & E-learning', 'Finance & FinTech',
-  'Automotive', 'Gaming', 'Entertainment & Media', 'D2C / E-commerce', 'Other',
+  'Automotive', 'Gaming', 'Entertainment & Media', 'D2C / E-commerce', 'Pet Care', 'Other',
 ];
 
 const DESC_MAX = 180;
@@ -193,7 +194,17 @@ export const BrandSettingsPanel = ({
 
   /* ─── Dirty tracking — seeded AFTER profile loads ── */
   const seededRef = useRef(false);
-  const baselineRef = useRef({ name: '', website: '', industry: '', description: '', logo: '' });
+  const baselineRef = useRef({
+    name: '',
+    website: '',
+    industry: '',
+    description: '',
+    logo: '',
+    instagram: '',
+    whatsapp: '',
+    tags: [] as string[],
+    address: '',
+  });
   const [isDirty, setIsDirty] = useState(false);
 
   const brandProfile = profile as any;
@@ -357,9 +368,9 @@ export const BrandSettingsPanel = ({
 
       // Sync to profiles.avatar_url for consistency
       if (logoUrl) {
-        await supabase
+        await (supabase
           .from('profiles')
-          .update({ avatar_url: logoUrl })
+          .update({ avatar_url: logoUrl } as any) as any)
           .eq('id', session!.user.id);
       }
 
@@ -436,7 +447,7 @@ export const BrandSettingsPanel = ({
       <AnimatePresence>
         {showLogoutModal && (
           <LogoutModal
-            email={String(profile?.email || session?.user?.email || '')}
+            email={String((profile as any)?.email || session?.user?.email || '')}
             onConfirm={async () => { setShowLogoutModal(false); await onLogout?.(); }}
             onCancel={() => setShowLogoutModal(false)}
           />
@@ -590,6 +601,9 @@ export const BrandSettingsPanel = ({
                   >
                     <option value="">Select industry…</option>
                     {INDUSTRIES.map(i => <option key={i} value={i}>{i}</option>)}
+                    {industry && !INDUSTRIES.includes(industry) && (
+                      <option value={industry}>{industry}</option>
+                    )}
                   </select>
                   <ChevronDown className={cn("absolute right-5 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none opacity-40 transition-transform group-hover:translate-y-[-40%]")} />
                 </div>
@@ -602,7 +616,7 @@ export const BrandSettingsPanel = ({
                     <MapPin className={isDark ? "text-white" : "text-slate-900"} size={18} />
                   </div>
                   <textarea
-                    className={cn(inputBase, "h-32 pt-4 resize-none")}
+                    className={cn(inputBase, "h-32 pt-4 pb-4 resize-none")}
                     value={companyAddress}
                     onChange={e => setCompanyAddress(e.target.value)}
                     placeholder="Enter your company's legal address for contracts..."
@@ -701,7 +715,7 @@ export const BrandSettingsPanel = ({
                   placeholder="We are a D2C fashion brand looking for Instagram reels that showcase aesthetic utility..."
                   rows={6}
                   className={cn(
-                    'w-full px-6 py-6 rounded-[2.5rem] border text-[15px] font-bold outline-none resize-none transition-all leading-relaxed duration-300',
+                    'w-full px-6 pt-6 pb-16 rounded-[2.5rem] border text-[15px] font-bold outline-none resize-none transition-all leading-relaxed duration-300',
                     isDark
                       ? 'border-white/5 bg-white/[0.02] text-white placeholder:text-white/10 focus:border-emerald-500/30 focus:ring-[12px] focus:ring-emerald-500/5 focus:bg-white/[0.05]'
                       : 'border-slate-100 bg-slate-50/50 text-slate-900 placeholder:text-slate-300 focus:border-emerald-500/30 focus:ring-[12px] focus:ring-emerald-500/5 focus:bg-white shadow-sm',

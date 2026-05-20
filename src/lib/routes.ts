@@ -47,7 +47,7 @@ export const routes = {
   isLawyer: (path: string) => path.startsWith('/lawyer-dashboard'),
   isAdvisor: (path: string) => path.startsWith('/advisor-dashboard'),
   isClient: (path: string) => path.startsWith('/client-'),
-  isBrand: (path: string) => path.startsWith('/brand-dashboard'),
+  isBrand: (path: string) => path.startsWith('/brand-'),
   isAuth: (path: string) => path === '/login' || path === '/signup' || path === '/reset-password',
   isRoot: (path: string) => path === '/',
   isCollabBypass: (path: string, handle: string) => {

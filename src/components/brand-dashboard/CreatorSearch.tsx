@@ -12,6 +12,7 @@ interface CreatorSearchProps {
 const CreatorSearch: React.FC<CreatorSearchProps> = ({ onSelect, selectedCreator, onClear }) => {
   const [query, setQuery] = useState('');
   const [debouncedQuery, setDebouncedQuery] = useState('');
+  const [focusedIndex, setFocusedIndex] = useState<number>(-1);
   const inputRef = useRef<HTMLInputElement>(null);
 
   // Debounce search input
@@ -20,6 +21,11 @@ const CreatorSearch: React.FC<CreatorSearchProps> = ({ onSelect, selectedCreator
       setDebouncedQuery(query);
     }, 300);
     return () => clearTimeout(timer);
+  }, [query]);
+
+  // Reset focus when query or search results change
+  useEffect(() => {
+    setFocusedIndex(-1);
   }, [query]);
 
   const { data: creators = [], isLoading, isFetching } = useCreators({
@@ -35,14 +41,37 @@ const CreatorSearch: React.FC<CreatorSearchProps> = ({ onSelect, selectedCreator
     onSelect(creator);
     setQuery('');
     setDebouncedQuery('');
+    setFocusedIndex(-1);
     inputRef.current?.blur();
   };
 
   const handleClear = () => {
     setQuery('');
     setDebouncedQuery('');
+    setFocusedIndex(-1);
     onClear?.();
     inputRef.current?.focus();
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (!showResults || creators.length === 0) return;
+
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      setFocusedIndex((prev) => (prev + 1) % creators.length);
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      setFocusedIndex((prev) => (prev - 1 + creators.length) % creators.length);
+    } else if (e.key === 'Enter') {
+      e.preventDefault();
+      if (focusedIndex >= 0 && focusedIndex < creators.length) {
+        handleSelect(creators[focusedIndex]);
+      }
+    } else if (e.key === 'Escape') {
+      setQuery('');
+      setDebouncedQuery('');
+      setFocusedIndex(-1);
+    }
   };
 
   return (
@@ -55,8 +84,14 @@ const CreatorSearch: React.FC<CreatorSearchProps> = ({ onSelect, selectedCreator
           type="text"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
+          onKeyDown={handleKeyDown}
+          aria-autocomplete="list"
+          aria-controls="creator-search-results"
+          aria-expanded={showResults && creators.length > 0}
+          role="combobox"
+          aria-label="Search creators"
           placeholder="Search by Instagram handle, name, or username..."
-          className="w-full bg-secondary/50 border border-border rounded-xl pl-10 pr-10 py-3 text-foreground placeholder-white/40 text-[15px] outline-none focus:border-purple-400 focus:ring-2 focus:ring-purple-400/20 transition-all"
+          className="w-full bg-secondary/50 border border-border rounded-xl pl-10 pr-10 py-3 text-foreground placeholder-foreground/50 text-[15px] outline-none focus:border-purple-400 focus:ring-2 focus:ring-purple-400/20 transition-all"
         />
         {isSearching && (
           <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-foreground/40 animate-spin" />
@@ -65,6 +100,7 @@ const CreatorSearch: React.FC<CreatorSearchProps> = ({ onSelect, selectedCreator
           <button
             type="button"
             onClick={handleClear}
+            aria-label="Clear search input"
             className="absolute right-3 top-1/2 -translate-y-1/2 p-0.5 hover:bg-secondary/50 rounded-full"
           >
             <X className="w-3.5 h-3.5 text-foreground/40" />
@@ -108,13 +144,15 @@ const CreatorSearch: React.FC<CreatorSearchProps> = ({ onSelect, selectedCreator
               <p className="text-[12px] text-foreground/25 mt-1">Try a different Instagram handle or name</p>
             </div>
           ) : (
-            <ul className="overflow-y-auto flex-1">
-              {creators.map((creator) => (
-                <li key={creator.id}>
+            <ul id="creator-search-results" role="listbox" aria-label="Creator search results" className="overflow-y-auto flex-1">
+              {creators.map((creator, index) => (
+                <li key={creator.id} role="option" aria-selected={index === focusedIndex}>
                   <button
                     type="button"
                     onClick={() => handleSelect(creator)}
-                    className="w-full flex items-center gap-3 px-4 py-3 hover:bg-card transition-colors text-left"
+                    className={`w-full flex items-center gap-3 px-4 py-3 transition-colors text-left ${
+                      index === focusedIndex ? "bg-purple-500/20" : "hover:bg-card"
+                    }`}
                   >
                     {/* Avatar */}
                     <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500/40 to-indigo-500/40 flex items-center justify-center flex-shrink-0">

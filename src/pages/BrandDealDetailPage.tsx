@@ -4,7 +4,7 @@ import { useSession } from '@/contexts/SessionContext';
 import { getApiBaseUrl } from '@/lib/utils/api';
 import { supabase } from '@/integrations/supabase/client';
 import { BrandDeal } from '@/types';
-import BrandBottomNav from '@/components/brand-dashboard/BrandBottomNav';
+
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import {
@@ -74,7 +74,7 @@ const BrandDealDetailPage: React.FC = () => {
     void loadDeal();
   }, [dealId, session?.access_token]);
 
-  const normalizedStatus = String(deal?.status || '').trim().toUpperCase().replaceAll(' ', '_');
+  const normalizedStatus = String(deal?.status || '').trim().toUpperCase().replace(/ /g, '_');
   const canReviewContent = normalizedStatus === 'CONTENT_DELIVERED' || normalizedStatus === 'REVISION_DONE';
   const paymentMarkedSent = Boolean((deal as any)?.payment_released_at) || normalizedStatus === 'PAYMENT_RELEASED';
   const paymentStatus = String((deal as any)?.payment_status || '').trim().toLowerCase();
@@ -101,9 +101,9 @@ const BrandDealDetailPage: React.FC = () => {
         return;
       }
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase
         .from('deal_action_logs')
-        .select('event, metadata, created_at')
+        .select('event, metadata, created_at') as any)
         .eq('deal_id', deal.id)
         .in('event', ['CONTENT_SUBMITTED', 'REVISION_SUBMITTED'])
         .order('created_at', { ascending: false })
@@ -814,7 +814,7 @@ const BrandDealDetailPage: React.FC = () => {
         </div>
       </div>
 
-      <BrandBottomNav />
+
     </div>
   );
 };

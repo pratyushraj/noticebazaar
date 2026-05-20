@@ -371,6 +371,10 @@ router.get('/profile', async (req: AuthenticatedRequest, res: Response) => {
     }
     console.log(`[BrandDashboard] Profile fetched for ${userId}:`, data ? 'Found' : 'Not Found');
 
+    if (data) {
+      data.company_address = data.address || null;
+    }
+
     res.setHeader('Cache-Control', 'no-store');
     return res.json({ success: true, brand: data || null });
   } catch (error: any) {
@@ -448,7 +452,7 @@ router.put('/profile', async (req: AuthenticatedRequest, res: Response) => {
       instagram_handle: typeof body.instagram_handle === 'string' ? body.instagram_handle.trim() || null : null,
       whatsapp_handle: typeof body.whatsapp_handle === 'string' ? body.whatsapp_handle.trim() || null : null,
       content_niches: Array.isArray(body.content_niches) ? body.content_niches : [],
-      company_address: typeof body.company_address === 'string' ? body.company_address.trim() || null : null,
+      address: typeof body.company_address === 'string' ? body.company_address.trim() || null : null,
       updated_at: new Date().toISOString(),
     };
 
@@ -474,7 +478,7 @@ router.put('/profile', async (req: AuthenticatedRequest, res: Response) => {
       // Create a select clause that only includes columns present in the current payload attempt,
       // plus the mandatory ID/Audit columns. This ensures .select() doesn't fail if a column is missing.
       const mandatory = ['id', 'external_id', 'name', 'website_url', 'industry', 'description', 'logo_url', 'created_at', 'updated_at'];
-      const optional = ['budget_min', 'budget_max', 'company_address', 'instagram_handle', 'whatsapp_handle', 'content_niches'];
+      const optional = ['budget_min', 'budget_max', 'address', 'instagram_handle', 'whatsapp_handle', 'content_niches'];
       
       const availableColumns = [...mandatory, ...optional.filter(col => Object.keys(payloadToUse).includes(col) || col === 'budget_min' || col === 'budget_max')];
       
@@ -509,16 +513,16 @@ router.put('/profile', async (req: AuthenticatedRequest, res: Response) => {
     const payloadAttempts = [
       payload,
       (() => {
-        const { company_address, ...safePayload } = payload;
+        const { address, ...safePayload } = payload;
         return safePayload;
       })(),
       (() => {
-        const { company_address, instagram_handle, whatsapp_handle, content_niches, ...legacyPayload } = payload;
+        const { address, instagram_handle, whatsapp_handle, content_niches, ...legacyPayload } = payload;
         return legacyPayload;
       })(),
       (() => {
         const {
-          company_address,
+          address,
           instagram_handle,
           whatsapp_handle,
           content_niches,
@@ -548,6 +552,10 @@ router.put('/profile', async (req: AuthenticatedRequest, res: Response) => {
 
     if (lastError) {
       throw lastError;
+    }
+
+    if (result) {
+      result.company_address = result.address || null;
     }
 
     res.setHeader('Cache-Control', 'no-store');

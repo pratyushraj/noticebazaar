@@ -34,7 +34,7 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50"
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100]"
             onClick={onClose}
           />
 
@@ -45,7 +45,7 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
             exit={{ y: '100%' }}
             transition={{ type: 'spring', damping: 30, stiffness: 300 }}
             className={cn(
-              "fixed bottom-0 left-0 right-0 z-50 bg-card text-foreground rounded-t-[32px] shadow-[0_-10px_40px_rgba(0,0,0,0.1)]",
+              "fixed bottom-0 left-0 right-0 z-[100] bg-card text-foreground rounded-t-[32px] shadow-[0_-10px_40px_rgba(0,0,0,0.1)]",
               "max-h-[92vh] overflow-hidden flex flex-col border-t border-border",
               "safe-area-inset-bottom",
               className
@@ -74,7 +74,7 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
             </div>
 
             {/* Content */}
-            <div className="flex-1 overflow-y-auto px-6 pb-6">
+            <div className="flex-1 overflow-y-auto px-6 pb-28">
               {children}
             </div>
           </motion.div>

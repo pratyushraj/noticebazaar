@@ -657,10 +657,10 @@ router.post('/:token', async (req: Request, res: Response) => {
           if (deal.brand_id) {
             const { data: brandData } = await supabase
               .from('brands')
-              .select('company_address')
+              .select('address')
               .eq('external_id', deal.brand_id)
               .maybeSingle();
-            companyAddressFromTable = brandData?.company_address || null;
+            companyAddressFromTable = brandData?.address || null;
           }
 
           // Fetch analysis data if available

@@ -3444,10 +3444,10 @@ router.post('/accept/confirm', async (req: AuthenticatedRequest, res: Response) 
         if (request.brand_id) {
           const { data: brandData } = await supabase
             .from('brands')
-            .select('company_address')
+            .select('address')
             .eq('external_id', request.brand_id)
             .maybeSingle();
-          companyAddressFromTable = brandData?.company_address || null;
+          companyAddressFromTable = brandData?.address || null;
         }
         const brandAddress = request.brand_address?.trim() || companyAddressFromTable || undefined;
 
@@ -3819,10 +3819,10 @@ router.patch('/:id/accept', async (req: AuthenticatedRequest, res: Response) => 
         if (request.brand_id) {
           const { data: brandData } = await supabase
             .from('brands')
-            .select('company_address')
+            .select('address')
             .eq('external_id', request.brand_id)
             .maybeSingle();
-          companyAddressFromTable = brandData?.company_address || null;
+          companyAddressFromTable = brandData?.address || null;
         }
         const brandAddress = request.brand_address?.trim() || companyAddressFromTable || undefined;
 
