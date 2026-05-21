@@ -26,7 +26,7 @@ async function main() {
   const fullName = 'Rio patola';
   const password = 'CreatorArmour2026!'; // Temporary credential
 
-  console.log(`🚀 Updating Onboarding for Rio patola (@${username}) with Meta Creator Marketplace intel...`);
+  console.log(`🚀 Updating Onboarding for Rio patola (@${username}) to set Drools as their past brand deal...`);
 
   try {
     // 1. Resolve Auth User ID
@@ -55,6 +55,7 @@ async function main() {
 
     // Standard high-quality Yellow Labrador avatar
     const avatarUrl = 'https://images.unsplash.com/photo-1596492784531-6e6eb5ea9993?auto=format&fit=crop&q=80&w=250&h=250';
+    const pastBrands = ['Drools'];
 
     // 2. Register Profile Details
     console.log('📝 Registering creator profile parameters with high-fidelity marketplace metrics...');
@@ -96,10 +97,10 @@ async function main() {
       primary_audience_language: 'Hindi / English',
 
       // System Trust Signals
-      deal_score: 94, // Increased score due to high confirmed interaction rate
+      deal_score: 94,
       collab_show_trust_signals: true,
       collab_show_audience_snapshot: true,
-      collab_show_past_work: false, // Hidden since no partnerships in the past year
+      collab_show_past_work: true, // Display past work as they have verified brand partnership history
 
       // Marketplace Intel
       deal_intelligence: {
@@ -144,9 +145,9 @@ async function main() {
           ]
         }
       ],
-      past_brands: [],
-      past_brand_count: 0,
-      collab_brands_count_override: 0
+      past_brands: pastBrands,
+      past_brand_count: 1,
+      collab_brands_count_override: 1
     };
 
     const { error: profileError } = await supabase
@@ -154,7 +155,7 @@ async function main() {
       .upsert(profileUpdate);
 
     if (profileError) throw profileError;
-    console.log('✅ Profile updated in database with all high-fidelity marketplace metrics.');
+    console.log('✅ Profile updated in database with Drools past brand deal.');
 
     // 3. Creators table link
     const { data: creatorRecord } = await supabase
@@ -207,7 +208,7 @@ async function main() {
       else console.log('✅ Social account updated');
     }
 
-    console.log('\n✨ Database Onboarding Update Successful! Rio patola profile is enriched.');
+    console.log('\n✨ Database Update Successful! Rio patola has only 1 past brand: Drools.');
     console.log(`🔗 Profile Link: https://creatorarmour.com/${username}`);
     console.log(`👤 User ID: ${actualUserId}`);
 
