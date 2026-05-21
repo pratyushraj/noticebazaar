@@ -18,3 +18,22 @@ server/pnpm-lock.yaml
 # Do not deploy standalone backend from this repo on Vercel.
 # api/ must NOT be ignored — it contains the serverless function entry point.
 server/
+api/server/
+api/index.ts
+
+
+
+# Heavy non-production directories
+scratch/
+temp_assets/
+temp/
+.kilocode/
+-DOs9iIID295/
+.agents/
+tests/
+postman/
+.claude/
+.codex/
+.openclaw/
+OpenClawDreams/
+

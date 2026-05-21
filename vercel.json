@@ -4,9 +4,6 @@
   "outputDirectory": "dist",
   "installCommand": "pnpm install",
   "functions": {
-    "api/index.ts": {
-      "maxDuration": 30
-    },
     "api/dashboard-preview.ts": {
       "maxDuration": 30
     },
