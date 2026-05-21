@@ -13,77 +13,6 @@ const BASE_URL = 'https://creatorarmour.com';
 config({ path: path.resolve(process.cwd(), '.env.local') });
 config({ path: path.resolve(process.cwd(), '.env') });
 
-// Categories will be fetched dynamically from the database
-async function getActiveCategories(): Promise<string[]> {
-  const supabaseUrl = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL;
-  const supabaseKey =
-    process.env.VITE_SUPABASE_SERVICE_ROLE_KEY ||
-    process.env.SUPABASE_SERVICE_ROLE_KEY ||
-    process.env.VITE_SUPABASE_ANON_KEY ||
-    process.env.SUPABASE_ANON_KEY;
-
-  if (!supabaseUrl || !supabaseKey) {
-    console.warn('Supabase credentials not found; skipping dynamic category fetch');
-    return [
-      'beauty', 'fashion', 'fitness', 'food', 'finance', 
-      'gaming', 'lifestyle', 'parenting', 'skincare', 'tech', 'travel', 'ugc'
-    ];
-  }
-
-  try {
-    const supabase = createClient(supabaseUrl, supabaseKey, {
-      auth: { persistSession: false, autoRefreshToken: false },
-    });
-
-    // Fetch unique categories from creators who have onboarding complete
-    const { data, error } = await supabase
-      .from('profiles')
-      .select('creator_category')
-      .eq('role' as any, 'creator')
-      .eq('onboarding_complete' as any, true)
-      .not('creator_category' as any, 'is', null);
-
-    if (error) {
-      console.warn(`Could not load categories for sitemap: ${error.message}`);
-      return [];
-    }
-
-    const categories = new Set<string>();
-    data.forEach((p: any) => {
-      if (p.creator_category) {
-        // Handle comma separated categories if any
-        p.creator_category.split(',').forEach((cat: string) => {
-          const trimmed = cat.trim().toLowerCase();
-          if (trimmed) categories.add(trimmed);
-        });
-      }
-    });
-
-    // Also check content_niches
-    const { data: nicheData, error: nicheError } = await supabase
-      .from('profiles')
-      .select('content_niches')
-      .eq('role' as any, 'creator')
-      .eq('onboarding_complete' as any, true)
-      .not('content_niches' as any, 'is', null);
-
-    if (!nicheError && nicheData) {
-      nicheData.forEach((p: any) => {
-        if (p.content_niches && Array.isArray(p.content_niches)) {
-          p.content_niches.forEach((niche: string) => {
-            const trimmed = niche.trim().toLowerCase();
-            if (trimmed) categories.add(trimmed);
-          });
-        }
-      });
-    }
-
-    return Array.from(categories);
-  } catch (error) {
-    console.warn('Could not load categories dynamically:', error);
-    return [];
-  }
-}
 
 // Static public pages
 const staticPages = [
@@ -96,7 +25,6 @@ const staticPages = [
   { loc: '/rate-calculator', priority: '0.8', changefreq: 'monthly' },
   { loc: '/collaboration-agreement-generator', priority: '0.7', changefreq: 'monthly' },
   { loc: '/brand-directory', priority: '0.9', changefreq: 'daily' },
-  { loc: '/discover', priority: '0.9', changefreq: 'daily' },
   { loc: '/blog', priority: '0.8', changefreq: 'daily' },
   { loc: '/careers', priority: '0.5', changefreq: 'monthly' },
   { loc: '/privacy-policy', priority: '0.3', changefreq: 'yearly' },
@@ -115,15 +43,6 @@ async function getBlogSlugs(): Promise<string[]> {
     console.warn('Could not load blog posts for sitemap');
     return [];
   }
-}
-
-function toSlug(value: string): string {
-  return value
-    .trim()
-    .toLowerCase()
-    .replace(/&/g, ' and ')
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '');
 }
 
 function isIndexableUsername(username: unknown): username is string {
@@ -240,16 +159,9 @@ async function main() {
     }))
   );
 
-  const activeCategories = await getActiveCategories();
-  const discoverCategoryPages = activeCategories.map(category => ({
-    loc: `/discover/${toSlug(category)}`,
-    priority: '0.8',
-    changefreq: 'weekly' as const,
-  }));
-
   const creatorPages = await getPublicCreatorPages();
 
-  const allPages = [...staticPages, ...blogPages, ...calculatorPages, ...discoverCategoryPages, ...creatorPages];
+  const allPages = [...staticPages, ...blogPages, ...calculatorPages, ...creatorPages];
   const xml = generateXml(allPages);
 
   const outPath = path.resolve(process.cwd(), 'public', 'sitemap.xml');

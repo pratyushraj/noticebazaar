@@ -29,11 +29,9 @@ const FreeLegalCheck = lazy(() => import("@/pages/FreeLegalCheck"));
 const FreeInfluencerContract = lazy(() => import("@/pages/FreeInfluencerContract"));
 const CollaborationAgreementGenerator = lazy(() => import("@/pages/CollaborationAgreementGenerator"));
 const BrandDirectory = lazy(() => import("@/pages/BrandDirectory"));
-const DiscoverCreators = lazy(() => import("@/pages/DiscoverCreators"));
 const RateCalculator = lazy(() => import("@/pages/RateCalculator"));
 const RateCalculatorDynamic = lazy(() => import("@/pages/RateCalculatorDynamic"));
 const CollabLinkLanding = lazy(() => import("@/pages/CollabLinkLanding"));
-const LlmCreatorDirectory = lazy(() => import("@/pages/LlmCreatorDirectory"));
 const ROICalculator = lazy(() => import("@/pages/ROICalculator"));
 const InvestorPitchPage = lazy(() => import("@/pages/InvestorPitchPage"));
 const InvestorPitchDeck = lazy(() => import("@/pages/InvestorPitchDeck"));
@@ -76,9 +74,9 @@ export const PublicRoutes = () => (
     <Route path="/free-influencer-contract" element={<LazyRoute><FreeInfluencerContract /></LazyRoute>} />
     <Route path="/collaboration-agreement-generator" element={<LazyRoute><CollaborationAgreementGenerator /></LazyRoute>} />
     <Route path="/brand-directory" element={<LazyRoute><BrandDirectory /></LazyRoute>} />
-    <Route path="/discover" element={<LazyRoute><DiscoverCreators /></LazyRoute>} />
-    <Route path="/discover/:category" element={<LazyRoute><DiscoverCreators /></LazyRoute>} />
-    <Route path="/creators-list" element={<LazyRoute><LlmCreatorDirectory /></LazyRoute>} />
+    <Route path="/discover" element={<Navigate to="/signup" replace />} />
+    <Route path="/discover/:category" element={<Navigate to="/signup" replace />} />
+    <Route path="/creators-list" element={<Navigate to="/signup" replace />} />
     <Route path="/rate-calculator" element={<LazyRoute><RateCalculator /></LazyRoute>} />
     <Route path="/calculator" element={<LazyRoute><ROICalculator /></LazyRoute>} />
     <Route path="/investors" element={<LazyRoute><InvestorPitchPage /></LazyRoute>} />

@@ -184,9 +184,9 @@ const deriveBadges = (profile: any, stats: any) => {
 
 /**
  * GET /api/creators
- * Get list of creators for directory (public, no auth required)
+ * Get list of creators for directory (requires authentication)
  */
-router.get('/', async (req: Request, res: Response) => {
+router.get('/', authMiddleware, async (req: Request, res: Response) => {
   try {
     const { category, limit = '50', offset = '0', username, q } = req.query as any;
     const baseSelect = `
@@ -443,9 +443,9 @@ router.get('/', async (req: Request, res: Response) => {
 /**
  * GET /api/creators/suggested
  * Lightweight discovery endpoint that includes trust signals (no vanity metrics).
- * Public: safe aggregated stats only.
+ * Requires authentication.
  */
-router.get('/suggested', async (req: Request, res: Response) => {
+router.get('/suggested', authMiddleware, async (req: Request, res: Response) => {
   try {
     const { category, limit = '8', offset = '0' } = req.query;
     const safeLimit = Math.max(1, Math.min(24, parseInt(limit as string, 10) || 8));

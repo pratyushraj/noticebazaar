@@ -34,6 +34,19 @@ body {
   100% { transform: translateX(-100%); }
 }
 
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+.animate-marquee {
+  animation: marquee 35s linear infinite;
+}
+
+.animate-marquee:hover {
+  animation-play-state: paused;
+}
+
 input, textarea, [contenteditable="true"], .selectable {
   -webkit-user-select: text;
   user-select: text;

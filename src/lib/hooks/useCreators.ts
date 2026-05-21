@@ -35,7 +35,18 @@ export const useCreators = (options: UseCreatorsOptions = {}) => {
       if (category && category !== 'all') params.set('category', category);
       params.set('limit', limit.toString());
 
-      const response = await fetch(`${apiBaseUrl}/api/creators?${params.toString()}`);
+      const { data: sessionData } = await supabase.auth.getSession();
+      const token = sessionData?.session?.access_token;
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+      };
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+
+      const response = await fetch(`${apiBaseUrl}/api/creators?${params.toString()}`, {
+        headers,
+      });
       if (!response.ok) {
         throw new Error('Failed to fetch creators');
       }
@@ -54,7 +65,19 @@ export const useCreatorByUsername = (username: string | null) => {
     queryFn: async (): Promise<CreatorProfile | null> => {
       if (!username) return null;
       const apiBaseUrl = getApiBaseUrl();
-      const response = await fetch(`${apiBaseUrl}/api/creators?q=${encodeURIComponent(username.trim())}&limit=1`);
+      
+      const { data: sessionData } = await supabase.auth.getSession();
+      const token = sessionData?.session?.access_token;
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+      };
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+
+      const response = await fetch(`${apiBaseUrl}/api/creators?q=${encodeURIComponent(username.trim())}&limit=1`, {
+        headers,
+      });
       if (!response.ok) return null;
       const data = await response.json();
       return data.creators?.[0] ?? null;

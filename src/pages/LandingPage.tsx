@@ -622,6 +622,64 @@ const LandingPage = () => {
           </div>
         </section>
 
+        {/* Verified Creators Marquee Strip */}
+        {(() => {
+          const verifiedCreators = [
+            { name: 'Sarfaraz', img: AANYA_IMG, niche: 'Travel' },
+            { name: 'Snehal', img: PRIYA_IMG, niche: 'Fashion' },
+            { name: 'Dilip', img: ARJUN_IMG, niche: 'Lifestyle' },
+            { name: 'Shagufi', img: NEHA_IMG, niche: 'Beauty' },
+            { name: 'Dipali', img: RITIKA_IMG, niche: 'Lifestyle' },
+            { name: 'POP', img: ROHAN_IMG, niche: 'Music' },
+            { name: 'Akansha', img: 'https://ooaxtwmqrvfzdqzoijcj.supabase.co/storage/v1/object/public/creator-assets/98038dfe-ff4e-4331-8e77-a10340fb9b38/avatar.jpg', niche: 'Pets' },
+            { name: 'Sarfaraz', img: AANYA_IMG, niche: 'Travel' },
+          ];
+          const doubled = [...verifiedCreators, ...verifiedCreators];
+          return (
+            <section className="py-8 md:py-10 border-b border-[#E5E7EB] bg-white overflow-hidden">
+              <div className="max-w-[1200px] mx-auto px-4 sm:px-6 mb-5 flex items-center justify-between">
+                <p className="text-[12px] font-bold text-[#64748B] uppercase tracking-[0.22em]">Elite verified creators on Creator Armour</p>
+              </div>
+              <div
+                className="relative overflow-hidden"
+                style={{ WebkitMaskImage: 'linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%)', maskImage: 'linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%)' }}
+              >
+                <div className="animate-marquee flex gap-6 w-max">
+                  {doubled.map((creator, i) => (
+                    <div key={i} className="flex flex-col items-center gap-2 shrink-0 cursor-default">
+                      <div className="relative group">
+                        <div className="w-[72px] h-[72px] rounded-full border-[2.5px] border-[#DCFCE7] shadow-md overflow-hidden ring-2 ring-[#16A34A]/10 group-hover:ring-[#16A34A]/30 transition-all duration-300">
+                          <img
+                            src={creator.img}
+                            alt={creator.name}
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                            onError={(e) => {
+                              (e.target as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${creator.name}&background=DCFCE7&color=16A34A&size=72`;
+                            }}
+                          />
+                        </div>
+                        <div className="absolute -bottom-1 -right-1 w-[22px] h-[22px] bg-[#16A34A] rounded-full flex items-center justify-center border-2 border-white shadow">
+                          <ShieldCheck className="w-3 h-3 text-white" />
+                        </div>
+                      </div>
+                      <p className="text-[11px] font-bold text-[#64748B] max-w-[72px] text-center truncate">{creator.name}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div className="max-w-[1200px] mx-auto px-4 sm:px-6 mt-5">
+                <p className="text-[13px] text-[#64748B]">
+                  100+ verified creators on the platform. The{' '}
+                  <span className="inline-flex items-center gap-0.5 text-[#16A34A] font-bold">
+                    <ShieldCheck className="w-3.5 h-3.5" /> shield
+                  </span>
+                  {' '}marks Elite Verified, not every creator.
+                </p>
+              </div>
+            </section>
+          );
+        })()}
+
         {/* Trust Stats Bar */}
         <section className="bg-[#0F172A] py-6 md:py-8">
           <div className="max-w-[1200px] mx-auto px-6">

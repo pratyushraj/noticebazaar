@@ -1334,7 +1334,12 @@ const BrandMobileDashboard = ({
     ['brandSuggestedCreators'],
     async () => {
       const apiBase = getApiBaseUrl();
-      const res = await fetch(`${apiBase}/api/creators/suggested?limit=10`);
+      const { data: { session } } = await supabase.auth.getSession();
+      const headers: Record<string, string> = {};
+      if (session?.access_token) {
+        headers['Authorization'] = `Bearer ${session.access_token}`;
+      }
+      const res = await fetch(`${apiBase}/api/creators/suggested?limit=10`, { headers });
       if (res.status === 404) return [];
       const data: any = await res.json().catch(() => ({}));
       if (!res.ok || !data?.success) return []; // fail silently — non-critical API
@@ -1360,8 +1365,14 @@ const BrandMobileDashboard = ({
       try {
         setIsSearchingCreators(true);
         const apiBase = getApiBaseUrl();
+        const { data: { session } } = await supabase.auth.getSession();
+        const headers: Record<string, string> = {};
+        if (session?.access_token) {
+          headers['Authorization'] = `Bearer ${session.access_token}`;
+        }
         const res = await fetch(`${apiBase}/api/creators?username=${encodeURIComponent(term)}&limit=8`, {
           signal: controller.signal,
+          headers,
         });
         const data: any = await res.json().catch(() => ({}));
         if (!res.ok || !data?.success) {
