@@ -1968,6 +1968,385 @@ const CollabLinkLanding = () => {
         hash: window.location.hash,
       })
 
+      // Try fetching directly from Supabase first (bypasses Render cold starts entirely!)
+      try {
+        console.log('[CollabLinkLanding] Attempting direct Supabase query to bypass Render server cold-start...');
+        
+        let profileRow: any = null;
+        
+        // 1. Try by instagram_handle first (case-insensitive comparison)
+        const { data: igData, error: igError } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('instagram_handle', normalizedUsername.toLowerCase())
+          .eq('role', 'creator')
+          .maybeSingle();
+          
+        if (!igError && igData) {
+          profileRow = igData;
+        } else {
+          // 2. Try by username as fallback
+          const { data: usrData, error: usrError } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('username', normalizedUsername.toLowerCase())
+            .eq('role', 'creator')
+            .maybeSingle();
+            
+          if (!usrError && usrData) {
+            profileRow = usrData;
+          }
+        }
+
+        if (profileRow) {
+          console.log('[CollabLinkLanding] Found creator profile in Supabase directly! Bypassing sleep delay.');
+          const p = profileRow;
+          
+          // Replicate trustStats computation from backend
+          let totalBrandCount = Number(p.collab_brands_count_override ?? p.past_brand_count ?? 0);
+          let completedDeals = 0;
+          let totalDeals = 0;
+          let responseDurationsHours: number[] = [];
+          
+          try {
+            const [dealsRes, responsesRes] = await Promise.all([
+              supabase.from('brand_deals').select('brand_name, status, progress_percentage').eq('creator_id', p.id),
+              supabase.from('collab_requests').select('created_at, updated_at, status').eq('creator_id', p.id).in('status', ['accepted', 'countered', 'declined'])
+            ]);
+            
+            if (dealsRes.data) {
+              const dealsRows = dealsRes.data;
+              totalDeals = dealsRows.length;
+              completedDeals = dealsRows.filter((d: any) => {
+                const status = (d?.status || '').toLowerCase();
+                const progress = typeof d?.progress_percentage === 'number' ? d.progress_percentage : 0;
+                if (progress >= 100) return true;
+                return status.includes('completed') || status.includes('closed') || status.includes('resolved');
+              }).length;
+              
+              const uniqueBrands = new Set(
+                dealsRows
+                  .map((d: any) => (typeof d?.brand_name === 'string' ? d.brand_name.trim().toLowerCase() : ''))
+                  .filter(Boolean)
+              ).size;
+              
+              totalBrandCount += uniqueBrands;
+            }
+            
+            if (responsesRes.data) {
+              responseDurationsHours = responsesRes.data
+                .map((r: any) => {
+                  const created = r?.created_at ? new Date(r.created_at).getTime() : NaN;
+                  const updated = r?.updated_at ? new Date(r.updated_at).getTime() : NaN;
+                  if (!Number.isFinite(created) || !Number.isFinite(updated) || updated < created) return null;
+                  const hours = (updated - created) / (1000 * 60 * 60);
+                  if (hours < 0 || hours > 168) return null;
+                  return hours;
+                })
+                .filter((v: number | null): v is number => typeof v === 'number');
+            }
+          } catch (statsError) {
+            console.warn('[CollabLinkLanding] Direct trust stats calculation failed:', statsError);
+          }
+          
+          const avgResponseHours = responseDurationsHours.length > 0
+            ? responseDurationsHours.reduce((sum: number, h: number) => sum + h, 0) / responseDurationsHours.length
+            : null;
+            
+          const trustStats = {
+            brands_count: totalBrandCount,
+            completed_deals: completedDeals,
+            total_deals: totalDeals,
+            completion_rate: totalDeals > 0 ? Math.round((completedDeals / totalDeals) * 100) : 98,
+            avg_response_hours: avgResponseHours !== null ? Math.max(1, Math.round(avgResponseHours)) : 3,
+          };
+          
+          // Replicate platforms array
+          const platforms: Array<{ name: string; handle: string; followers?: number }> = [];
+          const primaryPublicHandle = p.instagram_handle || p.username;
+          if (primaryPublicHandle) {
+            platforms.push({
+              name: 'Instagram',
+              handle: primaryPublicHandle,
+              followers: p.instagram_followers ?? undefined,
+            });
+          }
+          if (p.youtube_channel_id) {
+            platforms.push({
+              name: 'YouTube',
+              handle: p.youtube_channel_id,
+              followers: p.youtube_subs || undefined,
+            });
+          }
+          if (p.tiktok_handle) {
+            platforms.push({
+              name: 'TikTok',
+              handle: p.tiktok_handle,
+              followers: p.tiktok_followers || undefined,
+            });
+          }
+          if (p.twitter_handle) {
+            platforms.push({
+              name: 'Twitter',
+              handle: p.twitter_handle,
+              followers: p.twitter_followers || undefined,
+            });
+          }
+          if (p.facebook_profile_url) {
+            platforms.push({
+              name: 'Facebook',
+              handle: p.facebook_profile_url,
+              followers: p.facebook_followers || undefined,
+            });
+          }
+          
+          // Replicate rate calculations
+          const BASE_RATE_PER_FOLLOWER = 0.06;
+          const MIN_REEL_RATE = 1500;
+          const MAX_REEL_RATE = 800000;
+          
+          const estimateReelRate = (followers: number) => {
+            if (!followers || followers <= 0) return MIN_REEL_RATE;
+            let estimated = followers * BASE_RATE_PER_FOLLOWER;
+            if (followers > 5000000) {
+              estimated = Math.max(estimated, 150000);
+            } else if (followers > 1000000) {
+              estimated = Math.max(estimated, 80000);
+            } else if (followers > 500000) {
+              estimated = Math.max(estimated, 40000);
+            }
+            if (followers >= 10000) {
+              estimated = Math.max(estimated, 2000);
+            } else if (followers >= 5000) {
+              estimated = Math.max(estimated, 1500);
+            }
+            return Math.max(MIN_REEL_RATE, Math.min(MAX_REEL_RATE, Math.round(estimated)));
+          };
+          
+          const estimateReelBudgetRange = (rate: number) => {
+            const safeRate = Math.max(MIN_REEL_RATE, Math.round(rate || MIN_REEL_RATE));
+            return {
+              min: Math.round(safeRate * 0.8),
+              max: Math.round(safeRate * 1.2),
+            };
+          };
+          
+          const estimateBarterValueRange = (rate: number) => {
+            const safeRate = Math.max(MIN_REEL_RATE, Math.round(rate || MIN_REEL_RATE));
+            return {
+              min: Math.round(safeRate * 0.9),
+              max: Math.round(safeRate * 1.3),
+            };
+          };
+          
+          const getEffectiveReelRate = () => {
+            if (p.avg_rate_reel && p.avg_rate_reel > 0) return p.avg_rate_reel;
+            if (p.learned_avg_rate_reel && p.learned_avg_rate_reel > 0) return p.learned_avg_rate_reel;
+            return estimateReelRate(p.instagram_followers || 0);
+          };
+          
+          const suggestedReelRate = getEffectiveReelRate();
+          const suggestedPaidRange = estimateReelBudgetRange(suggestedReelRate);
+          const suggestedBarterRange = estimateBarterValueRange(suggestedReelRate);
+          
+          // Performance proof from snapshot
+          let performanceProof: any = null;
+          try {
+            const { data: latestSnapshot } = await supabase
+              .from('instagram_performance_snapshots')
+              .select('engagement_rate, median_reel_views, avg_likes, avg_comments, avg_saves, avg_shares, sample_size, data_quality, captured_at')
+              .eq('creator_id', p.id)
+              .order('captured_at', { ascending: false })
+              .limit(1)
+              .maybeSingle();
+              
+            if (latestSnapshot) {
+              performanceProof = {
+                engagement_rate: latestSnapshot.engagement_rate,
+                median_reel_views: latestSnapshot.median_reel_views,
+                avg_likes: latestSnapshot.avg_likes,
+                avg_comments: latestSnapshot.avg_comments,
+                avg_saves: latestSnapshot.avg_saves,
+                avg_shares: latestSnapshot.avg_shares,
+                sample_size: latestSnapshot.sample_size,
+                data_quality: latestSnapshot.data_quality || 'limited',
+                captured_at: latestSnapshot.captured_at,
+              };
+            }
+          } catch (_err) {}
+          
+          const fullName = `${p.first_name || ''} ${p.last_name || ''}`.trim();
+          const resolvedName = fullName || p.business_name || primaryPublicHandle || 'Creator';
+          const resolvedProfilePhoto = p.avatar_url || p.instagram_profile_photo || null;
+          
+          const creatorObj = {
+            id: p.id,
+            is_registered: true,
+            profile_type: 'verified',
+            profile_label: 'Verified Creator Profile',
+            submission_flow: 'direct_request',
+            name: sanitizeDisplayName(resolvedName),
+            username: sanitizeDisplayName(p.username || primaryPublicHandle),
+            category: p.creator_category,
+            platforms,
+            avg_rate_reel: p.avg_rate_reel ?? null,
+            story_price: p.story_price ?? null,
+            post_price: p.post_price ?? null,
+            starting_price: p.starting_price ?? null,
+            suggested_reel_rate: suggestedReelRate,
+            suggested_paid_range_min: suggestedPaidRange.min,
+            suggested_paid_range_max: suggestedPaidRange.max,
+            suggested_barter_value_min: suggestedBarterRange.min,
+            suggested_barter_value_max: suggestedBarterRange.max,
+            profile_photo: resolvedProfilePhoto,
+            followers: p.instagram_followers || null,
+            last_instagram_sync: p.last_instagram_sync || null,
+            bio: p.bio || null,
+            open_to_collabs: p.open_to_collabs !== false,
+            content_niches: Array.isArray(p.content_niches) ? p.content_niches : [],
+            media_kit_url: p.media_kit_url || null,
+            portfolio_links: Array.isArray(p.portfolio_links) ? p.portfolio_links : [],
+            audience_gender_split: p.audience_gender_split || null,
+            top_cities: Array.isArray(p.top_cities) ? p.top_cities : [],
+            audience_age_range: p.audience_age_range || null,
+            primary_audience_language: p.primary_audience_language || null,
+            posting_frequency: p.posting_frequency || null,
+            active_brand_collabs_month: p.active_brand_collabs_month ?? null,
+            campaign_slot_note: p.campaign_slot_note || null,
+            collab_brands_count_override: p.collab_brands_count_override ?? null,
+            collab_response_hours_override: p.collab_response_hours_override ?? null,
+            collab_cancellations_percent_override: p.collab_cancellations_percent_override ?? null,
+            collab_region_label: p.collab_region_label || null,
+            collab_intro_line: p.collab_intro_line || null,
+            collab_audience_fit_note: p.collab_audience_fit_note || null,
+            collab_recent_activity_note: p.collab_recent_activity_note || null,
+            collab_audience_relevance_note: p.collab_audience_relevance_note || null,
+            collab_delivery_reliability_note: p.collab_delivery_reliability_note || null,
+            collab_engagement_confidence_note: p.collab_engagement_confidence_note || null,
+            collab_response_behavior_note: p.collab_response_behavior_note || null,
+            collab_cta_trust_note: p.collab_cta_trust_note || null,
+            collab_cta_dm_note: p.collab_cta_dm_note || null,
+            collab_cta_platform_note: p.collab_cta_platform_note || null,
+            collab_show_packages: p.collab_show_packages ?? true,
+            collab_show_trust_signals: p.collab_show_trust_signals ?? true,
+            collab_show_audience_snapshot: p.collab_show_audience_snapshot ?? true,
+            collab_show_past_work: p.collab_show_past_work ?? true,
+            collab_past_work_items: Array.isArray(p.collab_past_work_items) ? p.collab_past_work_items : [],
+            past_brands: Array.isArray(p.past_brands) ? p.past_brands : [],
+            recent_campaign_types: Array.isArray(p.recent_campaign_types) ? p.recent_campaign_types : [],
+            avg_reel_views: (() => {
+              const manualViews = Number(p.avg_reel_views_manual);
+              if (Number.isFinite(manualViews) && manualViews > 0) return manualViews;
+              return performanceProof?.median_reel_views ?? null;
+            })(),
+            avg_likes: (() => {
+              const manualLikes = Number(p.avg_likes_manual);
+              if (Number.isFinite(manualLikes) && manualLikes > 0) return manualLikes;
+              return performanceProof?.avg_likes ?? null;
+            })(),
+            past_brand_count: trustStats.brands_count,
+            performance_proof: performanceProof,
+            trust_stats: trustStats,
+            min_deal_value: p.pricing_min ?? null,
+            min_lead_time_days: 3,
+            typical_story_rate: null,
+            typical_post_rate: null,
+            premium_production_multiplier: null,
+            brand_type_preferences: null,
+            campaign_type_support: null,
+            revision_policy: null,
+            allow_negotiation: true,
+            allow_counter_offer: true,
+            onboarding_complete: p.onboarding_complete ?? null,
+          };
+          
+          setCreator(creatorObj);
+          
+          // Preload profile photo
+          if (resolvedProfilePhoto) {
+            const img = new Image();
+            img.src = safeAvatarSrc(resolvedProfilePhoto) || '';
+          }
+          
+          // Supplement local details
+          const links = Array.isArray(p.portfolio_links)
+            ? p.portfolio_links.filter((l: any) => l && String(l || '').trim())
+            : [];
+          
+          let fallbackVideo = p.discovery_video_url;
+          let fallbackPoster = p.discovery_card_image;
+          
+          if (!fallbackVideo && Array.isArray(p.collab_past_work_items)) {
+            const firstVideo = p.collab_past_work_items.find((item: any) => item.mediaType === 'video' && item.sourceUrl);
+            if (firstVideo) {
+              fallbackVideo = firstVideo.sourceUrl;
+            }
+          }
+          
+          setCreator((prev: any) => ({
+            ...prev,
+            portfolio_links: links.length > 0 ? links : prev?.portfolio_links || [],
+            media_kit_url: p.media_kit_url || prev?.media_kit_url || null,
+            discovery_video_url: fallbackVideo || prev?.discovery_video_url || null,
+            portfolio_videos: p.portfolio_videos || prev?.portfolio_videos || [],
+            avg_reel_views_manual: p.avg_reel_views_manual !== undefined ? p.avg_reel_views_manual : prev?.avg_reel_views_manual,
+            avg_views: p.avg_views !== undefined ? p.avg_views : prev?.avg_views,
+            engagement_rate: p.engagement_rate !== undefined ? p.engagement_rate : prev?.engagement_rate,
+            response_hours: p.response_hours !== undefined ? p.response_hours : prev?.response_hours,
+            reliability_score: p.reliability_score !== undefined ? p.reliability_score : prev?.reliability_score,
+            past_brands: p.past_brands || prev?.past_brands,
+            is_verified: p.is_verified !== undefined ? p.is_verified : prev?.is_verified,
+            is_elite_verified: p.is_elite_verified !== undefined ? p.is_elite_verified : prev?.is_elite_verified,
+            onboarding_complete: p.onboarding_complete !== undefined ? p.onboarding_complete : prev?.onboarding_complete,
+            collab_brands_count_override: p.collab_brands_count_override !== undefined ? p.collab_brands_count_override : prev?.collab_brands_count_override,
+            collab_response_hours_override: p.collab_response_hours_override !== undefined ? p.collab_response_hours_override : prev?.collab_response_hours_override,
+            reel_price: p.reel_price !== undefined ? p.reel_price : prev?.reel_price,
+            story_price: p.story_price !== undefined ? p.story_price : prev?.story_price,
+            barter_min_value: p.barter_min_value !== undefined ? p.barter_min_value : prev?.barter_min_value,
+            audience_gender_split: p.audience_gender_split || prev?.audience_gender_split,
+            audience_age_range: p.audience_age_range || prev?.audience_age_range,
+            top_cities: p.top_cities || prev?.top_cities,
+            content_niches: p.content_niches || prev?.content_niches,
+            primary_audience_language: p.primary_audience_language || prev?.primary_audience_language,
+            posting_frequency: p.posting_frequency || prev?.posting_frequency,
+            deal_templates: p.deal_templates || prev?.deal_templates,
+            past_brand_count: p.past_brand_count !== undefined ? p.past_brand_count : prev?.past_brand_count,
+            followers: p.followers_count !== undefined ? p.followers_count : prev?.followers,
+            profile_photo: p.avatar_url || p.instagram_profile_photo || prev?.profile_photo,
+            discovery_card_image: fallbackPoster || prev?.discovery_card_image || null,
+            portfolio_items: normalizePortfolioItems(p.collab_past_work_items, p.portfolio_links),
+          }));
+          
+          trackEvent('collab_link_viewed', { username: normalizedUsername });
+          
+          // Direct recording to collab_link_events
+          if (p.id) {
+            const searchParamsObj = new URLSearchParams(window.location.search);
+            supabase
+              .from('collab_link_events')
+              .insert({
+                creator_id: p.id,
+                event_type: 'view',
+                utm_source: searchParamsObj.get('utm_source') || 'direct',
+                utm_medium: searchParamsObj.get('utm_medium') || null,
+                utm_campaign: searchParamsObj.get('utm_campaign') || null,
+                device_type: /mobile|android|iphone/i.test(navigator.userAgent) ? 'mobile' : /tablet|ipad/i.test(navigator.userAgent) ? 'tablet' : 'desktop',
+              })
+              .then(({ error }) => {
+                if (error) console.warn('[CollabLinkLanding] Direct event recording skipped:', error.message);
+              });
+          }
+          
+          // Background wake up Render server (so it's warm by the time brand submits deal form)
+          fetch(`${primaryApiBaseUrl}/health`).catch(() => {});
+          
+          setLoading(false);
+          return; // Instant speedup complete!
+        }
+      } catch (directQueryErr) {
+        console.warn('[CollabLinkLanding] Direct Supabase query failed, falling back to Render endpoint:', directQueryErr);
+      }
+
       try {
         let response: Response | null = null
         let activeApiBaseUrl = primaryApiBaseUrl
