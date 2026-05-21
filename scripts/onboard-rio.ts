@@ -26,48 +26,38 @@ async function main() {
   const fullName = 'Rio patola';
   const password = 'CreatorArmour2026!'; // Temporary credential
 
-  console.log(`🚀 Starting Onboarding for Rio patola (@${username})...`);
+  console.log(`🚀 Updating Onboarding for Rio patola (@${username}) with Meta Creator Marketplace intel...`);
 
   try {
-    // 1. Create Auth User
-    console.log(`📧 Creating auth user for ${email}...`);
-    const { data: userData, error: userError } = await supabase.auth.admin.createUser({
-      email,
-      password,
-      email_confirm: true,
-      user_metadata: {
-        first_name: 'Rio',
-        last_name: 'patola',
-      }
-    });
-
-    if (userError) {
-      if (userError.message.toLowerCase().includes('already')) {
-        console.log('⚠️ User already exists, proceeding to update profile...');
-      } else {
-        throw userError;
-      }
-    }
-
-    const userId = userData.user?.id;
+    // 1. Resolve Auth User ID
     let actualUserId = '';
-    if (!userId) {
-      const { data: users } = await supabase.auth.admin.listUsers();
-      const existingUser = users.users.find(u => u.email === email);
-      if (!existingUser) throw new Error('Could not find or create user');
-      actualUserId = existingUser.id;
+    const { data: users } = await supabase.auth.admin.listUsers();
+    const existingUser = users.users.find(u => u.email === email);
+    
+    if (!existingUser) {
+      console.log(`📧 User not found. Creating auth user for ${email}...`);
+      const { data: userData, error: userError } = await supabase.auth.admin.createUser({
+        email,
+        password,
+        email_confirm: true,
+        user_metadata: {
+          first_name: 'Rio',
+          last_name: 'patola',
+        }
+      });
+      if (userError) throw userError;
+      actualUserId = userData.user?.id || '';
     } else {
-      actualUserId = userId;
+      actualUserId = existingUser.id;
     }
 
     console.log(`✅ User ID resolved: ${actualUserId}`);
 
     // Standard high-quality Yellow Labrador avatar
     const avatarUrl = 'https://images.unsplash.com/photo-1596492784531-6e6eb5ea9993?auto=format&fit=crop&q=80&w=250&h=250';
-    const pastBrands = ['Heads Up For Tails', 'Supertails', 'Pawtect'];
 
     // 2. Register Profile Details
-    console.log('📝 Registering creator profile parameters...');
+    console.log('📝 Registering creator profile parameters with high-fidelity marketplace metrics...');
     const profileUpdate = {
       id: actualUserId,
       first_name: 'Rio',
@@ -79,11 +69,11 @@ async function main() {
       role: 'creator',
       onboarding_complete: true,
       creator_category: 'Pet Care & Wholesomeness',
-      instagram_followers: 60000,
-      followers_count: 60000,
-      engagement_rate: 6.8, // Good industry average engagement for 60k followers
-      avg_views: 45000,    // Good baseline view count
-      avg_reel_views_manual: 45000,
+      instagram_followers: 60300,
+      followers_count: 60300,
+      engagement_rate: 7.9, // Exact official Meta Interaction Rate
+      avg_views: 54400,    // Exact official Meta Accounts Engaged (30d)
+      avg_reel_views_manual: 54400,
       reel_price: 7000,   // From DM starting rate
       story_price: 2000,    // Estimated standard
       starting_price: 7000,
@@ -94,36 +84,36 @@ async function main() {
       location: 'Madhya Pradesh, India',
       city: 'Gwalior',
       bio: '🐾 Just a wholesome yellow Labrador spreading smiles! Lover of treats, long naps, and active play. DM for inquiries 💌',
-      intro_line: 'Wholesome Yellow Labrador from Gwalior with 60K active followers 🐾💛',
+      intro_line: 'Wholesome Yellow Labrador with 60.3K followers and 7.9% official Meta Interaction Rate 🐾💛',
       collab_intro_line: 'Rio the Labrador shares sweet wholesome stories, playful tricks, and healthy pet food reviews from Gwalior.',
       last_instagram_sync: new Date().toISOString(),
       updated_at: new Date().toISOString(),
 
-      // Audience Demographics Snapshot
-      audience_gender_split: { women: 75, men: 25 },
-      top_cities: ['Gwalior', 'Indore', 'Bhopal', 'Mumbai', 'Delhi'],
-      audience_age_range: '18-34 (82%)',
+      // Audience Demographics Snapshot from Meta Creator Marketplace
+      audience_gender_split: { women: 51.3, men: 48.7 },
+      top_cities: ['Delhi', 'Mumbai', 'Ahmedabad', 'Bangalore'],
+      audience_age_range: '18-34 (86.9%)',
       primary_audience_language: 'Hindi / English',
 
       // System Trust Signals
-      deal_score: 92,
+      deal_score: 94, // Increased score due to high confirmed interaction rate
       collab_show_trust_signals: true,
       collab_show_audience_snapshot: true,
-      collab_show_past_work: true,
+      collab_show_past_work: false, // Hidden since no partnerships in the past year
 
-      // Intel
+      // Marketplace Intel
       deal_intelligence: {
-        hookRate: 52.3,
-        interactionRate: 6.8,
-        accountsReached30d: '850K',
-        accountsEngaged30d: '45K',
-        viralPotential: 'High Viral Potential',
-        demographicsRelevance: '98% India Concentrated'
+        hookRate: 46.0, // 46% from Marketplace
+        interactionRate: 7.9, // 7.9% from Marketplace
+        accountsReached30d: '516.8K', // 516.8K from Marketplace
+        accountsEngaged30d: '54.4K', // 54.4K from Marketplace
+        viralPotential: 'High Organic Reach Potential',
+        demographicsRelevance: '97% India Concentrated'
       },
-      collab_audience_fit_note: 'Strong 98.2% Indian concentration with heavy presence in Madhya Pradesh and major metros.',
-      collab_engagement_confidence_note: 'Strong 6.8% interaction rate coupled with highly engaged local pet-parents.',
-      collab_delivery_reliability_note: 'Highly active pet creator in Tier-2/Tier-1 Indian cities.',
-      collab_cta_trust_note: 'Strong conversion potential for premium pet food, local groomers, and pet-friendly travel products.',
+      collab_audience_fit_note: 'Strong 97% Indian concentration with primary audience concentrated in Delhi (6.4%), Mumbai (2.5%), Ahmedabad (2.2%), and Bangalore (1.7%).',
+      collab_engagement_confidence_note: 'Healthy 7.9% official Meta interaction rate combined with an active 46% video hook rate.',
+      collab_delivery_reliability_note: 'Verified creator with strong engagement and high organic viewer retention.',
+      collab_cta_trust_note: 'Highly recommended for mid-tier Indian D2C pet wellness and accessory campaigns.',
 
       // Deal Templates
       deal_templates: [
@@ -154,9 +144,9 @@ async function main() {
           ]
         }
       ],
-      past_brands: pastBrands,
-      past_brand_count: 3,
-      collab_brands_count_override: 3
+      past_brands: [],
+      past_brand_count: 0,
+      collab_brands_count_override: 0
     };
 
     const { error: profileError } = await supabase
@@ -164,7 +154,7 @@ async function main() {
       .upsert(profileUpdate);
 
     if (profileError) throw profileError;
-    console.log('✅ Profile updated in database with all metrics and details.');
+    console.log('✅ Profile updated in database with all high-fidelity marketplace metrics.');
 
     // 3. Creators table link
     const { data: creatorRecord } = await supabase
@@ -198,7 +188,7 @@ async function main() {
           creator_id: actualUserId,
           platform: 'instagram',
           username: username,
-          followers: 60000,
+          followers: 60300,
           linked_at: new Date().toISOString()
         });
 
@@ -208,7 +198,7 @@ async function main() {
       const { error: socialError } = await supabase
         .from('social_accounts')
         .update({
-          followers: 60000,
+          followers: 60300,
           linked_at: new Date().toISOString()
         })
         .eq('id', existingSocial.id);
@@ -217,12 +207,12 @@ async function main() {
       else console.log('✅ Social account updated');
     }
 
-    console.log('\n✨ Database Onboarding Successful! Rio patola is now Elite Verified.');
+    console.log('\n✨ Database Onboarding Update Successful! Rio patola profile is enriched.');
     console.log(`🔗 Profile Link: https://creatorarmour.com/${username}`);
     console.log(`👤 User ID: ${actualUserId}`);
 
   } catch (error: any) {
-    console.error('❌ Onboarding failed:', error.message);
+    console.error('❌ Update failed:', error.message);
     process.exit(1);
   }
 }
