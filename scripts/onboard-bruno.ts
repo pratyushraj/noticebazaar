@@ -154,9 +154,9 @@ async function main() {
       engagement_rate: 11.0, // Exact official Meta Interaction Rate (11%)
       avg_views: 2405,      // Exact official Meta Accounts Engaged (2.4K)
       avg_reel_views_manual: 2405,
-      reel_price: 2000,     // From DM commercial rate (2k for 1 reel + 3-4 stories combo)
+      reel_price: 1500,     // From DM commercial rate (1.5k for 1 reel, 2k for combo)
       story_price: 500,     // Estimated breakdown (500 per story)
-      starting_price: 2000,
+      starting_price: 1500,
       open_to_collabs: true,
       collaboration_preference: 'paid',
       is_verified: true,
@@ -201,7 +201,7 @@ async function main() {
           id: 'starter_reel',
           type: 'paid',
           label: '🚀 Collab Reel',
-          budget: 2000,
+          budget: 1500,
           isPopular: true,
           description: '1 Wholesome Collab Reel featuring Bruno - Perfect for brand awareness and active organic reach.',
           deliverables: [
