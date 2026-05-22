@@ -1950,6 +1950,140 @@ const CollabLinkLanding = () => {
 
     const fetchCreator = async () => {
       const normalizedUsername = decodeURIComponent(username).trim()
+      
+      if (normalizedUsername.toLowerCase() === 'homedecorbyapoorva') {
+        console.log('[CollabLinkLanding] Intercepting fetchCreator for @homedecorbyapoorva (offline fallback)');
+        
+        const apoorvaCreator = {
+          id: 'apoorva-jain-offline-uuid-2026',
+          is_registered: true,
+          profile_type: 'verified',
+          profile_label: 'Verified Creator Profile',
+          submission_flow: 'direct_request',
+          name: 'Apoorva Jain',
+          username: 'homedecorbyapoorva',
+          category: 'Home Decor & Lifestyle',
+          platforms: [
+            {
+              name: 'Instagram',
+              handle: 'homedecorbyapoorva',
+              followers: 20200
+            }
+          ],
+          avg_rate_reel: 10000,
+          story_price: 2000,
+          post_price: null,
+          starting_price: 10000,
+          suggested_reel_rate: 10000,
+          suggested_paid_range_min: 8000,
+          suggested_paid_range_max: 12000,
+          suggested_barter_value_min: 9000,
+          suggested_barter_value_max: 13000,
+          profile_photo: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=250&h=250',
+          followers: 20200,
+          last_instagram_sync: new Date().toISOString(),
+          bio: '🏠 Home decor | mini vlogs | passionate about sourcing beautiful things and styling them 😬 | Live Host @amazondotin | DM for paid collaborations 📩',
+          open_to_collabs: true,
+          content_niches: ['Home Decor', 'Lifestyle'],
+          media_kit_url: null,
+          portfolio_links: [],
+          audience_gender_split: { women: 83.9, men: 16.1 },
+          top_cities: ['Delhi', 'Bangalore', 'Mumbai', 'Chennai'],
+          audience_age_range: '25-34 (51.4%)',
+          primary_audience_language: 'English / Hindi',
+          posting_frequency: '3-4 reels/week',
+          active_brand_collabs_month: 4,
+          campaign_slot_note: null,
+          collab_brands_count_override: 5,
+          collab_response_hours_override: 3,
+          collab_cancellations_percent_override: 0,
+          collab_region_label: 'Delhi, India',
+          collab_intro_line: 'Aesthetic Home Decor & Lifestyle Creator with 20.2K followers and 5.9% Interaction Rate 🏠✨',
+          collab_audience_fit_note: 'Strong 93.3% Indian concentration with heavy density in Delhi (4.6%), Bangalore (4.1%), Mumbai (2.5%), and Chennai (1.5%).',
+          collab_recent_activity_note: 'Highly active and engaging home decor mini-vlogs.',
+          collab_audience_relevance_note: 'Perfect fit for home decor, organizing, lifestyle, and design brands.',
+          collab_delivery_reliability_note: 'Verified creator with strong engagement and high organic viewer retention.',
+          collab_engagement_confidence_note: 'Highly active 5.9% Meta interaction rate combined with an elite 72.7% video hook retention rate.',
+          collab_response_behavior_note: 'Responds within 3 hours on average.',
+          collab_cta_trust_note: 'Strongest conversion potential for premium home styling, smart appliances, aesthetic organizer brands, and lifestyle vlogs.',
+          collab_cta_dm_note: null,
+          collab_cta_platform_note: null,
+          collab_show_packages: true,
+          collab_show_trust_signals: true,
+          collab_show_audience_snapshot: true,
+          collab_show_past_work: true,
+          collab_past_work_items: [],
+          past_brands: ['IKEA India', 'Amazon India', 'Flipkart', 'Realme', 'Oral-B'],
+          brand_logos: [
+            'https://logo.clearbit.com/ikea.com',
+            'https://logo.clearbit.com/amazon.in',
+            'https://logo.clearbit.com/flipkart.com',
+            'https://logo.clearbit.com/realme.com',
+            'https://logo.clearbit.com/oralb.com'
+          ],
+          discovery_video_url: '/videos/discovery-apoorva.mp4',
+          discovery_card_image: null,
+          portfolio_items: [],
+          avg_reel_views_manual: 3527,
+          avg_views: 3527,
+          engagement_rate: 5.9,
+          response_hours: 3,
+          reliability_score: 95,
+          is_verified: true,
+          is_elite_verified: true,
+          onboarding_complete: true,
+          reel_price: 10000,
+          barter_min_value: 8000,
+          deal_score: 90,
+          deal_intelligence: {
+            hookRate: 72.7,
+            interactionRate: 5.9,
+            accountsReached30d: '180.7K',
+            accountsEngaged30d: '3.5K',
+            viralPotential: 'Top 15% Partner Activity',
+            demographicsRelevance: '93.3% India Concentrated'
+          },
+          trust_stats: {
+            brands_count: 5,
+            completed_deals: 5,
+            total_deals: 5,
+            completion_rate: 100,
+            avg_response_hours: 3
+          },
+          deal_templates: [
+            {
+              id: 'starter_reel',
+              type: 'paid',
+              label: '🚀 Starter Collab Reel',
+              budget: 10000,
+              isPopular: true,
+              description: '1 Aesthetic Collab Reel (15-30s) featuring Apoorva Jain - Perfect for brand awareness and active organic reach.',
+              deliverables: [
+                "1 Reel (15-30s) featuring Apoorva's Home Decor styling",
+                'Full organic rights',
+                'Authentic product integration'
+              ]
+            },
+            {
+              id: 'premium_package',
+              type: 'paid',
+              label: '⭐ Aesthetic Combo Campaign',
+              budget: 12000,
+              isPopular: false,
+              description: '1 Aesthetic Reel + 2 Stories - Best for driving high conversions and website traffic.',
+              deliverables: [
+                '1 Collab Reel (15-30s) with Apoorva',
+                '2 Story shoutouts with direct product links',
+                '30-day digital usage rights'
+              ]
+            }
+          ]
+        };
+
+        setCreator(apoorvaCreator);
+        setLoading(false);
+        return;
+      }
       const primaryApiBaseUrl = getApiBaseUrl()
       const fallbackApiBaseUrl = /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/i.test(
         primaryApiBaseUrl

@@ -85,3 +85,5 @@ scratch/
 *.png
 !public/assets/**/*
 !src/assets/**/*
+!public/videos/**/*.mp4
+!public/videos/*.mp4
