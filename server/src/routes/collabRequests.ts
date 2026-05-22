@@ -285,9 +285,46 @@ const resolveCreatorByPublicHandle = async (handle: string, selectColumns: strin
     };
   }
 
-  const usernameMatch = Array.isArray(usernameProfiles) && usernameProfiles.length > 0
+  let usernameMatch = Array.isArray(usernameProfiles) && usernameProfiles.length > 0
     ? usernameProfiles[0]
     : null;
+
+  if (!usernameMatch) {
+    // Try falling back to common variations (e.g. appending '_', '.', or stripping trailing punctuation)
+    const candidates = [
+      normalizedHandle + '_',
+      normalizedHandle + '.',
+    ];
+    if (normalizedHandle.endsWith('_') || normalizedHandle.endsWith('.')) {
+      candidates.push(normalizedHandle.replace(/[._]+$/, ''));
+    }
+
+    for (const candidate of candidates) {
+      const { data: igCand } = await supabase
+        .from('profiles')
+        .select(selectColumns)
+        .eq('instagram_handle', candidate)
+        .eq('role', 'creator')
+        .limit(1);
+
+      if (Array.isArray(igCand) && igCand.length > 0) {
+        usernameMatch = igCand[0];
+        break;
+      }
+
+      const { data: usrCand } = await supabase
+        .from('profiles')
+        .select(selectColumns)
+        .eq('username', candidate)
+        .eq('role', 'creator')
+        .limit(1);
+
+      if (Array.isArray(usrCand) && usrCand.length > 0) {
+        usernameMatch = usrCand[0];
+        break;
+      }
+    }
+  }
 
   if (!usernameMatch) {
     return {

@@ -2151,6 +2151,42 @@ const CollabLinkLanding = () => {
           }
         }
 
+        if (!profileRow) {
+          const candidates = [
+            normalizedUsername.toLowerCase() + '_',
+            normalizedUsername.toLowerCase() + '.',
+          ];
+          if (normalizedUsername.endsWith('_') || normalizedUsername.endsWith('.')) {
+            candidates.push(normalizedUsername.toLowerCase().replace(/[._]+$/, ''));
+          }
+
+          for (const candidate of candidates) {
+            const { data: igCand } = await supabase
+              .from('profiles')
+              .select('*')
+              .eq('instagram_handle', candidate)
+              .eq('role', 'creator')
+              .maybeSingle();
+
+            if (igCand) {
+              profileRow = igCand;
+              break;
+            }
+
+            const { data: usrCand } = await supabase
+              .from('profiles')
+              .select('*')
+              .eq('username', candidate)
+              .eq('role', 'creator')
+              .maybeSingle();
+
+            if (usrCand) {
+              profileRow = usrCand;
+              break;
+            }
+          }
+        }
+
         if (profileRow) {
           console.log('[CollabLinkLanding] Found creator profile in Supabase directly! Bypassing sleep delay.');
           const p = profileRow;
