@@ -246,21 +246,27 @@ const NaturallyYoursPitch = () => {
                     <video
                       src={creator.discovery_video_url}
                       className="w-full h-full object-cover"
-                      autoPlay
                       muted
                       loop
                       playsInline
-                      preload="auto"
+                      preload="none"
                       poster={creator.avatar_url}
                       onClick={handleVideoTap}
-                      onMouseOver={e => {
-                        const video = e.target as HTMLVideoElement;
-                        video.play().catch(() => {});
+                      onMouseEnter={(e) => {
+                        const playPromise = e.currentTarget.play();
+                        if (playPromise !== undefined) {
+                          playPromise.catch(() => {});
+                        }
                       }}
-                      onMouseOut={e => {
-                        const video = e.target as HTMLVideoElement;
-                        video.pause();
-                        video.currentTime = 0;
+                      onMouseLeave={(e) => {
+                        e.currentTarget.pause();
+                      }}
+                      onTouchStart={(e) => {
+                        if (e.currentTarget.paused) {
+                          e.currentTarget.play().catch(() => {});
+                        } else {
+                          e.currentTarget.pause();
+                        }
                       }}
                       onError={(e) => {
                         console.error('Video playback failed:', e);

@@ -204,11 +204,28 @@ const PetBrandPitch = () => {
                     <video
                       src={creator.discovery_video_url}
                       className="w-full h-full object-cover"
-                      autoPlay
                       muted
                       loop
                       playsInline
+                      preload="none"
+                      poster={creator.avatar_url}
                       onClick={handleVideoTap}
+                      onMouseEnter={(e) => {
+                        const playPromise = e.currentTarget.play();
+                        if (playPromise !== undefined) {
+                          playPromise.catch(() => {});
+                        }
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.pause();
+                      }}
+                      onTouchStart={(e) => {
+                        if (e.currentTarget.paused) {
+                          e.currentTarget.play().catch(() => {});
+                        } else {
+                          e.currentTarget.pause();
+                        }
+                      }}
                     />
                   ) : (
                     <div className="w-full h-full flex flex-col items-center justify-center bg-emerald-950/20 text-emerald-800 text-center p-6">

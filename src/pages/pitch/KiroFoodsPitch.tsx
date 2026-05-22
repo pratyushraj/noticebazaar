@@ -140,17 +140,26 @@ const KiroFoodsPitch = () => {
                     <video 
                       src={creator.discovery_video_url} 
                       className="w-full h-full object-cover"
-                      autoPlay
                       muted
                       loop
                       playsInline
-                      preload="auto"
+                      preload="none"
                       poster={creator.avatar_url}
-                      onMouseOver={e => (e.target as HTMLVideoElement).play()}
-                      onMouseOut={e => {
-                        const v = e.target as HTMLVideoElement;
-                        v.pause();
-                        v.currentTime = 0;
+                      onMouseEnter={(e) => {
+                        const playPromise = e.currentTarget.play();
+                        if (playPromise !== undefined) {
+                          playPromise.catch(() => {});
+                        }
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.pause();
+                      }}
+                      onTouchStart={(e) => {
+                        if (e.currentTarget.paused) {
+                          e.currentTarget.play().catch(() => {});
+                        } else {
+                          e.currentTarget.pause();
+                        }
                       }}
                       onError={(e) => {
                         console.error('Video playback failed:', e);

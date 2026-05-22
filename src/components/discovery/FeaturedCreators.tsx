@@ -165,7 +165,8 @@ export const FeaturedCreators = () => {
                       loop
                       playsInline
                       webkit-playsinline="true"
-                      preload="auto"
+                      preload="metadata"
+                      poster={safeAvatarSrc(currentCreator.avatar_url, currentCreator.first_name) || ''}
                       crossOrigin="anonymous"
                       key={currentCreator.discovery_video_url}
                       onLoadedData={(e) => {

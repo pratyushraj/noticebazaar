@@ -247,7 +247,7 @@ export const DiscoveryCard = React.forwardRef<HTMLDivElement, DiscoveryCardProps
 
             {/* Visual Section (Top 65% height) */}
             <div className="relative h-[65%] w-full overflow-hidden z-0 bg-black rounded-[2rem]">
-                {creator.discovery_video_url ? (
+                {creator.discovery_video_url && isActive ? (
                     <video
                         ref={videoRef}
                         key={creator.discovery_video_url}

@@ -263,7 +263,31 @@ const BarterCollabPage = () => {
               {creators.map(creator => (
                 <div key={creator.id} className="group relative aspect-[4/5] rounded-[32px] overflow-hidden bg-slate-100 shadow-lg border-4 border-white hover:shadow-2xl hover:-translate-y-2 transition-all duration-500">
                   {creator.discovery_video_url ? (
-                    <video src={creator.discovery_video_url} className="w-full h-full object-cover" autoPlay muted loop playsInline poster={creator.avatar_url || ''} />
+                    <video 
+                      src={creator.discovery_video_url} 
+                      className="w-full h-full object-cover" 
+                      muted 
+                      loop 
+                      playsInline 
+                      preload="none"
+                      poster={safeAvatarSrc(creator.avatar_url, creator.name) || ''} 
+                      onMouseEnter={(e) => {
+                        const playPromise = e.currentTarget.play();
+                        if (playPromise !== undefined) {
+                          playPromise.catch(() => {});
+                        }
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.pause();
+                      }}
+                      onTouchStart={(e) => {
+                        if (e.currentTarget.paused) {
+                          e.currentTarget.play().catch(() => {});
+                        } else {
+                          e.currentTarget.pause();
+                        }
+                      }}
+                    />
                   ) : (
                     <img
                       src={safeAvatarSrc(creator.avatar_url, creator.name)}
