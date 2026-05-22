@@ -40,6 +40,7 @@ const BrandPitchDeck = lazy(() => import("@/pages/BrandPitchDeck"));
 const WelcomeOnboarding = lazy(() => import("@/pages/WelcomeOnboarding"));
 const InstaMockup = lazy(() => import("@/pages/InstaMockup"));
 const BarterCollabPage = lazy(() => import("@/pages/BarterCollabPage"));
+const AutoplayDirectory = lazy(() => import("@/pages/AutoplayDirectory"));
 
 
 export const PublicRoutes = () => (
@@ -92,6 +93,9 @@ export const PublicRoutes = () => (
     <Route path="/barter" element={<Navigate to="/barter-collab" replace />} />
     <Route path="/product-exchange" element={<Navigate to="/barter-collab" replace />} />
     <Route path="/influencer-gifting" element={<Navigate to="/barter-collab" replace />} />
+    {/* Local Autoplay Directory */}
+    <Route path="/autoplay-directory" element={<LazyRoute><AutoplayDirectory /></LazyRoute>} />
+    <Route path="/local-creators" element={<Navigate to="/autoplay-directory" replace />} />
     <Route path="/:username" element={<ReservedUsernameGuard><LazyRoute><CollabLinkLanding /></LazyRoute></ReservedUsernameGuard>} />
     <Route path="/:username/success" element={<ReservedUsernameGuard><LazyRoute><CollabLinkLanding /></LazyRoute></ReservedUsernameGuard>} />
     <Route path="/collab/:username" element={<LegacyCollabRedirect />} />
