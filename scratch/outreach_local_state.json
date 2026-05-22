@@ -1,0 +1,1856 @@
+{
+  "d2c_brands": {
+    "Absolut Pet": {
+      "email": "info@absolutpet.in",
+      "website": "https://absolutpet.in",
+      "category": "Pet Care",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-21T19:30:00.000Z"
+    },
+    "Blep World": {
+      "email": "care@blepworld.com",
+      "website": "https://blepworld.com",
+      "category": "Pet Care",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-21T19:30:00.000Z"
+    },
+    "Bowlers": {
+      "email": "feedback@bowlerspets.com",
+      "website": "https://bowlerspets.com",
+      "category": "Pet Care",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-21T19:30:00.000Z"
+    },
+    "Papa Pawsome": {
+      "email": "info@papapawsome.com",
+      "website": "https://papapawsome.com",
+      "category": "Pet Care",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-21T19:30:00.000Z"
+    },
+    "DogMeal India": {
+      "email": "dogmealindia@gmail.com",
+      "website": "https://dogmeal.in",
+      "category": "Pet Care",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-21T19:30:00.000Z"
+    },
+    "Furlicks": {
+      "email": "care@furlicks.com",
+      "website": "https://furlicks.com",
+      "category": "Pet Care",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-21T19:30:00.000Z"
+    },
+    "Groom My Pet": {
+      "email": "support@groommypet.in",
+      "website": "https://groommypet.in",
+      "category": "Pet Care",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-21T19:30:00.000Z"
+    },
+    "Moe Puppy": {
+      "email": "support@moepuppy.com",
+      "website": "https://moepuppy.com",
+      "category": "Pet Care",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-21T19:30:00.000Z"
+    },
+    "Pawfectly Made": {
+      "email": "woofsandpurrs@pawfectlymade.com",
+      "website": "https://pawfectlymade.com",
+      "category": "Pet Care",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-21T19:30:00.000Z"
+    },
+    "PawsIndia": {
+      "email": "support@pawsindia.com",
+      "website": "https://pawsindia.com",
+      "category": "Pet Care",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-21T19:30:00.000Z"
+    },
+    "Goofy Tails": {
+      "email": "support@goofytails.com",
+      "website": "https://goofytails.com",
+      "category": "Pet Care",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-21T19:30:00.000Z"
+    },
+    "Woof Treats": {
+      "email": "neha@wooftreats.in",
+      "website": "https://wooftreats.in",
+      "category": "Pet Care",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-21T19:30:00.000Z"
+    },
+    "Zoof Pets": {
+      "email": "woof@zoofpets.com",
+      "website": "https://zoofpets.com",
+      "category": "Pet Care",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-21T19:30:00.000Z"
+    },
+    "Zoivane Pets": {
+      "email": "info@zoivanepets.com",
+      "website": "https://zoivanepets.com",
+      "category": "Pet Care",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-21T19:30:00.000Z"
+    },
+    "Happy Puppy Organics": {
+      "email": "support@apetterlife.in",
+      "website": "https://happypuppyorganics.com",
+      "category": "Pet Care",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-21T19:30:00.000Z"
+    },
+    "APH Spices": {
+      "email": "info@aphspices.com",
+      "website": "https://aphspices.com",
+      "category": "Food, Snacks & Beverages",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-21T19:30:00.000Z"
+    },
+    "Atmosphere Kombucha": {
+      "email": "hello@atmospherestudio.in",
+      "website": "https://atmospherestudio.in",
+      "category": "Food, Snacks & Beverages",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-21T19:30:00.000Z"
+    },
+    "Avataa Tea": {
+      "email": "info@avataatea.com",
+      "website": "https://avataatea.com",
+      "category": "Food, Snacks & Beverages",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-21T19:30:00.000Z"
+    },
+    "Beanly": {
+      "email": "hello@beanlycoffee.com",
+      "website": "https://beanlycoffee.com",
+      "category": "Food, Snacks & Beverages",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-21T19:30:00.000Z"
+    },
+    "Beyond Water": {
+      "email": "help@drinkbeyond.co.in",
+      "website": "https://drinkbeyond.co.in",
+      "category": "Food, Snacks & Beverages",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-21T19:30:00.000Z"
+    },
+    "BluePine Foods": {
+      "email": "info@bluepinefoods.com",
+      "website": "https://bluepinefoods.com",
+      "category": "Food, Snacks & Beverages",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-21T19:30:00.000Z"
+    },
+    "Chutnefy": {
+      "email": "feedback@chutnefy.com",
+      "website": "https://chutnefy.com",
+      "category": "Food, Snacks & Beverages",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-21T19:30:00.000Z"
+    },
+    "Happy Jars": {
+      "email": "contact@happyjars.in",
+      "website": "https://happyjars.in",
+      "category": "Food, Snacks & Beverages",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-21T19:30:00.000Z"
+    },
+    "Dancing Cow | Oatish": {
+      "email": "support@dancingcow.in",
+      "website": "https://dancingcow.in",
+      "category": "Food, Snacks & Beverages",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-21T19:30:00.000Z"
+    },
+    "Dorje Teas": {
+      "email": "hello@dorjeteas.com",
+      "website": "https://dorjeteas.com",
+      "category": "Food, Snacks & Beverages",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-21T19:30:00.000Z"
+    },
+    "Drama Llama": {
+      "email": "info@dramallamabev.com",
+      "website": "https://dramallamabev.com",
+      "category": "Food, Snacks & Beverages",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-21T19:30:00.000Z"
+    },
+    "Dry Gravy": {
+      "email": "info@drygravy.in",
+      "website": "https://drygravy.in",
+      "category": "Food, Snacks & Beverages",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-21T19:30:00.000Z"
+    },
+    "Earthful": {
+      "email": "care@earthful.me",
+      "website": "https://earthful.me",
+      "category": "Food, Snacks & Beverages",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-21T19:30:00.000Z"
+    },
+    "FarmDidi": {
+      "email": "support@farmdidi.co",
+      "website": "https://farmdidi.co",
+      "category": "Food, Snacks & Beverages",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-21T19:30:00.000Z"
+    },
+    "Fitchy": {
+      "email": "hello@fitchy.in",
+      "website": "https://fitchy.in",
+      "category": "Food, Snacks & Beverages",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-21T19:30:00.000Z"
+    },
+    "Gud Gum": {
+      "email": "marketing@gudgum.in",
+      "website": "https://gudgum.in",
+      "category": "Food, Snacks & Beverages",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-21T19:30:00.000Z"
+    },
+    "Kerehaklu": {
+      "email": "info@kerehaklu.com",
+      "website": "https://kerehaklu.com",
+      "category": "Food, Snacks & Beverages",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-21T19:30:00.000Z"
+    },
+    "The Wandering Bean": {
+      "email": "thewanderingbean.coffee@gmail.com",
+      "website": "https://wanderingbean.in",
+      "category": "Food, Snacks & Beverages",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-21T19:30:00.000Z"
+    },
+    "Gladful": {
+      "email": "hello@gladful.in",
+      "website": "https://gladful.in",
+      "category": "Food, Snacks & Beverages",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-21T19:30:00.000Z"
+    },
+    "The Divine Foods": {
+      "email": "info@thedivinefoods.com",
+      "website": "https://thedivinefoods.com",
+      "category": "Food, Snacks & Beverages",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-21T19:30:00.000Z"
+    },
+    "Namhya Foods": {
+      "email": "care@namhyafoods.com",
+      "website": "https://namhyafoods.com",
+      "category": "Food, Snacks & Beverages",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-21T19:30:00.000Z"
+    },
+    "Snack Amor": {
+      "email": "info@snackamor.com",
+      "website": "https://snackamor.com",
+      "category": "Food, Snacks & Beverages",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-21T19:30:00.000Z"
+    },
+    "Spice Story": {
+      "email": "hello@spicestory.in",
+      "website": "https://spicestory.in",
+      "category": "Food, Snacks & Beverages",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-21T19:30:00.000Z"
+    },
+    "The Cinnamon Kitchen": {
+      "email": "hey@cinnamon.kitchen",
+      "website": "https://cinnamon.kitchen",
+      "category": "Food, Snacks & Beverages",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-21T19:30:00.000Z"
+    },
+    "The Gourmet Jar": {
+      "email": "hello@thegourmetjar.com",
+      "website": "https://thegourmetjar.com",
+      "category": "Food, Snacks & Beverages",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-21T19:30:00.000Z"
+    },
+    "Tiggle": {
+      "email": "hello@thetiggle.com",
+      "website": "https://thetiggle.com",
+      "category": "Food, Snacks & Beverages",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-21T19:30:00.000Z"
+    },
+    "Wakao Foods": {
+      "email": "hello@wakaofoods.com",
+      "website": "https://wakaofoods.com",
+      "category": "Food, Snacks & Beverages",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-21T19:30:00.000Z"
+    },
+    "Naturally Yours": {
+      "email": "support@naturallyyours.in",
+      "website": "https://naturallyyours.in",
+      "category": "Food, Snacks & Beverages",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-21T19:30:00.000Z"
+    },
+    "Keeros": {
+      "email": "hello@keeros.in",
+      "website": "https://keeros.in",
+      "category": "Food, Snacks & Beverages",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-21T19:30:00.000Z"
+    },
+    "The Healthy Binge": {
+      "email": "contact@trueagroroots.com",
+      "website": "https://thehealthybinge.in",
+      "category": "Food, Snacks & Beverages",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-21T19:30:00.000Z"
+    },
+    "Auli Lifestyle": {
+      "email": "info@aulilifestyle.com",
+      "website": "https://aulilifestyle.com",
+      "category": "Beauty, Skincare & Grooming",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-21T19:30:00.000Z"
+    },
+    "Bare Necessities": {
+      "email": "info@barenecessities.in",
+      "website": "https://barenecessities.in",
+      "category": "Beauty, Skincare & Grooming",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-21T19:30:00.000Z"
+    },
+    "Biobloom": {
+      "email": "info@biobloomonline.com",
+      "website": "https://biobloomonline.com",
+      "category": "Beauty, Skincare & Grooming",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-21T19:30:00.000Z"
+    },
+    "CosIQ": {
+      "email": "care@mycosiq.com",
+      "website": "https://mycosiq.com",
+      "category": "Beauty, Skincare & Grooming",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-21T19:30:00.000Z"
+    },
+    "Derma Essentia": {
+      "email": "info@dermaessentia.com",
+      "website": "https://dermaessentia.com",
+      "category": "Beauty, Skincare & Grooming",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-21T19:30:00.000Z"
+    },
+    "House of EM5": {
+      "email": "em5support@indiainfotech.com",
+      "website": "https://houseofem5.com",
+      "category": "Beauty, Skincare & Grooming",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-21T19:30:00.000Z"
+    },
+    "Isak Fragrances": {
+      "email": "info@isakfragrances.com",
+      "website": "https://isakfragrances.com",
+      "category": "Beauty, Skincare & Grooming",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-21T19:30:00.000Z"
+    },
+    "Mintree": {
+      "email": "hello@mintree.us",
+      "website": "https://mintree.us",
+      "category": "Beauty, Skincare & Grooming",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-21T19:30:00.000Z"
+    },
+    "Nature's Tattva": {
+      "email": "cs@tattvalogy.com",
+      "website": "https://tattvalogy.com",
+      "category": "Beauty, Skincare & Grooming",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-21T19:30:00.000Z"
+    },
+    "Rhea Skin": {
+      "email": "hello@rheaskin.com",
+      "website": "https://rheaskin.com",
+      "category": "Beauty, Skincare & Grooming",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-21T19:30:00.000Z"
+    },
+    "Suganda": {
+      "email": "support@suganda.co",
+      "website": "https://suganda.co",
+      "category": "Beauty, Skincare & Grooming",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-21T19:30:00.000Z"
+    },
+    "The Sass Bar": {
+      "email": "hello@thesassbar.com",
+      "website": "https://thesassbar.com",
+      "category": "Beauty, Skincare & Grooming",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-21T19:30:00.000Z"
+    },
+    "VR Luxuries": {
+      "email": "vrluxuries@gmail.com",
+      "website": "https://vrluxuries.com",
+      "category": "Beauty, Skincare & Grooming",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-21T19:30:00.000Z"
+    },
+    "Rubab Men": {
+      "email": "kaash.enterprises1@gmail.com",
+      "website": "https://rubabmen.com",
+      "category": "Beauty, Skincare & Grooming",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-21T19:30:00.000Z"
+    },
+    "Shesha Ayurveda": {
+      "email": "support@sheshaayurveda.com",
+      "website": "https://sheshaayurveda.com",
+      "category": "Beauty, Skincare & Grooming",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-21T19:30:00.000Z"
+    },
+    "Dromen & Co": {
+      "email": "info@dromenco.com",
+      "website": "https://dromenco.com",
+      "category": "Beauty, Skincare & Grooming",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-21T19:30:00.000Z"
+    },
+    "PureByPriyanka": {
+      "email": "info@purebypriyanka.com",
+      "website": "https://purebypriyanka.com",
+      "category": "Beauty, Skincare & Grooming",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-21T19:30:00.000Z"
+    },
+    "Earthy Sapo": {
+      "email": "customercare@earthysapo.com",
+      "website": "https://earthysapo.com",
+      "category": "Beauty, Skincare & Grooming",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-21T19:30:00.000Z"
+    },
+    "Rustic Art": {
+      "email": "hello@rusticart.in",
+      "website": "https://rusticart.in",
+      "category": "Beauty, Skincare & Grooming",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-21T19:30:00.000Z"
+    },
+    "Amazing Greys": {
+      "email": "care@amazinggreys.com",
+      "website": "https://amazinggreys.com",
+      "category": "Beauty, Skincare & Grooming",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-21T19:30:00.000Z"
+    },
+    "March Tee": {
+      "email": "help@marchtee.com",
+      "website": "https://marchtee.com",
+      "category": "Apparel & Accessories",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-21T19:30:00.000Z"
+    },
+    "Aretto": {
+      "email": "hello@aretto.in",
+      "website": "https://aretto.in",
+      "category": "Apparel & Accessories",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-21T19:30:00.000Z"
+    },
+    "Greenwear": {
+      "email": "info@greenwear.in",
+      "website": "https://greenwear.in",
+      "category": "Apparel & Accessories",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-21T19:30:00.000Z"
+    },
+    "Heart Up My Sleeves": {
+      "email": "info@heartupmysleeves.com",
+      "website": "https://heartupmysleeves.com",
+      "category": "Apparel & Accessories",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-21T19:30:00.000Z"
+    },
+    "Tailor & Circus": {
+      "email": "hello@andcircus.com",
+      "website": "https://andcircus.com",
+      "category": "Apparel & Accessories",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-21T19:30:00.000Z"
+    },
+    "Kaveri": {
+      "email": "info@bykaveri.com",
+      "website": "https://bykaveri.com",
+      "category": "Apparel & Accessories",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-21T19:30:00.000Z"
+    },
+    "Spatika": {
+      "email": "info@spatika.in",
+      "website": "https://spatika.in",
+      "category": "Apparel & Accessories",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-21T19:30:00.000Z"
+    },
+    "The Quirky Naari": {
+      "email": "support@thequirkynaari.com",
+      "website": "https://thequirkynaari.com",
+      "category": "Apparel & Accessories",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-21T19:30:00.000Z"
+    },
+    "Very Much Indian": {
+      "email": "info@verymuchindian.com",
+      "website": "https://verymuchindian.com",
+      "category": "Apparel & Accessories",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-21T19:30:00.000Z"
+    },
+    "Zillionaire": {
+      "email": "info@zillionaireindia.com",
+      "website": "https://zillionaireindia.com",
+      "category": "Apparel & Accessories",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-21T19:30:00.000Z"
+    },
+    "Tripole Gears": {
+      "email": "orders@tripole.in",
+      "website": "https://tripole.in",
+      "category": "Apparel & Accessories",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-21T19:30:00.000Z"
+    },
+    "Gusto India": {
+      "email": "info@gustoindia.in",
+      "website": "https://gustoindia.in",
+      "category": "Apparel & Accessories",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-21T19:30:00.000Z"
+    },
+    "Dr T Formulaa": {
+      "email": "info@drtformulaa.com",
+      "website": "https://drtformulaa.com",
+      "category": "Apparel & Accessories",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-21T19:30:00.000Z"
+    },
+    "Andamen": {
+      "email": "contact@andamen.com",
+      "website": "https://andamen.com",
+      "category": "Apparel & Accessories",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-21T19:30:00.000Z"
+    },
+    "Chidiyaa": {
+      "email": "support@chidiyaa.com",
+      "website": "https://chidiyaa.com",
+      "category": "Apparel & Accessories",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-21T19:30:00.000Z"
+    },
+    "Ariro Toys": {
+      "email": "growthmanager@arirotoys.com",
+      "website": "https://arirotoys.com",
+      "category": "Home, Wellness & Lifestyle",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-21T19:30:00.000Z"
+    },
+    "Bamboo India": {
+      "email": "info@bambooindia.com",
+      "website": "https://bambooindia.com",
+      "category": "Home, Wellness & Lifestyle",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-21T19:30:00.000Z"
+    },
+    "Blix": {
+      "email": "contact@blix.in",
+      "website": "https://blix.in",
+      "category": "Home, Wellness & Lifestyle",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-21T19:30:00.000Z"
+    },
+    "Cleevo": {
+      "email": "info@getcleevo.com",
+      "website": "https://getcleevo.com",
+      "category": "Home, Wellness & Lifestyle",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-21T19:30:00.000Z"
+    },
+    "Daily Dump": {
+      "email": "hello@dailydump.org",
+      "website": "https://dailydump.org",
+      "category": "Home, Wellness & Lifestyle",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-21T19:30:00.000Z"
+    },
+    "Dcalcifer India": {
+      "email": "s.gowthamsrinivash@gmail.com",
+      "website": "https://dcalcifer.com",
+      "category": "Home, Wellness & Lifestyle",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-21T19:30:00.000Z"
+    },
+    "Dhaaga Life": {
+      "email": "info@dhaagalife.com",
+      "website": "https://dhaagalife.com",
+      "category": "Home, Wellness & Lifestyle",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-21T19:30:00.000Z"
+    },
+    "Econiture": {
+      "email": "info@econiture.com",
+      "website": "https://econiture.com",
+      "category": "Home, Wellness & Lifestyle",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-21T19:30:00.000Z"
+    },
+    "Ekatra Handmade": {
+      "email": "aishwarya@ekatrahandmade.com",
+      "website": "https://ekatrahandmade.com",
+      "category": "Home, Wellness & Lifestyle",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-21T19:30:00.000Z"
+    },
+    "Flitch": {
+      "email": "info@flitch.in",
+      "website": "https://flitch.in",
+      "category": "Home, Wellness & Lifestyle",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-21T19:30:00.000Z"
+    },
+    "Grypp": {
+      "email": "hello@grypp.in",
+      "website": "https://grypp.in",
+      "category": "Home, Wellness & Lifestyle",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-21T19:30:00.000Z"
+    },
+    "Jackpot India": {
+      "email": "info@jackpotindia.com",
+      "website": "https://jackpotindia.com",
+      "category": "Home, Wellness & Lifestyle",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-21T19:30:00.000Z"
+    },
+    "The June Shop": {
+      "email": "sales@thejuneshop.com",
+      "website": "https://thejuneshop.com",
+      "category": "Home, Wellness & Lifestyle",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-21T19:30:00.000Z"
+    },
+    "Born Good": {
+      "email": "care@borngood.in",
+      "website": "https://borngood.in",
+      "category": "Home, Wellness & Lifestyle",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-21T19:30:00.000Z"
+    },
+    "Pabiben": {
+      "email": "info@pabiben.com",
+      "website": "https://pabiben.com",
+      "category": "Home, Wellness & Lifestyle",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-21T19:30:00.000Z"
+    },
+    "Kalakaram": {
+      "email": "support@kalakaram.com",
+      "website": "https://kalakaram.com",
+      "category": "Home, Wellness & Lifestyle",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-21T19:30:00.000Z"
+    },
+    "Sirohi": {
+      "email": "contact@sirohi.org",
+      "website": "https://sirohi.org",
+      "category": "Home, Wellness & Lifestyle",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-21T19:30:00.000Z"
+    },
+    "EcoRight": {
+      "email": "help@ecoright.com",
+      "website": "https://ecoright.com",
+      "category": "Home, Wellness & Lifestyle",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-21T19:30:00.000Z"
+    },
+    "Shumee": {
+      "email": "care@shumee.in",
+      "website": "https://shumee.in",
+      "category": "Home, Wellness & Lifestyle",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-22T07:26:12.699Z"
+    },
+    "The Happy Turtle": {
+      "email": "info@thehappyturtle.in",
+      "website": "https://thehappyturtle.in",
+      "category": "Home, Wellness & Lifestyle",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-22T07:26:14.893Z"
+    },
+    "sweetspot.way": {
+      "email": "wecare@sweetspotway.com",
+      "website": "https://sweetspotway.com",
+      "category": "Food, Snacks & Beverages",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-22T20:59:57.840Z"
+    },
+    "Beastberry": {
+      "email": "support@beastberry.in",
+      "website": "https://beastberry.in",
+      "category": "Food, Snacks & Beverages",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-22T21:00:02.226Z"
+    },
+    "acmeposhan": {
+      "email": "poshan.support@acme.in",
+      "website": "https://acmeposhan.com",
+      "category": "Food, Snacks & Beverages",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-22T21:00:04.801Z"
+    },
+    "U16 Ultimatebeauty": {
+      "email": "u16ultimatebeauty@gmail.com",
+      "website": "https://u16.co.in",
+      "category": "Beauty, Skincare & Grooming",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-22T21:00:07.797Z"
+    },
+    "EVERPURE LIFE": {
+      "email": "customercare@everpurelife.com",
+      "website": "https://everpurelife.com",
+      "category": "Home, Wellness & Lifestyle",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-22T21:00:11.580Z"
+    },
+    "seoulceuticalsindia": {
+      "email": "cartfireindia@gmail.com",
+      "website": "https://seoulceuticals.in",
+      "category": "Beauty, Skincare & Grooming",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-22T21:00:13.904Z"
+    },
+    "getyuriskin": {
+      "email": "support@yuriskin.com",
+      "website": "https://yuriskin.com",
+      "category": "Beauty, Skincare & Grooming",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-22T21:00:16.123Z"
+    },
+    "belowzero.skin": {
+      "email": "belowzero836@gmail.com",
+      "website": "https://belowzero.in",
+      "category": "Beauty, Skincare & Grooming",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-22T21:00:18.347Z"
+    },
+    "zeniqua_india": {
+      "email": "support@zeniqua.in",
+      "website": "https://zeniqua.in",
+      "category": "Home, Wellness & Lifestyle",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-22T21:00:23.351Z"
+    },
+    "skincentivesindia": {
+      "email": "skincentivesindia@gmail.com",
+      "website": "https://skincentives.in",
+      "category": "Beauty, Skincare & Grooming",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-22T21:00:27.028Z"
+    },
+    "modestouzeattires": {
+      "email": "care@modestouzeattires.com",
+      "website": "https://modestouzeattires.com",
+      "category": "Apparel & Accessories",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-22T21:00:32.002Z"
+    },
+    "TagZ Foods": {
+      "email": "help@tagzfoods.com",
+      "website": "https://tagzfoods.com",
+      "category": "Food, Snacks & Beverages",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-22T21:00:34.937Z"
+    },
+    "Eat Better Co.": {
+      "email": "care@eatbetterco.com",
+      "website": "https://eatbetterco.com",
+      "category": "Food, Snacks & Beverages",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-22T21:00:37.786Z"
+    },
+    "The Whole Truth Foods": {
+      "email": "partnerships@thewholetruthfoods.com",
+      "website": "https://thewholetruthfoods.com",
+      "category": "Food, Snacks & Beverages",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-22T21:00:42.904Z"
+    },
+    "Slurrp Farm": {
+      "email": "mail@slurrpfarm.com",
+      "website": "https://slurrpfarm.com",
+      "category": "Food, Snacks & Beverages",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-22T21:00:45.257Z"
+    },
+    "Troo Good": {
+      "email": "support@troogood.com",
+      "website": "https://troogood.com",
+      "category": "Food, Snacks & Beverages",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-22T21:00:47.722Z"
+    },
+    "Beyond Snack": {
+      "email": "crc@drjackfruit.com",
+      "website": "https://beyondsnack.in",
+      "category": "Food, Snacks & Beverages",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-22T21:00:51.292Z"
+    },
+    "Blue Tea": {
+      "email": "contact@bluetea.co.in",
+      "website": "https://bluetea.co.in",
+      "category": "Food, Snacks & Beverages",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-22T21:00:53.516Z"
+    },
+    "Sleepy Owl Coffee": {
+      "email": "marketing@sleepyowl.co",
+      "website": "https://sleepyowl.co",
+      "category": "Food, Snacks & Beverages",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-22T21:00:55.744Z"
+    },
+    "Rage Coffee": {
+      "email": "help@ragecoffee.com",
+      "website": "https://ragecoffee.com",
+      "category": "Food, Snacks & Beverages",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-22T21:00:58.238Z"
+    },
+    "Anveshan": {
+      "email": "business@anveshan.farm",
+      "website": "https://anveshan.farm",
+      "category": "Food, Snacks & Beverages",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-22T21:01:00.533Z"
+    },
+    "Good Monk": {
+      "email": "care@goodmonk.in",
+      "website": "https://goodmonk.in",
+      "category": "Food, Snacks & Beverages",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-22T21:01:02.750Z"
+    },
+    "Teafit": {
+      "email": "hi@tea.fit",
+      "website": "https://tea.fit",
+      "category": "Food, Snacks & Beverages",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-22T21:01:05.044Z"
+    },
+    "Snitch": {
+      "email": "collab@snitch.co.in",
+      "website": "https://snitch.co.in",
+      "category": "Apparel & Accessories",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-22T21:01:07.274Z"
+    },
+    "DaMENSCH": {
+      "email": "support@damensch.com",
+      "website": "https://damensch.com",
+      "category": "Apparel & Accessories",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-22T21:01:09.556Z"
+    },
+    "Clovia": {
+      "email": "marketing@clovia.com",
+      "website": "https://clovia.com",
+      "category": "Apparel & Accessories",
+      "status": "pending",
+      "outreach_count": 0
+    },
+    "Miraggio": {
+      "email": "support@miraggiolife.com",
+      "website": "https://miraggiolife.com",
+      "category": "Apparel & Accessories",
+      "status": "pending",
+      "outreach_count": 0
+    },
+    "Suta": {
+      "email": "marketing@suta.in",
+      "website": "https://suta.in",
+      "category": "Apparel & Accessories",
+      "status": "pending",
+      "outreach_count": 0
+    },
+    "TrueBrowns": {
+      "email": "info@truebrowns.com",
+      "website": "https://truebrowns.com",
+      "category": "Apparel & Accessories",
+      "status": "pending",
+      "outreach_count": 0
+    },
+    "BlissClub": {
+      "email": "hi@myblissclub.in",
+      "website": "https://myblissclub.in",
+      "category": "Apparel & Accessories",
+      "status": "pending",
+      "outreach_count": 0
+    },
+    "Aastey": {
+      "email": "happy@aastey.com",
+      "website": "https://aastey.com",
+      "category": "Apparel & Accessories",
+      "status": "pending",
+      "outreach_count": 0
+    },
+    "Nicobar": {
+      "email": "care@nicobar.com",
+      "website": "https://nicobar.com",
+      "category": "Apparel & Accessories",
+      "status": "pending",
+      "outreach_count": 0
+    },
+    "Maati by Neha Kabra": {
+      "email": "info@maatibyneha.com",
+      "website": "https://maatibyneha.com",
+      "category": "Apparel & Accessories",
+      "status": "pending",
+      "outreach_count": 0
+    },
+    "Okhai": {
+      "email": "okhaicfe@okhai.org",
+      "website": "https://okhai.org",
+      "category": "Apparel & Accessories",
+      "status": "pending",
+      "outreach_count": 0
+    },
+    "The Summer House": {
+      "email": "hello@thesummerhouse.in",
+      "website": "https://thesummerhouse.in",
+      "category": "Apparel & Accessories",
+      "status": "pending",
+      "outreach_count": 0
+    },
+    "Deconstruct": {
+      "email": "wecare@thedeconstruct.in",
+      "website": "https://thedeconstruct.in",
+      "category": "Beauty, Skincare & Grooming",
+      "status": "pending",
+      "outreach_count": 0
+    },
+    "Dot & Key": {
+      "email": "care@dotandkey.com",
+      "website": "https://dotandkey.com",
+      "category": "Beauty, Skincare & Grooming",
+      "status": "pending",
+      "outreach_count": 0
+    },
+    "Earth Rhythm": {
+      "email": "business@earthrhythm.com",
+      "website": "https://earthrhythm.com",
+      "category": "Beauty, Skincare & Grooming",
+      "status": "pending",
+      "outreach_count": 0
+    },
+    "Vilvah Store": {
+      "email": "sales@vilvahstore.com",
+      "website": "https://vilvahstore.com",
+      "category": "Beauty, Skincare & Grooming",
+      "status": "pending",
+      "outreach_count": 0
+    },
+    "Inde Wild": {
+      "email": "indiacare@indewild.com",
+      "website": "https://indewild.com",
+      "category": "Beauty, Skincare & Grooming",
+      "status": "pending",
+      "outreach_count": 0
+    },
+    "Arata": {
+      "email": "marketing@arata.in",
+      "website": "https://arata.in",
+      "category": "Beauty, Skincare & Grooming",
+      "status": "pending",
+      "outreach_count": 0
+    },
+    "Bella Vita Organic": {
+      "email": "shop@bellavitaorganic.com",
+      "website": "https://bellavitaorganic.com",
+      "category": "Beauty, Skincare & Grooming",
+      "status": "pending",
+      "outreach_count": 0
+    },
+    "mCaffeine": {
+      "email": "support@mcaffeine.com",
+      "website": "https://mcaffeine.com",
+      "category": "Beauty, Skincare & Grooming",
+      "status": "pending",
+      "outreach_count": 0
+    },
+    "Plum": {
+      "email": "hi@plumgoodness.com",
+      "website": "https://plumgoodness.com",
+      "category": "Beauty, Skincare & Grooming",
+      "status": "pending",
+      "outreach_count": 0
+    },
+    "The Moms Co.": {
+      "email": "support@themomsco.com",
+      "website": "https://themomsco.com",
+      "category": "Beauty, Skincare & Grooming",
+      "status": "pending",
+      "outreach_count": 0
+    },
+    "The Man Company": {
+      "email": "support@themancompany.com",
+      "website": "https://themancompany.com",
+      "category": "Beauty, Skincare & Grooming",
+      "status": "pending",
+      "outreach_count": 0
+    },
+    "Plix": {
+      "email": "hello@plixlife.com",
+      "website": "https://plixlife.com",
+      "category": "Home, Wellness & Lifestyle",
+      "status": "pending",
+      "outreach_count": 0
+    },
+    "Wellbeing Nutrition": {
+      "email": "care@wellbeingnutrition.com",
+      "website": "https://wellbeingnutrition.com",
+      "category": "Home, Wellness & Lifestyle",
+      "status": "pending",
+      "outreach_count": 0
+    },
+    "Supply6": {
+      "email": "care@supplysix.com",
+      "website": "https://supplysix.com",
+      "category": "Home, Wellness & Lifestyle",
+      "status": "pending",
+      "outreach_count": 0
+    },
+    "Fast&Up": {
+      "email": "customercare@fastandup.in",
+      "website": "https://fastandup.in",
+      "category": "Home, Wellness & Lifestyle",
+      "status": "pending",
+      "outreach_count": 0
+    },
+    "Fitspire": {
+      "email": "support@fitspire.fit",
+      "website": "https://fitspire.fit",
+      "category": "Home, Wellness & Lifestyle",
+      "status": "pending",
+      "outreach_count": 0
+    },
+    "OZiva": {
+      "email": "community@oziva.in",
+      "website": "https://oziva.in",
+      "category": "Home, Wellness & Lifestyle",
+      "status": "pending",
+      "outreach_count": 0
+    },
+    "MuscleBlaze": {
+      "email": "info@muscleblaze.com",
+      "website": "https://muscleblaze.com",
+      "category": "Home, Wellness & Lifestyle",
+      "status": "pending",
+      "outreach_count": 0
+    },
+    "Nutrabay": {
+      "email": "support@nutrabay.com",
+      "website": "https://nutrabay.com",
+      "category": "Home, Wellness & Lifestyle",
+      "status": "pending",
+      "outreach_count": 0
+    },
+    "Nestasia": {
+      "email": "info@nestasia.in",
+      "website": "https://nestasia.in",
+      "category": "Home, Wellness & Lifestyle",
+      "status": "pending",
+      "outreach_count": 0
+    },
+    "Byora Homes": {
+      "email": "care@byorahomes.com",
+      "website": "https://byorahomes.com",
+      "category": "Home, Wellness & Lifestyle",
+      "status": "pending",
+      "outreach_count": 0
+    },
+    "Nappa Dori": {
+      "email": "customercare@nappadori.com",
+      "website": "https://nappadori.com",
+      "category": "Home, Wellness & Lifestyle",
+      "status": "pending",
+      "outreach_count": 0
+    },
+    "RAD Living": {
+      "email": "hello@radlvng.com",
+      "website": "https://radlvng.com",
+      "category": "Home, Wellness & Lifestyle",
+      "status": "pending",
+      "outreach_count": 0
+    },
+    "Karma Kettle": {
+      "email": "sales@karmakettle.com",
+      "website": "https://karmakettle.com",
+      "category": "Food, Snacks & Beverages",
+      "status": "pending",
+      "outreach_count": 0
+    },
+    "Scrapshala": {
+      "email": "support@scrapshala.com",
+      "website": "https://scrapshala.com",
+      "category": "Home, Wellness & Lifestyle",
+      "status": "pending",
+      "outreach_count": 0
+    },
+    "ExclusiveLane": {
+      "email": "care@exclusivelane.com",
+      "website": "https://exclusivelane.com",
+      "category": "Home, Wellness & Lifestyle",
+      "status": "pending",
+      "outreach_count": 0
+    }
+  },
+  "dentists": {
+    "Best Dental Care": {
+      "email": "smile@bestdentistinpatna.com",
+      "doctorName": "Dr. R. K. Singh",
+      "treatmentKeyword": "smile makeovers, cosmetic alignment",
+      "locationKeyword": "Boring-Patliputra Road",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-22T19:45:56.379Z"
+    },
+    "Luxe Dental Patna": {
+      "email": "luxedentalpatna@gmail.com",
+      "doctorName": "Doctor",
+      "treatmentKeyword": "teeth whitening, veneers",
+      "locationKeyword": "Boring Road",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-22T19:45:56.379Z"
+    },
+    "Facio Dental Centre": {
+      "email": "info@faciodental.com",
+      "doctorName": "Doctor",
+      "treatmentKeyword": "braces, smile correction",
+      "locationKeyword": "Boring Road",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-22T19:45:56.379Z"
+    },
+    "Oro Max Dental Care": {
+      "email": "dr.harshsingh02@gmail.com",
+      "doctorName": "Dr. Harsh Singh",
+      "treatmentKeyword": "dental implants, whitening",
+      "locationKeyword": "Boring Road",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-22T19:45:56.379Z"
+    },
+    "Rahul Dental Clinic": {
+      "email": "rahul.sgt@gmail.com",
+      "doctorName": "Dr. Rahul",
+      "treatmentKeyword": "root canal, general treatments",
+      "locationKeyword": "Boring Road",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-22T19:45:56.379Z"
+    },
+    "Reasons 2 Smile (Patna Dental)": {
+      "email": "info@patnadental.com",
+      "doctorName": "Dr. Shashi Ranjan",
+      "treatmentKeyword": "smile designing, alignment",
+      "locationKeyword": "Kankarbagh",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-22T19:45:56.379Z"
+    },
+    "Advanced Dental Hospital": {
+      "email": "advdentalpat@gmail.com",
+      "doctorName": "Doctor",
+      "treatmentKeyword": "advanced implants, braces",
+      "locationKeyword": "Kankarbagh",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-22T19:45:56.379Z"
+    },
+    "Hope Dental & Aesthetics": {
+      "email": "hopedental21@gmail.com",
+      "doctorName": "Doctor",
+      "treatmentKeyword": "cosmetic dental enhancements, whitening",
+      "locationKeyword": "Kankarbagh",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-22T19:45:56.379Z"
+    },
+    "Buddha Dental Hospital": {
+      "email": "kishoreamartya1@gmail.com",
+      "doctorName": "Dr. Kishore Amartya",
+      "treatmentKeyword": "oral surgery, dental restorations",
+      "locationKeyword": "Kankarbagh",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-22T19:45:56.379Z"
+    },
+    "The Teeth Doctor": {
+      "email": "rajubabu15@gmail.com",
+      "doctorName": "Dr. Raju Babu",
+      "treatmentKeyword": "cosmetic scaling, root canals",
+      "locationKeyword": "Kankarbagh",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-22T19:45:56.379Z"
+    },
+    "Dr. Sachin's Dental": {
+      "email": "info@sachindental.com",
+      "doctorName": "Dr. Sachin Kumar",
+      "treatmentKeyword": "dental implants, full-mouth restoration",
+      "locationKeyword": "Ashiana-Digha Road",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-22T19:45:56.379Z"
+    },
+    "Ratan Dental": {
+      "email": "info@ratandental.com",
+      "doctorName": "Dr. Rohit Kumar Singh",
+      "treatmentKeyword": "pain-free laser dentistry, smile makeovers",
+      "locationKeyword": "Rajendra Nagar",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-22T19:45:56.379Z"
+    },
+    "Pratibha Dental Care": {
+      "email": "draditisinghk@gmail.com",
+      "doctorName": "Dr. Aditi Singh",
+      "treatmentKeyword": "orthodontic treatments, scaling",
+      "locationKeyword": "Boring Road",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-22T19:45:56.379Z"
+    },
+    "ToothCare Dental Clinic": {
+      "email": "toothcarepatna@gmail.com",
+      "doctorName": "Doctor",
+      "treatmentKeyword": "cosmetic teeth alignments, root canals",
+      "locationKeyword": "Gorakhnath Lane, Boring Road",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-22T20:24:36.414Z"
+    },
+    "Magadh Oro Dental": {
+      "email": "magadhorodentalpatna@gmail.com",
+      "doctorName": "Doctor",
+      "treatmentKeyword": "dental implants, oral rehabilitation",
+      "locationKeyword": "Kankarbagh",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-22T20:24:38.881Z"
+    },
+    "Cosmodent Dental Clinic": {
+      "email": "cosmodentpatna@gmail.com",
+      "doctorName": "Dr. Prerna Priya",
+      "treatmentKeyword": "orthodontic alignments, painless dentistry",
+      "locationKeyword": "Patna Central",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-22T20:24:41.049Z"
+    },
+    "Dr. Smile Dental Clinic": {
+      "email": "drsmile009@gmail.com",
+      "doctorName": "Doctor",
+      "treatmentKeyword": "cosmetic dental implants, whitening",
+      "locationKeyword": "Boring Road",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-22T20:24:43.195Z"
+    },
+    "Smile Dental Clinic": {
+      "email": "Kharshit909@gmail.com",
+      "doctorName": "Dr. Harshit Kumar",
+      "treatmentKeyword": "cosmetic scaling, restorative dental care",
+      "locationKeyword": "Patna",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-22T20:24:45.364Z"
+    },
+    "Patna Dental Design": {
+      "email": "kundanjee1990@gmail.com",
+      "doctorName": "Doctor",
+      "treatmentKeyword": "digital smile designing, aligners",
+      "locationKeyword": "Patna",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-22T20:24:47.530Z"
+    },
+    "Patna Dental Clinic & Implant Center": {
+      "email": "riteshvatsa2003@gmail.com",
+      "doctorName": "Doctor",
+      "treatmentKeyword": "dental implants, advanced root canal treatments",
+      "locationKeyword": "Makhania Kua",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-22T20:24:49.659Z"
+    },
+    "The Oro Dental Clinic": {
+      "email": "theorojyotiprakash@gmail.com",
+      "doctorName": "Dr. Jyoti Prakash",
+      "treatmentKeyword": "oral surgery, digital smile designing",
+      "locationKeyword": "Patna",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-22T20:24:51.827Z"
+    },
+    "Dental Comfort Zone": {
+      "email": "dcz.patna@gmail.com",
+      "doctorName": "Doctor",
+      "treatmentKeyword": "laser treatments, teeth whitening",
+      "locationKeyword": "Patna",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-22T20:24:53.973Z"
+    },
+    "Smile Art Dental Clinic": {
+      "email": "smileartdentalclinic@gmail.com",
+      "doctorName": "Doctor",
+      "treatmentKeyword": "smile makeovers, dental cosmetic scaling",
+      "locationKeyword": "Gulzarbagh",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-22T20:24:56.465Z"
+    },
+    "City Dental Centre": {
+      "email": "cityimaging2@gmail.com",
+      "doctorName": "Doctor",
+      "treatmentKeyword": "root canal therapy, family dental care",
+      "locationKeyword": "Tempo Stand, Kankarbagh",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-22T20:24:58.630Z"
+    },
+    "Green Dental Care": {
+      "email": "dr.amitkumarsrivastava@ymail.com",
+      "doctorName": "Dr. Amit Kumar Srivastava",
+      "treatmentKeyword": "teeth alignment, pain-free extractions",
+      "locationKeyword": "Boring Road",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-22T20:25:00.921Z"
+    },
+    "Krishna Dental Hospital & Research Center": {
+      "email": "support@krishnadentalhospital.com",
+      "doctorName": "Doctor",
+      "treatmentKeyword": "comprehensive orthodontics, dental implants",
+      "locationKeyword": "Yarpur",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-22T20:25:03.154Z"
+    },
+    "Om Dental Braces & Implant Clinic": {
+      "email": "omdentalclinicpatnaa@gmail.com",
+      "doctorName": "Doctor",
+      "treatmentKeyword": "braces, ceramic implants",
+      "locationKeyword": "Patna",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-22T20:25:05.367Z"
+    },
+    "Jay Dental Care": {
+      "email": "info@jaydentalcare.com",
+      "doctorName": "Doctor",
+      "treatmentKeyword": "smile redesigns, full-mouth restoration",
+      "locationKeyword": "Gardanibagh",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-22T20:25:07.523Z"
+    }
+  },
+  "dermatologists": {
+    "SKINaGe Clinic": {
+      "email": "skinagepatna@gmail.com",
+      "doctorName": "Doctor",
+      "treatmentKeyword": "laser skincare, acne scar treatments, glowing skin",
+      "locationKeyword": "Sri Krishna Puri, Boring Road",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-22T20:25:15.126Z"
+    },
+    "Perfect Skin & Hair Solutions": {
+      "email": "perfectskin566@gmail.com",
+      "doctorName": "Dr. Samina Subuhi",
+      "treatmentKeyword": "clinical dermatology, hair fall therapy",
+      "locationKeyword": "Sabzibagh",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-22T20:25:18.033Z"
+    },
+    "Ortho and Skin Care Clinic": {
+      "email": "orthoandskin@gmail.com",
+      "doctorName": "Dr. Richa Thakur",
+      "treatmentKeyword": "medical skin therapies, chemical peels",
+      "locationKeyword": "Raja Bazar",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-22T20:25:21.083Z"
+    },
+    "Kiran Skin Clinic": {
+      "email": "asmita.hi@gmail.com",
+      "doctorName": "Dr. Asmita Singh",
+      "treatmentKeyword": "medical & cosmetic dermatology, laser treatments",
+      "locationKeyword": "Bailey Road",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-22T20:25:24.134Z"
+    },
+    "Skin And Hair Clinic": {
+      "email": "info@skinandhairclinic.com",
+      "doctorName": "Dr. Abhijeet Jha",
+      "treatmentKeyword": "clinical aesthetic dermatology, hair transplants",
+      "locationKeyword": "Kankarbagh",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-22T20:25:26.276Z"
+    },
+    "Adarsh Skin Care Clinic": {
+      "email": "info@adarshskincareclinic.com",
+      "doctorName": "Dr. Ayush Adarsh",
+      "treatmentKeyword": "advanced skin treatments, anti-aging therapies",
+      "locationKeyword": "Rajendra Nagar",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-22T20:25:28.450Z"
+    },
+    "Square Root Hair Transplant Skin Laser Clinic": {
+      "email": "squarerootpatna@gmail.com",
+      "doctorName": "Doctor",
+      "treatmentKeyword": "hair restoration, skin rejuvenation",
+      "locationKeyword": "Sri Krishna Puri",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-22T20:25:30.583Z"
+    },
+    "Advance Skin Hair & Laser Clinic": {
+      "email": "info@advanceskinhairclinic.com",
+      "doctorName": "Dr. Punkesh Kumar",
+      "treatmentKeyword": "laser hair removal, pigment therapies",
+      "locationKeyword": "Rajendra Nagar",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-22T20:25:32.731Z"
+    },
+    "Dermashine Skin & Cosmetic Clinic": {
+      "email": "drrashidderma@gmail.com",
+      "doctorName": "Dr. Rashid Shahid",
+      "treatmentKeyword": "cosmetic injectables, skin polishing",
+      "locationKeyword": "Haroon Nagar",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-22T20:25:34.868Z"
+    },
+    "Advante Hair & Skin Clinic": {
+      "email": "advanteclinicpatna@gmail.com",
+      "doctorName": "Doctor",
+      "treatmentKeyword": "medical hair growth treatments, laser peeling",
+      "locationKeyword": "Kidwai Puri",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-22T20:25:36.991Z"
+    },
+    "Satya Skin And Cosmetic Clinic": {
+      "email": "drkumarsatyaprakash@gmail.com",
+      "doctorName": "Dr. Kumar Satya Prakash",
+      "treatmentKeyword": "acne control, whitening lasers",
+      "locationKeyword": "Malahi Pakri Chowk, Kankarbagh",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-22T20:25:39.938Z"
+    },
+    "Dr. Priyadarshi Ranjan Plastic & Cosmetic Surgery Clinic": {
+      "email": "drpdranjan@gmail.com",
+      "doctorName": "Dr. Priyadarshi Ranjan",
+      "treatmentKeyword": "cosmetic surgeries, microdermabrasion",
+      "locationKeyword": "PC Colony, Kankarbagh",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-22T20:25:42.075Z"
+    },
+    "Ashwini ENT & Cosmetic Hospital": {
+      "email": "info@ashwinicosmetichospital.com",
+      "doctorName": "Doctor",
+      "treatmentKeyword": "cosmetic facial reconstruction, skin rejuvenation",
+      "locationKeyword": "Malahi Pakri Chowk, Kankarbagh",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-22T20:25:44.216Z"
+    },
+    "Cutis Skin Clinic and Laser Centre": {
+      "email": "sksudhu@gmail.com",
+      "doctorName": "Doctor",
+      "treatmentKeyword": "skincare facials, anti-pigmentation lasers",
+      "locationKeyword": "PC Colony, Kankarbagh",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-22T20:25:46.341Z"
+    },
+    "Mediversal Health Studio": {
+      "email": "operations.studio@mediversal.in",
+      "doctorName": "Doctor",
+      "treatmentKeyword": "weight loss programs, wellness skin therapies",
+      "locationKeyword": "East Gandhi Maidan",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-22T20:25:48.496Z"
+    },
+    "Dr. Abhijeet Kumar Jha Skin Clinic": {
+      "email": "info@drabhijeetjha.com",
+      "doctorName": "Dr. Abhijeet Kumar Jha",
+      "treatmentKeyword": "clinical skincare, advanced hair regrowth",
+      "locationKeyword": "Kankarbagh",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-22T20:25:50.624Z"
+    },
+    "The Skin Centre": {
+      "email": "restorefollicle@gmail.com",
+      "doctorName": "Dr. Abhinav Kumar",
+      "treatmentKeyword": "hair restorations, advanced scalp treatments",
+      "locationKeyword": "Kankarbagh",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-22T20:25:52.778Z"
+    },
+    "Redefine Skin Clinic": {
+      "email": "drkunalsinha82@gmail.com",
+      "doctorName": "Dr. Kunal Sinha",
+      "treatmentKeyword": "skin laser toning, clinical peelings",
+      "locationKeyword": "Kankarbagh",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-22T20:25:54.916Z"
+    }
+  },
+  "salons": {
+    "Head Turners (Boring Road)": {
+      "email": "headturners.patna13@gmail.com",
+      "doctorName": "Manager",
+      "treatmentKeyword": "hair highlights, luxury facials, bridal makeups",
+      "locationKeyword": "Boring Road",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-22T20:26:03.056Z"
+    },
+    "Geetanjali Salon": {
+      "email": "customercare@geetanjalisalon.com",
+      "doctorName": "Manager",
+      "treatmentKeyword": "hair styling, global coloring, global balayage",
+      "locationKeyword": "Boring Road & Kankarbagh",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-22T20:26:05.852Z"
+    },
+    "Jawed Habib Salon & Beauty Parlour": {
+      "email": "info@thejawedhabibsalon.com",
+      "doctorName": "Manager",
+      "treatmentKeyword": "hair keratin, signature spa, bridal glow",
+      "locationKeyword": "Kankarbagh",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-22T20:26:08.055Z"
+    },
+    "Shahnaz Hussain and Loreal Professional Beauty Salon": {
+      "email": "Shahnazhussain2011@gmail.com",
+      "doctorName": "Manager",
+      "treatmentKeyword": "herbal skin facials, organic hair spa",
+      "locationKeyword": "Sheikhpura, Bailey Road",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-22T20:26:10.224Z"
+    },
+    "The World Of Beauty Place": {
+      "email": "theworldofbeautyplace@gmail.com",
+      "doctorName": "Manager",
+      "treatmentKeyword": "bridal makeup studio, hair spa therapy",
+      "locationKeyword": "Lohianagar",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-22T20:26:12.405Z"
+    },
+    "CUT&STYLE Salon": {
+      "email": "info@cutandstyle.in",
+      "doctorName": "Manager",
+      "treatmentKeyword": "hair aesthetics, organic skin care, premium grooming",
+      "locationKeyword": "Rajiv Nagar",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-22T20:26:14.593Z"
+    },
+    "The Icon Studio Unisex Salon & Spa": {
+      "email": "theiconstudiosalon@gmail.com",
+      "doctorName": "Manager",
+      "treatmentKeyword": "signature massages, global hair spa, bridal makeovers",
+      "locationKeyword": "BMP Road, Bailey Road",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-22T20:26:16.786Z"
+    },
+    "D'Elixir Salon": {
+      "email": "contact@delixirsalon.com",
+      "doctorName": "Manager",
+      "treatmentKeyword": "hair botox, hydra-facials, premium groomings",
+      "locationKeyword": "New Patliputra Colony",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-22T20:26:18.980Z"
+    },
+    "The Grace Salon": {
+      "email": "thegracewellness@gmail.com",
+      "doctorName": "Manager",
+      "treatmentKeyword": "wellness spa therapies, hair aesthetic setups",
+      "locationKeyword": "South Gandhi Maidan",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-22T20:26:21.180Z"
+    },
+    "Lady Fair Beauty Salon & Makeup Studio": {
+      "email": "Ladyfairpatna@gmail.com",
+      "doctorName": "Manager",
+      "treatmentKeyword": "high-end bridal makeups, premium pre-bridal grooming",
+      "locationKeyword": "Boring Road",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-22T20:26:23.341Z"
+    },
+    "Style N Shine Studio": {
+      "email": "carestylenShine@gmail.com",
+      "doctorName": "Manager",
+      "treatmentKeyword": "hair transformations, advanced glow facials",
+      "locationKeyword": "Patna",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-22T20:26:25.517Z"
+    },
+    "The Boss Salon and Spa": {
+      "email": "beardotheboss777@gmail.com",
+      "doctorName": "Manager",
+      "treatmentKeyword": "beard grooming, signature skin therapies",
+      "locationKeyword": "Patna",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-22T20:26:27.704Z"
+    },
+    "VLCC (P&M Mall branch)": {
+      "email": "vlccpatna2013@gmail.com",
+      "doctorName": "Manager",
+      "treatmentKeyword": "weight loss therapies, medical facials, laser aesthetic clinics",
+      "locationKeyword": "P&M Mall, Patliputra",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-22T20:26:29.915Z"
+    },
+    "Lakme Salon Kankarbagh": {
+      "email": "Lakmesalon90feetpatna@gmail.com",
+      "doctorName": "Manager",
+      "treatmentKeyword": "Lakme signature facials, global hair colorings",
+      "locationKeyword": "90 Feet Road, Kankarbagh",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-22T20:26:32.109Z"
+    },
+    "Lakme Salon Patliputra": {
+      "email": "info@lakmepatna.com",
+      "doctorName": "Manager",
+      "treatmentKeyword": "lakme bridal makeups, premium global styling",
+      "locationKeyword": "Patliputra Colony",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-22T20:26:34.323Z"
+    },
+    "Hair Studio (Boring Road) / Smooth N Shine": {
+      "email": "cdsinghsmoothnshine@gmail.com",
+      "doctorName": "Manager",
+      "treatmentKeyword": "keratin hair smoothing, global hair shine treatments",
+      "locationKeyword": "Boring Road",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-22T20:26:36.540Z"
+    },
+    "Shahnaz Hussain Makeup Studio": {
+      "email": "shahnazhussainmakeupstudio@gmail.com",
+      "doctorName": "Manager",
+      "treatmentKeyword": "signature bridal cosmetics, advanced skin glowups",
+      "locationKeyword": "Sheikhpura, Bailey Road",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-22T20:26:39.417Z"
+    },
+    "Blonde And Beyond Unisex Salon": {
+      "email": "bandbsalonacademy@gmail.com",
+      "doctorName": "Manager",
+      "treatmentKeyword": "blonde highlighting, advanced global hair extensions",
+      "locationKeyword": "Fraser Road",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-22T20:26:41.627Z"
+    },
+    "Beauty Spa and Salon (Bailey Road)": {
+      "email": "beautyspa33@gmail.com",
+      "doctorName": "Manager",
+      "treatmentKeyword": "wellness body spas, signature aromatherapy treatments",
+      "locationKeyword": "Gola Road, Bailey Road",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-22T20:26:43.832Z"
+    },
+    "King & Queens Unisex Salon and Spa": {
+      "email": "patelsonia531@gmail.com",
+      "doctorName": "Manager",
+      "treatmentKeyword": "luxury body spa setups, family groomings",
+      "locationKeyword": "Patna",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-22T20:26:46.057Z"
+    }
+  }
+}
