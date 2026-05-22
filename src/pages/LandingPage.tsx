@@ -16,12 +16,12 @@ const ThreeDIllustration = lazy(() =>
   import('@/components/ui/ThreeDIllustration').then(m => ({ default: m.default }))
 );
 
-const AANYA_IMG = "https://ooaxtwmqrvfzdqzoijcj.supabase.co/storage/v1/object/public/creator-assets/amnatureboy/avatar_1778442032436.jpg"; // Sarfaraz
-const PRIYA_IMG = "https://ooaxtwmqrvfzdqzoijcj.supabase.co/storage/v1/object/public/creator-assets/8174aa75-a594-4a6f-b29e-c6d3e3bd9ad6/profile-1778409108437.jpg"; // Snehal Sachdeva
-const ARJUN_IMG = "https://ooaxtwmqrvfzdqzoijcj.supabase.co/storage/v1/object/public/creator-assets/0b298d98-5165-4028-9648-c7371717e885/profile-1778408361391.jpg"; // Dilip Paliwal
-const NEHA_IMG = "https://ooaxtwmqrvfzdqzoijcj.supabase.co/storage/v1/object/public/creator-assets/f5dae986-c446-4697-b293-d8d1910f1215/profile-1778242003572.jpg"; // Shagufi Khan
-const RITIKA_IMG = "https://ooaxtwmqrvfzdqzoijcj.supabase.co/storage/v1/object/public/creator-assets/48d49200-930c-42c2-bf96-b150986be654/profile-1778405330198.jpg"; // Dipali Tripathi
-const ROHAN_IMG = "https://ooaxtwmqrvfzdqzoijcj.supabase.co/storage/v1/object/public/creator-assets/ca50d386-bb6d-444d-a4ec-5322a05dca1d/dp_real.jpg"; // POP
+const AANYA_IMG = "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&w=250&h=250&q=80"; // Sarfaraz
+const PRIYA_IMG = "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=250&h=250&q=80"; // Snehal Sachdeva
+const ARJUN_IMG = "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=250&h=250&q=80"; // Dilip Paliwal
+const NEHA_IMG = "/avatars/shagufikhan_.jpg"; // Shagufi Khan (shagufikhan_)
+const RITIKA_IMG = "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=250&h=250&q=80"; // Dipali Tripathi
+const ROHAN_IMG = "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=250&h=250&q=80"; // POP
 
 const dashboardShowcase = [
   {
@@ -631,7 +631,7 @@ const LandingPage = () => {
             { name: 'Shagufi', img: NEHA_IMG, niche: 'Beauty' },
             { name: 'Dipali', img: RITIKA_IMG, niche: 'Lifestyle' },
             { name: 'POP', img: ROHAN_IMG, niche: 'Music' },
-            { name: 'Akansha', img: 'https://ooaxtwmqrvfzdqzoijcj.supabase.co/storage/v1/object/public/creator-assets/98038dfe-ff4e-4331-8e77-a10340fb9b38/avatar.jpg', niche: 'Pets' },
+            { name: 'Akansha', img: 'https://images.unsplash.com/photo-1583511655857-d19b40a7a54e?auto=format&fit=crop&w=250&h=250&q=80', niche: 'Pets' },
             { name: 'Sarfaraz', img: AANYA_IMG, niche: 'Travel' },
           ];
           const doubled = [...verifiedCreators, ...verifiedCreators];

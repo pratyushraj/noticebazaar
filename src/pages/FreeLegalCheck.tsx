@@ -10,8 +10,8 @@ import { Card } from '@/components/ui/card';
 import LegalCheckForm from '@/components/forms/LegalCheckForm';
 import { cn } from '@/lib/utils';
 
-// New constant for the Supabase hosted PDF URL
-const SAMPLE_REPORT_URL = 'https://ooaxtwmqrvfzdqzoijcj.supabase.co/storage/v1/object/public/marketing-assets/legal_health_check.pdf';
+// New constant for the local PDF URL
+const SAMPLE_REPORT_URL = '/legal_health_check.pdf';
 
 const FreeLegalCheck = () => {
   const formRef = useRef<HTMLDivElement>(null);
