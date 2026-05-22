@@ -1243,9 +1243,28 @@ const CollabLinkLanding = () => {
 
   useEffect(() => {
     if (creator) {
-      if (creator.deal_templates && creator.deal_templates.length > 0) {
+      const templatesArray = (() => {
+        const raw = creator.deal_templates
+        if (Array.isArray(raw)) return raw
+        if (typeof raw === 'string') {
+          try {
+            return JSON.parse(raw)
+          } catch (e) {
+            console.warn('[CollabLinkLanding] Failed to parse deal_templates JSON:', e)
+            try {
+              const parsed = new Function(`return ${raw}`)()
+              if (Array.isArray(parsed)) return parsed
+            } catch (innerErr) {
+              console.error('[CollabLinkLanding] Function evaluator fallback failed:', innerErr)
+            }
+          }
+        }
+        return []
+      })()
+
+      if (templatesArray && templatesArray.length > 0) {
         const fallbackRate = (creator as any).avg_rate_reel || creator.suggested_reel_rate || 5000
-        let validatedTemplates = creator.deal_templates.slice(0, 4).map((rawT, i) => {
+        let validatedTemplates = templatesArray.slice(0, 4).map((rawT, i) => {
           const t = rawT as any;
           // Map properties safely from possible external formats (name -> label, price -> budget)
           let label = t.label || t.name || `Package ${i + 1}`;
@@ -3346,9 +3365,26 @@ const CollabLinkLanding = () => {
   // const platformNames = platforms.map(p => p.name).join(', ');
   const followerCount = creator.platforms.reduce((sum, p) => sum + (p.followers || 0), 0)
   const trustStats = creator.trust_stats
-  const pastBrands = Array.isArray(creator.past_brands)
-    ? creator.past_brands.map(b => (typeof b === 'string' ? b.trim() : '')).filter(Boolean)
-    : []
+  const pastBrands = (() => {
+    const raw = creator.past_brands
+    if (Array.isArray(raw)) {
+      return raw.map(b => (typeof b === 'string' ? b.trim() : '')).filter(Boolean)
+    }
+    if (typeof raw === 'string') {
+      const trimmed = raw.trim()
+      if (trimmed.startsWith('[') && trimmed.endsWith(']')) {
+        return trimmed
+          .slice(1, -1)
+          .split(',')
+          .map(s => s.trim())
+          .filter(Boolean)
+      }
+      if (trimmed) {
+        return trimmed.split(',').map(s => s.trim()).filter(Boolean)
+      }
+    }
+    return []
+  })()
   const trustedBrands = trustStats?.brands_count ?? 0
   const avgResponseHours = creator.collab_response_hours_override ?? trustStats?.avg_response_hours ?? 3
   const completionRate = trustStats?.completion_rate ?? 98
@@ -4702,7 +4738,7 @@ const CollabLinkLanding = () => {
 
                   {/* Brand Experience Section */}
                   {/* Recent Collaborations (Worked With) Section */}
-                  {(creator.past_brands && creator.past_brands.length > 0) && (
+                  {(pastBrands && pastBrands.length > 0) && (
                     <div className="mt-24 px-4 max-w-sm mx-auto">
                       <div className="flex flex-col items-center mb-12">
                         <h3 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.4em] mb-8">
@@ -4710,8 +4746,8 @@ const CollabLinkLanding = () => {
                         </h3>
                         <div className="flex flex-wrap justify-center items-center gap-4">
                           {(
-                            creator.past_brands && creator.past_brands.length > 0
-                              ? creator.past_brands.map(name => ({ name: String(name).trim(), color: 'text-slate-900' }))
+                            pastBrands && pastBrands.length > 0
+                              ? pastBrands.map(name => ({ name: String(name).trim(), color: 'text-slate-900' }))
                               : []
 
                           ).map(brand => (
