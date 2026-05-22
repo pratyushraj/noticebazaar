@@ -134,7 +134,7 @@ async function main() {
     console.log(`✅ User ID resolved: ${actualUserId}`);
 
     // Standard high-quality Golden Retriever avatar
-    const avatarUrl = 'https://images.unsplash.com/photo-1583511655857-d19b40a7a54e?auto=format&fit=crop&q=80&w=250&h=250';
+    const avatarUrl = 'https://sqqocqujxlgoxbcnfbfb.supabase.co/storage/v1/object/public/creator-assets/bruno_thegoldenretriever_/avatar_real.jpg';
 
     // Phase 2: Register Profile Details
     console.log('[2/8] Registering creator profile parameters with official Meta Marketplace metrics...');
