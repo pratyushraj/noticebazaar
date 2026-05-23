@@ -1447,6 +1447,166 @@
       "status": "contacted",
       "outreach_count": 1,
       "last_contacted_at": "2026-05-23T16:16:46.828Z"
+    },
+    "SkinInspired": {
+      "email": "contact@skininspired.in",
+      "website": "https://skininspired.in",
+      "category": "Beauty, Skincare & Grooming",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-23T16:23:28.461Z"
+    },
+    "Sotrue": {
+      "email": "info@sotrue.in",
+      "website": "https://sotrue.in",
+      "category": "Beauty, Skincare & Grooming",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-23T16:23:31.508Z"
+    },
+    "Munchlet": {
+      "email": "info@thorishagrotraders.com",
+      "website": "https://munchlet.com",
+      "category": "Food, Snacks & Beverages",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-23T17:00:57.276Z"
+    },
+    "Formulo": {
+      "email": "customercare@formulo.in",
+      "website": "https://formulo.in",
+      "category": "Beauty, Skincare & Grooming",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-23T17:01:00.524Z"
+    },
+    "Petalpastee": {
+      "email": "info@petalpastee.com",
+      "website": "https://petalpastee.com",
+      "category": "Beauty, Skincare & Grooming",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-23T17:01:02.766Z"
+    },
+    "Mubble": {
+      "email": "info@mubblepets.com",
+      "website": "https://mubblepets.com",
+      "category": "Pet Care",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-23T17:01:05.021Z"
+    },
+    "The Facecraft Project": {
+      "email": "info@thefacecraftproject.com",
+      "website": "https://thefacecraftproject.com",
+      "category": "Beauty, Skincare & Grooming",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-23T17:03:21.537Z"
+    },
+    "Hira Fragrances": {
+      "email": "collabs@hirafragrances.com",
+      "website": "https://hirafragrances.com",
+      "category": "Beauty, Skincare & Grooming",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-23T17:03:25.122Z"
+    },
+    "Clinikally": {
+      "email": "support@clinikally.com",
+      "website": "https://www.clinikally.com",
+      "category": "Beauty, Skincare & Grooming",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-23T17:14:34.797Z"
+    },
+    "Lely's": {
+      "email": "info@lelys.in",
+      "website": "https://www.lelys.in",
+      "category": "Beauty, Skincare & Grooming",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-23T17:14:39.473Z"
+    },
+    "Beautywise": {
+      "email": "customercare@beautywise.in",
+      "website": "https://beautywise.in",
+      "category": "Beauty, Skincare & Grooming",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-23T17:14:43.906Z"
+    },
+    "Dermatouch": {
+      "email": "customercare@dermatouch.com",
+      "website": "https://dermatouch.co",
+      "category": "Beauty, Skincare & Grooming",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-23T17:14:47.013Z"
+    },
+    "GoBest Dentist": {
+      "email": "info@gobestdentist.com",
+      "website": "https://www.gobestdentist.com",
+      "category": "Dentistry",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-23T17:35:31.841Z"
+    },
+    "Dezy": {
+      "email": "support@dezy.mobi",
+      "website": "https://dezy.com",
+      "category": "Dentistry",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-23T17:35:35.345Z"
+    },
+    "Bentodent": {
+      "email": "info@bentodent.in",
+      "website": "https://bentodent.in",
+      "category": "Dentistry",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-23T17:35:37.590Z"
+    },
+    "MyOrl-Care": {
+      "email": "contact@myorlcare.com",
+      "website": "https://myorlcare.com",
+      "category": "Dentistry",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-23T17:35:39.784Z"
+    },
+    "Looks Salon": {
+      "email": "customercare@lookssalon.in",
+      "website": "https://www.lookssalon.in",
+      "category": "Beauty, Skincare & Grooming",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-23T17:43:45.204Z"
+    },
+    "BeautyGlad": {
+      "email": "support@beautyglad.com",
+      "website": "https://www.beautyglad.com",
+      "category": "Beauty, Skincare & Grooming",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-23T17:43:49.116Z"
+    },
+    "Monsoon Salon & Spa": {
+      "email": "info@monsoonsalon.com",
+      "website": "https://www.monsoonsalon.com",
+      "category": "Beauty, Skincare & Grooming",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-23T17:43:51.618Z"
+    },
+    "Angel Home Salon": {
+      "email": "angelhomesalon@gmail.com",
+      "website": "http://www.angelhomesalon.com",
+      "category": "Beauty, Skincare & Grooming",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-23T17:43:53.803Z"
     }
   },
   "dentists": {
