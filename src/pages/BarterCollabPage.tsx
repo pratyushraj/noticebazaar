@@ -107,13 +107,13 @@ const FALLBACK_CREATORS: Creator[] = [
     name: 'Shagufi Khan',
     username: 'shagufikhan_',
     category: 'Beauty & Lifestyle',
-    avatar_url: 'https://sqqocqujxlgoxbcnfbfb.supabase.co/storage/v1/object/public/creator-assets/shagufikhan_/avatar_real.jpg',
+    avatar_url: 'https://sqqocqujxlgoxbcnfbfb.supabase.co/storage/v1/object/public/creator-assets/thegleamngown/avatar_real.jpg',
     avg_views: 70600,
     avg_reel_views_manual: 70600,
     barter_min_value: 4000,
     is_verified: true,
     location: 'Delhi',
-    discovery_video_url: 'https://sqqocqujxlgoxbcnfbfb.supabase.co/storage/v1/object/public/creator-assets/whylittletreats/reel_optimized.mp4'
+    discovery_video_url: 'https://sqqocqujxlgoxbcnfbfb.supabase.co/storage/v1/object/public/creator-assets/thegleamngown/discovery_real.mp4'
   },
   {
     id: 'c4',
@@ -139,7 +139,7 @@ const FALLBACK_CREATORS: Creator[] = [
     barter_min_value: 3000,
     is_verified: true,
     location: 'Udaipur',
-    discovery_video_url: 'https://sqqocqujxlgoxbcnfbfb.supabase.co/storage/v1/object/public/creator-assets/amnatureboy/discovery_real.mp4'
+    discovery_video_url: 'https://sqqocqujxlgoxbcnfbfb.supabase.co/storage/v1/object/public/creator-assets/mobileclicksbydilip/discovery_real.mp4'
   }
 ];
 
