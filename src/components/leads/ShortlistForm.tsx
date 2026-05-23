@@ -63,8 +63,10 @@ export const ShortlistForm: React.FC<ShortlistFormProps> = ({ onSuccess, compact
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className={`grid gap-4 ${compact ? 'grid-cols-1' : 'grid-cols-1 sm:grid-cols-2'}`}>
         <div>
-          <label className="block text-[11px] font-black uppercase tracking-widest text-[#64748B] mb-1.5">Brand / Company Name *</label>
+          <label htmlFor="brand_name" className="block text-[11px] font-black uppercase tracking-widest text-[#64748B] mb-1.5">Brand / Company Name *</label>
           <input
+            id="brand_name"
+            name="brand_name"
             type="text"
             placeholder="e.g. Nykaa, Boat, Mamaearth"
             value={form.brand_name}
@@ -73,8 +75,10 @@ export const ShortlistForm: React.FC<ShortlistFormProps> = ({ onSuccess, compact
           />
         </div>
         <div>
-          <label className="block text-[11px] font-black uppercase tracking-widest text-[#64748B] mb-1.5">WhatsApp / Email *</label>
+          <label htmlFor="contact" className="block text-[11px] font-black uppercase tracking-widest text-[#64748B] mb-1.5">WhatsApp / Email *</label>
           <input
+            id="contact"
+            name="contact"
             type="text"
             placeholder="Your WhatsApp number or email"
             value={form.contact}
@@ -83,8 +87,10 @@ export const ShortlistForm: React.FC<ShortlistFormProps> = ({ onSuccess, compact
           />
         </div>
         <div>
-          <label className="block text-[11px] font-black uppercase tracking-widest text-[#64748B] mb-1.5">Category *</label>
+          <label htmlFor="category" className="block text-[11px] font-black uppercase tracking-widest text-[#64748B] mb-1.5">Category *</label>
           <select
+            id="category"
+            name="category"
             value={form.category}
             onChange={e => setForm(f => ({ ...f, category: e.target.value }))}
             className="w-full h-12 px-4 rounded-2xl border border-[#E5E7EB] bg-[#F8FAF9] text-[#0F172A] font-medium text-[15px] focus:outline-none focus:ring-2 focus:ring-[#16A34A]/30 focus:border-[#16A34A] transition-all appearance-none"
@@ -94,8 +100,10 @@ export const ShortlistForm: React.FC<ShortlistFormProps> = ({ onSuccess, compact
           </select>
         </div>
         <div>
-          <label className="block text-[11px] font-black uppercase tracking-widest text-[#64748B] mb-1.5">Campaign Budget *</label>
+          <label htmlFor="budget" className="block text-[11px] font-black uppercase tracking-widest text-[#64748B] mb-1.5">Campaign Budget *</label>
           <select
+            id="budget"
+            name="budget"
             value={form.budget}
             onChange={e => setForm(f => ({ ...f, budget: e.target.value }))}
             className="w-full h-12 px-4 rounded-2xl border border-[#E5E7EB] bg-[#F8FAF9] text-[#0F172A] font-medium text-[15px] focus:outline-none focus:ring-2 focus:ring-[#16A34A]/30 focus:border-[#16A34A] transition-all appearance-none"
@@ -105,8 +113,10 @@ export const ShortlistForm: React.FC<ShortlistFormProps> = ({ onSuccess, compact
           </select>
         </div>
         <div>
-          <label className="block text-[11px] font-black uppercase tracking-widest text-[#64748B] mb-1.5">How many creators?</label>
+          <label htmlFor="creator_count" className="block text-[11px] font-black uppercase tracking-widest text-[#64748B] mb-1.5">How many creators?</label>
           <select
+            id="creator_count"
+            name="creator_count"
             value={form.creator_count}
             onChange={e => setForm(f => ({ ...f, creator_count: e.target.value }))}
             className="w-full h-12 px-4 rounded-2xl border border-[#E5E7EB] bg-[#F8FAF9] text-[#0F172A] font-medium text-[15px] focus:outline-none focus:ring-2 focus:ring-[#16A34A]/30 focus:border-[#16A34A] transition-all appearance-none"
@@ -116,8 +126,10 @@ export const ShortlistForm: React.FC<ShortlistFormProps> = ({ onSuccess, compact
           </select>
         </div>
         <div>
-          <label className="block text-[11px] font-black uppercase tracking-widest text-[#64748B] mb-1.5">Brief (optional)</label>
+          <label htmlFor="message" className="block text-[11px] font-black uppercase tracking-widest text-[#64748B] mb-1.5">Brief (optional)</label>
           <input
+            id="message"
+            name="message"
             type="text"
             placeholder="e.g. Reel + Story for product launch"
             value={form.message}
