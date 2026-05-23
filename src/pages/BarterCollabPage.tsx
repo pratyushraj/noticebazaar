@@ -125,9 +125,15 @@ const BarterCollabPage = () => {
   return (
     <div className="min-h-dvh bg-[#F8FAF9] text-[#0F172A] font-sans overflow-x-hidden">
       <SEOHead
-        title="Barter Collab Influencers India — Find Creators Open to Product Exchange"
-        description="Find Indian influencers and UGC creators open to barter deals and product exchange collaborations. No agency fees. Send structured offers, generate contracts, track delivery."
+        title="Barter Influencer Marketing Platform India — Safe Product Exchange"
+        description="Tired of creator ghosting? Creator Armour is India's first automated barter influencer marketing platform. Generate digital barter contracts, verify addresses, and secure content without manual DM chaos or agency fees."
         keywords={[
+          'barter influencer marketing platform India',
+          'barter campaign automation software',
+          'UGC creator barter platform',
+          'barter collaboration contract agreement template',
+          'influencer product exchange agreement India',
+          'prevent influencer ghosting on barter deals',
           'barter collab influencers India',
           'product exchange influencer India',
           'influencer gifting India',
@@ -135,7 +141,6 @@ const BarterCollabPage = () => {
           'barter deal creator India',
           'free product review influencer India',
           'non-monetary influencer collaboration',
-          'barter influencer marketing',
           'micro influencer barter India',
           'product exchange collaboration India',
         ]}
