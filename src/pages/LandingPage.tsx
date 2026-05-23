@@ -16,12 +16,12 @@ const ThreeDIllustration = lazy(() =>
   import('@/components/ui/ThreeDIllustration').then(m => ({ default: m.default }))
 );
 
-const AANYA_IMG = "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&w=250&h=250&q=80"; // Sarfaraz
-const PRIYA_IMG = "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=250&h=250&q=80"; // Snehal Sachdeva
-const ARJUN_IMG = "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=250&h=250&q=80"; // Dilip Paliwal
-const NEHA_IMG = "/avatars/shagufikhan_.jpg"; // Shagufi Khan (shagufikhan_)
-const RITIKA_IMG = "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=250&h=250&q=80"; // Dipali Tripathi
-const ROHAN_IMG = "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=250&h=250&q=80"; // POP
+const AANYA_IMG = "https://sqqocqujxlgoxbcnfbfb.supabase.co/storage/v1/object/public/creator-assets/amnatureboy/avatar_real.jpg"; // Sarfaraz
+const PRIYA_IMG = "https://sqqocqujxlgoxbcnfbfb.supabase.co/storage/v1/object/public/creator-assets/snehal_sachdeva/avatar_real.jpg"; // Snehal Sachdeva
+const ARJUN_IMG = "https://sqqocqujxlgoxbcnfbfb.supabase.co/storage/v1/object/public/creator-assets/mobileclicksbydilip/avatar_real.jpg"; // Dilip Paliwal
+const NEHA_IMG = "https://sqqocqujxlgoxbcnfbfb.supabase.co/storage/v1/object/public/creator-assets/shagufikhan_/avatar_real.jpg"; // Shagufi Khan (shagufikhan_)
+const RITIKA_IMG = "https://sqqocqujxlgoxbcnfbfb.supabase.co/storage/v1/object/public/creator-assets/dipali_tripathi_/avatar_real.jpg"; // Dipali Tripathi
+const ROHAN_IMG = "https://sqqocqujxlgoxbcnfbfb.supabase.co/storage/v1/object/public/creator-assets/ugc_pop._/avatar_real.jpg"; // POP
 
 const dashboardShowcase = [
   {
@@ -631,8 +631,8 @@ const LandingPage = () => {
             { name: 'Shagufi', img: NEHA_IMG, niche: 'Beauty' },
             { name: 'Dipali', img: RITIKA_IMG, niche: 'Lifestyle' },
             { name: 'POP', img: ROHAN_IMG, niche: 'Music' },
-            { name: 'Akansha', img: 'https://images.unsplash.com/photo-1583511655857-d19b40a7a54e?auto=format&fit=crop&w=250&h=250&q=80', niche: 'Pets' },
-            { name: 'Sarfaraz', img: AANYA_IMG, niche: 'Travel' },
+            { name: 'Vidushi', img: 'https://sqqocqujxlgoxbcnfbfb.supabase.co/storage/v1/object/public/creator-assets/whylittletreats/avatar_real.jpg', niche: 'Lifestyle' },
+            { name: 'Sparkle', img: 'https://sqqocqujxlgoxbcnfbfb.supabase.co/storage/v1/object/public/creator-assets/helloiamsparkle/avatar_real.jpg', niche: 'Lifestyle' },
           ];
           const doubled = [...verifiedCreators, ...verifiedCreators];
           return (
@@ -984,6 +984,35 @@ const LandingPage = () => {
                    <p className="text-sm font-medium text-slate-500 mb-4">3 Reels (Hook Optimized) + Raw Footage + White-listing Rights</p>
                    <div className="flex items-center justify-between">
                      <p className="text-2xl font-black text-slate-900">₹8,500</p>
+                     <button className="px-6 py-2.5 rounded-full bg-slate-900 text-white font-black text-[12px] uppercase tracking-widest hover:bg-emerald-600 transition-colors">
+                       Book Now
+                     </button>
+                   </div>
+                 </div>
+               </div>
+            </div>
+
+            {/* Vidushi Card */}
+            <div className="bg-white rounded-[3rem] border border-slate-200 p-8 shadow-2xl shadow-slate-200/40 relative overflow-hidden group hover:-translate-y-2 transition-all duration-500">
+               <div className="flex items-center gap-4 mb-8 text-left">
+                  <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-white shadow-lg">
+                    <img src="https://sqqocqujxlgoxbcnfbfb.supabase.co/storage/v1/object/public/creator-assets/whylittletreats/avatar_real.jpg" className="w-full h-full object-cover" alt="Vidushi" />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-black text-slate-900">Vidushi</h3>
+                    <p className="text-sm font-bold text-slate-500">Food & Lifestyle • 106.9K followers</p>
+                  </div>
+               </div>
+               
+               <div className="space-y-4">
+                 <div className="p-6 rounded-[2rem] border-2 border-emerald-500 bg-emerald-50/30 relative text-left">
+                   <div className="absolute -top-3 right-6 px-3 py-1 bg-emerald-500 text-white text-[10px] font-black uppercase tracking-widest rounded-full shadow-lg">
+                     Popular
+                   </div>
+                   <h4 className="text-lg font-black text-slate-900 mb-1">⭐ Growth Campaign</h4>
+                   <p className="text-sm font-medium text-slate-500 mb-4">1 Premium Reel + 2 Stories (Ideal for conversions & traffic)</p>
+                   <div className="flex items-center justify-between">
+                     <p className="text-2xl font-black text-slate-900">₹15,000</p>
                      <button className="px-6 py-2.5 rounded-full bg-slate-900 text-white font-black text-[12px] uppercase tracking-widest hover:bg-emerald-600 transition-colors">
                        Book Now
                      </button>
