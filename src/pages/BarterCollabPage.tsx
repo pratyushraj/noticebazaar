@@ -106,27 +106,27 @@ const FALLBACK_CREATORS: Creator[] = [
     id: 'c3',
     name: 'Shagufi Khan',
     username: 'shagufikhan_',
-    category: 'Beauty & Lifestyle',
+    category: 'Fashion',
     avatar_url: 'https://sqqocqujxlgoxbcnfbfb.supabase.co/storage/v1/object/public/creator-assets/thegleamngown/avatar_real.jpg',
     avg_views: 70600,
     avg_reel_views_manual: 70600,
     barter_min_value: 4000,
     is_verified: true,
     location: 'Delhi',
-    discovery_video_url: 'https://sqqocqujxlgoxbcnfbfb.supabase.co/storage/v1/object/public/creator-assets/thegleamngown/discovery_real.mp4'
+    discovery_video_url: '/videos/discovery-apoorva.mp4'
   },
   {
     id: 'c4',
-    name: 'Snehal Sachdeva',
-    username: 'snehal_sachdeva',
-    category: 'Fashion & Lifestyle',
-    avatar_url: 'https://sqqocqujxlgoxbcnfbfb.supabase.co/storage/v1/object/public/creator-assets/snehal_sachdeva/avatar_real.jpg',
+    name: 'Shiny Jain',
+    username: 'shinyyy.05',
+    category: 'Fashion & Food',
+    avatar_url: 'https://sqqocqujxlgoxbcnfbfb.supabase.co/storage/v1/object/public/creator-assets/shinyyy.05/avatar_real.jpg',
     avg_views: 45000,
     avg_reel_views_manual: 45000,
     barter_min_value: 5000,
     is_verified: true,
     location: 'Mumbai',
-    discovery_video_url: 'https://sqqocqujxlgoxbcnfbfb.supabase.co/storage/v1/object/public/creator-assets/8174aa75-a594-4a6f-b29e-c6d3e3bd9ad6/discovery.mp4?v=1779449430826'
+    discovery_video_url: '/videos/dipali.mp4'
   },
   {
     id: 'c5',
@@ -140,6 +140,58 @@ const FALLBACK_CREATORS: Creator[] = [
     is_verified: true,
     location: 'Udaipur',
     discovery_video_url: 'https://sqqocqujxlgoxbcnfbfb.supabase.co/storage/v1/object/public/creator-assets/mobileclicksbydilip/discovery_real.mp4'
+  },
+  {
+    id: 'c6',
+    name: 'Charandeep Kaur',
+    username: 'cutiebug2021',
+    category: 'Fashion',
+    avatar_url: 'https://sqqocqujxlgoxbcnfbfb.supabase.co/storage/v1/object/public/creator-assets/cutiebug2021/avatar_real.jpg',
+    avg_views: 111000,
+    avg_reel_views_manual: 111000,
+    barter_min_value: 4000,
+    is_verified: true,
+    location: 'Delhi',
+    discovery_video_url: '/videos/discovery/cutiebug2021_discovery.mp4'
+  },
+  {
+    id: 'c7',
+    name: 'Rounak Agarwal',
+    username: 'rounak_agarwal',
+    category: 'Lifestyle',
+    avatar_url: 'https://sqqocqujxlgoxbcnfbfb.supabase.co/storage/v1/object/public/creator-assets/rounak_agarwal/avatar_real.jpg',
+    avg_views: 300000,
+    avg_reel_views_manual: 300000,
+    barter_min_value: 6000,
+    is_verified: true,
+    location: 'Patna',
+    discovery_video_url: '/videos/discovery/souptik_manna_reel.mp4'
+  },
+  {
+    id: 'c8',
+    name: 'Amandeep Kaur',
+    username: 'shavy.0404',
+    category: 'Fashion & Lifestyle',
+    avatar_url: 'https://sqqocqujxlgoxbcnfbfb.supabase.co/storage/v1/object/public/creator-assets/749543bf-cb63-4f21-bb6d-a08c7c6f726a/avatar_real.jpg',
+    avg_views: 52000,
+    avg_reel_views_manual: 52000,
+    barter_min_value: 4000,
+    is_verified: true,
+    location: 'Amritsar',
+    discovery_video_url: '/videos/discovery/shavy_discovery.mp4'
+  },
+  {
+    id: 'c9',
+    name: 'Zahoor Ahmed M',
+    username: 'framesbymir_',
+    category: 'Travel & Photography',
+    avatar_url: 'https://sqqocqujxlgoxbcnfbfb.supabase.co/storage/v1/object/public/creator-assets/e9c5aadb-ca9e-4a70-8d3d-da36df1ac193/avatar_real.jpg',
+    avg_views: 15000,
+    avg_reel_views_manual: 15000,
+    barter_min_value: 3000,
+    is_verified: true,
+    location: 'Noida',
+    discovery_video_url: '/videos/discovery/framesbymir_discovery.mp4'
   }
 ];
 
@@ -164,7 +216,7 @@ const BarterCollabPage = () => {
         // Filter creators open to barter (have barter_min_value or very low starting price, or collaboration_preference includes barter)
         const barterOpen = (data.creators || []).filter((c: Creator) =>
           c.barter_min_value != null || (c.starting_price != null && c.starting_price <= 3000)
-        ).slice(0, 6);
+        ).slice(0, 9);
         if (barterOpen.length > 0) {
           setCreators(barterOpen);
         }
@@ -328,7 +380,7 @@ const BarterCollabPage = () => {
 
           {loading ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {[1, 2, 3, 4, 5, 6].map(i => (
+              {[1, 2, 3, 4, 5, 6, 7, 8, 9].map(i => (
                 <div key={i} className="aspect-[4/5] rounded-[32px] bg-[#E5E7EB] animate-pulse" />
               ))}
             </div>
@@ -357,30 +409,7 @@ const BarterCollabPage = () => {
 
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent" />
 
-                  <div className="absolute top-6 left-6 flex gap-2">
-                    <span className="text-[10px] font-black uppercase tracking-widest text-emerald-400 bg-emerald-900/40 backdrop-blur-sm px-3 py-1 rounded-md border border-emerald-400/20">
-                      {creator.category || 'Lifestyle'}
-                    </span>
-                    <span className="text-[10px] font-black uppercase tracking-widest text-yellow-400 bg-yellow-900/40 backdrop-blur-sm px-3 py-1 rounded-md border border-yellow-400/20">
-                      Barter OK
-                    </span>
-                  </div>
-
-                  <div className="absolute top-6 right-6">
-                    <div className="bg-white/10 backdrop-blur-xl border border-white/20 p-3 rounded-[16px] text-white">
-                      <p className="text-[8px] font-black uppercase tracking-widest opacity-60 mb-0.5">Reel Views</p>
-                      <p className="text-sm font-black">{formatViews(creator.avg_reel_views_manual || creator.avg_views)}</p>
-                    </div>
-                  </div>
-
                   <div className="absolute bottom-8 inset-x-8">
-                    <div className="flex items-center gap-2 mb-1">
-                      <h3 className="text-xl font-black text-white tracking-tight">Verified {creator.category || 'Creator'}</h3>
-                      {creator.is_verified && <CheckCircle2 className="w-4 h-4 text-emerald-400 fill-white" />}
-                    </div>
-                    <p className="text-white/60 text-[10px] font-bold uppercase tracking-wider mb-4">
-                      ID: CA-{creator.id.substring(0, 4).toUpperCase()} · {creator.location || 'India'}
-                    </p>
                     <Link
                       to="/signup?mode=brand"
                       className="flex items-center justify-center gap-2 h-12 rounded-2xl bg-[#16A34A] text-white font-black text-sm shadow-lg hover:bg-[#15803D] transition-all"
