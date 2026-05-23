@@ -559,12 +559,6 @@
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://creatorarmour.com/whylittletreats</loc>
-    <lastmod>2026-05-22</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
     <loc>https://creatorarmour.com/shavy.0404</loc>
     <lastmod>2026-05-22</lastmod>
     <changefreq>weekly</changefreq>
@@ -632,6 +626,12 @@
   </url>
   <url>
     <loc>https://creatorarmour.com/krishnavi_healthy_bites</loc>
+    <lastmod>2026-05-22</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://creatorarmour.com/whylittletreats</loc>
     <lastmod>2026-05-22</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>

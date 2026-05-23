@@ -5,6 +5,7 @@ import {
   Gift, TrendingUp, Users, Zap, ChevronDown, ChevronUp
 } from 'lucide-react';
 import { SEOHead } from '@/components/seo/SEOHead';
+import { BreadcrumbSchema } from '@/components/seo/SchemaMarkup';
 import { getApiBaseUrl } from '@/lib/utils/api';
 import { withRetry } from '@/lib/utils/retry';
 import { safeAvatarSrc } from '@/lib/utils/image';
@@ -87,7 +88,7 @@ const FALLBACK_CREATORS: Creator[] = [
     barter_min_value: 5000,
     is_verified: true,
     location: 'Ranchi',
-    discovery_video_url: 'https://sqqocqujxlgoxbcnfbfb.supabase.co/storage/v1/object/public/creator-assets/whylittletreats/reel_optimized.mp4'
+    discovery_video_url: '/videos/discovery/whylittletreats_discovery.mp4'
   },
   {
     id: 'c2',
@@ -250,6 +251,23 @@ const BarterCollabPage = () => {
     },
   };
 
+  const serviceSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'Service',
+    name: 'Barter Influencer Marketing Platform',
+    serviceType: 'Influencer Marketing',
+    provider: {
+      '@type': 'Organization',
+      name: 'Creator Armour',
+      url: 'https://creatorarmour.com',
+    },
+    areaServed: {
+      '@type': 'Country',
+      name: 'India',
+    },
+    description: 'Structured product exchange campaigns, creator discovery, contract generation, and delivery tracking for Indian brands.',
+  };
+
   const formatViews = (v?: number) => {
     if (!v) return '—';
     if (v >= 1000000) return `${(v / 1000000).toFixed(1)}M+`;
@@ -282,7 +300,13 @@ const BarterCollabPage = () => {
         ]}
         canonicalUrl="https://creatorarmour.com/barter-collab"
         imageAlt="Creator Armour barter influencer marketing page for Indian brands"
-        jsonLd={[webPageSchema, faqSchema]}
+        jsonLd={[webPageSchema, serviceSchema, faqSchema]}
+      />
+      <BreadcrumbSchema
+        items={[
+          { name: 'Home', url: 'https://creatorarmour.com/' },
+          { name: 'Barter Collab', url: 'https://creatorarmour.com/barter-collab' },
+        ]}
       />
 
       {/* Nav */}
@@ -309,6 +333,11 @@ const BarterCollabPage = () => {
       <main className="pt-20">
         {/* Hero */}
         <section className="px-4 sm:px-6 max-w-[1200px] mx-auto py-20 lg:py-28 text-center">
+          <nav aria-label="Breadcrumb" className="mb-6 flex items-center justify-center text-[12px] font-bold text-[#64748B]">
+            <Link to="/" className="hover:text-[#16A34A]">Home</Link>
+            <span className="mx-2">/</span>
+            <span className="text-[#0F172A]">Barter Collab</span>
+          </nav>
           <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-[#DCFCE7] text-[#16A34A] rounded-full border border-[#16A34A]/20 mb-6">
             <Package className="w-4 h-4" />
             <span className="text-[11px] font-black uppercase tracking-wider">India's First Structured Barter Marketplace</span>

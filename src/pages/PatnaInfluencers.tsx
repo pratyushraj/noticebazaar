@@ -133,8 +133,8 @@ const PatnaInfluencers = () => {
   return (
     <div className="min-h-screen bg-[#020D0A] text-slate-100 font-sans antialiased selection:bg-emerald-500 selection:text-black">
       <SEOHead
-        title="Top Instagram Influencers in Patna, Bihar (2026) | Creator Armour"
-        description="Discover the best Instagram and UGC influencers in Patna, Bihar for 2026. Explore verified local food, fashion, travel, and lifestyle creators with high engagement."
+        title="Patna Influencers | Creator Armour"
+        description="Discover verified Instagram and UGC creators in Patna, Bihar across food, fashion, travel, and lifestyle."
         keywords={["Patna influencers", "Instagram influencers Patna", "best creators Bihar", "influencer marketing Patna", "Bihar food bloggers"]}
         jsonLd={jsonLd}
         canonicalUrl="https://creatorarmour.com/patna-influencers"

@@ -20,9 +20,9 @@
   },
   "scripts": {
     "dev": "vite",
-    "build": "tsx scripts/generate-sitemap.ts && vite build",
-    "build:staging": "tsx scripts/generate-sitemap.ts && vite build --mode staging",
-    "build:production": "tsx scripts/generate-sitemap.ts && vite build --mode production",
+    "build": "tsx scripts/generate-sitemap.ts && vite build && react-snap",
+    "build:staging": "tsx scripts/generate-sitemap.ts && vite build --mode staging && react-snap",
+    "build:production": "tsx scripts/generate-sitemap.ts && vite build --mode production && react-snap",
     "lint": "eslint .",
     "preview": "vite preview",
     "test": "vitest",
@@ -137,6 +137,7 @@
     "eslint-plugin-react-refresh": "^0.4.9",
     "globals": "^15.9.0",
     "playwright": "^1.57.0",
+    "react-snap": "^1.23.0",
     "typescript-eslint": "^8.0.1"
   },
   "overrides": {

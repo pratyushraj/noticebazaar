@@ -131,8 +131,8 @@ const CollaborationAgreementGenerator = () => {
     <>
       {/* SEO Meta Tags */}
       <SEOHead
-        title="Collaboration Agreement Generator | Free Brand Partnership Tool"
-        description="Generate professional collaboration agreements for brand partnerships. Free tool for creators and influencers to create legally compliant collaboration contracts with brands in India."
+        title="Collaboration Agreement Generator | Creator Armour"
+        description="Generate professional collaboration agreements for brand partnerships. Create legally compliant contracts for creators, influencers, and brands in India."
         keywords={[
           'collaboration agreement generator',
           'brand partnership agreement',

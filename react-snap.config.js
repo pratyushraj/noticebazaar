@@ -1,28 +1,31 @@
 module.exports = {
-  source: "dist",
+  source: 'dist',
+  include: [
+    '/',
+    '/about',
+    '/brands',
+    '/brand-directory',
+    '/pricing-comparison',
+    '/free-legal-check',
+    '/free-influencer-contract',
+    '/collaboration-agreement-generator',
+    '/barter-collab',
+    '/patna-influencers',
+    '/careers',
+    '/blog',
+  ],
   minifyHtml: {
     collapseWhitespace: false,
     removeComments: false,
   },
-  include: [
-    "/dashboard-preview",
-    "/dashboard-preview?tab=overview",
-    "/dashboard-preview?tab=deals",
-    "/dashboard-preview?tab=payments",
-    "/dashboard-preview?tab=protection",
-  ],
   skipThirdPartyRequests: true,
   cacheAjaxRequests: false,
-  puppeteerArgs: ["--no-sandbox", "--disable-setuid-sandbox"],
+  puppeteerArgs: ['--no-sandbox', '--disable-setuid-sandbox'],
   fixWebpackChunksIssue: false,
   removeStyleTags: false,
   removeScriptTags: false,
-  // Wait for React to hydrate
   waitFor: 3000,
-  // Crawl from these routes
-  crawlFrom: "/dashboard-preview",
-  // Don't remove data attributes
+  crawlFrom: '/',
   removeDataAttributes: false,
-  // Keep inline styles
   inlineCss: false,
 };

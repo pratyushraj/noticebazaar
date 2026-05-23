@@ -22,8 +22,8 @@ const InvestorPitchPage = () => {
   return (
     <div className="min-h-screen bg-[#020D0A] text-white">
       <SEOHead
-        title="Investor Relations | Creator Armour — Building the Creator OS"
-        description="Creator Armour is the infrastructure layer for the $250B creator economy. We are building the operating system for creator-brand collaboration at scale."
+        title="Investor Relations | Creator Armour"
+        description="Creator Armour is building the operating system for creator-brand collaboration at scale."
         keywords={['creator armour investors', 'creator economy startup', 'SaaS for influencers', 'venture capital India', 'D2C infrastructure']}
       />
 

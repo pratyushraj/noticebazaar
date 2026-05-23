@@ -127,8 +127,8 @@ const FreeInfluencerContract = () => {
     <>
       {/* SEO Meta Tags */}
       <SEOHead
-        title="Free Influencer Contract Generator | Create Brand Deal Contracts"
-        description="Generate professional influencer contracts for free. Create legally compliant brand deal agreements with payment terms, deliverables, and IP rights. Download with Creator Armour Pro."
+        title="Free Influencer Contract Generator | Creator Armour"
+        description="Generate professional influencer contracts for free. Create legally compliant brand deal agreements with payment terms, deliverables, and IP rights."
         keywords={[
           'free influencer contract',
           'brand deal contract generator',
