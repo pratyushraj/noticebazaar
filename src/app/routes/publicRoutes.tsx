@@ -99,6 +99,7 @@ export const PublicRoutes = () => (
     <Route path="/influencer-gifting" element={<Navigate to="/barter-collab" replace />} />
     {/* Local Autoplay Directory */}
     <Route path="/autoplay-directory" element={<LazyRoute><AutoplayDirectory /></LazyRoute>} />
+    <Route path="/secret-reels" element={<LazyRoute><AutoplayDirectory /></LazyRoute>} />
     <Route path="/local-creators" element={<Navigate to="/autoplay-directory" replace />} />
     <Route path="/:username" element={<ReservedUsernameGuard><LazyRoute><CollabLinkLanding /></LazyRoute></ReservedUsernameGuard>} />
     <Route path="/:username/success" element={<ReservedUsernameGuard><LazyRoute><CollabLinkLanding /></LazyRoute></ReservedUsernameGuard>} />
