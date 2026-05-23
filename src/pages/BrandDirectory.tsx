@@ -125,6 +125,12 @@ const BrandDirectory = () => {
         <p className="text-sm text-muted-foreground">
           Discover brands looking for creators like you
         </p>
+        <div className="mt-4 rounded-2xl border border-sky-500/20 bg-sky-500/5 px-4 py-3">
+          <p className="text-xs font-black uppercase tracking-[0.2em] text-sky-500 mb-1">Direct answer</p>
+          <p className="text-sm text-muted-foreground">
+            Use this page to find brands that are already open to creator collaborations, then filter by industry, payment reliability, and fit before you reach out.
+          </p>
+        </div>
       </div>
 
       {/* Search and Filters */}
@@ -491,4 +497,3 @@ const BrandDirectory = () => {
 };
 
 export default BrandDirectory;
-

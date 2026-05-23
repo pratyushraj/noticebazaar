@@ -172,6 +172,12 @@ const CollaborationAgreementGenerator = () => {
             <h1 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-purple-200 via-pink-200 to-purple-100 text-transparent bg-clip-text">
               Collaboration Agreement Generator
             </h1>
+            <div className="mb-6 rounded-2xl border border-purple-400/20 bg-white/5 px-4 py-3 text-left">
+              <p className="text-xs font-black uppercase tracking-[0.2em] text-purple-200 mb-1">Direct answer</p>
+              <p className="text-sm text-secondary">
+                If you need a collaboration agreement, this page helps you create a simple brand partnership contract for paid, barter, or hybrid deals.
+              </p>
+            </div>
             <p className="text-xl text-secondary mb-6 leading-relaxed">
               Create professional collaboration agreements for brand partnerships. Our free tool helps influencers, creators, and brands draft legally compliant collaboration contracts that protect both parties and ensure clear terms for successful partnerships.
             </p>

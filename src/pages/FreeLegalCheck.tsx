@@ -113,6 +113,12 @@ const FreeLegalCheck = () => {
           <h1 className="text-4xl md:text-5xl font-extrabold leading-tight text-foreground mb-4">
             Find Out How Much Money You're Losing to Compliance Gaps.
           </h1>
+          <div className="mt-6 mb-6 rounded-2xl border border-yellow-500/20 bg-yellow-500/5 px-4 py-3 text-left">
+            <p className="text-xs font-black uppercase tracking-[0.2em] text-yellow-500 mb-1">Direct answer</p>
+            <p className="text-sm text-muted-foreground">
+              If you need a quick legal check, upload your contract and get a practical read on red flags, unfair clauses, and payment risk before signing.
+            </p>
+          </div>
           {/* New Sub-headline (Point 4) */}
           <p className="text-lg text-gray-400 max-w-2xl mx-auto mb-6">
             Get your free 5-minute audit. We'll show you exactly what's missing and how much it could cost you in penalties.

@@ -109,6 +109,12 @@ const Careers = () => {
           <Briefcase className="h-8 w-8 text-primary mb-3" />
           <h1 className="text-3xl font-bold text-foreground mb-2">Careers at Creator Armour</h1>
           <p className="text-sm text-muted-foreground">Join us in protecting and empowering content creators across India</p>
+          <div className="mt-4 rounded-2xl border border-border bg-muted/40 px-4 py-3">
+            <p className="text-xs font-black uppercase tracking-[0.2em] text-primary mb-1">Direct answer</p>
+            <p className="text-sm text-muted-foreground">
+              We’re hiring for product, engineering, legal, finance, and marketing roles focused on creator protection and creator-brand collaboration workflows.
+            </p>
+          </div>
         </header>
 
         <div className="prose dark:prose-invert max-w-none space-y-8 text-muted-foreground">

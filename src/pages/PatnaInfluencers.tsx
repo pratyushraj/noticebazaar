@@ -181,6 +181,13 @@ const PatnaInfluencers = () => {
             </span>
           </h1>
 
+          <div className="mx-auto max-w-2xl mb-6 rounded-[24px] border border-emerald-500/10 bg-white/5 px-4 py-3 text-left">
+            <p className="text-[11px] font-black uppercase tracking-[0.2em] text-emerald-400 mb-1">Direct answer</p>
+            <p className="text-sm text-slate-300">
+              If you need Patna creators for a campaign, this page lists verified local influencers with engagement, categories, and collaboration-ready profiles.
+            </p>
+          </div>
+
           <p className="text-slate-400 max-w-2xl mx-auto text-base md:text-lg leading-relaxed mb-8">
             Access verified audience metrics, engagement stats, and secure contract workflows for the top content creators in Patna. Boost your D2C brand ROI in Eastern India.
           </p>

@@ -32,6 +32,12 @@ const About = () => {
             <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-purple-200 via-pink-200 to-purple-100 text-transparent bg-clip-text">
               Why Creator Armour Exists
             </h1>
+            <div className="mx-auto max-w-2xl rounded-2xl border border-purple-400/20 bg-white/5 px-4 py-3 text-left">
+              <p className="text-xs font-black uppercase tracking-[0.2em] text-pink-200 mb-1">Direct answer</p>
+              <p className="text-sm text-secondary">
+                Creator Armour helps creators and brands manage contracts, payments, and collaborations in one place so brand deals are easier to close and track.
+              </p>
+            </div>
             <p className="text-lg text-secondary max-w-2xl mx-auto">
               A simple explanation of the problems creators face and how we're trying to help.
             </p>

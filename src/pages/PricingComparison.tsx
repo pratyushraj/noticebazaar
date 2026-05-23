@@ -61,6 +61,12 @@ const PricingComparison = () => {
       
       <header className="text-center mb-12">
         <h1 className="text-4xl font-bold text-foreground mb-2">Subscription Plan Comparison</h1>
+        <div className="mx-auto max-w-3xl mb-6 rounded-2xl border border-border bg-muted/40 px-4 py-3 text-left">
+          <p className="text-xs font-black uppercase tracking-[0.2em] text-primary mb-1">Direct answer</p>
+          <p className="text-sm text-muted-foreground">
+            Compare plans if you want help with creator deals, legal support, and workflow tools, then choose the tier that matches your volume and protection needs.
+          </p>
+        </div>
         <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
           Find the perfect legal and CA support for your business. All plans include secure portal access and the AI Assistant, Lexi.
         </p>

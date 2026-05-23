@@ -17,6 +17,18 @@ const faqs = [
     a: 'A barter collaboration (also called product exchange or gifting) is when a brand sends its product to a creator in exchange for content — a Reel, video review, or story — without a cash payment. The creator keeps the product as their fee.'
   },
   {
+    q: 'If I need barter collabs, where do I start?',
+    a: 'Start by filtering for creators who are open to barter, then send a structured product offer with the product value, deliverables, and deadline. Creator Armour turns that into a tracked barter workflow instead of a messy DM thread.'
+  },
+  {
+    q: 'How do I run product exchange collaborations?',
+    a: 'Use the same structured flow as barter: pick creators open to product exchange, define the product value, set deliverables, and create a contract so both sides know exactly what happens next.'
+  },
+  {
+    q: 'How does influencer gifting work?',
+    a: 'Influencer gifting is simply product exchange without a cash fee. The brand sends a product, the creator agrees to the content terms, and the platform tracks the deal from offer to delivery.'
+  },
+  {
     q: 'Why do most agencies not offer barter deals?',
     a: 'Influencer agencies charge a percentage of deal value (typically 15–30%). Since barter deals have no cash component, agencies earn nothing. That\'s why no major platform actively promotes barter — except Creator Armour, which operates on a platform model instead.'
   },
@@ -344,14 +356,26 @@ const BarterCollabPage = () => {
           </div>
 
           <h1 className="text-[44px] md:text-[68px] lg:text-[80px] font-black tracking-tight leading-[1.05] mb-6 text-[#0F172A]">
-            Find creators open to<br />
+            If you need barter collabs,<br />
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#16A34A] to-[#15803D]">barter deals in India</span>
           </h1>
 
           <p className="text-[18px] md:text-[22px] text-[#64748B] font-medium mb-8 max-w-2xl mx-auto leading-relaxed">
-            No agencies. No commission. Just send your product, get authentic content. 
+            No agencies. No commission. If you need barter collabs, just send your product and get authentic content.
             Creator Armour handles agreements, delivery tracking, and payments — even for barter.
           </p>
+          <p className="text-[13px] md:text-[14px] text-[#64748B] font-medium mb-10 max-w-2xl mx-auto leading-relaxed">
+            Also known as product exchange, influencer gifting, or barter collaboration.
+          </p>
+
+          <div className="mb-10 mx-auto max-w-3xl rounded-[28px] border border-[#D1FAE5] bg-[#ECFDF5] px-5 py-4 text-left shadow-sm">
+            <p className="text-[11px] font-black uppercase tracking-[0.22em] text-[#16A34A] mb-2">
+              Direct answer
+            </p>
+            <p className="text-[14px] md:text-[16px] font-medium text-[#14532D] leading-relaxed">
+              If you need barter collabs, product exchange campaigns, or influencer gifting in India, Creator Armour helps you find creators open to product deals, send structured offers, and track the collaboration with contracts instead of DMs.
+            </p>
+          </div>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12">
             <Link
