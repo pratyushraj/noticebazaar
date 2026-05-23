@@ -1,9 +1,9 @@
 import { Resend } from 'resend';
 import { getEmailLayout } from './professionalEmailTemplates.js';
 
-const ADMIN_EMAIL = 'pratyushraj@outlook.com';
+const ADMIN_EMAILS = ['pratyushraj@outlook.com', 'creatorarmour07@gmail.com'];
 
-export const sendAdminAlert = async (type: 'onboarding' | 'offer', data: any) => {
+export const sendAdminAlert = async (type: 'onboarding' | 'offer' | 'brand_signup', data: any) => {
   if (!process.env.RESEND_API_KEY) {
     console.error('[AdminNotification] Missing RESEND_API_KEY');
     return;
@@ -52,6 +52,24 @@ export const sendAdminAlert = async (type: 'onboarding' | 'offer', data: any) =>
         </td>
       </tr>
     `;
+  } else if (type === 'brand_signup') {
+    subject = `New Brand Signed Up: ${data.brandName}`;
+    content = `
+      <tr>
+        <td style="padding: 32px;">
+          <h2 style="color: #111827; margin-bottom: 16px;">New Brand Registered! 🚀</h2>
+          <p style="color: #4b5563; line-height: 1.6;">
+            A new brand has successfully registered on the Creator Armour platform.
+          </p>
+          <div style="background: #f9fafb; padding: 20px; border-radius: 8px; margin: 20px 0;">
+            <p><strong>Brand Name:</strong> ${data.brandName}</p>
+            <p><strong>Email Address:</strong> ${data.email}</p>
+            <p><strong>Industry:</strong> ${data.industry || 'N/A'}</p>
+          </div>
+          <p style="color: #6b7280; font-size: 14px;">This brand has now been added to the Creator Armour directory and onboarding flow.</p>
+        </td>
+      </tr>
+    `;
   }
 
   const html = getEmailLayout({ content, showFooter: true, backgroundStyle: 'modern' });
@@ -59,11 +77,11 @@ export const sendAdminAlert = async (type: 'onboarding' | 'offer', data: any) =>
   try {
     await resendClient.emails.send({
       from: 'Creator Armour Alerts <alerts@creatorarmour.com>',
-      to: ADMIN_EMAIL,
+      to: ADMIN_EMAILS,
       subject: subject,
       html: html,
     });
-    console.log(`[AdminNotification] Alert sent to ${ADMIN_EMAIL} for ${type}`);
+    console.log(`[AdminNotification] Alert sent to ${ADMIN_EMAILS.join(', ')} for ${type}`);
   } catch (error) {
     console.error('[AdminNotification] Failed to send alert:', error);
   }

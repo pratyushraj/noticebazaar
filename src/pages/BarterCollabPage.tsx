@@ -91,32 +91,45 @@ const FALLBACK_CREATORS: Creator[] = [
   },
   {
     id: 'c2',
-    name: 'Annie Goshal',
-    username: 'annie_pupstar',
-    category: 'Pet Care',
-    avatar_url: 'https://sqqocqujxlgoxbcnfbfb.supabase.co/storage/v1/object/public/creator-assets/annie_pupstar/avatar_real.jpg',
-    avg_views: 154000,
-    avg_reel_views_manual: 154000,
-    barter_min_value: 0,
+    name: 'Sarfaraz',
+    username: 'amnatureboy',
+    category: 'Travel & Photography',
+    avatar_url: 'https://sqqocqujxlgoxbcnfbfb.supabase.co/storage/v1/object/public/creator-assets/amnatureboy/avatar_real.jpg',
+    avg_views: 27000,
+    avg_reel_views_manual: 27000,
+    barter_min_value: 3000,
     is_verified: true,
-    location: 'Mumbai',
-    discovery_video_url: 'https://sqqocqujxlgoxbcnfbfb.supabase.co/storage/v1/object/public/creator-assets/annie_pupstar/reel_optimized.mp4'
+    location: 'Noida',
+    discovery_video_url: 'https://sqqocqujxlgoxbcnfbfb.supabase.co/storage/v1/object/public/creator-assets/amnatureboy/discovery_real.mp4'
   },
   {
     id: 'c3',
-    name: 'Bruno',
-    username: 'bruno_thegoldenretriever_',
-    category: 'Pet Care',
-    avatar_url: 'https://sqqocqujxlgoxbcnfbfb.supabase.co/storage/v1/object/public/creator-assets/bruno_thegoldenretriever_/avatar_real.jpg',
-    avg_views: 12600,
-    avg_reel_views_manual: 12600,
-    barter_min_value: 2000,
+    name: 'Shagufi Khan',
+    username: 'shagufikhan_',
+    category: 'Beauty & Lifestyle',
+    avatar_url: 'https://sqqocqujxlgoxbcnfbfb.supabase.co/storage/v1/object/public/creator-assets/shagufikhan_/avatar_real.jpg',
+    avg_views: 70600,
+    avg_reel_views_manual: 70600,
+    barter_min_value: 4000,
     is_verified: true,
     location: 'Delhi',
-    discovery_video_url: 'https://sqqocqujxlgoxbcnfbfb.supabase.co/storage/v1/object/public/creator-assets/bruno_thegoldenretriever_/reel_optimized.mp4'
+    discovery_video_url: 'https://sqqocqujxlgoxbcnfbfb.supabase.co/storage/v1/object/public/creator-assets/whylittletreats/reel_optimized.mp4'
   },
   {
     id: 'c4',
+    name: 'Snehal Sachdeva',
+    username: 'snehal_sachdeva',
+    category: 'Fashion & Lifestyle',
+    avatar_url: 'https://sqqocqujxlgoxbcnfbfb.supabase.co/storage/v1/object/public/creator-assets/snehal_sachdeva/avatar_real.jpg',
+    avg_views: 45000,
+    avg_reel_views_manual: 45000,
+    barter_min_value: 5000,
+    is_verified: true,
+    location: 'Mumbai',
+    discovery_video_url: 'https://sqqocqujxlgoxbcnfbfb.supabase.co/storage/v1/object/public/creator-assets/8174aa75-a594-4a6f-b29e-c6d3e3bd9ad6/discovery.mp4?v=1779449430826'
+  },
+  {
+    id: 'c5',
     name: 'Dilip Paliwal',
     username: 'mobileclicksbydilip',
     category: 'Travel & Photography',
@@ -125,21 +138,11 @@ const FALLBACK_CREATORS: Creator[] = [
     avg_reel_views_manual: 27500,
     barter_min_value: 3000,
     is_verified: true,
-    location: 'Udaipur'
-  },
-  {
-    id: 'c5',
-    name: 'Snehal Sachdeva',
-    username: 'snehal_sachdeva',
-    category: 'Fashion & Lifestyle',
-    avatar_url: 'https://sqqocqujxlgoxbcnfbfb.supabase.co/storage/v1/object/public/creator-assets/snehal_sachdeva/avatar_real.jpg',
-    avg_views: 45000,
-    avg_reel_views_manual: 45000,
-    barter_min_value: 0,
-    is_verified: true,
-    location: 'Mumbai'
+    location: 'Udaipur',
+    discovery_video_url: 'https://sqqocqujxlgoxbcnfbfb.supabase.co/storage/v1/object/public/creator-assets/amnatureboy/discovery_real.mp4'
   }
 ];
+
 
 const BarterCollabPage = () => {
   const [creators, setCreators] = useState<Creator[]>(FALLBACK_CREATORS);
@@ -337,32 +340,17 @@ const BarterCollabPage = () => {
                     <video 
                       src={creator.discovery_video_url} 
                       className="w-full h-full object-cover" 
+                      autoPlay
                       muted 
                       loop 
                       playsInline 
-                      preload="none"
-                      poster={safeAvatarSrc(creator.avatar_url, creator.name) || ''} 
-                      onMouseEnter={(e) => {
-                        const playPromise = e.currentTarget.play();
-                        if (playPromise !== undefined) {
-                          playPromise.catch(() => {});
-                        }
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.pause();
-                      }}
-                      onTouchStart={(e) => {
-                        if (e.currentTarget.paused) {
-                          e.currentTarget.play().catch(() => {});
-                        } else {
-                          e.currentTarget.pause();
-                        }
-                      }}
+                      preload="auto"
+                      poster={safeAvatarSrc(creator.avatar_url, 'CA') || ''} 
                     />
                   ) : (
                     <img
-                      src={safeAvatarSrc(creator.avatar_url, creator.name)}
-                      alt={creator.name}
+                      src={safeAvatarSrc(creator.avatar_url, 'CA')}
+                      alt="Verified Creator"
                       className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                     />
                   )}
@@ -387,12 +375,14 @@ const BarterCollabPage = () => {
 
                   <div className="absolute bottom-8 inset-x-8">
                     <div className="flex items-center gap-2 mb-1">
-                      <h3 className="text-xl font-black text-white tracking-tight">{creator.name}</h3>
+                      <h3 className="text-xl font-black text-white tracking-tight">Verified {creator.category || 'Creator'}</h3>
                       {creator.is_verified && <CheckCircle2 className="w-4 h-4 text-emerald-400 fill-white" />}
                     </div>
-                    <p className="text-white/60 text-xs font-bold uppercase tracking-widest mb-4">@{creator.username}</p>
+                    <p className="text-white/60 text-[10px] font-bold uppercase tracking-wider mb-4">
+                      ID: CA-{creator.id.substring(0, 4).toUpperCase()} · {creator.location || 'India'}
+                    </p>
                     <Link
-                      to={`/${creator.username}`}
+                      to="/signup?mode=brand"
                       className="flex items-center justify-center gap-2 h-12 rounded-2xl bg-[#16A34A] text-white font-black text-sm shadow-lg hover:bg-[#15803D] transition-all"
                     >
                       Send Barter Offer <ArrowRight className="w-4 h-4" />

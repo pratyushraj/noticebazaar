@@ -4,6 +4,7 @@ import express, { Response } from 'express';
 import multer from 'multer';
 import { AuthenticatedRequest } from '../middleware/auth.js';
 import { supabase } from '../lib/supabase.js';
+import { sendAdminAlert } from '../services/adminNotificationService.js';
 
 const router = express.Router();
 const upload = multer({ storage: multer.memoryStorage() });
@@ -218,6 +219,18 @@ router.post('/identity', async (req: AuthenticatedRequest, res: Response) => {
       .select('*')
       .maybeSingle();
     if (error) throw error;
+
+    // Trigger admin email alert on brand registration
+    try {
+      void sendAdminAlert('brand_signup', {
+        brandName: name,
+        email: brand.email || 'N/A',
+        industry: payload.industry || 'N/A'
+      });
+    } catch (emailErr) {
+      console.warn('[BrandDashboard] Non-fatal: failed to send brand_signup alert:', emailErr);
+    }
+
     res.setHeader('Cache-Control', 'no-store');
     return res.json({ success: true, brand: data || null });
   } catch (error: any) {
