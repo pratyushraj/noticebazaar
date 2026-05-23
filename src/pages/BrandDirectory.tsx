@@ -111,9 +111,9 @@ const BrandDirectory = () => {
   return (
     <div className="w-full max-w-full overflow-x-hidden pb-[80px] px-4 md:px-6 antialiased">
       <SEOHead
-        title="Brand Directory — Find Brands for Creator Collaborations"
-        description="Browse brands looking for Indian creators. Filter by industry, payment rating, and bookmark brands you want to work with."
-        keywords={['brand directory', 'brands for influencers', 'brand collaboration india', 'find brand deals']}
+        title="Find Brands Open to Creator Collaborations | Creator Armour"
+        description="Browse brands open to creator collaborations in India. Filter by industry, payment rating, and bookmark brands you want to work with."
+        keywords={['find brands open to creator collaborations', 'brand directory india', 'brands for influencers', 'find brand deals']}
         canonicalUrl="https://creatorarmour.com/brand-directory"
       />
       {/* Header */}

@@ -19,9 +19,9 @@ const BlogListing = () => {
   return (
     <div className="min-h-screen bg-[#020D0A] text-white">
       <SEOHead
-        title="Creator Armour Blog — Legal & Business Tips for Creators"
-        description="Learn how to protect your brand deals, recover unpaid fees, and manage your creator business professionally in India."
-        keywords={['creator blog', 'influencer tips', 'creator legal help', 'brand deal advice', 'India creator economy']}
+        title="Creator Business Blog India | Creator Armour"
+        description="Read practical guides on barter collaborations, creator contracts, UGC, rates, and brand deal workflows for Indian creators and brands."
+        keywords={['creator business blog india', 'barter collaborations india', 'creator legal help', 'ugc creator guide', 'brand deal advice']}
         canonicalUrl="https://creatorarmour.com/blog"
       />
 

@@ -47,6 +47,7 @@
   "reactSnap": {
     "source": "dist",
     "destination": "dist",
+    "port": 45789,
     "include": [
       "/",
       "/about",

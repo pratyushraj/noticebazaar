@@ -457,14 +457,14 @@ export const blogPosts: BlogPost[] = [
   },
   {
     slug: 'how-to-find-the-right-ugc-creator-for-your-brand-in-india',
-    title: 'How to Find the Right UGC Creator for Your Brand in India',
+    title: 'Find UGC Creators in India: A Brand Discovery Guide',
     metaDescription: 'Learn how Indian brands can find UGC creators faster, evaluate fit, compare rates, and close safer creator collaborations without wasting time on DMs.',
     category: 'Business',
     date: '2026-04-12',
     readTime: '7 min read',
     image: '/blog-images/ugc-creator-brand-india-og.png',
     summary: 'A practical guide for brands to shortlist UGC creators, check fit, and send structured offers that convert faster than inbox hunting.',
-    keywords: ['find ugc creator', 'ugc creator india', 'brand collaboration', 'creator discovery', 'influencer marketing', 'ugc brands'],
+    keywords: ['find ugc creators in India', 'ugc creator india', 'brand collaboration', 'creator discovery', 'ugc brands'],
     content: {
       introduction: 'Finding the right UGC creator is not about scrolling endlessly through Instagram and hoping the best profiles reply. The fastest way to get a strong result is to define the brief, evaluate fit against the audience, and use a structured workflow that makes it easy for creators to respond. Here is a practical guide for Indian brands that want better creator matches and fewer wasted conversations.',
       sections: [
@@ -524,7 +524,7 @@ export const blogPosts: BlogPost[] = [
   },
   {
     slug: 'influencer-rate-card-india-2026',
-    title: 'Influencer Rate Card India 2026: What to Charge Brands',
+    title: 'Influencer Rate Card India 2026 | Creator Armour',
     metaDescription: 'Updated 2026 influencer rate card for India. Know what to charge brands based on follower count, engagement rate, and content type. Free rate calculator included.',
     category: 'Finance',
     date: '2026-03-30',
@@ -606,7 +606,7 @@ export const blogPosts: BlogPost[] = [
   },
   {
     slug: 'brand-deal-contract-template-india',
-    title: 'Brand Deal Contract Template India: Free Download',
+    title: 'Brand Deal Contract Template India | Free Download',
     metaDescription: 'Free brand deal contract template for Indian creators and influencers. Covers payment terms, deliverables, usage rights, and cancellation clauses.',
     category: 'Legal',
     date: '2026-03-30',
@@ -825,7 +825,7 @@ export const blogPosts: BlogPost[] = [
   {
     slug: 'barter-influencer-deal-india-guide-2025',
     title: 'Barter Influencer Deals India: Complete Brand Guide (2025)',
-    metaDescription: 'How D2C brands in India can run barter collabs with influencers without spending cash. Find creators open to product exchange, write agreements, and track content delivery.',
+    metaDescription: 'How D2C brands in India can run barter collaborations with influencers without spending cash. Find creators open to product exchange, write agreements, and track content delivery.',
     category: 'Business',
     date: '2026-05-13',
     readTime: '9 min read',
@@ -833,15 +833,14 @@ export const blogPosts: BlogPost[] = [
     summary: 'The complete guide for Indian brands looking to run barter collaborations with creators. No agency needed, no cash required — just a product, a structured offer, and a contract.',
     keywords: [
       'barter influencer deal India',
+      'barter collaborations India',
       'product exchange influencer India',
       'influencer gifting India',
-      'product seeding influencer',
-      'barter collab India',
+      'influencer gifting platform India',
       'free product review influencer India',
-      'barter collaboration brand India',
       'micro influencer barter India',
       'non monetary influencer deal',
-      'influencer gifting strategy',
+      'find influencers open to barter collabs',
     ],
     content: {
       introduction: 'Every year, thousands of Indian D2C brands search for a way to get influencer content without paying cash. The term they use: "barter collab." The irony? No major agency helps them find one — because agencies earn a percentage of cash deals, so a ₹0 cash barter = ₹0 in agency revenue. That leaves a massive, underserved market of brands and creators who could work together brilliantly if they just had the right platform. This guide explains exactly how to run a barter influencer campaign in India from start to finish.',
@@ -1001,7 +1000,7 @@ export const blogPosts: BlogPost[] = [
   },
   {
     slug: 'top-instagram-influencers-in-patna-bihar',
-    title: 'Top 10 Instagram Influencers in Patna, Bihar (2026)',
+    title: 'Patna Influencers 2026 | Local Creator Guide',
     metaDescription: 'Discover the top Instagram influencers in Patna, Bihar for 2026. Explore local creators in lifestyle, food, travel, and fashion to boost your D2C brand ROI.',
     category: 'Business',
     date: '2026-05-22',

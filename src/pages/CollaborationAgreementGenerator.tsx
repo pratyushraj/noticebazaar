@@ -137,8 +137,8 @@ const CollaborationAgreementGenerator = () => {
           'collaboration agreement generator',
           'brand partnership agreement',
           'influencer collaboration contract',
+          'barter collaboration agreement',
           'creator agreement template',
-          'India',
           'free collaboration tool',
         ]}
         canonicalUrl={canonicalUrl}

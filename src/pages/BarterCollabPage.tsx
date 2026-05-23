@@ -290,25 +290,14 @@ const BarterCollabPage = () => {
   return (
     <div className="min-h-dvh bg-[#F8FAF9] text-[#0F172A] font-sans overflow-x-hidden">
       <SEOHead
-        title="Barter Influencer Marketing in India | Creator Armour"
-        description="Find barter-ready creators in India, send product offers, and generate digital agreements without DMs, agency commissions, or manual follow-ups."
+        title="Barter Collaborations India | Creator Armour"
+        description="Find creators open to barter collaborations, product exchange, and influencer gifting in India. Build structured offers and agreements for your brand."
         keywords={[
-          'barter influencer marketing platform India',
-          'barter influencer marketing India',
-          'barter campaign automation software',
-          'UGC creator barter platform',
-          'barter collaboration contract agreement template',
-          'influencer product exchange agreement India',
-          'prevent influencer ghosting on barter deals',
-          'barter collab influencers India',
-          'product exchange influencer India',
-          'influencer gifting India',
-          'product seeding influencer',
-          'barter deal creator India',
-          'free product review influencer India',
-          'non-monetary influencer collaboration',
-          'micro influencer barter India',
-          'product exchange collaboration India',
+          'barter collaborations India',
+          'find influencers open to barter collabs',
+          'product exchange collaborations for brands',
+          'influencer gifting platform India',
+          'creator armour',
         ]}
         canonicalUrl="https://creatorarmour.com/barter-collab"
         imageAlt="Creator Armour barter influencer marketing page for Indian brands"
@@ -357,11 +346,11 @@ const BarterCollabPage = () => {
 
           <h1 className="text-[44px] md:text-[68px] lg:text-[80px] font-black tracking-tight leading-[1.05] mb-6 text-[#0F172A]">
             If you need barter collabs,<br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#16A34A] to-[#15803D]">barter deals in India</span>
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#16A34A] to-[#15803D]">barter collaborations in India</span>
           </h1>
 
           <p className="text-[18px] md:text-[22px] text-[#64748B] font-medium mb-8 max-w-2xl mx-auto leading-relaxed">
-            No agencies. No commission. If you need barter collabs, just send your product and get authentic content.
+            No agencies. No commission. If you need barter collaborations in India, just send your product and get authentic content.
             Creator Armour handles agreements, delivery tracking, and payments — even for barter.
           </p>
           <p className="text-[13px] md:text-[14px] text-[#64748B] font-medium mb-10 max-w-2xl mx-auto leading-relaxed">
@@ -373,7 +362,7 @@ const BarterCollabPage = () => {
               Direct answer
             </p>
             <p className="text-[14px] md:text-[16px] font-medium text-[#14532D] leading-relaxed">
-              If you need barter collabs, product exchange campaigns, or influencer gifting in India, Creator Armour helps you find creators open to product deals, send structured offers, and track the collaboration with contracts instead of DMs.
+              If you need barter collaborations in India, product exchange campaigns, or influencer gifting, Creator Armour helps you find creators open to product deals, send structured offers, and track the collaboration with contracts instead of DMs.
             </p>
           </div>
 

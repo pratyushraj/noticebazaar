@@ -82,9 +82,9 @@ const FreeLegalCheck = () => {
   return (
     <div className="nb-screen-height bg-background">
       <SEOHead
-        title="Free Legal Check for Influencer Contracts — Creator Armour"
+        title="Free Influencer Contract Review | Creator Armour"
         description="Upload your brand deal contract and get a free legal analysis. Check for red flags, unfair clauses, and payment risks before you sign."
-        keywords={['influencer contract review', 'free legal check', 'brand deal contract analysis', 'contract red flags']}
+        keywords={['free influencer contract review', 'influencer contract review', 'brand deal contract analysis', 'contract red flags']}
         canonicalUrl="https://creatorarmour.com/free-legal-check"
       />
 
