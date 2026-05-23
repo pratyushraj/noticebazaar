@@ -2,6 +2,7 @@ import { createClient } from '@supabase/supabase-js';
 import { Resend } from 'resend';
 import * as dotenv from 'dotenv';
 import { join } from 'path';
+import * as fs from 'fs';
 
 dotenv.config({ path: join(process.cwd(), '.env') });
 dotenv.config({ path: join(process.cwd(), '.env.local') });
@@ -19,10 +20,14 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
 const resend = new Resend(RESEND_API_KEY);
 
 const targetBrands = [
-  { name: 'TailBlaze', email: 'hello@tailblaze.com', website: 'https://tailblaze.com' },
-  { name: 'Pawpeye', email: 'pawpeye@gmail.com', website: 'https://pawpeye.com' },
-  { name: 'Dogkart', email: 'support@dogkart.in', website: 'https://dogkart.in' },
-  { name: "Ollie's Paw", email: 'hello@olliespaw.com', website: 'https://olliespaw.com' }
+  { name: 'PetChef', email: 'woof@petchef.co.in', website: 'https://petchef.co.in' },
+  { name: 'ModaVeda', email: 'hi@modaveda.com', website: 'https://modaveda.com' },
+  { name: 'Sexxidoggi', email: 'hello@sexxidoggi.com', website: 'https://sexxidoggi.com' },
+  { name: 'Sploot', email: 'customercare@sploot.tech', website: 'https://sploot.space' },
+  { name: "Benny's Bowl", email: 'support@bennysbowl.com', website: 'https://bennysbowl.com' },
+  { name: 'Barks & Wags', email: 'info@barksandwags.in', website: 'https://barksandwags.in' },
+  { name: 'The Honest Pet Co.', email: 'support@honestpetco.in', website: 'https://honestpetco.in' },
+  { name: 'Fur Ball Story', email: 'info@furballstory.com', website: 'https://furballstory.com' }
 ];
 
 function getPetEmailTemplate(brandName: string): string {
@@ -121,6 +126,29 @@ async function sendOutreach() {
           await supabase.from('brand_leads').insert(leadPayload);
         }
 
+        // Update local state JSON file
+        try {
+          const localStatePath = join(process.cwd(), 'scratch', 'outreach_local_state.json');
+          if (fs.existsSync(localStatePath)) {
+            const localState = JSON.parse(fs.readFileSync(localStatePath, 'utf8'));
+            if (!localState.d2c_brands) localState.d2c_brands = {};
+            
+            localState.d2c_brands[b.name] = {
+              email: b.email,
+              website: b.website,
+              category: 'Pet Care',
+              status: 'contacted',
+              outreach_count: existingLead ? (existingLead.outreach_count || 0) + 1 : 1,
+              last_contacted_at: leadPayload.last_contacted_at
+            };
+            
+            fs.writeFileSync(localStatePath, JSON.stringify(localState, null, 2), 'utf8');
+            console.log(`   ✅ Local state JSON updated for ${b.name}`);
+          }
+        } catch (e: any) {
+          console.error(`   ❌ Failed to update local state JSON for ${b.name}:`, e.message);
+        }
+
         const { data, error } = await resend.emails.send({
           from: 'Pratyush from Creator Armour <outreach@creatorarmour.com>',
           to: b.email,
@@ -138,6 +166,56 @@ async function sendOutreach() {
       }
 
       await new Promise(r => setTimeout(r, 1500));
+    }
+
+    // Special handling for Slobberman.dog (Website form / WhatsApp outreach)
+    console.log(`➡️ Processing Slobberman.dog (manual outreach via WhatsApp/Form)...`);
+    try {
+      const b = { name: 'Slobberman.dog', email: '', website: 'https://slobberman.dog' };
+      const { data: existingLead } = await supabase
+        .from('brand_leads')
+        .select('*')
+        .eq('brand_name', b.name)
+        .maybeSingle();
+
+      const leadPayload = {
+        brand_name: b.name,
+        website: b.website,
+        email: b.email,
+        category: 'Pet Care',
+        status: 'contacted',
+        outreach_count: existingLead ? (existingLead.outreach_count || 0) + 1 : 1,
+        last_contacted_at: new Date().toISOString(),
+        contact_name: 'Marketing Team',
+        notes: 'Outreached via WhatsApp (+91 63643 54693) / Website Form.'
+      };
+
+      if (existingLead) {
+        await supabase.from('brand_leads').update(leadPayload).eq('id', existingLead.id);
+      } else {
+        await supabase.from('brand_leads').insert(leadPayload);
+      }
+
+      // Update local state JSON for Slobberman
+      const localStatePath = join(process.cwd(), 'scratch', 'outreach_local_state.json');
+      if (fs.existsSync(localStatePath)) {
+        const localState = JSON.parse(fs.readFileSync(localStatePath, 'utf8'));
+        if (!localState.d2c_brands) localState.d2c_brands = {};
+        
+        localState.d2c_brands[b.name] = {
+          email: b.email,
+          website: b.website,
+          category: 'Pet Care',
+          status: 'contacted',
+          outreach_count: existingLead ? (existingLead.outreach_count || 0) + 1 : 1,
+          last_contacted_at: leadPayload.last_contacted_at
+        };
+        fs.writeFileSync(localStatePath, JSON.stringify(localState, null, 2), 'utf8');
+      }
+      console.log(`   ✅ Success! Slobberman.dog marked as contacted.`);
+      results.push({ name: b.name, email: 'WhatsApp/Form', status: 'Marked Contacted', id: 'N/A' });
+    } catch (err: any) {
+      console.error(`   ❌ Failed to process Slobberman.dog:`, err.message);
     }
 
     console.log('\n🐾 PET OUTREACH RESULTS:');

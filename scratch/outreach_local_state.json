@@ -1375,6 +1375,78 @@
       "status": "contacted",
       "outreach_count": 1,
       "last_contacted_at": "2026-05-23T11:30:08.813Z"
+    },
+    "PetChef": {
+      "email": "woof@petchef.co.in",
+      "website": "https://petchef.co.in",
+      "category": "Pet Care",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-23T16:16:24.719Z"
+    },
+    "ModaVeda": {
+      "email": "hi@modaveda.com",
+      "website": "https://modaveda.com",
+      "category": "Pet Care",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-23T16:16:28.878Z"
+    },
+    "Sexxidoggi": {
+      "email": "hello@sexxidoggi.com",
+      "website": "https://sexxidoggi.com",
+      "category": "Pet Care",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-23T16:16:32.366Z"
+    },
+    "Sploot": {
+      "email": "customercare@sploot.tech",
+      "website": "https://sploot.space",
+      "category": "Pet Care",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-23T16:16:35.206Z"
+    },
+    "Benny's Bowl": {
+      "email": "support@bennysbowl.com",
+      "website": "https://bennysbowl.com",
+      "category": "Pet Care",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-23T16:16:38.089Z"
+    },
+    "Barks & Wags": {
+      "email": "info@barksandwags.in",
+      "website": "https://barksandwags.in",
+      "category": "Pet Care",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-23T16:16:40.283Z"
+    },
+    "The Honest Pet Co.": {
+      "email": "support@honestpetco.in",
+      "website": "https://honestpetco.in",
+      "category": "Pet Care",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-23T16:16:42.457Z"
+    },
+    "Fur Ball Story": {
+      "email": "info@furballstory.com",
+      "website": "https://furballstory.com",
+      "category": "Pet Care",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-23T16:16:44.641Z"
+    },
+    "Slobberman.dog": {
+      "email": "",
+      "website": "https://slobberman.dog",
+      "category": "Pet Care",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-23T16:16:46.828Z"
     }
   },
   "dentists": {
