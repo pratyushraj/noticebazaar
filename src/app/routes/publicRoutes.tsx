@@ -31,6 +31,7 @@ const CollaborationAgreementGenerator = lazy(() => import("@/pages/Collaboration
 const BrandDirectory = lazy(() => import("@/pages/BrandDirectory"));
 const RateCalculator = lazy(() => import("@/pages/RateCalculator"));
 const RateCalculatorDynamic = lazy(() => import("@/pages/RateCalculatorDynamic"));
+const PatnaInfluencers = lazy(() => import("@/pages/PatnaInfluencers"));
 const CollabLinkLanding = lazy(() => import("@/pages/CollabLinkLanding"));
 const ROICalculator = lazy(() => import("@/pages/ROICalculator"));
 const InvestorPitchPage = lazy(() => import("@/pages/InvestorPitchPage"));
@@ -75,6 +76,9 @@ export const PublicRoutes = () => (
     <Route path="/free-influencer-contract" element={<LazyRoute><FreeInfluencerContract /></LazyRoute>} />
     <Route path="/collaboration-agreement-generator" element={<LazyRoute><CollaborationAgreementGenerator /></LazyRoute>} />
     <Route path="/brand-directory" element={<LazyRoute><BrandDirectory /></LazyRoute>} />
+    <Route path="/patna-influencers" element={<LazyRoute><PatnaInfluencers /></LazyRoute>} />
+    <Route path="/discover/patna" element={<Navigate to="/patna-influencers" replace />} />
+    <Route path="/local-creators/patna" element={<Navigate to="/patna-influencers" replace />} />
     <Route path="/discover" element={<Navigate to="/signup" replace />} />
     <Route path="/discover/:category" element={<Navigate to="/signup" replace />} />
     <Route path="/creators-list" element={<Navigate to="/signup" replace />} />

@@ -1416,6 +1416,7 @@ const LandingPage = () => {
               <Link to="/discover?city=Hyderabad" className="text-sm font-medium text-slate-500 hover:text-white transition-colors">Creators in Hyderabad</Link>
               <Link to="/discover?city=Pune" className="text-sm font-medium text-slate-500 hover:text-white transition-colors">Creators in Pune</Link>
               <Link to="/discover?city=Chennai" className="text-sm font-medium text-slate-500 hover:text-white transition-colors">Creators in Chennai</Link>
+              <Link to="/patna-influencers" className="text-sm font-medium text-slate-500 hover:text-white transition-colors">Creators in Patna</Link>
               
               <Link to="/discover?category=Fashion" className="text-sm font-medium text-slate-500 hover:text-white transition-colors">Fashion Influencers</Link>
               <Link to="/discover?category=Beauty" className="text-sm font-medium text-slate-500 hover:text-white transition-colors">Beauty Influencers</Link>

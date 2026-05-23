@@ -26,6 +26,7 @@ const staticPages = [
   { loc: '/collaboration-agreement-generator', priority: '0.7', changefreq: 'monthly' },
   { loc: '/brand-directory', priority: '0.9', changefreq: 'daily' },
   { loc: '/blog', priority: '0.8', changefreq: 'daily' },
+  { loc: '/patna-influencers', priority: '0.8', changefreq: 'weekly' },
   { loc: '/careers', priority: '0.5', changefreq: 'monthly' },
   { loc: '/privacy-policy', priority: '0.3', changefreq: 'yearly' },
   { loc: '/terms-of-service', priority: '0.3', changefreq: 'yearly' },
