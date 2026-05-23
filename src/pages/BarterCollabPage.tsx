@@ -75,9 +75,75 @@ interface Creator {
   location?: string;
 }
 
+const FALLBACK_CREATORS: Creator[] = [
+  {
+    id: 'c1',
+    name: 'Vidushi Sharan',
+    username: 'whylittletreats',
+    category: 'Food & Lifestyle',
+    avatar_url: 'https://sqqocqujxlgoxbcnfbfb.supabase.co/storage/v1/object/public/creator-assets/whylittletreats/avatar_real.jpg',
+    avg_views: 106900,
+    avg_reel_views_manual: 106900,
+    barter_min_value: 5000,
+    is_verified: true,
+    location: 'Ranchi',
+    discovery_video_url: 'https://sqqocqujxlgoxbcnfbfb.supabase.co/storage/v1/object/public/creator-assets/whylittletreats/reel_optimized.mp4'
+  },
+  {
+    id: 'c2',
+    name: 'Annie Goshal',
+    username: 'annie_pupstar',
+    category: 'Pet Care',
+    avatar_url: 'https://sqqocqujxlgoxbcnfbfb.supabase.co/storage/v1/object/public/creator-assets/annie_pupstar/avatar_real.jpg',
+    avg_views: 154000,
+    avg_reel_views_manual: 154000,
+    barter_min_value: 0,
+    is_verified: true,
+    location: 'Mumbai',
+    discovery_video_url: 'https://sqqocqujxlgoxbcnfbfb.supabase.co/storage/v1/object/public/creator-assets/annie_pupstar/reel_optimized.mp4'
+  },
+  {
+    id: 'c3',
+    name: 'Bruno',
+    username: 'bruno_thegoldenretriever_',
+    category: 'Pet Care',
+    avatar_url: 'https://sqqocqujxlgoxbcnfbfb.supabase.co/storage/v1/object/public/creator-assets/bruno_thegoldenretriever_/avatar_real.jpg',
+    avg_views: 12600,
+    avg_reel_views_manual: 12600,
+    barter_min_value: 2000,
+    is_verified: true,
+    location: 'Delhi',
+    discovery_video_url: 'https://sqqocqujxlgoxbcnfbfb.supabase.co/storage/v1/object/public/creator-assets/bruno_thegoldenretriever_/reel_optimized.mp4'
+  },
+  {
+    id: 'c4',
+    name: 'Dilip Paliwal',
+    username: 'mobileclicksbydilip',
+    category: 'Travel & Photography',
+    avatar_url: 'https://sqqocqujxlgoxbcnfbfb.supabase.co/storage/v1/object/public/creator-assets/mobileclicksbydilip/avatar_real.jpg',
+    avg_views: 27500,
+    avg_reel_views_manual: 27500,
+    barter_min_value: 3000,
+    is_verified: true,
+    location: 'Udaipur'
+  },
+  {
+    id: 'c5',
+    name: 'Snehal Sachdeva',
+    username: 'snehal_sachdeva',
+    category: 'Fashion & Lifestyle',
+    avatar_url: 'https://sqqocqujxlgoxbcnfbfb.supabase.co/storage/v1/object/public/creator-assets/snehal_sachdeva/avatar_real.jpg',
+    avg_views: 45000,
+    avg_reel_views_manual: 45000,
+    barter_min_value: 0,
+    is_verified: true,
+    location: 'Mumbai'
+  }
+];
+
 const BarterCollabPage = () => {
-  const [creators, setCreators] = useState<Creator[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [creators, setCreators] = useState<Creator[]>(FALLBACK_CREATORS);
+  const [loading, setLoading] = useState(false);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
 
   useEffect(() => {
@@ -96,12 +162,12 @@ const BarterCollabPage = () => {
         const barterOpen = (data.creators || []).filter((c: Creator) =>
           c.barter_min_value != null || (c.starting_price != null && c.starting_price <= 3000)
         ).slice(0, 6);
-        setCreators(barterOpen.length >= 3 ? barterOpen : (data.creators || []).slice(0, 6));
+        if (barterOpen.length > 0) {
+          setCreators(barterOpen);
+        }
       }
     } catch {
       // silently fail
-    } finally {
-      setLoading(false);
     }
   };
 
