@@ -14,7 +14,7 @@ interface SEOHeadProps {
   robots?: string;
   imageAlt?: string;
   locale?: string;
-  jsonLd?: Record<string, unknown>; // JSON-LD structured data
+  jsonLd?: Record<string, unknown> | Record<string, unknown>[]; // JSON-LD structured data
   video?: string; // Video URL
   videoType?: string; // Video MIME type (e.g. video/mp4)
   videoWidth?: string;

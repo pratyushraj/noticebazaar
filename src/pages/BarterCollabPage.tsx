@@ -236,6 +236,20 @@ const BarterCollabPage = () => {
     }))
   };
 
+  const webPageSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'WebPage',
+    name: 'Barter Influencer Marketing in India',
+    url: 'https://creatorarmour.com/barter-collab',
+    description: 'Find barter-ready creators in India, send product offers, and generate digital agreements without DMs or agency commissions.',
+    inLanguage: 'en-IN',
+    isPartOf: {
+      '@type': 'WebSite',
+      name: 'Creator Armour',
+      url: 'https://creatorarmour.com',
+    },
+  };
+
   const formatViews = (v?: number) => {
     if (!v) return '—';
     if (v >= 1000000) return `${(v / 1000000).toFixed(1)}M+`;
@@ -246,10 +260,11 @@ const BarterCollabPage = () => {
   return (
     <div className="min-h-dvh bg-[#F8FAF9] text-[#0F172A] font-sans overflow-x-hidden">
       <SEOHead
-        title="Barter Influencer Marketing Platform India — Safe Product Exchange"
-        description="Tired of creator ghosting? Creator Armour is India's first automated barter influencer marketing platform. Generate digital barter contracts, verify addresses, and secure content without manual DM chaos or agency fees."
+        title="Barter Influencer Marketing in India | Creator Armour"
+        description="Find barter-ready creators in India, send product offers, and generate digital agreements without DMs, agency commissions, or manual follow-ups."
         keywords={[
           'barter influencer marketing platform India',
+          'barter influencer marketing India',
           'barter campaign automation software',
           'UGC creator barter platform',
           'barter collaboration contract agreement template',
@@ -266,7 +281,8 @@ const BarterCollabPage = () => {
           'product exchange collaboration India',
         ]}
         canonicalUrl="https://creatorarmour.com/barter-collab"
-        jsonLd={faqSchema}
+        imageAlt="Creator Armour barter influencer marketing page for Indian brands"
+        jsonLd={[webPageSchema, faqSchema]}
       />
 
       {/* Nav */}
@@ -390,6 +406,7 @@ const BarterCollabPage = () => {
                 <div key={creator.id} className="group relative aspect-[4/5] rounded-[32px] overflow-hidden bg-slate-100 shadow-lg border-4 border-white hover:shadow-2xl hover:-translate-y-2 transition-all duration-500">
                   {creator.discovery_video_url ? (
                     <video 
+                      key={creator.discovery_video_url}
                       src={creator.discovery_video_url} 
                       className="w-full h-full object-cover" 
                       autoPlay
@@ -464,6 +481,17 @@ const BarterCollabPage = () => {
             <h2 className="text-3xl md:text-[40px] font-black text-[#0F172A] tracking-tight">
               Everything about barter deals
             </h2>
+            <p className="mt-4 text-[#64748B] font-medium max-w-2xl mx-auto">
+              If you want the contract side too, see our{' '}
+              <Link to="/collaboration-agreement-generator" className="text-[#16A34A] font-bold hover:underline">
+                collaboration agreement generator
+              </Link>{' '}
+              or read the{' '}
+              <Link to="/blog/barter-influencer-deal-india-guide-2025" className="text-[#16A34A] font-bold hover:underline">
+                barter deal guide
+              </Link>
+              .
+            </p>
           </div>
           <div className="space-y-3">
             {faqs.map((faq, idx) => (
