@@ -421,12 +421,6 @@
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://creatorarmour.com/rounak_agarwal</loc>
-    <lastmod>2026-05-22</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
     <loc>https://creatorarmour.com/bruno_thegoldenretriever_</loc>
     <lastmod>2026-05-22</lastmod>
     <changefreq>weekly</changefreq>
@@ -525,6 +519,12 @@
   <url>
     <loc>https://creatorarmour.com/biharigirl_anjaliagarwal</loc>
     <lastmod>2026-05-23</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://creatorarmour.com/rounak_agarwal</loc>
+    <lastmod>2026-05-22</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
