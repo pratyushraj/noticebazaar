@@ -87,7 +87,15 @@ async function run() {
   const targetName = args[1] || 'Test D2C Brand';
   const targetCategory = args[2] || 'Food & Snacks';
 
-  if (targetEmail && targetEmail !== '--bulk') {
+  const limitArgIdx = args.indexOf('--limit');
+  let limit = 0;
+  if (limitArgIdx !== -1 && limitArgIdx + 1 < args.length) {
+    limit = parseInt(args[limitArgIdx + 1], 10);
+  }
+
+  const isBulk = args.includes('--bulk');
+
+  if (targetEmail && !isBulk) {
     // --- SINGLE TEST PREVIEW MODE ---
     console.log(`\n🚀 PREVIEWING & SENDING OUTBOUND EMAIL to ${targetName} (${targetEmail})...`);
     
@@ -116,7 +124,7 @@ async function run() {
     } catch (err: any) {
       console.error(`❌ Failed to send preview email:`, err.message);
     }
-  } else if (targetEmail === '--bulk') {
+  } else if (isBulk) {
     // --- SAFE BULK CAMPAIGN RUN MODE WITH DUPLICATE PROTECTION (OFFLINE-FIRST) ---
     console.log(`\n🚀 INITIATING AUTOMATED BULK OUTREACH CAMPAIGN WITH DUPLICATE PROTECTION (OFFLINE-FIRST)...`);
     
@@ -136,22 +144,33 @@ async function run() {
         return b.status !== 'contacted' && (!b.outreach_count || b.outreach_count === 0);
       });
 
+      let targetedBrandsList = uncontactedBrands;
+      if (limit > 0) {
+        targetedBrandsList = uncontactedBrands.slice(0, limit);
+      }
+
       console.log(`\n🐾 Duplicate Protection Audit:`);
       console.log(`- Total Seeded Brands in Cache: ${brandNames.length}`);
       console.log(`- Already Contacted Brands (SKIPPED): ${brandNames.length - uncontactedBrands.length}`);
-      console.log(`- Uncontacted Brands Remaining (TO SEND): ${uncontactedBrands.length}`);
+      console.log(`- Uncontacted Brands Remaining: ${uncontactedBrands.length}`);
+      if (limit > 0) {
+        console.log(`- Batch Limit Applied: Sending exactly ${targetedBrandsList.length} pitches of the remaining uncontacted brands.`);
+      } else {
+        console.log(`- Uncontacted Brands Remaining (TO SEND): ${uncontactedBrands.length}`);
+      }
 
-      if (uncontactedBrands.length === 0) {
-        console.log('\n✅ All seeded brands have already been contacted. Skipping batch run to prevent duplicates!');
+      if (targetedBrandsList.length === 0) {
+        console.log('\n✅ All seeded brands have already been contacted or list is empty. Skipping batch run!');
         return;
       }
 
-      console.log(`\n📧 Commencing delivery to ${uncontactedBrands.length} uncontacted brands...`);
+      console.log(`\n📧 Commencing delivery to ${targetedBrandsList.length} uncontacted brands...`);
       let sentCount = 0;
 
-      for (const brandName of uncontactedBrands) {
+      for (const brandName of targetedBrandsList) {
         const brand = brands[brandName];
         console.log(`➡️ Sending category-specific pitch to ${brandName} (${brand.email})...`);
+
 
         try {
           const brandPayload: BrandOutreachProps = {

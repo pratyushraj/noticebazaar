@@ -31,61 +31,61 @@ const dashboardShowcase = [
     accent: 'emerald',
     icon: BriefcaseBusiness,
     body: (
-      <div className="space-y-4">
-        {/* New Offers Card Demo */}
-        <div className="p-5 rounded-[28px] border bg-white border-slate-200/60 shadow-[0_15px_35px_rgba(0,0,0,0.05)] relative overflow-hidden group">
-          <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
-            <div className="flex gap-2">
-              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-wider border bg-blue-50 text-blue-700 border-blue-100 whitespace-nowrap">
-                <Zap className="w-3 h-3 fill-current" />
-                Standard Deal
+      <div className="p-5 rounded-[24px] border bg-[#0F172A] border-slate-800/80 text-white shadow-2xl relative overflow-hidden group/mockup text-left">
+        {/* Glowing background mesh */}
+        <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
+        
+        {/* Mockup Header */}
+        <div className="flex items-center justify-between gap-2 mb-4 border-b border-slate-800/50 pb-3">
+          <div className="flex items-center gap-2">
+            <div className="w-2.5 h-2.5 rounded-full bg-rose-500/80" />
+            <div className="w-2.5 h-2.5 rounded-full bg-amber-500/80" />
+            <div className="w-2.5 h-2.5 rounded-full bg-emerald-500/80" />
+          </div>
+          <span className="text-[9px] font-bold tracking-widest uppercase text-slate-500 font-mono">active_proposal.json</span>
+        </div>
+
+        {/* Offer Details */}
+        <div className="space-y-4">
+          <div className="flex items-start justify-between gap-2">
+            <div>
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md text-[9px] font-bold uppercase tracking-wider bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 mb-2">
+                <Zap className="w-2.5 h-2.5 fill-current" />
+                Verified Collab
               </span>
+              <h4 className="text-[16px] font-black tracking-tight text-white leading-tight">
+                Nykaa Beauty
+              </h4>
+              <p className="text-[11px] font-bold text-slate-400 mt-0.5">
+                1 Reel + 3 IG Stories
+              </p>
             </div>
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-[9px] font-black uppercase tracking-wider border bg-rose-50 text-rose-600 border-rose-100 whitespace-nowrap">
-              <Clock className="w-3 h-3" />
-              Exp. in 2 days
+            <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[9px] font-bold uppercase tracking-wider bg-rose-500/10 text-rose-400 border border-rose-500/20 font-mono">
+              2d left
             </span>
           </div>
 
-          <div className="flex gap-4 mb-6">
-            <div className="w-[100px] h-[100px] rounded-[24px] overflow-hidden border border-slate-100 bg-slate-50/50 shrink-0 p-1 shadow-md transition-all duration-500 group-hover:scale-[1.05]">
-              <img 
-                src={optimizeImage("https://images.unsplash.com/photo-1596462502278-27bfdc403348?auto=format&fit=crop&w=500&h=500&q=80", { width: 128, quality: 80 }) ?? ""} 
-                alt="Nykaa Beauty Logo" 
-                className="w-full h-full object-cover rounded-[18px]" 
-              />
+          <div className="p-3.5 rounded-xl bg-slate-950/60 border border-slate-800/80 flex items-center justify-between">
+            <div>
+              <p className="text-[9px] font-black uppercase tracking-widest text-slate-500">Guaranteed Payout</p>
+              <p className="text-[22px] font-black tracking-tighter text-emerald-400 mt-0.5 tabular-nums">
+                ₹18,000
+              </p>
             </div>
-
-            <div className="min-w-0 flex-1 py-0.5 flex flex-col justify-between">
-              <div className="min-w-0">
-                <h4 className="text-[18px] font-black tracking-tight leading-tight text-slate-900">
-                  Nykaa Beauty
-                </h4>
-                <p className="text-[12px] font-bold mt-1 text-slate-500">
-                  1 Reel + 3 Stories
-                </p>
-              </div>
-
-              <div className="pt-2">
-                <div className="flex items-baseline gap-1.5">
-                  <p className="text-[24px] font-black tracking-tighter tabular-nums leading-none text-slate-900">
-                    ₹18,000
-                  </p>
-                  <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Earnings</p>
-                </div>
-              </div>
+            <div className="w-9 h-9 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-400">
+              <Wallet className="w-5 h-5" />
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            <div className="h-[48px] rounded-[18px] font-black uppercase tracking-widest text-[11px] flex items-center justify-center gap-2 bg-blue-600 text-white shadow-lg shadow-blue-600/20">
-              <CheckCircle2 className="w-4 h-4" />
+          <div className="grid grid-cols-2 gap-2 pt-1">
+            <button className="h-10 rounded-xl font-bold uppercase tracking-widest text-[10px] flex items-center justify-center gap-1.5 bg-gradient-to-r from-emerald-500 to-teal-500 text-slate-950 shadow-md shadow-emerald-500/10 hover:from-emerald-400 hover:to-teal-400 transition-all duration-300">
+              <CheckCircle2 className="w-3.5 h-3.5" />
               Accept
-            </div>
-            <div className="h-[48px] rounded-[18px] font-black uppercase tracking-widest text-[11px] flex items-center justify-center gap-2 bg-white border border-slate-200 text-slate-600">
-              <XCircle className="w-4 h-4" />
+            </button>
+            <button className="h-10 rounded-xl font-bold uppercase tracking-widest text-[10px] flex items-center justify-center gap-1.5 bg-slate-900 border border-slate-800 text-slate-400 hover:bg-slate-800 transition-all duration-300">
+              <XCircle className="w-3.5 h-3.5" />
               Decline
-            </div>
+            </button>
           </div>
         </div>
       </div>
@@ -98,57 +98,69 @@ const dashboardShowcase = [
     icon: Wallet,
     accent: 'teal',
     body: (
-      <div className="space-y-6">
-        <div className="p-6 rounded-[2.5rem] border bg-white border-slate-200 shadow-xl shadow-slate-200/50 relative overflow-hidden">
-          <div className="flex justify-between items-start mb-8">
-            <div className="text-left">
-              <p className="text-[11px] font-black uppercase tracking-[0.2em] opacity-40 mb-1 text-slate-500">Total Revenue</p>
-              <h2 className="text-4xl font-black tracking-tighter text-slate-900">
+      <div className="p-5 rounded-[24px] border bg-[#0F172A] border-slate-800/80 text-white shadow-2xl relative overflow-hidden group/mockup text-left">
+        {/* Glowing background mesh */}
+        <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
+
+        {/* Mockup Header */}
+        <div className="flex items-center justify-between gap-2 mb-4 border-b border-slate-800/50 pb-3">
+          <span className="text-[9px] font-bold tracking-widest uppercase text-slate-500 font-mono">escrow_ledger.sh</span>
+          <span className="px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-400 text-[8px] font-black uppercase tracking-widest border border-emerald-500/20">100% Secured</span>
+        </div>
+
+        {/* Balance Display */}
+        <div className="space-y-4">
+          <div className="flex justify-between items-end">
+            <div>
+              <p className="text-[9px] font-black uppercase tracking-widest text-slate-500">Escrow Balance</p>
+              <h3 className="text-[26px] font-black tracking-tight text-white mt-1 leading-none tabular-nums bg-gradient-to-r from-white to-slate-400 bg-clip-text text-transparent">
                 ₹50,159
-              </h2>
+              </h3>
             </div>
-            <div className="w-14 h-14 rounded-2xl flex items-center justify-center bg-slate-50">
-              <Wallet className="w-7 h-7 text-blue-600" />
+            <div className="text-right">
+              <span className="text-[9px] font-bold text-emerald-400 font-mono">+12.4% this month</span>
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="p-4 rounded-2xl border bg-orange-50/30 border-orange-100/50 text-left">
-              <div className="flex items-center gap-2 mb-2">
-                <div className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse" />
-                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Processing</p>
-              </div>
-              <p className="text-xl font-black text-slate-900">₹41,160</p>
-            </div>
-            <div className="p-4 rounded-2xl border bg-green-50/30 border-green-100/50 text-left">
-              <div className="flex items-center gap-2 mb-2">
-                <div className="w-1.5 h-1.5 rounded-full bg-green-500" />
-                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Paid Out</p>
-              </div>
-              <p className="text-xl font-black text-slate-900">₹8,999</p>
-            </div>
+          {/* SVG Sparkline Graph */}
+          <div className="h-14 w-full bg-slate-950/40 rounded-xl border border-slate-800/50 p-1 flex items-end relative overflow-hidden">
+            <svg className="w-full h-full" viewBox="0 0 100 40" preserveAspectRatio="none">
+              <defs>
+                <linearGradient id="chartGlow" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#10B981" stopOpacity="0.3" />
+                  <stop offset="100%" stopColor="#10B981" stopOpacity="0.0" />
+                </linearGradient>
+              </defs>
+              <path
+                d="M0,35 Q15,32 30,22 T60,25 T90,5 L100,2 L100,40 L0,40 Z"
+                fill="url(#chartGlow)"
+              />
+              <path
+                d="M0,35 Q15,32 30,22 T60,25 T90,5 L100,2"
+                fill="none"
+                stroke="#10B981"
+                strokeWidth="2"
+                strokeLinecap="round"
+              />
+            </svg>
           </div>
-        </div>
-        
-        <div className="space-y-3">
-          <div className="flex items-center justify-between px-1">
-            <h4 className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Payout Method</h4>
-            <button className="text-[10px] font-bold text-blue-600">Edit Details</button>
-          </div>
-          <div className="p-5 rounded-3xl border flex items-center justify-between bg-white border-slate-200 shadow-sm text-left">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-2xl flex items-center justify-center bg-slate-50 text-slate-600">
-                <Landmark className="w-6 h-6" />
+
+          {/* Split Escrow Details */}
+          <div className="grid grid-cols-2 gap-2.5">
+            <div className="p-3 rounded-xl bg-slate-950/80 border border-slate-800/80">
+              <div className="flex items-center gap-1.5 mb-1">
+                <div className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
+                <p className="text-[8px] font-black text-slate-500 uppercase tracking-widest">In Escrow</p>
               </div>
-              <div>
-                <div className="flex items-center gap-2 mb-0.5">
-                  <p className="text-[15px] font-bold text-slate-900">UPI Transfer</p>
-                  <span className="px-1.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-green-50 text-green-600 border border-green-100">Verified</span>
-                </div>
-                <p className="text-xs font-medium text-slate-400 font-mono tracking-tight">ama*****@oksbi</p>
-              </div>
+              <p className="text-[15px] font-black text-white tabular-nums">₹41,160</p>
             </div>
-            <ChevronRight className="w-5 h-5 text-slate-300" />
+            <div className="p-3 rounded-xl bg-slate-950/80 border border-slate-800/80">
+              <div className="flex items-center gap-1.5 mb-1">
+                <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                <p className="text-[8px] font-black text-slate-500 uppercase tracking-widest">Released</p>
+              </div>
+              <p className="text-[15px] font-black text-white tabular-nums">₹8,999</p>
+            </div>
           </div>
         </div>
       </div>
@@ -161,50 +173,69 @@ const dashboardShowcase = [
     icon: Gavel,
     accent: 'blue',
     body: (
-      <div className="space-y-4">
-      <div className="p-5 rounded-[28px] border bg-white border-slate-200/60 shadow-[0_15px_35px_rgba(0,0,0,0.05)] relative overflow-hidden group">
-        <div className="flex gap-4 mb-6">
-          <div className="w-[100px] h-[100px] rounded-[24px] overflow-hidden border border-slate-100 bg-slate-50/50 shrink-0 p-1 shadow-md transition-all duration-500 group-hover:scale-[1.05]">
-            <img 
-              src="/assets/images/lawyer-pratik.png" 
-              alt="Lawyer Pratik Singh" 
-              className="w-full h-full object-cover rounded-[18px]" 
-            />
-          </div>
+      <div className="p-5 rounded-[24px] border bg-[#0F172A] border-slate-800/80 text-white shadow-2xl relative overflow-hidden group/mockup text-left">
+        {/* Glowing background mesh */}
+        <div className="absolute top-0 right-0 w-32 h-32 bg-rose-500/10 rounded-full blur-3xl pointer-events-none" />
 
-          <div className="min-w-0 flex-1 py-0.5 flex flex-col justify-center text-left">
-            <div className="min-w-0">
-              <h4 className="text-[18px] font-black tracking-tight leading-tight text-slate-900">
-                Pratik Singh
-              </h4>
-              <p className="text-[12px] font-bold mt-1 text-slate-500">
-                Senior Legal Counsel
-              </p>
+        {/* Mockup Header */}
+        <div className="flex items-center justify-between gap-2 mb-4 border-b border-slate-800/50 pb-3">
+          <div className="flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-blue-50 animate-pulse" />
+            <span className="text-[9px] font-bold tracking-widest uppercase text-slate-400 font-mono">Contract Guard AI</span>
+          </div>
+          <span className="text-[8px] font-bold uppercase tracking-widest text-slate-500">v2.4</span>
+        </div>
+
+        {/* Document Scan Simulation */}
+        <div className="space-y-3.5">
+          {/* Lawyer Info in header */}
+          <div className="flex items-center gap-3 bg-slate-950/40 p-2.5 rounded-xl border border-slate-800/50">
+            <div className="w-8 h-8 rounded-lg overflow-hidden border border-slate-800 shrink-0">
+              <img 
+                src="https://sqqocqujxlgoxbcnfbfb.supabase.co/storage/v1/object/public/creator-assets/ugc_pop._/avatar_real.jpg" 
+                alt="AI Advisor" 
+                className="w-full h-full object-cover" 
+              />
+            </div>
+            <div>
+              <h5 className="text-[12px] font-black leading-none text-white">AI Contract Scan</h5>
+              <p className="text-[9px] text-slate-500 font-bold mt-1">Audit complete · 3 issues resolved</p>
             </div>
           </div>
-        </div>
 
-        <div className="flex items-center gap-3 mb-4">
-          <div className="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center">
-            <AlertTriangle className="w-5 h-5 text-amber-600" />
+          {/* Issue Highlighted */}
+          <div className="p-3 rounded-xl bg-rose-950/30 border border-rose-900/40 text-left">
+            <div className="flex items-center justify-between gap-2 mb-1.5">
+              <span className="inline-flex items-center gap-1.5 text-[8px] font-black uppercase tracking-widest text-rose-400 bg-rose-500/10 px-1.5 py-0.5 rounded border border-rose-500/20">
+                <AlertTriangle className="w-3.5 h-3.5 fill-current" />
+                Risky Clause Detected
+              </span>
+            </div>
+            <p className="text-[10px] text-slate-400 italic leading-snug line-clamp-1">
+              "...Brand shall own all right, title, and interest in raw files in perpetuity..."
+            </p>
+            <p className="text-[10px] text-rose-300 font-bold mt-1.5 flex items-start gap-1">
+              <span className="text-rose-400">💡 Suggestion:</span> Change to 12-month usage rights.
+            </p>
           </div>
-          <div className="text-left">
-            <p className="text-[11px] font-black uppercase tracking-widest text-slate-400">Dispute Detected</p>
-            <p className="text-sm font-black text-slate-900">Payment Overdue: 14 Days</p>
-          </div>
-        </div>
-        
-        <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100 mb-4 text-left">
-          <p className="text-xs font-medium text-slate-600 leading-relaxed italic">
-            "Brand has not released payment after approval. Initiating legal notice..."
-          </p>
-        </div>
 
-        <button className="w-full h-12 rounded-[18px] font-black uppercase tracking-widest text-[11px] flex items-center justify-center gap-2 bg-slate-900 text-white shadow-lg">
-          <Gavel className="w-4 h-4" />
-          Request Legal Aid
-        </button>
-      </div>
+          {/* Secure Checks Checklist */}
+          <div className="space-y-1.5 bg-slate-950/50 p-2.5 rounded-xl border border-slate-800/40 text-[10px]">
+            <div className="flex items-center gap-2 text-emerald-400 font-bold">
+              <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
+              <span>Escrow milestone payment linked</span>
+            </div>
+            <div className="flex items-center gap-2 text-emerald-400 font-bold">
+              <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
+              <span>Clear revision limit capped (max 2)</span>
+            </div>
+          </div>
+
+          <button className="w-full h-10 rounded-xl font-bold uppercase tracking-widest text-[10px] flex items-center justify-center gap-1.5 bg-blue-600 text-white shadow-md shadow-blue-500/10 hover:bg-blue-500 transition-all duration-300">
+            <Gavel className="w-3.5 h-3.5" />
+            Request Counsel Review
+          </button>
+        </div>
       </div>
     ),
   },
@@ -880,7 +911,7 @@ const LandingPage = () => {
                     </div>
                   </div>
 
-                  <div className="rounded-[28px] border border-slate-100 bg-[#F8FAF9]/85 p-4 shadow-sm relative z-10">
+                  <div className="mt-auto relative z-10 w-full">
                     {panel.body}
                   </div>
                 </div>

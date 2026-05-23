@@ -969,12 +969,12 @@
       "last_contacted_at": "2026-05-22T21:01:00.533Z"
     },
     "Good Monk": {
-      "email": "care@goodmonk.in",
+      "email": "wecare@superfoodsvalley.com",
       "website": "https://goodmonk.in",
       "category": "Food, Snacks & Beverages",
       "status": "contacted",
       "outreach_count": 1,
-      "last_contacted_at": "2026-05-22T21:01:02.750Z"
+      "last_contacted_at": "2026-05-23T18:30:17.896Z"
     },
     "Teafit": {
       "email": "hi@tea.fit",
@@ -1382,7 +1382,7 @@
       "category": "Pet Care",
       "status": "contacted",
       "outreach_count": 1,
-      "last_contacted_at": "2026-05-23T16:16:24.719Z"
+      "last_contacted_at": "2026-05-23T18:30:20.735Z"
     },
     "ModaVeda": {
       "email": "hi@modaveda.com",
@@ -1390,7 +1390,7 @@
       "category": "Pet Care",
       "status": "contacted",
       "outreach_count": 1,
-      "last_contacted_at": "2026-05-23T16:16:28.878Z"
+      "last_contacted_at": "2026-05-23T18:30:22.943Z"
     },
     "Sexxidoggi": {
       "email": "hello@sexxidoggi.com",
@@ -1398,7 +1398,7 @@
       "category": "Pet Care",
       "status": "contacted",
       "outreach_count": 1,
-      "last_contacted_at": "2026-05-23T16:16:32.366Z"
+      "last_contacted_at": "2026-05-23T18:30:25.161Z"
     },
     "Sploot": {
       "email": "customercare@sploot.tech",
@@ -1406,7 +1406,7 @@
       "category": "Pet Care",
       "status": "contacted",
       "outreach_count": 1,
-      "last_contacted_at": "2026-05-23T16:16:35.206Z"
+      "last_contacted_at": "2026-05-23T18:30:27.334Z"
     },
     "Benny's Bowl": {
       "email": "support@bennysbowl.com",
@@ -1414,7 +1414,7 @@
       "category": "Pet Care",
       "status": "contacted",
       "outreach_count": 1,
-      "last_contacted_at": "2026-05-23T16:16:38.089Z"
+      "last_contacted_at": "2026-05-23T18:30:29.526Z"
     },
     "Barks & Wags": {
       "email": "info@barksandwags.in",
@@ -1422,7 +1422,7 @@
       "category": "Pet Care",
       "status": "contacted",
       "outreach_count": 1,
-      "last_contacted_at": "2026-05-23T16:16:40.283Z"
+      "last_contacted_at": "2026-05-23T18:30:31.718Z"
     },
     "The Honest Pet Co.": {
       "email": "support@honestpetco.in",
@@ -1607,6 +1607,86 @@
       "status": "contacted",
       "outreach_count": 1,
       "last_contacted_at": "2026-05-23T17:43:53.803Z"
+    },
+    "Comfort Smiles": {
+      "email": "comfortsmilesdentistry@gmail.com",
+      "website": "https://comfortsmiles.in",
+      "category": "Dentistry",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-23T17:49:35.795Z"
+    },
+    "Re-Hab Dental": {
+      "email": "rehabdentalcentre@gmail.com",
+      "website": "https://re-habdental.com",
+      "category": "Dentistry",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-23T17:49:39.329Z"
+    },
+    "Skinlogics Derma": {
+      "email": "skinlogicsclinic@gmail.com",
+      "website": "https://www.skinlogics.in",
+      "category": "Beauty, Skincare & Grooming",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-23T17:49:41.534Z"
+    },
+    "Skinfinity Derma": {
+      "email": "info@skinfinityderma.com",
+      "website": "https://www.skinfinityderma.com",
+      "category": "Beauty, Skincare & Grooming",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-23T17:49:44.395Z"
+    },
+    "Zanishaa Aesthetics": {
+      "email": "info@zanishaaaesthetics.com",
+      "website": "https://zanishaaaesthetics.com",
+      "category": "Beauty, Skincare & Grooming",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-23T17:49:46.594Z"
+    },
+    "Healthy Master": {
+      "email": "support@healthymaster.in",
+      "website": "https://healthymaster.in",
+      "category": "Food, Snacks & Beverages",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-23T18:17:39.778Z"
+    },
+    "Alpino Health Foods": {
+      "email": "support@alpinohealthfoods.com",
+      "website": "https://alpino.store",
+      "category": "Food, Snacks & Beverages",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-23T18:30:33.960Z"
+    },
+    "The Indus Valley": {
+      "email": "help@theindusvalley.in",
+      "website": "https://theindusvalley.in",
+      "category": "Home, Wellness & Lifestyle",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-23T18:30:36.164Z"
+    },
+    "Troovy Foods": {
+      "email": "hello@troovyfoods.com",
+      "website": "https://troovyfoods.com",
+      "category": "Food, Snacks & Beverages",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-23T18:30:38.356Z"
+    },
+    "Deyga Organics": {
+      "email": "enquiry@deyga.in",
+      "website": "https://deyga.in",
+      "category": "Beauty, Skincare & Grooming",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-23T18:30:40.570Z"
     }
   },
   "dentists": {
