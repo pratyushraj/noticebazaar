@@ -20,9 +20,9 @@
   },
   "scripts": {
     "dev": "vite",
-    "build": "tsx scripts/generate-sitemap.ts && vite build && react-snap",
-    "build:staging": "tsx scripts/generate-sitemap.ts && vite build --mode staging && react-snap",
-    "build:production": "tsx scripts/generate-sitemap.ts && vite build --mode production && react-snap",
+    "build": "tsx scripts/generate-sitemap.ts && vite build && rm -rf build && cp -R dist build && node scripts/run-react-snap.mjs",
+    "build:staging": "tsx scripts/generate-sitemap.ts && vite build --mode staging && rm -rf build && cp -R dist build && node scripts/run-react-snap.mjs",
+    "build:production": "tsx scripts/generate-sitemap.ts && vite build --mode production && rm -rf build && cp -R dist build && node scripts/run-react-snap.mjs",
     "lint": "eslint .",
     "preview": "vite preview",
     "test": "vitest",
@@ -43,43 +43,6 @@
     "verify-migrations": "tsx scripts/verify-migrations.ts",
     "sync-brands": "tsx scripts/sync-brands.ts",
     "validate-opportunities": "tsx scripts/validate-opportunities-db.ts"
-  },
-  "reactSnap": {
-    "source": "dist",
-    "destination": "dist",
-    "port": 45789,
-    "include": [
-      "/",
-      "/about",
-      "/brands",
-      "/brand-directory",
-      "/pricing-comparison",
-      "/free-legal-check",
-      "/free-influencer-contract",
-      "/collaboration-agreement-generator",
-      "/barter-collab",
-      "/patna-influencers",
-      "/careers",
-      "/blog"
-    ],
-    "minifyHtml": {
-      "collapseWhitespace": false,
-      "removeComments": false
-    },
-    "skipThirdPartyRequests": true,
-    "cacheAjaxRequests": false,
-    "puppeteerArgs": [
-      "--no-sandbox",
-      "--disable-setuid-sandbox"
-    ],
-    "puppeteerExecutablePath": "/Users/pratyushraj/Library/Caches/ms-playwright/chromium-1217/chrome-mac-arm64/Google Chrome for Testing.app/Contents/MacOS/Google Chrome for Testing",
-    "fixWebpackChunksIssue": false,
-    "removeStyleTags": false,
-    "removeScriptTags": false,
-    "waitFor": 3000,
-    "crawl": false,
-    "removeDataAttributes": false,
-    "inlineCss": false
   },
   "dependencies": {
     "@cometchat-pro/chat": "^3.0.13",
@@ -180,6 +143,42 @@
   "overrides": {
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
+  },
+  "reactSnap": {
+    "source": "build",
+    "destination": "build",
+    "port": 45789,
+    "include": [
+      "/",
+      "/about",
+      "/brands",
+      "/brand-directory",
+      "/pricing-comparison",
+      "/free-legal-check",
+      "/free-influencer-contract",
+      "/collaboration-agreement-generator",
+      "/barter-collab",
+      "/patna-influencers",
+      "/careers",
+      "/blog"
+    ],
+    "minifyHtml": {
+      "collapseWhitespace": false,
+      "removeComments": false
+    },
+    "skipThirdPartyRequests": true,
+    "cacheAjaxRequests": false,
+    "puppeteerArgs": [
+      "--no-sandbox",
+      "--disable-setuid-sandbox"
+    ],
+    "fixWebpackChunksIssue": false,
+    "removeStyleTags": false,
+    "removeScriptTags": false,
+    "waitFor": 3000,
+    "crawl": false,
+    "removeDataAttributes": false,
+    "inlineCss": false
   },
   "browserslist": [
     "defaults",
