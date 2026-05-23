@@ -51,6 +51,7 @@ Capture what matters. Decisions, context, things to remember. Skip the secrets u
 - Don't run destructive commands without asking.
 - `trash` > `rm` (recoverable beats gone forever)
 - **NEVER duplicate-email brands:** Always check the local offline state cache `scratch/outreach_local_state.json` (`status === 'contacted'` / `outreach_count > 0`), the live Supabase `brand_leads` table, and past dispatch history to prevent sending duplicate cold emails to the same brand.
+- **NEVER outreach large or heavily-funded brands:** Cold outreach must exclusively target emerging, bootstrapped, seed-stage, and founder-led mid-tier D2C brands. Avoid large corporate groups, VC-backed players (e.g. ARR > ₹20 Cr, Series A+), or brands with celebrity ambassadors where conversion is extremely low.
 - When in doubt, ask.
 
 ## External vs Internal
