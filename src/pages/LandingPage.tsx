@@ -396,12 +396,12 @@ const LandingPage = () => {
               <h1 className="text-[48px] md:text-[72px] lg:text-[88px] font-black tracking-tighter leading-[0.95] mb-6 text-[#0F172A] drop-shadow-sm text-balance italic uppercase">
                 Brands chill. <br />
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#16A34A] to-[#15803D] inline-block mt-2">
-                  We handle operations.
+                  Zero DM Hunting.
                 </span>
               </h1>
 
               <p className="text-[20px] md:text-[24px] text-[#64748B] font-medium mb-8 max-w-lg mx-auto lg:mx-0 leading-relaxed text-pretty">
-                The infrastructure layer for high-volume creator campaigns. Verified talent. Zero spreadsheet chaos.
+                Curated creator shortlists, hyperlocal matching, and automated campaign operations. Custom-built for offline retail showrooms and online D2C e-commerce stores.
               </p>
 
               <div className="mb-10 inline-flex items-center gap-2 px-3 md:px-5 py-2 md:py-3 bg-[#16A34A]/5 text-[#15803D] rounded-2xl border border-[#16A34A]/10 text-center shadow-sm">
@@ -588,6 +588,126 @@ const LandingPage = () => {
                   </div>
                 </div>
               </div>
+            </div>
+          </div>
+        </section>
+
+        {/* NEW: DUAL BRAND BLUEPRINT SECTION */}
+        <section className="px-4 sm:px-6 max-w-[1200px] mx-auto py-12 lg:py-16">
+          <div className="text-center mb-12">
+            <span className="text-[11px] font-black uppercase tracking-[0.25em] text-[#16A34A] bg-[#ECFDF5] px-4 py-1.5 rounded-full border border-[#16A34A]/10">Campaign Blueprints</span>
+            <h2 className="text-4xl md:text-5xl font-black tracking-tight text-[#0F172A] mt-4 uppercase italic">
+              How Creator Armour <span className="text-emerald-600">Empowers Your Brand</span>
+            </h2>
+            <p className="mt-4 text-lg text-[#64748B] font-medium max-w-2xl mx-auto">
+              Select the strategy optimized for your business model. We provide the creators, legal contracts, and tracking infrastructure.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
+            {/* Local Brands Column */}
+            <div className="bg-white rounded-[32px] border border-slate-200 p-8 md:p-10 shadow-[0_15px_30px_rgba(0,0,0,0.04)] relative overflow-hidden group hover:border-[#16A34A]/40 hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between text-left">
+              <div>
+                <div className="flex items-center gap-4 mb-6">
+                  <div className="w-14 h-14 rounded-2xl bg-[#ECFDF5] flex items-center justify-center text-[#16A34A] shrink-0 shadow-sm">
+                    <ShieldCheck className="w-8 h-8" />
+                  </div>
+                  <div>
+                    <h3 className="text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2">
+                      📍 Hyperlocal Outlets
+                    </h3>
+                    <p className="text-sm font-bold text-slate-500 uppercase tracking-widest mt-0.5">Offline / Retail / Clinics</p>
+                  </div>
+                </div>
+
+                <p className="text-[15px] text-slate-600 font-semibold leading-relaxed mb-6">
+                  Connect with elite micro-influencers and creators situated directly in your neighborhood. Perfect for local cafes, gyms, dental clinics, or retail showrooms looking to drive massive local foot-traffic.
+                </p>
+
+                <div className="space-y-4 mb-8">
+                  <div className="flex items-start gap-3">
+                    <span className="text-[#16A34A] font-bold mt-0.5">✓</span>
+                    <div>
+                      <p className="text-sm font-black text-slate-900">Geofenced Community Reach</p>
+                      <p className="text-xs text-slate-500 font-medium">Target creators with high-density local followers concentrated in your exact city.</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <span className="text-[#16A34A] font-bold mt-0.5">✓</span>
+                    <div>
+                      <p className="text-sm font-black text-slate-900">High-Value Local Barter</p>
+                      <p className="text-xs text-slate-500 font-medium">Coordinate high-end product/service exchanges in the local area starting from ₹4,000 value.</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <span className="text-[#16A34A] font-bold mt-0.5">✓</span>
+                    <div>
+                      <p className="text-sm font-black text-slate-900">Foot-Traffic Tracking</p>
+                      <p className="text-xs text-slate-500 font-medium">Monitor direct customer walk-ins, reviews, and geolocated engagement coupon redemptions.</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <button
+                onClick={() => { triggerHaptic(HapticPatterns.success); setShortlistModalOpen(true); }}
+                className="w-full h-14 rounded-2xl bg-white border-2 border-slate-200 text-[#0F172A] font-black text-base hover:border-[#16A34A] hover:bg-[#F8FAF9] transition-all flex items-center justify-center gap-2 group-hover:shadow-md"
+              >
+                Find Local Creators <ChevronRight className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Nationwide D2C Brands Column */}
+            <div className="bg-[#0F172A] text-white rounded-[32px] p-8 md:p-10 shadow-2xl relative overflow-hidden group hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between border border-slate-800 text-left">
+              <div className="absolute top-0 right-0 w-64 h-64 bg-[#16A34A]/10 rounded-full blur-[80px] pointer-events-none" />
+              <div>
+                <div className="flex items-center gap-4 mb-6">
+                  <div className="w-14 h-14 rounded-2xl bg-[#16A34A] flex items-center justify-center text-white shrink-0 shadow-lg shadow-[#16A34A]/20">
+                    <Zap className="w-7 h-7" />
+                  </div>
+                  <div>
+                    <h3 className="text-2xl font-black tracking-tight flex items-center gap-2 text-white">
+                      🌐 Nationwide D2C Brands
+                    </h3>
+                    <p className="text-sm font-bold text-emerald-400 uppercase tracking-widest mt-0.5">E-Commerce / Online Stores</p>
+                  </div>
+                </div>
+
+                <p className="text-[15px] text-slate-300 font-semibold leading-relaxed mb-6">
+                  Scale your digital conversion rates and UGC assets libraries. We handle end-to-end influencer shortlisting, campaign briefing, legal agreements, and secure automated payout schedules.
+                </p>
+
+                <div className="space-y-4 mb-8">
+                  <div className="flex items-start gap-3">
+                    <span className="text-[#16A34A] font-bold mt-0.5">✓</span>
+                    <div>
+                      <p className="text-sm font-black text-white">Curated Expert Shortlists</p>
+                      <p className="text-xs text-slate-400 font-medium">Receive 3–5 pre-screened creator options matched perfectly to your target demographics in 48 hours.</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <span className="text-[#16A34A] font-bold mt-0.5">✓</span>
+                    <div>
+                      <p className="text-sm font-black text-white">Escrow Payment Protection</p>
+                      <p className="text-xs text-slate-400 font-medium">Advance deposit is held safely in escrow, releasing automatically only when the creator uploads standard vertical Reels.</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <span className="text-[#16A34A] font-bold mt-0.5">✓</span>
+                    <div>
+                      <p className="text-sm font-black text-white">Compliance & Usage Rights</p>
+                      <p className="text-xs text-slate-400 font-medium">Legally binding, automated influencer contracts are auto-signed to cover copyright and marketing usage rights.</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <button
+                onClick={() => { triggerHaptic(HapticPatterns.success); setShortlistModalOpen(true); }}
+                className="w-full h-14 rounded-2xl bg-[#16A34A] hover:bg-[#15803D] text-white font-black text-base shadow-xl shadow-[#16A34A]/25 transition-all flex items-center justify-center gap-2"
+              >
+                Build E-Commerce Shortlist <ArrowRight className="w-5 h-5" />
+              </button>
             </div>
           </div>
         </section>
