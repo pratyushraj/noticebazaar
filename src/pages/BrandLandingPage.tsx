@@ -565,7 +565,7 @@ const BrandLandingPage = () => {
               <div className="flex gap-8 text-[11px] font-black uppercase tracking-widest text-white/40">
                 <Link to="/privacy-policy" className="hover:text-emerald-400 transition-colors">Privacy</Link>
                 <Link to="/terms-of-service" className="hover:text-emerald-400 transition-colors">Terms</Link>
-                <a href={`mailto:${BRAND_CONTACT_EMAIL}`} className="hover:text-emerald-400 transition-colors">Contact</a>
+                <a href="tel:+917292984244" className="hover:text-emerald-400 transition-colors">Contact: +91 7292984244</a>
               </div>
             </div>
           </div>

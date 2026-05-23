@@ -12,8 +12,8 @@ SET
   profile_completion = COALESCE(profile_completion, storefront_completion, 0),
   intro_line = COALESCE(intro_line, collab_intro_line),
   payout_upi = COALESCE(payout_upi, upi_id, bank_upi),
-  packages_added = CASE WHEN COALESCE(packages, '[]'::jsonb) != '[]'::jsonb THEN true ELSE false END,
-  past_work_added = CASE WHEN COALESCE(past_collabs, '[]'::jsonb) != '[]'::jsonb OR COALESCE(past_work_items, '[]'::jsonb) != '[]'::jsonb THEN true ELSE false END
+  packages_added = CASE WHEN COALESCE(deal_templates, '[]'::jsonb) != '[]'::jsonb THEN true ELSE false END,
+  past_work_added = CASE WHEN COALESCE(past_collabs, '[]'::jsonb) != '[]'::jsonb OR COALESCE(collab_past_work_items, '[]'::jsonb) != '[]'::jsonb THEN true ELSE false END
 WHERE role = 'creator';
 
 COMMENT ON COLUMN public.profiles.profile_completion IS 'Overall profile completion percentage';

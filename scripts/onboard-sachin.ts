@@ -155,6 +155,7 @@ async function main() {
       reel_price: 15000,     // From DM commercial rate (15k starting)
       story_price: 4000,     // Estimated starting breakdown
       starting_price: 15000,
+      barter_min_value: 10000,
       open_to_collabs: true,
       collaboration_preference: 'both',
       is_verified: true,
@@ -248,7 +249,7 @@ async function main() {
           label: '🎁 Product Exchange',
           price: 0,
           budget: 0,
-          description: 'Barter collaboration for product review/feature.',
+          description: 'Barter collaboration for product review/feature (minimum product value ₹10,000+).',
           deliverables: [
             '1 Reel or 2 Stories',
             'Product review focus'

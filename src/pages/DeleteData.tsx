@@ -97,8 +97,8 @@ const DeleteData = () => {
               dpo@creatorarmour.com
             </a>
             or via WhatsApp at
-            <a href="https://wa.me/919205376316" target="_blank" rel="noopener" className="text-primary font-semibold ml-1">
-              +91 92053 76316
+            <a href="https://wa.me/917292984244" target="_blank" rel="noopener" className="text-primary font-semibold ml-1">
+              +91 72929 84244
             </a>
             . We respond to all deletion requests within 24 hours.
           </p>

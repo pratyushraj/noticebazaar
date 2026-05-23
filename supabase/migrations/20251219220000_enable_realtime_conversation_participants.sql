@@ -1,5 +1,7 @@
--- Enable Realtime for conversation_participants table
--- This allows real-time subscriptions to work for when lawyers are added to conversations
-
-ALTER PUBLICATION supabase_realtime ADD TABLE conversation_participants;
-
+-- Enable Realtime for conversation_participants table (only if it exists)
+DO $$
+BEGIN
+  IF EXISTS (SELECT FROM pg_tables WHERE schemaname = 'public' AND tablename = 'conversation_participants') THEN
+    ALTER PUBLICATION supabase_realtime ADD TABLE conversation_participants;
+  END IF;
+END $$;

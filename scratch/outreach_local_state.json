@@ -1287,6 +1287,94 @@
       "status": "contacted",
       "outreach_count": 1,
       "last_contacted_at": "2026-05-23T09:42:21.195Z"
+    },
+    "WellX store®": {
+      "email": "info@wellxstore.com",
+      "category": "Food & Snacks",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-23T10:25:29.032Z",
+      "website": "https://wellxstore.com"
+    },
+    "Shantilal's Sweets & Foods": {
+      "email": "shantilalssweets@gmail.com",
+      "website": "",
+      "category": "Food & Beverage",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-23T11:29:59.750Z"
+    },
+    "Flyseas": {
+      "email": "support@flyseas.com",
+      "website": "",
+      "category": "Food & Beverage",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-23T11:30:00.679Z"
+    },
+    "RailRestro": {
+      "email": "info@railrestro.com",
+      "website": "",
+      "category": "Food & Beverage",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-23T11:30:02.397Z"
+    },
+    "Taste of Patna": {
+      "email": "tasteofpatna8@gmail.com",
+      "website": "",
+      "category": "Food & Beverage",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-23T11:30:03.318Z"
+    },
+    "Apna Mess (AKN Food)": {
+      "email": "niteshkumar174215@gmail.com",
+      "website": "",
+      "category": "Food & Beverage",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-23T11:30:04.168Z"
+    },
+    "Badal Enterprises": {
+      "email": "rajkumar1996badal@gmail.com",
+      "website": "",
+      "category": "Food & Beverage",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-23T11:30:05.024Z"
+    },
+    "Cafe Amaayra": {
+      "email": "relishhq@gmail.com",
+      "website": "",
+      "category": "Cafe / Food Service",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-23T11:30:06.267Z"
+    },
+    "CAFE7": {
+      "email": "pridevihar@gmail.com",
+      "website": "",
+      "category": "Cafe / Food Service",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-23T11:30:07.150Z"
+    },
+    "Coffeecana": {
+      "email": "coffeecanaindia@gmail.com",
+      "website": "",
+      "category": "Cafe / Food Service",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-23T11:30:07.993Z"
+    },
+    "VenturePark Incubator": {
+      "email": "ventureparkbiaincubator@gmail.com",
+      "website": "",
+      "category": "Food & Beverage",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-23T11:30:08.813Z"
     }
   },
   "dentists": {

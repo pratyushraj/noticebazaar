@@ -3,12 +3,16 @@
 
 DO $$ 
 BEGIN
-    IF NOT EXISTS (
-        SELECT 1 
-        FROM pg_constraint 
-        WHERE conname = 'brands_external_id_key'
+    IF EXISTS (
+        SELECT 1 FROM pg_tables WHERE tablename = 'brands' AND schemaname = 'public'
     ) THEN
-        ALTER TABLE public.brands 
-        ADD CONSTRAINT brands_external_id_key UNIQUE (external_id);
+        IF NOT EXISTS (
+            SELECT 1 
+            FROM pg_constraint 
+            WHERE conname = 'brands_external_id_key'
+        ) THEN
+            ALTER TABLE public.brands 
+            ADD CONSTRAINT brands_external_id_key UNIQUE (external_id);
+        END IF;
     END IF;
 END $$;

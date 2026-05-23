@@ -43,7 +43,7 @@ const FeatureCell = ({ value, isPopular }: { value: string | boolean, isPopular:
 
 const PricingComparison = () => {
   const whatsappMessage = encodeURIComponent("Hi Creator Armour, I need help choosing the right subscription plan for my business.");
-  const whatsappLink = `https://wa.me/919205376316?text=${whatsappMessage}`;
+  const whatsappLink = `https://wa.me/917292984244?text=${whatsappMessage}`;
 
   return (
     <div className="container mx-auto px-6 py-12 nb-screen-height bg-background">

@@ -16,7 +16,7 @@ const ThreeDIllustration = lazy(() =>
   import('@/components/ui/ThreeDIllustration').then(m => ({ default: m.default }))
 );
 
-const AANYA_IMG = "https://sqqocqujxlgoxbcnfbfb.supabase.co/storage/v1/object/public/creator-assets/amnatureboy/avatar_real.jpg"; // Sarfaraz
+const SARFARAZ_IMG = "https://sqqocqujxlgoxbcnfbfb.supabase.co/storage/v1/object/public/creator-assets/amnatureboy/avatar_real.jpg"; // Sarfaraz
 const PRIYA_IMG = "https://sqqocqujxlgoxbcnfbfb.supabase.co/storage/v1/object/public/creator-assets/snehal_sachdeva/avatar_real.jpg"; // Snehal Sachdeva
 const ARJUN_IMG = "https://sqqocqujxlgoxbcnfbfb.supabase.co/storage/v1/object/public/creator-assets/mobileclicksbydilip/avatar_real.jpg"; // Dilip Paliwal
 const NEHA_IMG = "https://sqqocqujxlgoxbcnfbfb.supabase.co/storage/v1/object/public/creator-assets/shagufikhan_/avatar_real.jpg"; // Shagufi Khan (shagufikhan_)
@@ -356,7 +356,7 @@ const LandingPage = () => {
             <Link
               to="/signup?mode=creator"
               onClick={() => triggerHaptic(HapticPatterns.success)}
-              className="bg-[#16A34A] hover:bg-[#15803D] text-white px-3.5 sm:px-5 py-2 sm:py-3 rounded-full text-[13px] sm:text-[15px] font-black shadow-lg shadow-[#16A34A]/25 hover:shadow-[#16A34A]/40 hover:-translate-y-0.5 transition-all whitespace-nowrap shrink-0 min-h-[40px] sm:min-h-[44px] flex items-center justify-center"
+              className="bg-[#16A34A] hover:bg-[#15803D] text-white px-3.5 sm:px-5 py-2 sm:py-3 rounded-full text-[13px] sm:text-[15px] font-black shadow-lg shadow-[#16A34A]/25 hover:shadow-[0_0_25px_rgba(22,163,74,0.35)] hover:-translate-y-0.5 transition-all whitespace-nowrap shrink-0 min-h-[40px] sm:min-h-[44px] flex items-center justify-center border border-[#16A34A]"
             >
               Create <span className="hidden min-[400px]:inline ml-1">Collab </span>Link
             </Link>
@@ -463,13 +463,13 @@ const LandingPage = () => {
                     type="button"
                     id="hero-shortlist-cta"
                     onClick={() => { triggerHaptic(HapticPatterns.success); setShortlistModalOpen(true); }}
-                    className="w-full sm:w-auto bg-[#16A34A] hover:bg-[#15803D] text-white px-6 md:px-8 py-4 md:py-5 rounded-full font-black text-[16px] md:text-[18px] shadow-xl shadow-[#16A34A]/20 hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2 border border-[#16A34A]"
+                    className="w-full sm:w-auto bg-[#16A34A] hover:bg-[#15803D] text-white px-6 md:px-8 py-4 md:py-5 rounded-full font-black text-[16px] md:text-[18px] shadow-xl shadow-[#16A34A]/25 hover:shadow-[0_0_35px_rgba(22,163,74,0.45)] hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2 border border-[#16A34A]"
                   >
                     Get a free creator shortlist <ArrowRight className="w-5 h-5" />
                   </button>
                   <Link
                     to="/#how-it-works"
-                    className="w-full sm:w-auto bg-white hover:bg-[#F8FAF9] border shadow-sm border-[#E5E7EB] text-[#64748B] px-6 md:px-8 py-4 md:py-5 rounded-full font-black text-[15px] md:text-[16px] transition-all flex items-center justify-center gap-2"
+                    className="w-full sm:w-auto bg-white/80 backdrop-blur-sm hover:bg-white border shadow-sm border-slate-200 text-slate-600 hover:text-slate-800 px-6 md:px-8 py-4 md:py-5 rounded-full font-black text-[15px] md:text-[16px] hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2"
                   >
                     See how it works
                   </Link>
@@ -478,9 +478,12 @@ const LandingPage = () => {
 
             {/* Hero Mockup */}
             <div className="flex-1 w-full max-w-[420px] lg:max-w-none relative">
+              {/* Glowing Background Aura behind Phone Mockup */}
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[450px] h-[450px] bg-emerald-500/10 rounded-full blur-[120px] pointer-events-none -z-10" />
+
               {/* Floating Creator Profile Badge */}
-              <div className="hidden md:flex absolute -left-16 md:-left-24 top-20 bg-white p-4 rounded-3xl shadow-2xl border border-[#E5E7EB] z-20 items-center gap-4 animate-in fade-in slide-in-from-bottom-4 duration-1000 delay-300 hover:scale-105 transition-transform">
-                <img src={AANYA_IMG} alt="Sarfaraz" className="w-16 h-16 rounded-full object-cover shadow-sm border-2 border-white" />
+              <div className="hidden md:flex absolute -left-16 md:-left-24 top-20 bg-white/90 backdrop-blur-md p-4 rounded-[24px] shadow-[0_20px_50px_rgba(0,0,0,0.08)] border border-white/50 z-20 items-center gap-4 animate-in fade-in slide-in-from-bottom-4 duration-1000 delay-300 hover:scale-[1.03] transition-transform">
+                <img src={SARFARAZ_IMG} alt="Sarfaraz" className="w-16 h-16 rounded-full object-cover shadow-md border-2 border-white" />
                 <div>
                   <div className="flex items-center gap-1.5 mb-1">
                     <h3 className="text-base font-black text-[#0F172A]">Sarfaraz</h3>
@@ -491,8 +494,8 @@ const LandingPage = () => {
               </div>
 
               {/* Floating Offer Notification */}
-              <div className="hidden md:flex absolute -right-8 md:-right-16 top-64 bg-white p-4 rounded-3xl shadow-2xl border border-[#E5E7EB] z-30 items-center gap-4 animate-in fade-in slide-in-from-right-8 duration-1000 delay-700 hover:scale-105 transition-transform">
-                <div className="w-12 h-12 rounded-full bg-[#16A34A] flex items-center justify-center">
+              <div className="hidden md:flex absolute -right-8 md:-right-16 top-64 bg-white/90 backdrop-blur-md p-4 rounded-[24px] shadow-[0_20px_50px_rgba(0,0,0,0.08)] border border-white/50 z-30 items-center gap-4 animate-in fade-in slide-in-from-right-8 duration-1000 delay-700 hover:scale-[1.03] transition-transform">
+                <div className="w-12 h-12 rounded-full bg-[#16A34A] flex items-center justify-center shadow-md">
                   <span className="text-xl">💰</span>
                 </div>
                 <div>
@@ -501,8 +504,9 @@ const LandingPage = () => {
                 </div>
               </div>
 
-              <div className="hidden lg:flex absolute -left-8 bottom-10 z-30 rounded-3xl border border-[#E5E7EB] bg-white/95 px-4 py-3 shadow-2xl backdrop-blur-sm items-center gap-4 animate-in fade-in slide-in-from-left-8 duration-1000 delay-500 hover:scale-105 transition-transform">
-                <div className="w-11 h-11 rounded-2xl bg-[#DCFCE7] flex items-center justify-center text-[#16A34A]">
+              {/* Floating Contract Check */}
+              <div className="hidden lg:flex absolute -left-8 bottom-10 z-30 rounded-[24px] border border-white/50 bg-white/90 backdrop-blur-md px-4 py-3 shadow-[0_20px_50px_rgba(0,0,0,0.08)] items-center gap-4 animate-in fade-in slide-in-from-left-8 duration-1000 delay-500 hover:scale-[1.03] transition-transform">
+                <div className="w-11 h-11 rounded-2xl bg-[#DCFCE7] flex items-center justify-center text-[#16A34A] shadow-sm">
                   <FileText className="w-5 h-5" />
                 </div>
                 <div>
@@ -511,12 +515,13 @@ const LandingPage = () => {
                 </div>
               </div>
 
-              <div className="hidden xl:flex absolute -right-20 bottom-28 z-30 rounded-3xl border border-[#E5E7EB] bg-white px-4 py-3 text-[#0F172A] shadow-2xl items-center gap-4 animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-900 hover:scale-105 transition-transform">
-                <div className="w-11 h-11 rounded-2xl bg-[#DCFCE7]/50 flex items-center justify-center text-[#16A34A]">
+              {/* Floating Payout Follow-up */}
+              <div className="hidden xl:flex absolute -right-20 bottom-28 z-30 rounded-[24px] border border-white/50 bg-white/90 backdrop-blur-md px-4 py-3 text-[#0F172A] shadow-[0_20px_50px_rgba(0,0,0,0.08)] items-center gap-4 animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-900 hover:scale-[1.03] transition-transform">
+                <div className="w-11 h-11 rounded-2xl bg-[#DCFCE7]/50 flex items-center justify-center text-[#16A34A] shadow-sm">
                   <Clock className="w-5 h-5" />
                 </div>
                 <div>
-                  <p className="text-[11px] font-bold uppercase tracking-wider text-[#64748B]">Payment follow-up</p>
+                  <p className="text-[11px] font-bold uppercase tracking-wider text-[#64748B]">Payout follow-up</p>
                   <p className="text-sm font-black text-[#0F172A]">₹12,000 overdue by 4 days</p>
                 </div>
               </div>
@@ -531,7 +536,7 @@ const LandingPage = () => {
                   <div className="absolute top-0 left-0 right-0 h-44 bg-gradient-to-b from-[#DCFCE7] to-white" />
 
                   <div className="relative z-10 flex flex-col items-center mb-6">
-                    <img src={AANYA_IMG} className="w-24 h-24 rounded-full object-cover border-4 border-white shadow-md mb-4" alt="Creator Sarfaraz Profile Photo" />
+                    <img src={SARFARAZ_IMG} className="w-24 h-24 rounded-full object-cover border-4 border-white shadow-md mb-4" alt="Creator Sarfaraz Profile Photo" />
                     <h2 className="text-2xl font-black text-[#0F172A] flex items-center gap-1">Sarfaraz <CheckCircle2 className="w-6 h-6 text-[#16A34A] fill-[#DCFCE7]" /></h2>
                     <p className="text-[13px] font-bold text-[#64748B] mb-4">@amnatureboy</p>
 
@@ -704,7 +709,7 @@ const LandingPage = () => {
 
               <button
                 onClick={() => { triggerHaptic(HapticPatterns.success); setShortlistModalOpen(true); }}
-                className="w-full h-14 rounded-2xl bg-[#16A34A] hover:bg-[#15803D] text-white font-black text-base shadow-xl shadow-[#16A34A]/25 transition-all flex items-center justify-center gap-2"
+                className="w-full h-14 rounded-2xl bg-[#16A34A] hover:bg-[#15803D] text-white font-black text-base shadow-xl shadow-[#16A34A]/25 hover:shadow-[0_0_35px_rgba(22,163,74,0.45)] hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2 border border-[#16A34A]"
               >
                 Build E-Commerce Shortlist <ArrowRight className="w-5 h-5" />
               </button>
@@ -745,7 +750,7 @@ const LandingPage = () => {
         {/* Verified Creators Marquee Strip */}
         {(() => {
           const verifiedCreators = [
-            { name: 'Sarfaraz', img: AANYA_IMG, niche: 'Travel' },
+            { name: 'Sarfaraz', img: SARFARAZ_IMG, niche: 'Travel' },
             { name: 'Snehal', img: PRIYA_IMG, niche: 'Fashion' },
             { name: 'Dilip', img: ARJUN_IMG, niche: 'Lifestyle' },
             { name: 'Shagufi', img: NEHA_IMG, niche: 'Beauty' },
@@ -854,26 +859,28 @@ const LandingPage = () => {
               return (
                 <div
                   key={panel.title}
-                  className="rounded-[20px] border border-[#E5E7EB] bg-white p-6 md:p-8 shadow-[0_8px_24px_rgba(0,0,0,0.06)] hover:-translate-y-1 hover:shadow-[0_12px_32px_rgba(0,0,0,0.1)] transition-all duration-300"
+                  className="rounded-[32px] border border-slate-200/60 bg-white/70 backdrop-blur-md p-6 md:p-8 shadow-[0_15px_45px_rgba(15,23,42,0.04)] hover:-translate-y-1.5 hover:shadow-[0_20px_50px_rgba(15,23,42,0.08)] transition-all duration-500 relative overflow-hidden group flex flex-col justify-between"
                 >
-                  <div className="flex items-center gap-3 mb-5">
-                    <div className={cn(
-                      'w-11 h-11 rounded-2xl flex items-center justify-center',
-                      panel.accent === 'emerald' && 'bg-[#DCFCE7] text-[#16A34A]',
-                      panel.accent === 'blue' && 'bg-[#DBEAFE] text-[#2563EB]',
-                      panel.accent === 'teal' && 'bg-[#F0FDFA] text-[#0D9488]',
-                    )}>
-                      <Icon className="w-5 h-5" />
+                  <div>
+                    <div className="flex items-center gap-3 mb-5">
+                      <div className={cn(
+                        'w-11 h-11 rounded-2xl flex items-center justify-center shadow-sm',
+                        panel.accent === 'emerald' && 'bg-[#DCFCE7] text-[#16A34A]',
+                        panel.accent === 'blue' && 'bg-[#DBEAFE] text-[#2563EB]',
+                        panel.accent === 'teal' && 'bg-[#F0FDFA] text-[#0D9488]',
+                      )}>
+                        <Icon className="w-5 h-5" />
+                      </div>
+                      <p className="text-[11px] font-black uppercase tracking-[0.22em] text-[#64748B]">{panel.eyebrow}</p>
                     </div>
-                    <p className="text-[11px] font-black uppercase tracking-[0.22em] text-[#64748B]">{panel.eyebrow}</p>
+
+                    <div className="mb-6">
+                      <h3 className="text-[19px] sm:text-2xl font-black tracking-tight text-[#0F172A] leading-tight whitespace-nowrap overflow-hidden text-ellipsis sm:whitespace-normal">{panel.title}</h3>
+                      <p className="mt-3 text-sm font-medium leading-6 text-[#64748B]">{panel.description}</p>
+                    </div>
                   </div>
 
-                  <div className="mb-6">
-                    <h3 className="text-[19px] sm:text-2xl font-black tracking-tight text-[#0F172A] leading-tight whitespace-nowrap overflow-hidden text-ellipsis sm:whitespace-normal">{panel.title}</h3>
-                    <p className="mt-3 text-sm font-medium leading-6 text-[#64748B]">{panel.description}</p>
-                  </div>
-
-                  <div className="rounded-[26px] border border-[#E5E7EB] bg-[#F8FAF9] p-4">
+                  <div className="rounded-[28px] border border-slate-100 bg-[#F8FAF9]/85 p-4 shadow-sm relative z-10">
                     {panel.body}
                   </div>
                 </div>
@@ -888,8 +895,8 @@ const LandingPage = () => {
             {[
               {
                 quote: 'Having a collab link made brands take me seriously. No more chasing payments on WhatsApp.',
-                name: 'Rounak Agarwal',
-                meta: 'Lifestyle & Travel · Patna · 88K followers',
+                name: 'Dilip Paliwal',
+                meta: 'Photography & Travel · Udaipur · 27K followers',
                 img: ARJUN_IMG,
               },
               {
@@ -924,53 +931,58 @@ const LandingPage = () => {
 
         {/* NEW: THE COMPARISON SECTION */}
         <section className="px-4 sm:px-6 max-w-[1000px] mx-auto py-16 lg:py-20">
-          <div className="bg-[#0F172A] rounded-[40px] overflow-hidden shadow-2xl relative">
-            <div className="absolute top-0 left-0 w-full h-full bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-[0.03] pointer-events-none" />
+          <div className="relative p-0.5 rounded-[40px] overflow-hidden group shadow-2xl bg-[#090C15]">
+            {/* Ambient Background Glowing Border */}
+            <div className="absolute -inset-1 bg-gradient-to-r from-emerald-500/20 to-teal-500/20 rounded-[40px] blur-lg opacity-75 group-hover:opacity-100 transition duration-1000" />
             
-            <div className="grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-white/10 relative z-10">
-              {/* OLD WAY */}
-              <div className="p-6 md:p-12 bg-white/5">
-                <h3 className="text-xl font-black text-rose-400 mb-8 uppercase tracking-widest flex items-center gap-3">
-                  <XCircle className="w-6 h-6" /> The DM way
-                </h3>
-                <ul className="space-y-6">
-                  {[
-                    "Hundreds of creator DMs, 90% irrelevant",
-                    "No way to verify engagement or past work",
-                    "Ghosted after sending product samples",
-                    "No contract, no leverage, no accountability"
-                  ].map((item, idx) => (
-                    <li key={idx} className="flex items-start gap-3 text-slate-400 font-medium">
-                      <span className="text-rose-500 mt-1">✕</span>
-                      <span>{item}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
+            <div className="relative bg-[#0F172A] rounded-[38px] overflow-hidden z-10">
+              <div className="absolute top-0 left-0 w-full h-full bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-[0.03] pointer-events-none" />
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-white/10 relative z-10">
+                {/* OLD WAY */}
+                <div className="p-6 md:p-12 bg-white/5">
+                  <h3 className="text-xl font-black text-rose-400 mb-8 uppercase tracking-widest flex items-center gap-3">
+                    <XCircle className="w-6 h-6" /> The DM way
+                  </h3>
+                  <ul className="space-y-6">
+                    {[
+                      "Hundreds of creator DMs, 90% irrelevant",
+                      "No way to verify engagement or past work",
+                      "Ghosted after sending product samples",
+                      "No contract, no leverage, no accountability"
+                    ].map((item, idx) => (
+                      <li key={idx} className="flex items-start gap-3 text-slate-400 font-medium">
+                        <span className="text-rose-500 mt-1">✕</span>
+                        <span>{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
 
-              {/* ARMOUR WAY */}
-              <div className="p-6 md:p-12 bg-[#16A34A]/5">
-                <h3 className="text-xl font-black text-[#16A34A] mb-8 uppercase tracking-widest flex items-center gap-3">
-                  <CheckCircle2 className="w-6 h-6" /> The Armour way
-                </h3>
-                <ul className="space-y-6">
-                  {[
-                    "We send you 3–5 pre-vetted creator profiles",
-                    "Verified engagement, niche fit, and past brands",
-                    "Contracts and deliverables managed for you",
-                    "Pay only when you're happy with the shortlist"
-                  ].map((item, idx) => (
-                    <li key={idx} className="flex items-start gap-3 text-white font-medium">
-                      <span className="text-[#16A34A] mt-1">✓</span>
-                      <span>{item}</span>
-                    </li>
-                  ))}
-                </ul>
+                {/* ARMOUR WAY */}
+                <div className="p-6 md:p-12 bg-[#16A34A]/5">
+                  <h3 className="text-xl font-black text-[#16A34A] mb-8 uppercase tracking-widest flex items-center gap-3">
+                    <CheckCircle2 className="w-6 h-6" /> The Armour way
+                  </h3>
+                  <ul className="space-y-6">
+                    {[
+                      "We send you 3–5 pre-vetted creator profiles",
+                      "Verified engagement, niche fit, and past brands",
+                      "Contracts and deliverables managed for you",
+                      "Pay only when you're happy with the shortlist"
+                    ].map((item, idx) => (
+                      <li key={idx} className="flex items-start gap-3 text-white font-medium">
+                        <span className="text-[#16A34A] mt-1">✓</span>
+                        <span>{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
               </div>
-            </div>
-            
-            <div className="p-6 text-center border-t border-white/10">
-              <p className="text-slate-400 text-sm font-bold">Brands using Creator Armour close campaigns 3× faster with zero DM overhead.</p>
+              
+              <div className="p-6 text-center border-t border-white/10">
+                <p className="text-slate-400 text-sm font-bold">Brands using Creator Armour close campaigns 3× faster with zero DM overhead.</p>
+              </div>
             </div>
           </div>
         </section>
@@ -1039,7 +1051,7 @@ const LandingPage = () => {
                     <div className="absolute top-0 left-0 right-0 h-24 bg-gradient-to-b from-[#DCFCE7] to-transparent" />
 
                     <div className="relative z-10 text-center mb-6">
-                      <img src={AANYA_IMG} className="w-20 h-20 rounded-full mx-auto object-cover border-[3px] border-white shadow-sm mb-3" alt="Sarfaraz" loading="lazy" />
+                      <img src={SARFARAZ_IMG} className="w-20 h-20 rounded-full mx-auto object-cover border-[3px] border-white shadow-sm mb-3" alt="Sarfaraz" loading="lazy" />
                       <h3 className="font-black text-lg text-[#0F172A] flex items-center justify-center gap-1">Sarfaraz <CheckCircle2 className="w-4 h-4 text-[#16A34A] fill-[#DCFCE7]" /></h3>
                       <p className="text-[12px] font-bold text-[#64748B] mb-3">11K Followers</p>
 
@@ -1388,7 +1400,7 @@ const LandingPage = () => {
                   <Link to="/about" className="hover:text-white transition-colors w-fit">About Us</Link>
                   <Link to="/privacy-policy" className="hover:text-white transition-colors w-fit">Privacy</Link>
                   <Link to="/terms-of-service" className="hover:text-white transition-colors w-fit">Terms</Link>
-                  <a href="mailto:support@creatorarmour.com" className="hover:text-white transition-colors w-fit">Contact</a>
+                  <a href="tel:+917292984244" className="hover:text-white transition-colors w-fit">Contact: +91 7292984244</a>
                 </div>
               </div>
             </div>

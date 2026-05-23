@@ -466,7 +466,7 @@ const MarketingHome = () => {
             >
               Book Free Call
             </button>
-            <a href="https://wa.me/919205376316?text=Hi%20Creator%20Armour,%20I%20need%20help" target="_blank" rel="noopener" className="bg-green-500/95 hover:bg-green-600 px-3 py-2 rounded-lg text-sm font-semibold hidden md:inline-flex items-center gap-2">
+            <a href="https://wa.me/917292984244?text=Hi%20Creator%20Armour,%20I%20need%20help" target="_blank" rel="noopener" className="bg-green-500/95 hover:bg-green-600 px-3 py-2 rounded-lg text-sm font-semibold hidden md:inline-flex items-center gap-2">
               <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="white"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" /></svg>
               WhatsApp
             </a>
@@ -916,7 +916,7 @@ const MarketingHome = () => {
                 <ListItem Icon={Check}>Accessible by your legal team.</ListItem>
               </ul>
               <div className="mt-6">
-                <a href="https://wa.me/919205376316?text=Hi%20Creator%20Armour,%20I%20want%20to%20know%20more%20about%20the%20WhatsApp%20Legal%20Vault" target="_blank" rel="noopener" className="bg-green-500/95 hover:bg-green-600 px-5 py-3 rounded-lg text-lg font-semibold inline-flex items-center gap-2">
+                <a href="https://wa.me/917292984244?text=Hi%20Creator%20Armour,%20I%20want%20to%20know%20more%20about%20the%20WhatsApp%20Legal%20Vault" target="_blank" rel="noopener" className="bg-green-500/95 hover:bg-green-600 px-5 py-3 rounded-lg text-lg font-semibold inline-flex items-center gap-2">
                   <MessageSquare className="h-5 w-5" /> Learn More on WhatsApp
                 </a>
               </div>
@@ -1050,7 +1050,7 @@ const MarketingHome = () => {
               <div className="mt-1"><Link to="/refund-policy" className="hover:text-foreground">Refund Policy</Link></div>
               <div className="mt-1 flex items-center gap-2">
                 <Phone className="h-4 w-4 text-info" />
-                <a href="tel:+919205376316" className="hover:text-foreground">+91 92053 76316</a>
+                <a href="tel:+917292984244" className="hover:text-foreground">+91 72929 84244</a>
               </div>
               <div className="mt-1 flex items-center gap-2">
                 <MessageSquare className="h-4 w-4 text-info" />
@@ -1096,7 +1096,7 @@ const MarketingHome = () => {
       </div>
 
       {/* Floating WhatsApp CTA (bottom-right) */}
-      <a href="https://wa.me/919205376316?text=Hi%20Creator Armour,%20I%20need%20help" target="_blank" rel="noopener" className="fixed bottom-6 right-6 bg-green-500 p-3 rounded-full shadow-xl z-50 hidden md:flex items-center gap-2 transition-all duration-300 hover:scale-105">
+      <a href="https://wa.me/917292984244?text=Hi%20Creator Armour,%20I%20need%20help" target="_blank" rel="noopener" className="fixed bottom-6 right-6 bg-green-500 p-3 rounded-full shadow-xl z-50 hidden md:flex items-center gap-2 transition-all duration-300 hover:scale-105">
         <MessageSquare className="h-6 w-6 text-foreground" />
         <span className="text-foreground font-semibold hidden sm:inline">Chat on WhatsApp Now</span>
       </a>

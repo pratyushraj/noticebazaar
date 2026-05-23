@@ -1,5 +1,12 @@
 create extension if not exists pgcrypto;
 
+-- Ensure missing columns exist in existing analytics_events table
+ALTER TABLE public.analytics_events
+  ADD COLUMN IF NOT EXISTS creator_id uuid null references public.profiles(id) on delete set null,
+  ADD COLUMN IF NOT EXISTS brand_id uuid null references public.profiles(id) on delete set null,
+  ADD COLUMN IF NOT EXISTS deal_id uuid null references public.brand_deals(id) on delete set null,
+  ADD COLUMN IF NOT EXISTS request_id uuid null references public.collab_requests(id) on delete set null;
+
 create table if not exists public.analytics_events (
   id uuid primary key default gen_random_uuid(),
   user_id uuid null references auth.users(id) on delete set null,

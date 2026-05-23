@@ -112,7 +112,7 @@ const YourLegalAdvisorWidget = ({ onSendMessage }: YourLegalAdvisorWidgetProps) 
           className="flex-1 h-20 bg-secondary text-primary border-border hover:bg-secondary/80 flex flex-col items-center justify-center rounded-xl" // Custom styling for dark background, blue text
           asChild
         >
-          <a href="tel:+919205376316" className="flex flex-col items-center justify-center h-full w-full">
+          <a href="tel:+917292984244" className="flex flex-col items-center justify-center h-full w-full">
             <Phone className="h-7 w-7 mb-1 text-muted-foreground" /> 
             <span className="text-lg font-semibold">Call</span>
           </a>

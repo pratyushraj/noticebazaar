@@ -145,8 +145,8 @@ async function run() {
             status: 'contacted',
             outreach_count: existingLead ? (existingLead.outreach_count || 0) + 1 : 1,
             last_contacted_at: new Date().toISOString(),
-            contact_name: dentist.doctorName,
-            website: existingLead?.website || ''
+            website: existingLead?.website || '',
+            notes: `Contact Doctor: ${dentist.doctorName}`
           };
 
           if (existingLead) {

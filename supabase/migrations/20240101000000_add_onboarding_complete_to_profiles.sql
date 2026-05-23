@@ -1,6 +1,6 @@
 -- Add the new column
 ALTER TABLE public.profiles
-ADD COLUMN onboarding_complete BOOLEAN DEFAULT FALSE;
+ADD COLUMN IF NOT EXISTS onboarding_complete BOOLEAN DEFAULT FALSE;
 
 -- Update existing users to have onboarding_complete = TRUE if they are not 'creator'
 -- Assuming existing users (client, admin, ca) are already onboarded.

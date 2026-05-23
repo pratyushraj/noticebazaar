@@ -1,3 +1,13 @@
+-- Ensure auth users exist
+INSERT INTO auth.users (id, email, email_confirmed_at, aud, role, created_at, updated_at)
+VALUES 
+('00000000-0000-0000-0000-000000000001', 'aria_tech@example.com', now(), 'authenticated', 'authenticated', now(), now()),
+('00000000-0000-0000-0000-000000000002', 'kaelan_fitness@example.com', now(), 'authenticated', 'authenticated', now(), now()),
+('00000000-0000-0000-0000-000000000003', 'maya_travels@example.com', now(), 'authenticated', 'authenticated', now(), now()),
+('00000000-0000-0000-0000-000000000004', 'marcus_style@example.com', now(), 'authenticated', 'authenticated', now(), now()),
+('00000000-0000-0000-0000-000000000005', 'elara_beauty@example.com', now(), 'authenticated', 'authenticated', now(), now())
+ON CONFLICT (id) DO NOTHING;
+
 -- Clear existing sample creators if any
 DELETE FROM public.profiles WHERE id IN (
   '00000000-0000-0000-0000-000000000001',
@@ -12,7 +22,7 @@ INSERT INTO public.profiles (
     id, username, first_name, role, avatar_url, bio, location, 
     followers_count, engagement_rate, discovery_video_url, 
     is_verified, starting_price, open_to_collabs, 
-    content_vibes, category, suggested_reel_rate
+    content_vibes, creator_category, reel_price
 )
 VALUES 
 (

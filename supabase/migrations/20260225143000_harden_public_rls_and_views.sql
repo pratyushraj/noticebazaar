@@ -131,7 +131,12 @@ END $$;
 -- ---------------------------------------------------------------------------
 DO $$
 BEGIN
-  IF NOT EXISTS (
+  IF EXISTS (
+    SELECT 1
+    FROM information_schema.tables
+    WHERE table_schema = 'public'
+      AND table_name = 'gst_company_cache'
+  ) AND NOT EXISTS (
     SELECT 1
     FROM pg_policies
     WHERE schemaname = 'public'

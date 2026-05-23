@@ -1,4 +1,5 @@
 ALTER TABLE public.profiles
+  ADD COLUMN IF NOT EXISTS location text,
   ADD COLUMN IF NOT EXISTS city text,
   ADD COLUMN IF NOT EXISTS niche text,
   ADD COLUMN IF NOT EXISTS language text,
@@ -6,6 +7,8 @@ ALTER TABLE public.profiles
   ADD COLUMN IF NOT EXISTS story_price numeric,
   ADD COLUMN IF NOT EXISTS post_price numeric,
   ADD COLUMN IF NOT EXISTS barter_min_value numeric,
+  ADD COLUMN IF NOT EXISTS suggested_barter_value_min integer,
+  ADD COLUMN IF NOT EXISTS suggested_barter_value_max integer,
   ADD COLUMN IF NOT EXISTS delivery_days integer DEFAULT 3,
   ADD COLUMN IF NOT EXISTS revisions integer DEFAULT 1,
   ADD COLUMN IF NOT EXISTS audience_type text,
@@ -43,6 +46,8 @@ COMMENT ON COLUMN public.profiles.reel_price IS 'Starting reel price used in pro
 COMMENT ON COLUMN public.profiles.story_price IS 'Starting story price used in progressive onboarding';
 COMMENT ON COLUMN public.profiles.post_price IS 'Starting post price used in progressive onboarding';
 COMMENT ON COLUMN public.profiles.barter_min_value IS 'Minimum barter value the creator accepts';
+COMMENT ON COLUMN public.profiles.suggested_barter_value_min IS 'Suggested minimum barter value';
+COMMENT ON COLUMN public.profiles.suggested_barter_value_max IS 'Suggested maximum barter value';
 COMMENT ON COLUMN public.profiles.delivery_days IS 'Typical content delivery time in days';
 COMMENT ON COLUMN public.profiles.revisions IS 'Default revisions included';
 COMMENT ON COLUMN public.profiles.audience_type IS 'Short audience description such as women 18-30 in metro cities';

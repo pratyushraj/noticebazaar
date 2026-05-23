@@ -77,7 +77,7 @@ async function main() {
         label: '🎁 Product Exchange',
         price: 0,
         budget: 0,
-        description: 'Barter collaboration for product review/feature.',
+        description: 'Barter collaboration for product review/feature (minimum product value ₹10,000+).',
         deliverables: [
           '1 Reel or 2 Stories',
           'Product review focus'
@@ -85,7 +85,7 @@ async function main() {
       }
     ];
 
-    console.log('\n🎥 Updating database...');
+    console.log('\n🎥 Updating database with standardized packages and exact marketplace metrics...');
     const { error: updateError } = await supabase
       .from('profiles')
       .update({
@@ -93,6 +93,26 @@ async function main() {
         reel_price: 15000,
         starting_price: 15000,
         story_price: 4000,
+        barter_min_value: 10000,
+        instagram_followers: 230700,
+        followers_count: 230700,
+        engagement_rate: 10.1,
+        interaction_rate: 10.1,
+        accounts_reached_30d: 2400000,
+        accounts_engaged_30d: 359000,
+        audience_gender_split: { women: 44.6, men: 55.4 },
+        audience_age_range: '18-24 (48.8%), 25-34 (39.7%)',
+        top_cities: ['Patna', 'Delhi', 'Mumbai', 'Gopalganj', 'Bengaluru'],
+        deal_intelligence: {
+          hookRate: 54.8, // Match the 54.8% Reach rate
+          interactionRate: 10.1,
+          accountsReached30d: '2.4M',
+          accountsEngaged30d: '359K',
+          viralPotential: 'Extremely High',
+          demographicsRelevance: '93% India Concentrated',
+          specialties: ['Engaging hooks', 'Strong hooks', 'Partnership ads']
+        },
+        collab_audience_fit_note: 'High concentration of audience in Patna (11.8%) and metro cities across India.',
         updated_at: new Date().toISOString()
       })
       .eq('id', profile.id);
@@ -103,7 +123,7 @@ async function main() {
     // Final verification
     const { data: updatedProfile, error: verifyError } = await supabase
       .from('profiles')
-      .select('username, deal_templates, starting_price, reel_price, story_price')
+      .select('username, deal_templates, starting_price, reel_price, story_price, instagram_followers, engagement_rate, interaction_rate, accounts_reached_30d, accounts_engaged_30d, audience_gender_split, top_cities')
       .eq('id', profile.id)
       .single();
 
@@ -113,11 +133,15 @@ async function main() {
 
     console.log('\n🎥 Updated Verification:');
     console.log(`- Username: @${updatedProfile.username}`);
-    console.log(`- Starting Price: ${updatedProfile.starting_price}`);
-    console.log(`- Reel Price: ${updatedProfile.reel_price}`);
-    console.log(`- Story Price: ${updatedProfile.story_price}`);
+    console.log(`- Followers: ${updatedProfile.instagram_followers}`);
+    console.log(`- Engagement Rate: ${updatedProfile.engagement_rate}%`);
+    console.log(`- Interaction Rate: ${updatedProfile.interaction_rate}%`);
+    console.log(`- Accounts Reached (30d): ${updatedProfile.accounts_reached_30d}`);
+    console.log(`- Accounts Engaged (30d): ${updatedProfile.accounts_engaged_30d}`);
+    console.log(`- Gender Split:`, JSON.stringify(updatedProfile.audience_gender_split));
+    console.log(`- Top Cities:`, JSON.stringify(updatedProfile.top_cities));
     console.log(`- Deal Templates:`, JSON.stringify(updatedProfile.deal_templates, null, 2));
-    console.log('\n✨ Pricing and deliverables alignment completed successfully!');
+    console.log('\n✨ Pricing, deliverables, and official marketplace metrics alignment completed successfully!');
 
   } catch (error: any) {
     console.error('❌ Update failed:', error.message);

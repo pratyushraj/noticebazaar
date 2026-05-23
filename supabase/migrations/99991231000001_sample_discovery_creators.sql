@@ -1,3 +1,11 @@
+-- Ensure auth users exist
+INSERT INTO auth.users (id, email, email_confirmed_at, aud, role, created_at, updated_at)
+VALUES 
+('00000000-0000-0000-0000-000000000001', 'aria_tech@example.com', now(), 'authenticated', 'authenticated', now(), now()),
+('00000000-0000-0000-0000-000000000002', 'kaelan_fitness@example.com', now(), 'authenticated', 'authenticated', now(), now()),
+('00000000-0000-0000-0000-000000000003', 'maya_travels@example.com', now(), 'authenticated', 'authenticated', now(), now())
+ON CONFLICT (id) DO NOTHING;
+
 -- Create Sample AI Creators for Discovery Lab
 INSERT INTO public.profiles (id, username, first_name, role, avatar_url, bio, location, followers_count, engagement_rate, discovery_video_url, is_verified, starting_price)
 VALUES 
