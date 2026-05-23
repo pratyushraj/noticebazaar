@@ -1004,253 +1004,289 @@
       "email": "marketing@clovia.com",
       "website": "https://clovia.com",
       "category": "Apparel & Accessories",
-      "status": "pending",
-      "outreach_count": 0
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-23T09:41:02.114Z"
     },
     "Miraggio": {
       "email": "support@miraggiolife.com",
       "website": "https://miraggiolife.com",
       "category": "Apparel & Accessories",
-      "status": "pending",
-      "outreach_count": 0
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-23T09:41:06.469Z"
     },
     "Suta": {
       "email": "marketing@suta.in",
       "website": "https://suta.in",
       "category": "Apparel & Accessories",
-      "status": "pending",
-      "outreach_count": 0
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-23T09:41:08.630Z"
     },
     "TrueBrowns": {
       "email": "info@truebrowns.com",
       "website": "https://truebrowns.com",
       "category": "Apparel & Accessories",
-      "status": "pending",
-      "outreach_count": 0
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-23T09:41:10.820Z"
     },
     "BlissClub": {
       "email": "hi@myblissclub.in",
       "website": "https://myblissclub.in",
       "category": "Apparel & Accessories",
-      "status": "pending",
-      "outreach_count": 0
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-23T09:41:12.969Z"
     },
     "Aastey": {
       "email": "happy@aastey.com",
       "website": "https://aastey.com",
       "category": "Apparel & Accessories",
-      "status": "pending",
-      "outreach_count": 0
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-23T09:41:15.148Z"
     },
     "Nicobar": {
       "email": "care@nicobar.com",
       "website": "https://nicobar.com",
       "category": "Apparel & Accessories",
-      "status": "pending",
-      "outreach_count": 0
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-23T09:41:17.304Z"
     },
     "Maati by Neha Kabra": {
       "email": "info@maatibyneha.com",
       "website": "https://maatibyneha.com",
       "category": "Apparel & Accessories",
-      "status": "pending",
-      "outreach_count": 0
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-23T09:41:19.467Z"
     },
     "Okhai": {
       "email": "okhaicfe@okhai.org",
       "website": "https://okhai.org",
       "category": "Apparel & Accessories",
-      "status": "pending",
-      "outreach_count": 0
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-23T09:41:21.641Z"
     },
     "The Summer House": {
       "email": "hello@thesummerhouse.in",
       "website": "https://thesummerhouse.in",
       "category": "Apparel & Accessories",
-      "status": "pending",
-      "outreach_count": 0
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-23T09:41:23.827Z"
     },
     "Deconstruct": {
       "email": "wecare@thedeconstruct.in",
       "website": "https://thedeconstruct.in",
       "category": "Beauty, Skincare & Grooming",
-      "status": "pending",
-      "outreach_count": 0
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-23T09:41:25.990Z"
     },
     "Dot & Key": {
       "email": "care@dotandkey.com",
       "website": "https://dotandkey.com",
       "category": "Beauty, Skincare & Grooming",
-      "status": "pending",
-      "outreach_count": 0
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-23T09:41:28.195Z"
     },
     "Earth Rhythm": {
       "email": "business@earthrhythm.com",
       "website": "https://earthrhythm.com",
       "category": "Beauty, Skincare & Grooming",
-      "status": "pending",
-      "outreach_count": 0
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-23T09:41:30.382Z"
     },
     "Vilvah Store": {
       "email": "sales@vilvahstore.com",
       "website": "https://vilvahstore.com",
       "category": "Beauty, Skincare & Grooming",
-      "status": "pending",
-      "outreach_count": 0
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-23T09:41:32.570Z"
     },
     "Inde Wild": {
       "email": "indiacare@indewild.com",
       "website": "https://indewild.com",
       "category": "Beauty, Skincare & Grooming",
-      "status": "pending",
-      "outreach_count": 0
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-23T09:41:34.731Z"
     },
     "Arata": {
       "email": "marketing@arata.in",
       "website": "https://arata.in",
       "category": "Beauty, Skincare & Grooming",
-      "status": "pending",
-      "outreach_count": 0
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-23T09:41:36.906Z"
     },
     "Bella Vita Organic": {
       "email": "shop@bellavitaorganic.com",
       "website": "https://bellavitaorganic.com",
       "category": "Beauty, Skincare & Grooming",
-      "status": "pending",
-      "outreach_count": 0
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-23T09:41:39.059Z"
     },
     "mCaffeine": {
       "email": "support@mcaffeine.com",
       "website": "https://mcaffeine.com",
       "category": "Beauty, Skincare & Grooming",
-      "status": "pending",
-      "outreach_count": 0
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-23T09:41:41.266Z"
     },
     "Plum": {
       "email": "hi@plumgoodness.com",
       "website": "https://plumgoodness.com",
       "category": "Beauty, Skincare & Grooming",
-      "status": "pending",
-      "outreach_count": 0
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-23T09:41:43.779Z"
     },
     "The Moms Co.": {
       "email": "support@themomsco.com",
       "website": "https://themomsco.com",
       "category": "Beauty, Skincare & Grooming",
-      "status": "pending",
-      "outreach_count": 0
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-23T09:41:45.919Z"
     },
     "The Man Company": {
       "email": "support@themancompany.com",
       "website": "https://themancompany.com",
       "category": "Beauty, Skincare & Grooming",
-      "status": "pending",
-      "outreach_count": 0
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-23T09:41:48.079Z"
     },
     "Plix": {
       "email": "hello@plixlife.com",
       "website": "https://plixlife.com",
       "category": "Home, Wellness & Lifestyle",
-      "status": "pending",
-      "outreach_count": 0
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-23T09:41:50.275Z"
     },
     "Wellbeing Nutrition": {
       "email": "care@wellbeingnutrition.com",
       "website": "https://wellbeingnutrition.com",
       "category": "Home, Wellness & Lifestyle",
-      "status": "pending",
-      "outreach_count": 0
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-23T09:41:52.415Z"
     },
     "Supply6": {
       "email": "care@supplysix.com",
       "website": "https://supplysix.com",
       "category": "Home, Wellness & Lifestyle",
-      "status": "pending",
-      "outreach_count": 0
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-23T09:41:54.558Z"
     },
     "Fast&Up": {
       "email": "customercare@fastandup.in",
       "website": "https://fastandup.in",
       "category": "Home, Wellness & Lifestyle",
-      "status": "pending",
-      "outreach_count": 0
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-23T09:41:56.769Z"
     },
     "Fitspire": {
       "email": "support@fitspire.fit",
       "website": "https://fitspire.fit",
       "category": "Home, Wellness & Lifestyle",
-      "status": "pending",
-      "outreach_count": 0
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-23T09:41:59.010Z"
     },
     "OZiva": {
       "email": "community@oziva.in",
       "website": "https://oziva.in",
       "category": "Home, Wellness & Lifestyle",
-      "status": "pending",
-      "outreach_count": 0
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-23T09:42:01.173Z"
     },
     "MuscleBlaze": {
       "email": "info@muscleblaze.com",
       "website": "https://muscleblaze.com",
       "category": "Home, Wellness & Lifestyle",
-      "status": "pending",
-      "outreach_count": 0
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-23T09:42:03.352Z"
     },
     "Nutrabay": {
       "email": "support@nutrabay.com",
       "website": "https://nutrabay.com",
       "category": "Home, Wellness & Lifestyle",
-      "status": "pending",
-      "outreach_count": 0
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-23T09:42:05.552Z"
     },
     "Nestasia": {
       "email": "info@nestasia.in",
       "website": "https://nestasia.in",
       "category": "Home, Wellness & Lifestyle",
-      "status": "pending",
-      "outreach_count": 0
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-23T09:42:07.794Z"
     },
     "Byora Homes": {
       "email": "care@byorahomes.com",
       "website": "https://byorahomes.com",
       "category": "Home, Wellness & Lifestyle",
-      "status": "pending",
-      "outreach_count": 0
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-23T09:42:09.957Z"
     },
     "Nappa Dori": {
       "email": "customercare@nappadori.com",
       "website": "https://nappadori.com",
       "category": "Home, Wellness & Lifestyle",
-      "status": "pending",
-      "outreach_count": 0
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-23T09:42:12.141Z"
     },
     "RAD Living": {
       "email": "hello@radlvng.com",
       "website": "https://radlvng.com",
       "category": "Home, Wellness & Lifestyle",
-      "status": "pending",
-      "outreach_count": 0
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-23T09:42:14.305Z"
     },
     "Karma Kettle": {
       "email": "sales@karmakettle.com",
       "website": "https://karmakettle.com",
       "category": "Food, Snacks & Beverages",
-      "status": "pending",
-      "outreach_count": 0
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-23T09:42:16.501Z"
     },
     "Scrapshala": {
       "email": "support@scrapshala.com",
       "website": "https://scrapshala.com",
       "category": "Home, Wellness & Lifestyle",
-      "status": "pending",
-      "outreach_count": 0
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-23T09:42:18.678Z"
     },
     "ExclusiveLane": {
       "email": "care@exclusivelane.com",
       "website": "https://exclusivelane.com",
       "category": "Home, Wellness & Lifestyle",
-      "status": "pending",
-      "outreach_count": 0
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-23T09:42:21.195Z"
     }
   },
   "dentists": {
