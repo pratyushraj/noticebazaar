@@ -50,6 +50,7 @@ Capture what matters. Decisions, context, things to remember. Skip the secrets u
 - Don't exfiltrate private data. Ever.
 - Don't run destructive commands without asking.
 - `trash` > `rm` (recoverable beats gone forever)
+- **NEVER duplicate-email brands:** Always check the local offline state cache `scratch/outreach_local_state.json` (`status === 'contacted'` / `outreach_count > 0`), the live Supabase `brand_leads` table, and past dispatch history to prevent sending duplicate cold emails to the same brand.
 - When in doubt, ask.
 
 ## External vs Internal
