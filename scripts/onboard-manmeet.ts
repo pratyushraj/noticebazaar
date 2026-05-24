@@ -92,20 +92,16 @@ function getEmailLayout(content: string, creatorName: string) {
 }
 
 async function main() {
-  const email = 'nikhilmartolia45@gmail.com';
-  const username = 'nikh_l_martolia';
-  const fullName = 'Nikhil Singh Martolia';
+  const email = 'explorewithmanni@gmail.com';
+  const username = 'explorewithmanni';
+  const fullName = 'Manmeet Bindra';
   const password = 'CreatorArmour2026!'; // Temporary password
-  const avatarPath = path.join(process.cwd(), 'scratch', 'test_perfect_patch_nikhil', 'nikhil_avatar_inpainted_66.png');
-  const optimizedVideoPath = path.join(process.cwd(), 'scratch', 'nikhil_optimized.mp4');
+  const optimizedVideoPath = path.join(process.cwd(), 'scratch', 'manmeet_optimized.mp4');
 
-  console.log(`🚀 Starting Onboarding & Asset synchronization pipeline for Nikhil (@${username})...`);
+  console.log(`🚀 Starting Onboarding & Asset synchronization pipeline for Manmeet (@${username})...`);
 
   try {
     // 1. Verify files exist
-    if (!fs.existsSync(avatarPath)) {
-      throw new Error(`Avatar not found at ${avatarPath}. Run patching first.`);
-    }
     if (!fs.existsSync(optimizedVideoPath)) {
       throw new Error(`Optimized Reel not found at ${optimizedVideoPath}. Run optimization first.`);
     }
@@ -117,8 +113,8 @@ async function main() {
       password,
       email_confirm: true,
       user_metadata: {
-        first_name: 'Nikhil',
-        last_name: 'Martolia',
+        first_name: 'Manmeet',
+        last_name: 'Bindra',
       }
     });
 
@@ -143,65 +139,53 @@ async function main() {
 
     console.log(`✅ User ID resolved: ${actualUserId}`);
 
-    // Phase 2: Upload Avatar
-    console.log('[2/8] Uploading patched avatar to creator-assets bucket...');
-    const avatarBuffer = fs.readFileSync(avatarPath);
-    const avatarStoragePath = `${username}/avatar_ultra.png`;
-    
-    const { error: avatarUploadError } = await supabase.storage
-      .from('creator-assets')
-      .upload(avatarStoragePath, avatarBuffer, {
-        contentType: 'image/png',
-        upsert: true
-      });
-      
-    if (avatarUploadError) throw avatarUploadError;
-    const avatarPublicUrl = `${SUPABASE_URL}/storage/v1/object/public/creator-assets/${avatarStoragePath}`;
-    console.log(`✅ Avatar CDN URL: ${avatarPublicUrl}`);
+    // Phase 2: Placeholder Avatar (will be overwritten instantly by DP Sniffer)
+    console.log('[2/8] Setting placeholder avatar...');
+    const placeholderUrl = `https://sqqocqujxlgoxbcnfbfb.supabase.co/storage/v1/object/public/creator-assets/default_avatar.png`;
 
     // Phase 3: Register Profile Details
     console.log('[3/8] Registering creator profile parameters with official Meta Marketplace metrics...');
     
     const profileUpdate = {
       id: actualUserId,
-      first_name: 'Nikhil',
-      last_name: 'Martolia',
-      avatar_url: avatarPublicUrl,
-      instagram_profile_photo: avatarPublicUrl,
+      first_name: 'Manmeet',
+      last_name: 'Bindra',
+      avatar_url: placeholderUrl,
+      instagram_profile_photo: placeholderUrl,
       username: username,
       instagram_handle: username,
-      business_name: 'Nikhil Singh Martolia | Fashion & Lifestyle stories 🕶️🔥',
+      business_name: 'Manmeet Bindra | Food, Travel & Lifestyle 🍔✈️',
       role: 'creator',
       onboarding_complete: true,
-      creator_category: 'Fashion & Lifestyle',
-      instagram_followers: 94200,
-      followers_count: 94200,
-      engagement_rate: 8.0, // Exact official Meta Interaction Rate from screenshot
-      avg_views: 145000,     // Solid view average reflecting dense Gen-Z streetwear base
-      avg_reel_views_manual: 145000,
-      reel_price: 80000,     // starts from ₹80,000
-      story_price: 15000,     
-      starting_price: 80000,
+      creator_category: 'Food & Travel',
+      instagram_followers: 82300,
+      followers_count: 82300,
+      engagement_rate: 4.4, // Exact official Meta Interaction Rate from screenshot
+      avg_views: 180000,     // Solid high engagement food base
+      avg_reel_views_manual: 180000,
+      reel_price: 10000,     // ₹10,000 Reel price from DMs
+      story_price: 3500,     // ₹3,500 Story price from DMs
+      starting_price: 10000,
       open_to_collabs: true,
       collaboration_preference: 'both',
       is_verified: true,
       is_elite_verified: true,
-      location: 'Mumbai, Maharashtra',
-      city: 'Mumbai',
-      bio: '🔥 Fashion + Lifestyle + Streetwear check-ins. Based in Mumbai. Curating aesthetic fits, streetwear reels, and lifestyle guides for Gen-Z ✨',
-      intro_line: 'Verified Fashion & Streetwear Creator from Mumbai with 94.2K followers and 8% Interaction Rate 🔥🕶️',
-      collab_intro_line: 'Nikhil Singh Martolia features premium streetwear styling lookbooks, aesthetic outfits of the day (OOTDs), and lifestyle stories.',
+      location: 'Delhi, India',
+      city: 'Delhi',
+      bio: '🍳 Food, Travel & Lifestyle check-ins. Based in Delhi. Curating authentic street food trails, cafe visual guides, and aesthetic lifestyle stories for food lovers 📸✈️',
+      intro_line: 'Verified Food & Travel Creator from Delhi with 82.3K followers and 4.4% Interaction Rate 🍔✈️',
+      collab_intro_line: 'Manmeet Bindra features premium food explorations, cafes unboxing, restaurant storytelling, and travel guides.',
       last_instagram_sync: new Date().toISOString(),
       updated_at: new Date().toISOString(),
 
       // Demographic snapshot from Meta Creator Marketplace
-      audience_gender_split: { women: 9.4, men: 90.6 },
-      top_cities: ['Delhi', 'Mumbai', 'Bengaluru', 'Kolkata'],
-      audience_age_range: '18-24 (70.9%)',
+      audience_gender_split: { women: 21.3, men: 78.7 }, 
+      top_cities: ['Delhi', 'Ghaziabad', 'Gurugram', 'Noida'],
+      audience_age_range: '25-34 (42.8%)',
       primary_audience_language: 'Hindi / English',
 
       // System Trust Signals
-      deal_score: 97,
+      deal_score: 96,
       collab_show_trust_signals: true,
       collab_show_audience_snapshot: true,
       collab_show_past_work: true,
@@ -210,28 +194,28 @@ async function main() {
 
       // Marketplace Intel
       deal_intelligence: {
-        hookRate: 58.6,
-        interactionRate: 8.0,
-        accountsReached30d: '8.1M', // Exact 8.1M from screenshot
-        accountsEngaged30d: '1.0M', // Exact 1M from screenshot
-        viralPotential: 'Very High',
-        demographicsRelevance: '93.5% India Concentrated'
+        hookRate: 54.3,
+        interactionRate: 4.4,
+        accountsReached30d: '877.3K', // Exact 877.3K from screenshot
+        accountsEngaged30d: '55.4K', // Exact 55.4K from screenshot
+        viralPotential: 'High',
+        demographicsRelevance: '96.1% India Concentrated'
       },
-      collab_audience_fit_note: 'Strong 93.5% Indian focus with dense concentration of Gen-Z male demographic (90.6% Male, 70.9% 18-24 age group).',
-      collab_engagement_confidence_note: 'Superb 8% official Meta interaction rate combined with high 8.1M accounts reached and 1M engaged.',
-      collab_delivery_reliability_note: 'Mumbai-based fashion creator professional and prompt with brief alignment and delivery timelines.',
-      collab_cta_trust_note: 'High conversions for streetwear, footwear, Gen-Z fashion apparel, grooming, healthy lifestyle, and styling accessories.',
+      collab_audience_fit_note: 'Dense 96.1% Indian target audience with exceptional 78.7% Male split—optimal for food apps, lifestyle brands, cafes, and restaurants.',
+      collab_engagement_confidence_note: 'Solid 4.4% official Meta interaction rate combined with high 877.3K accounts reached.',
+      collab_delivery_reliability_note: 'Delhi-based food professional highly responsive and punctual with cafes and lifestyle brand briefs.',
+      collab_cta_trust_note: 'High conversions for food delivery apps, cafes, restaurants, lifestyle accessories, travel tools, and local cafe promotions.',
 
-      // Custom Standardized Packages (Starting from 80k)
+      // Custom Standardized Packages (Starting from 10k)
       deal_templates: [
         {
           id: 'starter_collab',
           name: '🚀 Starter Collab',
           label: '🚀 Starter Collab',
           type: 'paid',
-          price: 80000,
-          budget: 80000,
-          rate: 80000,
+          price: 10000,
+          budget: 10000,
+          rate: 10000,
           description: 'Perfect for first-time brand awareness & organic reach.',
           deliverables: [
             '1 Reel (15-30s)',
@@ -244,9 +228,9 @@ async function main() {
           name: '⭐ Growth Campaign',
           label: '⭐ Growth Campaign',
           type: 'paid',
-          price: 100000,
-          budget: 100000,
-          rate: 100000,
+          price: 13500,
+          budget: 13500,
+          rate: 13500,
           isPopular: true,
           description: 'Best for brands wanting ads usage + conversions.',
           deliverables: [
@@ -265,8 +249,8 @@ async function main() {
           price: 0,
           budget: 0,
           rate: 0,
-          barter_min_value: 30000,
-          description: 'Barter collaboration - premium product or experience exchange (minimum value ₹30,000+).',
+          barter_min_value: 15000,
+          description: 'Barter collaboration - premium product or experience exchange (minimum value ₹15,000+).',
           deliverables: [
             '1 Reel or 2 Stories',
             'Product review focus'
@@ -280,7 +264,7 @@ async function main() {
       .upsert(profileUpdate);
 
     if (profileError) throw profileError;
-    console.log('✅ Profile updated in database with all high-fidelity marketplace metrics.');
+    console.log('✅ Profile updated in database.');
 
     // Phase 4: Link creators and social_accounts
     console.log('[4/8] Linking creators and social accounts tables...');
@@ -311,12 +295,12 @@ async function main() {
         creator_id: actualUserId,
         platform: 'instagram',
         username: username,
-        followers: 94200,
+        followers: 82300,
         linked_at: new Date().toISOString()
       });
     } else {
       await supabase.from('social_accounts').update({
-        followers: 94200,
+        followers: 82300,
         linked_at: new Date().toISOString()
       }).eq('id', existingSocial.id);
     }
@@ -325,7 +309,7 @@ async function main() {
     // Phase 5: Upload Optimized Reel
     console.log('[5/8] Uploading optimized vertical Reel to Supabase storage...');
     const fileBuffer = fs.readFileSync(optimizedVideoPath);
-    const videoFileName = `discovery-nikhil-${Date.now()}.mp4`;
+    const videoFileName = `discovery-manmeet-${Date.now()}.mp4`;
     const videoStoragePath = `${actualUserId}/${videoFileName}`;
 
     const { error: uploadError } = await supabase.storage
@@ -371,7 +355,7 @@ async function main() {
     // Phase 7: Send Onboarding Invitation Email
     console.log('[7/8] Sending professional email invitation via Resend API...');
     const ctaButton = `<a href="${actionUrl}" style="display: inline-block; padding: 14px 28px; background-color: #10b981; color: #ffffff !important; text-decoration: none; border-radius: 8px; font-weight: 700; font-size: 16px;">Set My Password</a>`;
-    const htmlBody = getEmailLayout(ctaButton, 'Nikhil');
+    const htmlBody = getEmailLayout(ctaButton, 'Manmeet');
 
     const emailResponse = await fetch('https://api.resend.com/emails', {
       method: 'POST',

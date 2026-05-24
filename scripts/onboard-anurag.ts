@@ -92,19 +92,19 @@ function getEmailLayout(content: string, creatorName: string) {
 }
 
 async function main() {
-  const email = 'nikhilmartolia45@gmail.com';
-  const username = 'nikh_l_martolia';
-  const fullName = 'Nikhil Singh Martolia';
+  const email = 'anuragvermawork@gmail.com';
+  const username = 'ianuragvermaa';
+  const fullName = 'Anurag Verma';
   const password = 'CreatorArmour2026!'; // Temporary password
-  const avatarPath = path.join(process.cwd(), 'scratch', 'test_perfect_patch_nikhil', 'nikhil_avatar_inpainted_66.png');
-  const optimizedVideoPath = path.join(process.cwd(), 'scratch', 'nikhil_optimized.mp4');
+  const avatarPath = path.join(process.cwd(), 'scratch', 'anurag_avatar_wide_256.png');
+  const optimizedVideoPath = path.join(process.cwd(), 'scratch', 'anurag_optimized.mp4');
 
-  console.log(`🚀 Starting Onboarding & Asset synchronization pipeline for Nikhil (@${username})...`);
+  console.log(`🚀 Starting Onboarding & Asset synchronization pipeline for Anurag (@${username})...`);
 
   try {
     // 1. Verify files exist
     if (!fs.existsSync(avatarPath)) {
-      throw new Error(`Avatar not found at ${avatarPath}. Run patching first.`);
+      throw new Error(`Avatar not found at ${avatarPath}. Run cropping first.`);
     }
     if (!fs.existsSync(optimizedVideoPath)) {
       throw new Error(`Optimized Reel not found at ${optimizedVideoPath}. Run optimization first.`);
@@ -117,8 +117,8 @@ async function main() {
       password,
       email_confirm: true,
       user_metadata: {
-        first_name: 'Nikhil',
-        last_name: 'Martolia',
+        first_name: 'Anurag',
+        last_name: 'Verma',
       }
     });
 
@@ -143,10 +143,10 @@ async function main() {
 
     console.log(`✅ User ID resolved: ${actualUserId}`);
 
-    // Phase 2: Upload Avatar
-    console.log('[2/8] Uploading patched avatar to creator-assets bucket...');
+    // Phase 2: Upload Avatar with cache-bypassing timestamp
+    console.log('[2/8] Uploading avatar to creator-assets bucket...');
     const avatarBuffer = fs.readFileSync(avatarPath);
-    const avatarStoragePath = `${username}/avatar_ultra.png`;
+    const avatarStoragePath = `${username}/avatar_perfect_final_${Date.now()}.png`;
     
     const { error: avatarUploadError } = await supabase.storage
       .from('creator-assets')
@@ -164,74 +164,74 @@ async function main() {
     
     const profileUpdate = {
       id: actualUserId,
-      first_name: 'Nikhil',
-      last_name: 'Martolia',
+      first_name: 'Anurag',
+      last_name: 'Verma',
       avatar_url: avatarPublicUrl,
       instagram_profile_photo: avatarPublicUrl,
       username: username,
       instagram_handle: username,
-      business_name: 'Nikhil Singh Martolia | Fashion & Lifestyle stories 🕶️🔥',
+      business_name: 'Anurag Verma | Cinematic Travel & Adventure 📸🏔️',
       role: 'creator',
       onboarding_complete: true,
-      creator_category: 'Fashion & Lifestyle',
-      instagram_followers: 94200,
-      followers_count: 94200,
-      engagement_rate: 8.0, // Exact official Meta Interaction Rate from screenshot
-      avg_views: 145000,     // Solid view average reflecting dense Gen-Z streetwear base
-      avg_reel_views_manual: 145000,
-      reel_price: 80000,     // starts from ₹80,000
-      story_price: 15000,     
-      starting_price: 80000,
+      creator_category: 'Travel & Filmmaking',
+      instagram_followers: 71600,
+      followers_count: 71600,
+      engagement_rate: 7.5, // Exact official Meta Interaction Rate from screenshot
+      avg_views: 350000,     // High cinematic reach average
+      avg_reel_views_manual: 350000,
+      reel_price: 25000,     // ₹25,000 starting reel price based on 20-30k commercial budget
+      story_price: 5000,     // Standard story rate
+      starting_price: 25000,
       open_to_collabs: true,
       collaboration_preference: 'both',
       is_verified: true,
       is_elite_verified: true,
-      location: 'Mumbai, Maharashtra',
-      city: 'Mumbai',
-      bio: '🔥 Fashion + Lifestyle + Streetwear check-ins. Based in Mumbai. Curating aesthetic fits, streetwear reels, and lifestyle guides for Gen-Z ✨',
-      intro_line: 'Verified Fashion & Streetwear Creator from Mumbai with 94.2K followers and 8% Interaction Rate 🔥🕶️',
-      collab_intro_line: 'Nikhil Singh Martolia features premium streetwear styling lookbooks, aesthetic outfits of the day (OOTDs), and lifestyle stories.',
+      location: 'New Delhi, India',
+      city: 'New Delhi',
+      bio: '🧗‍♂️ Exploring the unexplored. Cinematic travel film director, sports enthusiast, and content producer based in New Delhi. Capturing visual stories, aesthetic travel guides, and premium lifestyle lookbooks 📸🏔️',
+      intro_line: 'Verified Travel & Filmmaking Creator from New Delhi with 71.6K followers and 7.5% Interaction Rate 📸🏔️',
+      collab_intro_line: 'Anurag Verma features aesthetic visual storytelling, high-fidelity landscape travel Reels, and premium product integration lookbooks.',
       last_instagram_sync: new Date().toISOString(),
       updated_at: new Date().toISOString(),
 
       // Demographic snapshot from Meta Creator Marketplace
-      audience_gender_split: { women: 9.4, men: 90.6 },
-      top_cities: ['Delhi', 'Mumbai', 'Bengaluru', 'Kolkata'],
-      audience_age_range: '18-24 (70.9%)',
+      audience_gender_split: { women: 42.1, men: 57.9 },
+      top_cities: ['Chennai', 'Bengaluru', 'Delhi', 'Mumbai'],
+      audience_age_range: '18-24 (72.8%)',
       primary_audience_language: 'Hindi / English',
 
       // System Trust Signals
-      deal_score: 97,
+      deal_score: 98,
       collab_show_trust_signals: true,
       collab_show_audience_snapshot: true,
       collab_show_past_work: true,
-      past_brand_count: 0,
-      collab_brands_count_override: 0,
+      past_brand_count: 1,
+      collab_brands_count_override: 1,
 
       // Marketplace Intel
       deal_intelligence: {
-        hookRate: 58.6,
-        interactionRate: 8.0,
-        accountsReached30d: '8.1M', // Exact 8.1M from screenshot
-        accountsEngaged30d: '1.0M', // Exact 1M from screenshot
+        hookRate: 42.0,
+        interactionRate: 7.5,
+        accountsReached30d: '7.3M', // Exact 7.3M from screenshot
+        accountsEngaged30d: '616.9K', // Exact 616.9K from screenshot
         viralPotential: 'Very High',
-        demographicsRelevance: '93.5% India Concentrated'
+        demographicsRelevance: '91.5% India Concentrated'
       },
-      collab_audience_fit_note: 'Strong 93.5% Indian focus with dense concentration of Gen-Z male demographic (90.6% Male, 70.9% 18-24 age group).',
-      collab_engagement_confidence_note: 'Superb 8% official Meta interaction rate combined with high 8.1M accounts reached and 1M engaged.',
-      collab_delivery_reliability_note: 'Mumbai-based fashion creator professional and prompt with brief alignment and delivery timelines.',
-      collab_cta_trust_note: 'High conversions for streetwear, footwear, Gen-Z fashion apparel, grooming, healthy lifestyle, and styling accessories.',
+      collab_audience_fit_note: 'Strong 91.5% Indian focus with exceptionally dense concentration of Gen-Z demographic (72.8% 18-24 age group).',
+      collab_engagement_confidence_note: 'Superb 7.5% official Meta interaction rate combined with high 7.3M accounts reached and 616K engaged.',
+      collab_delivery_reliability_note: 'New Delhi-based visual professional and prompt with brief alignment and delivery timelines.',
+      collab_cta_trust_note: 'High conversions for travel gear, lifestyle apparel, consumer electronics, skincare/sunscreen, outdoor brands, and visual styling accessories.',
 
-      // Custom Standardized Packages (Starting from 80k)
+      // Custom Standardized Packages (Starting from 25k)
       deal_templates: [
         {
           id: 'starter_collab',
           name: '🚀 Starter Collab',
           label: '🚀 Starter Collab',
           type: 'paid',
-          price: 80000,
-          budget: 80000,
-          rate: 80000,
+          price: 25000,
+          budget: 25000,
+          rate: 25000,
           description: 'Perfect for first-time brand awareness & organic reach.',
           deliverables: [
             '1 Reel (15-30s)',
@@ -244,9 +244,9 @@ async function main() {
           name: '⭐ Growth Campaign',
           label: '⭐ Growth Campaign',
           type: 'paid',
-          price: 100000,
-          budget: 100000,
-          rate: 100000,
+          price: 30000,
+          budget: 30000,
+          rate: 30000,
           isPopular: true,
           description: 'Best for brands wanting ads usage + conversions.',
           deliverables: [
@@ -265,8 +265,8 @@ async function main() {
           price: 0,
           budget: 0,
           rate: 0,
-          barter_min_value: 30000,
-          description: 'Barter collaboration - premium product or experience exchange (minimum value ₹30,000+).',
+          barter_min_value: 10000,
+          description: 'Barter collaboration - premium product or experience exchange (minimum value ₹10,000+).',
           deliverables: [
             '1 Reel or 2 Stories',
             'Product review focus'
@@ -311,12 +311,12 @@ async function main() {
         creator_id: actualUserId,
         platform: 'instagram',
         username: username,
-        followers: 94200,
+        followers: 71600,
         linked_at: new Date().toISOString()
       });
     } else {
       await supabase.from('social_accounts').update({
-        followers: 94200,
+        followers: 71600,
         linked_at: new Date().toISOString()
       }).eq('id', existingSocial.id);
     }
@@ -325,7 +325,7 @@ async function main() {
     // Phase 5: Upload Optimized Reel
     console.log('[5/8] Uploading optimized vertical Reel to Supabase storage...');
     const fileBuffer = fs.readFileSync(optimizedVideoPath);
-    const videoFileName = `discovery-nikhil-${Date.now()}.mp4`;
+    const videoFileName = `discovery-anurag-${Date.now()}.mp4`;
     const videoStoragePath = `${actualUserId}/${videoFileName}`;
 
     const { error: uploadError } = await supabase.storage
@@ -371,7 +371,7 @@ async function main() {
     // Phase 7: Send Onboarding Invitation Email
     console.log('[7/8] Sending professional email invitation via Resend API...');
     const ctaButton = `<a href="${actionUrl}" style="display: inline-block; padding: 14px 28px; background-color: #10b981; color: #ffffff !important; text-decoration: none; border-radius: 8px; font-weight: 700; font-size: 16px;">Set My Password</a>`;
-    const htmlBody = getEmailLayout(ctaButton, 'Nikhil');
+    const htmlBody = getEmailLayout(ctaButton, 'Anurag');
 
     const emailResponse = await fetch('https://api.resend.com/emails', {
       method: 'POST',
