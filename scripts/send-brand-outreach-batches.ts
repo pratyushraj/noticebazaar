@@ -56,30 +56,30 @@ const batches = {
 
 function getD2CEmailTemplate(brandName: string, category: string): string {
   return `
-    <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size: 16px; color: #374151; line-height: 1.6;">
-      <p>Hi Team,</p>
+    <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size: 15px; color: #334155; line-height: 1.6; max-width: 600px; margin: 0 auto; padding: 12px 0;">
+      <p>Hi Team 👋</p>
       
-      <p>Came across <strong>${brandName}</strong> and really liked your brand positioning 👀</p>
+      <p>Came across your brand and honestly the products/content already feel very creator-friendly ✨</p>
       
-      <p>I'm Pratyush from <strong>Creator Armour</strong>. We've built a curated network of creators specifically for D2C brands to help with:</p>
+      <p>We’re currently helping brands connect with lifestyle, beauty, wellness & local creators for:<br>
+      • barter collaborations<br>
+      • UGC content<br>
+      • Instagram reel campaigns<br>
+      • creator-led product promotions</p>
       
-      <ul style="padding-left: 20px; color: #4b5563;">
-        <li>High-quality UGC & Reels</li>
-        <li>Barter collaborations (product for content)</li>
-        <li>Aesthetic ad creatives</li>
-      </ul>
+      <p>The goal is simple:<br>
+      help brands get authentic creator content without handling everything manually on DMs & spreadsheets.</p>
       
-      <p>Most of our creators are affordable, highly engaged, and comfortable creating authentic content for <strong>${category}</strong> brands.</p>
+      <p>We’d love to explore a small barter collaboration campaign with your brand 😊</p>
       
-      <p>Would love to share a few creator profiles that could fit your brand. Do you have a moment to chat or should I send over some profiles here?</p>
+      <p>No setup cost involved for the initial pilot.</p>
       
-      <p>Best,<br>
-      <strong>Pratyush Raj</strong><br>
-      Founder, Creator Armour<br>
-      <a href="https://creatorarmour.com" style="color: #10b981; text-decoration: none;">creatorarmour.com</a></p>
+      <p>Would love to connect if relevant.</p>
       
-      <p style="font-size: 12px; color: #9ca3af; margin-top: 40px; border-top: 1px solid #f3f4f6; padding-top: 20px;">
-        If you're not the right person for this, please let me know and I'll stop reaching out.
+      <p style="margin-top: 24px; padding-top: 12px; border-top: 1px solid #e2e8f0; color: #64748b; font-size: 14px;">
+        — Pratyush<br>
+        Creator Armour<br>
+        <a href="https://creatorarmour.com" style="color: #0f172a; text-decoration: underline; font-weight: 600;">creatorarmour.com</a>
       </p>
     </div>
   `;
@@ -141,7 +141,7 @@ async function main() {
           from: 'Pratyush from Creator Armour <outreach@creatorarmour.com>',
           to: b.email,
           reply_to: 'creatorarmour07@gmail.com',
-          subject: `Content & UGC for ${b.name}`,
+          subject: `collaboration with ${b.name}`,
           html: getD2CEmailTemplate(b.name, data.category)
         });
 

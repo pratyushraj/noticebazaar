@@ -30,51 +30,30 @@ interface BrandOutreachProps {
 }
 
 function getD2CEmailTemplate(brand: BrandOutreachProps): string {
-  const catLower = brand.category.toLowerCase();
-  
-  const isPet = catLower.includes('pet');
-  const isFood = catLower.includes('food') || catLower.includes('snack') || catLower.includes('beverage') || catLower.includes('coffee') || catLower.includes('tea') || catLower.includes('spices');
-  const isBeauty = catLower.includes('skin') || catLower.includes('beauty') || catLower.includes('groom') || catLower.includes('personal') || catLower.includes('fragrance') || catLower.includes('cos') || catLower.includes('ayurveda');
-  const isLifestyle = !isPet && !isFood && !isBeauty;
-
-  const petLine = isPet ? '<strong>🐾 pet care</strong>' : '🐾 pet care';
-  const foodLine = isFood ? '<strong>🍪 food & beverage</strong>' : '🍪 food & beverage';
-  const beautyLine = isBeauty ? '<strong>✨ beauty</strong>' : '✨ beauty';
-  const lifestyleLine = isLifestyle ? '<strong>👕 lifestyle</strong>' : '👕 lifestyle';
-
   return `
     <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size: 15px; color: #334155; line-height: 1.6; max-width: 600px; margin: 0 auto; padding: 12px 0;">
-      <p>Hi Team,</p>
+      <p>Hi Team 👋</p>
       
-      <p>Loved what you’re building at <strong>${brand.brandName}</strong> 👏</p>
+      <p>Came across your brand and honestly the products/content already feel very creator-friendly ✨</p>
       
-      <p>We’re building Creator Armour — a creator collaboration operating system for growing D2C brands.</p>
+      <p>We’re currently helping brands connect with lifestyle, beauty, wellness & local creators for:<br>
+      • barter collaborations<br>
+      • UGC content<br>
+      • Instagram reel campaigns<br>
+      • creator-led product promotions</p>
       
-      <p>Most brands already know influencer marketing works.</p>
+      <p>The goal is simple:<br>
+      help brands get authentic creator content without handling everything manually on DMs & spreadsheets.</p>
       
-      <p>The painful part is:<br>
-      • creator sourcing<br>
-      • tracking replies<br>
-      • managing briefs<br>
-      • chasing deliverables<br>
-      • coordinating payouts<br>
-      • handling WhatsApp + Instagram chaos</p>
+      <p>We’d love to explore a small barter collaboration campaign with your brand 😊</p>
       
-      <p>That’s the layer we’re simplifying.</p>
+      <p>No setup cost involved for the initial pilot.</p>
       
-      <p>We’re currently onboarding a small set of fast-growing brands across:<br>
-      ${petLine}<br>
-      ${foodLine}<br>
-      ${beautyLine}<br>
-      ${lifestyleLine}</p>
-      
-      <p>Would love to show you how brands are using Creator Armour to run creator campaigns with far less operational overhead.</p>
-      
-      <p>Open to a quick 10-minute intro sometime this week?</p>
+      <p>Would love to connect if relevant.</p>
       
       <p style="margin-top: 24px; padding-top: 12px; border-top: 1px solid #e2e8f0; color: #64748b; font-size: 14px;">
-        — Pratyush Raj<br>
-        Founder, Creator Armour<br>
+        — Pratyush<br>
+        Creator Armour<br>
         <a href="https://creatorarmour.com" style="color: #0f172a; text-decoration: underline; font-weight: 600;">creatorarmour.com</a>
       </p>
     </div>
@@ -105,7 +84,7 @@ async function run() {
       website: 'https://testbrand.com'
     };
 
-    const subject = `creator ops at ${targetName}`;
+    const subject = `collaboration with ${targetName}`;
     const htmlBody = getD2CEmailTemplate(brandPayload);
 
     try {
@@ -180,7 +159,7 @@ async function run() {
           };
 
           // Dispatch Outreach Email via Resend
-          const subject = `creator ops at ${brandName}`;
+          const subject = `collaboration with ${brandName}`;
           const htmlBody = getD2CEmailTemplate(brandPayload);
 
           const { data, error: sendError } = await resend.emails.send({
