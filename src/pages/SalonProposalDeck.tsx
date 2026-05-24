@@ -7,7 +7,6 @@ import {
   ChevronRight, 
   Maximize2, 
   Play, 
-  Layers, 
   Sparkles,
   Smartphone,
   CheckCircle,
@@ -18,8 +17,7 @@ import {
   Instagram,
   Heart,
   MessageCircle,
-  Send,
-  Bookmark,
+  BookmarkCheck,
   Users,
   Percent,
   Calendar,
@@ -38,7 +36,6 @@ import {
   Plus,
   X,
   MapPin,
-  BookmarkCheck,
   Video
 } from 'lucide-react';
 import { getApiBaseUrl } from '@/lib/utils/api';
@@ -66,11 +63,11 @@ const SalonProposalDeck = () => {
   const [formSubmitted, setFormSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const slidesCount = 7;
+  const slidesCount = 8; // 8 high-impact slides
 
   const getSlideTheme = (slideId: number) => {
-    if ([2, 4].includes(slideId)) return 'luxury-dark'; // Obsidian Gold theme
-    if ([1, 5].includes(slideId)) return 'gold-accent'; // Champagne gold glow
+    if ([2, 4, 6].includes(slideId)) return 'luxury-dark'; // Obsidian Gold theme
+    if ([1, 3, 5].includes(slideId)) return 'gold-accent'; // Champagne gold glow
     return 'dark'; // Cover & CTA
   };
 
@@ -158,13 +155,13 @@ const SalonProposalDeck = () => {
         pdf.setFont('helvetica', 'normal');
         pdf.setTextColor(160, 174, 192);
         pdf.setFontSize(12);
-        pdf.text('WhatsApp-friendly pitch deck for turning salon empty slots into bookings.', 20, 79, { maxWidth: 170 });
+        pdf.text('WhatsApp-friendly sales deck for monetizing empty weekday slots.', 20, 79, { maxWidth: 170 });
 
         const bullets = [
           'Hyperlocal creator matching within 5km',
-          'Five reel concepts for salon-specific treatments',
-          'Barter economics and ROI framing',
-          'Pilot-ready workflow with WhatsApp intake'
+          'Satisfying Reels blueprints driving local foot traffic',
+          'Barter leverage math and ROI tracking',
+          'Exclusive pilot onboarding'
         ];
 
         let y = 104;
@@ -193,7 +190,7 @@ const SalonProposalDeck = () => {
         setExportProgress(i + 1);
         await new Promise(r => setTimeout(r, 220));
         
-        const nicheIndexes = i === 3 ? salonNiches.map((_, index) => index) : [null];
+        const nicheIndexes = i === 4 ? salonNiches.map((_, index) => index) : [null];
         for (let j = 0; j < nicheIndexes.length; j++) {
           const nicheIndex = nicheIndexes[j];
           if (typeof nicheIndex === 'number') {
@@ -316,7 +313,7 @@ const SalonProposalDeck = () => {
 
   const handleWhatsAppClick = () => {
     const message = encodeURIComponent("Hey! I saw your Salon Chair Monetization Pilot. I'd love to get matched local beauty & lifestyle creators nearby to drive bookings into my salon.");
-    const whatsappUrl = `https://wa.me/919999999999?text=${message}`; // Coordinator preserved WhatsApp number
+    const whatsappUrl = `https://wa.me/919999999999?text=${message}`; 
     window.open(whatsappUrl, '_blank');
   };
 
@@ -327,18 +324,12 @@ const SalonProposalDeck = () => {
       retail: '₹3,500 - ₹5,000',
       barterCost: '₹450',
       hook: 'The Close-Up Glow Transformation',
-      script: 'Creator films raw close-ups of congested skin, shows the soothing ASMR hydro-vacuum extraction process, and finishes with a crystal-clear, glass-skin glow in natural sunlight.',
-      whyItWorks: 'Women save these Reels to book later before weddings, parties & vacations. Seeing unedited skin glow within a 5km radius drives immediate local trust.',
-      hasBeforeAfterImage: true,
+      script: 'Close-ups of congested skin, satisfying ASMR hydro-vacuum extraction, and a final crystal-clear glass-skin glow in natural sunlight.',
+      dopamineDesc: 'Satisfying visual dopamine drives massive saves, especially before weddings and festive seasons.',
       reelPreset: {
-        creator: '@capture.by.khushi',
         views: '84,200 Views',
         shares: '1,240 Saves',
-        directBookings: '14 Bookings',
-        comments: [
-          { user: 'ananya_sen', text: 'This looks so relaxing! Is this salon in Delhi GK-2? Booking now!' },
-          { user: 'rhea.sharma', text: 'Need this hydrafacial treatment before my vacation next week!' }
-        ]
+        directBookings: '14 Bookings'
       }
     },
     {
@@ -346,17 +337,12 @@ const SalonProposalDeck = () => {
       retail: '₹2,500 - ₹4,000',
       barterCost: '₹300',
       hook: 'Aesthetic Nail Tapping & Custom Art',
-      script: 'Macro video showing old chipped nails, the satisfying prep clicks/shaping, and a premium sunlight tapping transition showing off high-gloss gel extension nail art.',
-      whyItWorks: 'Nails are highly social. Women bookmark nail art styles to show to their technician, making this Reel a direct referral magnet for the exact same custom design.',
+      script: 'Macro video of chipped nails, satisfying prep clicks/shaping, and a premium daylight tapping transition showing Gel Extensions.',
+      dopamineDesc: 'Highly shareable nail designs acting as direct bookmark referrals for the exact same custom work.',
       reelPreset: {
-        creator: '@lilboxoffashion',
         views: '92,500 Views',
         shares: '2,890 Saves',
-        directBookings: '19 Bookings',
-        comments: [
-          { user: 'kavya.k', text: 'Stunning art! Can your GK salon replicate this next Thursday?' },
-          { user: 'ishaaa_9', text: 'Sending direct DM for extensions, these are gorgeous!' }
-        ]
+        directBookings: '19 Bookings'
       }
     },
     {
@@ -364,17 +350,12 @@ const SalonProposalDeck = () => {
       retail: '₹6,000 - ₹12,000',
       barterCost: '₹800',
       hook: 'The Extreme Silk-Shine Swish',
-      script: 'Before: Dry, frizzy, tangled hair. Process: Deep nourishing protein application, steam, and professional ironing. After: The iconic glossy hair swish in daylight.',
-      whyItWorks: 'Hair smoothing is a major decision. Showing a local creator’s transformation removes fear of hair damage, driving immediate high-ticket hair appointments.',
+      script: 'Monsoon frizz-to-glass transformation showing protein nourishment, steam styling, and the iconic shiny hair swish.',
+      dopamineDesc: 'Removes hair-damage fear by showing a local creator’s smooth, glossy result, driving high-ticket bookings.',
       reelPreset: {
-        creator: '@thegleamngown',
         views: '185,000 Views',
         shares: '4,100 Saves',
-        directBookings: '28 Bookings',
-        comments: [
-          { user: 'meera_kapoor', text: 'My hair looks exactly like her before. Sending WhatsApp to book.' },
-          { user: 'tanya_j', text: 'The gloss is blinding omg! What is the price for this?' }
-        ]
+        directBookings: '28 Bookings'
       }
     },
     {
@@ -382,17 +363,12 @@ const SalonProposalDeck = () => {
       retail: '₹2,500 - ₹4,500',
       barterCost: '₹350',
       hook: 'The ASMR Head Wash Relaxation',
-      script: 'Detailed scalp camera check showing dryness, water-halo basin washing clips, soothing head massage fingers, and a fresh shiny blowout.',
-      whyItWorks: 'ASMR head washes trigger absolute envy. Women book these treatments specifically for self-care, stress relief, and vacations, looking for a luxury escape nearby.',
+      script: 'Dry scalp check, followed by water-halo basin washing, therapeutic champi massage clips, and a fresh shiny blowout.',
+      dopamineDesc: 'Triggering self-care envy. High saves for premium therapeutic experiences.',
       reelPreset: {
-        creator: '@nehas_aura28',
         views: '110,000 Views',
         shares: '3,450 Saves',
-        directBookings: '16 Bookings',
-        comments: [
-          { user: 'pujara.shikh', text: 'That water ring head halo looks heavenly, booking this weekend' },
-          { user: 'ria_verma', text: 'Need this scalp massage to destress ASAP' }
-        ]
+        directBookings: '16 Bookings'
       }
     },
     {
@@ -400,17 +376,12 @@ const SalonProposalDeck = () => {
       retail: '₹4,500 - ₹8,000',
       barterCost: '₹600',
       hook: 'The Royalty Bridal Transition',
-      script: 'Starts with bride-to-be in casual clothes discussing wedding aesthetics. Transition in warm studio lights to her custom HD bridal makeup and veil reveal.',
-      whyItWorks: 'Brides-to-be scour local media. A real, high-resolution bridal trial look directly targets wedding bookings, generating high-value bridal packages.',
+      script: 'Bride-to-be discussing wedding aesthetics, transitioning to custom HD bridal makeup and dupatta reveal under warm lights.',
+      dopamineDesc: 'High-value bridal package leads driven by authentic, premium trial demonstrations.',
       reelPreset: {
-        creator: '@storiesbyseema',
         views: '142,000 Views',
         shares: '3,100 Saves',
-        directBookings: '9 Wedding Deals',
-        comments: [
-          { user: 'bride_to_be_2026', text: 'Which artist did this? Need a quote for December wedding!' },
-          { user: 'divya_oberoi', text: 'So glowing and clean, not heavy or cakey at all!' }
-        ]
+        directBookings: '9 Wedding Deals'
       }
     },
     {
@@ -418,17 +389,12 @@ const SalonProposalDeck = () => {
       retail: '₹4,000 - ₹7,000',
       barterCost: '₹200',
       hook: 'Painless Laser: Expectation vs Reality',
-      script: 'Creator answers typical fears, films the ice-cool cooling gel glide on their skin, and reviews the absolute smooth and comfortable results.',
-      whyItWorks: 'Local laser deals fail because of pain fear. A trusted creator review proving the process is comfortable removes the block, driving massive clinical consultation visits.',
+      script: 'Addressing typical pain fears, showing the ice-cool gel glide, and reviewing smooth results on Indian skin tones.',
+      dopamineDesc: 'Builds massive trust for clinical beauty treatments by showing the actual comfortable process.',
       reelPreset: {
-        creator: '@monika_urs',
         views: '73,000 Views',
         shares: '940 Saves',
-        directBookings: '12 Consultations',
-        comments: [
-          { user: 'shruti.m', text: 'Is it actually painless? I have been so scared to try laser' },
-          { user: 'pooja.r', text: 'Exactly the reassurance I needed, calling your clinic!' }
-        ]
+        directBookings: '12 Consultations'
       }
     }
   ];
@@ -461,7 +427,7 @@ const SalonProposalDeck = () => {
         
         {/* Progress Tracker */}
         <div className="hidden sm:flex items-center gap-3">
-          <span className="text-xs font-black uppercase text-slate-400 tracking-wider">Aesthetic Bookings Engine</span>
+          <span className="text-xs font-black uppercase text-slate-400 tracking-wider">Unused-Chair Monetization</span>
           <span className="h-1.5 w-1.5 rounded-full bg-amber-400" />
           <span className="text-xs font-bold text-neutral-400">Page {currentSlide + 1} of {slidesCount}</span>
         </div>
@@ -471,7 +437,7 @@ const SalonProposalDeck = () => {
             onClick={exportToPDF}
             disabled={isExporting}
             className="px-3 py-1.5 hover:bg-slate-900 rounded-lg text-slate-300 hover:text-white transition-colors flex items-center gap-1.5 text-xs font-bold border border-amber-500/10 disabled:opacity-50"
-            title="Download portrait PDF copy for forwarding"
+            title="Download PDF Copy"
           >
             <FileText className="h-4 w-4 text-amber-400" />
             <span className="hidden sm:inline">Download Deck PDF</span>
@@ -500,13 +466,14 @@ const SalonProposalDeck = () => {
         {/* Left Side Navigation List */}
         <nav className="hidden lg:flex w-72 border-r border-amber-500/10 bg-[#090909]/30 flex-col overflow-y-auto py-6 px-4 gap-2 scrollbar-thin">
           {[
-            { id: 0, label: '01. Cover Hook', desc: 'Real Local Bookings' },
-            { id: 1, label: '02. How It Works', desc: 'Quiet Chair Booking' },
-            { id: 2, label: '03. Barter Economics', desc: 'cheapest marketing hack' },
-            { id: 3, label: '04. Reel Concepts', desc: 'visual blueprints' },
-            { id: 4, label: '05. Shield & Comparison', desc: 'why agencies fail' },
-            { id: 5, label: '06. Free Pilot Offer', desc: 'No monthly retainers' },
-            { id: 6, label: '07. WhatsApp to Start', desc: 'Match local creators' }
+            { id: 0, label: '01. Executive Hook', desc: 'Watch Instagram Reels' },
+            { id: 1, label: '02. Sunk Cost Audit', desc: 'Premium salon pain points' },
+            { id: 2, label: '03. How It Works', desc: '5km geolocated matching' },
+            { id: 3, label: '04. Visual ROI Flow', desc: 'Barter leverage math' },
+            { id: 4, label: '05. Reel Blueprints', desc: 'Satisfying visual concepts' },
+            { id: 5, label: '06. Expected Outcomes', desc: 'Realistic booking numbers' },
+            { id: 6, label: '07. Vetting & Proof', desc: 'Verified booking queries' },
+            { id: 7, label: '08. Exclusive Pilot', desc: 'Selective onboarding' }
           ].map((item) => (
             <button
               key={item.id}
@@ -561,25 +528,25 @@ const SalonProposalDeck = () => {
  
                   <div className="lg:col-span-7 space-y-6 relative z-10">
                     <div className="h-8 px-4 rounded-full bg-amber-500/10 text-amber-300 border border-amber-500/20 flex items-center justify-center text-[10px] font-black uppercase tracking-widest w-fit animate-pulse">
-                      💆‍♀️ Chair Monetization Infrastructure
+                      💆‍♀️ Unused-Chair Monetization Engine
                     </div>
-                    <h1 className="text-4xl md:text-6xl font-black uppercase italic tracking-tighter leading-none text-white">
-                      YOUR NEXT 20 HIGH-VALUE CLIENTS <br/>
-                      ARE ALREADY WATCHING <span className="text-amber-400">INSTAGRAM REELS.</span>
+                    <h1 className="text-3xl md:text-5xl font-black uppercase italic tracking-tighter leading-tight text-white">
+                      YOUR NEXT 20 CLIENTS ARE ALREADY <br/>
+                      WATCHING <span className="text-amber-400">INSTAGRAM REELS.</span>
                     </h1>
                     <p className="text-base md:text-lg text-slate-300 font-medium leading-relaxed max-w-xl">
-                      We help premium salons turn creator visits into bookings.
+                      Turn quiet weekday hours into confirmed bookings with local creator matching.
                       <span className="text-amber-400 block mt-2 font-bold italic">
-                        Instagram pushes geotagged Reels directly to local women within 5km of your salon.
+                        Instagram pushes geotagged Reels directly to women within 5km of your salon.
                       </span>
                     </p>
                     
                     <div className="flex flex-wrap gap-6 text-[10px] font-black uppercase tracking-widest text-neutral-500 pt-2">
                       <p>📍 5km Local Target</p>
                       <p>•</p>
-                      <p>📸 Geotagged Reels</p>
+                      <p>📸 Satisfying ASMR Reels</p>
                       <p>•</p>
-                      <p>💆‍♀️ Booking Tracking Engine</p>
+                      <p>💆‍♀️ Unused Seat Optimization</p>
                     </div>
                   </div>
 
@@ -604,20 +571,20 @@ const SalonProposalDeck = () => {
                       {/* Vetted badge */}
                       <div className="z-10 flex justify-between items-start">
                         <span className="px-2 py-0.5 rounded-full bg-black/80 border border-amber-500/30 text-[8px] font-black uppercase tracking-widest text-amber-400 flex items-center gap-1">
-                          <Sparkles className="h-2.5 w-2.5 animate-pulse" /> GK-2 Delhi Target
+                          <Sparkles className="h-2.5 w-2.5 animate-pulse" /> 5km Radius
                         </span>
                         <span className="px-2 py-0.5 rounded-full bg-emerald-500 text-black text-[8px] font-black uppercase tracking-widest animate-bounce">
-                          +18 Bookings
+                          +14 Bookings
                         </span>
                       </div>
 
                       {/* Overlaid WhatsApp verified client message */}
                       <div className="z-10 bg-black/95 border border-white/10 rounded-2xl p-2.5 font-mono text-[8px] space-y-1 shadow-2xl relative mt-auto">
                         <p className="text-amber-400 font-bold uppercase text-[7px] tracking-wider flex items-center gap-1">
-                          <MessageSquare className="h-3 w-3 fill-amber-400 text-amber-400 animate-pulse" /> WhatsApp Intake Proof
+                          <MessageSquare className="h-3 w-3 fill-amber-400 text-amber-400" /> Real-time Intake Proof
                         </p>
                         <p className="text-neutral-300">
-                          <span className="text-white font-bold">Client:</span> "Hey! Just saw the local creator's hydrafacial Reel. Do you have a slot this Wednesday at 12 PM?"
+                          <span className="text-white font-bold">Client:</span> "Saw the local hydrafacial transformation. Do you have a slot open tomorrow?"
                         </p>
                       </div>
                     </div>
@@ -625,185 +592,185 @@ const SalonProposalDeck = () => {
                 </div>
               )}
 
-              {/* PAGE 2: HOW IT WORKS */}
+              {/* PAGE 2: THE PAIN (SUNK COST AUDIT) */}
               {currentSlide === 1 && (
                 <div className="flex-1 flex flex-col justify-between z-10 relative">
                   <div className="space-y-2">
-                    <div className="h-5 w-fit px-3 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center text-[9px] font-black uppercase tracking-wider">
-                      Quiet Chair Bookings
+                    <div className="h-5 w-fit px-3 rounded-full bg-red-500/10 border border-red-500/20 text-red-400 flex items-center justify-center text-[9px] font-black uppercase tracking-wider">
+                      Sunk Cost Audit
                     </div>
                     <h2 className="text-2xl md:text-3xl font-black uppercase italic tracking-tighter text-white">
-                      Turning Quiet Hours into <span className="text-amber-400">Paying Clients.</span>
+                      The Cost of an <span className="text-red-400">Empty Salon Chair.</span>
                     </h2>
-                    <p className="text-xs text-neutral-400 max-w-2xl">
-                      We handle all the coordination, script direction, and creator reminders. Zero workload on your front desk.
+                    <p className="text-xs text-neutral-400 max-w-2xl font-medium">
+                      Every premium salon has hidden leaks draining its monthly profits. Let's look at the operational reality:
                     </p>
                   </div>
 
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 py-4 my-auto">
+                  <div className="grid grid-cols-1 md:grid-cols-5 gap-4 py-4 my-auto">
+                    {[
+                      {
+                        title: 'Khali Kursi (Idle Chairs)',
+                        label: 'Idle Inventory',
+                        desc: 'Weekday chairs (Mon-Thu) sit completely empty. Rent, lights, and AC are still paid 100%.',
+                        icon: '💺'
+                      },
+                      {
+                        title: 'Unused Staff Hours',
+                        label: 'Sunk Payroll',
+                        desc: 'Stylists and therapists are on fixed monthly salaries, sitting idle during slow morning hours.',
+                        icon: '⏳'
+                      },
+                      {
+                        title: 'Expensive Meta Ads',
+                        label: 'Cash Burn',
+                        desc: 'Burning thousands on Instagram ads that attract fake profile clicks and zero local foot traffic.',
+                        icon: '💸'
+                      },
+                      {
+                        title: 'Wasted Barters',
+                        label: 'Influencer Leak',
+                        desc: 'Giving free ₹5,000 treatments to creators whose followers live in other states and who never post.',
+                        icon: '❌'
+                      },
+                      {
+                        title: 'Zero Booking Tracking',
+                        label: 'Blind Spots',
+                        desc: 'No clear way to attribute a free treatment or campaign to actual bookings or paid walk-ins.',
+                        icon: '🛡️'
+                      }
+                    ].map((pain, pIdx) => (
+                      <div key={pIdx} className="bg-red-500/[0.02] border border-red-500/10 rounded-2xl p-4 flex flex-col justify-between min-h-[180px] hover:border-red-500/20 transition-all">
+                        <div className="flex justify-between items-start">
+                          <span className="text-xl">{pain.icon}</span>
+                          <span className="text-[7.5px] font-black uppercase tracking-widest text-red-400/80">{pain.label}</span>
+                        </div>
+                        <div className="mt-4 text-left">
+                          <p className="text-xs font-black uppercase text-white tracking-wide">{pain.title}</p>
+                          <p className="text-[9px] text-neutral-400 mt-1 leading-relaxed font-medium">{pain.desc}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="bg-amber-500/5 border border-amber-500/15 rounded-2xl p-3.5 text-center flex items-center justify-center gap-2">
+                    <Sparkles className="h-4 w-4 text-amber-400 animate-pulse shrink-0" />
+                    <p className="text-xs text-neutral-300 font-bold">
+                      <span className="text-amber-400 uppercase font-black">Creator Armour Fixes This:</span> We convert your empty slot capacity into geolocated local distribution.
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* PAGE 3: HOW IT WORKS & LOCAL MAP VISUALIZATION */}
+              {currentSlide === 2 && (
+                <div className="flex-1 flex flex-col justify-between z-10 relative">
+                  <div className="space-y-2">
+                    <div className="h-5 w-fit px-3 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center text-[9px] font-black uppercase tracking-wider">
+                      Hyperlocal Distribution
+                    </div>
+                    <h2 className="text-2xl md:text-3xl font-black uppercase italic tracking-tighter text-white">
+                      Targeting Local Women <span className="text-amber-400">Within 5km.</span>
+                    </h2>
+                    <p className="text-xs text-neutral-400 max-w-2xl font-medium">
+                      Instagram’s geotag pushes Reels to local women nearby. We match you with vetted creators who live within 5km.
+                    </p>
+                  </div>
+
+                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center my-auto py-2">
                     
-                    {/* Card 1: Local Matching with Instagram mini profile UI */}
-                    <div className="bg-white/[0.02] border border-white/5 rounded-2xl p-3 md:p-4 flex flex-col justify-between min-h-[220px] hover:border-amber-500/20 transition-colors relative overflow-hidden group">
-                      <div className="flex items-center justify-between">
-                        <span className="text-xl font-black text-amber-400/20">01</span>
-                        <span className="text-[7.5px] font-black uppercase tracking-widest text-amber-400/70 border border-amber-500/10 px-2 py-0.5 rounded bg-amber-500/5">📍 Geotagged Match</span>
-                      </div>
-                      
-                      {/* Mini Instagram Profile Layout */}
-                      <div className="bg-black/40 border border-white/5 rounded-xl p-2 space-y-1.5 relative overflow-hidden text-[8px] font-sans">
-                        <div className="flex items-center gap-1.5">
-                          <div className="w-5 h-5 rounded-full bg-amber-500/20 border border-amber-500/30 flex items-center justify-center text-[8px] font-black font-mono text-amber-400">C</div>
-                          <div className="flex-1 min-w-0">
-                            <p className="font-bold text-white leading-none truncate">@local.beauty</p>
-                            <p className="text-neutral-500 text-[6.5px]">Local • 25k followers</p>
-                          </div>
+                    {/* Concentric 5km Map Mockup */}
+                    <div className="lg:col-span-6 flex justify-center">
+                      <div className="w-full max-w-[340px] aspect-square bg-[#050505] border border-amber-500/20 rounded-3xl relative overflow-hidden flex items-center justify-center shadow-xl">
+                        
+                        {/* Map Grid Background */}
+                        <div className="absolute inset-0 bg-[linear-gradient(rgba(245,158,11,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(245,158,11,0.02)_1px,transparent_1px)] bg-[size:20px_20px]" />
+                        
+                        {/* Concentric rings */}
+                        <div className="absolute w-[80%] h-[80%] border border-dashed border-amber-500/10 rounded-full flex items-center justify-center">
+                          <span className="absolute top-2 text-[7px] font-mono text-neutral-600 tracking-wider">5KM RADIUS</span>
                         </div>
-                        <div className="grid grid-cols-3 gap-1">
-                          <div className="aspect-square bg-neutral-800 rounded border border-white/5 overflow-hidden">
-                            <img src="/images/salon/before_after.png" className="w-full h-full object-cover opacity-60" />
-                          </div>
-                          <div className="aspect-square bg-neutral-800 rounded border border-white/5 overflow-hidden">
-                            <img src="/images/salon/creator_filming.png" className="w-full h-full object-cover opacity-60" />
-                          </div>
-                          <div className="aspect-square bg-neutral-800 rounded border border-white/5 flex flex-col items-center justify-center gap-0.5 bg-gradient-to-br from-amber-500/10 to-yellow-600/10">
-                            <MapPin className="h-2 w-2 text-amber-400" />
-                            <span className="text-[5.5px] font-bold text-neutral-400 uppercase tracking-tight">Nearby (5km)</span>
-                          </div>
+                        <div className="absolute w-[50%] h-[50%] border border-dashed border-amber-500/20 rounded-full flex items-center justify-center">
+                          <span className="absolute top-2 text-[7px] font-mono text-neutral-500 tracking-wider">2KM ZONE</span>
                         </div>
-                      </div>
 
-                      <div className="mt-2">
-                        <p className="text-xs font-black uppercase text-white tracking-wide">Local Matching</p>
-                        <p className="text-[9.5px] text-neutral-400 mt-1 leading-relaxed font-medium">We match you with lifestyle creators nearby (within 5km of your salon).</p>
+                        {/* Central Salon Pin */}
+                        <div className="relative z-10 w-8 h-8 rounded-full bg-amber-500/20 border border-amber-500 flex items-center justify-center shadow-2xl animate-pulse">
+                          <MapPin className="h-4.5 w-4.5 text-amber-400 fill-amber-400/20" />
+                        </div>
+                        <span className="absolute z-10 translate-y-7 text-[8px] font-black uppercase tracking-widest text-white bg-black/85 px-1.5 py-0.5 rounded border border-amber-500/20">Aesthetic Salon</span>
+
+                        {/* Nearby Matched Creators */}
+                        <div className="absolute top-[22%] left-[18%] z-10 bg-black/90 border border-white/10 rounded-xl p-1 flex items-center gap-1 text-[7px] font-mono shadow-2xl">
+                          <div className="w-3.5 h-3.5 rounded-full bg-amber-500/30 flex items-center justify-center font-bold">C</div>
+                          <span className="text-amber-400">@lajpat.beauty (1.2km)</span>
+                        </div>
+                        <div className="absolute bottom-[28%] right-[12%] z-10 bg-black/90 border border-white/10 rounded-xl p-1 flex items-center gap-1 text-[7px] font-mono shadow-2xl">
+                          <div className="w-3.5 h-3.5 rounded-full bg-amber-500/30 flex items-center justify-center font-bold">C</div>
+                          <span className="text-amber-400">@south.ex.style (2.8km)</span>
+                        </div>
+                        <div className="absolute bottom-[65%] right-[22%] z-10 bg-black/90 border border-white/10 rounded-xl p-1 flex items-center gap-1 text-[7px] font-mono shadow-2xl">
+                          <div className="w-3.5 h-3.5 rounded-full bg-amber-500/30 flex items-center justify-center font-bold">C</div>
+                          <span className="text-amber-400">@gk2.lifestyle (0.8km)</span>
+                        </div>
                       </div>
                     </div>
 
-                    {/* Card 2: We Guide The Filming with mini phone view */}
-                    <div className="bg-white/[0.02] border border-white/5 rounded-2xl p-3 md:p-4 flex flex-col justify-between min-h-[220px] hover:border-amber-500/20 transition-colors relative overflow-hidden group">
-                      <div className="flex items-center justify-between">
-                        <span className="text-xl font-black text-amber-400/20">02</span>
-                        <span className="text-[7.5px] font-black uppercase tracking-widest text-amber-400/70 border border-amber-500/10 px-2 py-0.5 rounded bg-amber-500/5">📸 Reels Shot Guide</span>
-                      </div>
-
-                      {/* Mini Reels recording view */}
-                      <div className="bg-black/50 border border-white/5 rounded-xl p-1.5 relative overflow-hidden flex flex-col justify-between aspect-[16/9] w-full my-1.5">
-                        <div className="absolute inset-0 bg-neutral-950/20" />
-                        <img src="/images/salon/creator_filming.png" className="absolute inset-0 w-full h-full object-cover opacity-30 filter blur-[0.5px]" />
-                        
-                        <div className="relative z-10 flex justify-between items-center text-[6px] font-mono">
-                          <span className="text-neutral-400 font-bold uppercase flex items-center gap-0.5">
-                            <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse inline-block" /> REC
+                    {/* Operational match timeline */}
+                    <div className="lg:col-span-6 space-y-3.5 text-left">
+                      {[
+                        { title: 'Local Creator Match', label: 'Hyperlocal Geotag', text: 'Vetted beauty creators living or working within 5km of your salon coordinates.' },
+                        { title: ' directed script guide', label: 'High Dopamine ASMR', text: 'We direct creator close-ups, satisfying treatments, transformation hooks. No front-desk effort.' },
+                        { title: 'Mon-Thu slot visits', label: 'Quiet Hour fill', text: 'Creators book slow weekday mornings. Empty chairs become booking machines.' },
+                        { title: 'WhatsApp tracking', label: 'ROI attribution', text: 'Booking inquiries land directly on WhatsApp with dynamic referral tags.' }
+                      ].map((item, idx) => (
+                        <div key={idx} className="flex gap-3 bg-white/[0.01] border border-white/5 p-3 rounded-2xl">
+                          <span className="h-6 w-6 rounded-full bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-xs font-black text-amber-400 shrink-0 font-mono">
+                            {idx + 1}
                           </span>
-                          <span className="text-neutral-400">HD 60FPS</span>
-                        </div>
-                        
-                        <div className="relative z-10 bg-white/5 backdrop-blur-md rounded border border-white/10 p-1 flex items-center gap-1.5 text-[6px]">
-                          <Sparkles className="h-2 w-2 text-amber-400 shrink-0 animate-spin-slow" />
-                          <span className="text-neutral-300 font-sans leading-tight">Concept: Serum Glow Close-Up</span>
-                        </div>
-                      </div>
-
-                      <div className="mt-2">
-                        <p className="text-xs font-black uppercase text-white tracking-wide">We Guide Filming</p>
-                        <p className="text-[9.5px] text-neutral-400 mt-1 leading-relaxed font-medium">We direct creators exactly what to film for highly satisfying visual dopamine.</p>
-                      </div>
-                    </div>
-
-                    {/* Card 3: Quiet Slot Visits with empty vs creator split */}
-                    <div className="bg-white/[0.02] border border-white/5 rounded-2xl p-3 md:p-4 flex flex-col justify-between min-h-[220px] hover:border-amber-500/20 transition-colors relative overflow-hidden group">
-                      <div className="flex items-center justify-between">
-                        <span className="text-xl font-black text-amber-400/20">03</span>
-                        <span className="text-[7.5px] font-black uppercase tracking-widest text-amber-400/70 border border-amber-500/10 px-2 py-0.5 rounded bg-amber-500/5">💺 Mon-Thu chair fill</span>
-                      </div>
-
-                      {/* Split Empty vs Creator chair monetized */}
-                      <div className="grid grid-cols-2 gap-1.5 text-[7px] font-mono my-1">
-                        <div className="bg-red-950/10 border border-red-500/10 rounded-xl p-1 text-center flex flex-col justify-between min-h-[64px]">
-                          <p className="text-neutral-500 uppercase tracking-widest text-[5px]">Mon-Thu AM</p>
-                          <div className="my-1 flex justify-center text-red-400/30">
-                            <Users className="h-3 w-3" />
-                          </div>
-                          <p className="text-[7px] font-black text-red-400 leading-none">0% Booked</p>
-                        </div>
-                        <div className="bg-amber-500/5 border border-amber-500/20 rounded-xl p-1 text-center flex flex-col justify-between min-h-[64px] relative overflow-hidden">
-                          <img src="/images/salon/hair_transformation.png" className="absolute inset-0 w-full h-full object-cover opacity-25 filter blur-[0.5px]" />
-                          <p className="relative z-10 text-amber-400 uppercase tracking-widest text-[5px]">Chair Filmed</p>
-                          <div className="relative z-10 my-0.5 text-emerald-400 font-sans font-black text-[8px] flex items-center justify-center gap-0.5 animate-bounce">
-                            +18k Views
-                          </div>
-                          <p className="relative z-10 text-[7px] font-black text-emerald-400 leading-none">Monetized</p>
-                        </div>
-                      </div>
-
-                      <div className="mt-2">
-                        <p className="text-xs font-black uppercase text-white tracking-wide">Quiet Slot Visits</p>
-                        <p className="text-[9.5px] text-neutral-400 mt-1 leading-relaxed font-medium">Creators visit during slow weekday hours, turning empty slots into distribution.</p>
-                      </div>
-                    </div>
-
-                    {/* Card 4: Track Bookings with WhatsApp screenshot mockup */}
-                    <div className="bg-white/[0.02] border border-white/5 rounded-2xl p-4 flex flex-col justify-between min-h-[220px] hover:border-amber-500/20 transition-colors relative overflow-hidden group">
-                      <div className="flex items-center justify-between">
-                        <span className="text-xl font-black text-amber-400/20">04</span>
-                        <span className="text-[7.5px] font-black uppercase tracking-widest text-amber-400/70 border border-amber-500/10 px-2 py-0.5 rounded bg-amber-500/5">💬 direct inquiries</span>
-                      </div>
-
-                      {/* Mini WhatsApp screenshot and Booking status */}
-                      <div className="space-y-1 my-1">
-                        <div className="bg-[#128C7E]/10 border border-[#25D366]/20 rounded-xl p-1.5 flex items-center gap-1.5 text-neutral-300 font-sans leading-tight text-[6px]">
-                          <MessageSquare className="h-2.5 w-2.5 text-[#25D366] shrink-0 fill-[#25D366]/10" />
                           <div>
-                            <p className="text-[#25D366] font-bold text-[5.5px] leading-none uppercase">WhatsApp Lead</p>
-                            <p className="italic mt-0.5">“Saw your Reel! Do you have slot tomorrow?”</p>
+                            <p className="text-xs font-black uppercase text-white tracking-wide">{item.title}</p>
+                            <p className="text-[9px] font-black uppercase text-amber-400/80 font-mono mt-0.5">{item.label}</p>
+                            <p className="text-[10px] text-neutral-400 leading-normal mt-1 font-medium">{item.text}</p>
                           </div>
                         </div>
-                        <div className="bg-neutral-900 border border-white/5 rounded-xl p-1 flex items-center justify-between text-neutral-400 text-[6px] font-mono">
-                          <span className="font-bold">📅 WED 11 AM</span>
-                          <span className="px-1 py-0.2 rounded bg-emerald-500/20 text-emerald-400 font-bold uppercase text-[5px] border border-emerald-500/25">BOOKED</span>
-                        </div>
-                      </div>
-
-                      <div className="mt-2">
-                        <p className="text-xs font-black uppercase text-white tracking-wide">Track Bookings</p>
-                        <p className="text-[9.5px] text-neutral-400 mt-1 leading-relaxed font-medium">We track dynamic booking inquiries directly, showing your exact barter ROI.</p>
-                      </div>
+                      ))}
                     </div>
 
                   </div>
 
                   <div className="text-[10px] font-bold text-neutral-500 text-center uppercase tracking-widest">
-                    🎯 No monthly agency retainers • 100% managed execution • Zero front desk friction
+                    🎯 Concentric targeting allows organic distribution directly to high-intent women in your exact neighborhood.
                   </div>
                 </div>
               )}
 
-              {/* PAGE 3: ECONOMICS formula */}
-              {currentSlide === 2 && (
+              {/* PAGE 4: BARTER ECONOMICS & VISUAL ROI FLOW */}
+              {currentSlide === 3 && (
                 <div className="flex-1 flex flex-col justify-between z-10 relative">
                   <div className="space-y-1">
                     <div className="h-5 w-fit px-3 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center text-[9px] font-black uppercase tracking-wider">
-                      Chair Monetization Math
+                      Barter Math
                     </div>
                     <h2 className="text-2xl md:text-3xl font-black uppercase italic tracking-tighter text-white">
-                      Why Barter Is Your <span className="text-amber-400">Cheapest Bookings Engine.</span>
+                      Unused Chair Monetization: <span className="text-amber-400">The Visual ROI.</span>
                     </h2>
                   </div>
 
                   <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center my-auto py-2">
                     
-                    {/* Left side: Interactive Margin Calculator & Comparative Chart */}
+                    {/* Left: Slider Calculator */}
                     <div className="lg:col-span-6 space-y-4">
                       <div className="bg-amber-400/5 border border-amber-500/20 rounded-2xl p-5 space-y-4">
                         <p className="text-xs font-black uppercase tracking-wider text-amber-400 flex items-center gap-1.5">
-                          <Percent className="h-4 w-4" /> Live Barter Cost Breakdown
+                          <Percent className="h-4 w-4 animate-spin-slow" /> Interactive Barter Calculator
                         </p>
                         
-                        <div className="space-y-3">
-                          {/* Retail Slider */}
+                        <div className="space-y-3 font-mono">
                           <div className="space-y-1">
                             <div className="flex justify-between items-center text-xs">
-                              <span className="text-neutral-400 uppercase tracking-wider text-[8.5px] font-bold">Treatment Retail Value</span>
-                              <span className="text-white font-black">₹{treatmentValue}</span>
+                              <span className="text-neutral-400 uppercase tracking-wider text-[8.5px] font-black">Treatment Retail Value</span>
+                              <span className="text-white font-black text-xs">₹{treatmentValue.toLocaleString('en-IN')}</span>
                             </div>
                             <input 
                               type="range" 
@@ -812,15 +779,14 @@ const SalonProposalDeck = () => {
                               step="500"
                               value={treatmentValue}
                               onChange={(e) => setTreatmentValue(Number(e.target.value))}
-                              className="w-full accent-amber-500 bg-neutral-900 h-1 rounded-lg appearance-none cursor-pointer"
+                              className="w-full accent-amber-500 bg-neutral-900 h-1.5 rounded-lg appearance-none cursor-pointer"
                             />
                           </div>
 
-                          {/* Ingredient Percent Slider */}
                           <div className="space-y-1">
                             <div className="flex justify-between items-center text-xs">
-                              <span className="text-neutral-400 uppercase tracking-wider text-[8.5px] font-bold">Raw Material/Ingredient Cost</span>
-                              <span className="text-amber-400 font-black">{ingredientCostPercent}%</span>
+                              <span className="text-neutral-400 uppercase tracking-wider text-[8.5px] font-black">Raw Cost Percentage</span>
+                              <span className="text-amber-400 font-black text-xs">{ingredientCostPercent}%</span>
                             </div>
                             <input 
                               type="range" 
@@ -829,52 +795,14 @@ const SalonProposalDeck = () => {
                               step="1"
                               value={ingredientCostPercent}
                               onChange={(e) => setIngredientCostPercent(Number(e.target.value))}
-                              className="w-full accent-amber-500 bg-neutral-900 h-1 rounded-lg appearance-none cursor-pointer"
+                              className="w-full accent-amber-500 bg-neutral-900 h-1.5 rounded-lg appearance-none cursor-pointer"
                             />
                           </div>
                         </div>
 
-                        {/* Comparative Visual Bars */}
-                        <div className="space-y-2 border-t border-white/5 pt-3">
-                          <p className="text-[8.5px] font-black uppercase text-neutral-500 tracking-wider">Visual Leverage comparison</p>
-                          
-                          {/* Raw material cost bar */}
-                          <div className="space-y-1">
-                            <div className="flex justify-between text-[8px] font-mono text-neutral-400">
-                              <span>Raw Ingredient Cost (₹{realBarterCost})</span>
-                              <span>{ingredientCostPercent}%</span>
-                            </div>
-                            <div className="h-2 bg-neutral-900 rounded-full overflow-hidden">
-                              <div className="h-full bg-red-500/80 rounded-full" style={{ width: `${ingredientCostPercent}%` }} />
-                            </div>
-                          </div>
-
-                          {/* Retail value bar */}
-                          <div className="space-y-1">
-                            <div className="flex justify-between text-[8px] font-mono text-neutral-400">
-                              <span>Retail Booking price (₹{treatmentValue})</span>
-                              <span>100% Value</span>
-                            </div>
-                            <div className="h-2 bg-neutral-900 rounded-full overflow-hidden">
-                              <div className="h-full bg-gradient-to-r from-amber-500 to-yellow-600 rounded-full" style={{ width: '60%' }} />
-                            </div>
-                          </div>
-
-                          {/* expected bookings return bar */}
-                          <div className="space-y-1">
-                            <div className="flex justify-between text-[8px] font-mono text-emerald-400">
-                              <span>Est. Bookings Revenue (₹{Math.round(treatmentValue * 4.2)})</span>
-                              <span>420% ROI leverage</span>
-                            </div>
-                            <div className="h-2 bg-neutral-900 rounded-full overflow-hidden">
-                              <div className="h-full bg-emerald-500 rounded-full animate-pulse" style={{ width: '100%' }} />
-                            </div>
-                          </div>
-                        </div>
-
-                        <div className="border-t border-white/5 pt-2 grid grid-cols-2 gap-2 text-center bg-black/40 p-2.5 rounded-xl">
+                        <div className="border-t border-white/5 pt-3 grid grid-cols-2 gap-2 text-center bg-black/40 p-2.5 rounded-xl">
                           <div>
-                            <p className="text-[8px] font-black uppercase text-neutral-500 tracking-wider">Your Raw cost</p>
+                            <p className="text-[8px] font-black uppercase text-neutral-500 tracking-wider">Your Raw Cost</p>
                             <p className="text-base font-black text-white mt-0.5">₹{realBarterCost}</p>
                           </div>
                           <div>
@@ -885,427 +813,397 @@ const SalonProposalDeck = () => {
                       </div>
                     </div>
 
-                    {/* Right side: Reels analytics and verified comments proof */}
-                    <div className="lg:col-span-6 space-y-3">
-                      
-                      {/* Simulated Instagram Reels Analytics Panel */}
-                      <div className="bg-[#120d03] border border-amber-500/25 rounded-2xl p-4 relative overflow-hidden">
-                        <div className="absolute top-0 right-0 p-1 bg-amber-500/10 text-amber-400 text-[6.5px] font-black uppercase tracking-widest border-b border-l border-amber-500/25 rounded-bl-lg font-mono">
-                          Reel performance stats
-                        </div>
-                        <p className="text-[8.5px] font-black uppercase text-neutral-400 mb-2 font-mono flex items-center gap-1 text-amber-400">
-                          <Instagram className="h-3 w-3" /> Live Instagram metrics
-                        </p>
-                        <div className="grid grid-cols-4 gap-2 text-center">
-                          <div className="bg-black/50 p-2 rounded-xl border border-white/5">
-                            <p className="text-[7.5px] font-black uppercase text-neutral-500">Reach Views</p>
-                            <p className="text-sm font-black text-white mt-0.5">82k</p>
-                          </div>
-                          <div className="bg-black/50 p-2 rounded-xl border border-white/5">
-                            <p className="text-[7.5px] font-black uppercase text-neutral-500 flex items-center justify-center gap-0.5">
-                              <Heart className="h-2 w-2 text-red-500 fill-red-500 shrink-0" /> Likes
-                            </p>
-                            <p className="text-sm font-black text-amber-400 mt-0.5">4.1k</p>
-                          </div>
-                          <div className="bg-black/50 p-2 rounded-xl border border-white/5">
-                            <p className="text-[7.5px] font-black uppercase text-neutral-500 flex items-center justify-center gap-0.5">
-                              <BookmarkCheck className="h-2 w-2 text-amber-400 shrink-0" /> Saves
-                            </p>
-                            <p className="text-sm font-black text-amber-400 mt-0.5">137</p>
-                          </div>
-                          <div className="bg-black/50 p-2 rounded-xl border border-white/5">
-                            <p className="text-[7.5px] font-black uppercase text-neutral-500">Bookings</p>
-                            <p className="text-sm font-black text-emerald-400 mt-0.5">14</p>
-                          </div>
-                        </div>
-                      </div>
+                    {/* Right: Visual ROI chain flow */}
+                    <div className="lg:col-span-6 space-y-4">
+                      <p className="text-amber-400 text-xs font-black uppercase tracking-wider text-left font-mono">
+                        📈 Visual ROI chain
+                      </p>
 
-                      {/* Local comments visual panel - SELLS HARDER than anything */}
-                      <div className="bg-neutral-900 border border-white/10 rounded-2xl p-4 space-y-3 font-sans relative">
-                        <p className="text-amber-400 text-[8px] font-black uppercase tracking-widest border-b border-white/5 pb-1">
-                          💬 High-Intent Local Comments (within 5km)
-                        </p>
-                        <div className="space-y-2 text-[9px] max-h-[110px] overflow-y-auto scrollbar-thin">
-                          <p className="text-neutral-300 font-medium leading-tight">
-                            <span className="text-white font-bold">@priya_kapoor:</span> "Where is this salon located? GK-2? Need to book this hydrafacial before my wedding next week! 😭👰‍♀️"
-                          </p>
-                          <p className="text-neutral-300 font-medium leading-tight">
-                            <span className="text-white font-bold">@diksha.sharma:</span> "Price list please? That ASMR head wash scalp steam halo looks so heavenly! 😍"
-                          </p>
-                          <p className="text-neutral-300 font-medium leading-tight">
-                            <span className="text-white font-bold">@ria.oberoi:</span> "Do you have slots open for nail gel art this Thursday at your South Ext branch?"
-                          </p>
-                          <p className="text-neutral-300 font-medium leading-tight text-neutral-400">
-                            <span className="text-neutral-300 font-bold">@nisha_grover:</span> "Love this custom art, sending you a DM to book nail extensions today!"
-                          </p>
-                        </div>
-                      </div>
-
-                      <div className="bg-black/40 border border-white/5 rounded-2xl p-3.5 space-y-1 text-center">
-                        <p className="text-[9.5px] text-neutral-300 font-bold italic">
-                          "Meta ads burn money after 24 hours. Reels keep bringing bookings for weeks."
-                        </p>
+                      <div className="bg-neutral-900/60 border border-white/5 rounded-3xl p-5 space-y-4 text-left">
+                        {[
+                          { title: '1 Premium Treatment', label: `₹${realBarterCost} Raw Material Cost` },
+                          { title: '1 Directed Creator Reel', label: 'Macro satisfying video scripts' },
+                          { title: '82,000 geotargeted reach', label: 'Local women within 5km radius' },
+                          { title: '14 direct client bookings', label: 'Dynamic WhatsApp intake attribution' },
+                          { title: `₹${(treatmentValue * 14).toLocaleString('en-IN')} net bookings value`, label: 'Significant ROI leverage', highlight: true }
+                        ].map((step, idx) => (
+                          <div key={idx} className="relative flex items-start gap-3">
+                            {/* Line connecting steps */}
+                            {idx < 4 && (
+                              <div className="absolute left-2.5 top-6 bottom-0 w-[1px] bg-amber-500/10 z-0 h-4" />
+                            )}
+                            <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-black shrink-0 relative z-10 ${
+                              step.highlight 
+                                ? 'bg-emerald-500 text-black animate-bounce' 
+                                : 'bg-amber-500/10 border border-amber-500/20 text-amber-400 font-mono'
+                            }`}>
+                              {idx === 4 ? '₹' : idx + 1}
+                            </span>
+                            <div className="min-w-0">
+                              <p className={`text-xs font-black uppercase tracking-wide leading-none ${step.highlight ? 'text-emerald-400 font-black' : 'text-white'}`}>
+                                {step.title}
+                              </p>
+                              <p className="text-[9px] text-neutral-500 font-medium font-mono mt-0.5">{step.label}</p>
+                            </div>
+                          </div>
+                        ))}
                       </div>
                     </div>
+
                   </div>
 
                   <div className="text-[10px] font-bold text-neutral-500 text-center uppercase tracking-widest">
-                    💡 Spend raw ingredients • Receive geolocated distribution reaching local women within 5km of your door
+                    💡 Spend raw ingredients • Receive geolocated distribution reaching local women within 5km of your door.
                   </div>
                 </div>
               )}
 
-              {/* PAGE 4: REEL BLUEPRINTS (VISUAL HEAVEN) */}
-              {currentSlide === 3 && (
+              {/* PAGE 5: REEL BLUEPRINTS & WHY REELS WORK */}
+              {currentSlide === 4 && (
                 <div className="flex-1 flex flex-col justify-between z-10 relative">
                   <div className="space-y-1">
                     <div className="h-5 w-fit px-3 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center text-[9px] font-black uppercase tracking-wider">
-                      Reel Blueprints (Visual Heaven)
+                      satisfying blue prints
                     </div>
                     <h2 className="text-2xl md:text-3xl font-black uppercase italic tracking-tighter text-white">
-                      Reel concepts that <span className="text-amber-400">actually work for salons.</span>
+                      Reel Concepts & <span className="text-amber-400">Why They Perform.</span>
                     </h2>
                   </div>
 
                   <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch my-auto py-2">
                     
-                    {/* Navigation Tabs of Niches */}
-                    <div className="lg:col-span-4 flex flex-col gap-1.5 justify-center">
-                      {salonNiches.map((niche, idx) => (
-                        <button
-                          key={idx}
-                          onClick={() => setActiveNicheIndex(idx)}
-                          className={`w-full p-2.5 rounded-xl text-left border transition-all text-xs font-bold uppercase tracking-wider ${
-                            activeNicheIndex === idx 
-                              ? 'bg-amber-400/10 border-amber-400/30 text-amber-400 shadow-[0_0_8px_rgba(245,158,11,0.1)]'
-                              : 'bg-transparent border-transparent text-neutral-400 hover:text-neutral-200 hover:bg-white/[0.01]'
-                          }`}
-                        >
-                          {niche.title.split(' / ')[0]}
-                        </button>
+                    {/* Left: Why Reels Work visual blocks */}
+                    <div className="lg:col-span-5 flex flex-col gap-2.5 justify-center text-left">
+                      <p className="text-amber-400 text-xs font-black uppercase tracking-wider font-mono mb-1">
+                        ⚡ Why Reels outperform ads
+                      </p>
+                      {[
+                        { title: 'Pure ASMR Dopamine', desc: 'Satisfying sounds (hydro-vacuum clicks, basin washing) capture attention instantly.' },
+                        { title: 'Transformation-Driven', desc: 'Desi skin concerns (monsoon frizz, tan lines) transforming to perfect glowing skin tone.' },
+                        { title: 'High Save Psychology', desc: 'Indian women bookmark beauty transformation Reels to refer back before weddings and festivals.' },
+                        { title: 'organic Local push', desc: 'Instagram geotags organically serve locally shot Reels to nearby neighborhood residents.' }
+                      ].map((item, keyIdx) => (
+                        <div key={keyIdx} className="bg-white/[0.01] border border-white/5 rounded-2xl p-3">
+                          <p className="text-xs font-black uppercase text-white tracking-wide">{item.title}</p>
+                          <p className="text-[9.5px] text-neutral-400 mt-0.5 leading-relaxed font-medium">{item.desc}</p>
+                        </div>
                       ))}
                     </div>
 
-                    {/* Detailed Concept Detail Card with AI image asset embedding */}
-                    <div className="lg:col-span-8 bg-neutral-900/40 border border-white/5 rounded-3xl p-5 flex flex-col justify-between min-h-[300px]">
-                      <div className="space-y-3 flex-1 flex flex-col justify-between">
-                        <div className="flex justify-between items-center border-b border-white/5 pb-2">
-                          <span className="text-xs font-black uppercase tracking-widest text-amber-400">{salonNiches[activeNicheIndex].title}</span>
-                          <span className="text-[9px] font-black uppercase text-neutral-500 bg-neutral-950 px-2 py-0.5 rounded-md">
-                            Barter Cost: {salonNiches[activeNicheIndex].barterCost} (Retail: {salonNiches[activeNicheIndex].retail})
-                          </span>
+                    {/* Right: Niche Blueprints Tabs & Mock Video Preview */}
+                    <div className="lg:col-span-7 bg-neutral-900 border border-white/10 rounded-3xl p-5 flex flex-col justify-between">
+                      
+                      <div className="flex overflow-x-auto gap-1 border-b border-white/5 pb-2 scrollbar-none">
+                        {salonNiches.map((niche, idx) => (
+                          <button
+                            key={idx}
+                            onClick={() => setActiveNicheIndex(idx)}
+                            className={`px-3 py-1.5 rounded-xl border text-[9px] font-black uppercase tracking-wider shrink-0 transition-all ${
+                              activeNicheIndex === idx 
+                                ? 'bg-amber-400/10 border-amber-400/30 text-amber-400 shadow-[0_0_8px_rgba(245,158,11,0.1)]'
+                                : 'bg-transparent border-transparent text-neutral-500 hover:text-neutral-300'
+                            }`}
+                          >
+                            {niche.title.split(' / ')[0]}
+                          </button>
+                        ))}
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-12 gap-4 flex-1 items-center mt-4">
+                        <div className="md:col-span-7 space-y-3 text-left">
+                          <div>
+                            <span className="text-[9px] font-black uppercase text-neutral-500 bg-neutral-950 px-2 py-0.5 rounded-md border border-white/5 font-mono">
+                              Barter Cost: {salonNiches[activeNicheIndex].barterCost} (Retail: {salonNiches[activeNicheIndex].retail})
+                            </span>
+                            <p className="text-xs font-black text-amber-400 leading-none uppercase mt-2">{salonNiches[activeNicheIndex].hook}</p>
+                          </div>
+                          
+                          <p className="text-[10px] text-neutral-400 leading-relaxed font-medium">
+                            {salonNiches[activeNicheIndex].script}
+                          </p>
+
+                          <div className="bg-black/20 rounded-xl p-2.5 border border-white/5 text-[9px] text-neutral-400 font-medium leading-relaxed font-sans">
+                            {salonNiches[activeNicheIndex].dopamineDesc}
+                          </div>
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-12 gap-4 flex-1 items-center">
-                          <div className="md:col-span-6 space-y-2.5">
-                            <div>
-                              <p className="text-[9px] font-black uppercase tracking-wider text-neutral-500 font-mono">Creative Hook Concept</p>
-                              <p className="text-xs font-bold text-white leading-tight italic">"{salonNiches[activeNicheIndex].hook}"</p>
-                            </div>
-                            
-                            <div>
-                              <p className="text-[9px] font-black uppercase tracking-wider text-neutral-500 font-mono">The Video Concept</p>
-                              <p className="text-[10px] text-neutral-400 leading-relaxed font-medium">
-                                {salonNiches[activeNicheIndex].script}
-                              </p>
-                            </div>
-
-                            <div className="bg-black/20 rounded-xl p-2.5 border border-white/5 text-[8.5px] text-neutral-300 font-medium font-sans">
-                              {salonNiches[activeNicheIndex].dopamineDesc}
-                            </div>
+                        <div className="md:col-span-5 flex flex-col gap-2">
+                          <div className="relative rounded-2xl border border-amber-500/15 overflow-hidden aspect-[4/3] max-h-[140px] flex items-center justify-center bg-black/60 shadow-xl">
+                            <img 
+                              src={
+                                activeNicheIndex === 0 
+                                  ? "/images/salon/before_after.png"
+                                  : activeNicheIndex === 1
+                                  ? "/images/salon/nail_extension.png"
+                                  : activeNicheIndex === 2
+                                  ? "/images/salon/hair_transformation.png"
+                                  : activeNicheIndex === 3
+                                  ? "/images/salon/scalp_steam.png"
+                                  : "/images/salon/before_after.png"
+                              } 
+                              alt={salonNiches[activeNicheIndex].title} 
+                              className="w-full h-full object-cover opacity-90 select-none scale-105"
+                            />
+                            <div className="absolute inset-0 bg-black/20" />
                           </div>
 
-                          <div className="md:col-span-6 flex flex-col gap-2 h-full justify-between">
-                            {/* satisfying high-fidelity images integration based on Niche index */}
-                            <div className="relative rounded-2xl border border-amber-500/15 overflow-hidden aspect-[4/3] max-h-[150px] flex items-center justify-center bg-black/60 shadow-xl group">
-                              <img 
-                                src={
-                                  activeNicheIndex === 0 
-                                    ? "/images/salon/before_after.png"
-                                    : activeNicheIndex === 1
-                                    ? "/images/salon/nail_extension.png"
-                                    : activeNicheIndex === 2
-                                    ? "/images/salon/hair_transformation.png"
-                                    : activeNicheIndex === 3
-                                    ? "/images/salon/scalp_steam.png"
-                                    : "/images/salon/before_after.png" // fallback
-                                } 
-                                alt={salonNiches[activeNicheIndex].title} 
-                                className="w-full h-full object-cover opacity-90 select-none group-hover:scale-105 transition-transform duration-[6000ms]"
-                              />
-                              <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                                <span className="h-8 w-8 rounded-full bg-amber-400 text-black flex items-center justify-center font-bold shadow-lg transform scale-90 group-hover:scale-100 transition-transform">
-                                  <Play className="h-4.5 w-4.5 fill-black text-black ml-0.5" />
-                                </span>
-                              </div>
-                              <div className="absolute bottom-0 inset-x-0 bg-black/85 px-2 py-1 text-[7.5px] font-mono text-center text-amber-400 font-bold border-t border-white/5">
-                                Satisfying visual dopamine = High saves/bookmarks
-                              </div>
+                          <div className="bg-black/50 rounded-xl p-2.5 space-y-1 font-mono text-[7.5px] text-left">
+                            <div className="flex justify-between text-neutral-400 border-b border-white/5 pb-0.5">
+                              <span>Reel Reach:</span>
+                              <span className="text-white font-black">{salonNiches[activeNicheIndex].reelPreset.views}</span>
                             </div>
-
-                            {/* Direct Booking & Saves proof highlights */}
-                            <div className="bg-black/50 rounded-xl p-2.5 space-y-1 font-mono text-[8px]">
-                              <div className="flex justify-between text-neutral-400 border-b border-white/5 pb-0.5">
-                                <span>Reel Reach:</span>
-                                <span className="text-white font-black">{salonNiches[activeNicheIndex].reelPreset.views}</span>
-                              </div>
-                              <div className="flex justify-between text-neutral-400 border-b border-white/5 pb-0.5">
-                                <span>Saves (Bookmarks):</span>
-                                <span className="text-amber-400 font-black">{salonNiches[activeNicheIndex].reelPreset.shares}</span>
-                              </div>
-                              <div className="flex justify-between text-neutral-400">
-                                <span>Direct Bookings:</span>
-                                <span className="text-emerald-400 font-black">{salonNiches[activeNicheIndex].reelPreset.directBookings}</span>
-                              </div>
+                            <div className="flex justify-between text-neutral-400 border-b border-white/5 pb-0.5">
+                              <span>Saves (Bookmarks):</span>
+                              <span className="text-amber-400 font-black">{salonNiches[activeNicheIndex].reelPreset.shares}</span>
+                            </div>
+                            <div className="flex justify-between text-neutral-400">
+                              <span>Direct Bookings:</span>
+                              <span className="text-emerald-400 font-black">{salonNiches[activeNicheIndex].reelPreset.directBookings}</span>
                             </div>
                           </div>
                         </div>
                       </div>
 
-                      <div className="text-[9px] font-bold text-neutral-400 uppercase tracking-widest pt-2 border-t border-white/5 mt-1 font-sans">
-                        💡 Save/Share Psychology: Women save these Reels to book later before weddings, parties & vacations.
-                      </div>
                     </div>
-
                   </div>
 
-                  <div className="text-[10px] font-bold text-neutral-500 text-center uppercase tracking-widest">
-                    🎯 Click any treatment above to see its custom creative concept & why it brings bookings
+                  <div className="text-[10px] font-black uppercase tracking-widest text-neutral-500 text-center">
+                    🎯 Click any treatment above to see its custom creative concept & performance stats.
                   </div>
                 </div>
               )}
 
-              {/* PAGE 5: TRUST PAGE (Vetting Dashboard Infrastructure) */}
-              {currentSlide === 4 && (
+              {/* PAGE 6: EXPECTED OUTCOMES & MATCHING CITIES */}
+              {currentSlide === 5 && (
                 <div className="flex-1 flex flex-col justify-between z-10 relative">
                   <div className="space-y-1">
                     <div className="h-5 w-fit px-3 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center text-[9px] font-black uppercase tracking-wider">
-                      Infrastructure Trust
+                      Target authority
                     </div>
                     <h2 className="text-2xl md:text-3xl font-black uppercase italic tracking-tighter text-white">
-                      We make sure <span className="text-amber-400">creators actually post.</span>
+                      Hyperlocal Matches & <span className="text-amber-400">Expected Outcomes.</span>
                     </h2>
                   </div>
 
-                  {/* Side-by-Side Vetting and comparison */}
-                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 my-auto py-2">
+                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch my-auto py-2">
                     
-                    {/* Failure items */}
-                    <div className="lg:col-span-5 bg-red-950/10 border border-red-500/20 rounded-2xl p-4 space-y-3 text-left">
-                      <p className="text-red-400 text-xs font-black uppercase tracking-wider flex items-center gap-1.5">
-                        <X className="h-4 w-4 shrink-0 animate-pulse" /> Why campaigns fail
-                      </p>
-                      <div className="space-y-2.5 text-[9px] text-neutral-400">
-                        <p className="flex items-start gap-2"><span className="text-red-400 font-bold shrink-0">❌</span> <span><strong className="text-neutral-200">Random college influencers:</strong> Zero local target authority or booking conversion.</span></p>
-                        <p className="flex items-start gap-2"><span className="text-red-400 font-bold shrink-0">❌</span> <span><strong className="text-neutral-200">No hyperlocal geotargeting:</strong> Reel views come from random states instead of women within 5km radius.</span></p>
-                        <p className="flex items-start gap-2"><span className="text-red-400 font-bold shrink-0">❌</span> <span><strong className="text-neutral-200">No ROI tracking:</strong> Free treatments are wasted with zero measured bookings.</span></p>
-                        <p className="flex items-start gap-2"><span className="text-red-400 font-bold shrink-0">❌</span> <span><strong className="text-neutral-200">Creators ghost:</strong> Creators receive a free ₹5,000 service and simply never post.</span></p>
+                    {/* Left: Expected outcomes box (CONVERSION DRIVER) */}
+                    <div className="lg:col-span-5 bg-neutral-900 border border-amber-500/20 rounded-3xl p-5 flex flex-col justify-between text-left">
+                      <div>
+                        <p className="text-amber-400 text-xs font-black uppercase tracking-wider font-mono flex items-center gap-1.5">
+                          <TrendingUp className="h-4 w-4 shrink-0 animate-pulse" /> Expected Booking Metrics
+                        </p>
+                        <p className="text-[9.5px] text-neutral-400 leading-normal mt-2 font-medium">
+                          We prioritize transparency and long-term trust. Here are the average realistic outcomes generated from 1 local creator collaboration:
+                        </p>
+                      </div>
+
+                      <div className="space-y-3 font-mono my-4">
+                        {[
+                          { title: 'Geotargeted Reach', val: '5k – 80k Views', sub: 'High-intent local women within 5km radius' },
+                          { title: 'WhatsApp Inquiries', val: '3 – 15 Chats', sub: 'Direct DMs or catalog clicks' },
+                          { title: 'Confirmed Bookings', val: '1 – 8 Bookings', sub: 'Tracked via custom slot promo codes' },
+                          { title: 'Peak Seasons', val: 'Weddings & Festivals', sub: 'Highest velocity during shaadi & Diwali months' }
+                        ].map((stat, idx) => (
+                          <div key={idx} className="flex justify-between items-center border-b border-white/5 pb-2">
+                            <div>
+                              <p className="text-[10px] font-black text-white uppercase tracking-wider">{stat.title}</p>
+                              <p className="text-[8px] text-neutral-500 leading-none mt-0.5">{stat.sub}</p>
+                            </div>
+                            <span className="text-xs font-black text-amber-400">{stat.val}</span>
+                          </div>
+                        ))}
+                      </div>
+
+                      <div className="bg-black/35 rounded-xl p-3 border border-white/5 text-[9px] text-neutral-400 leading-relaxed font-sans font-medium">
+                        Expected outcome conversions are highest when matching Satisfying ASMR sound syncs with slow weekday Mon-Thu mornings.
                       </div>
                     </div>
 
-                    {/* Vetting Dashboard Infrastructure panel */}
-                    <div className="lg:col-span-7 bg-neutral-900 border border-white/10 rounded-2xl p-4 shadow-xl text-xs font-mono relative">
-                      <div className="absolute top-0 right-0 p-1.5 bg-amber-400/10 text-amber-400 text-[8px] font-black uppercase tracking-widest border-b border-l border-white/10">
-                        Escrow & Vetting Infrastructure
+                    {/* Right: Who this is for & City lists */}
+                    <div className="lg:col-span-7 flex flex-col gap-4 justify-between text-left">
+                      
+                      {/* Who this is for list (filters bad leads) */}
+                      <div className="bg-white/[0.01] border border-white/5 rounded-3xl p-5 grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <p className="text-[9px] font-black uppercase tracking-widest text-emerald-400 font-mono">✓ Ideal Best Fit For</p>
+                          <div className="space-y-1.5 text-[10px] font-medium text-neutral-300 font-sans">
+                            <p className="flex items-center gap-1.5"><span className="text-emerald-400 font-bold">✓</span> Premium Salons</p>
+                            <p className="flex items-center gap-1.5"><span className="text-emerald-400 font-bold">✓</span> Bridal Makeup Studios</p>
+                            <p className="flex items-center gap-1.5"><span className="text-emerald-400 font-bold">✓</span> Aesthetic Nail Bars</p>
+                            <p className="flex items-center gap-1.5"><span className="text-emerald-400 font-bold">✓</span> Hydrafacial Skin Clinics</p>
+                          </div>
+                        </div>
+
+                        <div className="space-y-2">
+                          <p className="text-[9px] font-black uppercase tracking-widest text-red-400 font-mono">✕ Not Suitable For</p>
+                          <div className="space-y-1.5 text-[10px] font-medium text-neutral-400 font-sans">
+                            <p className="flex items-center gap-1.5"><span className="text-red-500 font-bold">✕</span> Budget Haircut Shops</p>
+                            <p className="flex items-center gap-1.5"><span className="text-red-500 font-bold">✕</span> Walk-in Only Salons</p>
+                            <p className="flex items-center gap-1.5"><span className="text-red-500 font-bold">✕</span> Mass Volume Shops</p>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Hyperlocal city tags */}
+                      <div className="bg-neutral-900 border border-white/10 rounded-3xl p-5 relative overflow-hidden">
+                        <span className="absolute top-0 right-0 p-1.5 bg-amber-400/10 text-amber-400 text-[7px] font-black uppercase tracking-widest border-b border-l border-white/10 font-mono">
+                          Active locations
+                        </span>
+                        <p className="text-xs font-black uppercase text-white tracking-wide mb-2">Supported Hyperlocal Zones</p>
+                        <div className="flex flex-wrap gap-1.5">
+                          {['Delhi NCR', 'Mumbai', 'Bengaluru', 'Hyderabad', 'Pune', 'Kolkata'].map((city, cIdx) => (
+                            <span key={cIdx} className="px-2 py-1 bg-black/45 border border-white/5 rounded-lg text-[9px] font-black uppercase tracking-wider text-neutral-400">
+                              🏙 {city}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+
+                    </div>
+
+                  </div>
+
+                  <div className="text-[10px] font-bold text-neutral-500 text-center uppercase tracking-widest">
+                    🎯 Slot Protection Exclusivity: We match with only 5 partner salons per micro-area to avoid creator overlap.
+                  </div>
+                </div>
+              )}
+
+              {/* PAGE 7: TRUST & VISUAL PROOF (SCREENSHOTS AND DMS) */}
+              {currentSlide === 6 && (
+                <div className="flex-1 flex flex-col justify-between z-10 relative">
+                  <div className="space-y-1">
+                    <div className="h-5 w-fit px-3 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center text-[9px] font-black uppercase tracking-wider">
+                      Vetted Vouch & Escrow
+                    </div>
+                    <h2 className="text-2xl md:text-3xl font-black uppercase italic tracking-tighter text-white">
+                      Verified Visual Proof & <span className="text-amber-400">Foot Traffic.</span>
+                    </h2>
+                  </div>
+
+                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 my-auto py-2">
+                    
+                    {/* Simulated High-Fidelity Instagram Reel Mockup screenshot */}
+                    <div className="lg:col-span-6 bg-black border border-white/10 rounded-2xl p-4 flex gap-4 items-stretch relative overflow-hidden shadow-2xl">
+                      <div className="absolute top-0 right-0 p-1 bg-amber-500/10 text-amber-400 text-[6.5px] font-black uppercase tracking-widest border-b border-l border-white/10 font-mono">
+                        Instagram Reel View
                       </div>
                       
-                      <div className="flex items-center gap-2 border-b border-white/5 pb-2 mb-2.5">
-                        <Smartphone className="h-3.5 w-3.5 text-amber-400" />
-                        <span className="text-[9px] font-bold text-white uppercase tracking-wider">Vetting Approval Dashboard</span>
+                      {/* Video clip representation */}
+                      <div className="w-[45%] relative rounded-xl border border-white/10 overflow-hidden flex items-center justify-center bg-neutral-900 aspect-[9/16] shrink-0">
+                        <img 
+                          src="/images/salon/before_after.png" 
+                          className="absolute inset-0 w-full h-full object-cover opacity-45 filter blur-[0.5px]" 
+                        />
+                        <Play className="h-6 w-6 text-amber-400 relative z-10 shrink-0" />
+                        <div className="absolute bottom-2 inset-x-2 bg-black/85 p-1 rounded font-mono text-[7px] text-center text-emerald-400">
+                          82k Views • 1.2k Saves
+                        </div>
                       </div>
 
-                      <div className="space-y-2 text-[9px]">
-                        <div className="bg-black/40 p-2.5 rounded-xl border border-white/5 flex justify-between items-center">
-                          <div className="flex items-center gap-2">
-                            <div className="w-6 h-6 rounded-full bg-amber-500/20 border border-amber-500/30 flex items-center justify-center text-[9px] font-black font-mono text-amber-400">C</div>
-                            <div className="text-left">
-                              <p className="text-neutral-500 font-bold uppercase text-[7px] tracking-widest">Matched Creator</p>
-                              <p className="text-white font-bold mt-0.5">Verified Creator (@local.beauty)</p>
-                            </div>
-                          </div>
-                          <span className="px-2 py-0.5 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[8px] font-black rounded-full animate-pulse">
-                            CREATOR VERIFIED
-                          </span>
+                      {/* Comments Feed representation */}
+                      <div className="flex-1 flex flex-col justify-between text-left">
+                        <p className="text-amber-400 text-[8.5px] font-black uppercase tracking-wider border-b border-white/5 pb-1 flex items-center gap-1 font-mono">
+                          <MessageCircle className="h-3.5 w-3.5" /> High-Intent Comments
+                        </p>
+                        
+                        <div className="space-y-2.5 my-2 max-h-[160px] overflow-y-auto scrollbar-thin text-[9.5px] font-medium leading-tight text-neutral-300">
+                          <p><strong>@priya.k:</strong> "GK-2 branch price for Hydrafacial? DM list! 😍✨"</p>
+                          <p><strong>@diksha_sharma:</strong> "Is that ASMR wash basin head halo scalp steam available this Wed?"</p>
+                          <p><strong>@nisha.grvr:</strong> "Gel extension Thursday slot open? Nail tapping transition looks gorgeous! 💅"</p>
                         </div>
 
-                        <div className="bg-black/40 p-2.5 rounded-xl border border-amber-500/20 text-left">
-                          <div className="flex justify-between items-center text-neutral-300">
-                            <span className="font-bold text-amber-400 font-sans">Draft Status: DRAFT SUBMITTED</span>
-                            <span className="px-1.5 py-0.5 bg-amber-500/10 text-amber-400 text-[7px] font-black uppercase tracking-widest rounded border border-amber-500/20">DRAFT APPROVED</span>
-                          </div>
-                          
-                          <div className="grid grid-cols-2 gap-2 mt-2 font-sans text-[8px]">
-                            <div className="bg-neutral-800 rounded-md p-1.5 border border-white/5 text-neutral-400 flex items-center gap-1.5">
-                              <span className="text-emerald-400 font-black">✓</span> Geotagged GK-2 Delhi
-                            </div>
-                            <div className="bg-neutral-800 rounded-md p-1.5 border border-white/5 text-neutral-400 flex items-center gap-1.5">
-                              <span className="text-emerald-400 font-black">✓</span> ASMR wash sound sync
-                            </div>
-                            <div className="bg-neutral-800 rounded-md p-1.5 border border-white/5 text-neutral-400 flex items-center gap-1.5">
-                              <span className="text-emerald-400 font-black">✓</span> 5km local radius target
-                            </div>
-                            <div className="bg-neutral-800 rounded-md p-1.5 border border-white/5 text-neutral-400 flex items-center gap-1.5">
-                              <span className="text-emerald-400 font-black">✓</span> Booking promo code
-                            </div>
-                          </div>
+                        <div className="bg-amber-500/5 border border-amber-500/15 p-2 rounded-xl text-[8.5px] text-neutral-400">
+                          Comments are manually vetted by Creator Armour coordinator before the final post alert.
                         </div>
+                      </div>
+                    </div>
+
+                    {/* Side-by-Side Simulated WhatsApp booking chats/DMs (DOUBLES TRUST) */}
+                    <div className="lg:col-span-6 bg-neutral-900 border border-white/5 rounded-2xl p-4 shadow-xl text-xs font-mono relative flex flex-col justify-between">
+                      <div className="absolute top-0 right-0 p-1.5 bg-[#25D366]/10 text-[#25D366] text-[7.5px] font-black uppercase tracking-widest border-b border-l border-white/10">
+                        WhatsApp Booking Intake
+                      </div>
+                      
+                      <div className="flex items-center gap-2 border-b border-white/5 pb-2 mb-2">
+                        <MessageSquare className="h-4 w-4 text-[#25D366]" />
+                        <span className="text-[9px] font-black text-white uppercase tracking-wider font-mono">Simulated Intake chats</span>
+                      </div>
+
+                      <div className="space-y-2.5 text-[8.5px] my-auto">
+                        <div className="bg-black/45 border-l-4 border-l-[#25D366] rounded-xl p-2.5 space-y-1 text-left relative">
+                          <div className="flex justify-between items-center text-[7.5px] text-neutral-500 font-mono">
+                            <span>WhatsApp Lead (Delhi GK-2)</span>
+                            <span>10:42 AM</span>
+                          </div>
+                          <p className="text-neutral-300">
+                            "Hey! Just saw @local.beauty's hydrafacial Reel. Do you have a slot open this Thursday at 11 AM?"
+                          </p>
+                        </div>
+
+                        <div className="bg-black/45 border-l-4 border-l-[#25D366] rounded-xl p-2.5 space-y-1 text-left relative">
+                          <div className="flex justify-between items-center text-[7.5px] text-neutral-500 font-mono">
+                            <span>WhatsApp Lead (Bandra Mumbai)</span>
+                            <span>11:15 AM</span>
+                          </div>
+                          <p className="text-neutral-300">
+                            "Price list please? The frizz-to-glass keratin transformation looks unbelievable. Sending slot request today."
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="bg-black/25 border border-white/5 rounded-xl p-2 text-center text-[8px] text-neutral-500 font-sans mt-3">
+                        🛡️ Vetted locally • Slot exclusivity secured • 100% draft approved before going live
                       </div>
                     </div>
 
                   </div>
 
                   <div className="text-[10px] font-bold text-neutral-500 text-center uppercase tracking-widest">
-                    🛡️ Vetted locally • Exclusivity secured • 100% draft approved before going live
+                    💡 High-fidelity proof captures show you exactly what happens behind the scenes. Zero ghosting.
                   </div>
                 </div>
               )}
 
-              {/* PAGE 6: FREE PILOT CAMPAIGN */}
-              {currentSlide === 5 && (
-                <div className="flex-1 flex flex-col justify-between z-10 relative">
-                  <div className="space-y-2 text-center max-w-3xl mx-auto my-auto">
-                    <div className="h-6 w-fit mx-auto px-4 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center text-[10px] font-black uppercase tracking-widest animate-pulse">
-                      ✨ Risk-Free Activation
-                    </div>
-                    <h2 className="text-3xl md:text-5xl font-black uppercase italic tracking-tighter text-white leading-tight">
-                      Free Pilot Campaign for <br/>
-                      Early Partner Salons
-                    </h2>
-                    <p className="text-xs text-neutral-300 font-medium leading-relaxed max-w-xl mx-auto">
-                      We want to prove we can bring local women into your chairs before you run any paid campaigns. We will manage your very first creator collaboration completely for free.
-                    </p>
-                  </div>
-
-                  {/* 3 campaign pillars replacing specific creators */}
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-left py-2 my-auto">
-                    {[
-                      {
-                        title: '1 Vetted Creator Reel',
-                        metric: '85%+ Local Women Focus',
-                        reach: 'Hyperlocal targeting within 5km',
-                        description: 'We match your salon with a vetted local creator whose followers are verified high-intent local women living or working nearby.',
-                        tags: ['Hyperlocal', 'Targeted', 'Local Women'],
-                        icon: MapPin,
-                        image: "/images/salon/before_after.png"
-                      },
-                      {
-                        title: 'Directed Script & Guide',
-                        metric: 'Done-For-You Production',
-                        reach: 'High-dopamine beauty close-ups',
-                        description: 'We write the creative brief and direct the creator on precise hooks, satisfying ASMR, and visual transformations.',
-                        tags: ['Creative Brief', 'Shot Guide', 'ASMR'],
-                        icon: Video,
-                        image: "/images/salon/nail_extension.png"
-                      },
-                      {
-                        title: 'Zero Risk Escrow Lock',
-                        metric: '100% Posting Guarantee',
-                        reach: 'Protected booking agreement',
-                        description: 'Creators only visit during quiet slots. We secure draft approval before anything goes live, so you never get ghosted.',
-                        tags: ['Zero Risk', 'Exclusivity', 'Protected'],
-                        icon: Lock,
-                        image: "/images/salon/hair_transformation.png"
-                      }
-                    ].map((item, i) => {
-                      const IconComponent = item.icon;
-                      return (
-                        <div key={i} className="bg-amber-400/[0.02] border border-amber-500/15 rounded-2xl p-4 hover:border-amber-500/20 transition-all flex flex-col justify-between min-h-[200px] relative overflow-hidden group">
-                          
-                          <div className="flex justify-between items-start">
-                            <div className="flex items-center gap-2">
-                              <div className="w-8 h-8 rounded-full border border-amber-500/20 overflow-hidden bg-black/40 flex items-center justify-center relative">
-                                <img 
-                                  src={item.image}
-                                  className="w-full h-full object-cover opacity-20 absolute inset-0 group-hover:scale-105 transition-transform duration-500"
-                                />
-                                <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-black/80 to-transparent z-0" />
-                                <IconComponent className="h-4 w-4 text-amber-400 relative z-10 shrink-0" />
-                              </div>
-                              <div className="text-left relative z-10">
-                                <p className="text-xs font-black text-white leading-none uppercase tracking-wide">{item.title}</p>
-                                <p className="text-[8.5px] text-amber-400 font-mono mt-1 font-bold">{item.metric}</p>
-                              </div>
-                            </div>
-                          </div>
-
-                          <div className="my-3 text-[9.5px] text-neutral-400 leading-relaxed font-medium relative z-10">
-                            {item.description}
-                          </div>
-
-                          <div className="bg-black/50 border border-white/5 rounded-xl p-2 mb-3 text-[8px] font-mono text-center relative z-10">
-                            <p className="text-[7.5px] text-neutral-400 leading-none">{item.reach}</p>
-                          </div>
-
-                          <div className="flex flex-wrap gap-1 relative z-10">
-                            {item.tags.map((tag, tIdx) => (
-                              <span key={tIdx} className="text-[7px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded bg-white/5 text-neutral-400 border border-white/5">
-                                {tag}
-                              </span>
-                            ))}
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-
-                  <div className="text-[10px] font-black uppercase tracking-widest text-amber-400 text-center animate-pulse">
-                    ⚠️ Exclusivity Lock: We only onboard 5 salons per city to avoid creator overlap and secure slot exclusivity.
-                  </div>
-                </div>
-              )}
-
-              {/* PAGE 7: ONBOARDING / CONTACT FORM */}
-              {currentSlide === 6 && (
+              {/* PAGE 8: EXCLUSIVE PILOT ONBOARDING FORM */}
+              {currentSlide === 7 && (
                 <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center z-10 relative">
                   
-                  {/* WhatsApp style floating notifications popup - CLOSES THE SALE */}
+                  {/* Selective CTA Text */}
                   <div className="lg:col-span-6 space-y-5 text-left h-full flex flex-col justify-between py-2">
                     
                     <div className="space-y-4">
                       <div className="h-5 w-fit px-3 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center text-[9px] font-black uppercase tracking-wider">
-                        Chair Monetization Engine
+                        Selective Onboarding
                       </div>
                       <h2 className="text-3xl md:text-4xl font-black uppercase italic tracking-tighter text-white leading-tight">
-                        Let's set up <br/>
-                        your first <span className="text-amber-400">barter pilot.</span>
+                        Apply For <br/>
+                        Pilot Collaboration.
                       </h2>
                       <p className="text-xs text-neutral-400 leading-relaxed font-medium">
-                        Get matched with 3 nearby beauty & lifestyle creators today.
+                        We onboarding only 5 salons per micro-area/city to avoid creator overlap and secure slot exclusivity.
                       </p>
                     </div>
 
-                    {/* WhatsApp style iOS floating notifications mockup */}
-                    <div className="space-y-2.5 my-auto max-w-sm">
-                      {[
-                        { time: '10:42 AM', text: '“Hi saw your Reel, hydrafacial price?”', delay: '0s' },
-                        { time: '11:15 AM', text: '“Do you have appointments tomorrow?”', delay: '0.2s' },
-                        { time: '12:04 PM', text: '“Can I book nail extensions?”', delay: '0.4s' }
-                      ].map((inq, iIdx) => (
-                        <div 
-                          key={iIdx} 
-                          className="bg-black/90 border border-white/10 rounded-2xl p-2.5 flex items-center gap-3 relative shadow-[0_4px_15px_rgba(0,0,0,0.5)] hover:border-amber-500/30 transition-all border-l-4 border-l-[#25D366] animate-pulse"
-                          style={{ animationDelay: inq.delay }}
-                        >
-                          <div className="h-6 w-6 rounded-full bg-[#25D366]/10 flex items-center justify-center shrink-0">
-                            <MessageSquare className="h-3.5 w-3.5 text-[#25D366] fill-[#25D366]/20" />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <p className="text-[9.5px] text-neutral-200 font-bold font-sans">Booking inquiry</p>
-                            <p className="text-[8.5px] text-neutral-400 font-sans leading-none mt-0.5 truncate">{inq.text}</p>
-                          </div>
-                          <span className="text-[7px] font-mono text-neutral-500 shrink-0">{inq.time}</span>
-                        </div>
-                      ))}
+                    {/* Exclusivity Warning visual banner */}
+                    <div className="bg-amber-500/5 border border-amber-500/20 rounded-2xl p-4 space-y-2 max-w-sm">
+                      <p className="text-amber-400 text-[10px] font-black uppercase tracking-wider font-mono flex items-center gap-1.5">
+                        <AlertTriangle className="h-4 w-4 shrink-0 animate-pulse" /> Micro-Area Exclusivity Alert
+                      </p>
+                      <p className="text-[9.5px] text-neutral-400 leading-relaxed font-sans">
+                        To guarantee high conversion rates and maintain neighborhood freshness, matched slots are locked permanently to matched early partner salons.
+                      </p>
                     </div>
 
                     {/* WhatsApp CTA Button */}
                     <div className="pt-2">
                       <button
                         onClick={handleWhatsAppClick}
-                        className="w-full sm:w-auto px-8 py-4 bg-[#25D366] hover:bg-[#20ba59] text-black font-black uppercase tracking-widest text-sm rounded-2xl transition-all shadow-[0_4px_20px_rgba(37,211,102,0.25)] hover:shadow-[0_4px_25px_rgba(37,211,102,0.4)] flex items-center justify-center gap-3 border border-emerald-400/20 active:scale-[0.98]"
+                        className="w-full sm:w-auto px-8 py-4 bg-[#25D366] hover:bg-[#20ba59] text-black font-black uppercase tracking-widest text-xs rounded-2xl transition-all shadow-[0_4px_20px_rgba(37,211,102,0.25)] flex items-center justify-center gap-3 border border-emerald-400/20 active:scale-[0.98]"
                       >
                         <MessageSquare className="h-5 w-5 text-black fill-black" />
-                        <span>WhatsApp Us To Start Free Pilot</span>
+                        <span>Apply via WhatsApp</span>
                       </button>
                     </div>
                   </div>
@@ -1323,7 +1221,7 @@ const SalonProposalDeck = () => {
                           className="space-y-3.5 text-left"
                         >
                           <p className="text-[9px] font-black uppercase tracking-widest text-neutral-500 text-center border-b border-white/5 pb-2 font-mono">
-                            Or drop your details below
+                            Or submit your details below
                           </p>
 
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
@@ -1391,7 +1289,7 @@ const SalonProposalDeck = () => {
                               <span>Sending Details...</span>
                             ) : (
                               <>
-                                <span>Request Matched Creators</span>
+                                <span>Apply For Pilot matched creators</span>
                                 <ArrowRight className="h-4 w-4" />
                               </>
                             )}
@@ -1409,10 +1307,10 @@ const SalonProposalDeck = () => {
                           </div>
                           <h3 className="text-xl font-black uppercase tracking-wide text-white">Application Received! ✨</h3>
                           <p className="text-xs text-neutral-400 max-w-md mx-auto leading-relaxed">
-                            Thank you for joining the Creator Armour early partner circle. Our lead coordinator is reviewing your salon details and will reach out to you on <span className="text-white font-bold">WhatsApp ({formData.whatsappNumber})</span> within 24 hours with your first 3 vetted creator profiles.
+                            Thank you for applying. Our lead coordinator is reviewing your details and will reach out on <span className="text-white font-bold">WhatsApp ({formData.whatsappNumber})</span> within 24 hours with your first 3 vetted creator profiles.
                           </p>
                           <p className="text-[9.5px] text-neutral-500 font-bold uppercase tracking-wider">
-                            ⚡ Exclusivity Lock: Secure your city slot before your competitor does
+                            ⚡ Exclusivity Lock: Secure your micro-area slot before your competitor does
                           </p>
                           <button
                             onClick={() => setFormSubmitted(false)}
@@ -1429,7 +1327,7 @@ const SalonProposalDeck = () => {
 
               {/* Landscape PDF Deck Footer info */}
               <footer className="flex justify-between items-center border-t border-white/[0.04] pt-4 mt-6 text-[9px] text-neutral-500 font-bold uppercase tracking-widest">
-                <span className="flex items-center gap-1.5"><ShieldCheck className="h-3.5 w-3.5 text-amber-400" /> Unused-Chair Monetization Infrastructure</span>
+                <span className="flex items-center gap-1.5"><ShieldCheck className="h-3.5 w-3.5 text-amber-400" /> Unused-chair monetization infrastructure</span>
                 <span>Page {currentSlide + 1} of {slidesCount}</span>
                 <span>© {new Date().getFullYear()} Creator Armour</span>
               </footer>
@@ -1480,7 +1378,7 @@ const SalonProposalDeck = () => {
             className="px-4 py-2 rounded-xl bg-amber-500 text-black font-black uppercase text-[10px] tracking-wider hover:bg-amber-400 transition-colors flex items-center gap-1.5"
           >
             <Compass className="h-3.5 w-3.5 animate-spin-slow" />
-            <span>WhatsApp Us Now</span>
+            <span>Apply For Pilot</span>
           </button>
         </div>
       </footer>

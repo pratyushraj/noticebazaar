@@ -10,38 +10,55 @@ test.describe('Salon Proposal Deck E2E Tests', () => {
     console.log('Navigating to /salon-proposal...');
     await page.goto(`${BASE_URL}/salon-proposal`, { waitUntil: 'networkidle' });
 
-    // 2. Verify Slide 1 loads successfully
-    await expect(page.locator('h1')).toContainText(/watch.*reels/i);
-    await expect(page.locator('text=Unused-chair monetization').first()).toBeVisible();
-    console.log('Slide 1 loaded and verified.');
+    // 2. Verify Slide 1 (Cover) loads successfully
+    await expect(page.locator('#salon-pitch-deck-slide-card >> h1')).toContainText(/next.*20.*clients.*watching/i);
+    await expect(page.locator('#salon-pitch-deck-slide-card >> text=Monetization').first()).toBeVisible();
+    console.log('Slide 1 Cover loaded and verified.');
 
     // Focus and click body to ensure keyboard focus
     await page.focus('body');
     await page.click('body');
     await page.waitForTimeout(300);
 
-    // 3. Navigate to Slide 3 (Economics / Unused Slot Calculator) using keyboard ArrowRight (2 presses)
-    console.log('Navigating to Slide 3...');
+    // 3. Navigate to Slide 2 (Sunk Cost Pain)
+    console.log('Navigating to Slide 2 (Pain)...');
+    await page.keyboard.press('ArrowRight');
+    await page.waitForTimeout(800);
+    await expect(page.locator('#salon-pitch-deck-slide-card >> text=Empty Salon Chair').first()).toBeVisible();
+    console.log('Slide 2 (Pain) loaded and verified.');
+
+    // 4. Navigate to Slide 4 (Economics & Calculator, index 3) using keyboard ArrowRight (2 more presses)
+    console.log('Navigating to Slide 4 (Economics)...');
     await page.keyboard.press('ArrowRight');
     await page.waitForTimeout(800);
     await page.keyboard.press('ArrowRight');
     await page.waitForTimeout(800);
 
-    // Verify we are on Slide 3
-    await expect(page.locator('text=Chair Monetization Math').first()).toBeVisible();
-    console.log('Slide 3 loaded and verified.');
+    // Verify we are on Slide 4
+    await expect(page.locator('#salon-pitch-deck-slide-card >> text=Barter Math').first()).toBeVisible();
+    console.log('Slide 4 loaded and verified.');
 
-    // 4. Test cost calculator inputs on Slide 3
-    const treatmentsInput = page.locator('input[type="number"]').first();
-    if (await treatmentsInput.isVisible()) {
-      console.log('Interacting with calculator on Slide 3...');
-      const initialCostText = await page.locator('text=₹').first().textContent();
+    // 5. Test cost calculator inputs on Slide 4
+    const calculatorSlider = page.locator('input[type="range"]').first();
+    if (await calculatorSlider.isVisible()) {
+      console.log('Interacting with cost calculator slider...');
+      const initialCostText = await page.locator('#salon-pitch-deck-slide-card >> text=₹').first().textContent();
       
-      await treatmentsInput.fill('10');
-      await treatmentsInput.dispatchEvent('input');
-      await page.waitForTimeout(500);
+      // Simulate React-compatible slider change using native prototype setter
+      await calculatorSlider.evaluate((el: HTMLInputElement) => {
+        const nativeInputValueSetter = Object.getOwnPropertyDescriptor(
+          window.HTMLInputElement.prototype,
+          'value'
+        )?.set;
+        if (nativeInputValueSetter) {
+          nativeInputValueSetter.call(el, '5000');
+          el.dispatchEvent(new Event('input', { bubbles: true }));
+          el.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+      });
+      await page.waitForTimeout(600);
 
-      const updatedCostText = await page.locator('text=₹').first().textContent();
+      const updatedCostText = await page.locator('#salon-pitch-deck-slide-card >> text=₹').first().textContent();
       console.log(`Calculator updated. Initial: ${initialCostText}, Updated: ${updatedCostText}`);
       expect(initialCostText).not.toEqual(updatedCostText);
     }
@@ -55,8 +72,8 @@ test.describe('Salon Proposal Deck E2E Tests', () => {
     await page.click('#salon-pitch-deck-slide-card');
     await page.waitForTimeout(300);
 
-    // 5. Navigate to Slide 7 (Intake Form) using keyboard ArrowRight (4 more presses)
-    console.log('Navigating to Slide 7...');
+    // 6. Navigate to Slide 8 (Intake Form, index 7) using keyboard ArrowRight (4 more presses)
+    console.log('Navigating to Slide 8 (Onboarding Form)...');
     for (let i = 0; i < 4; i++) {
       await page.keyboard.press('ArrowRight');
       await page.waitForTimeout(300);
@@ -69,15 +86,15 @@ test.describe('Salon Proposal Deck E2E Tests', () => {
       }
     }
 
-    // Verify the Pilot Form is visible on Slide 7
-    await expect(page.locator('text=Or drop your details below').first()).toBeVisible();
-    console.log('Slide 7 intake form verified.');
+    // Verify the Pilot Form is visible on Slide 8
+    await expect(page.locator('#salon-pitch-deck-slide-card >> text=Or submit your details below').first()).toBeVisible();
+    console.log('Slide 8 intake form verified.');
 
     // Fill application form
     const salonNameInput = page.locator('input[type="text"]').first();
     const emailInput = page.locator('input[type="email"]').first();
     const phoneInput = page.locator('input[type="tel"]').first();
-    const submitBtn = page.locator('button[type="submit"], button:has-text("Request Matched Creators")').first();
+    const submitBtn = page.locator('button[type="submit"], button:has-text("Apply For Pilot")').first();
 
     await salonNameInput.fill('E2E Test Salon');
     await emailInput.fill('e2e-salon@test.com');
@@ -88,7 +105,7 @@ test.describe('Salon Proposal Deck E2E Tests', () => {
     await submitBtn.click();
     console.log('Form submitted.');
 
-    // 6. Verify successful submission layout
+    // 7. Verify successful submission layout
     await page.waitForSelector('text=/Application Received/i', { timeout: 15000 });
     await expect(page.locator('text=/Application Received/i').first()).toBeVisible();
     console.log('Form submission success verified.');

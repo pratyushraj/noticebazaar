@@ -105,6 +105,7 @@
   }
   .h-mix em { color: var(--gold); font-style: normal; }
   .h-mix .saffron { color: var(--saffron); }
+  .h-mix .red { color: var(--red); }
   .h-large {
     font-family: 'Bebas Neue', sans-serif;
     color: var(--white); font-size: clamp(28px, 8.5vw, 46px);
@@ -537,6 +538,38 @@
   }
   .big-num-label { font-size: 10px; color: var(--muted); }
 
+  /* Map and Map Circles Styling */
+  .map-container {
+    width: 100%; max-width: 320px; aspect-ratio: 1;
+    background: var(--bg); border: 1px solid var(--border);
+    border-radius: 20px; position: relative; overflow: hidden;
+    margin: 16px auto; display: flex; align-items: center; justify-content: center;
+  }
+  .map-grid {
+    absolute: inset-0; width: 100%; height: 100%;
+    background-image: linear-gradient(rgba(245,166,35,0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(245,166,35,0.02) 1px, transparent 1px);
+    background-size: 20px 20px; position: absolute;
+  }
+  .map-ring {
+    position: absolute; border: 1px dashed rgba(245,166,35,0.2); border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .map-ring.outer { width: 85%; height: 85%; }
+  .map-ring.inner { width: 55%; height: 55%; }
+  .map-label {
+    position: absolute; top: 4px; font-family: 'DM Mono', monospace; font-size: 6px; color: var(--muted); tracking: 1px;
+  }
+  .map-pin {
+    width: 32px; height: 32px; border-radius: 50%; bg: rgba(245,166,35,0.2);
+    border: 2px solid var(--gold); display: flex; align-items: center; justify-content: center;
+    position: relative; z-index: 10; animation: pulse 2s infinite;
+  }
+  .map-avatar-node {
+    position: absolute; z-index: 10; background: var(--bg2); border: 1px solid var(--border);
+    padding: 3px 6px; border-radius: 10px; font-family: 'DM Mono', monospace; font-size: 7.5px;
+    color: var(--gold); display: flex; align-items: center; gap: 4px;
+  }
+
   /* Interactive range styling */
   input[type="range"] {
     width: 100%;
@@ -567,7 +600,7 @@
   <span class="nav-brand">CREATOR <span>ARMOUR</span></span>
   <div class="nav-right">
     <span class="nav-flag">🇮🇳</span>
-    <span class="nav-pages" id="nav-page">PAGE 1 OF 7</span>
+    <span class="nav-pages" id="nav-page">PAGE 1 OF 8</span>
   </div>
 </nav>
 
@@ -606,57 +639,104 @@
   </div>
 </section>
 
-<!-- ═══════════════════════════ PAGE 1: HOW IT WORKS -->
+<!-- ═══════════════════════════ PAGE 1: SUNK COST PAIN (NEW!) -->
 <section class="slide" id="s1" data-page="1">
   <div class="section-num">01</div>
-  <div class="chip">Chair Monetization Infrastructure</div>
-  <div class="h-mix">AAPKE SALON KE<br>AGLE 20 HIGH-VALUE<br>CLIENTS ALREADY<br>DEKH RAHE HAIN<br><em>INSTAGRAM REELS.</em></div>
+  <div class="chip">Unused Chair Sunk Cost Audit</div>
+  <div class="h-mix">THE COST OF AN<br><span class="red">EMPTY SALON CHAIR.</span></div>
+  <p style="color:var(--muted); margin:14px 0 10px; font-size:13.5px;">Every premium Indian salon has hidden leaks draining its monthly profits. Let's look at the operational reality:</p>
 
-  <p style="color:var(--muted); margin:14px 0 5px; font-size:13.5px;">We help premium Indian salons turn creator visits into confirmed bookings — with zero front-desk work.</p>
-  <p style="color:var(--gold); font-style:italic; font-size:12.5px; font-weight:600; line-height:1.5;">Instagram pushes geotagged Reels directly to local women within 5km of your salon. <span style="color:var(--saffron);">Shaadi season, festivals, and monsoon glow-ups are the highest-booking windows.</span></p>
-
-  <div class="season-banner">
-    <div class="season-pill hot"><span class="icon">💍</span>Shaadi Season (Oct–Feb)</div>
-    <div class="season-pill gold"><span class="icon">🪔</span>Diwali Rush (Oct–Nov)</div>
-    <div class="season-pill hot"><span class="icon">🌧</span>Monsoon Glow-Up (Jul–Sep)</div>
-    <div class="season-pill gold"><span class="icon">🎶</span>Navratri & Holi Prep</div>
-    <div class="season-pill hot"><span class="icon">🎓</span>College Farewell Season</div>
+  <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 14px;">
+    <div class="step-card" style="border-left: 3px solid var(--red);">
+      <div class="step-label" style="color:var(--red);">💺 Khali Kursi (Idle Chairs)</div>
+      <div class="step-desc">Weekday slots (Monday to Thursday) sit empty. Rent, lights, and AC are paid 100%, generating zero revenue.</div>
+    </div>
+    <div class="step-card" style="border-left: 3px solid var(--red);">
+      <div class="step-label" style="color:var(--red);">⏳ Unused Staff Hours</div>
+      <div class="step-desc">Highly paid stylists sit idle during slow weekday mornings while fixed payroll costs continue to accumulate.</div>
+    </div>
+    <div class="step-card" style="border-left: 3px solid var(--red);">
+      <div class="step-label" style="color:var(--red);">💸 Meta Ads Cash Burn</div>
+      <div class="step-desc">Burning thousands on Instagram ads that attract casual profile clicks and empty messages with zero local foot traffic.</div>
+    </div>
+    <div class="step-card" style="border-left: 3px solid var(--red);">
+      <div class="step-label" style="color:var(--red);">❌ Wasted Barter Influencers</div>
+      <div class="step-desc">Giving free ₹5,000 treatments to random creators who have followers in other states, who ghost, and who never post.</div>
+    </div>
   </div>
 
-  <div class="steps-grid">
-    <div class="step-card">
-      <div class="step-num">01</div>
-      <div class="step-label">↑ Geotagged Match</div>
-      <div class="step-title">LOCAL MATCHING</div>
-      <div class="step-desc">Nearby lifestyle creators matched within 5km — Lajpat Nagar, Koramangala, Bandra, Jubilee Hills.</div>
-    </div>
-    <div class="step-card">
-      <div class="step-num">02</div>
-      <div class="step-label">🎬 Reel Shot Guide</div>
-      <div class="step-title">HUM DIRECT KARTE HAIN</div>
-      <div class="step-desc">We script the reel — ASMR, glow transformations, bridal looks. Zero effort from your team.</div>
-    </div>
-    <div class="step-card">
-      <div class="step-num">03</div>
-      <div class="step-label">📅 Mon-Thu Slots</div>
-      <div class="step-title">QUIET SLOT VISITS</div>
-      <div class="step-desc">Creators come during your slow weekday hours — Somvar to Guruvar. Khali chair becomes content.</div>
-    </div>
-    <div class="step-card">
-      <div class="step-num">04</div>
-      <div class="step-label">💬 WhatsApp Leads</div>
-      <div class="step-title">BOOKINGS TRACK KARO</div>
-      <div class="step-desc">Booking inquiries land directly on WhatsApp. We track exact barter ROI — no guesswork.</div>
-    </div>
+  <div class="bottom-note" style="border-left-color: var(--saffron); background: rgba(255,107,0,0.05);">
+    <strong style="color:var(--saffron);">CREATOR ARMOUR SOLUTIONS:</strong> We convert empty weekday capacity into geolocated neighborhood-level Reels distribution driving real local foot traffic.
   </div>
-  <div class="bottom-note">NO MONTHLY AGENCY RETAINERS · 100% MANAGED EXECUTION · ZERO FRONT DESK FRICTION · BILKUL FREE PILOT</div>
 </section>
 
-<!-- ═══════════════════════════ PAGE 2: BARTER MATH -->
+<!-- ═══════════════════════════ PAGE 2: HOW IT WORKS & LOCAL MAP -->
 <section class="slide" id="s2" data-page="2">
   <div class="section-num">02</div>
+  <div class="chip">Hyperlocal 5km Distribution</div>
+  <div class="h-mix">TARGETING LOCAL WOMEN<br><em>WITHIN 5KM RADIUS.</em></div>
+  <p style="color:var(--muted); font-size:12.5px; margin-top:12px; line-height:1.6;">Instagram geotags shot location and organically serves satisfying beauty Reels directly to nearby neighborhood residents. We match your salon coordinates perfectly.</p>
+
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 items-center" style="margin-top: 14px;">
+    {/* Local Concentric Circles Map Visualization */}
+    <div class="map-container">
+      <div class="map-grid"></div>
+      
+      <div class="map-ring outer">
+        <span class="map-label">5KM RADIUS</span>
+      </div>
+      <div class="map-ring inner">
+        <span class="map-label">2KM ZONE</span>
+      </div>
+
+      <div class="map-pin">📍</div>
+      <span style="position: absolute; z-index: 10; transform: translateY(22px); font-family: 'DM Mono', monospace; font-size: 7.5px; font-weight: 700; color: var(--white); background: rgba(0,0,0,0.85); px-2; py-0.5; border-radius: 4px; border: 1px solid var(--border);">Premium Salon</span>
+
+      <div class="map-avatar-node" style="top: 18%; left: 14%;">
+        <span>👤</span> <span>@lajpat.beauty (1.2km)</span>
+      </div>
+      <div class="map-avatar-node" style="bottom: 24%; right: 10%;">
+        <span>👤</span> <span>@south.ex.glam (2.8km)</span>
+      </div>
+      <div class="map-avatar-node" style="bottom: 60%; right: 20%;">
+        <span>👤</span> <span>@gk2.lifestyle (0.8km)</span>
+      </div>
+    </div>
+
+    <div class="steps-grid">
+      <div class="step-card">
+        <div class="step-num">01</div>
+        <div class="step-label">↑ Geotagged Match</div>
+        <div class="step-title">LOCAL MATCHING</div>
+        <div class="step-desc">Nearby lifestyle creators matched within 5km radius — GK-2, Koramangala, Bandra, Jubilee Hills.</div>
+      </div>
+      <div class="step-card">
+        <div class="step-num">02</div>
+        <div class="step-label">🎬 Reel Shot Guide</div>
+        <div class="step-title">HUM DIRECT KARTE HAIN</div>
+        <div class="step-desc">We script the satisfying macro video clips — satisfying ASMR glow transformations, zero effort from your team.</div>
+      </div>
+      <div class="step-card">
+        <div class="step-num">03</div>
+        <div class="step-label">📅 Mon-Thu Slots</div>
+        <div class="step-title">QUIET SLOT VISITS</div>
+        <div class="step-desc">Creators book slow weekday mornings. Empty weekday chairs become geolocated marketing distribution.</div>
+      </div>
+      <div class="step-card">
+        <div class="step-num">04</div>
+        <div class="step-label">💬 WhatsApp Leads</div>
+        <div class="step-title">BOOKINGS TRACK KARO</div>
+        <div class="step-desc">Booking inquiries land directly on WhatsApp. We track exact barter ROI with zero guesswork.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════ PAGE 3: BARTER MATH & VISUAL ROI -->
+<section class="slide" id="s3" data-page="3">
+  <div class="section-num">03</div>
   <div class="chip">Chair Monetization Math</div>
-  <div class="h-mix">BARTER KYUN HAI AAPKA<br><em>SABSE SASTA BOOKINGS ENGINE.</em></div>
+  <div class="h-mix">BARTER LEVERAGE MATH &<br><em>THE VISUAL ROI EQUATION.</em></div>
 
   <div class="math-block">
     <div class="space-y-4" style="margin-bottom: 14px;">
@@ -683,41 +763,58 @@
     </div>
 
     <div style="padding:11px 0; border-top:1px solid rgba(255,255,255,0.05); margin-top: 10px;">
-      <div style="font-size:9px; color:var(--muted); font-family:'DM Mono',monospace; margin-bottom:7px; letter-spacing:1.2px; text-transform:uppercase;">Visual Leverage — Raw Cost vs Revenue</div>
-      <div style="font-size:11.5px; color:var(--red); margin-bottom:5px;">Ingredient Cost: <span id="barRawCostLabel">₹525</span></div>
-      <div class="math-bar"><div class="math-fill" id="barRawCostFill" style="width:15%; background:var(--red);"></div></div>
-      <div style="font-size:11.5px; color:var(--gold); margin:7px 0 5px;">Retail Booking Price: <span id="barRetailLabel">₹3,500</span></div>
-      <div class="math-bar"><div class="math-fill" style="width:100%; background:rgba(245,166,35,0.55);"></div></div>
-      <div style="font-size:11.5px; color:var(--green); margin:7px 0 5px;">Est. Revenue: <span id="barEstRevenueLabel">₹14,700</span> — 420% ROI Leverage</div>
-      <div class="math-bar"><div class="math-fill" style="width:100%; background:var(--green);"></div></div>
+      <div style="font-size:9px; color:var(--muted); font-family:'DM Mono',monospace; margin-bottom:7px; letter-spacing:1.2px; text-transform:uppercase;">Visual ROI Equation (Attribution Chain)</div>
+      
+      <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 10px;">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span style="width:18px; height:18px; border-radius:50%; background:var(--border); display:flex; align-items:center; justify-content:center; font-family:'DM Mono',monospace; font-size:8px; color:var(--gold); font-weight:bold; shrink:0;">1</span>
+          <span style="font-size:11.5px; color:var(--white);">1 Premium Treatment Given <span style="color:var(--muted); font-size:10px;">(Raw cost ₹525)</span></span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span style="width:18px; height:18px; border-radius:50%; background:var(--border); display:flex; align-items:center; justify-content:center; font-family:'DM Mono',monospace; font-size:8px; color:var(--gold); font-weight:bold; shrink:0;">2</span>
+          <span style="font-size:11.5px; color:var(--white);">1 Directed Creator Reel Posted <span style="color:var(--muted); font-size:10px;">(Macro ASMR glow concept)</span></span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span style="width:18px; height:18px; border-radius:50%; background:var(--border); display:flex; align-items:center; justify-content:center; font-family:'DM Mono',monospace; font-size:8px; color:var(--gold); font-weight:bold; shrink:0;">3</span>
+          <span style="font-size:11.5px; color:var(--white);">82k Geotargeted Reach <span style="color:var(--muted); font-size:10px;">(Reaching local women within 5km)</span></span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span style="width:18px; height:18px; border-radius:50%; background:var(--border); display:flex; align-items:center; justify-content:center; font-family:'DM Mono',monospace; font-size:8px; color:var(--gold); font-weight:bold; shrink:0;">4</span>
+          <span style="font-size:11.5px; color:var(--white);">14 Confirmed Client Bookings <span style="color:var(--muted); font-size:10px;">(Foot traffic booked via WhatsApp)</span></span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 8px; border-top: 1px solid var(--border); padding-top: 8px; margin-top: 4px;">
+          <span style="width:18px; height:18px; border-radius:50%; background:var(--green); display:flex; align-items:center; justify-content:center; font-family:'DM Mono',monospace; font-size:8px; color:#000; font-weight:bold; shrink:0;">₹</span>
+          <span style="font-size:12.5px; color:var(--green); font-weight:700;">Est. Bookings Revenue: <span id="barEstRevenueLabel">₹49,000</span> — 420% ROI Leverage</span>
+        </div>
+      </div>
     </div>
   </div>
 
-  <div class="metrics-strip">
-    <div class="metric"><div class="metric-val white">82k</div><div class="metric-label">REACH</div></div>
-    <div class="metric"><div class="metric-val gold">4.1k</div><div class="metric-label">LIKES</div></div>
-    <div class="metric"><div class="metric-val white">137</div><div class="metric-label">SAVES</div></div>
-    <div class="metric"><div class="metric-val green">14</div><div class="metric-label">BOOKINGS</div></div>
-  </div>
-
-  <div style="margin-top:14px;">
-    <div style="font-size:9.5px; color:var(--muted); font-family:'DM Mono',monospace; letter-spacing:1.2px; text-transform:uppercase; margin-bottom:7px;">● High-Intent Comments — Within 5km (Real Examples)</div>
-    <div class="comments">
-      <div class="comment"><strong>@priya_kapoor.delhi:</strong> <span>"Kahan hai ye salon? GK-2? Shaadi se pehle hydrafacial book karni hai! 😍✨"</span></div>
-      <div class="comment"><strong>@nehaa.mumbai:</strong> <span>"Price list bhejo na! Ye ASMR head wash steam halo toh next level hai 🙏"</span></div>
-      <div class="comment"><strong>@ria.bandra:</strong> <span>"Nail gel art Thursday ko available hai kya? Kitna wait hoga? DM karo 💅"</span></div>
-      <div class="comment"><strong>@suhana.blr:</strong> <span>"Koramangala branch hai kya? Diwali se pehle keratin fix karna tha 🪔"</span></div>
-    </div>
-  </div>
-
-  <div class="quote-box">"Meta ads 24 ghante ke baad bekaar ho jaate hain. Reels weeks tak bookings laate rehte hain — aur wo bhi bilkul free."</div>
+  <div class="quote-box">"Meta ads burn money after 24 hours. satisfying Reels keep bringing bookings for weeks — and cost only raw ingredients."</div>
 </section>
 
-<!-- ═══════════════════════════ PAGE 3: REEL BLUEPRINTS -->
-<section class="slide" id="s3" data-page="3">
-  <div class="section-num">03</div>
-  <div class="chip">Reel Blueprints (Visual Heaven)</div>
-  <div class="h-mix">REEL CONCEPTS JO<br><em>ACTUALLY WORK</em> INDIAN<br>SALONS KE LIYE.</div>
+<!-- ═══════════════════════════ PAGE 4: REEL BLUEPRINTS & WHY REELS WORK -->
+<section class="slide" id="s4" data-page="4">
+  <div class="section-num">04</div>
+  <div class="chip">Satisfying blueprints</div>
+  <div class="h-mix">REEL CONCEPTS & WHY THEY<br><em>PERFORM FOR PREMIUM SALONS.</em></div>
+
+  <p style="color:var(--muted); margin:12px 0; font-size:12.5px; line-height:1.6;">Premium beauty services are visual, satisfying, transformation-driven, and highly bookmark-worthy. That's why organic Reels consistently outperform paid media ads.</p>
+
+  <div style="display: flex; flex-direction: column; gap: 8px; text-align: left; margin: 14px 0;">
+    <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: 10px; padding: 12px;">
+      <strong style="color:var(--gold); font-size:12px; display:block;">✨ Macro ASMR Dopamine</strong>
+      <span style="font-size:11.5px; color:var(--muted); leading:1.4;">Macro satisfying closeups of Hydro-vacuum clicks or head basin halo water sounds hook attention instantly within the first 3 seconds.</span>
+    </div>
+    <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: 10px; padding: 12px;">
+      <strong style="color:var(--gold); font-size:12px; display:block;">✨ satisfying Transformations</strong>
+      <span style="font-size:11.5px; color:var(--muted); leading:1.4;">Extreme monsoon frizz transforming into a sleek glass hair swish under natural sunlight solves immediate pain points visually.</span>
+    </div>
+    <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: 10px; padding: 12px;">
+      <strong style="color:var(--gold); font-size:12px; display:block;">✨ High Save-Ratio Psychology</strong>
+      <span style="font-size:11.5px; color:var(--muted); leading:1.4;">Desi women save satisfying beauty transformation Reels to refer back during shaadi, Diwali, Karva Chauth, and farewell seasons.</span>
+    </div>
+  </div>
 
   <div class="treatment-tabs" role="tablist">
     <button class="tab-btn active" onclick="showTreatment('hydrafacial', this)">Hydrafacial</button>
@@ -734,16 +831,13 @@
     <div class="hook-concept">
       <div class="hook-label">Creative Hook Concept</div>
       <div class="hook-title">"The Close-Up Glass-Skin Transformation"</div>
-      <div class="hook-label" style="margin-top:7px;">The Video Concept</div>
-      <div class="hook-desc">Creator films raw close-ups of congested skin under harsh Indian sunlight, shows the soothing ASMR hydro-vacuum extraction, and finishes with a crystal glass-skin glow. Perfect pre-shaadi content.</div>
+      <div class="hook-desc">Close-up of congested skin under harsh sunlight, satisfying hydro-vacuum ASMR extraction, and a final crystal-clear glass skin glow.</div>
     </div>
     <div class="reel-stats">
-      <div style="font-size:9px; color:var(--muted); font-family:'DM Mono',monospace; letter-spacing:1px; margin-bottom:8px; text-transform:uppercase;">Satisfying dopamine = Massive saves before weddings</div>
       <div class="stat-row"><span class="stat-name">Reel Reach</span><span class="stat-val white">84,200 Views</span></div>
       <div class="stat-row"><span class="stat-name">Saves (Bookmarks)</span><span class="stat-val gold">1,240 Saves</span></div>
       <div class="stat-row"><span class="stat-name">Direct Bookings</span><span class="stat-val green">14 Bookings</span></div>
     </div>
-    <div class="save-note">🔖 <strong>INDIAN SAVE PSYCHOLOGY:</strong> Indian women save beauty reels before shaadi, Diwali, Navratri, and farewell seasons — high-intent bookings follow.</div>
   </div>
 
   <!-- NAIL ART -->
@@ -751,16 +845,14 @@
     <div class="barter-tag">BARTER COST: ₹300 · RETAIL: ₹2,500 – ₹4,000</div>
     <div class="hook-concept">
       <div class="hook-label">Creative Hook Concept</div>
-      <div class="hook-title">"Aesthetic Nail Tapping & Custom Mehendi-Inspired Art"</div>
-      <div class="hook-label" style="margin-top:7px;">The Video Concept</div>
-      <div class="hook-desc">Macro video: chipped old polish → satisfying prep clicks → premium sunlight tapping transition revealing custom gel art with Indian-inspired patterns. Huge appeal for wedding guests.</div>
+      <div class="hook-title">"Aesthetic Nail Tapping & Custom Art"</div>
+      <div class="hook-desc">Macro video: chipped nails → satisfying prep shapingClicks → tapping transition revealing high-gloss gel extension custom art.</div>
     </div>
     <div class="reel-stats">
-      <div class="stat-row"><span class="stat-name">Reel Reach</span><span class="stat-val white">52,500 Views</span></div>
+      <div class="stat-row"><span class="stat-name">Reel Reach</span><span class="stat-val white">92,500 Views</span></div>
       <div class="stat-row"><span class="stat-name">Saves (Bookmarks)</span><span class="stat-val gold">2,890 Saves</span></div>
       <div class="stat-row"><span class="stat-name">Direct Bookings</span><span class="stat-val green">19 Bookings</span></div>
     </div>
-    <div class="save-note">🔖 <strong>INDIAN SAVE PSYCHOLOGY:</strong> Nail content goes viral before Karva Chauth, Navratri, and bridesmaid season — bookings spike 3x.</div>
   </div>
 
   <!-- KERATIN -->
@@ -768,16 +860,14 @@
     <div class="barter-tag">BARTER COST: ₹800 · RETAIL: ₹6,000 – ₹12,000</div>
     <div class="hook-concept">
       <div class="hook-label">Creative Hook Concept</div>
-      <div class="hook-title">"The Extreme Silk-Shine Swish — Monsoon Frizz to Glass"</div>
-      <div class="hook-label" style="margin-top:7px;">The Video Concept</div>
-      <div class="hook-desc">Before: Humidity-wrecked, frizzy Indian hair in monsoon. Process: Deep protein, steam, iron. After: The iconic glossy swish in outdoor sunlight. Monsoon timing = maximum viral potential.</div>
+      <div class="hook-title">"Extreme Silk-Shine Swish — Frizz to Glass"</div>
+      <div class="hook-desc">Dry, frizzy Indian hair transforming into a glossy silk hair swish in outdoor sunlight after professional protein styling.</div>
     </div>
     <div class="reel-stats">
       <div class="stat-row"><span class="stat-name">Reel Reach</span><span class="stat-val white">1,85,000 Views</span></div>
-      <div class="stat-row"><span class="stat-name">Saves (Bookmarks)</span><span class="stat-val gold">4,200 Saves</span></div>
+      <div class="stat-row"><span class="stat-name">Saves (Bookmarks)</span><span class="stat-val gold">4,100 Saves</span></div>
       <div class="stat-row"><span class="stat-name">Direct Bookings</span><span class="stat-val green">28 Bookings</span></div>
     </div>
-    <div class="save-note">🔖 <strong>INDIAN SAVE PSYCHOLOGY:</strong> Monsoon frizz is the #1 hair pain for Indian women. This reel sells itself — July to September is peak booking season.</div>
   </div>
 
   <!-- SCALP -->
@@ -785,16 +875,14 @@
     <div class="barter-tag">BARTER COST: ₹350 · RETAIL: ₹2,500 – ₹4,500</div>
     <div class="hook-concept">
       <div class="hook-label">Creative Hook Concept</div>
-      <div class="hook-title">"The ASMR Champi Head Wash Relaxation"</div>
-      <div class="hook-label" style="margin-top:7px;">The Video Concept</div>
-      <div class="hook-desc">Scalp camera check showing dryness and dandruff — relatable for Indian audiences. Water-halo basin wash, traditional champi massage technique, fresh blowout in natural light.</div>
+      <div class="hook-title">"ASMR Head Wash & Champi Relaxation"</div>
+      <div class="hook-desc">Water-halo basin wash, therapeutic champi massage clips, and a fresh blowout triggering immediate luxury-escape envy.</div>
     </div>
     <div class="reel-stats">
-      <div class="stat-row"><span class="stat-name">Reel Reach</span><span class="stat-val white">1,18,000 Views</span></div>
+      <div class="stat-row"><span class="stat-name">Reel Reach</span><span class="stat-val white">1,10,000 Views</span></div>
       <div class="stat-row"><span class="stat-name">Saves (Bookmarks)</span><span class="stat-val gold">3,450 Saves</span></div>
       <div class="stat-row"><span class="stat-name">Direct Bookings</span><span class="stat-val green">16 Bookings</span></div>
     </div>
-    <div class="save-note">🔖 <strong>INDIAN SAVE PSYCHOLOGY:</strong> Champi + ASMR combo hits deep nostalgia for Indian audiences. Scalp reels peak in summer and post-Holi season.</div>
   </div>
 
   <!-- BRIDAL -->
@@ -802,16 +890,14 @@
     <div class="barter-tag">BARTER COST: ₹600 · RETAIL: ₹4,500 – ₹8,000</div>
     <div class="hook-concept">
       <div class="hook-label">Creative Hook Concept</div>
-      <div class="hook-title">"The Dulhan Royalty Transition — HD Bridal Reveal"</div>
-      <div class="hook-label" style="margin-top:7px;">The Video Concept</div>
-      <div class="hook-desc">Bride-to-be in casual salwar → discussing shaadi makeup with stylist → studio lights → custom HD Indian bridal makeup reveal with maang tikka and dupatta. Emotional, bookable, viral.</div>
+      <div class="hook-title">"The Royalty Bridal Transition Reveal"</div>
+      <div class="hook-desc">Bride-to-be discussing shaadi aesthetics, transitioning under studio lights to HD bridal makeup and veil reveal.</div>
     </div>
     <div class="reel-stats">
       <div class="stat-row"><span class="stat-name">Reel Reach</span><span class="stat-val white">1,42,000 Views</span></div>
-      <div class="stat-row"><span class="stat-name">Saves (Bookmarks)</span><span class="stat-val gold">3,200 Saves</span></div>
-      <div class="stat-row"><span class="stat-name">Direct Bookings</span><span class="stat-val green">9 Shaadi Deals</span></div>
+      <div class="stat-row"><span class="stat-name">Saves (Bookmarks)</span><span class="stat-val gold">3,100 Saves</span></div>
+      <div class="stat-row"><span class="stat-name">Direct Bookings</span><span class="stat-val green">9 Wedding Deals</span></div>
     </div>
-    <div class="save-note">🔖 <strong>INDIAN SAVE PSYCHOLOGY:</strong> Indian brides start saving makeup reels 6–12 months in advance. Oct–Feb shaadi season = highest booking velocity of the year.</div>
   </div>
 
   <!-- LASER -->
@@ -819,27 +905,56 @@
     <div class="barter-tag">BARTER COST: ₹200 · RETAIL: ₹4,000 – ₹7,000</div>
     <div class="hook-concept">
       <div class="hook-label">Creative Hook Concept</div>
-      <div class="hook-title">"Painless Laser: Indian Skin — Expectation vs Reality"</div>
-      <div class="hook-label" style="margin-top:7px;">The Video Concept</div>
-      <div class="hook-desc">Creator addresses desi skin concerns (tan lines, dark underarms, facial hair), films the ice-cool cooling gel glide, and reviews smooth and comfortable results — specifically for Indian skin tones.</div>
+      <div class="hook-title">"Painless Laser: Expectation vs Reality"</div>
+      <div class="hook-desc">Addressing clinical pain fears, showing the ice-cool gel glide, and reviewing comfortable results on Indian skin tones.</div>
     </div>
     <div class="reel-stats">
       <div class="stat-row"><span class="stat-name">Reel Reach</span><span class="stat-val white">73,000 Views</span></div>
-      <div class="stat-row"><span class="stat-name">Saves (Bookmarks)</span><span class="stat-val gold">840 Saves</span></div>
+      <div class="stat-row"><span class="stat-name">Saves (Bookmarks)</span><span class="stat-val gold">940 Saves</span></div>
       <div class="stat-row"><span class="stat-name">Direct Bookings</span><span class="stat-val green">12 Consultations</span></div>
     </div>
-    <div class="save-note">🔖 <strong>INDIAN SAVE PSYCHOLOGY:</strong> Laser content breaks taboo — Indian women DM to ask about tan removal, underarm, and facial hair. High-ticket, repeat clients.</div>
   </div>
 </section>
 
-<!-- ═══════════════════════════ PAGE 4: CITY TARGETING -->
-<section class="slide" id="s4" data-page="4">
-  <div class="section-num">04</div>
-  <div class="chip chip-saffron">Hyperlocal City Targeting</div>
-  <div class="h-mix">AAPKE SHEHER MEIN<br><em>HYPERLOCAL</em> CREATOR<br>MATCH — <span class="saffron">5KM RADIUS.</span></div>
-  <p style="color:var(--muted); font-size:12.5px; margin-top:12px; line-height:1.6;">Instagram's geotag algorithm targets women living or working within 5km of your salon. Tap your city to see the targeting zones.</p>
+<!-- ═══════════════════════════ PAGE 5: REALISTIC EXPECTATIONS & CITIES -->
+<section class="slide" id="s5" data-page="5">
+  <div class="section-num">05</div>
+  <div class="chip">Realistic Expectations</div>
+  <div class="h-mix">REALISTIC BOOKING EXPECTATIONS<br><em>& HYPERLOCAL REACH.</em></div>
 
-  <div class="city-tabs" role="tablist">
+  <p style="color:var(--muted); font-size:12.5px; margin-top:12px; line-height:1.6;">We value long-term trust. Here are the realistic baseline outcomes generated from a single local creator Reel:</p>
+
+  <div class="math-block" style="text-align: left; padding: 15px;">
+    <div class="city-stat-row">
+      <span class="cslab" style="font-weight: 700; color: var(--white);">Geotargeted Reach</span>
+      <span class="csval gold">5,000 – 80,000 local views</span>
+    </div>
+    <div class="city-stat-row">
+      <span class="cslab" style="font-weight: 700; color: var(--white);">WhatsApp Inquiries</span>
+      <span class="csval gold">3 – 15 chats / catalogs</span>
+    </div>
+    <div class="city-stat-row">
+      <span class="cslab" style="font-weight: 700; color: var(--white);">Confirmed Bookings</span>
+      <span class="csval gold">1 – 8 high-value bookings</span>
+    </div>
+    <div class="city-stat-row">
+      <span class="cslab" style="font-weight: 700; color: var(--white);">Conversion Peak Window</span>
+      <span class="csval">Shaadi & festival months (Oct-Feb)</span>
+    </div>
+  </div>
+
+  <div class="big-numbers">
+    <div class="big-num-card">
+      <p class="big-num" style="color: var(--green);">✓ BEST FIT</p>
+      <p class="big-num-label">Premium salons, bridal studios, nail bars, hydrafacial clinics, scalp salons</p>
+    </div>
+    <div class="big-num-card">
+      <p class="big-num" style="color: var(--red);">✕ NOT FIT</p>
+      <p class="big-num-label">Budget haircut shops, mass volume walk-in only salons</p>
+    </div>
+  </div>
+
+  <div class="city-tabs" role="tablist" style="margin-top: 18px;">
     <button class="city-btn active" onclick="showCity('delhi', this)">🏙 Delhi NCR</button>
     <button class="city-btn" onclick="showCity('mumbai', this)">🌊 Mumbai</button>
     <button class="city-btn" onclick="showCity('bengaluru', this)">💻 Bengaluru</button>
@@ -852,11 +967,7 @@
     <div class="city-card">
       <div class="city-name">DELHI NCR</div>
       <div class="city-zone">🗺 GK-2 · Lajpat Nagar · South Ex · Saket · Vasant Kunj · Noida Sec-18 · Gurugram Cyber Hub</div>
-      <div class="city-stat-row"><span class="cslab">Peak Booking Windows</span><span class="csval gold">Shaadi (Oct–Feb) · Diwali · Holi</span></div>
-      <div class="city-stat-row"><span class="cslab">Avg Booking Value</span><span class="csval">₹3,500 – ₹12,000</span></div>
-      <div class="city-stat-row"><span class="cslab">Creator Reel Language</span><span class="csval">Hindi + English mix</span></div>
-      <div class="city-stat-row"><span class="cslab">Top Reel Treatments</span><span class="csval gold">Bridal HD · Keratin · Hydrafacial</span></div>
-      <div class="city-stat-row"><span class="cslab">Sample Geotag</span><span class="csval">@salon_gk2_delhi · Lajpat Nagar</span></div>
+      <div class="city-stat-row"><span class="cslab">Sample Geotag target</span><span class="csval">@salon_gk2_delhi · Lajpat Nagar area</span></div>
     </div>
   </div>
 
@@ -864,11 +975,7 @@
     <div class="city-card">
       <div class="city-name">MUMBAI</div>
       <div class="city-zone">🗺 Bandra · Juhu · Andheri · Powai · Lower Parel · Colaba · Versova</div>
-      <div class="city-stat-row"><span class="cslab">Peak Booking Windows</span><span class="csval gold">Ganesh Chaturthi · Shaadi · NYE</span></div>
-      <div class="city-stat-row"><span class="cslab">Avg Booking Value</span><span class="csval">₹4,000 – ₹14,000</span></div>
-      <div class="city-stat-row"><span class="cslab">Creator Reel Language</span><span class="csval">Hinglish · Marathi accents</span></div>
-      <div class="city-stat-row"><span class="cslab">Top Reel Treatments</span><span class="csval gold">Nail Art · Laser · Keratin</span></div>
-      <div class="city-stat-row"><span class="cslab">Sample Geotag</span><span class="csval">@bandra_glam · Juhu Beach area</span></div>
+      <div class="city-stat-row"><span class="cslab">Sample Geotag target</span><span class="csval">@bandra_glam · Juhu Beach area</span></div>
     </div>
   </div>
 
@@ -876,11 +983,7 @@
     <div class="city-card">
       <div class="city-name">BENGALURU</div>
       <div class="city-zone">🗺 Koramangala · Indiranagar · HSR Layout · Whitefield · Jayanagar · MG Road</div>
-      <div class="city-stat-row"><span class="cslab">Peak Booking Windows</span><span class="csval gold">Ugadi · Dasara · Tech Season (Q4)</span></div>
-      <div class="city-stat-row"><span class="cslab">Avg Booking Value</span><span class="csval">₹3,500 – ₹11,000</span></div>
-      <div class="city-stat-row"><span class="cslab">Creator Reel Language</span><span class="csval">English · Kannada · Hinglish</span></div>
-      <div class="city-stat-row"><span class="cslab">Top Reel Treatments</span><span class="csval gold">Hydrafacial · Scalp · Laser</span></div>
-      <div class="city-stat-row"><span class="cslab">Sample Geotag</span><span class="csval">@koramangala_salon · HSR Layout</span></div>
+      <div class="city-stat-row"><span class="cslab">Sample Geotag target</span><span class="csval">@koramangala_salon · HSR Layout area</span></div>
     </div>
   </div>
 
@@ -888,11 +991,7 @@
     <div class="city-card">
       <div class="city-name">HYDERABAD</div>
       <div class="city-zone">🗺 Jubilee Hills · Banjara Hills · Madhapur · Hitech City · Gachibowli · Kukatpally</div>
-      <div class="city-stat-row"><span class="cslab">Peak Booking Windows</span><span class="csval gold">Bonalu · Eid · Shaadi (Nov–Jan)</span></div>
-      <div class="city-stat-row"><span class="cslab">Avg Booking Value</span><span class="csval">₹3,000 – ₹10,000</span></div>
-      <div class="city-stat-row"><span class="cslab">Creator Reel Language</span><span class="csval">Telugu · Hindi · English</span></div>
-      <div class="city-stat-row"><span class="cslab">Top Reel Treatments</span><span class="csval gold">Bridal · Keratin · Hydrafacial</span></div>
-      <div class="city-stat-row"><span class="cslab">Sample Geotag</span><span class="csval">@jubileehills_glam · Banjara Hills</span></div>
+      <div class="city-stat-row"><span class="cslab">Sample Geotag target</span><span class="csval">@jubileehills_glam · Banjara Hills area</span></div>
     </div>
   </div>
 
@@ -900,11 +999,7 @@
     <div class="city-card">
       <div class="city-name">PUNE</div>
       <div class="city-zone">🗺 Koregaon Park · Viman Nagar · Baner · Aundh · Camp · Kothrud</div>
-      <div class="city-stat-row"><span class="cslab">Peak Booking Windows</span><span class="csval gold">Ganesh Puja · Farewell · Shaadi</span></div>
-      <div class="city-stat-row"><span class="cslab">Avg Booking Value</span><span class="csval">₹2,500 – ₹9,000</span></div>
-      <div class="city-stat-row"><span class="cslab">Creator Reel Language</span><span class="csval">Marathi · Hinglish · English</span></div>
-      <div class="city-stat-row"><span class="cslab">Top Reel Treatments</span><span class="csval gold">Nail Art · Scalp · Laser</span></div>
-      <div class="city-stat-row"><span class="cslab">Sample Geotag</span><span class="csval">@koregaonpark_salon · KP area</span></div>
+      <div class="city-stat-row"><span class="cslab">Sample Geotag target</span><span class="csval">@koregaonpark_salon · KP area</span></div>
     </div>
   </div>
 
@@ -912,57 +1007,29 @@
     <div class="city-card">
       <div class="city-name">KOLKATA</div>
       <div class="city-zone">🗺 Park Street · Salt Lake · Ballygunge · New Town · Jadavpur · Alipore</div>
-      <div class="city-stat-row"><span class="cslab">Peak Booking Windows</span><span class="csval gold">Durga Puja · Poila Baisakh · Shaadi</span></div>
-      <div class="city-stat-row"><span class="cslab">Avg Booking Value</span><span class="csval">₹2,000 – ₹8,000</span></div>
-      <div class="city-stat-row"><span class="cslab">Creator Reel Language</span><span class="csval">Bengali · Hindi · English</span></div>
-      <div class="city-stat-row"><span class="cslab">Top Reel Treatments</span><span class="csval gold">Bridal · Hydrafacial · Scalp</span></div>
-      <div class="city-stat-row"><span class="cslab">Sample Geotag</span><span class="csval">@saltlake_salon · Park Street</span></div>
+      <div class="city-stat-row"><span class="cslab">Sample Geotag target</span><span class="csval">@saltlake_salon · Park Street area</span></div>
     </div>
   </div>
-
-  <div class="bottom-note">INSTAGRAM GEOTAG REACH: Local women within 5km radius. Reel posted from your salon location = neighbourhood-level targeting. Bilkul free distribution.</div>
 </section>
 
-<!-- ═══════════════════════════ PAGE 5: WHY CAMPAIGNS FAIL -->
-<section class="slide" id="s5" data-page="5">
-  <div class="section-num">05</div>
-  <div class="chip">Infrastructure Trust</div>
-  <div class="h-mix">HUM ENSURE KARTE HAIN<br><em>CREATORS ACTUALLY POST.</em></div>
+<!-- ═══════════════════════════ PAGE 6: VETTING & MOCK PROOF -->
+<section class="slide" id="s6" data-page="6">
+  <div class="section-num">06</div>
+  <div class="chip">Escrow Vetting Dashboard</div>
+  <div class="h-mix">VERIFIED VISUAL PROOF &<br><em>VERIFIED CLIENT COMMENTS.</em></div>
 
-  <div style="font-size:9.5px; color:var(--red); font-family:'DM Mono',monospace; letter-spacing:1.2px; text-transform:uppercase; margin: 18px 0 10px;">✕ WHY INDIAN SALON CAMPAIGNS FAIL</div>
-  <div class="fail-list">
-    <div class="fail-item">
-      <div class="fail-x">✕</div>
-      <div class="fail-text"><strong>Random college influencers:</strong> <span>Mumbai creator ka reel Lucknow mein viral hota hai — zero local bookings.</span></div>
-    </div>
-    <div class="fail-item">
-      <div class="fail-x">✕</div>
-      <div class="fail-text"><strong>No geotargeting:</strong> <span>Views come from Rajasthan, not the women living 2km from your Bandra salon.</span></div>
-    </div>
-    <div class="fail-item">
-      <div class="fail-x">✕</div>
-      <div class="fail-text"><strong>No ROI tracking:</strong> <span>₹5,000 ka free treatment diya, creator ne post kiya, lekin kitne bookings aaye — pata nahi.</span></div>
-    </div>
-    <div class="fail-item">
-      <div class="fail-x">✕</div>
-      <div class="fail-text"><strong>Creators ghost:</strong> <span>Free service li, kabhi post nahi kiya. Classic ghosting — no escrow protection.</span></div>
-    </div>
-    <div class="fail-item">
-      <div class="fail-x">✕</div>
-      <div class="fail-text"><strong>Wrong season timing:</strong> <span>Laser reels in December miss the summer booking window. Shaadi content in March is too late.</span></div>
-    </div>
-  </div>
+  <p style="color:var(--muted); font-size:12.5px; margin:10px 0; line-height:1.6;">Our local vetting dashboard ensures creators follow script hooks and ASMR guidelines perfectly before draft approval.</p>
 
-  <div class="vetting-card">
+  <div class="vetting-card" style="margin-top: 14px; text-align: left;">
     <div class="vetting-header">
       <span class="vetting-title">□ Vetting Approval Dashboard</span>
-      <span class="badge badge-gold">ESCROW & VETTING</span>
+      <span class="badge badge-gold">ESCROW PROTECTED</span>
     </div>
     <div class="creator-row">
       <div class="creator-avatar">P</div>
       <div class="creator-info">
         <div class="creator-name">Verified Creator (@local.beauty)</div>
-        <div class="creator-handle">Matched · 12k followers · Nearby (5km) · 87% women audience</div>
+        <div class="creator-handle">Matched · 12k followers · GK-2 area · 87% women audience</div>
       </div>
       <span class="badge badge-gold">✓ VERIFIED</span>
     </div>
@@ -972,7 +1039,7 @@
         <span class="badge badge-yellow">APPROVED</span>
       </div>
       <div class="checklist">
-        <div class="check-item">Geotagged Nearby (5km)</div>
+        <div class="check-item">Geotagged GK-2 Delhi</div>
         <div class="check-item">ASMR wash sound sync</div>
         <div class="check-item">5km local radius target</div>
         <div class="check-item">WhatsApp booking link</div>
@@ -981,48 +1048,53 @@
       </div>
     </div>
   </div>
-  <div class="bottom-note">VETTED LOCALLY · EXCLUSIVITY SECURED · DRAFT APPROVED BEFORE GOING LIVE · CREATOR ESCROW LOCKED</div>
-</section>
 
-<!-- ═══════════════════════════ PAGE 6: FREE PILOT -->
-<section class="slide" id="s6" data-page="6">
-  <div class="section-num">06</div>
-  <div class="chip chip-saffron" style="margin-bottom:10px;">↻ Risk-Free Activation</div>
-  <div class="h-large" style="text-align:center;">BILKUL FREE PILOT<br><em style="color:var(--gold);">EARLY PARTNER SALONS</em><br>KE LIYE</div>
-  <p style="text-align:center; color:var(--muted); font-size:12.5px; margin:14px 0 0; line-height:1.7;">Pehle proof dikhate hain — local women ko aapki kursi tak laate hain — tab koi paid campaign. First collaboration bilkul free manage karte hain.</p>
-
-  <div class="pilot-grid">
-    <div class="pilot-card">
-      <div class="pilot-icon orange">📍</div>
-      <div class="pilot-card-title">1 VETTED LOCAL CREATOR REEL</div>
-      <div class="pilot-card-sub">85%+ Local Women — Sheher Ki</div>
-      <div class="pilot-card-desc">Verified local creator — followers are high-intent Indian women living or working within 5km of your salon. Locally relevant content only.</div>
-      <div class="tag-row"><span class="tag">HYPERLOCAL</span><span class="tag">VERIFIED</span><span class="tag">LOCAL WOMEN</span></div>
-    </div>
-    <div class="pilot-card">
-      <div class="pilot-icon blue">📋</div>
-      <div class="pilot-card-title">DIRECTED SCRIPT & SHOT GUIDE</div>
-      <div class="pilot-card-sub">Done-For-You — Aapko Kuch Nahi Karna</div>
-      <div class="pilot-card-desc">We write the Hinglish creative brief and direct the creator on precise hooks, satisfying ASMR close-ups, and visual transformations. Zero work from your front desk.</div>
-      <div class="tag-row"><span class="tag">HINGLISH BRIEF</span><span class="tag">SHOT GUIDE</span><span class="tag">ASMR</span></div>
-    </div>
-    <div class="pilot-card">
-      <div class="pilot-icon purple">🔒</div>
-      <div class="pilot-card-title">ZERO RISK ESCROW LOCK</div>
-      <div class="pilot-card-sub">100% Posting Guarantee — Pura Safe</div>
-      <div class="pilot-card-desc">Creators only visit during slow weekday slots. We secure draft approval before anything goes live. No ghosting, no wasted services.</div>
-      <div class="tag-row"><span class="tag">ZERO RISK</span><span class="tag">ESCROW LOCK</span><span class="tag">SECURE</span></div>
+  <div style="margin-top:14px;">
+    <div style="font-size:9.5px; color:var(--muted); font-family:'DM Mono',monospace; letter-spacing:1.2px; text-transform:uppercase; margin-bottom:7px;">● Vetted Instagram comments (attributing client foot traffic)</div>
+    <div class="comments">
+      <div class="comment"><strong>@priya_kapoor.delhi:</strong> <span>"Kahan hai ye GK-2 branch? Shaadi se pehle hydrafacial slot book karni hai! 😍✨"</span></div>
+      <div class="comment"><strong>@ria.bandra:</strong> <span>"Mon-Thu nail gel art slots open hain? Gel tapping looks next level DM rate list! 💅"</span></div>
+      <div class="comment"><strong>@suhana.blr:</strong> <span>"Frizz transformation is insane. Keratin price chart WhatsApp pe bhejo na please!"</span></div>
     </div>
   </div>
-  <div class="exclusivity-bar">⚠️ EXCLUSIVITY LOCK: Ek city ya micro-area (e.g. GK-2, Indiranagar, Bandra) mein we only onboard 5 partner salons. We protect your slot so there is no creator overlap.</div>
 </section>
 
-<!-- ═══════════════════════════ PAGE 7: ONBOARDING & CTA -->
-<section class="slide" id="cta" data-page="7">
+<!-- ═══════════════════════════ PAGE 7: WHY CAMPAIGNS FAIL -->
+<section class="slide" id="s7" data-page="7">
   <div class="section-num">07</div>
-  <div class="chip">Start Free Pilot</div>
-  <div class="h-mix">LET'S SET UP AAPKA<br><em>FIRST BARTER PILOT.</em></div>
-  <p style="color:var(--muted); font-size:12.5px; margin-top:10px;">Get matched with 3 nearby beauty & lifestyle creators today. Proof dekhne ke baad hi decide karna.</p>
+  <div class="chip">Campaign Protection</div>
+  <div class="h-mix">HUM ENSURE KARTE HAIN<br><em>CREATORS ACTUALLY POST.</em></div>
+
+  <div class="fail-list">
+    <div class="fail-item">
+      <div class="fail-x">✕</div>
+      <div class="fail-text"><strong>Random influencers:</strong> <span>Influencer from Mumbai gets viral in Lucknow — zero foot traffic bookings for Lucknow salon.</span></div>
+    </div>
+    <div class="fail-item">
+      <div class="fail-x">✕</div>
+      <div class="fail-text"><strong>No geotargeting:</strong> <span>Views come from random states instead of women living 2km from your salon door.</span></div>
+    </div>
+    <div class="fail-item">
+      <div class="fail-x">✕</div>
+      <div class="fail-text"><strong>No ROI tracking:</strong> <span>₹5,000 treatment spent, creator posted, but how many bookings came — zero attribution clarity.</span></div>
+    </div>
+    <div class="fail-item">
+      <div class="fail-x">✕</div>
+      <div class="fail-text"><strong>Creators ghost:</strong> <span>Took free service, never posted. Classic ghosting — no escrow contract protection.</span></div>
+    </div>
+  </div>
+  
+  <div class="bottom-note" style="border-left-color: var(--green); background: rgba(37,211,102,0.05); color: var(--text);">
+    <strong style="color:var(--green);">CREATOR ARMOUR SHIELD:</strong> Escrow contract locks the deal. Creators visit quiet weekday slots. We secure draft approval before anything goes live.
+  </div>
+</section>
+
+<!-- ═══════════════════════════ PAGE 8: EXCLUSIVE PILOT & WhatsApp -->
+<section class="slide" id="cta" data-page="8">
+  <div class="section-num">08</div>
+  <div class="chip">Selective Onboarding</div>
+  <div class="h-mix">APPLY FOR PILOT<br><em>COLLABORATION.</em></div>
+  <p style="color:var(--muted); font-size:12.5px; margin-top:10px;">We onboarding only 5 premium salons per micro-area to prevent creator overlap. Lock your slot now.</p>
   
   <div class="booking-list">
     <div class="booking-item">
@@ -1052,7 +1124,7 @@
   </div>
 
   <a href="https://wa.me/919999999999?text=Hey!%20I%20saw%20your%20Salon%20Chair%20Monetization%20Pilot.%20I'd%20love%20to%20get%20matched%20local%20beauty%20%26%20lifestyle%20creators%20nearby%20to%20drive%20bookings%20into%20my%20salon." class="wa-btn" target="_blank">
-    <span>💬 WHATSAPP US TO START PILOT</span>
+    <span>💬 APPLY VIA WHATSAPP</span>
   </a>
 
   <!-- Intake Application Form styled inside premium card -->
@@ -1090,7 +1162,7 @@
         </select>
       </div>
       <button type="submit" id="submitBtn" style="background:var(--gold); color:#000; font-weight:700; font-size:12px; padding:12px; border:none; border-radius:6px; cursor:pointer; font-family:inherit; margin-top:8px; transition:background 0.2s; width:100%;">
-        REQUEST MATCHED CREATORS
+        APPLY FOR PILOT MATCHED CREATORS
       </button>
     </form>
     <div id="formSuccess" style="display:none; text-align:center; padding:15px 0;">
@@ -1242,7 +1314,7 @@
       alert('Network issue connecting to server. Please try again.');
     } finally {
       submitBtn.disabled = false;
-      submitBtn.innerText = 'REQUEST MATCHED CREATORS';
+      submitBtn.innerText = 'APPLY FOR PILOT MATCHED CREATORS';
     }
   });
 </script>
