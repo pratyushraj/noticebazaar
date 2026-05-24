@@ -317,14 +317,14 @@ const SalonProposalDeck = () => {
     window.open(whatsappUrl, '_blank');
   };
 
-  // Niche blueprints with real images and local engagement indicators
+  // Niche blueprints with real engagement indicators
   const salonNiches = [
     {
       title: 'Hydrafacial / Glass Skin Facials',
       retail: '₹3,500 - ₹5,000',
       barterCost: '₹450',
       hook: 'The Close-Up Glow Transformation',
-      script: 'Close-ups of congested skin, satisfying ASMR hydro-vacuum extraction, and a final crystal-clear glass-skin glow in natural sunlight.',
+      script: 'Close-ups of skin extraction process, macro hydro-vacuum clips, and a final unedited glass-skin glow in natural sunlight.',
       dopamineDesc: 'Satisfying visual dopamine drives massive saves, especially before weddings and festive seasons.',
       reelPreset: {
         views: '84,200 Views',
@@ -337,7 +337,7 @@ const SalonProposalDeck = () => {
       retail: '₹2,500 - ₹4,000',
       barterCost: '₹300',
       hook: 'Aesthetic Nail Tapping & Custom Art',
-      script: 'Macro video of chipped nails, satisfying prep clicks/shaping, and a premium daylight tapping transition showing Gel Extensions.',
+      script: 'Macro video showing satisfying shaping clicks, detail design painting, and a premium daylight tapping transition.',
       dopamineDesc: 'Highly shareable nail designs acting as direct bookmark referrals for the exact same custom work.',
       reelPreset: {
         views: '92,500 Views',
@@ -350,8 +350,8 @@ const SalonProposalDeck = () => {
       retail: '₹6,000 - ₹12,000',
       barterCost: '₹800',
       hook: 'The Extreme Silk-Shine Swish',
-      script: 'Monsoon frizz-to-glass transformation showing protein nourishment, steam styling, and the iconic shiny hair swish.',
-      dopamineDesc: 'Removes hair-damage fear by showing a local creator’s smooth, glossy result, driving high-ticket bookings.',
+      script: 'Humidity frizz-to-glass transformation showing protein nourishment, steam styling, and the iconic shiny hair swish.',
+      dopamineDesc: 'Removes hair-damage fear by showing a creator’s smooth, glossy result, driving high-ticket bookings.',
       reelPreset: {
         views: '185,000 Views',
         shares: '4,100 Saves',
@@ -363,7 +363,7 @@ const SalonProposalDeck = () => {
       retail: '₹2,500 - ₹4,500',
       barterCost: '₹350',
       hook: 'The ASMR Head Wash Relaxation',
-      script: 'Dry scalp check, followed by water-halo basin washing, therapeutic champi massage clips, and a fresh shiny blowout.',
+      script: 'Scalp camera check, water-halo basin washing, therapeutic traditional champi massage clips, and a fresh blowout.',
       dopamineDesc: 'Triggering self-care envy. High saves for premium therapeutic experiences.',
       reelPreset: {
         views: '110,000 Views',
@@ -376,7 +376,7 @@ const SalonProposalDeck = () => {
       retail: '₹4,500 - ₹8,000',
       barterCost: '₹600',
       hook: 'The Royalty Bridal Transition',
-      script: 'Bride-to-be discussing wedding aesthetics, transitioning to custom HD bridal makeup and dupatta reveal under warm lights.',
+      script: 'Bride-to-be discussing wedding aesthetics, transitioning under studio lights to HD makeup and dupatta reveal.',
       dopamineDesc: 'High-value bridal package leads driven by authentic, premium trial demonstrations.',
       reelPreset: {
         views: '142,000 Views',
@@ -389,7 +389,7 @@ const SalonProposalDeck = () => {
       retail: '₹4,000 - ₹7,000',
       barterCost: '₹200',
       hook: 'Painless Laser: Expectation vs Reality',
-      script: 'Addressing typical pain fears, showing the ice-cool gel glide, and reviewing smooth results on Indian skin tones.',
+      script: 'Addressing clinical pain fears, showing the ice-cool cooling gel glide, and reviewing comfortable results on Indian skin.',
       dopamineDesc: 'Builds massive trust for clinical beauty treatments by showing the actual comfortable process.',
       reelPreset: {
         views: '73,000 Views',
@@ -515,15 +515,10 @@ const SalonProposalDeck = () => {
               {currentSlide === 0 && (
                 <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-6 items-center relative z-10 my-auto h-full">
                   
-                  {/* Faded Background Luxury Interior with Dark Overlay */}
-                  <div className="absolute inset-0 z-0 pointer-events-none rounded-[32px] overflow-hidden">
-                    <img 
-                      src="/images/salon/creator_filming.png" 
-                      alt="Luxury salon creator" 
-                      className="w-full h-full object-cover filter blur-[3px] opacity-[0.22] scale-105"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-[#050505]/85 to-transparent" />
-                    <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(0,0,0,0)_20%,rgba(5,5,5,0.85)_80%)]" />
+                  {/* Atmospheric Obsidian Gold mesh gradient instead of stock images */}
+                  <div className="absolute inset-0 z-0 pointer-events-none rounded-[32px] overflow-hidden bg-gradient-to-b from-amber-500/[0.03] via-transparent to-transparent">
+                    <div className="absolute top-12 right-1/4 w-[300px] h-[300px] bg-amber-500/[0.04] rounded-full blur-[100px]" />
+                    <div className="absolute bottom-12 left-1/4 w-[300px] h-[300px] bg-amber-500/[0.02] rounded-full blur-[120px]" />
                   </div>
  
                   <div className="lg:col-span-7 space-y-6 relative z-10">
@@ -561,12 +556,14 @@ const SalonProposalDeck = () => {
                       <div className="absolute bottom-4 left-4 w-4 h-4 border-b-2 border-l-2 border-amber-500/80 z-20" />
                       <div className="absolute bottom-4 right-4 w-4 h-4 border-b-2 border-r-2 border-amber-500/80 z-20" />
                       
-                      <div className="absolute inset-0 bg-neutral-950/20 z-0" />
-                      <img 
-                        src="/images/salon/creator_filming.png" 
-                        alt="Creator filming Reel inside luxurious salon" 
-                        className="absolute inset-0 w-full h-full object-cover rounded-3xl opacity-80 z-0 select-none scale-105 group-hover:scale-110 transition-transform duration-[10000ms]"
-                      />
+                      {/* Abstract Gold-Obsidian Gradient viewport instead of stock photo */}
+                      <div className="absolute inset-0 bg-gradient-to-br from-neutral-900 via-neutral-950 to-black z-0 flex flex-col items-center justify-center border border-white/5 rounded-3xl relative">
+                        <div className="w-12 h-12 rounded-full border border-amber-500/20 bg-amber-500/5 flex items-center justify-center mb-2 animate-pulse">
+                          <Video className="h-6 w-6 text-amber-400" />
+                        </div>
+                        <span className="text-[10px] font-black uppercase tracking-widest text-neutral-400 font-mono">Camera view active</span>
+                        <span className="text-[8px] text-neutral-600 font-mono mt-1">GK-2 Delhi coordinates</span>
+                      </div>
                       
                       {/* Vetted badge */}
                       <div className="z-10 flex justify-between items-start">
@@ -618,19 +615,19 @@ const SalonProposalDeck = () => {
                       {
                         title: 'Unused Staff Hours',
                         label: 'Sunk Payroll',
-                        desc: 'Stylists and therapists are on fixed monthly salaries, sitting idle during slow morning hours.',
+                        desc: 'Stylists and therapists are on fixed monthly salaries, sitting idle during slow weekday mornings.',
                         icon: '⏳'
                       },
                       {
                         title: 'Expensive Meta Ads',
                         label: 'Cash Burn',
-                        desc: 'Burning thousands on Instagram ads that attract fake profile clicks and zero local foot traffic.',
+                        desc: 'Burning thousands on Instagram ads that attract casual profile clicks and zero local foot traffic.',
                         icon: '💸'
                       },
                       {
                         title: 'Wasted Barters',
                         label: 'Influencer Leak',
-                        desc: 'Giving free ₹5,000 treatments to creators whose followers live in other states and who never post.',
+                        desc: 'Giving free ₹5,000 treatments to random creators who have followers in other states and who never post.',
                         icon: '❌'
                       },
                       {
@@ -863,7 +860,7 @@ const SalonProposalDeck = () => {
                 <div className="flex-1 flex flex-col justify-between z-10 relative">
                   <div className="space-y-1">
                     <div className="h-5 w-fit px-3 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center text-[9px] font-black uppercase tracking-wider">
-                      satisfying blue prints
+                      satisfying blueprints
                     </div>
                     <h2 className="text-2xl md:text-3xl font-black uppercase italic tracking-tighter text-white">
                       Reel Concepts & <span className="text-amber-400">Why They Perform.</span>
@@ -928,23 +925,23 @@ const SalonProposalDeck = () => {
                         </div>
 
                         <div className="md:col-span-5 flex flex-col gap-2">
-                          <div className="relative rounded-2xl border border-amber-500/15 overflow-hidden aspect-[4/3] max-h-[140px] flex items-center justify-center bg-black/60 shadow-xl">
-                            <img 
-                              src={
-                                activeNicheIndex === 0 
-                                  ? "/images/salon/before_after.png"
-                                  : activeNicheIndex === 1
-                                  ? "/images/salon/nail_extension.png"
-                                  : activeNicheIndex === 2
-                                  ? "/images/salon/hair_transformation.png"
-                                  : activeNicheIndex === 3
-                                  ? "/images/salon/scalp_steam.png"
-                                  : "/images/salon/before_after.png"
-                              } 
-                              alt={salonNiches[activeNicheIndex].title} 
-                              className="w-full h-full object-cover opacity-90 select-none scale-105"
-                            />
-                            <div className="absolute inset-0 bg-black/20" />
+                          {/* Aesthetic Abstract Visual blueprint mockup (No photos) */}
+                          <div className="relative rounded-2xl border border-amber-500/15 overflow-hidden aspect-[4/3] max-h-[140px] flex flex-col justify-between p-4 bg-gradient-to-br from-neutral-900 to-black shadow-xl group">
+                            <div className="flex justify-between items-center text-[7px] font-mono text-neutral-400">
+                              <span className="uppercase tracking-widest">Script blueprint active</span>
+                              <span className="text-amber-400">● Geotag Ready</span>
+                            </div>
+                            
+                            <div className="flex flex-col items-center justify-center my-auto py-1">
+                              <Play className="h-7 w-7 text-amber-400 animate-pulse fill-amber-400/10 mb-1" />
+                              <span className="text-[9px] font-black uppercase tracking-widest text-white font-sans text-center leading-tight">
+                                {salonNiches[activeNicheIndex].title.split(' / ')[0]}
+                              </span>
+                            </div>
+
+                            <div className="bg-black/45 px-2 py-0.5 rounded text-[7.5px] font-mono text-center text-amber-400 border border-white/5">
+                              Satisfying ASMR sounds + Glow Transitions
+                            </div>
                           </div>
 
                           <div className="bg-black/50 rounded-xl p-2.5 space-y-1 font-mono text-[7.5px] text-left">
@@ -1084,20 +1081,25 @@ const SalonProposalDeck = () => {
 
                   <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 my-auto py-2">
                     
-                    {/* Simulated High-Fidelity Instagram Reel Mockup screenshot */}
+                    {/* Simulated High-Fidelity Instagram Reel Mockup (No photos) */}
                     <div className="lg:col-span-6 bg-black border border-white/10 rounded-2xl p-4 flex gap-4 items-stretch relative overflow-hidden shadow-2xl">
                       <div className="absolute top-0 right-0 p-1 bg-amber-500/10 text-amber-400 text-[6.5px] font-black uppercase tracking-widest border-b border-l border-white/10 font-mono">
                         Instagram Reel View
                       </div>
                       
-                      {/* Video clip representation */}
-                      <div className="w-[45%] relative rounded-xl border border-white/10 overflow-hidden flex items-center justify-center bg-neutral-900 aspect-[9/16] shrink-0">
-                        <img 
-                          src="/images/salon/before_after.png" 
-                          className="absolute inset-0 w-full h-full object-cover opacity-45 filter blur-[0.5px]" 
-                        />
-                        <Play className="h-6 w-6 text-amber-400 relative z-10 shrink-0" />
-                        <div className="absolute bottom-2 inset-x-2 bg-black/85 p-1 rounded font-mono text-[7px] text-center text-emerald-400">
+                      {/* Typographic video viewport mockup instead of stock photo */}
+                      <div className="w-[45%] relative rounded-xl border border-white/10 overflow-hidden flex flex-col justify-between p-3 bg-gradient-to-b from-neutral-900 via-neutral-950 to-black aspect-[9/16] shrink-0">
+                        <div className="flex justify-between items-center text-[6px] font-mono text-neutral-500">
+                          <span>GK-2 TARGET</span>
+                          <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-ping" />
+                        </div>
+                        
+                        <div className="my-auto flex flex-col items-center justify-center">
+                          <Play className="h-6 w-6 text-amber-400 fill-amber-400/10 mb-1 animate-pulse" />
+                          <span className="text-[7.5px] font-black text-white text-center uppercase tracking-widest">ASMR glow video</span>
+                        </div>
+
+                        <div className="bg-black/95 p-1 rounded font-mono text-[6.5px] text-center text-emerald-400 border border-white/5">
                           82k Views • 1.2k Saves
                         </div>
                       </div>
@@ -1114,7 +1116,7 @@ const SalonProposalDeck = () => {
                           <p><strong>@nisha.grvr:</strong> "Gel extension Thursday slot open? Nail tapping transition looks gorgeous! 💅"</p>
                         </div>
 
-                        <div className="bg-amber-500/5 border border-amber-500/15 p-2 rounded-xl text-[8.5px] text-neutral-400">
+                        <div className="bg-amber-500/5 border border-amber-500/15 p-2 rounded-xl text-[8.5px] text-neutral-400 font-sans">
                           Comments are manually vetted by Creator Armour coordinator before the final post alert.
                         </div>
                       </div>
@@ -1137,7 +1139,7 @@ const SalonProposalDeck = () => {
                             <span>WhatsApp Lead (Delhi GK-2)</span>
                             <span>10:42 AM</span>
                           </div>
-                          <p className="text-neutral-300">
+                          <p className="text-neutral-300 font-sans leading-normal">
                             "Hey! Just saw @local.beauty's hydrafacial Reel. Do you have a slot open this Thursday at 11 AM?"
                           </p>
                         </div>
@@ -1147,7 +1149,7 @@ const SalonProposalDeck = () => {
                             <span>WhatsApp Lead (Bandra Mumbai)</span>
                             <span>11:15 AM</span>
                           </div>
-                          <p className="text-neutral-300">
+                          <p className="text-neutral-300 font-sans leading-normal">
                             "Price list please? The frizz-to-glass keratin transformation looks unbelievable. Sending slot request today."
                           </p>
                         </div>
@@ -1192,7 +1194,7 @@ const SalonProposalDeck = () => {
                         <AlertTriangle className="h-4 w-4 shrink-0 animate-pulse" /> Micro-Area Exclusivity Alert
                       </p>
                       <p className="text-[9.5px] text-neutral-400 leading-relaxed font-sans">
-                        To guarantee high conversion rates and maintain neighborhood freshness, matched slots are locked permanently to matched early partner salons.
+                        To guarantee high conversion rates and maintain neighborhood freshness, slots are locked permanently to matched early partner salons.
                       </p>
                     </div>
 
