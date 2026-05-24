@@ -34,22 +34,23 @@ function getD2CEmailTemplate(brand: BrandOutreachProps): string {
     <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size: 15px; color: #334155; line-height: 1.6; max-width: 600px; margin: 0 auto; padding: 12px 0;">
       <p>Hi Team 👋</p>
       
-      <p>Came across your brand and honestly the products/content already feel very creator-friendly ✨</p>
+      <p>Came across your brand and honestly the content/products already feel very creator-friendly ✨</p>
       
-      <p>We’re currently helping brands connect with lifestyle, beauty, wellness & local creators for:<br>
+      <p>We’re currently helping brands connect with lifestyle, beauty, wellness & local creators for barter-based collaborations and UGC content.</p>
+      
+      <p>And since we’re onboarding a few early partner brands right now, we’d love to help you with a small creator campaign completely FREE 😊</p>
+      
+      <p>We can help with:<br>
+      • creator sourcing<br>
+      • Instagram reel content<br>
       • barter collaborations<br>
-      • UGC content<br>
-      • Instagram reel campaigns<br>
-      • creator-led product promotions</p>
+      • local promotions<br>
+      • UGC campaigns<br>
+      • creator coordination</p>
       
-      <p>The goal is simple:<br>
-      help brands get authentic creator content without handling everything manually on DMs & spreadsheets.</p>
+      <p>Most creators are open to collaborations in exchange for products/services — especially when the brand positioning is strong.</p>
       
-      <p>We’d love to explore a small barter collaboration campaign with your brand 😊</p>
-      
-      <p>No setup cost involved for the initial pilot.</p>
-      
-      <p>Would love to connect if relevant.</p>
+      <p>Would love to explore a small pilot collaboration with your brand ✨</p>
       
       <p style="margin-top: 24px; padding-top: 12px; border-top: 1px solid #e2e8f0; color: #64748b; font-size: 14px;">
         — Pratyush<br>
