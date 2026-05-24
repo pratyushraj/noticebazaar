@@ -49,6 +49,7 @@ const SalonProposalDeck = () => {
   // Barter Cost Calculator States
   const [treatmentValue, setTreatmentValue] = useState(3500);
   const [ingredientCostPercent, setIngredientCostPercent] = useState(15);
+  const realBarterCost = Math.round(treatmentValue * (ingredientCostPercent / 100));
   
   // Onboarding Form States
   const [formData, setFormData] = useState({
