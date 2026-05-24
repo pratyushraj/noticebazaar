@@ -1687,6 +1687,132 @@
       "status": "contacted",
       "outreach_count": 1,
       "last_contacted_at": "2026-05-23T18:30:40.570Z"
+    },
+    "Dishvya": {
+      "email": "info@dishvya.com",
+      "category": "Fashion & Apparel",
+      "website": "https://dishvya.com",
+      "handle": "@dishvyabrand",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-24T11:09:02.488Z"
+    },
+    "C'nor": {
+      "email": "care@cnor.in",
+      "category": "Beauty & Skincare",
+      "website": "https://cnor.in",
+      "handle": "@cnor_brand",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-24T11:09:05.581Z"
+    },
+    "Santerra Hygiene": {
+      "email": "info@santerrahygiene.com",
+      "category": "Wellness & Hygiene",
+      "website": "https://santerrahygiene.com",
+      "handle": "@santerra_hygiene",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-24T11:09:08.493Z"
+    },
+    "NexLev": {
+      "email": "support@nexlev.in",
+      "category": "Fashion & Apparel",
+      "website": "https://nexlev.in",
+      "handle": "@nexlev.in",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-24T11:09:10.796Z"
+    },
+    "Shadani Group": {
+      "email": "info@shadanigroup.com",
+      "category": "Food & Gourmet",
+      "website": "https://shadanigroup.com",
+      "handle": "@shadanigroup",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-24T11:09:14.307Z"
+    },
+    "Desi Tesi": {
+      "email": "namastedesitesi@gmail.com",
+      "category": "Food & Gourmet",
+      "website": "https://itsdesitesi.com",
+      "handle": "@itsdesitesi",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-24T11:09:16.654Z"
+    },
+    "Nutrovally": {
+      "email": "nvsupport@nutrovally.com",
+      "category": "Food & Gourmet",
+      "website": "https://nutrovally.com",
+      "handle": "@nutrovallyindia",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-24T11:09:18.982Z"
+    },
+    "Nourish Veda": {
+      "email": "contact@nourishveda.fit",
+      "category": "Wellness & Health",
+      "website": "https://nourishveda.fit",
+      "handle": "@nourishveda.health",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-24T11:09:21.272Z"
+    },
+    "The Good Leaf": {
+      "email": "sales@thegoodleaf.in",
+      "category": "Wellness & Health",
+      "website": "https://thegoodleaf.in",
+      "handle": "@thegoodleaf_in",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-24T11:09:23.987Z"
+    },
+    "Modestouze Attires": {
+      "email": "care@modestouzeattires.com",
+      "category": "Fashion & Apparel",
+      "website": "https://modestouzeattires.com",
+      "handle": "@modestouzeattires",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-24T11:09:26.180Z"
+    },
+    "THE Dravya store": {
+      "email": "thedravyastore@gmail.com",
+      "category": "Beauty & Skincare",
+      "website": "https://thedravyastore.com",
+      "handle": "@the_dravya_store",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-24T12:20:22.887Z"
+    },
+    "AGARO Lifestyle": {
+      "email": "contact@agarolifestyle.com",
+      "category": "Personal Care & Appliances",
+      "website": "https://agarolifestyle.com",
+      "handle": "@theagaro_lifestyle",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-24T12:20:27.090Z"
+    },
+    "Suzyan Professional": {
+      "email": "support@suzyancosmetics.com",
+      "category": "Beauty & Skincare",
+      "website": "https://suzyancosmetics.com",
+      "handle": "@suzyan.professional",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-24T12:20:29.972Z"
+    },
+    "Zaysoo": {
+      "email": "Mraenterprises2017@gmail.com",
+      "category": "Fashion & Apparel",
+      "website": "https://zaysoo.com",
+      "handle": "@zaysoo_official",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-24T12:20:33.117Z"
     }
   },
   "dentists": {

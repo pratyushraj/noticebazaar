@@ -45,6 +45,21 @@
     "updated_at": "2026-05-23T17:14:44.029973+00:00"
   },
   {
+    "id": "03fa2967-9a48-429a-9a15-6527b4bc338d",
+    "brand_name": "Nourish Veda",
+    "website": "https://nourishveda.fit",
+    "instagram_handle": null,
+    "email": "contact@nourishveda.fit",
+    "category": "Wellness & Health",
+    "status": "contacted",
+    "outreach_count": 1,
+    "last_contacted_at": "2026-05-24T11:09:21.465+00:00",
+    "replied_at": null,
+    "notes": null,
+    "created_at": "2026-05-24T11:09:21.572728+00:00",
+    "updated_at": "2026-05-24T11:09:21.572728+00:00"
+  },
+  {
     "id": "045a8ac5-29c1-4514-b309-4dd0ca2acc3e",
     "brand_name": "Beyond Water",
     "website": "https://drinkbeyond.co.in",
@@ -210,6 +225,21 @@
     "updated_at": "2026-05-22T21:01:03.005037+00:00"
   },
   {
+    "id": "0c70d6ea-8191-43aa-ad72-4857c03e1eec",
+    "brand_name": "Dishvya",
+    "website": "https://dishvya.com",
+    "instagram_handle": null,
+    "email": "info@dishvya.com",
+    "category": "Fashion & Apparel",
+    "status": "contacted",
+    "outreach_count": 1,
+    "last_contacted_at": "2026-05-24T11:09:02.988+00:00",
+    "replied_at": null,
+    "notes": null,
+    "created_at": "2026-05-24T11:09:03.661195+00:00",
+    "updated_at": "2026-05-24T11:09:03.661195+00:00"
+  },
+  {
     "id": "0c97e116-3d01-4afb-b19d-ee799140c289",
     "brand_name": "Hair Studio (Boring Road) / Smooth N Shine",
     "website": "",
@@ -298,6 +328,21 @@
     "notes": "Contact Doctor: Doctor",
     "created_at": "2026-05-22T19:45:57.615801+00:00",
     "updated_at": "2026-05-22T19:45:57.615801+00:00"
+  },
+  {
+    "id": "11bcbff4-2d26-437a-903e-dc3615cb1453",
+    "brand_name": "Desi Tesi",
+    "website": "https://itsdesitesi.com",
+    "instagram_handle": null,
+    "email": "namastedesitesi@gmail.com",
+    "category": "Food & Gourmet",
+    "status": "contacted",
+    "outreach_count": 1,
+    "last_contacted_at": "2026-05-24T11:09:16.817+00:00",
+    "replied_at": null,
+    "notes": null,
+    "created_at": "2026-05-24T11:09:16.920519+00:00",
+    "updated_at": "2026-05-24T11:09:16.920519+00:00"
   },
   {
     "id": "11ec8385-d170-4002-ac9b-cc7ec44696f3",
@@ -660,6 +705,21 @@
     "updated_at": "2026-05-23T09:42:10.287776+00:00"
   },
   {
+    "id": "241b8ce1-b779-4e1e-99ba-9435a42decfe",
+    "brand_name": "C'nor",
+    "website": "https://cnor.in",
+    "instagram_handle": null,
+    "email": "care@cnor.in",
+    "category": "Beauty & Skincare",
+    "status": "contacted",
+    "outreach_count": 1,
+    "last_contacted_at": "2026-05-24T11:09:05.767+00:00",
+    "replied_at": null,
+    "notes": null,
+    "created_at": "2026-05-24T11:09:05.871211+00:00",
+    "updated_at": "2026-05-24T11:09:05.871211+00:00"
+  },
+  {
     "id": "26094364-ec75-4bd8-bc00-8d6d8376bcd7",
     "brand_name": "Deconstruct",
     "website": "https://thedeconstruct.in",
@@ -765,6 +825,21 @@
     "updated_at": "2026-05-22T19:45:59.707637+00:00"
   },
   {
+    "id": "2a980cd5-92b0-421f-a72f-679e087511af",
+    "brand_name": "The Good Leaf",
+    "website": "https://thegoodleaf.in",
+    "instagram_handle": null,
+    "email": "sales@thegoodleaf.in",
+    "category": "Wellness & Health",
+    "status": "contacted",
+    "outreach_count": 1,
+    "last_contacted_at": "2026-05-24T11:09:24.151+00:00",
+    "replied_at": null,
+    "notes": null,
+    "created_at": "2026-05-24T11:09:24.260625+00:00",
+    "updated_at": "2026-05-24T11:09:24.260625+00:00"
+  },
+  {
     "id": "2b01891d-493b-4dcf-9d9f-0dcab57e35bd",
     "brand_name": "Cleevo",
     "website": "https://getcleevo.com",
@@ -847,12 +922,12 @@
     "email": "care@modestouzeattires.com",
     "category": "Apparel & Accessories",
     "status": "contacted",
-    "outreach_count": 1,
-    "last_contacted_at": "2026-05-22T21:00:32.197+00:00",
+    "outreach_count": 2,
+    "last_contacted_at": "2026-05-24T11:09:26.354+00:00",
     "replied_at": null,
     "notes": null,
     "created_at": "2026-05-22T21:00:32.678717+00:00",
-    "updated_at": "2026-05-22T21:00:32.678717+00:00"
+    "updated_at": "2026-05-24T11:09:26.457616+00:00"
   },
   {
     "id": "3381b0d2-1850-4f51-9017-2e21ea334a9f",
@@ -1815,6 +1890,21 @@
     "updated_at": "2026-05-23T18:30:25.441225+00:00"
   },
   {
+    "id": "6a927a94-66a2-4e9f-9932-e2f7f4a72161",
+    "brand_name": "Santerra Hygiene",
+    "website": "https://santerrahygiene.com",
+    "instagram_handle": null,
+    "email": "info@santerrahygiene.com",
+    "category": "Wellness & Hygiene",
+    "status": "contacted",
+    "outreach_count": 1,
+    "last_contacted_at": "2026-05-24T11:09:08.687+00:00",
+    "replied_at": null,
+    "notes": null,
+    "created_at": "2026-05-24T11:09:08.795584+00:00",
+    "updated_at": "2026-05-24T11:09:08.795584+00:00"
+  },
+  {
     "id": "6e9d2558-4610-434a-9426-44e9f8b7982f",
     "brand_name": "Bare Necessities",
     "website": "https://barenecessities.in",
@@ -2220,6 +2310,21 @@
     "updated_at": "2026-05-22T20:26:17.076263+00:00"
   },
   {
+    "id": "880cf661-c5da-4fdf-90bb-e6fb69b8e035",
+    "brand_name": "Suzyan Professional",
+    "website": "https://suzyancosmetics.com",
+    "instagram_handle": null,
+    "email": "support@suzyancosmetics.com",
+    "category": "Beauty & Skincare",
+    "status": "contacted",
+    "outreach_count": 1,
+    "last_contacted_at": "2026-05-24T12:20:31.028+00:00",
+    "replied_at": null,
+    "notes": null,
+    "created_at": "2026-05-24T12:20:31.124344+00:00",
+    "updated_at": "2026-05-24T12:20:31.124344+00:00"
+  },
+  {
     "id": "8b1580c6-e162-4323-94dd-dbb7edcd9944",
     "brand_name": "The Happy Turtle",
     "website": "https://thehappyturtle.in",
@@ -2278,6 +2383,21 @@
     "notes": "Dermatologist ad outreach: Lely's focuses on affordable clinical skincare and their flagship Derma Roller tool.",
     "created_at": "2026-05-23T17:14:39.609337+00:00",
     "updated_at": "2026-05-23T17:14:39.609337+00:00"
+  },
+  {
+    "id": "8e6e0bae-3b9a-4c61-a2c0-f57c2794fab6",
+    "brand_name": "NexLev",
+    "website": "https://nexlev.in",
+    "instagram_handle": null,
+    "email": "support@nexlev.in",
+    "category": "Fashion & Apparel",
+    "status": "contacted",
+    "outreach_count": 1,
+    "last_contacted_at": "2026-05-24T11:09:10.976+00:00",
+    "replied_at": null,
+    "notes": null,
+    "created_at": "2026-05-24T11:09:11.082416+00:00",
+    "updated_at": "2026-05-24T11:09:11.082416+00:00"
   },
   {
     "id": "8fe2a4bb-2258-4416-8058-5b92052a52f4",
@@ -2550,6 +2670,21 @@
     "updated_at": "2026-05-22T21:00:51.554248+00:00"
   },
   {
+    "id": "a0434c52-e90a-4521-9453-f549b04b1119",
+    "brand_name": "AGARO Lifestyle",
+    "website": "https://agarolifestyle.com",
+    "instagram_handle": null,
+    "email": "contact@agarolifestyle.com",
+    "category": "Personal Care & Appliances",
+    "status": "contacted",
+    "outreach_count": 1,
+    "last_contacted_at": "2026-05-24T12:20:27.286+00:00",
+    "replied_at": null,
+    "notes": null,
+    "created_at": "2026-05-24T12:20:27.379891+00:00",
+    "updated_at": "2026-05-24T12:20:27.379891+00:00"
+  },
+  {
     "id": "a18988d2-3e60-4734-a087-afc61af7bd74",
     "brand_name": "Arata",
     "website": "https://arata.in",
@@ -2698,6 +2833,21 @@
     "notes": "Contact: Manager | Location: Lohianagar",
     "created_at": "2026-05-22T20:26:12.686206+00:00",
     "updated_at": "2026-05-22T20:26:12.686206+00:00"
+  },
+  {
+    "id": "ac358d01-130b-4fee-ad77-597f75da1585",
+    "brand_name": "Zaysoo",
+    "website": "https://zaysoo.com",
+    "instagram_handle": null,
+    "email": "Mraenterprises2017@gmail.com",
+    "category": "Fashion & Apparel",
+    "status": "contacted",
+    "outreach_count": 1,
+    "last_contacted_at": "2026-05-24T12:20:33.315+00:00",
+    "replied_at": null,
+    "notes": null,
+    "created_at": "2026-05-24T12:20:33.407504+00:00",
+    "updated_at": "2026-05-24T12:20:33.407504+00:00"
   },
   {
     "id": "af5fc9e7-d803-491b-b855-44c7d40b409a",
@@ -3585,6 +3735,21 @@
     "updated_at": "2026-05-23T18:30:34.239678+00:00"
   },
   {
+    "id": "eb46d3e2-2e75-430d-9edd-2743a7180b03",
+    "brand_name": "Nutrovally",
+    "website": "https://nutrovally.com",
+    "instagram_handle": null,
+    "email": "nvsupport@nutrovally.com",
+    "category": "Food & Gourmet",
+    "status": "contacted",
+    "outreach_count": 1,
+    "last_contacted_at": "2026-05-24T11:09:19.173+00:00",
+    "replied_at": null,
+    "notes": null,
+    "created_at": "2026-05-24T11:09:19.273155+00:00",
+    "updated_at": "2026-05-24T11:09:19.273155+00:00"
+  },
+  {
     "id": "eb61c553-f07a-4a79-b420-8ba47148da28",
     "brand_name": "Rubab Men",
     "website": "https://rubabmen.com",
@@ -3705,6 +3870,21 @@
     "updated_at": "2026-05-22T20:25:01.181261+00:00"
   },
   {
+    "id": "f55ef652-43e8-4fbf-88aa-e15a617416dc",
+    "brand_name": "Shadani Group",
+    "website": "https://shadanigroup.com",
+    "instagram_handle": null,
+    "email": "info@shadanigroup.com",
+    "category": "Food & Gourmet",
+    "status": "contacted",
+    "outreach_count": 1,
+    "last_contacted_at": "2026-05-24T11:09:14.477+00:00",
+    "replied_at": null,
+    "notes": null,
+    "created_at": "2026-05-24T11:09:14.586186+00:00",
+    "updated_at": "2026-05-24T11:09:14.586186+00:00"
+  },
+  {
     "id": "f6e2447e-f460-49cb-a86d-52aa39989147",
     "brand_name": "Satya Skin And Cosmetic Clinic",
     "website": "",
@@ -3763,6 +3943,21 @@
     "notes": "Contact: Manager | Location: Sheikhpura, Bailey Road",
     "created_at": "2026-05-22T20:26:10.504717+00:00",
     "updated_at": "2026-05-22T20:26:10.504717+00:00"
+  },
+  {
+    "id": "fa35022d-943d-4cbe-abed-a1142c04559f",
+    "brand_name": "THE Dravya store",
+    "website": "https://thedravyastore.com",
+    "instagram_handle": null,
+    "email": "thedravyastore@gmail.com",
+    "category": "Beauty & Skincare",
+    "status": "contacted",
+    "outreach_count": 1,
+    "last_contacted_at": "2026-05-24T12:20:23.746+00:00",
+    "replied_at": null,
+    "notes": null,
+    "created_at": "2026-05-24T12:20:24.331502+00:00",
+    "updated_at": "2026-05-24T12:20:24.331502+00:00"
   },
   {
     "id": "fa580dfe-9594-4d3e-87fb-b60b3c63c8d4",
