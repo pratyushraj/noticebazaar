@@ -466,7 +466,7 @@ export const blogPosts: BlogPost[] = [
     summary: 'A practical guide for brands to shortlist UGC creators, check fit, and send structured offers that convert faster than inbox hunting.',
     keywords: ['find ugc creators in India', 'ugc creator india', 'brand collaboration', 'creator discovery', 'ugc brands'],
     content: {
-      introduction: 'Finding the right UGC creator is not about scrolling endlessly through Instagram and hoping the best profiles reply. The fastest way to get a strong result is to define the brief, evaluate fit against the audience, and use a structured workflow that makes it easy for creators to respond. Here is a practical guide for Indian brands that want better creator matches and fewer wasted conversations.',
+      introduction: 'If you want to find UGC creators in India, the fastest path is not scrolling endlessly through Instagram and hoping the best profiles reply. Define the brief, evaluate fit against the audience, and use a structured workflow that makes it easy for creators to respond. Here is a practical guide for Indian brands that want better creator matches and fewer wasted conversations.',
       sections: [
         {
           heading: '1. Start with the campaign objective',
@@ -532,7 +532,7 @@ export const blogPosts: BlogPost[] = [
     image: 'https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=800&h=400&fit=crop',
     summary: 'A data-driven breakdown of what Indian influencers should charge brands in 2026, with benchmarks by platform and niche.',
     content: {
-      introduction: 'One of the hardest parts of being a creator in India is figuring out what to charge. Charge too little and you leave money on the table. Charge too much and brands ghost you. Here\'s a data-backed rate card for 2026.',
+      introduction: 'One of the hardest parts of being a creator in India is figuring out what to charge brands. Charge too little and you leave money on the table. Charge too much and brands ghost you. Here\'s a data-backed influencer rate card for India in 2026, plus a free calculator to sanity-check your numbers.',
       sections: [
         {
           heading: 'Instagram Rate Benchmarks (India 2026)',
@@ -614,7 +614,7 @@ export const blogPosts: BlogPost[] = [
     image: 'https://images.unsplash.com/photo-1450101499163-c8848c66ca85?w=800&h=400&fit=crop',
     summary: 'A free, ready-to-use brand deal contract template designed for Indian creators, covering all the clauses that protect your payments and content rights.',
     content: {
-      introduction: 'Every brand deal needs a contract — even for ₹5,000. Without one, you\'re relying on trust alone, and trust doesn\'t pay invoices. Here\'s a free template built specifically for Indian creators.',
+      introduction: 'Every brand deal needs a contract — even for ₹5,000. Without one, you\'re relying on trust alone, and trust doesn\'t pay invoices. If you need a free influencer contract review, this template is a practical starting point for Indian creators.',
       sections: [
         {
           heading: 'Why Indian Creators Need Written Contracts',
@@ -629,14 +629,14 @@ export const blogPosts: BlogPost[] = [
           content: 'Before signing any brand\'s contract, run it through our free contract analyzer. It scans for red flags like unlimited revisions, perpetual usage rights, and one-sided cancellation clauses.',
         },
       ],
-      conclusion: 'Don\'t sign anything without a contract. Download our free template, customize it for each deal, and protect your work and payments.',
+      conclusion: 'Don\'t sign anything without a contract. Download our free template, customize it for each deal, and protect your work and payments. If you are comparing options, use the collaboration agreement generator and contract analyzer together.',
     },
     faqs: [
       { question: 'Is a WhatsApp agreement legally binding in India?', answer: 'Technically yes, under the Indian Contract Act. But proving terms in court is nearly impossible without screenshots and context. Always use a written contract.' },
       { question: 'What if a brand refuses to sign a contract?', answer: 'That\'s a red flag. Professional brands expect contracts. If they refuse, they\'re likely to cause payment issues later. Walk away.' },
     ],
     keywords: ['brand deal contract template', 'influencer contract india', 'creator agreement template', 'brand collaboration contract', 'free contract template'],
-    internalLinks: { homepage: true, contractTool: true },
+    internalLinks: { homepage: true, contractTool: true, collabLink: true },
     author: { name: 'Creator Armour', type: 'Organization' },
   },
   {
@@ -1008,7 +1008,7 @@ export const blogPosts: BlogPost[] = [
     summary: 'Discover the top Instagram influencers in Patna, Bihar for 2026. Learn about leading creators in lifestyle, food, travel, and fashion, and how brands can collaborate with them effectively.',
     keywords: ['Patna influencers', 'Instagram influencers Patna', 'Bihar content creators', 'influencer marketing Patna', 'best food bloggers Patna'],
     content: {
-      introduction: 'Patna, the vibrant capital of Bihar, is emerging as a hotbed for digital creativity in 2026. With rising internet density and a highly active local youth population, content creators from Patna are building highly engaged, authentic communities. For D2C brands looking to establish a regional footprint in Eastern India, collaborating with local Patna influencers offers unparalleled regional relevance and higher engagement rates compared to generic national campaigns.',
+      introduction: 'If you are looking for Patna influencers in 2026, the city is emerging as a hotbed for digital creativity with highly active local creator communities. For D2C brands looking to establish a regional footprint in Eastern India, collaborating with local Patna influencers offers strong regional relevance and higher engagement rates than generic national campaigns.',
       sections: [
         {
           heading: 'Why Collaborate with Influencers in Patna, Bihar?',

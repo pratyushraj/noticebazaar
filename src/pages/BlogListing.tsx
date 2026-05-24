@@ -140,6 +140,63 @@ const BlogListing = () => {
           </div>
         </div>
       </section>
+
+      {/* Related Reading */}
+      <section className="max-w-[1200px] mx-auto px-6 py-20">
+        <div className="rounded-3xl border border-emerald-500/20 bg-white/5 p-8 md:p-10">
+          <p className="text-[10px] font-black uppercase tracking-[0.25em] text-emerald-400 mb-3">Related Reading</p>
+          <h2 className="text-2xl md:text-3xl font-black tracking-tight uppercase italic mb-4">
+            Start with the core creator tools
+          </h2>
+          <p className="text-slate-400 max-w-2xl mb-8 font-medium">
+            If you are exploring creator workflows, these three pages cover the main routes brands and creators use most often.
+          </p>
+          <div className="grid gap-4 md:grid-cols-3">
+            <Link
+              to="/barter-collab"
+              className="rounded-2xl border border-white/10 bg-black/20 p-5 hover:border-emerald-500/40 hover:bg-emerald-500/10 transition-all group"
+            >
+              <div className="flex items-center justify-between gap-3">
+                <span className="font-black uppercase tracking-wider text-white group-hover:text-emerald-400">
+                  Barter Collabs
+                </span>
+                <ArrowRight className="w-4 h-4 text-emerald-400" />
+              </div>
+              <p className="mt-3 text-sm text-slate-400 font-medium">
+                Find creators open to product exchange and influencer gifting in India.
+              </p>
+            </Link>
+            <Link
+              to="/brand-directory"
+              className="rounded-2xl border border-white/10 bg-black/20 p-5 hover:border-emerald-500/40 hover:bg-emerald-500/10 transition-all group"
+            >
+              <div className="flex items-center justify-between gap-3">
+                <span className="font-black uppercase tracking-wider text-white group-hover:text-emerald-400">
+                  Brand Directory
+                </span>
+                <ArrowRight className="w-4 h-4 text-emerald-400" />
+              </div>
+              <p className="mt-3 text-sm text-slate-400 font-medium">
+                Browse brands open to creator collaborations and outreach.
+              </p>
+            </Link>
+            <Link
+              to="/free-influencer-contract"
+              className="rounded-2xl border border-white/10 bg-black/20 p-5 hover:border-emerald-500/40 hover:bg-emerald-500/10 transition-all group"
+            >
+              <div className="flex items-center justify-between gap-3">
+                <span className="font-black uppercase tracking-wider text-white group-hover:text-emerald-400">
+                  Contract Tools
+                </span>
+                <ArrowRight className="w-4 h-4 text-emerald-400" />
+              </div>
+              <p className="mt-3 text-sm text-slate-400 font-medium">
+                Review influencer contracts and protect your brand deals before signing.
+              </p>
+            </Link>
+          </div>
+        </div>
+      </section>
     </div>
   );
 };

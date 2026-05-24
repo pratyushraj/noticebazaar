@@ -544,7 +544,7 @@ export default function ReelGenerator() {
                 </div>
 
                 {/* Inner Canvas (Where Reel Plays) */}
-                <div className={`w-full h-full rounded-[38px] overflow-hidden ${activeTheme.bgClass} relative flex flex-col justify-between p-6 select-none`}>
+                <div id="reel-inner-canvas" className={`w-full h-full rounded-[38px] overflow-hidden ${activeTheme.bgClass} relative flex flex-col justify-between p-6 select-none`}>
                   
                   {/* Subtle Noise Static Filter */}
                   {showNoiseOverlay && (

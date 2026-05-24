@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { SEOHead } from '@/components/seo/SEOHead';
-import { ArrowRight, BadgeCheck, BriefcaseBusiness, Clock, FileText, Handshake, Mail, Menu, Search, Send, ShieldCheck, Sparkles, X, Star, Zap, Globe } from 'lucide-react';
+import { ArrowRight, BadgeCheck, BriefcaseBusiness, Clock, FileText, Handshake, Mail, Menu, Search, Send, ShieldCheck, Sparkles, X, Star, Zap, Globe, ChevronRight } from 'lucide-react';
 import { triggerHaptic, HapticPatterns } from '@/lib/utils/haptics';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -546,6 +546,64 @@ const BrandLandingPage = () => {
                   </button>
                 </div>
               </motion.div>
+            </div>
+          </section>
+
+          <section className="py-10 md:py-14">
+            <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+              <div className="rounded-[2rem] border border-white/10 bg-white/5 p-6 md:p-8">
+                <p className="text-[10px] font-black uppercase tracking-[0.25em] text-emerald-400 mb-3">Related Reading</p>
+                <h2 className="text-2xl md:text-3xl font-black tracking-tight uppercase italic mb-4">
+                  Brand playbooks worth reading next
+                </h2>
+                <p className="text-sm md:text-base text-slate-400 font-medium max-w-2xl mb-6">
+                  These pages cover the workflows brands use most often when they need creators, barters, or contract checks.
+                </p>
+                <div className="grid gap-4 md:grid-cols-3">
+                  <Link
+                    to="/barter-collab"
+                    className="rounded-2xl border border-white/10 bg-[#071511] p-5 hover:border-emerald-400/40 hover:bg-emerald-500/10 transition-all group"
+                  >
+                    <div className="flex items-center justify-between gap-3">
+                      <span className="font-black uppercase tracking-wider text-white group-hover:text-emerald-400">
+                        Barter Collabs
+                      </span>
+                      <ChevronRight className="w-4 h-4 text-emerald-400" />
+                    </div>
+                    <p className="mt-3 text-sm text-slate-400 font-medium">
+                      Run product exchange and influencer gifting campaigns in India.
+                    </p>
+                  </Link>
+                  <Link
+                    to="/brand-directory"
+                    className="rounded-2xl border border-white/10 bg-[#071511] p-5 hover:border-emerald-400/40 hover:bg-emerald-500/10 transition-all group"
+                  >
+                    <div className="flex items-center justify-between gap-3">
+                      <span className="font-black uppercase tracking-wider text-white group-hover:text-emerald-400">
+                        Brand Directory
+                      </span>
+                      <ChevronRight className="w-4 h-4 text-emerald-400" />
+                    </div>
+                    <p className="mt-3 text-sm text-slate-400 font-medium">
+                      Find creators already open to collaboration offers.
+                    </p>
+                  </Link>
+                  <Link
+                    to="/free-influencer-contract"
+                    className="rounded-2xl border border-white/10 bg-[#071511] p-5 hover:border-emerald-400/40 hover:bg-emerald-500/10 transition-all group"
+                  >
+                    <div className="flex items-center justify-between gap-3">
+                      <span className="font-black uppercase tracking-wider text-white group-hover:text-emerald-400">
+                        Contract Tools
+                      </span>
+                      <ChevronRight className="w-4 h-4 text-emerald-400" />
+                    </div>
+                    <p className="mt-3 text-sm text-slate-400 font-medium">
+                      Review deal terms before you approve a creator partnership.
+                    </p>
+                  </Link>
+                </div>
+              </div>
             </div>
           </section>
         </main>
