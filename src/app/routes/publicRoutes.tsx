@@ -42,6 +42,7 @@ const WelcomeOnboarding = lazy(() => import("@/pages/WelcomeOnboarding"));
 const InstaMockup = lazy(() => import("@/pages/InstaMockup"));
 const BarterCollabPage = lazy(() => import("@/pages/BarterCollabPage"));
 const AutoplayDirectory = lazy(() => import("@/pages/AutoplayDirectory"));
+const ReelGenerator = lazy(() => import("@/pages/ReelGenerator"));
 
 
 export const PublicRoutes = () => (
@@ -55,6 +56,8 @@ export const PublicRoutes = () => (
     <Route path="/pet-care" element={<PetBrandPitch />} />
     <Route path="/pitch/pet-care" element={<Navigate to="/pet-care" replace />} />
     <Route path="/insta-mockup" element={<LazyRoute><InstaMockup /></LazyRoute>} />
+    <Route path="/reel-generator" element={<LazyRoute><ReelGenerator /></LazyRoute>} />
+    <Route path="/reels-creator" element={<Navigate to="/reel-generator" replace />} />
     <Route path="/welcome" element={<LazyRoute><WelcomeOnboarding /></LazyRoute>} />
     <Route path="/blog" element={<LazyRoute><BlogListing /></LazyRoute>} />
     <Route path="/blog/:slug" element={<LazyRoute><BlogPost /></LazyRoute>} />
