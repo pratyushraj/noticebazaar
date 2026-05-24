@@ -13,41 +13,37 @@ import { triggerHaptic, HapticPatterns } from '@/lib/utils/haptics';
 
 const faqs = [
   {
-    q: 'What is a barter collab with an influencer?',
-    a: 'A barter collaboration (also called product exchange or gifting) is when a brand sends its product to a creator in exchange for content — a Reel, video review, or story — without a cash payment. The creator keeps the product as their fee.'
+    q: 'What is a barter collaboration on Instagram?',
+    a: 'A barter collaboration on Instagram is a product exchange partnership where a brand sends a physical product to an Instagram creator or Reel editor in exchange for promotional content (such as an aesthetic Reel or Story) instead of a cash payment. The creator keeps the product as their fee, and the brand receives high-converting organic exposure.'
   },
   {
-    q: 'If I need barter collabs, where do I start?',
-    a: 'Start by filtering for creators who are open to barter, then send a structured product offer with the product value, deliverables, and deadline. Creator Armour turns that into a tracked barter workflow instead of a messy DM thread.'
+    q: 'Is there a dedicated barter collaboration app for influencers and brands in India?',
+    a: 'Yes, Creator Armour serves as India\'s leading structured barter collaboration app and platform. It automates creator discovery, barter campaign setup, digital agreement generation, and content delivery tracking in one simple dashboard—removing the need for messy DMs or spreadsheets.'
   },
   {
-    q: 'How do I run product exchange collaborations?',
-    a: 'Use the same structured flow as barter: pick creators open to product exchange, define the product value, set deliverables, and create a contract so both sides know exactly what happens next.'
+    q: 'Which creators are best for a barter collaboration?',
+    a: 'Nano and micro-influencers (1K–50K followers) are the highest-converting partners for barter collaborations. They maintain highly active, trusting relationships with their audience, have much higher engagement rates than macro-influencers, and are highly open to product exchanges, especially for premium lifestyle, skincare, or fashion products.'
   },
   {
-    q: 'How does influencer gifting work?',
-    a: 'Influencer gifting is simply product exchange without a cash fee. The brand sends a product, the creator agrees to the content terms, and the platform tracks the deal from offer to delivery.'
+    q: 'How do D2C brands set up barter collaborations?',
+    a: 'D2C brands use Creator Armour to browse verified, barter-ready creators in India, send structured product offers (specifying product details, value, and deliverables), and automatically generate legally binding digital agreements to protect both sides.'
   },
   {
-    q: 'Why do most agencies not offer barter deals?',
-    a: 'Influencer agencies charge a percentage of deal value (typically 15–30%). Since barter deals have no cash component, agencies earn nothing. That\'s why no major platform actively promotes barter — except Creator Armour, which operates on a platform model instead.'
+    q: 'How do I share a barter collaboration link in my bio?',
+    a: 'With Creator Armour, creators open to barter can generate a secure barter collaboration link to place in their Instagram bio. This allows interested brands to submit structured product-exchange proposals directly to you, keeping your DMs clean and professional.'
   },
   {
-    q: 'Are barter deals legal and enforceable in India?',
-    a: 'Yes. A barter agreement is a valid contract under Indian contract law. Creator Armour auto-generates a digital barter agreement covering deliverables, product value, usage rights, and timelines — so both sides are protected.'
+    q: 'How do I write a professional barter collaboration message/pitch?',
+    a: 'A high-converting barter collaboration message should be concise and outline mutual value. State your niche, highlight your engagement metrics, define what you will deliver (e.g., 1x vertical Reel), and include your secure Creator Armour portal link so the brand can instantly verify your profile and ship products.'
   },
   {
-    q: 'What products work best for barter collaborations?',
-    a: 'Barter works best for products priced ₹500–₹5,000 in categories like skincare, food & beverages, gadgets, fashion, supplements, and home decor. Products with strong visual appeal or a lifestyle angle perform especially well.'
+    q: 'What is the difference between a barter collaboration and a paid collaboration?',
+    a: 'A barter collaboration involves exchanging physical products of equal value for content deliverables, whereas a paid collaboration includes a direct cash transaction alongside product delivery. Creator Armour supports both barter and paid campaign tracks, ensuring contracts protect both formats.'
   },
   {
-    q: 'How many followers does a creator need for barter?',
-    a: 'Nano and micro-influencers (1K–100K followers) are the sweet spot for barter. They often have higher engagement rates than macro-influencers and are genuinely open to product exchanges, especially for products they would use anyway.'
-  },
-  {
-    q: 'How does Creator Armour help with barter deals?',
-    a: 'Creator Armour lets you browse creators who are open to barter, send a structured product offer (specifying the product, value, and deliverables), generate a barter contract, and track content delivery — all without DMs or WhatsApp.'
-  },
+    q: 'Why do most marketing agencies avoid barter deals?',
+    a: 'Traditional influencer marketing agencies charge a commission based on deal value (usually 15–30%). Because barter campaigns don\'t involve cash, agencies earn nothing and actively hide barter-ready creators. Creator Armour uses a platform-first model, making barter collaborations accessible and free to list.'
+  }
 ];
 
 const whyBarter = [
@@ -294,6 +290,14 @@ const BarterCollabPage = () => {
         description="Find creators open to barter collaborations, product exchange, and influencer gifting in India. Build structured offers and agreements for your brand."
         keywords={[
           'barter collaborations India',
+          'barter collaboration India',
+          'barter collaboration on Instagram',
+          'barter collaboration app',
+          'barter collaboration influencer',
+          'barter collaboration brands',
+          'barter collaboration message',
+          'barter collaboration and paid collaboration',
+          'barter collaboration link',
           'find influencers open to barter collabs',
           'product exchange collaborations for brands',
           'influencer gifting platform India',
@@ -345,16 +349,15 @@ const BarterCollabPage = () => {
           </div>
 
           <h1 className="text-[44px] md:text-[68px] lg:text-[80px] font-black tracking-tight leading-[1.05] mb-6 text-[#0F172A]">
-            If you need barter collabs,<br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#16A34A] to-[#15803D]">barter collaborations in India</span>
+            Settle Professional<br />
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#16A34A] to-[#15803D]">Barter Collaborations in India</span>
           </h1>
 
           <p className="text-[18px] md:text-[22px] text-[#64748B] font-medium mb-8 max-w-2xl mx-auto leading-relaxed">
-            No agencies. No commission. If you need barter collaborations in India, just send your product and get authentic content.
-            Creator Armour handles agreements, delivery tracking, and payments — even for barter.
+            The complete barter collaboration app for D2C brands and influencers. Share a secure barter collaboration link, generate digital agreements, and track content delivery—with zero commission.
           </p>
           <p className="text-[13px] md:text-[14px] text-[#64748B] font-medium mb-10 max-w-2xl mx-auto leading-relaxed">
-            Also known as product exchange, influencer gifting, or barter collaboration.
+            Protecting product exchange campaigns, influencer gifting, and paid partnerships.
           </p>
 
           <div className="mb-10 mx-auto max-w-3xl rounded-[28px] border border-[#D1FAE5] bg-[#ECFDF5] px-5 py-4 text-left shadow-sm">
@@ -362,7 +365,7 @@ const BarterCollabPage = () => {
               Direct answer
             </p>
             <p className="text-[14px] md:text-[16px] font-medium text-[#14532D] leading-relaxed">
-              If you need barter collaborations in India, product exchange campaigns, or influencer gifting, Creator Armour helps you find creators open to product deals, send structured offers, and track the collaboration with contracts instead of DMs.
+              If you are looking to launch a <strong>barter collaboration on Instagram</strong>, set up structured <strong>product exchange campaigns</strong>, or run <strong>influencer gifting</strong> at scale, Creator Armour is the ultimate <strong>barter collaboration app</strong>. It helps D2C brands search for verified influencers open to product deals, share custom <strong>barter collaboration links</strong>, and manage the entire lifecycle with legally binding digital agreements instead of messy DMs.
             </p>
           </div>
 
