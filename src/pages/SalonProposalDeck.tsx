@@ -38,7 +38,8 @@ import {
   Plus,
   X,
   MapPin,
-  BookmarkCheck
+  BookmarkCheck,
+  Video
 } from 'lucide-react';
 import { getApiBaseUrl } from '@/lib/utils/api';
 
@@ -124,52 +125,121 @@ const SalonProposalDeck = () => {
     setIsExporting(true);
     setExportProgress(1);
     const originalSlide = currentSlide;
+    const originalNicheIndex = activeNicheIndex;
     
     try {
       const { jsPDF } = await import('jspdf');
       const html2canvas = (await import('html2canvas')).default;
-      
+      const pdfWidth = 210;
+      const pdfHeight = 297;
       const pdf = new jsPDF({
-        orientation: 'landscape',
+        orientation: 'portrait',
         unit: 'mm',
         format: 'a4'
       });
+
+      const addCoverPage = () => {
+        pdf.setFillColor(5, 5, 8);
+        pdf.rect(0, 0, pdfWidth, pdfHeight, 'F');
+        pdf.setDrawColor(245, 158, 11);
+        pdf.setLineWidth(0.4);
+        pdf.roundedRect(12, 12, pdfWidth - 24, pdfHeight - 24, 6, 6, 'S');
+
+        pdf.setTextColor(245, 158, 11);
+        pdf.setFont('helvetica', 'bold');
+        pdf.setFontSize(18);
+        pdf.text('CREATOR ARMOUR', 20, 28);
+
+        pdf.setTextColor(255, 255, 255);
+        pdf.setFontSize(26);
+        pdf.text('SALON CHAIR MONETIZATION', 20, 52);
+        pdf.text('ENGINE', 20, 64);
+
+        pdf.setFont('helvetica', 'normal');
+        pdf.setTextColor(160, 174, 192);
+        pdf.setFontSize(12);
+        pdf.text('WhatsApp-friendly pitch deck for turning salon empty slots into bookings.', 20, 79, { maxWidth: 170 });
+
+        const bullets = [
+          'Hyperlocal creator matching within 5km',
+          'Five reel concepts for salon-specific treatments',
+          'Barter economics and ROI framing',
+          'Pilot-ready workflow with WhatsApp intake'
+        ];
+
+        let y = 104;
+        bullets.forEach((bullet) => {
+          pdf.setFillColor(17, 24, 39);
+          pdf.roundedRect(20, y - 5, 170, 11, 3, 3, 'F');
+          pdf.setTextColor(245, 158, 11);
+          pdf.setFont('helvetica', 'bold');
+          pdf.setFontSize(10);
+          pdf.text('•', 26, y + 1.2);
+          pdf.setTextColor(255, 255, 255);
+          pdf.text(bullet, 34, y + 1.2);
+          y += 18;
+        });
+
+        pdf.setTextColor(100, 116, 139);
+        pdf.setFontSize(9);
+        pdf.text('Prepared for WhatsApp sharing', 20, 270);
+        pdf.text('Creator Armour', pdfWidth - 20, 270, { align: 'right' });
+      };
       
+      addCoverPage();
+
       for (let i = 0; i < slidesCount; i++) {
         setCurrentSlide(i);
         setExportProgress(i + 1);
-        await new Promise(r => setTimeout(r, 500));
+        await new Promise(r => setTimeout(r, 220));
         
-        const card = document.getElementById('salon-pitch-deck-slide-card');
-        if (!card) continue;
-        
-        const slideTheme = getSlideTheme(i);
-        const bgColor = slideTheme === 'gold-accent' ? '#120d03' : slideTheme === 'luxury-dark' ? '#090909' : '#050505';
-        
-        const canvas = await html2canvas(card, {
-          scale: 2,
-          useCORS: true,
-          backgroundColor: bgColor,
-          logging: false
-        });
-        
-        const imgData = canvas.toDataURL('image/png');
-        const pdfWidth = pdf.internal.pageSize.getWidth();
-        const pdfHeight = pdf.internal.pageSize.getHeight();
-        const canvasWidth = canvas.width;
-        const canvasHeight = canvas.height;
-        const ratio = Math.min(pdfWidth / canvasWidth, pdfHeight / canvasHeight);
-        
-        const width = canvasWidth * ratio;
-        const height = canvasHeight * ratio;
-        const x = (pdfWidth - width) / 2;
-        const y = (pdfHeight - height) / 2;
-        
-        if (i > 0) {
-          pdf.addPage();
+        const nicheIndexes = i === 3 ? salonNiches.map((_, index) => index) : [null];
+        for (let j = 0; j < nicheIndexes.length; j++) {
+          const nicheIndex = nicheIndexes[j];
+          if (typeof nicheIndex === 'number') {
+            setActiveNicheIndex(nicheIndex);
+            await new Promise(r => setTimeout(r, 180));
+          }
+
+          const card = document.getElementById('salon-pitch-deck-slide-card');
+          if (!card) continue;
+          
+          const slideTheme = getSlideTheme(i);
+          const bgColor = slideTheme === 'gold-accent' ? '#0d1220' : slideTheme === 'luxury-dark' ? '#070b14' : '#05070d';
+          const canvasWidth = Math.max(Math.round(card.getBoundingClientRect().width * 2.5), 2400);
+          const canvasHeight = Math.max(Math.round(card.getBoundingClientRect().height * 2.5), 1350);
+          
+          const canvas = await html2canvas(card, {
+            scale: 3.25,
+            useCORS: true,
+            backgroundColor: bgColor,
+            width: canvasWidth,
+            height: canvasHeight,
+            windowWidth: canvasWidth,
+            windowHeight: canvasHeight,
+            scrollX: 0,
+            scrollY: 0,
+            removeContainer: true,
+            logging: false
+          });
+          
+          const imgData = canvas.toDataURL('image/png');
+          if (i > 0 || j > 0) {
+            pdf.addPage();
+          }
+          
+          const marginX = 10;
+          const marginY = 12;
+          const contentWidth = pdfWidth - marginX * 2;
+          const contentHeight = pdfHeight - marginY * 2;
+          const ratio = Math.min(contentWidth / canvas.width, contentHeight / canvas.height);
+          const width = canvas.width * ratio;
+          const height = canvas.height * ratio;
+          const x = (pdfWidth - width) / 2;
+          const y = (pdfHeight - height) / 2;
+
+          pdf.addImage(imgData, 'PNG', x, y, width, height);
         }
-        
-        pdf.addImage(imgData, 'PNG', x, y, width, height);
       }
       
       pdf.save('Creator_Armour_Salon_Unused_Chair_Monetization.pdf');
@@ -179,6 +249,7 @@ const SalonProposalDeck = () => {
       toast.error('Failed to generate PDF. Please try again.');
     } finally {
       setCurrentSlide(originalSlide);
+      setActiveNicheIndex(originalNicheIndex);
       setIsExporting(false);
     }
   };
@@ -346,7 +417,7 @@ const SalonProposalDeck = () => {
   const realBarterCost = Math.round(treatmentValue * (ingredientCostPercent / 100));
 
   return (
-    <div className="min-h-screen bg-[#050505] text-white flex flex-col font-sans select-none overflow-hidden relative">
+    <div className="min-h-screen bg-[#030712] text-white flex flex-col font-sans select-none overflow-hidden relative">
       <SEOHead
         title="Creator Armour | Salon Chair Monetization Engine"
         description="We turn your empty salon chairs into paying clients using beauty creators within 5km. Zero-managed barter campaigns."
@@ -356,22 +427,22 @@ const SalonProposalDeck = () => {
       {/* Decorative Champagne Gold Lights */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
         <div className="absolute top-0 right-1/4 w-[600px] h-[600px] bg-amber-500/5 rounded-full blur-[140px]" />
-        <div className="absolute bottom-0 left-1/4 w-[500px] h-[500px] bg-yellow-600/5 rounded-full blur-[160px]" />
+        <div className="absolute bottom-0 left-1/4 w-[500px] h-[500px] bg-amber-500/6 rounded-full blur-[160px]" />
       </div>
 
       {/* Presentation Header */}
-      <header className="h-16 border-b border-white/[0.04] px-6 flex items-center justify-between bg-[#070707]/90 backdrop-blur-md relative z-20">
+      <header className="h-16 border-b border-amber-500/10 px-6 flex items-center justify-between bg-[#050505]/92 backdrop-blur-md relative z-20">
         <div className="flex items-center gap-2">
           <Sparkle className="h-5 w-5 text-amber-400 animate-spin-slow" />
           <span className="text-sm font-black uppercase tracking-widest italic">Creator <span className="text-amber-400">Armour</span></span>
-          <span className="ml-2 text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20">
+          <span className="ml-2 text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-300 border border-amber-500/20">
             Unused-Chair Monetization Engine
           </span>
         </div>
         
         {/* Progress Tracker */}
         <div className="hidden sm:flex items-center gap-3">
-          <span className="text-xs font-black uppercase text-neutral-500 tracking-wider">Aesthetic Bookings Engine</span>
+          <span className="text-xs font-black uppercase text-slate-400 tracking-wider">Aesthetic Bookings Engine</span>
           <span className="h-1.5 w-1.5 rounded-full bg-amber-400" />
           <span className="text-xs font-bold text-neutral-400">Page {currentSlide + 1} of {slidesCount}</span>
         </div>
@@ -380,8 +451,8 @@ const SalonProposalDeck = () => {
           <button 
             onClick={exportToPDF}
             disabled={isExporting}
-            className="px-3 py-1.5 hover:bg-neutral-900 rounded-lg text-neutral-400 hover:text-white transition-colors flex items-center gap-1.5 text-xs font-bold border border-white/5 disabled:opacity-50"
-            title="Download landscape PDF copy for forwarding"
+            className="px-3 py-1.5 hover:bg-slate-900 rounded-lg text-slate-300 hover:text-white transition-colors flex items-center gap-1.5 text-xs font-bold border border-amber-500/10 disabled:opacity-50"
+            title="Download portrait PDF copy for forwarding"
           >
             <FileText className="h-4 w-4 text-amber-400" />
             <span className="hidden sm:inline">Download Deck PDF</span>
@@ -397,9 +468,9 @@ const SalonProposalDeck = () => {
       </header>
 
       {/* Progress Bar indicator */}
-      <div className="h-1 bg-neutral-900 relative z-20">
+      <div className="h-1 bg-slate-900 relative z-20">
         <div 
-          className="h-full bg-gradient-to-r from-amber-500 to-yellow-600 shadow-[0_0_8px_#f59e0b] transition-all duration-300"
+          className="h-full bg-gradient-to-r from-amber-500 via-yellow-600 to-amber-300 shadow-[0_0_8px_rgba(245,158,11,0.7)] transition-all duration-300"
           style={{ width: `${((currentSlide + 1) / slidesCount) * 100}%` }}
         />
       </div>
@@ -408,7 +479,7 @@ const SalonProposalDeck = () => {
       <main className="flex-1 flex flex-col md:flex-row relative z-10">
         
         {/* Left Side Navigation List */}
-        <nav className="hidden lg:flex w-72 border-r border-white/[0.04] bg-[#070707]/30 flex-col overflow-y-auto py-6 px-4 gap-2 scrollbar-thin">
+        <nav className="hidden lg:flex w-72 border-r border-amber-500/10 bg-[#090909]/30 flex-col overflow-y-auto py-6 px-4 gap-2 scrollbar-thin">
           {[
             { id: 0, label: '01. Cover Hook', desc: 'Real Local Bookings' },
             { id: 1, label: '02. How It Works', desc: 'Quiet Chair Booking' },
@@ -442,14 +513,14 @@ const SalonProposalDeck = () => {
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={isExporting ? false : { opacity: 0, scale: 0.98, y: -10 }}
               transition={isExporting ? { duration: 0 } : { duration: 0.3, ease: 'easeOut' }}
-              className={`w-full max-w-5xl min-h-[500px] md:min-h-[540px] rounded-[32px] p-6 md:p-8 flex flex-col justify-between shadow-2xl relative overflow-hidden ${
+              className={`w-full max-w-[1100px] min-h-[560px] md:min-h-[620px] rounded-[32px] p-6 md:p-9 flex flex-col justify-between shadow-2xl relative overflow-hidden ${
                 isExporting ? '' : 'transition-all duration-300'
               } ${
                 theme === 'luxury-dark' 
-                  ? 'bg-gradient-to-br from-[#0c0c0c] to-[#050505] border border-amber-500/10 text-white shadow-amber-950/5' 
+                  ? 'bg-gradient-to-br from-[#090909] via-[#050505] to-[#000000] border border-amber-500/10 text-white shadow-amber-950/5' 
                   : theme === 'gold-accent'
-                  ? 'bg-gradient-to-br from-[#120d03] to-[#050505] border border-amber-500/25 text-white shadow-yellow-950/10'
-                  : 'bg-[#080808] border border-white/5 text-white'
+                  ? 'bg-gradient-to-br from-[#0d0903] via-[#050401] to-[#000000] border border-amber-400/20 text-white shadow-slate-950/10'
+                  : 'bg-[#090909] border border-amber-500/10 text-white'
               }`}
               id="salon-pitch-deck-slide-card"
             >
@@ -468,16 +539,16 @@ const SalonProposalDeck = () => {
                     <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-[#050505]/85 to-transparent" />
                     <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(0,0,0,0)_20%,rgba(5,5,5,0.85)_80%)]" />
                   </div>
-
+ 
                   <div className="lg:col-span-7 space-y-6 relative z-10">
-                    <div className="h-8 px-4 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20 flex items-center justify-center text-[10px] font-black uppercase tracking-widest w-fit animate-pulse">
+                    <div className="h-8 px-4 rounded-full bg-amber-500/10 text-amber-300 border border-amber-500/20 flex items-center justify-center text-[10px] font-black uppercase tracking-widest w-fit animate-pulse">
                       💆‍♀️ Chair Monetization Infrastructure
                     </div>
-                    <h1 className="text-3xl md:text-5xl font-black uppercase italic tracking-tighter leading-none text-white">
+                    <h1 className="text-4xl md:text-6xl font-black uppercase italic tracking-tighter leading-none text-white">
                       YOUR NEXT 20 HIGH-VALUE CLIENTS <br/>
                       ARE ALREADY WATCHING <span className="text-amber-400">INSTAGRAM REELS.</span>
                     </h1>
-                    <p className="text-sm md:text-base text-neutral-400 font-medium leading-relaxed max-w-xl">
+                    <p className="text-base md:text-lg text-slate-300 font-medium leading-relaxed max-w-xl">
                       We help premium salons turn creator visits into bookings.
                       <span className="text-amber-400 block mt-2 font-bold italic">
                         Instagram pushes geotagged Reels directly to local women within 5km of your salon.
@@ -527,7 +598,7 @@ const SalonProposalDeck = () => {
                           <MessageSquare className="h-3 w-3 fill-amber-400 text-amber-400 animate-pulse" /> WhatsApp Intake Proof
                         </p>
                         <p className="text-neutral-300">
-                          <span className="text-white font-bold">Client:</span> "Hey! Just saw @capture.by.khushi’s hydrafacial Reel. Do you have a slot this Wednesday at 12 PM?"
+                          <span className="text-white font-bold">Client:</span> "Hey! Just saw the local creator's hydrafacial Reel. Do you have a slot this Wednesday at 12 PM?"
                         </p>
                       </div>
                     </div>
@@ -550,10 +621,10 @@ const SalonProposalDeck = () => {
                     </p>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4 py-4 my-auto">
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 py-4 my-auto">
                     
                     {/* Card 1: Local Matching with Instagram mini profile UI */}
-                    <div className="bg-white/[0.02] border border-white/5 rounded-2xl p-4 flex flex-col justify-between min-h-[220px] hover:border-amber-500/20 transition-colors relative overflow-hidden group">
+                    <div className="bg-white/[0.02] border border-white/5 rounded-2xl p-3 md:p-4 flex flex-col justify-between min-h-[220px] hover:border-amber-500/20 transition-colors relative overflow-hidden group">
                       <div className="flex items-center justify-between">
                         <span className="text-xl font-black text-amber-400/20">01</span>
                         <span className="text-[7.5px] font-black uppercase tracking-widest text-amber-400/70 border border-amber-500/10 px-2 py-0.5 rounded bg-amber-500/5">📍 Geotagged Match</span>
@@ -562,10 +633,10 @@ const SalonProposalDeck = () => {
                       {/* Mini Instagram Profile Layout */}
                       <div className="bg-black/40 border border-white/5 rounded-xl p-2 space-y-1.5 relative overflow-hidden text-[8px] font-sans">
                         <div className="flex items-center gap-1.5">
-                          <div className="w-5 h-5 rounded-full bg-amber-500/20 border border-amber-500/30 flex items-center justify-center text-[8px] font-black font-mono text-amber-400">K</div>
+                          <div className="w-5 h-5 rounded-full bg-amber-500/20 border border-amber-500/30 flex items-center justify-center text-[8px] font-black font-mono text-amber-400">C</div>
                           <div className="flex-1 min-w-0">
-                            <p className="font-bold text-white leading-none truncate">@capture.by.khushi</p>
-                            <p className="text-neutral-500 text-[6.5px]">Delhi • 27.2k followers</p>
+                            <p className="font-bold text-white leading-none truncate">@local.beauty</p>
+                            <p className="text-neutral-500 text-[6.5px]">Local • 25k followers</p>
                           </div>
                         </div>
                         <div className="grid grid-cols-3 gap-1">
@@ -577,7 +648,7 @@ const SalonProposalDeck = () => {
                           </div>
                           <div className="aspect-square bg-neutral-800 rounded border border-white/5 flex flex-col items-center justify-center gap-0.5 bg-gradient-to-br from-amber-500/10 to-yellow-600/10">
                             <MapPin className="h-2 w-2 text-amber-400" />
-                            <span className="text-[5.5px] font-bold text-neutral-400 uppercase tracking-tight">GK-2 Delhi</span>
+                            <span className="text-[5.5px] font-bold text-neutral-400 uppercase tracking-tight">Nearby (5km)</span>
                           </div>
                         </div>
                       </div>
@@ -589,7 +660,7 @@ const SalonProposalDeck = () => {
                     </div>
 
                     {/* Card 2: We Guide The Filming with mini phone view */}
-                    <div className="bg-white/[0.02] border border-white/5 rounded-2xl p-4 flex flex-col justify-between min-h-[220px] hover:border-amber-500/20 transition-colors relative overflow-hidden group">
+                    <div className="bg-white/[0.02] border border-white/5 rounded-2xl p-3 md:p-4 flex flex-col justify-between min-h-[220px] hover:border-amber-500/20 transition-colors relative overflow-hidden group">
                       <div className="flex items-center justify-between">
                         <span className="text-xl font-black text-amber-400/20">02</span>
                         <span className="text-[7.5px] font-black uppercase tracking-widest text-amber-400/70 border border-amber-500/10 px-2 py-0.5 rounded bg-amber-500/5">📸 Reels Shot Guide</span>
@@ -620,7 +691,7 @@ const SalonProposalDeck = () => {
                     </div>
 
                     {/* Card 3: Quiet Slot Visits with empty vs creator split */}
-                    <div className="bg-white/[0.02] border border-white/5 rounded-2xl p-4 flex flex-col justify-between min-h-[220px] hover:border-amber-500/20 transition-colors relative overflow-hidden group">
+                    <div className="bg-white/[0.02] border border-white/5 rounded-2xl p-3 md:p-4 flex flex-col justify-between min-h-[220px] hover:border-amber-500/20 transition-colors relative overflow-hidden group">
                       <div className="flex items-center justify-between">
                         <span className="text-xl font-black text-amber-400/20">03</span>
                         <span className="text-[7.5px] font-black uppercase tracking-widest text-amber-400/70 border border-amber-500/10 px-2 py-0.5 rounded bg-amber-500/5">💺 Mon-Thu chair fill</span>
@@ -636,7 +707,7 @@ const SalonProposalDeck = () => {
                           <p className="text-[7px] font-black text-red-400 leading-none">0% Booked</p>
                         </div>
                         <div className="bg-amber-500/5 border border-amber-500/20 rounded-xl p-1 text-center flex flex-col justify-between min-h-[64px] relative overflow-hidden">
-                          <img src="/images/salon/creator_filming.png" className="absolute inset-0 w-full h-full object-cover opacity-20 filter blur-[0.5px]" />
+                          <img src="/images/salon/hair_transformation.png" className="absolute inset-0 w-full h-full object-cover opacity-25 filter blur-[0.5px]" />
                           <p className="relative z-10 text-amber-400 uppercase tracking-widest text-[5px]">Chair Filmed</p>
                           <div className="relative z-10 my-0.5 text-emerald-400 font-sans font-black text-[8px] flex items-center justify-center gap-0.5 animate-bounce">
                             +18k Views
@@ -1027,10 +1098,10 @@ const SalonProposalDeck = () => {
                       <div className="space-y-2 text-[9px]">
                         <div className="bg-black/40 p-2.5 rounded-xl border border-white/5 flex justify-between items-center">
                           <div className="flex items-center gap-2">
-                            <div className="w-6 h-6 rounded-full bg-amber-500/20 border border-amber-500/30 flex items-center justify-center text-[9px] font-black font-mono text-amber-400">K</div>
+                            <div className="w-6 h-6 rounded-full bg-amber-500/20 border border-amber-500/30 flex items-center justify-center text-[9px] font-black font-mono text-amber-400">C</div>
                             <div className="text-left">
                               <p className="text-neutral-500 font-bold uppercase text-[7px] tracking-widest">Matched Creator</p>
-                              <p className="text-white font-bold mt-0.5">Khushi (@capture.by.khushi)</p>
+                              <p className="text-white font-bold mt-0.5">Verified Creator (@local.beauty)</p>
                             </div>
                           </div>
                           <span className="px-2 py-0.5 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[8px] font-black rounded-full animate-pulse">
@@ -1075,7 +1146,7 @@ const SalonProposalDeck = () => {
                 <div className="flex-1 flex flex-col justify-between z-10 relative">
                   <div className="space-y-2 text-center max-w-3xl mx-auto my-auto">
                     <div className="h-6 w-fit mx-auto px-4 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center text-[10px] font-black uppercase tracking-widest animate-pulse">
-                      ✨ Matched Creator Pilot
+                      ✨ Risk-Free Activation
                     </div>
                     <h2 className="text-3xl md:text-5xl font-black uppercase italic tracking-tighter text-white leading-tight">
                       Free Pilot Campaign for <br/>
@@ -1086,76 +1157,76 @@ const SalonProposalDeck = () => {
                     </p>
                   </div>
 
-                  {/* 3 creator card matches with local female audience data */}
+                  {/* 3 campaign pillars replacing specific creators */}
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-left py-2 my-auto">
                     {[
-                      { 
-                        handle: '@capture.by.khushi', 
-                        niche: 'Skincare • Hydrafacials', 
-                        followers: '27.2K', 
-                        reach: 'Delhi GK-2 focus', 
-                        metric: '86% GK-2 Female Audience',
-                        tags: ['Skincare', 'Beauty', 'Delhi-NCR', 'Skincare']
+                      {
+                        title: '1 Vetted Creator Reel',
+                        metric: '85%+ Local Women Focus',
+                        reach: 'Hyperlocal targeting within 5km',
+                        description: 'We match your salon with a vetted local creator whose followers are verified high-intent local women living or working nearby.',
+                        tags: ['Hyperlocal', 'Targeted', 'Local Women'],
+                        icon: MapPin,
+                        image: "/images/salon/before_after.png"
                       },
-                      { 
-                        handle: '@lilboxoffashion', 
-                        niche: 'Nails Gel • Custom Art', 
-                        followers: '84.5K', 
-                        reach: 'Mumbai Bandra focus', 
-                        metric: '92% Bandra Female Audience',
-                        tags: ['Nails Art', 'Lifestyle', 'Mumbai', 'Beauty']
+                      {
+                        title: 'Directed Script & Guide',
+                        metric: 'Done-For-You Production',
+                        reach: 'High-dopamine beauty close-ups',
+                        description: 'We write the creative brief and direct the creator on precise hooks, satisfying ASMR, and visual transformations.',
+                        tags: ['Creative Brief', 'Shot Guide', 'ASMR'],
+                        icon: Video,
+                        image: "/images/salon/nail_extension.png"
                       },
-                      { 
-                        handle: '@thegleamngown', 
-                        niche: 'Keratin Hair smoothing', 
-                        followers: '94.2K', 
-                        reach: 'Bangalore Indiranagar focus', 
-                        metric: '88% Indiranagar Female Audience',
-                        tags: ['Haircare', 'Bridal', 'Bangalore', 'Nails']
+                      {
+                        title: 'Zero Risk Escrow Lock',
+                        metric: '100% Posting Guarantee',
+                        reach: 'Protected booking agreement',
+                        description: 'Creators only visit during quiet slots. We secure draft approval before anything goes live, so you never get ghosted.',
+                        tags: ['Zero Risk', 'Exclusivity', 'Protected'],
+                        icon: Lock,
+                        image: "/images/salon/hair_transformation.png"
                       }
-                    ].map((item, i) => (
-                      <div key={i} className="bg-amber-400/[0.02] border border-amber-500/15 rounded-2xl p-4 hover:border-amber-500/20 transition-all flex flex-col justify-between min-h-[170px] relative overflow-hidden group">
-                        
-                        <div className="flex justify-between items-start">
-                          <div className="flex items-center gap-2">
-                            <div className="w-7 h-7 rounded-full border border-amber-500/20 overflow-hidden bg-black/40">
-                              <img 
-                                src={
-                                  i === 0 
-                                    ? "/images/salon/before_after.png" 
-                                    : i === 1 
-                                    ? "/images/salon/nail_extension.png" 
-                                    : "/images/salon/hair_transformation.png"
-                                } 
-                                className="w-full h-full object-cover opacity-80"
-                              />
-                            </div>
-                            <div className="text-left">
-                              <p className="text-xs font-black text-white leading-none">{item.handle}</p>
-                              <p className="text-[8px] text-neutral-500 mt-0.5">{item.niche}</p>
+                    ].map((item, i) => {
+                      const IconComponent = item.icon;
+                      return (
+                        <div key={i} className="bg-amber-400/[0.02] border border-amber-500/15 rounded-2xl p-4 hover:border-amber-500/20 transition-all flex flex-col justify-between min-h-[200px] relative overflow-hidden group">
+                          
+                          <div className="flex justify-between items-start">
+                            <div className="flex items-center gap-2">
+                              <div className="w-8 h-8 rounded-full border border-amber-500/20 overflow-hidden bg-black/40 flex items-center justify-center relative">
+                                <img 
+                                  src={item.image}
+                                  className="w-full h-full object-cover opacity-20 absolute inset-0 group-hover:scale-105 transition-transform duration-500"
+                                />
+                                <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-black/80 to-transparent z-0" />
+                                <IconComponent className="h-4 w-4 text-amber-400 relative z-10 shrink-0" />
+                              </div>
+                              <div className="text-left relative z-10">
+                                <p className="text-xs font-black text-white leading-none uppercase tracking-wide">{item.title}</p>
+                                <p className="text-[8.5px] text-amber-400 font-mono mt-1 font-bold">{item.metric}</p>
+                              </div>
                             </div>
                           </div>
-                          <span className="text-[8.5px] font-black text-amber-400 font-mono">{item.followers}</span>
-                        </div>
 
-                        {/* Audience split demographics bar chart */}
-                        <div className="bg-black/50 border border-white/5 rounded-xl p-2 my-2.5 text-[8px] font-mono text-center">
-                          <p className="font-bold text-amber-400">{item.metric}</p>
-                          <div className="h-1 bg-neutral-900 rounded-full my-1 overflow-hidden">
-                            <div className="h-full bg-gradient-to-r from-amber-500 to-yellow-600 rounded-full" style={{ width: i === 0 ? '86%' : i === 1 ? '92%' : '88%' }} />
+                          <div className="my-3 text-[9.5px] text-neutral-400 leading-relaxed font-medium relative z-10">
+                            {item.description}
                           </div>
-                          <p className="text-[7.5px] text-neutral-500 leading-none">{item.reach}</p>
-                        </div>
 
-                        <div className="flex flex-wrap gap-1">
-                          {item.tags.map((tag, tIdx) => (
-                            <span key={tIdx} className="text-[7px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded bg-white/5 text-neutral-400 border border-white/5">
-                              {tag}
-                            </span>
-                          ))}
+                          <div className="bg-black/50 border border-white/5 rounded-xl p-2 mb-3 text-[8px] font-mono text-center relative z-10">
+                            <p className="text-[7.5px] text-neutral-400 leading-none">{item.reach}</p>
+                          </div>
+
+                          <div className="flex flex-wrap gap-1 relative z-10">
+                            {item.tags.map((tag, tIdx) => (
+                              <span key={tIdx} className="text-[7px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded bg-white/5 text-neutral-400 border border-white/5">
+                                {tag}
+                              </span>
+                            ))}
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
 
                   <div className="text-[10px] font-black uppercase tracking-widest text-amber-400 text-center animate-pulse">
