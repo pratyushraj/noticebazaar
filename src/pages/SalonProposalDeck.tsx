@@ -35,7 +35,8 @@ import {
   MessageSquare,
   AlertTriangle,
   Eye,
-  Plus
+  Plus,
+  X
 } from 'lucide-react';
 import { getApiBaseUrl } from '@/lib/utils/api';
 
@@ -49,7 +50,6 @@ const SalonProposalDeck = () => {
   // Barter Cost Calculator States
   const [treatmentValue, setTreatmentValue] = useState(3500);
   const [ingredientCostPercent, setIngredientCostPercent] = useState(15);
-  const realBarterCost = Math.round(treatmentValue * (ingredientCostPercent / 100));
   
   // Onboarding Form States
   const [formData, setFormData] = useState({
@@ -67,7 +67,7 @@ const SalonProposalDeck = () => {
 
   const getSlideTheme = (slideId: number) => {
     if ([2, 4].includes(slideId)) return 'luxury-dark'; // Obsidian Gold theme
-    if ([1, 5].includes(slideId)) return 'gold-accent'; // Champagne glow
+    if ([1, 5].includes(slideId)) return 'gold-accent'; // Champagne gold glow
     return 'dark'; // Cover & CTA
   };
 
@@ -223,20 +223,21 @@ const SalonProposalDeck = () => {
   };
 
   const handleWhatsAppClick = () => {
-    const message = encodeURIComponent("Hey! I saw your Salon Chair Monetization Pilot. I'd love to get 3 matched local creators to drive bookings from women within 5km of my salon.");
-    const whatsappUrl = `https://wa.me/919999999999?text=${message}`; // Preserved static coordinator number
+    const message = encodeURIComponent("Hey! I saw your Salon Chair Monetization Pilot. I'd love to get matched local beauty & lifestyle creators nearby to drive bookings into my salon.");
+    const whatsappUrl = `https://wa.me/919999999999?text=${message}`; // Coordinator preserved WhatsApp number
     window.open(whatsappUrl, '_blank');
   };
 
-  // Niche blueprints with proof and target psychology
+  // Niche blueprints with real images and local engagement indicators
   const salonNiches = [
     {
-      title: 'Hydrafacial / Clean-Girl Facials',
+      title: 'Hydrafacial / Glass Skin Facials',
       retail: '₹3,500 - ₹5,000',
       barterCost: '₹450',
       hook: 'The Close-Up Glow Transformation',
       script: 'Creator films raw close-ups of congested skin, shows the soothing ASMR hydro-vacuum extraction process, and finishes with a crystal-clear, glass-skin glow in natural sunlight.',
       whyItWorks: 'Women save these Reels to book later before weddings, parties & vacations. Seeing unedited skin glow within a 5km radius drives immediate local trust.',
+      hasBeforeAfterImage: true,
       reelPreset: {
         creator: '@capture.by.khushi',
         views: '84,200 Views',
@@ -267,7 +268,7 @@ const SalonProposalDeck = () => {
       }
     },
     {
-      title: 'Hair Smoothening & Gloss',
+      title: 'Hair Smoothening & Keratin',
       retail: '₹6,000 - ₹12,000',
       barterCost: '₹800',
       hook: 'The Extreme Silk-Shine Swish',
@@ -321,7 +322,7 @@ const SalonProposalDeck = () => {
       }
     },
     {
-      title: 'Laser Hair Removal',
+      title: 'Laser Hair Reduction',
       retail: '₹4,000 - ₹7,000',
       barterCost: '₹200',
       hook: 'Painless Laser: Expectation vs Reality',
@@ -339,6 +340,8 @@ const SalonProposalDeck = () => {
       }
     }
   ];
+
+  const realBarterCost = Math.round(treatmentValue * (ingredientCostPercent / 100));
 
   return (
     <div className="min-h-screen bg-[#050505] text-white flex flex-col font-sans select-none overflow-hidden relative">
@@ -408,8 +411,8 @@ const SalonProposalDeck = () => {
             { id: 0, label: '01. Cover Hook', desc: 'Real Local Bookings' },
             { id: 1, label: '02. How It Works', desc: 'Quiet Chair Booking' },
             { id: 2, label: '03. Barter Economics', desc: 'cheapest marketing hack' },
-            { id: 3, label: '04. Reel Blueprints', desc: 'concepts that work' },
-            { id: 4, label: '05. Safety Shield', desc: 'creators must post' },
+            { id: 3, label: '04. Reel Concepts', desc: 'visual blueprints' },
+            { id: 4, label: '05. Shield & Comparison', desc: 'why agencies fail' },
             { id: 5, label: '06. Free Pilot Offer', desc: 'No monthly retainers' },
             { id: 6, label: '07. WhatsApp to Start', desc: 'Match local creators' }
           ].map((item) => (
@@ -458,10 +461,10 @@ const SalonProposalDeck = () => {
                     </div>
                     <h1 className="text-3xl md:text-5xl font-black uppercase italic tracking-tighter leading-none text-white">
                       YOUR NEXT 20 HIGH-VALUE CLIENTS <br/>
-                      ARE ALREADY WATCHING <span className="text-amber-400">REELS.</span>
+                      ARE ALREADY WATCHING <span className="text-amber-400">INSTAGRAM REELS.</span>
                     </h1>
                     <p className="text-sm md:text-base text-neutral-400 font-medium leading-relaxed max-w-xl">
-                      We help salons turn creator Reels into real bookings.
+                      We turn empty salon slots into local bookings using Instagram creators.
                       <span className="text-amber-400 block mt-2 font-bold italic">
                         Instagram pushes geotagged Reels directly to women within 5km of your salon.
                       </span>
@@ -470,54 +473,40 @@ const SalonProposalDeck = () => {
                     <div className="flex flex-wrap gap-6 text-[10px] font-black uppercase tracking-widest text-neutral-500 pt-2">
                       <p>📍 Within 5km Radius</p>
                       <p>•</p>
-                      <p>📸 High-Aesthetic Reels</p>
+                      <p>📸 Hyperlocal Instagram Reels</p>
                       <p>•</p>
                       <p>💆‍♀️ Direct Booking Tracking</p>
                     </div>
                   </div>
 
-                  {/* Simulated Instagram Reel Feed + Direct Booking Proof */}
-                  <div className="lg:col-span-5 hidden lg:block">
-                    <div className="bg-neutral-900/60 border border-white/5 rounded-3xl p-4 backdrop-blur-md relative overflow-hidden shadow-2xl space-y-3">
+                  {/* Aesthetic Luxury Creator Filming Mockup */}
+                  <div className="lg:col-span-5 hidden lg:block h-full max-h-[340px]">
+                    <div className="bg-neutral-900 border border-white/10 rounded-3xl p-3 backdrop-blur-md relative overflow-hidden shadow-2xl h-full flex flex-col justify-between">
+                      <div className="absolute inset-0 bg-neutral-950/20 z-0" />
+                      <img 
+                        src="/images/salon/creator_filming.png" 
+                        alt="Creator filming Reel inside luxurious salon" 
+                        className="absolute inset-0 w-full h-full object-cover rounded-3xl opacity-40 z-0 select-none"
+                      />
                       
-                      <div className="flex justify-between items-center border-b border-white/5 pb-2">
-                        <div className="flex items-center gap-2">
-                          <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-                          <span className="text-[9px] font-black uppercase tracking-widest text-neutral-400">Verified Proof</span>
-                        </div>
-                        <span className="text-[9px] font-black text-amber-400 uppercase tracking-widest bg-amber-500/10 px-2 py-0.5 rounded">
+                      {/* Vetted badge */}
+                      <div className="z-10 flex justify-between items-start">
+                        <span className="px-2 py-0.5 rounded-full bg-black/80 border border-amber-500/20 text-[8px] font-black uppercase tracking-widest text-amber-400 flex items-center gap-1">
+                          <Sparkles className="h-2.5 w-2.5" /> GK-2 Delhi Match
+                        </span>
+                        <span className="px-2 py-0.5 rounded-full bg-emerald-500 text-black text-[8px] font-black uppercase tracking-widest">
                           +18 Bookings
                         </span>
                       </div>
 
-                      <div className="flex items-center gap-2">
-                        <div className="h-7 w-7 rounded-full bg-amber-400/20 border border-amber-400/30 flex items-center justify-center text-[10px] font-black text-amber-400">
-                          CK
-                        </div>
-                        <div>
-                          <p className="text-xs font-bold text-white">@capture.by.khushi</p>
-                          <p className="text-[8.5px] text-neutral-500">Lucknow • Skincare & Lifestyle</p>
-                        </div>
-                      </div>
-
-                      {/* Mock Booking Screenshot replacement with elegant markup */}
-                      <div className="bg-black/50 border border-white/5 rounded-2xl p-2.5 space-y-2 font-mono text-[8.5px]">
-                        <p className="text-neutral-500 font-bold uppercase text-[7px] tracking-wider">Recent WhatsApp Inquiry</p>
-                        <div className="space-y-1.5">
-                          <p className="text-neutral-300"><span className="text-amber-400 font-bold">Client:</span> "Hey! Saw @capture.by.khushi's Reel. Do you have a Hydrafacial slot open this Saturday at 11 AM?"</p>
-                          <p className="text-emerald-400 font-bold"><span className="text-neutral-400">Salon Desk:</span> "Yes Priya! slot is booked. Confirmed with code KHUSHI-GLOW."</p>
-                        </div>
-                      </div>
-
-                      {/* Mock Instagram Engagement Row */}
-                      <div className="flex justify-between items-center text-neutral-500 pt-1">
-                        <div className="flex gap-4">
-                          <span className="flex items-center gap-1 text-[9px] font-bold text-neutral-300"><Heart className="h-3 w-3 text-red-500 fill-red-500" /> 8,420</span>
-                          <span className="flex items-center gap-1 text-[9px] font-bold text-neutral-300"><MessageCircle className="h-3 w-3" /> 230 comments</span>
-                        </div>
-                        <span className="text-[8.5px] text-neutral-400 font-sans font-bold flex items-center gap-1 bg-white/5 px-2 py-0.5 rounded-full">
-                          <Bookmark className="h-2.5 w-2.5 text-amber-400" /> 1,240 saves
-                        </span>
+                      {/* Overlaid WhatsApp verified client message */}
+                      <div className="z-10 bg-black/85 border border-white/10 rounded-2xl p-2.5 font-mono text-[8px] space-y-1 shadow-2xl relative mt-auto">
+                        <p className="text-amber-400 font-bold uppercase text-[7px] tracking-wider flex items-center gap-1">
+                          <MessageSquare className="h-3 w-3 fill-amber-400" /> WhatsApp Intake Proof
+                        </p>
+                        <p className="text-neutral-300">
+                          <span className="text-white font-bold">Client:</span> "Hey! Just saw @capture.by.khushi’s hair smoothening Reel. Do you have a slot this Wednesday at 12 PM?"
+                        </p>
                       </div>
                     </div>
                   </div>
@@ -541,7 +530,7 @@ const SalonProposalDeck = () => {
 
                   <div className="grid grid-cols-1 md:grid-cols-4 gap-4 py-4 my-auto">
                     {[
-                      { step: '01', title: 'Local Matching', desc: 'We match you with beauty & lifestyle creators nearby who have active female followings right in your city.' },
+                      { step: '01', title: 'Local Matching', desc: 'We match you with beauty & lifestyle creators nearby (within 5-7km of your salon) who have active local female followings.' },
                       { step: '02', title: 'We Guide the Filming', desc: 'We guide creators on exactly what to film so your services look extremely clean, luxurious, and satisfying.' },
                       { step: '03', title: 'Quiet Slot Visits', desc: 'Creators visit during your slow days (Mon-Thu mornings), filling empty chairs without interrupting paying clients.' },
                       { step: '04', title: 'We Track Bookings', desc: 'We track how many bookings each Reel generates, so you see the exact cash return on your barter treatment.' }
@@ -631,25 +620,40 @@ const SalonProposalDeck = () => {
                       </div>
                     </div>
 
-                    <div className="lg:col-span-7 space-y-3">
-                      <div className="bg-[#120d03] border border-amber-500/25 rounded-2xl p-4 text-center space-y-1">
-                        <p className="text-amber-400 text-xs font-black uppercase tracking-wider">The Power Formula</p>
-                        <h3 className="text-xl md:text-2xl font-black text-white leading-tight">
-                          ₹500 treatment cost can generate a Reel seen by 20k–100k local women.
-                        </h3>
-                        <p className="text-[9.5px] text-neutral-400 font-bold italic mt-1 text-center">
+                    <div className="lg:col-span-7 space-y-3.5">
+                      
+                      {/* Believable outcome mathematics display */}
+                      <div className="grid grid-cols-4 gap-2 bg-[#120d03] border border-amber-500/25 rounded-2xl p-4 text-center items-center">
+                        <div className="space-y-0.5 border-r border-white/5">
+                          <p className="text-[8px] font-black uppercase text-neutral-400">Material Cost</p>
+                          <p className="text-base font-black text-white">₹700</p>
+                        </div>
+                        <div className="space-y-0.5 border-r border-white/5">
+                          <p className="text-[8px] font-black uppercase text-neutral-400">Reel Views</p>
+                          <p className="text-base font-black text-amber-400">32k</p>
+                        </div>
+                        <div className="space-y-0.5 border-r border-white/5">
+                          <p className="text-[8px] font-black uppercase text-neutral-400">Inquiries</p>
+                          <p className="text-base font-black text-amber-400">11 Chat</p>
+                        </div>
+                        <div className="space-y-0.5">
+                          <p className="text-[8px] font-black uppercase text-neutral-400">Paid Bookings</p>
+                          <p className="text-base font-black text-emerald-400">4 New</p>
+                        </div>
+                      </div>
+
+                      <div className="bg-black/40 border border-white/5 rounded-2xl p-3.5 space-y-1">
+                        <p className="text-amber-400 text-xs font-black uppercase tracking-wider text-center">Reels vs Traditional Ads</p>
+                        <p className="text-[10px] text-neutral-300 font-bold italic text-center">
                           "Meta ads burn money after 24 hours. Reels keep bringing bookings for weeks."
                         </p>
                       </div>
 
                       {[
-                        { title: 'High Service Margins', desc: 'Your cost is just the raw product ingredients (like keratin shampoo or facial gel) + empty chair time. The staff and electric costs are already running.' },
-                        { title: 'Geotagged Distribution', desc: 'Tagging your location forces the Instagram algorithm to push the Reel to local women within a 5km radius of your salon.' }
+                        { title: 'No Monthly Retainers', desc: 'No monthly retainers. No ad spend required. Your only cost is the treatment itself. We monetize your dead slots, converting spare products into active local marketing.' }
                       ].map((item, i) => (
                         <div key={i} className="bg-white/[0.01] border border-white/5 rounded-xl p-3 flex gap-3 hover:bg-white/[0.03] transition-colors">
-                          <div className="h-5 w-5 rounded-full bg-amber-400/10 border border-amber-400/30 flex items-center justify-center text-[10px] font-black text-amber-400 shrink-0">
-                            {i + 1}
-                          </div>
+                          <CheckCircle className="h-5 w-5 text-amber-400 shrink-0 mt-0.5" />
                           <div>
                             <p className="text-xs font-bold text-white uppercase tracking-wider">{item.title}</p>
                             <p className="text-[10px] text-neutral-400 leading-relaxed mt-0.5">{item.desc}</p>
@@ -660,7 +664,7 @@ const SalonProposalDeck = () => {
                   </div>
 
                   <div className="text-[10px] font-bold text-neutral-500 text-center uppercase tracking-widest">
-                    💡 Spend ₹400 in raw ingredients • Receive local distribution reaching women within 5km of your door
+                    💡 Spend raw ingredients • Receive local distribution reaching women within 5km of your door
                   </div>
                 </div>
               )}
@@ -696,42 +700,56 @@ const SalonProposalDeck = () => {
                       ))}
                     </div>
 
-                    {/* Detailed Concept Detail Card */}
+                    {/* Detailed Concept Detail Card with AI image asset embedding */}
                     <div className="lg:col-span-8 bg-neutral-900/40 border border-white/5 rounded-3xl p-5 flex flex-col justify-between min-h-[260px]">
-                      <div className="space-y-3">
+                      <div className="space-y-3 flex-1 flex flex-col justify-between">
                         <div className="flex justify-between items-center border-b border-white/5 pb-2">
                           <span className="text-xs font-black uppercase tracking-widest text-amber-400">{salonNiches[activeNicheIndex].title}</span>
                           <span className="text-[9px] font-black uppercase text-neutral-500 bg-neutral-950 px-2 py-0.5 rounded-md">
-                            Barter Cost: {salonNiches[activeNicheIndex].barterCost} (Retail: {salonNiches[activeNicheIndex].retail})
+                            Barter: {salonNiches[activeNicheIndex].barterCost} (Retail: {salonNiches[activeNicheIndex].retail})
                           </span>
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <div>
+                        <div className="grid grid-cols-1 md:grid-cols-12 gap-4 flex-1 items-center">
+                          <div className="md:col-span-6 space-y-2">
                             <p className="text-[9px] font-black uppercase tracking-wider text-neutral-500 font-mono">What should creators post?</p>
-                            <p className="text-xs font-bold text-white mt-0.5 italic">"{salonNiches[activeNicheIndex].hook}"</p>
+                            <p className="text-xs font-bold text-white leading-tight italic">"{salonNiches[activeNicheIndex].hook}"</p>
                             
-                            <p className="text-[9px] font-black uppercase tracking-wider text-neutral-500 mt-3 font-mono">The Video Concept</p>
-                            <p className="text-[10px] text-neutral-400 mt-0.5 leading-relaxed font-medium">
+                            <p className="text-[9px] font-black uppercase tracking-wider text-neutral-500 font-mono">The Video Concept</p>
+                            <p className="text-[10px] text-neutral-400 leading-relaxed font-medium">
                               {salonNiches[activeNicheIndex].script}
                             </p>
                           </div>
 
-                          <div className="bg-black/30 border border-white/5 rounded-2xl p-3 flex flex-col justify-between">
-                            <div>
-                              <div className="flex justify-between items-center border-b border-white/5 pb-1">
-                                <span className="text-[9px] font-black uppercase tracking-wider text-amber-400">Why it gets bookings</span>
-                                <span className="text-[9px] text-neutral-500 font-mono">{salonNiches[activeNicheIndex].reelPreset.creator}</span>
+                          <div className="md:col-span-6 flex flex-col gap-2 h-full justify-between">
+                            {/* Hydrafacial AI before after screenshot integration */}
+                            {salonNiches[activeNicheIndex].hasBeforeAfterImage ? (
+                              <div className="relative rounded-2xl border border-amber-500/15 overflow-hidden aspect-[4/3] max-h-[140px] flex items-center justify-center bg-black/60 shadow-xl">
+                                <img 
+                                  src="/images/salon/before_after.png" 
+                                  alt="Hydrafacial glowing transformation before after proof" 
+                                  className="w-full h-full object-cover opacity-90 select-none"
+                                />
+                                <div className="absolute bottom-0 inset-x-0 bg-black/75 px-2 py-1 text-[7.5px] font-mono text-center text-amber-400 font-bold border-t border-white/5">
+                                  Satisfying glow results = High saves/bookmarks
+                                </div>
                               </div>
-                              <p className="text-[9.5px] text-neutral-300 mt-2 leading-relaxed">
-                                {salonNiches[activeNicheIndex].whyItWorks}
-                              </p>
-                            </div>
+                            ) : (
+                              <div className="bg-black/30 border border-white/5 rounded-2xl p-3 flex flex-col justify-between h-full">
+                                <div className="flex justify-between items-center border-b border-white/5 pb-1">
+                                  <span className="text-[9px] font-black uppercase tracking-wider text-amber-400">Why it gets bookings</span>
+                                  <span className="text-[9px] text-neutral-500 font-mono">{salonNiches[activeNicheIndex].reelPreset.creator}</span>
+                                </div>
+                                <p className="text-[9.5px] text-neutral-300 leading-relaxed">
+                                  {salonNiches[activeNicheIndex].whyItWorks}
+                                </p>
+                              </div>
+                            )}
 
                             {/* Direct Booking & Saves proof highlights */}
-                            <div className="bg-black/50 rounded-xl p-2.5 mt-2 space-y-1.5 font-mono text-[8px]">
-                              <div className="flex justify-between text-neutral-400 border-b border-white/5 pb-1">
-                                <span>Reel Reach:</span>
+                            <div className="bg-black/50 rounded-xl p-2.5 space-y-1 font-mono text-[8px]">
+                              <div className="flex justify-between text-neutral-400 border-b border-white/5 pb-0.5">
+                                <span>Views Reach:</span>
                                 <span className="text-white font-black">{salonNiches[activeNicheIndex].reelPreset.views}</span>
                               </div>
                               <div className="flex justify-between text-neutral-400">
@@ -739,7 +757,7 @@ const SalonProposalDeck = () => {
                                 <span className="text-amber-400 font-black">{salonNiches[activeNicheIndex].reelPreset.shares}</span>
                               </div>
                               <div className="flex justify-between text-neutral-400">
-                                <span>Direct Bookings:</span>
+                                <span>Local Bookings:</span>
                                 <span className="text-emerald-400 font-black">{salonNiches[activeNicheIndex].reelPreset.directBookings}</span>
                               </div>
                             </div>
@@ -760,7 +778,7 @@ const SalonProposalDeck = () => {
                 </div>
               )}
 
-              {/* PAGE 5: SAFETY SHIELD */}
+              {/* PAGE 5: SAFETY SHIELD & COMPARISON SHEET */}
               {currentSlide === 4 && (
                 <div className="flex-1 flex flex-col justify-between z-10 relative">
                   <div className="space-y-1">
@@ -772,70 +790,41 @@ const SalonProposalDeck = () => {
                     </h2>
                   </div>
 
-                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center my-auto py-2">
+                  {/* Why most influencer campaigns fail vs Creator Armour fixes */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 my-auto py-2">
                     
-                    {/* Visual mockup of the vetting interface */}
-                    <div className="lg:col-span-6 hidden lg:block bg-neutral-900 border border-white/10 rounded-2xl p-4 shadow-xl text-xs font-mono relative">
-                      <div className="absolute top-0 right-0 p-1.5 bg-amber-400/10 text-amber-400 text-[8px] font-black uppercase tracking-widest border-b border-l border-white/10">
-                        Vetting Shield
-                      </div>
-                      
-                      <div className="flex items-center gap-2 border-b border-white/5 pb-2 mb-3">
-                        <Smartphone className="h-4 w-4 text-amber-400 animate-pulse" />
-                        <span className="text-[10px] font-bold text-white uppercase tracking-wider">Video Verification</span>
-                      </div>
-
-                      <div className="space-y-2 text-[10px]">
-                        <div className="bg-black/40 p-2.5 rounded-xl border border-white/5">
-                          <p className="text-neutral-500 font-bold uppercase text-[7px] tracking-widest">Matched Creator</p>
-                          <p className="text-white font-bold mt-0.5">Khushi (@capture.by.khushi)</p>
-                          <div className="flex gap-3 text-neutral-400 text-[8.5px] mt-1 font-sans">
-                            <span>Followers: 27.2k</span>
-                            <span>Lucknow • Hair & Skincare</span>
-                          </div>
-                        </div>
-
-                        <div className="bg-black/40 p-2.5 rounded-xl border border-red-500/20">
-                          <div className="flex justify-between items-center text-neutral-300">
-                            <span className="font-bold text-red-400 font-sans">Anti-Ghost Protection: ACTIVE</span>
-                            <span className="px-1.5 py-0.5 bg-red-500/10 text-red-400 text-[7px] font-black uppercase tracking-widest rounded">Secured</span>
-                          </div>
-                          <p className="text-[8px] text-neutral-400 mt-1.5 leading-relaxed font-sans">
-                            If a creator receives a treatment and fails to post within 7 days, they are immediately flagged, restricted, and replaced.
-                          </p>
-                        </div>
+                    {/* Failure items */}
+                    <div className="bg-red-950/10 border border-red-500/20 rounded-2xl p-4 space-y-3">
+                      <p className="text-red-400 text-xs font-black uppercase tracking-wider flex items-center gap-1.5">
+                        <X className="h-4 w-4 shrink-0" /> Why most influencer campaigns fail
+                      </p>
+                      <div className="space-y-2.5 text-[10px] text-neutral-400">
+                        <p className="flex items-start gap-2"><span className="text-red-400 font-bold shrink-0">❌</span> <span><strong className="text-neutral-200">Random college influencers:</strong> Zero local target authority or purchasing trust.</span></p>
+                        <p className="flex items-start gap-2"><span className="text-red-400 font-bold shrink-0">❌</span> <span><strong className="text-neutral-200">No hyperlocal geotargeting:</strong> Reel views come from random states instead of women within 5km.</span></p>
+                        <p className="flex items-start gap-2"><span className="text-red-400 font-bold shrink-0">❌</span> <span><strong className="text-neutral-200">No booking tracking:</strong> Free treatments are wasted with zero measured business outcome.</span></p>
+                        <p className="flex items-start gap-2"><span className="text-red-400 font-bold shrink-0">❌</span> <span><strong className="text-neutral-200">Creators ghost:</strong> Creators receive a free ₹5,000 service and simply never post.</span></p>
+                        <p className="flex items-start gap-2"><span className="text-red-400 font-bold shrink-0">❌</span> <span><strong className="text-neutral-200">Agency Retainers:</strong> Squeezed by heavy cash retainers before matching even starts.</span></p>
                       </div>
                     </div>
 
-                    <div className="lg:col-span-6 space-y-4">
-                      <div className="bg-red-950/20 border border-red-500/20 rounded-2xl p-3.5 flex gap-3">
-                        <AlertTriangle className="h-5 w-5 text-red-400 shrink-0 mt-0.5" />
-                        <div>
-                          <p className="text-xs font-black uppercase text-red-400 tracking-wide">No Wasted Treatments</p>
-                          <p className="text-[10px] text-neutral-400 leading-relaxed mt-0.5">
-                            No random college influencers, freeloaders, or creators with fake engagement. Only verified local beauty & lifestyle creators with active audiences.
-                          </p>
-                        </div>
+                    {/* Success items */}
+                    <div className="bg-amber-500/[0.02] border border-amber-500/25 rounded-2xl p-4 space-y-3 shadow-xl">
+                      <p className="text-amber-400 text-xs font-black uppercase tracking-wider flex items-center gap-1.5">
+                        <Check className="h-4 w-4 shrink-0 text-amber-400" /> What Creator Armour fixes
+                      </p>
+                      <div className="space-y-2.5 text-[10px] text-neutral-300">
+                        <p className="flex items-start gap-2"><span className="text-amber-400 font-bold shrink-0">✅</span> <span><strong className="text-white">Beauty & lifestyle creators nearby:</strong> Reaching real local women who buy.</span></p>
+                        <p className="flex items-start gap-2"><span className="text-amber-400 font-bold shrink-0">✅</span> <span><strong className="text-white">Geotargeted local Reels:</strong> Instagram pushes geotagged Reels to women within 5km.</span></p>
+                        <p className="flex items-start gap-2"><span className="text-amber-400 font-bold shrink-0">✅</span> <span><strong className="text-white">Booking Tracking:</strong> Standard trackable promo codes track exact bookings generated.</span></p>
+                        <p className="flex items-start gap-2"><span className="text-amber-400 font-bold shrink-0">✅</span> <span><strong className="text-white">Anti-Ghost Protection:</strong> Automated triggers nudge creators, guaranteeing posts within 7 days.</span></p>
+                        <p className="flex items-start gap-2"><span className="text-amber-400 font-bold shrink-0">✅</span> <span><strong className="text-white">No Monthly Retainers:</strong> Zero cash risk. You only invest the raw product cost.</span></p>
                       </div>
-
-                      {[
-                        { title: 'Vetted Local Creators', desc: 'We only match you with creators who have verified, active local audiences in your city.' },
-                        { title: 'Draft Approval', desc: 'You approve the video draft before it goes live, ensuring your salon and services look absolutely premium.' },
-                        { title: 'Posting Reminders & Follow-Ups', desc: 'We handle all follow-ups and nudges so your staff never has to chase anyone down.' }
-                      ].map((item, i) => (
-                        <div key={i} className="flex gap-3">
-                          <CheckCircle className="h-5 w-5 text-amber-400 shrink-0 mt-0.5" />
-                          <div>
-                            <p className="text-xs font-black uppercase text-white tracking-wide">{item.title}</p>
-                            <p className="text-[10px] text-neutral-400 mt-1 leading-relaxed">{item.desc}</p>
-                          </div>
-                        </div>
-                      ))}
                     </div>
+
                   </div>
 
                   <div className="text-[10px] font-bold text-neutral-500 text-center uppercase tracking-widest">
-                    🛡️ No ghosts • No low-quality posts • Complete protection for your salon treatments
+                    🛡️ Vetted locally • Exclusivity secured • 100% draft approved before going live
                   </div>
                 </div>
               )}
@@ -845,7 +834,7 @@ const SalonProposalDeck = () => {
                 <div className="flex-1 flex flex-col justify-between z-10 relative text-center max-w-3xl mx-auto my-auto space-y-6">
                   <div className="space-y-2">
                     <div className="h-6 w-fit mx-auto px-4 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center text-[10px] font-black uppercase tracking-widest">
-                      ✨ Limited Partnership Spot
+                      ✨ Limited Exclusivity Slot
                     </div>
                     <h2 className="text-3xl md:text-5xl font-black uppercase italic tracking-tighter text-white leading-tight">
                       Free Pilot Campaign for <br/>
@@ -861,7 +850,7 @@ const SalonProposalDeck = () => {
                     {[
                       { title: 'Free Creator Matching', desc: 'We source, screen, and match 3 aesthetic local creators specifically suited for your salon treatments.' },
                       { title: 'Fully Guided Briefs', desc: 'We handle script direction, satisfying video guidance, and draft vetting before posting.' },
-                      { title: 'No Monthly Retainers', desc: 'Zero platform charges, setup costs, or monthly service fees. Your only investment is the ingredients.' }
+                      { title: 'No Monthly Retainers', desc: 'No monthly retainers. No ad spend required. Your only cost is the treatment raw material cost itself.' }
                     ].map((item, i) => (
                       <div key={i} className="bg-amber-400/[0.02] border border-amber-500/10 rounded-2xl p-4 hover:border-amber-500/20 transition-all">
                         <Check className="h-5 w-5 text-amber-400 mb-2" />
@@ -872,7 +861,7 @@ const SalonProposalDeck = () => {
                   </div>
 
                   <div className="text-[10px] font-black uppercase tracking-widest text-amber-400 animate-pulse">
-                    ⚠️ Limited to the first 5 salons in each city this month to avoid creator overlap.
+                    ⚠️ We only onboard 5 salons per city to avoid creator overlap and secure slot exclusivity.
                   </div>
                 </div>
               )}
@@ -892,7 +881,7 @@ const SalonProposalDeck = () => {
                       Get matched with 3 nearby creators today. We only onboard 5 salons per city to avoid creator overlap and secure local booking exclusivity.
                     </p>
 
-                    {/* Pratyush's requested high-converting WhatsApp Button */}
+                    {/* High-converting WhatsApp Button */}
                     <div className="pt-2">
                       <button
                         onClick={handleWhatsAppClick}
@@ -974,7 +963,7 @@ const SalonProposalDeck = () => {
                                 <option value="Hair Smoothening">Hair smoothing</option>
                                 <option value="Scalp Treatment">Scalp head ASMR</option>
                                 <option value="Bridal Makeup">Bridal Makeup Trial</option>
-                                <option value="Laser Hair Removal">Laser Hair Removal</option>
+                                <option value="Laser Hair Removal">Laser Hair Reduction</option>
                               </select>
                             </div>
                           </div>
