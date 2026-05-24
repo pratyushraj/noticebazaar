@@ -985,12 +985,13 @@
       "last_contacted_at": "2026-05-22T21:01:05.044Z"
     },
     "Snitch": {
-      "email": "collab@snitch.co.in",
+      "email": "influencer.reach@snitch.co.in",
+      "category": "Fashion & Apparel",
       "website": "https://snitch.co.in",
-      "category": "Apparel & Accessories",
+      "handle": "@snitch.co.in",
       "status": "contacted",
-      "outreach_count": 1,
-      "last_contacted_at": "2026-05-22T21:01:07.274Z"
+      "outreach_count": 2,
+      "last_contacted_at": "2026-05-24T15:47:09.740Z"
     },
     "DaMENSCH": {
       "email": "support@damensch.com",
@@ -1813,6 +1814,339 @@
       "status": "contacted",
       "outreach_count": 1,
       "last_contacted_at": "2026-05-24T12:20:33.117Z"
+    },
+    "Beyond The Sugar": {
+      "email": "official@beyondthesugar.com",
+      "category": "Healthy Food & Sweeteners",
+      "website": "https://beyondthesugar.com",
+      "handle": "@beyondthesugar",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-24T15:30:10.203Z"
+    },
+    "cosmapose": {
+      "email": "info@cosmapose.com",
+      "category": "Skincare & Beauty",
+      "website": "https://cosmapose.com",
+      "handle": "@cosmapose",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-24T15:30:13.480Z"
+    },
+    "truhabit.in": {
+      "email": "care@truhabit.in",
+      "category": "Wellness & Nutrition",
+      "website": "https://truhabit.in",
+      "handle": "@truhabit",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-24T15:30:15.692Z"
+    },
+    "Steadfast Nutrition": {
+      "email": "info@steadfastnutrition.in",
+      "category": "Sports Nutrition & Wellness",
+      "website": "https://steadfastnutrition.in",
+      "handle": "@steadfastnutrition",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-24T15:30:17.914Z"
+    },
+    "Triple Care": {
+      "email": "triplecare00@gmail.com",
+      "category": "Hair & Personal Care",
+      "website": "https://triplecare.in",
+      "handle": "@_triplecare",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-24T15:30:51.404Z"
+    },
+    "Ozone Ayurvedics": {
+      "email": "info@ozoneayurvedics.com",
+      "category": "Ayurvedic Skincare & Beauty",
+      "website": "https://ozoneayurvedics.com",
+      "handle": "@ozone_ayurvedics",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-24T15:39:18.465Z"
+    },
+    "Boldpurity": {
+      "email": "care@boldpurity.com",
+      "category": "Skincare & Clinical Beauty",
+      "website": "https://boldpurity.com",
+      "handle": "@boldpurity",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-24T15:55:27.729Z"
+    },
+    "Zyog Nutrition": {
+      "email": "info@zyog.in",
+      "category": "Wellness & Supplements",
+      "website": "https://zyog.in",
+      "handle": "@zyog.nutrition",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-24T15:56:43.700Z"
+    },
+    "Kohl & Spice": {
+      "email": "support@kohlspice.in",
+      "category": "Skincare & Clinical Beauty",
+      "website": "https://kohlspice.com",
+      "handle": "@kohlandspice",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-24T15:58:13.163Z"
+    },
+    "Moiz Skincare": {
+      "email": "support@moizskincare.com",
+      "category": "Skincare & Clinical Beauty",
+      "website": "https://www.moizskincare.com",
+      "handle": "@moiz_skincare",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-24T15:58:52.224Z"
+    },
+    "Seven Seas Cosmetics": {
+      "email": "care@sevenseascosmetics.com",
+      "category": "Skincare & Clinical Beauty",
+      "website": "https://www.sevenseascosmetics.com",
+      "handle": "@sevenseascosmetics",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-24T16:00:45.678Z"
+    },
+    "Boldpurity (Founder - Khatija)": {
+      "email": "khatija@boldpurity.com",
+      "category": "Skincare & Clinical Beauty",
+      "website": "https://boldpurity.com",
+      "handle": "@boldpurity",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-24T16:10:29.263Z"
+    },
+    "Boldpurity (Founder - Fouzan)": {
+      "email": "fouzan@boldpurity.com",
+      "category": "Skincare & Clinical Beauty",
+      "website": "https://boldpurity.com",
+      "handle": "@boldpurity",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-24T16:10:30.850Z"
+    },
+    "Zyog Nutrition (CEO - Bhavin)": {
+      "email": "bhavin@zyog.in",
+      "category": "Wellness & Supplements",
+      "website": "https://zyog.in",
+      "handle": "@zyog.nutrition",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-24T16:10:31.532Z"
+    },
+    "Zyog Nutrition (Marketing - Kamal)": {
+      "email": "kamal@zyog.in",
+      "category": "Wellness & Supplements",
+      "website": "https://zyog.in",
+      "handle": "@zyog.nutrition",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-24T16:10:32.222Z"
+    },
+    "Kohl & Spice (Founder - Kashish)": {
+      "email": "kashish.mittal@kohlspice.in",
+      "category": "Skincare & Clinical Beauty",
+      "website": "https://kohlspice.com",
+      "handle": "@kohlandspice",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-24T16:10:32.931Z"
+    },
+    "Moiz Skincare (Corporate Sales)": {
+      "email": "cs@glowderma.com",
+      "category": "Skincare & Clinical Beauty",
+      "website": "https://www.moizskincare.com",
+      "handle": "@moiz_skincare",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-24T16:10:33.607Z"
+    },
+    "Seven Seas Cosmetics (Accounts Exec)": {
+      "email": "accounts@sevenseascosmetics.com",
+      "category": "Skincare & Clinical Beauty",
+      "website": "https://www.sevenseascosmetics.com",
+      "handle": "@sevenseascosmetics",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-24T16:10:34.277Z"
+    },
+    "Bevygood": {
+      "email": "connect@bevygood.com",
+      "category": "Food, Snacks & Beverages",
+      "website": "https://bevygood.com",
+      "handle": "@itsbevygood",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-24T16:13:30.540Z"
+    },
+    "Puffli Snacks": {
+      "email": "puffdesk@pufflisnacks.com",
+      "category": "Food, Snacks & Beverages",
+      "website": "https://pufflisnacks.com",
+      "handle": "@puffli.snacks",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-24T16:15:15.343Z"
+    },
+    "Not Rocket Science": {
+      "email": "nutrifuturesolutions@gmail.com",
+      "category": "Food, Snacks & Beverages",
+      "website": "https://notrocketscience.in",
+      "handle": "@notrocketscience.india",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-24T16:18:01.305Z"
+    },
+    "True Grain Foods": {
+      "email": "info@truegrainstore.com",
+      "category": "Food, Snacks & Beverages",
+      "website": "https://truegrainstore.com",
+      "handle": "@truegrainfoods",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-24T16:24:10.831Z"
+    },
+    "Atulya": {
+      "email": "helpdesk@myatulya.com",
+      "category": "Skincare & Clinical Beauty",
+      "website": "https://www.myatulya.com",
+      "handle": "@atulyaofficial",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-24T16:28:04.078Z"
+    },
+    "Chewbells Healthcare": {
+      "email": "contactus@chewbellshealthcare.com",
+      "category": "Wellness & Supplements",
+      "website": "https://chewbellshealthcare.com",
+      "handle": "@chewbells_healthcare",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-24T16:29:01.373Z"
+    },
+    "Honey Bunny Care": {
+      "email": "care@vihanahealthcare.com",
+      "category": "Baby Care & Wellness",
+      "website": "https://honeybunny.care",
+      "handle": "@honeybunnycare",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-24T16:31:10.798Z"
+    },
+    "Herb Island": {
+      "email": "info@herbelementz.com",
+      "category": "Beauty & Skincare",
+      "website": "https://herbisland.in",
+      "handle": "@herbisland.official",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-24T16:34:03.780Z"
+    },
+    "Truedune": {
+      "email": "contact@truedune.com",
+      "category": "Beauty & Skincare",
+      "website": "https://truedune.com",
+      "handle": "@truedune",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-24T16:34:05.978Z"
+    },
+    "Nature's Nectar": {
+      "email": "care@natures-nectar.com",
+      "category": "Food & Health Foods",
+      "website": "https://www.natures-nectar.com",
+      "handle": "@naturesnectarindia",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-24T16:34:08.231Z"
+    },
+    "Whole Nutrition": {
+      "email": "contact@wholenutrition.in",
+      "category": "Wellness & Nutrition",
+      "website": "https://wholenutrition.in",
+      "handle": "@wholenutritionofficial",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-24T16:34:13.446Z"
+    },
+    "SatRas": {
+      "email": "care@satras.in",
+      "category": "Food & Health Foods",
+      "website": "https://satras.in",
+      "handle": "@satras.in",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-24T16:34:16.102Z"
+    },
+    "Prustlr": {
+      "email": "info@prustlr.com",
+      "category": "Wellness & Nutrition",
+      "website": "https://prustlr.com",
+      "handle": "@prustlr",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-24T16:34:18.294Z"
+    },
+    "Seoul Ceuticals India": {
+      "email": "cartfireindia@gmail.com",
+      "category": "Beauty & Skincare",
+      "website": "https://seoulceuticals.in",
+      "handle": "@seoulceuticalsindia",
+      "status": "contacted",
+      "outreach_count": 2,
+      "last_contacted_at": "2026-05-24T18:39:17.920Z"
+    },
+    "Cureveda": {
+      "email": "info@cureveda.com",
+      "category": "Wellness & Supplements",
+      "website": "https://www.cureveda.com",
+      "handle": "@cureveda",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-24T18:41:48.960Z"
+    },
+    "Sommer Beauty": {
+      "email": "support@sommerbeauty.in",
+      "category": "Beauty & Cosmetics",
+      "website": "https://sommerbeauty.in",
+      "handle": "@sommerbeautyindia",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-24T18:43:06.739Z"
+    },
+    "Gentle Beast": {
+      "email": "care@gentlebeast.in",
+      "category": "Men's Grooming & Supplements",
+      "website": "https://www.gentlebeast.in",
+      "handle": "@gentlebeast.in",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-24T18:44:20.913Z"
+    },
+    "KPG Masale": {
+      "email": "info@marveltea.com",
+      "category": "Spices, Food & Beverages",
+      "website": "https://www.marveltea.com",
+      "handle": "@kpgspices",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-24T18:47:41.631Z"
+    },
+    "Wakefit": {
+      "email": "support@wakefit.co",
+      "category": "Home, Sleep & Lifestyle",
+      "website": "https://www.wakefit.co",
+      "handle": "@wakefit.co",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-24T18:52:05.593Z"
     }
   },
   "dentists": {
@@ -2413,6 +2747,14 @@
       "status": "contacted",
       "outreach_count": 1,
       "last_contacted_at": "2026-05-22T20:26:46.057Z"
+    },
+    "Zeniqua India": {
+      "email": "support@zeniqua.in",
+      "website": "https://zeniqua.in",
+      "category": "Home, Wellness & Lifestyle",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-22T21:00:24.007Z"
     }
   }
 }

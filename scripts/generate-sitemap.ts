@@ -27,6 +27,7 @@ const staticPages = [
   { loc: '/brand-directory', priority: '0.9', changefreq: 'daily' },
   { loc: '/blog', priority: '0.8', changefreq: 'daily' },
   { loc: '/barter-collab', priority: '0.9', changefreq: 'weekly' },
+  { loc: '/salon-proposal', priority: '0.8', changefreq: 'weekly' },
   { loc: '/patna-influencers', priority: '0.8', changefreq: 'weekly' },
   { loc: '/careers', priority: '0.5', changefreq: 'monthly' },
   { loc: '/privacy-policy', priority: '0.3', changefreq: 'yearly' },

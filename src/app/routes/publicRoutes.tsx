@@ -37,6 +37,7 @@ const ROICalculator = lazy(() => import("@/pages/ROICalculator"));
 const InvestorPitchPage = lazy(() => import("@/pages/InvestorPitchPage"));
 const InvestorPitchDeck = lazy(() => import("@/pages/InvestorPitchDeck"));
 const BrandPitchDeck = lazy(() => import("@/pages/BrandPitchDeck"));
+const SalonProposalDeck = lazy(() => import("@/pages/SalonProposalDeck"));
 
 const WelcomeOnboarding = lazy(() => import("@/pages/WelcomeOnboarding"));
 const InstaMockup = lazy(() => import("@/pages/InstaMockup"));
@@ -91,6 +92,9 @@ export const PublicRoutes = () => (
     <Route path="/deck" element={<LazyRoute><InvestorPitchDeck /></LazyRoute>} />
     <Route path="/brand-deck" element={<LazyRoute><BrandPitchDeck /></LazyRoute>} />
     <Route path="/pitch-deck" element={<Navigate to="/brand-deck" replace />} />
+    <Route path="/salon-proposal" element={<LazyRoute><SalonProposalDeck /></LazyRoute>} />
+    <Route path="/salon-deck" element={<Navigate to="/salon-proposal" replace />} />
+    <Route path="/salons" element={<Navigate to="/salon-proposal" replace />} />
     <Route path="/calculator/:platform/:niche" element={<LazyRoute><RateCalculatorDynamic /></LazyRoute>} />
     <Route path="/creator/:username" element={<LegacyCreatorProfileRedirect />} />
     <Route path="/settings" element={<Navigate to="/creator-profile" replace />} />

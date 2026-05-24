@@ -1,0 +1,20 @@
+User-agent: *
+Allow: /
+Allow: /sitemap.xml
+Allow: /llms.txt
+Allow: /llms-full.txt
+
+# Block search engines from private areas
+Disallow: /api/
+Disallow: /admin/
+Disallow: /admin-dashboard/
+Disallow: /creator-dashboard/
+Disallow: /creator-onboarding/
+Disallow: /creator-profile/
+Disallow: /settings/
+Disallow: /login/
+Disallow: /signup/
+Disallow: /reset-password/
+Disallow: /forgot-password/
+
+Sitemap: https://creatorarmour.com/sitemap.xml
