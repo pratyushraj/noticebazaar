@@ -163,6 +163,7 @@ async function main() {
       reel_price: 15000,          // starts from ₹15,000 (Commercials)
       story_price: 3000,         // Story rate ₹3,000
       starting_price: 15000,
+      barter_min_value: 10000,
       open_to_collabs: true,
       collaboration_preference: 'both',
       is_verified: true,

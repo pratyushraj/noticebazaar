@@ -13514,7 +13514,7 @@
     "reel_price": 15000,
     "story_price": 3000,
     "post_price": null,
-    "barter_min_value": null,
+    "barter_min_value": 10000,
     "suggested_barter_value_min": null,
     "suggested_barter_value_max": null,
     "delivery_days": 3,
