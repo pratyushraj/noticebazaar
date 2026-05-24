@@ -1,0 +1,1250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Creator Armour – Salon Chair Monetization Engine | India</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Sora:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --gold: #F5A623;
+    --gold-dim: #C87E14;
+    --saffron: #FF6B00;
+    --green: #25D366;
+    --red: #E03B3B;
+    --indigo: #4F46E5;
+    --bg: #0A0A0A;
+    --bg2: #141414;
+    --bg3: #1C1C1C;
+    --border: rgba(245,166,35,0.15);
+    --text: #EDEDE5;
+    --muted: #7A7A7A;
+    --white: #fff;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Sora', sans-serif;
+    line-height: 1.55;
+    font-size: 15px;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* PROGRESS */
+  #progress-bar {
+    position: fixed; top: 0; left: 0;
+    height: 3px; width: 0%;
+    background: linear-gradient(90deg, var(--saffron), var(--gold), #FFE080);
+    z-index: 9999;
+    transition: width 0.18s ease;
+  }
+
+  /* NAV */
+  nav {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(10,10,10,0.94);
+    backdrop-filter: blur(14px);
+    border-bottom: 1px solid var(--border);
+    padding: 0 18px;
+    height: 54px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .nav-brand {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 17px; letter-spacing: 2.5px; color: var(--gold);
+    display: flex; align-items: center; gap: 6px;
+  }
+  .nav-brand span { color: var(--white); }
+  .nav-right { display: flex; align-items: center; gap: 10px; }
+  .nav-pages {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px; color: var(--muted); letter-spacing: 1px;
+  }
+  .nav-flag { font-size: 16px; }
+
+  /* SLIDE */
+  .slide {
+    min-height: 100dvh;
+    display: flex; flex-direction: column; justify-content: center;
+    padding: 64px 20px 80px;
+    border-bottom: 1px solid var(--border);
+    position: relative; overflow: hidden;
+  }
+  .slide:nth-child(odd) { background: var(--bg); }
+  .slide:nth-child(even) { background: var(--bg2); }
+
+  /* CHIP */
+  .chip {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: rgba(245,166,35,0.1);
+    border: 1px solid rgba(245,166,35,0.28);
+    color: var(--gold);
+    font-family: 'DM Mono', monospace;
+    font-size: 9.5px; letter-spacing: 1.8px; text-transform: uppercase;
+    padding: 5px 10px; border-radius: 4px; margin-bottom: 18px;
+    width: fit-content;
+  }
+  .chip::before { content: '■'; font-size: 7px; }
+
+  .chip-saffron {
+    background: rgba(255,107,0,0.1);
+    border-color: rgba(255,107,0,0.3);
+    color: var(--saffron);
+  }
+  .chip-saffron::before { content: '◆'; font-size: 7px; }
+
+  /* HEADS */
+  .h-mix {
+    font-family: 'Bebas Neue', sans-serif;
+    color: var(--white); font-size: clamp(30px, 9.5vw, 50px);
+    line-height: 1.0; letter-spacing: 1px;
+  }
+  .h-mix em { color: var(--gold); font-style: normal; }
+  .h-mix .saffron { color: var(--saffron); }
+  .h-large {
+    font-family: 'Bebas Neue', sans-serif;
+    color: var(--white); font-size: clamp(28px, 8.5vw, 46px);
+    line-height: 1.0; letter-spacing: 1px;
+  }
+
+  /* COVER */
+  #cover {
+    background: var(--bg);
+    justify-content: flex-start;
+    padding-top: 72px; padding-bottom: 64px;
+  }
+  .cover-flag-row {
+    display: flex; align-items: center; gap: 8px;
+    margin-bottom: 16px;
+  }
+  .cover-flag-text {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px; color: var(--saffron); letter-spacing: 2px; text-transform: uppercase;
+  }
+  .tricolor {
+    height: 3px; width: 40px; border-radius: 2px;
+    background: linear-gradient(90deg, #FF9933 33%, #fff 33% 66%, #138808 66%);
+  }
+  .cover-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(42px, 13.5vw, 76px);
+    line-height: 0.93; color: var(--white); margin-bottom: 18px;
+  }
+  .cover-title span { color: var(--gold); }
+  .cover-sub {
+    color: rgba(237,237,229,0.6); font-size: 14px;
+    margin-bottom: 28px; max-width: 320px; line-height: 1.7;
+  }
+  .cover-pills {
+    display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 36px;
+  }
+  .pill {
+    background: var(--bg3); border: 1px solid var(--border);
+    color: var(--muted); font-size: 10.5px;
+    font-family: 'DM Mono', monospace;
+    padding: 5px 11px; border-radius: 20px; letter-spacing: 0.3px;
+  }
+  .cover-border {
+    position: absolute; inset: 10px;
+    border: 1px solid var(--border); border-radius: 14px; pointer-events: none;
+  }
+  .cover-accent {
+    width: 56px; height: 3px;
+    background: linear-gradient(90deg, #FF9933, var(--gold));
+    margin-bottom: 22px; border-radius: 2px;
+  }
+  .cover-corner {
+    position: absolute; bottom: 22px; right: 20px;
+    font-size: 10px; color: var(--muted);
+    font-family: 'DM Mono', monospace; letter-spacing: 1px;
+  }
+  .scroll-hint {
+    position: absolute; bottom: 22px; left: 50%; transform: translateX(-50%);
+    display: flex; flex-direction: column; align-items: center; gap: 5px;
+    animation: bounce 2.2s infinite;
+  }
+  .scroll-hint span { font-size: 9px; color: var(--muted); font-family: 'DM Mono', monospace; letter-spacing: 1.5px; }
+  .scroll-arrow { width: 18px; height: 18px; border-right: 2px solid var(--gold); border-bottom: 2px solid var(--gold); transform: rotate(45deg); }
+  @keyframes bounce {
+    0%,100% { transform: translateX(-50%) translateY(0); }
+    50% { transform: translateX(-50%) translateY(7px); }
+  }
+
+  /* SEASON BANNER */
+  .season-banner {
+    display: flex; gap: 8px; overflow-x: auto;
+    scrollbar-width: none; margin: 16px 0;
+    padding-bottom: 4px;
+  }
+  .season-banner::-webkit-scrollbar { display: none; }
+  .season-pill {
+    flex-shrink: 0;
+    background: var(--bg3); border: 1px solid var(--border);
+    padding: 8px 13px; border-radius: 8px;
+    font-size: 11px; color: var(--muted); white-space: nowrap;
+  }
+  .season-pill .icon { margin-right: 5px; }
+  .season-pill.hot { border-color: rgba(255,107,0,0.4); color: var(--saffron); background: rgba(255,107,0,0.07); }
+  .season-pill.gold { border-color: rgba(245,166,35,0.4); color: var(--gold); background: rgba(245,166,35,0.07); }
+
+  /* STEPS GRID */
+  .steps-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 11px; margin-top: 24px;
+  }
+  .step-card {
+    background: var(--bg3); border: 1px solid var(--border);
+    border-radius: 10px; padding: 15px;
+  }
+  .step-num {
+    font-family: 'Bebas Neue', sans-serif; font-size: 26px;
+    color: var(--gold); margin-bottom: 5px; line-height: 1;
+  }
+  .step-label {
+    font-size: 10px; font-family: 'DM Mono', monospace;
+    color: var(--gold); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 7px;
+  }
+  .step-title { font-weight: 700; font-size: 12px; color: var(--white); margin-bottom: 5px; }
+  .step-desc { font-size: 11.5px; color: var(--muted); line-height: 1.5; }
+
+  .bottom-note {
+    margin-top: 22px; padding: 11px 14px;
+    background: rgba(245,166,35,0.05);
+    border-left: 3px solid var(--gold);
+    font-size: 10.5px; font-family: 'DM Mono', monospace;
+    color: var(--muted); letter-spacing: 0.4px;
+    border-radius: 0 6px 6px 0; line-height: 1.6;
+  }
+
+  /* MATH */
+  .math-block {
+    background: var(--bg3); border: 1px solid var(--border);
+    border-radius: 12px; padding: 18px; margin-top: 22px;
+  }
+  .math-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 9px 0; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 12.5px;
+  }
+  .math-row:last-child { border-bottom: none; }
+  .math-label { color: var(--muted); }
+  .math-val { font-family: 'DM Mono', monospace; font-weight: 500; color: var(--white); }
+  .math-val.gold { color: var(--gold); font-size: 14px; }
+  .math-bar { height: 5px; border-radius: 3px; background: var(--bg); overflow: hidden; margin-top: 4px; }
+  .math-fill { height: 100%; border-radius: 3px; transition: width 0.3s ease; }
+
+  .metrics-strip {
+    display: grid; grid-template-columns: repeat(4,1fr); gap: 7px; margin-top: 18px;
+  }
+  .metric {
+    background: var(--bg3); border: 1px solid var(--border);
+    border-radius: 8px; padding: 10px 6px; text-align: center;
+  }
+  .metric-val {
+    font-family: 'Bebas Neue', sans-serif; font-size: 19px;
+    color: var(--white); line-height: 1;
+  }
+  .metric-val.gold { color: var(--gold); }
+  .metric-val.green { color: var(--green); }
+  .metric-label { font-size: 9px; color: var(--muted); margin-top: 3px; }
+
+  .quote-box {
+    margin-top: 18px; padding: 13px 15px;
+    background: rgba(245,166,35,0.05);
+    border: 1px solid rgba(245,166,35,0.18);
+    border-radius: 10px; font-size: 12.5px;
+    color: rgba(237,237,229,0.7); font-style: italic; line-height: 1.65;
+  }
+
+  .comments { margin-top: 14px; }
+  .comment {
+    padding: 9px 0; border-bottom: 1px solid rgba(255,255,255,0.04);
+    font-size: 12.5px; line-height: 1.55;
+  }
+  .comment:last-child { border-bottom: none; }
+  .comment strong { color: var(--gold); }
+  .comment span { color: rgba(237,237,229,0.65); }
+
+  /* TREATMENT TABS */
+  .treatment-tabs {
+    display: flex; overflow-x: auto; gap: 6px;
+    margin: 18px 0 14px; scrollbar-width: none;
+    padding-bottom: 3px;
+  }
+  .treatment-tabs::-webkit-scrollbar { display: none; }
+  .tab-btn {
+    flex-shrink: 0;
+    background: var(--bg3); border: 1px solid var(--border);
+    color: var(--muted); font-size: 10.5px;
+    font-family: 'Sora', sans-serif; font-weight: 600;
+    letter-spacing: 0.4px; padding: 7px 13px;
+    border-radius: 6px; cursor: pointer;
+    white-space: nowrap; transition: all 0.18s;
+  }
+  .tab-btn.active {
+    background: rgba(245,166,35,0.13);
+    border-color: var(--gold); color: var(--gold);
+  }
+
+  .treatment-panel { display: none; }
+  .treatment-panel.active { display: block; }
+
+  .barter-tag {
+    background: rgba(245,166,35,0.09);
+    border: 1px solid rgba(245,166,35,0.28);
+    color: var(--gold); font-family: 'DM Mono', monospace;
+    font-size: 9.5px; padding: 4px 10px; border-radius: 4px;
+    margin-bottom: 11px; display: inline-block;
+  }
+  .hook-concept {
+    background: var(--bg3); border: 1px solid var(--border);
+    border-radius: 10px; padding: 15px; margin-bottom: 10px;
+  }
+  .hook-label {
+    font-family: 'DM Mono', monospace; font-size: 9px;
+    color: var(--muted); letter-spacing: 1.2px; text-transform: uppercase; margin-bottom: 5px;
+  }
+  .hook-title { font-weight: 700; font-size: 14px; color: var(--white); margin-bottom: 9px; }
+  .hook-desc { font-size: 12.5px; color: rgba(237,237,229,0.68); line-height: 1.6; }
+
+  .reel-stats {
+    background: var(--bg3); border: 1px solid var(--border);
+    border-radius: 10px; padding: 14px;
+  }
+  .stat-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 7px 0; border-bottom: 1px solid rgba(255,255,255,0.045); font-size: 12.5px;
+  }
+  .stat-row:last-child { border-bottom: none; }
+  .stat-name { color: var(--muted); }
+  .stat-val { font-family: 'DM Mono', monospace; font-weight: 600; }
+  .stat-val.gold { color: var(--gold); }
+  .stat-val.green { color: var(--green); }
+  .stat-val.white { color: var(--white); }
+
+  .save-note {
+    margin-top: 12px; font-size: 10.5px; color: var(--muted);
+    font-family: 'DM Mono', monospace; letter-spacing: 0.4px; line-height: 1.55;
+  }
+  .save-note strong { color: var(--gold); }
+
+  /* FAIL LIST */
+  .fail-list { margin: 18px 0; }
+  .fail-item {
+    display: flex; gap: 11px; padding: 11px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+  }
+  .fail-item:last-child { border-bottom: none; }
+  .fail-x {
+    width: 20px; height: 20px; flex-shrink: 0; margin-top: 1px;
+    background: rgba(224,59,59,0.12); border: 1px solid rgba(224,59,59,0.28);
+    border-radius: 4px; color: var(--red); font-size: 10px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .fail-text { font-size: 12.5px; line-height: 1.55; }
+  .fail-text strong { color: var(--white); }
+  .fail-text span { color: var(--muted); }
+
+  /* VETTING */
+  .vetting-card {
+    background: var(--bg3); border: 1px solid var(--border);
+    border-radius: 12px; padding: 16px; margin-top: 18px;
+  }
+  .vetting-header {
+    display: flex; justify-content: space-between; align-items: center; margin-bottom: 13px;
+  }
+  .vetting-title {
+    font-family: 'DM Mono', monospace; font-size: 9.5px;
+    color: var(--muted); letter-spacing: 1px; text-transform: uppercase;
+  }
+  .badge {
+    font-size: 9px; padding: 3px 7px; border-radius: 4px;
+    font-family: 'DM Mono', monospace; letter-spacing: 0.8px; font-weight: 500;
+  }
+  .badge-gold { background: rgba(245,166,35,0.12); border: 1px solid rgba(245,166,35,0.35); color: var(--gold); }
+  .badge-green { background: rgba(37,211,102,0.1); border: 1px solid rgba(37,211,102,0.28); color: var(--green); }
+  .badge-yellow { background: rgba(255,215,0,0.1); border: 1px solid rgba(255,215,0,0.28); color: #FFD700; }
+
+  .creator-row {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.05);
+  }
+  .creator-avatar {
+    width: 34px; height: 34px; border-radius: 50%; flex-shrink: 0;
+    background: linear-gradient(135deg, var(--saffron), var(--gold));
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Bebas Neue', sans-serif; font-size: 15px; color: var(--bg);
+  }
+  .creator-name { font-size: 12.5px; font-weight: 600; color: var(--white); }
+  .creator-handle { font-size: 10.5px; color: var(--muted); }
+
+  .checklist {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 7px; margin-top: 12px;
+  }
+  .check-item {
+    display: flex; align-items: center; gap: 7px;
+    font-size: 11.5px; color: var(--muted);
+  }
+  .check-item::before { content: '✓'; color: var(--green); font-weight: 700; font-size: 11px; }
+
+  /* CITY SELECTOR */
+  .city-tabs {
+    display: flex; overflow-x: auto; gap: 6px;
+    margin: 14px 0 6px; scrollbar-width: none; padding-bottom: 2px;
+  }
+  .city-tabs::-webkit-scrollbar { display: none; }
+  .city-btn {
+    flex-shrink: 0; background: var(--bg3); border: 1px solid var(--border);
+    color: var(--muted); font-size: 10.5px; font-family: 'Sora', sans-serif;
+    font-weight: 600; padding: 6px 12px; border-radius: 20px; cursor: pointer;
+    white-space: nowrap; transition: all 0.18s;
+  }
+  .city-btn.active {
+    background: rgba(255,107,0,0.12); border-color: var(--saffron); color: var(--saffron);
+  }
+  .city-panel { display: none; }
+  .city-panel.active { display: block; }
+
+  .city-card {
+    background: var(--bg3); border: 1px solid var(--border);
+    border-radius: 10px; padding: 15px; margin-top: 8px;
+  }
+  .city-name {
+    font-family: 'Bebas Neue', sans-serif; font-size: 22px; color: var(--white); margin-bottom: 4px;
+  }
+  .city-zone { font-size: 11px; color: var(--saffron); margin-bottom: 10px; }
+  .city-stat-row {
+    display: flex; justify-content: space-between; padding: 6px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.04); font-size: 12px;
+  }
+  .city-stat-row:last-child { border-bottom: none; }
+  .cslab { color: var(--muted); }
+  .csval { font-family: 'DM Mono', monospace; color: var(--white); font-weight: 600; }
+  .csval.gold { color: var(--gold); }
+
+  /* PILOT CARDS */
+  .pilot-grid { display: grid; grid-template-columns: 1fr; gap: 11px; margin-top: 22px; }
+  .pilot-card {
+    background: var(--bg3); border: 1px solid var(--border);
+    border-radius: 12px; padding: 16px;
+  }
+  .pilot-icon {
+    width: 34px; height: 34px; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 17px; margin-bottom: 11px;
+  }
+  .pilot-icon.orange { background: rgba(255,107,0,0.13); }
+  .pilot-icon.blue { background: rgba(59,130,246,0.13); }
+  .pilot-icon.purple { background: rgba(139,92,246,0.13); }
+  .pilot-card-title { font-weight: 700; font-size: 13.5px; color: var(--white); margin-bottom: 3px; }
+  .pilot-card-sub { font-size: 10.5px; color: var(--saffron); margin-bottom: 9px; }
+  .pilot-card-desc { font-size: 12.5px; color: var(--muted); line-height: 1.6; margin-bottom: 11px; }
+  .tag-row { display: flex; flex-wrap: wrap; gap: 5px; }
+  .tag {
+    background: var(--bg); border: 1px solid rgba(255,255,255,0.07);
+    color: var(--muted); font-size: 9.5px; padding: 3px 8px;
+    border-radius: 4px; font-family: 'DM Mono', monospace; letter-spacing: 0.4px;
+  }
+
+  .exclusivity-bar {
+    margin-top: 18px; background: rgba(255,107,0,0.07);
+    border: 1px solid rgba(255,107,0,0.22);
+    border-radius: 8px; padding: 11px 13px;
+    font-size: 11.5px; color: var(--saffron);
+    font-family: 'DM Mono', monospace; letter-spacing: 0.3px; line-height: 1.5;
+  }
+
+  /* CTA */
+  #cta { background: var(--bg); text-align: center; }
+  .wa-btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+    background: var(--green); color: #000;
+    font-weight: 700; font-size: 14px; font-family: 'Sora', sans-serif;
+    letter-spacing: 0.4px; padding: 15px 26px; border-radius: 10px;
+    border: none; cursor: pointer; margin-top: 24px;
+    text-decoration: none; width: 100%; max-width: 340px;
+    box-shadow: 0 0 28px rgba(37,211,102,0.22);
+    transition: transform 0.15s;
+  }
+  .wa-btn:active { transform: scale(0.97); }
+
+  .booking-list { margin: 24px 0 20px; }
+  .booking-item {
+    display: flex; align-items: center; gap: 11px;
+    padding: 11px 13px; background: var(--bg3);
+    border: 1px solid var(--border); border-radius: 8px; margin-bottom: 7px;
+  }
+  .booking-icon {
+    width: 30px; height: 30px; background: rgba(37,211,102,0.08);
+    border-radius: 8px; display: flex; align-items: center; justify-content: center;
+    font-size: 15px; flex-shrink: 0;
+  }
+  .booking-info { flex: 1; }
+  .booking-title { font-size: 12.5px; font-weight: 600; color: var(--white); text-align: left; }
+  .booking-sub { font-size: 11px; color: var(--muted); text-align: left; }
+  .booking-time { font-family: 'DM Mono', monospace; font-size: 10.5px; color: var(--muted); }
+
+  /* SECTION NUM WATERMARK */
+  .section-num {
+    position: absolute; top: 62px; right: 18px;
+    font-family: 'Bebas Neue', sans-serif; font-size: 68px;
+    color: rgba(245,166,35,0.04); line-height: 1;
+    pointer-events: none; user-select: none;
+  }
+
+  /* FOOTER */
+  footer {
+    padding: 26px 20px;
+    border-top: 1px solid var(--border);
+    display: flex; flex-direction: column; gap: 6px;
+    background: var(--bg);
+  }
+  .footer-top { display: flex; justify-content: space-between; align-items: center; }
+  .footer-brand { font-family: 'Bebas Neue', sans-serif; font-size: 15px; color: var(--gold); letter-spacing: 2.5px; }
+  .footer-copy { font-size: 10px; color: var(--muted); font-family: 'DM Mono', monospace; }
+  .footer-cities { font-size: 10px; color: var(--muted); font-family: 'DM Mono', monospace; letter-spacing: 0.3px; }
+
+  /* HINDI-ENGLISH ACCENT */
+  .hinglish { color: var(--gold); font-style: italic; }
+
+  /* TRUST ROW */
+  .trust-strip {
+    display: flex; gap: 8px; overflow-x: auto; margin: 18px 0;
+    scrollbar-width: none; padding-bottom: 3px;
+  }
+  .trust-strip::-webkit-scrollbar { display: none; }
+  .trust-item {
+    flex-shrink: 0; background: var(--bg3);
+    border: 1px solid rgba(37,211,102,0.18);
+    border-radius: 8px; padding: 8px 12px;
+    font-size: 11px; color: rgba(37,211,102,0.85);
+    font-family: 'DM Mono', monospace; white-space: nowrap;
+  }
+  .trust-item::before { content: '✓  '; }
+
+  /* BIG NUM PAIR */
+  .big-numbers {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 18px;
+  }
+  .big-num-card {
+    background: var(--bg3); border: 1px solid var(--border);
+    border-radius: 10px; padding: 15px; text-align: center;
+  }
+  .big-num {
+    font-family: 'Bebas Neue', sans-serif; font-size: 30px; color: var(--gold); line-height: 1; margin-bottom: 4px;
+  }
+  .big-num-label { font-size: 10px; color: var(--muted); }
+
+  /* Interactive range styling */
+  input[type="range"] {
+    width: 100%;
+    margin: 8px 0;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    height: 6px;
+    outline: none;
+    -webkit-appearance: none;
+  }
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    height: 16px;
+    width: 16px;
+    border-radius: 50%;
+    background: var(--gold);
+    cursor: pointer;
+    box-shadow: 0 0 10px rgba(245,166,35,0.5);
+  }
+</style>
+</head>
+<body>
+<div id="progress-bar"></div>
+
+<!-- NAV -->
+<nav>
+  <span class="nav-brand">CREATOR <span>ARMOUR</span></span>
+  <div class="nav-right">
+    <span class="nav-flag">🇮🇳</span>
+    <span class="nav-pages" id="nav-page">PAGE 1 OF 7</span>
+  </div>
+</nav>
+
+<!-- ═══════════════════════════ COVER -->
+<section class="slide" id="cover">
+  <div class="cover-border"></div>
+  <div class="cover-flag-row">
+    <div class="tricolor"></div>
+    <span class="cover-flag-text">Made for Indian Salons · Bharat-First</span>
+    <div class="tricolor"></div>
+  </div>
+  <div class="cover-accent"></div>
+  <div class="cover-title">SALON CHAIR<br><span>MONETIZATION</span><br>ENGINE</div>
+  <p class="cover-sub">WhatsApp pe share karo — premium Indian salons ke liye. Turn your <em>khali kursi</em> into paid bookings using Instagram Reels.</p>
+  <div class="cover-pills">
+    <span class="pill">🗺 5km Hyperlocal</span>
+    <span class="pill">💍 Shaadi Season</span>
+    <span class="pill">🎆 Festival Rush</span>
+    <span class="pill">📲 WhatsApp Intake</span>
+    <span class="pill">₹ Barter ROI</span>
+  </div>
+  <div class="trust-strip">
+    <div class="trust-item">Delhi NCR</div>
+    <div class="trust-item">Mumbai</div>
+    <div class="trust-item">Bengaluru</div>
+    <div class="trust-item">Hyderabad</div>
+    <div class="trust-item">Pune</div>
+    <div class="trust-item">Chennai</div>
+    <div class="trust-item">Kolkata</div>
+    <div class="trust-item">Jaipur</div>
+  </div>
+  <div class="cover-corner">© 2026 Creator Armour · Prepared for WhatsApp</div>
+  <div class="scroll-hint">
+    <span>SCROLL</span>
+    <div class="scroll-arrow"></div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════ PAGE 1: HOW IT WORKS -->
+<section class="slide" id="s1" data-page="1">
+  <div class="section-num">01</div>
+  <div class="chip">Chair Monetization Infrastructure</div>
+  <div class="h-mix">AAPKE SALON KE<br>AGLE 20 HIGH-VALUE<br>CLIENTS ALREADY<br>DEKH RAHE HAIN<br><em>INSTAGRAM REELS.</em></div>
+
+  <p style="color:var(--muted); margin:14px 0 5px; font-size:13.5px;">We help premium Indian salons turn creator visits into confirmed bookings — with zero front-desk work.</p>
+  <p style="color:var(--gold); font-style:italic; font-size:12.5px; font-weight:600; line-height:1.5;">Instagram pushes geotagged Reels directly to local women within 5km of your salon. <span style="color:var(--saffron);">Shaadi season, festivals, and monsoon glow-ups are the highest-booking windows.</span></p>
+
+  <div class="season-banner">
+    <div class="season-pill hot"><span class="icon">💍</span>Shaadi Season (Oct–Feb)</div>
+    <div class="season-pill gold"><span class="icon">🪔</span>Diwali Rush (Oct–Nov)</div>
+    <div class="season-pill hot"><span class="icon">🌧</span>Monsoon Glow-Up (Jul–Sep)</div>
+    <div class="season-pill gold"><span class="icon">🎶</span>Navratri & Holi Prep</div>
+    <div class="season-pill hot"><span class="icon">🎓</span>College Farewell Season</div>
+  </div>
+
+  <div class="steps-grid">
+    <div class="step-card">
+      <div class="step-num">01</div>
+      <div class="step-label">↑ Geotagged Match</div>
+      <div class="step-title">LOCAL MATCHING</div>
+      <div class="step-desc">Nearby lifestyle creators matched within 5km — Lajpat Nagar, Koramangala, Bandra, Jubilee Hills.</div>
+    </div>
+    <div class="step-card">
+      <div class="step-num">02</div>
+      <div class="step-label">🎬 Reel Shot Guide</div>
+      <div class="step-title">HUM DIRECT KARTE HAIN</div>
+      <div class="step-desc">We script the reel — ASMR, glow transformations, bridal looks. Zero effort from your team.</div>
+    </div>
+    <div class="step-card">
+      <div class="step-num">03</div>
+      <div class="step-label">📅 Mon-Thu Slots</div>
+      <div class="step-title">QUIET SLOT VISITS</div>
+      <div class="step-desc">Creators come during your slow weekday hours — Somvar to Guruvar. Khali chair becomes content.</div>
+    </div>
+    <div class="step-card">
+      <div class="step-num">04</div>
+      <div class="step-label">💬 WhatsApp Leads</div>
+      <div class="step-title">BOOKINGS TRACK KARO</div>
+      <div class="step-desc">Booking inquiries land directly on WhatsApp. We track exact barter ROI — no guesswork.</div>
+    </div>
+  </div>
+  <div class="bottom-note">NO MONTHLY AGENCY RETAINERS · 100% MANAGED EXECUTION · ZERO FRONT DESK FRICTION · BILKUL FREE PILOT</div>
+</section>
+
+<!-- ═══════════════════════════ PAGE 2: BARTER MATH -->
+<section class="slide" id="s2" data-page="2">
+  <div class="section-num">02</div>
+  <div class="chip">Chair Monetization Math</div>
+  <div class="h-mix">BARTER KYUN HAI AAPKA<br><em>SABSE SASTA BOOKINGS ENGINE.</em></div>
+
+  <div class="math-block">
+    <div class="space-y-4" style="margin-bottom: 14px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; font-size: 12.5px;">
+        <span class="math-label">TREATMENT RETAIL VALUE</span>
+        <span class="math-val" id="calcRetailText" style="color:var(--white); font-weight:700;">₹3,500</span>
+      </div>
+      <input type="range" id="calcRetailSlider" min="1500" max="10000" step="500" value="3500">
+      
+      <div style="display: flex; justify-content: space-between; align-items: center; font-size: 12.5px;">
+        <span class="math-label">RAW MATERIAL / INGREDIENT COST</span>
+        <span class="math-val" id="calcPercentText" style="color:var(--gold); font-weight:700;">15%</span>
+      </div>
+      <input type="range" id="calcPercentSlider" min="5" max="30" step="1" value="15">
+    </div>
+
+    <div class="math-row">
+      <span class="math-label">AAPKA RAW COST</span>
+      <span class="math-val" id="calcRawCostVal" style="color:var(--white); font-weight: 700;">₹525</span>
+    </div>
+    <div class="math-row">
+      <span class="math-label">NET BOOKING MARGIN</span>
+      <span class="math-val gold" id="calcMarginText">85% Leverage</span>
+    </div>
+
+    <div style="padding:11px 0; border-top:1px solid rgba(255,255,255,0.05); margin-top: 10px;">
+      <div style="font-size:9px; color:var(--muted); font-family:'DM Mono',monospace; margin-bottom:7px; letter-spacing:1.2px; text-transform:uppercase;">Visual Leverage — Raw Cost vs Revenue</div>
+      <div style="font-size:11.5px; color:var(--red); margin-bottom:5px;">Ingredient Cost: <span id="barRawCostLabel">₹525</span></div>
+      <div class="math-bar"><div class="math-fill" id="barRawCostFill" style="width:15%; background:var(--red);"></div></div>
+      <div style="font-size:11.5px; color:var(--gold); margin:7px 0 5px;">Retail Booking Price: <span id="barRetailLabel">₹3,500</span></div>
+      <div class="math-bar"><div class="math-fill" style="width:100%; background:rgba(245,166,35,0.55);"></div></div>
+      <div style="font-size:11.5px; color:var(--green); margin:7px 0 5px;">Est. Revenue: <span id="barEstRevenueLabel">₹14,700</span> — 420% ROI Leverage</div>
+      <div class="math-bar"><div class="math-fill" style="width:100%; background:var(--green);"></div></div>
+    </div>
+  </div>
+
+  <div class="metrics-strip">
+    <div class="metric"><div class="metric-val white">82k</div><div class="metric-label">REACH</div></div>
+    <div class="metric"><div class="metric-val gold">4.1k</div><div class="metric-label">LIKES</div></div>
+    <div class="metric"><div class="metric-val white">137</div><div class="metric-label">SAVES</div></div>
+    <div class="metric"><div class="metric-val green">14</div><div class="metric-label">BOOKINGS</div></div>
+  </div>
+
+  <div style="margin-top:14px;">
+    <div style="font-size:9.5px; color:var(--muted); font-family:'DM Mono',monospace; letter-spacing:1.2px; text-transform:uppercase; margin-bottom:7px;">● High-Intent Comments — Within 5km (Real Examples)</div>
+    <div class="comments">
+      <div class="comment"><strong>@priya_kapoor.delhi:</strong> <span>"Kahan hai ye salon? GK-2? Shaadi se pehle hydrafacial book karni hai! 😍✨"</span></div>
+      <div class="comment"><strong>@nehaa.mumbai:</strong> <span>"Price list bhejo na! Ye ASMR head wash steam halo toh next level hai 🙏"</span></div>
+      <div class="comment"><strong>@ria.bandra:</strong> <span>"Nail gel art Thursday ko available hai kya? Kitna wait hoga? DM karo 💅"</span></div>
+      <div class="comment"><strong>@suhana.blr:</strong> <span>"Koramangala branch hai kya? Diwali se pehle keratin fix karna tha 🪔"</span></div>
+    </div>
+  </div>
+
+  <div class="quote-box">"Meta ads 24 ghante ke baad bekaar ho jaate hain. Reels weeks tak bookings laate rehte hain — aur wo bhi bilkul free."</div>
+</section>
+
+<!-- ═══════════════════════════ PAGE 3: REEL BLUEPRINTS -->
+<section class="slide" id="s3" data-page="3">
+  <div class="section-num">03</div>
+  <div class="chip">Reel Blueprints (Visual Heaven)</div>
+  <div class="h-mix">REEL CONCEPTS JO<br><em>ACTUALLY WORK</em> INDIAN<br>SALONS KE LIYE.</div>
+
+  <div class="treatment-tabs" role="tablist">
+    <button class="tab-btn active" onclick="showTreatment('hydrafacial', this)">Hydrafacial</button>
+    <button class="tab-btn" onclick="showTreatment('nails', this)">Nail Art</button>
+    <button class="tab-btn" onclick="showTreatment('keratin', this)">Keratin</button>
+    <button class="tab-btn" onclick="showTreatment('scalp', this)">Scalp</button>
+    <button class="tab-btn" onclick="showTreatment('bridal', this)">Bridal</button>
+    <button class="tab-btn" onclick="showTreatment('laser', this)">Laser</button>
+  </div>
+
+  <!-- HYDRAFACIAL -->
+  <div class="treatment-panel active" id="tp-hydrafacial">
+    <div class="barter-tag">BARTER COST: ₹450 · RETAIL: ₹3,500 – ₹5,000</div>
+    <div class="hook-concept">
+      <div class="hook-label">Creative Hook Concept</div>
+      <div class="hook-title">"The Close-Up Glass-Skin Transformation"</div>
+      <div class="hook-label" style="margin-top:7px;">The Video Concept</div>
+      <div class="hook-desc">Creator films raw close-ups of congested skin under harsh Indian sunlight, shows the soothing ASMR hydro-vacuum extraction, and finishes with a crystal glass-skin glow. Perfect pre-shaadi content.</div>
+    </div>
+    <div class="reel-stats">
+      <div style="font-size:9px; color:var(--muted); font-family:'DM Mono',monospace; letter-spacing:1px; margin-bottom:8px; text-transform:uppercase;">Satisfying dopamine = Massive saves before weddings</div>
+      <div class="stat-row"><span class="stat-name">Reel Reach</span><span class="stat-val white">84,200 Views</span></div>
+      <div class="stat-row"><span class="stat-name">Saves (Bookmarks)</span><span class="stat-val gold">1,240 Saves</span></div>
+      <div class="stat-row"><span class="stat-name">Direct Bookings</span><span class="stat-val green">14 Bookings</span></div>
+    </div>
+    <div class="save-note">🔖 <strong>INDIAN SAVE PSYCHOLOGY:</strong> Indian women save beauty reels before shaadi, Diwali, Navratri, and farewell seasons — high-intent bookings follow.</div>
+  </div>
+
+  <!-- NAIL ART -->
+  <div class="treatment-panel" id="tp-nails">
+    <div class="barter-tag">BARTER COST: ₹300 · RETAIL: ₹2,500 – ₹4,000</div>
+    <div class="hook-concept">
+      <div class="hook-label">Creative Hook Concept</div>
+      <div class="hook-title">"Aesthetic Nail Tapping & Custom Mehendi-Inspired Art"</div>
+      <div class="hook-label" style="margin-top:7px;">The Video Concept</div>
+      <div class="hook-desc">Macro video: chipped old polish → satisfying prep clicks → premium sunlight tapping transition revealing custom gel art with Indian-inspired patterns. Huge appeal for wedding guests.</div>
+    </div>
+    <div class="reel-stats">
+      <div class="stat-row"><span class="stat-name">Reel Reach</span><span class="stat-val white">52,500 Views</span></div>
+      <div class="stat-row"><span class="stat-name">Saves (Bookmarks)</span><span class="stat-val gold">2,890 Saves</span></div>
+      <div class="stat-row"><span class="stat-name">Direct Bookings</span><span class="stat-val green">19 Bookings</span></div>
+    </div>
+    <div class="save-note">🔖 <strong>INDIAN SAVE PSYCHOLOGY:</strong> Nail content goes viral before Karva Chauth, Navratri, and bridesmaid season — bookings spike 3x.</div>
+  </div>
+
+  <!-- KERATIN -->
+  <div class="treatment-panel" id="tp-keratin">
+    <div class="barter-tag">BARTER COST: ₹800 · RETAIL: ₹6,000 – ₹12,000</div>
+    <div class="hook-concept">
+      <div class="hook-label">Creative Hook Concept</div>
+      <div class="hook-title">"The Extreme Silk-Shine Swish — Monsoon Frizz to Glass"</div>
+      <div class="hook-label" style="margin-top:7px;">The Video Concept</div>
+      <div class="hook-desc">Before: Humidity-wrecked, frizzy Indian hair in monsoon. Process: Deep protein, steam, iron. After: The iconic glossy swish in outdoor sunlight. Monsoon timing = maximum viral potential.</div>
+    </div>
+    <div class="reel-stats">
+      <div class="stat-row"><span class="stat-name">Reel Reach</span><span class="stat-val white">1,85,000 Views</span></div>
+      <div class="stat-row"><span class="stat-name">Saves (Bookmarks)</span><span class="stat-val gold">4,200 Saves</span></div>
+      <div class="stat-row"><span class="stat-name">Direct Bookings</span><span class="stat-val green">28 Bookings</span></div>
+    </div>
+    <div class="save-note">🔖 <strong>INDIAN SAVE PSYCHOLOGY:</strong> Monsoon frizz is the #1 hair pain for Indian women. This reel sells itself — July to September is peak booking season.</div>
+  </div>
+
+  <!-- SCALP -->
+  <div class="treatment-panel" id="tp-scalp">
+    <div class="barter-tag">BARTER COST: ₹350 · RETAIL: ₹2,500 – ₹4,500</div>
+    <div class="hook-concept">
+      <div class="hook-label">Creative Hook Concept</div>
+      <div class="hook-title">"The ASMR Champi Head Wash Relaxation"</div>
+      <div class="hook-label" style="margin-top:7px;">The Video Concept</div>
+      <div class="hook-desc">Scalp camera check showing dryness and dandruff — relatable for Indian audiences. Water-halo basin wash, traditional champi massage technique, fresh blowout in natural light.</div>
+    </div>
+    <div class="reel-stats">
+      <div class="stat-row"><span class="stat-name">Reel Reach</span><span class="stat-val white">1,18,000 Views</span></div>
+      <div class="stat-row"><span class="stat-name">Saves (Bookmarks)</span><span class="stat-val gold">3,450 Saves</span></div>
+      <div class="stat-row"><span class="stat-name">Direct Bookings</span><span class="stat-val green">16 Bookings</span></div>
+    </div>
+    <div class="save-note">🔖 <strong>INDIAN SAVE PSYCHOLOGY:</strong> Champi + ASMR combo hits deep nostalgia for Indian audiences. Scalp reels peak in summer and post-Holi season.</div>
+  </div>
+
+  <!-- BRIDAL -->
+  <div class="treatment-panel" id="tp-bridal">
+    <div class="barter-tag">BARTER COST: ₹600 · RETAIL: ₹4,500 – ₹8,000</div>
+    <div class="hook-concept">
+      <div class="hook-label">Creative Hook Concept</div>
+      <div class="hook-title">"The Dulhan Royalty Transition — HD Bridal Reveal"</div>
+      <div class="hook-label" style="margin-top:7px;">The Video Concept</div>
+      <div class="hook-desc">Bride-to-be in casual salwar → discussing shaadi makeup with stylist → studio lights → custom HD Indian bridal makeup reveal with maang tikka and dupatta. Emotional, bookable, viral.</div>
+    </div>
+    <div class="reel-stats">
+      <div class="stat-row"><span class="stat-name">Reel Reach</span><span class="stat-val white">1,42,000 Views</span></div>
+      <div class="stat-row"><span class="stat-name">Saves (Bookmarks)</span><span class="stat-val gold">3,200 Saves</span></div>
+      <div class="stat-row"><span class="stat-name">Direct Bookings</span><span class="stat-val green">9 Shaadi Deals</span></div>
+    </div>
+    <div class="save-note">🔖 <strong>INDIAN SAVE PSYCHOLOGY:</strong> Indian brides start saving makeup reels 6–12 months in advance. Oct–Feb shaadi season = highest booking velocity of the year.</div>
+  </div>
+
+  <!-- LASER -->
+  <div class="treatment-panel" id="tp-laser">
+    <div class="barter-tag">BARTER COST: ₹200 · RETAIL: ₹4,000 – ₹7,000</div>
+    <div class="hook-concept">
+      <div class="hook-label">Creative Hook Concept</div>
+      <div class="hook-title">"Painless Laser: Indian Skin — Expectation vs Reality"</div>
+      <div class="hook-label" style="margin-top:7px;">The Video Concept</div>
+      <div class="hook-desc">Creator addresses desi skin concerns (tan lines, dark underarms, facial hair), films the ice-cool cooling gel glide, and reviews smooth and comfortable results — specifically for Indian skin tones.</div>
+    </div>
+    <div class="reel-stats">
+      <div class="stat-row"><span class="stat-name">Reel Reach</span><span class="stat-val white">73,000 Views</span></div>
+      <div class="stat-row"><span class="stat-name">Saves (Bookmarks)</span><span class="stat-val gold">840 Saves</span></div>
+      <div class="stat-row"><span class="stat-name">Direct Bookings</span><span class="stat-val green">12 Consultations</span></div>
+    </div>
+    <div class="save-note">🔖 <strong>INDIAN SAVE PSYCHOLOGY:</strong> Laser content breaks taboo — Indian women DM to ask about tan removal, underarm, and facial hair. High-ticket, repeat clients.</div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════ PAGE 4: CITY TARGETING -->
+<section class="slide" id="s4" data-page="4">
+  <div class="section-num">04</div>
+  <div class="chip chip-saffron">Hyperlocal City Targeting</div>
+  <div class="h-mix">AAPKE SHEHER MEIN<br><em>HYPERLOCAL</em> CREATOR<br>MATCH — <span class="saffron">5KM RADIUS.</span></div>
+  <p style="color:var(--muted); font-size:12.5px; margin-top:12px; line-height:1.6;">Instagram's geotag algorithm targets women living or working within 5km of your salon. Tap your city to see the targeting zones.</p>
+
+  <div class="city-tabs" role="tablist">
+    <button class="city-btn active" onclick="showCity('delhi', this)">🏙 Delhi NCR</button>
+    <button class="city-btn" onclick="showCity('mumbai', this)">🌊 Mumbai</button>
+    <button class="city-btn" onclick="showCity('bengaluru', this)">💻 Bengaluru</button>
+    <button class="city-btn" onclick="showCity('hyderabad', this)">👑 Hyderabad</button>
+    <button class="city-btn" onclick="showCity('pune', this)">🎓 Pune</button>
+    <button class="city-btn" onclick="showCity('kolkata', this)">🎨 Kolkata</button>
+  </div>
+
+  <div class="city-panel active" id="cp-delhi">
+    <div class="city-card">
+      <div class="city-name">DELHI NCR</div>
+      <div class="city-zone">🗺 GK-2 · Lajpat Nagar · South Ex · Saket · Vasant Kunj · Noida Sec-18 · Gurugram Cyber Hub</div>
+      <div class="city-stat-row"><span class="cslab">Peak Booking Windows</span><span class="csval gold">Shaadi (Oct–Feb) · Diwali · Holi</span></div>
+      <div class="city-stat-row"><span class="cslab">Avg Booking Value</span><span class="csval">₹3,500 – ₹12,000</span></div>
+      <div class="city-stat-row"><span class="cslab">Creator Reel Language</span><span class="csval">Hindi + English mix</span></div>
+      <div class="city-stat-row"><span class="cslab">Top Reel Treatments</span><span class="csval gold">Bridal HD · Keratin · Hydrafacial</span></div>
+      <div class="city-stat-row"><span class="cslab">Sample Geotag</span><span class="csval">@salon_gk2_delhi · Lajpat Nagar</span></div>
+    </div>
+  </div>
+
+  <div class="city-panel" id="cp-mumbai">
+    <div class="city-card">
+      <div class="city-name">MUMBAI</div>
+      <div class="city-zone">🗺 Bandra · Juhu · Andheri · Powai · Lower Parel · Colaba · Versova</div>
+      <div class="city-stat-row"><span class="cslab">Peak Booking Windows</span><span class="csval gold">Ganesh Chaturthi · Shaadi · NYE</span></div>
+      <div class="city-stat-row"><span class="cslab">Avg Booking Value</span><span class="csval">₹4,000 – ₹14,000</span></div>
+      <div class="city-stat-row"><span class="cslab">Creator Reel Language</span><span class="csval">Hinglish · Marathi accents</span></div>
+      <div class="city-stat-row"><span class="cslab">Top Reel Treatments</span><span class="csval gold">Nail Art · Laser · Keratin</span></div>
+      <div class="city-stat-row"><span class="cslab">Sample Geotag</span><span class="csval">@bandra_glam · Juhu Beach area</span></div>
+    </div>
+  </div>
+
+  <div class="city-panel" id="cp-bengaluru">
+    <div class="city-card">
+      <div class="city-name">BENGALURU</div>
+      <div class="city-zone">🗺 Koramangala · Indiranagar · HSR Layout · Whitefield · Jayanagar · MG Road</div>
+      <div class="city-stat-row"><span class="cslab">Peak Booking Windows</span><span class="csval gold">Ugadi · Dasara · Tech Season (Q4)</span></div>
+      <div class="city-stat-row"><span class="cslab">Avg Booking Value</span><span class="csval">₹3,500 – ₹11,000</span></div>
+      <div class="city-stat-row"><span class="cslab">Creator Reel Language</span><span class="csval">English · Kannada · Hinglish</span></div>
+      <div class="city-stat-row"><span class="cslab">Top Reel Treatments</span><span class="csval gold">Hydrafacial · Scalp · Laser</span></div>
+      <div class="city-stat-row"><span class="cslab">Sample Geotag</span><span class="csval">@koramangala_salon · HSR Layout</span></div>
+    </div>
+  </div>
+
+  <div class="city-panel" id="cp-hyderabad">
+    <div class="city-card">
+      <div class="city-name">HYDERABAD</div>
+      <div class="city-zone">🗺 Jubilee Hills · Banjara Hills · Madhapur · Hitech City · Gachibowli · Kukatpally</div>
+      <div class="city-stat-row"><span class="cslab">Peak Booking Windows</span><span class="csval gold">Bonalu · Eid · Shaadi (Nov–Jan)</span></div>
+      <div class="city-stat-row"><span class="cslab">Avg Booking Value</span><span class="csval">₹3,000 – ₹10,000</span></div>
+      <div class="city-stat-row"><span class="cslab">Creator Reel Language</span><span class="csval">Telugu · Hindi · English</span></div>
+      <div class="city-stat-row"><span class="cslab">Top Reel Treatments</span><span class="csval gold">Bridal · Keratin · Hydrafacial</span></div>
+      <div class="city-stat-row"><span class="cslab">Sample Geotag</span><span class="csval">@jubileehills_glam · Banjara Hills</span></div>
+    </div>
+  </div>
+
+  <div class="city-panel" id="cp-pune">
+    <div class="city-card">
+      <div class="city-name">PUNE</div>
+      <div class="city-zone">🗺 Koregaon Park · Viman Nagar · Baner · Aundh · Camp · Kothrud</div>
+      <div class="city-stat-row"><span class="cslab">Peak Booking Windows</span><span class="csval gold">Ganesh Puja · Farewell · Shaadi</span></div>
+      <div class="city-stat-row"><span class="cslab">Avg Booking Value</span><span class="csval">₹2,500 – ₹9,000</span></div>
+      <div class="city-stat-row"><span class="cslab">Creator Reel Language</span><span class="csval">Marathi · Hinglish · English</span></div>
+      <div class="city-stat-row"><span class="cslab">Top Reel Treatments</span><span class="csval gold">Nail Art · Scalp · Laser</span></div>
+      <div class="city-stat-row"><span class="cslab">Sample Geotag</span><span class="csval">@koregaonpark_salon · KP area</span></div>
+    </div>
+  </div>
+
+  <div class="city-panel" id="cp-kolkata">
+    <div class="city-card">
+      <div class="city-name">KOLKATA</div>
+      <div class="city-zone">🗺 Park Street · Salt Lake · Ballygunge · New Town · Jadavpur · Alipore</div>
+      <div class="city-stat-row"><span class="cslab">Peak Booking Windows</span><span class="csval gold">Durga Puja · Poila Baisakh · Shaadi</span></div>
+      <div class="city-stat-row"><span class="cslab">Avg Booking Value</span><span class="csval">₹2,000 – ₹8,000</span></div>
+      <div class="city-stat-row"><span class="cslab">Creator Reel Language</span><span class="csval">Bengali · Hindi · English</span></div>
+      <div class="city-stat-row"><span class="cslab">Top Reel Treatments</span><span class="csval gold">Bridal · Hydrafacial · Scalp</span></div>
+      <div class="city-stat-row"><span class="cslab">Sample Geotag</span><span class="csval">@saltlake_salon · Park Street</span></div>
+    </div>
+  </div>
+
+  <div class="bottom-note">INSTAGRAM GEOTAG REACH: Local women within 5km radius. Reel posted from your salon location = neighbourhood-level targeting. Bilkul free distribution.</div>
+</section>
+
+<!-- ═══════════════════════════ PAGE 5: WHY CAMPAIGNS FAIL -->
+<section class="slide" id="s5" data-page="5">
+  <div class="section-num">05</div>
+  <div class="chip">Infrastructure Trust</div>
+  <div class="h-mix">HUM ENSURE KARTE HAIN<br><em>CREATORS ACTUALLY POST.</em></div>
+
+  <div style="font-size:9.5px; color:var(--red); font-family:'DM Mono',monospace; letter-spacing:1.2px; text-transform:uppercase; margin: 18px 0 10px;">✕ WHY INDIAN SALON CAMPAIGNS FAIL</div>
+  <div class="fail-list">
+    <div class="fail-item">
+      <div class="fail-x">✕</div>
+      <div class="fail-text"><strong>Random college influencers:</strong> <span>Mumbai creator ka reel Lucknow mein viral hota hai — zero local bookings.</span></div>
+    </div>
+    <div class="fail-item">
+      <div class="fail-x">✕</div>
+      <div class="fail-text"><strong>No geotargeting:</strong> <span>Views come from Rajasthan, not the women living 2km from your Bandra salon.</span></div>
+    </div>
+    <div class="fail-item">
+      <div class="fail-x">✕</div>
+      <div class="fail-text"><strong>No ROI tracking:</strong> <span>₹5,000 ka free treatment diya, creator ne post kiya, lekin kitne bookings aaye — pata nahi.</span></div>
+    </div>
+    <div class="fail-item">
+      <div class="fail-x">✕</div>
+      <div class="fail-text"><strong>Creators ghost:</strong> <span>Free service li, kabhi post nahi kiya. Classic ghosting — no escrow protection.</span></div>
+    </div>
+    <div class="fail-item">
+      <div class="fail-x">✕</div>
+      <div class="fail-text"><strong>Wrong season timing:</strong> <span>Laser reels in December miss the summer booking window. Shaadi content in March is too late.</span></div>
+    </div>
+  </div>
+
+  <div class="vetting-card">
+    <div class="vetting-header">
+      <span class="vetting-title">□ Vetting Approval Dashboard</span>
+      <span class="badge badge-gold">ESCROW & VETTING</span>
+    </div>
+    <div class="creator-row">
+      <div class="creator-avatar">P</div>
+      <div class="creator-info">
+        <div class="creator-name">Verified Creator (@local.beauty)</div>
+        <div class="creator-handle">Matched · 12k followers · Nearby (5km) · 87% women audience</div>
+      </div>
+      <span class="badge badge-gold">✓ VERIFIED</span>
+    </div>
+    <div style="margin-top:12px; padding:10px 0; border-top:1px solid rgba(255,255,255,0.05);">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+        <span style="font-size:12px; font-weight:600; color:#FFD700;">Draft Status: SUBMITTED ✓</span>
+        <span class="badge badge-yellow">APPROVED</span>
+      </div>
+      <div class="checklist">
+        <div class="check-item">Geotagged Nearby (5km)</div>
+        <div class="check-item">ASMR wash sound sync</div>
+        <div class="check-item">5km local radius target</div>
+        <div class="check-item">WhatsApp booking link</div>
+        <div class="check-item">Hinglish caption</div>
+        <div class="check-item">Shaadi season hook</div>
+      </div>
+    </div>
+  </div>
+  <div class="bottom-note">VETTED LOCALLY · EXCLUSIVITY SECURED · DRAFT APPROVED BEFORE GOING LIVE · CREATOR ESCROW LOCKED</div>
+</section>
+
+<!-- ═══════════════════════════ PAGE 6: FREE PILOT -->
+<section class="slide" id="s6" data-page="6">
+  <div class="section-num">06</div>
+  <div class="chip chip-saffron" style="margin-bottom:10px;">↻ Risk-Free Activation</div>
+  <div class="h-large" style="text-align:center;">BILKUL FREE PILOT<br><em style="color:var(--gold);">EARLY PARTNER SALONS</em><br>KE LIYE</div>
+  <p style="text-align:center; color:var(--muted); font-size:12.5px; margin:14px 0 0; line-height:1.7;">Pehle proof dikhate hain — local women ko aapki kursi tak laate hain — tab koi paid campaign. First collaboration bilkul free manage karte hain.</p>
+
+  <div class="pilot-grid">
+    <div class="pilot-card">
+      <div class="pilot-icon orange">📍</div>
+      <div class="pilot-card-title">1 VETTED LOCAL CREATOR REEL</div>
+      <div class="pilot-card-sub">85%+ Local Women — Sheher Ki</div>
+      <div class="pilot-card-desc">Verified local creator — followers are high-intent Indian women living or working within 5km of your salon. Locally relevant content only.</div>
+      <div class="tag-row"><span class="tag">HYPERLOCAL</span><span class="tag">VERIFIED</span><span class="tag">LOCAL WOMEN</span></div>
+    </div>
+    <div class="pilot-card">
+      <div class="pilot-icon blue">📋</div>
+      <div class="pilot-card-title">DIRECTED SCRIPT & SHOT GUIDE</div>
+      <div class="pilot-card-sub">Done-For-You — Aapko Kuch Nahi Karna</div>
+      <div class="pilot-card-desc">We write the Hinglish creative brief and direct the creator on precise hooks, satisfying ASMR close-ups, and visual transformations. Zero work from your front desk.</div>
+      <div class="tag-row"><span class="tag">HINGLISH BRIEF</span><span class="tag">SHOT GUIDE</span><span class="tag">ASMR</span></div>
+    </div>
+    <div class="pilot-card">
+      <div class="pilot-icon purple">🔒</div>
+      <div class="pilot-card-title">ZERO RISK ESCROW LOCK</div>
+      <div class="pilot-card-sub">100% Posting Guarantee — Pura Safe</div>
+      <div class="pilot-card-desc">Creators only visit during slow weekday slots. We secure draft approval before anything goes live. No ghosting, no wasted services.</div>
+      <div class="tag-row"><span class="tag">ZERO RISK</span><span class="tag">ESCROW LOCK</span><span class="tag">SECURE</span></div>
+    </div>
+  </div>
+  <div class="exclusivity-bar">⚠️ EXCLUSIVITY LOCK: Ek city ya micro-area (e.g. GK-2, Indiranagar, Bandra) mein we only onboard 5 partner salons. We protect your slot so there is no creator overlap.</div>
+</section>
+
+<!-- ═══════════════════════════ PAGE 7: ONBOARDING & CTA -->
+<section class="slide" id="cta" data-page="7">
+  <div class="section-num">07</div>
+  <div class="chip">Start Free Pilot</div>
+  <div class="h-mix">LET'S SET UP AAPKA<br><em>FIRST BARTER PILOT.</em></div>
+  <p style="color:var(--muted); font-size:12.5px; margin-top:10px;">Get matched with 3 nearby beauty & lifestyle creators today. Proof dekhne ke baad hi decide karna.</p>
+  
+  <div class="booking-list">
+    <div class="booking-item">
+      <div class="booking-icon">💬</div>
+      <div class="booking-info">
+        <div class="booking-title">"GK-2 branch hai kya? Keratin book karna hai"</div>
+        <div class="booking-sub">WhatsApp inquiry from GK-2 • 5km away</div>
+      </div>
+      <div class="booking-time">10:42 AM</div>
+    </div>
+    <div class="booking-item">
+      <div class="booking-icon">💬</div>
+      <div class="booking-info">
+        <div class="booking-title">"ASMR head wash video dekh kar book kar rahi hoon!"</div>
+        <div class="booking-sub">WhatsApp inquiry from South Ex • 3km away</div>
+      </div>
+      <div class="booking-time">11:15 AM</div>
+    </div>
+    <div class="booking-item">
+      <div class="booking-icon">💬</div>
+      <div class="booking-info">
+        <div class="booking-title">"Hydrafacial cost kitna hai? Promo code active hai?"</div>
+        <div class="booking-sub">WhatsApp inquiry from Saket • 4km away</div>
+      </div>
+      <div class="booking-time">12:04 PM</div>
+    </div>
+  </div>
+
+  <a href="https://wa.me/919999999999?text=Hey!%20I%20saw%20your%20Salon%20Chair%20Monetization%20Pilot.%20I'd%20love%20to%20get%20matched%20local%20beauty%20%26%20lifestyle%20creators%20nearby%20to%20drive%20bookings%20into%20my%20salon." class="wa-btn" target="_blank">
+    <span>💬 WHATSAPP US TO START PILOT</span>
+  </a>
+
+  <!-- Intake Application Form styled inside premium card -->
+  <div class="vetting-card" style="margin-top: 24px; text-align: left;">
+    <div class="vetting-header">
+      <span class="vetting-title">□ Fast Pilot Intake Form</span>
+      <span class="badge badge-gold">DIRECT REQUEST</span>
+    </div>
+    <form id="pilotForm" style="margin-top: 14px; display: flex; flex-direction: column; gap: 10px;">
+      <div>
+        <label style="display:block; font-size:9px; font-family:'DM Mono',monospace; color:var(--muted); text-transform:uppercase; margin-bottom:4px;">Salon Name *</label>
+        <input type="text" id="salonName" required placeholder="e.g. Blossom Luxury Salon" style="width:100%; padding:10px; background:var(--bg); border:1px solid var(--border); border-radius:6px; color:var(--white); font-family:inherit; font-size:12px;">
+      </div>
+      <div>
+        <label style="display:block; font-size:9px; font-family:'DM Mono',monospace; color:var(--muted); text-transform:uppercase; margin-bottom:4px;">Manager Name *</label>
+        <input type="text" id="managerName" required placeholder="e.g. Rahul Sharma" style="width:100%; padding:10px; background:var(--bg); border:1px solid var(--border); border-radius:6px; color:var(--white); font-family:inherit; font-size:12px;">
+      </div>
+      <div>
+        <label style="display:block; font-size:9px; font-family:'DM Mono',monospace; color:var(--muted); text-transform:uppercase; margin-bottom:4px;">Work Email *</label>
+        <input type="email" id="workEmail" required placeholder="e.g. contact@luxuryblossom.com" style="width:100%; padding:10px; background:var(--bg); border:1px solid var(--border); border-radius:6px; color:var(--white); font-family:inherit; font-size:12px;">
+      </div>
+      <div>
+        <label style="display:block; font-size:9px; font-family:'DM Mono',monospace; color:var(--muted); text-transform:uppercase; margin-bottom:4px;">WhatsApp Number *</label>
+        <input type="tel" id="whatsappNumber" required placeholder="e.g. +91 98765 43210" style="width:100%; padding:10px; background:var(--bg); border:1px solid var(--border); border-radius:6px; color:var(--white); font-family:inherit; font-size:12px;">
+      </div>
+      <div>
+        <label style="display:block; font-size:9px; font-family:'DM Mono',monospace; color:var(--muted); text-transform:uppercase; margin-bottom:4px;">Target Niche Treatment</label>
+        <select id="targetNiche" style="width:100%; padding:10px; background:var(--bg); border:1px solid var(--border); border-radius:6px; color:var(--white); font-family:inherit; font-size:12px; cursor:pointer;">
+          <option value="Hydrafacial">Hydrafacial</option>
+          <option value="Nail Art">Nails Art</option>
+          <option value="Keratin">Hair Keratin smoothing</option>
+          <option value="Scalp">Scalp head ASMR</option>
+          <option value="Bridal">Bridal Makeup Trial</option>
+          <option value="Laser">Laser Hair Reduction</option>
+        </select>
+      </div>
+      <button type="submit" id="submitBtn" style="background:var(--gold); color:#000; font-weight:700; font-size:12px; padding:12px; border:none; border-radius:6px; cursor:pointer; font-family:inherit; margin-top:8px; transition:background 0.2s; width:100%;">
+        REQUEST MATCHED CREATORS
+      </button>
+    </form>
+    <div id="formSuccess" style="display:none; text-align:center; padding:15px 0;">
+      <span style="font-size:24px;">✨</span>
+      <h4 style="color:var(--white); font-size:14px; margin-top:8px;">Application Received!</h4>
+      <p style="color:var(--muted); font-size:11.5px; margin-top:6px; line-height:1.5;">We will reach out on WhatsApp within 24 hours with your first 3 vetted creator profiles nearby.</p>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-top">
+    <span class="footer-brand">CREATOR <span>ARMOUR</span></span>
+    <span class="footer-copy">© 2026 Creator Armour</span>
+  </div>
+  <div class="footer-cities">Mumbai · Delhi NCR · Bengaluru · Hyderabad · Pune · Chennai · Kolkata · Jaipur</div>
+</footer>
+
+<script>
+  // 1. Progress Bar Indicator on Scroll
+  window.addEventListener('scroll', () => {
+    const winScroll = document.documentElement.scrollTop || document.body.scrollTop;
+    const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+    const scrolled = (winScroll / height) * 100;
+    document.getElementById('progress-bar').style.width = scrolled + '%';
+    
+    // Update active page index in nav
+    const slides = document.querySelectorAll('section.slide');
+    let currentSlideIndex = 0;
+    slides.forEach((slide, idx) => {
+      const rect = slide.getBoundingClientRect();
+      if (rect.top <= window.innerHeight / 2 && rect.bottom >= window.innerHeight / 2) {
+        currentSlideIndex = idx;
+      }
+    });
+    document.getElementById('nav-page').innerText = 'PAGE ' + (currentSlideIndex + 1) + ' OF 8';
+  });
+
+  // 2. Interactive Barter Cost Calculator
+  const calcRetailSlider = document.getElementById('calcRetailSlider');
+  const calcPercentSlider = document.getElementById('calcPercentSlider');
+  const calcRetailText = document.getElementById('calcRetailText');
+  const calcPercentText = document.getElementById('calcPercentText');
+  const calcRawCostVal = document.getElementById('calcRawCostVal');
+  const calcMarginText = document.getElementById('calcMarginText');
+  
+  const barRawCostLabel = document.getElementById('barRawCostLabel');
+  const barRawCostFill = document.getElementById('barRawCostFill');
+  const barRetailLabel = document.getElementById('barRetailLabel');
+  const barEstRevenueLabel = document.getElementById('barEstRevenueLabel');
+
+  function updateCalculator() {
+    const retailVal = parseInt(calcRetailSlider.value);
+    const percentVal = parseInt(calcPercentSlider.value);
+    
+    const rawCost = Math.round(retailVal * (percentVal / 100));
+    const netMargin = 100 - percentVal;
+    const estRevenue = Math.round(retailVal * 4.2);
+
+    calcRetailText.innerText = '₹' + retailVal.toLocaleString('en-IN');
+    calcPercentText.innerText = percentVal + '%';
+    calcRawCostVal.innerText = '₹' + rawCost.toLocaleString('en-IN');
+    calcMarginText.innerText = netMargin + '% Leverage';
+
+    barRawCostLabel.innerText = '₹' + rawCost.toLocaleString('en-IN') + ' — ' + percentVal + '%';
+    barRawCostFill.style.width = percentVal + '%';
+    barRetailLabel.innerText = '₹' + retailVal.toLocaleString('en-IN');
+    barEstRevenueLabel.innerText = '₹' + estRevenue.toLocaleString('en-IN');
+  }
+
+  calcRetailSlider.addEventListener('input', updateCalculator);
+  calcPercentSlider.addEventListener('input', updateCalculator);
+  updateCalculator();
+
+  // 3. Treatment Tabs Switcher
+  function showTreatment(treatmentId, btn) {
+    document.querySelectorAll('.treatment-panel').forEach(panel => {
+      panel.classList.remove('active');
+    });
+    document.getElementById('tp-' + treatmentId).classList.add('active');
+    
+    document.querySelectorAll('.treatment-tabs .tab-btn').forEach(button => {
+      button.classList.remove('active');
+    });
+    btn.classList.add('active');
+  }
+
+  // 4. City Tabs Switcher
+  function showCity(cityId, btn) {
+    document.querySelectorAll('.city-panel').forEach(panel => {
+      panel.classList.remove('active');
+    });
+    document.getElementById('cp-' + cityId).classList.add('active');
+    
+    document.querySelectorAll('.city-tabs .city-btn').forEach(button => {
+      button.classList.remove('active');
+    });
+    btn.classList.add('active');
+  }
+
+  // 5. Pilot Form Ingestion
+  const pilotForm = document.getElementById('pilotForm');
+  const submitBtn = document.getElementById('submitBtn');
+  const formSuccess = document.getElementById('formSuccess');
+
+  pilotForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const salonName = document.getElementById('salonName').value;
+    const managerName = document.getElementById('managerName').value;
+    const workEmail = document.getElementById('workEmail').value;
+    const whatsappNumber = document.getElementById('whatsappNumber').value;
+    const targetNiche = document.getElementById('targetNiche').value;
+    
+    submitBtn.disabled = true;
+    submitBtn.innerText = 'SENDING REQUEST...';
+
+    // Detect dev vs production API endpoint
+    const apiBase = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
+      ? 'http://localhost:3001/api/brand-inquiries' 
+      : '/api/brand-inquiries';
+
+    try {
+      const response = await fetch(apiBase, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          brandName: salonName,
+          workEmail: workEmail,
+          website: 'WhatsApp: ' + whatsappNumber,
+          category: targetNiche,
+          budget: 'Barter Pilot (Free Campaign)',
+          timeline: 'Immediate',
+          notes: 'Manager Name: ' + managerName + '\nAdditional Message: Static Landing Page Submit',
+          source: 'salon_proposal_static'
+        })
+      });
+
+      const resData = await response.json();
+      if (response.ok || resData.success) {
+        pilotForm.style.display = 'none';
+        formSuccess.style.display = 'block';
+      } else {
+        alert('Failed: ' + (resData.error || 'Unknown error. Please try again.'));
+      }
+    } catch (err) {
+      console.error('Error submitting pilot form:', err);
+      alert('Network issue connecting to server. Please try again.');
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.innerText = 'REQUEST MATCHED CREATORS';
+    }
+  });
+</script>
+</body>
+</html>
