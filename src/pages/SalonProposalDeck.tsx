@@ -204,24 +204,43 @@ const SalonProposalDeck = () => {
           const card = document.getElementById('salon-pitch-deck-slide-card');
           if (!card) continue;
           
+          // Save original styles to restore after capture (guarantees mobile-friendly A4 aspect ratio rendering)
+          const originalWidth = card.style.width;
+          const originalHeight = card.style.height;
+          const originalMinHeight = card.style.minHeight;
+          const originalMaxWidth = card.style.maxWidth;
+          const originalTransform = card.style.transform;
+          
+          // Enforce uniform standard desktop landscape presentation dimensions
+          card.style.width = '1100px';
+          card.style.height = '620px';
+          card.style.minHeight = '620px';
+          card.style.maxWidth = '1100px';
+          card.style.transform = 'none';
+          
           const slideTheme = getSlideTheme(i);
           const bgColor = slideTheme === 'gold-accent' ? '#0d1220' : slideTheme === 'luxury-dark' ? '#070b14' : '#05070d';
-          const canvasWidth = Math.max(Math.round(card.getBoundingClientRect().width * 2.5), 2400);
-          const canvasHeight = Math.max(Math.round(card.getBoundingClientRect().height * 2.5), 1350);
           
           const canvas = await html2canvas(card, {
-            scale: 3.25,
+            scale: 2.5, // Balanced high-resolution scale
             useCORS: true,
             backgroundColor: bgColor,
-            width: canvasWidth,
-            height: canvasHeight,
-            windowWidth: canvasWidth,
-            windowHeight: canvasHeight,
+            width: 1100,
+            height: 620,
+            windowWidth: 1200, // Forces desktop CSS media queries and responsive styles
+            windowHeight: 700,
             scrollX: 0,
             scrollY: 0,
             removeContainer: true,
             logging: false
           });
+          
+          // Restore original responsive mobile styles instantly
+          card.style.width = originalWidth;
+          card.style.height = originalHeight;
+          card.style.minHeight = originalMinHeight;
+          card.style.maxWidth = originalMaxWidth;
+          card.style.transform = originalTransform;
           
           const imgData = canvas.toDataURL('image/png');
           if (i > 0 || j > 0) {
