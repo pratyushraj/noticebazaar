@@ -146,6 +146,16 @@ For each blog post:
 - "how to track payments from brands"
 - "influencer contract review India"
 
+### Low KD Keywords (High Opportunity, Easy to Rank)
+- "how to find micro influencers for barter collaboration in India" (KD: ~8)
+- "best platforms for influencer barter campaigns in India" (KD: ~12)
+- "barter marketing strategy for D2C brands India" (KD: ~10)
+- "find fashion influencers open to barter collaboration India" (KD: ~5)
+- "how to pitch barter collaborations to nano influencers" (KD: ~14)
+- "free influencer marketing platforms for startups in India" (KD: ~15)
+- "regional language content creation tips for Indian influencers" (KD: ~7)
+
+
 ---
 
 ## 📈 Tracking & Analytics
